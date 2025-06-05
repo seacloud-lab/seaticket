@@ -1,0 +1,40 @@
+{% extends "registration/login.html" %}
+{% load i18n %}
+
+{% block main_content %}
+<div class="login-panel-outer-container mt-6 vh">
+<div class="login-panel">
+    <h1 class="login-panel-hd">短信验证</h1>
+    <form action="" method="post" id="sms-2fa-form">{% csrf_token %}
+        <div class="position-relative row m-0">
+            <input type="text" name="send_sms_code" placeholder="请输入手机号" value={{ phone }} class="input name-input col-6 mr-5" readonly="readonly" />
+            <button id="send_sms_code" type="submit" {{ send_button_disabled }} class="submit btn btn-primary btn-block col-4">{% if send_button_disabled %}已发送{% else %}发送验证码{% endif %}</button>
+        </div>
+    </form>
+    <form action="" method="post" id="sms-2fa-form-sms-code">{% csrf_token %}
+        <input id="id_sms_code" type="number" name="sms_code" placeholder="请输入短信验证码" value="" class="input name-input w-100" style="height: 40px;" autocomplete="off" />
+
+        {% if error_msg %}
+        <p class="error">{{ error_msg }}</p>
+        {% endif %}
+
+        <button id="verify" type="submit" class="submit btn btn-primary btn-block">验证</button>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
+
+var $el = $('.login-panel-outer-container');
+$el.removeClass('vh');
+
+// for refresh page
+if ( window.history.replaceState ) {
+    window.history.replaceState( null, null, window.location.href );
+}
+
+</script>
+{% endblock %}

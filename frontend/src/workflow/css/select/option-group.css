@@ -1,0 +1,56 @@
+.option-group {
+  position: absolute;
+  left: 0;
+  min-height: 60px;
+  max-height: 300px;
+  min-width: 100%;
+  max-width: 15rem;
+  padding: 0.5rem 0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: #fff;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 3px;
+  z-index: 10001;
+}
+
+.option-group .option-group-search {
+  width: 100%;
+  padding: 0 10px 6px 10px;
+  min-width: 170px;
+}
+
+.option-group .option-group-search .form-control {
+  height: 31px;
+}
+
+.option-group .none-search-result {
+  height: 100px;
+  width: 100%;
+  padding: 10px;
+  opacity: 0.5;
+}
+
+.option-group .option-group-content {
+  max-height: 252px;
+  overflow-y: auto;
+}
+
+.option-group .option {
+  display: block;
+  width: 100%;
+  line-height: 24px;
+  padding-left: 10px;
+  padding-right: 10px;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  background-color: transparent;
+  border: 0;
+}
+
+.option-group .option.option-active {
+  background-color: #20a0ff;
+  color: #fff;
+  cursor: pointer;
+}

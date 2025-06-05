@@ -1,0 +1,13 @@
+{% extends "base_for_react.html" %}
+{% load seahub_tags i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block extra_style %}
+{% render_bundle 'appTemplates' 'css' %}
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+</script>
+{% render_bundle 'appTemplates' 'js' %}
+{% endblock %}

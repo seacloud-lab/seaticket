@@ -1,0 +1,27 @@
+.long-text-editor-container.article {
+  min-height: 38px;
+  border-radius: 3px;
+}
+
+.sf-long-text-inline-editor-container:not(.preview) {
+  height: 300px;
+  border-color: #1991eb;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(70, 127, 207, .25);
+}
+
+.sf-long-text-inline-editor-container.preview {
+  cursor: pointer;
+}
+
+.sf-long-text-inline-editor-container .empty-loading-page {
+  position: relative;
+}
+
+.sf-long-text-inline-editor-container .sf-simple-slate-editor-container .sf-slate-editor-content {
+  border-radius: 3px;
+}
+
+.long-text-editor-container.article.not-allowed-click {
+  cursor: not-allowed !important;
+}

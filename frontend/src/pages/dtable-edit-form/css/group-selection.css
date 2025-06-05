@@ -1,0 +1,44 @@
+.group-selection-container {
+  display: flex;
+  align-items: center;
+  height: 30px;
+}
+
+.group-selection-popover {
+  width: 320px;
+  box-shadow: 0 0 5px #ccc;
+  background-color: #fff;
+  z-index: 10;
+}
+
+.group-selection-popover .group-selections-search {
+  padding: 10px 10px 0 10px;
+}
+
+.group-selection-popover .group-selections-search input {
+  height: 28px;
+}
+
+.group-selection-popover .group-selections-container {
+  max-height: 200px;
+  min-height: 160px;
+  padding: 10px;
+  overflow: auto;
+}
+
+/* option item */
+.group-selection-popover .group-selection-item {
+  display: flex;
+  font-size: 14px;
+  height: 30px;
+  line-height: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.group-selection-popover .group-checked {
+  width: 20px;
+  text-align: center;
+  color: #798d99;
+}
+

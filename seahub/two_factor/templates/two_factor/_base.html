@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/bootstrap_4.6.2.min.css" />
+</head>
+<body>
+  <div class="alert alert-success"><p class="container">Provide a template named
+    <code>two_factor/_base.html</code> to style this page and remove this message.</p></div>
+
+  {% block content_wrapper %}
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  {% endblock %}
+
+  <script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.popover.min.js"></script>
+  <script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.min.js"></script>
+</body>
+</html>

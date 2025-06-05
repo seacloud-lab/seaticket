@@ -1,0 +1,7 @@
+-r requirements.txt
+
+mock
+exam
+splinter
+pytest
+pytest-django

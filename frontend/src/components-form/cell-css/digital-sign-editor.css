@@ -1,0 +1,174 @@
+.edit-digital-sign-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #666;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.edit-digital-sign-button:hover {
+  background-color: #dbdbdb;
+  color: #666666;
+  cursor: pointer;
+}
+
+.digital-sign-editor-container {
+  position: fixed;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 600px;
+  z-index: 1000;
+  box-shadow: 0 0 5px #ccc;
+  background-color: #ffffff;
+}
+
+.digital-sign-editor-header {
+  height: 50px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ededed;
+}
+
+.digital-sign-editor-header .dtable-font {
+  color: #aaa;
+}
+
+.digital-sign-editor-logo {
+  display: flex;
+  align-items: center;
+}
+
+.digital-sign-editor-operations {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  user-select: none;
+}
+
+.digital-sign-editor-operations .btn-clear-digital-sign {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 28px;
+  font-weight: 400;
+  border: 0;
+  color: #666666;
+  background-color: #f0f0f0;
+}
+
+.digital-sign-editor-operations .btn-clear-digital-sign:hover {
+  color: #666;
+  background-color: #dbdbdb;
+  cursor: pointer;
+}
+
+.digital-sign-editor-operations .dtable-icon-clear-format {
+  color: #666666;
+  margin-right: .25rem;
+  font-size: 14px;
+}
+
+.digital-sign-editor-operations .btn-clear-digital-sign:hover .dtable-icon-clear-format {
+  color: #666;
+}
+
+.digital-sign-editor-container .digital-sign-panel {
+  position: relative;
+  height: 300px;
+}
+
+.signature-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+.signature-board canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.signature-board-tips {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  opacity: .5;
+}
+
+.signature-image-wrapper {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ededed;
+  border-radius: 4px;
+  margin: 10px 20px 10px 0;
+  width: 200px;
+  height: 100px;
+  box-sizing: border-box;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.signature-image-wrapper:not(:last-child):hover {
+  border-color:  #c9c9c9;
+}
+
+.signature-image-wrapper img {
+  display: block;
+  border-radius: 4px;
+  max-width: 196px;
+  max-height: 96px;
+}
+
+.signature-board-image-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.signature-board-image-wrapper img {
+  max-height: 100%;
+}
+
+.PC-image-previewer.digital-sign-image .ril-image-current,
+.mobile-image-previewer.digital-sign-image .ril-image-current {
+  background-color: #fff;
+}
+
+.digital-sign-view-panel {
+  position: relative;
+}
+
+.digital-sign-view-panel-operations {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.digital-sign-view-panel-operations .mobile-btn-clear {
+  color: rgb(240, 159, 63);
+}

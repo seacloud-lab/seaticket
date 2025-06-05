@@ -1,0 +1,67 @@
+.workflow-item-popover .popover {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.workflow-item-popover .workflow-item-popover-content {
+  padding: 8px 0;
+  min-width: 10rem;
+}
+
+.workflow-item-popover .workflow-item-popover-content .workflow-item-operation {
+  line-height: 1.5;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 3px 12px;
+  color: #212529;
+}
+
+.workflow-item-popover .workflow-item-popover-content .workflow-item-operation:hover {
+  color: #fff;
+}
+
+.workflow-item-popover .workflow-item-operation .multicolor-icon,
+.workflow-item-popover .workflow-item-operation .workflow-item-operation-icon {
+  font-size: 14px;
+  margin-right: 10px;
+  color: #999;
+}
+
+.workflow-item-popover .workflow-item-operation .dtable-icon-down3 {
+  color: #999;
+}
+
+.workflow-item-popover .workflow-item-operation:hover .dtable-icon-down3,
+.workflow-item-popover .workflow-item-operation:hover .multicolor-icon,
+.workflow-item-popover .workflow-item-operation:hover .dtable-icon-right-slide,
+.workflow-item-popover .workflow-item-operation:hover .workflow-item-operation-icon {
+  color: #fff;
+}
+
+.workflow-item-popover .no-target-folder {
+  display: inline-block;
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.workflow-item-popover .workflow-item-operation .dtable-icon-right-slide {
+  transform: scale(0.8);
+  font-size: 12px;
+  color: #999;
+}
+
+.move-to-folders-toggle {
+  opacity: 0;
+  width: 0;
+  min-width: 0;
+  margin-left: -12px;
+  padding: 0;
+}
+
+.workflow-item-popover-content .folders-dropdown-menu {
+  overflow-y: scroll;
+  margin-top: -23px;
+  margin-left: 23px;
+  width: 10rem;
+  max-height: 300px;
+}

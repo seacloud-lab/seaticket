@@ -1,0 +1,52 @@
+.notification-base-item,
+.notification-app-item {
+  padding: 20px 20px 20px 30px;
+  border-bottom: 1px solid #ededed
+}
+
+.notification-base-item:hover,
+.notification-app-item:hover {
+  background: #f5f5f5;
+}
+
+.notification-base-item .table-icon-content {
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.notification-base-item .dtable-icon-style {
+  font-size: 14px;
+}
+
+.notification-app-item .app-item-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.notification-base-item a,
+.notification-app-item a {
+  font-size: 14px;
+  color: #212529;
+}
+
+.notification-base-item .base-name,
+.notification-app-item .app-name {
+  margin-left: 8px;
+  max-width: 380px;
+}
+
+.notification-base-item .unseen,
+.notification-app-item .unseen {
+  border-radius: 50%;
+  min-width: 22px;
+  height: 22px;
+  font-size: 12px;
+  padding: 2px;
+  text-align: center;
+  color: #fff;
+  background-color: #fc6440;
+}

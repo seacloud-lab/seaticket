@@ -1,0 +1,55 @@
+.group-manage-trash-dialog {
+  width: 1000px;
+  max-width: 1000px;
+  height: calc(100% - 56px);
+}
+
+.group-manage-trash-dialog .modal-content {
+  width: 100%;
+  height: 100%;
+}
+
+.group-manage-trash-dialog .group-manage-trash-body {
+  padding-bottom: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+.group-manage-trash-dialog .trash-dtables tbody tr {
+  height: 56px;
+}
+
+.group-manage-trash-dialog .trash-dtables .table-icon-content {
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #eee;
+}
+
+.group-manage-trash-dialog .trash-dtables .trash-table-name {
+  color: #212529;
+  font-weight: 500;
+  padding-right: 20px;
+}
+
+.group-manage-trash-dialog .trash-dtables .trash-table-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.group-manage-trash-dialog .trash-dtables .table-icon-content .dtable-icon-style {
+  font-size: 16px;
+}
+
+.group-manage-trash-dialog .trash-dtables .trash-table-restore {
+  cursor: pointer;
+  color: #ED7109;
+}
+
+.group-manage-trash-dialog .trash-dtables .trash-table-restore:hover {
+  text-decoration: underline;
+}

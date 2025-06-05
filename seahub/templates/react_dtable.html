@@ -1,0 +1,159 @@
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+{% load pwa %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{{ site_title }}</title>
+{% progressive_web_app_meta %}
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
+{% if enable_org_dingtalk %}
+<meta name="wpk-bid" content="dta_2_108878">
+<script>
+    var isDingtalk = navigator && /DingTalk/.test(navigator.userAgent);
+    var isProductEnv = window && window.location && window.location.host && window.location.host.indexOf('//127.0.0.1')===-1 && window.location.host.indexOf('//localhost')===-1 && window.location.host.indexOf('//192.168.')===-1;
+    if (isProductEnv) {
+        !(function(c, i, e, b){
+            var h=i.createElement("script");
+            var f=i.getElementsByTagName("script")[0];
+            h.type="text/javascript";
+            h.crossorigin=true;
+            h.onload = function(){
+                c[b]||(c[b] = new c.wpkReporter({bid: "dta_2_108878"}));
+                c[b].installAll()
+            };
+            f.parentNode.insertBefore(h,f);
+            h.src=e
+        })(window, document, "https://g.alicdn.com/woodpeckerx/jssdk??wpkReporter.js", "__wpk");
+    }
+</script>
+{% endif %}
+<link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/base-font.css?v={{ version }}" />
+{% if request.is_mobile or request.is_tablet %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endif %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_react.css" />
+{% render_bundle 'appDTable' 'css' %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+
+<script type="text/javascript">
+    window.app = {
+        config: {
+            version: '{{ version }}',
+            siteRoot: '{{ SITE_ROOT }}',
+            avatarURL: '{{ avatar_url }}',
+            loginUrl: '{{ LOGIN_URL }}',
+            mediaUrl: '{{ MEDIA_URL }}',
+            lang: '{{ LANGUAGE_CODE }}',
+            logoPath: '{{ logo_path }}',
+            logoWidth: '{{ logo_width }}',
+            logoHeight: '{{ logo_height }}',
+            isPro: '{{ is_pro }}'
+        },
+        pageOptions: {
+            server: '{{ service_url }}',
+            csrfToken: "{{ csrf_token }}",
+            name: "{{request.user.username|email2nickname|escapejs}}",
+            userId: "{{request.user.id|escapejs}}",
+            username: "{{request.user.username|escapejs}}",
+            contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+            isMobile: {% if request.is_mobile or request.is_tablet %} true {% else %} false {% endif %},
+
+            canAddGroup: {% if user.permissions.can_add_group %} true {% else %} false {% endif %},
+            canAddDTable: {% if user.permissions.can_add_dtable %} true {% else %} false {% endif %},
+            canGenerateExternalLink: {% if user.permissions.can_generate_external_link %} true {% else %} false {% endif %},
+            canInvitePeople: {% if enable_guest_invitation and user.permissions.can_invite_guest %} true {% else %} false {% endif %},
+            canUseAdvancedPerms: {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %},
+            canUseAdvancedCustomization: {% if user.permissions.can_use_advanced_customization %} true {% else %} false {% endif %},
+
+            fileName: '{{ filename|escapejs }}',
+            filePath: '{{ path|escapejs }}',
+            workspaceID: '{{ workspace_id }}',
+            dtableUuid: '{{ dtable_uuid }}',
+            dtableServer: '{{ dtable_server }}',
+            dtableSocket: '{{ dtable_socket }}',
+            shareLinkPasswordMinLength: {{ share_link_password_min_length }},
+            shareLinkExpireDaysDefault: {% if share_link_expire_days_default %} {{ share_link_expire_days_default }} {% else %} 0 {% endif %},
+            shareLinkExpireDaysMin: {{ share_link_expire_days_min }},
+            shareLinkExpireDaysMax: {{ share_link_expire_days_max }},
+            {% if request.user.is_authenticated and request.cur_note %}
+                curNoteList: (function () {
+                  var curNoteList = [];
+                  {% for curNote in request.cur_note %}
+                  curNoteList.push({
+                    'curNoteMsg': '{{curNote.message|urlize|escapejs}}',
+                    'curNoteID': '{{curNote.id}}'
+                  });
+                  {% endfor %}
+                  return curNoteList;
+                })(),
+            {% endif %}
+            helpLink: '{{ help_link }}',
+            dtableColor: '{{ dtable_color }}',
+            cloudMode: {% if cloud_mode %} true {% else %} false {% endif %},
+            isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
+            orgName: {% if org is not None %} '{{ org.org_name|escapejs }}' {% else %} '' {% endif %},
+            orgID: {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %},
+            showWechatSupportGroup: {% if show_wechat_support_group %} true {% else %} false {% endif %},
+            showTemplatesLink: {% if show_templates_link %} true {% else %} false {% endif %},
+            seatableMarketUrl: '{{ seatable_market_url }}',
+            enableUserGuide: {% if enable_user_guide %} true {% else %} false {% endif %},
+            traingingServicesLink: '{{ training_services_link }}',
+            gettingStartLink: '{{ getting_start_link }}',
+            useCaseLink: '{{ use_cases_link }}',
+            videoTutorialsLink: '{{ video_tutorials_link }}',
+            introductionVideoLink: '{{ introduction_video_link }}',
+            enableIntroductionVideo: {% if enable_introduction_video %} true {% else %} false {% endif %},
+            enableCreateBaseFromTemplate: {% if enable_create_base_from_template %} true {% else %} false {% endif %},
+            enableOrgCommonDataset: {% if enable_org_common_dataset %} true {% else %} false {% endif %},
+            enableUniversalApp: {% if enable_universal_app %} true {% else %} false {% endif %},
+            needShowVideo: {% if need_show_video %} true {% else %} false {% endif %},
+            langCode: "{{LANGUAGE_CODE|escapejs}}",
+            enableTellAFriend: {% if enable_tell_a_friend %} true {% else %} false {% endif %},
+            enableInviteAFriend: {% if enable_invite_a_friend %} true {% else %} false {% endif %},
+            friendInvitationLink: "{{ friend_invitation_link }}",
+            canRunPython: {% if can_run_python %} true {% else %} false {% endif %},
+            enableWorkflow: {% if enable_workflow %} true {% else %} false {% endif %},
+            workflowHelpLink: '{{ workflow_help_link }}',
+            dtableBaiduMapKey: '{{ dtable_baidu_map_key }}',
+            universalAppCNHelpLink: '{{ universal_app_cn_help_link }}',
+            useExternalTeamAdmin: {% if use_external_team_admin %} true {% else %} false {% endif %},
+            customNavItems: {% if custom_nav_items %} JSON.parse('{{ custom_nav_items | escapejs }}') {% else %} {{'[]'}} {% endif %},
+            canRemoveBasePasswordViaPhone: {% if can_remove_base_password_via_phone %} true {% else %} false {% endif %},
+            hasBoundPhone: {% if has_bound_phone %} true {% else %} false {% endif %},
+            disableAddingPersonalBases: {% if disable_adding_personal_bases %} true {% else %} false {% endif %},
+            trashCleanExpireDays: '{{trash_clean_expire_days}}',
+            enableAddressBookV2: {% if enable_address_book_v2 %} true {% else %} false {% endif %},
+            enableDepartmentAdminManageMemberBases: {% if enable_department_admin_manage_member_bases %} true {% else %} false {% endif %},
+            enableShowIDInOrgWhenSearchUser: {% if enable_show_id_in_org_when_search_user %} true {% else %} false {% endif %},
+            enableSeatableAI: {% if enable_seatable_ai %} true {% else %} false {% endif %},
+        }
+     };
+    var performance = window.performance;
+    var timing = performance.timing;
+    console.log(timing.responseStart - timing.navigationStart);
+</script>
+<script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js?v={{ version }}"></script>
+<script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+{% render_bundle 'appDTable' 'js' %}
+</body>
+</html>
+

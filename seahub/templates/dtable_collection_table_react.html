@@ -1,0 +1,119 @@
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{{ filename }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
+<link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seafile-editor-font.css" />
+{% if request.is_mobile or request.is_tablet %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endif %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+{% render_bundle 'dtableCollectionTableView' 'css' %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="plugin-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="widget-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+
+<script type="text/javascript">
+    window.app = {
+        config: {
+            version: '{{ version }}',
+            siteRoot: '{{ SITE_ROOT }}',
+            mediaUrl: '{{ media_url }}',
+            lang: '{{ LANGUAGE_CODE }}',
+            loginUrl: '{{ LOGIN_URL }}',
+            dtableBaiduMapKey: '{{ dtable_baidu_map_key }}',
+            dtableMineMapKey: '{{ dtable_mine_map_key }}',
+            dtableMineMapCustomConfig: {% if dtable_mine_map_custom_config %} {{ dtable_mine_map_custom_config|safe }} {% else %} null {% endif %},
+            dtableGoogleMapKey: '{{ dtable_google_map_key }}',
+            dtableEnableEmailColumn: {% if dtable_enable_email_column %}true{% else %}false{% endif %},
+            faviconPath: '{{ favicon_path }}',
+            faviconNotificationPath: '{{ favicon_notification_path }}'
+        },
+        pageOptions: {
+            id_in_org: '{{ id_in_org }}',
+            server: '{{ service_url }}',
+            csrfToken: "{{ csrf_token }}",
+            name: "{{request.user.username|email2nickname|escapejs}}",
+            username: "{{request.user.username|escapejs}}",
+            contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+
+            fileName: '{{ filename|escapejs }}',
+            workspaceID: '{{ workspace_id }}',
+            dtableUuid: '{{ dtable_uuid }}',
+            isOwnedByGroup: {% if is_owned_by_group %} true {% else %} false {% endif %},
+            userGroupIds: {% if user_group_ids %} {{ user_group_ids|safe }} {% else %} null {% endif %},
+            permission: '{{ permission }}',
+            seafileUrl: '{{ seafile_url }}',
+            repoApiToken: '{{ repo_api_token }}',
+            dtableServer: '{{ dtable_server }}',
+            dtableSocket: '{{ dtable_socket }}',
+            canCreateCommonDataset: {% if can_create_common_dataset %}true{% else %}false{% endif %},
+            cloudMode: {% if cloud_mode %} true {% else %} false {% endif %},
+            isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
+            orgName: {% if org is not None %} '{{ org.org_name }}' {% else %} '' {% endif %},
+            seatableMarketUrl: '{{ seatable_market_url }}',
+            canGenerateExternalLink: {% if user.permissions.can_generate_external_link %} true {% else %} false {% endif %},
+            canRunPythonScript: {% if can_run_python_script %} true {% else %} false {% endif %},
+            isScriptRunningConfigured: {% if is_script_running_configured %} true {% else %} false {% endif %},
+            canUseAdvancedPerms: {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %},
+            canInvitePeople: {% if enable_guest_invitation and user.permissions.can_invite_guest %} true {% else %} false {% endif %},
+            isMobile: {% if request.is_mobile or request.is_tablet %} true {% else %} false {% endif %},
+            isAdmin: {% if is_admin %} true {% else %} false {% endif %},
+            enableWeixin: {% if enable_weixin %} true {% else %} false {% endif %},
+            enableUserToSetNumberSeparator: {% if enable_user_to_set_number_separator %}true{% else %}false{% endif %},
+            assetQuotaExceeded: {% if asset_quota_exceeded %} true {% else %} false {% endif %},
+            rowsExceeded: {% if rows_exceeded %} true {% else %} false {% endif %},
+            isBelongToUserOrInTheSameOrg: {% if is_belong_to_user_or_in_the_same_org %} true {% else %} false {% endif %},
+            shareLinkPasswordMinLength: {{ share_link_password_min_length }},
+            shareLinkExpireDaysDefault: {{ share_link_expire_days_default }},
+            shareLinkExpireDaysMin: {{ share_link_expire_days_min }},
+            shareLinkExpireDaysMax: {{ share_link_expire_days_max }},
+            userViewShareId: {% if user_view_share_id %} {{ user_view_share_id }} {% else %} '' {% endif%},
+            groupViewShareId: {% if group_view_share_id %} {{ group_view_share_id }} {% else %} '' {% endif%},
+            internalPlugins: {% if internal_plugins_config %} {{ internal_plugins_config|safe }} {% else %} null {% endif %},
+            dtableAppsConfig: {% if dtable_apps_config %} {{ dtable_apps_config|safe }} {% else %} null {% endif %},
+            seatableFaasUrl: '{{ seatable_faas_url }}',
+            collectionTableToken: '{{ token }}',
+            helpLink: '{{ help_link }}',
+            dtableColor: '{{ dtable_color }}',
+            baseWritableLimit: {{ base_writable_limit }},
+            accessToken: '{{ access_token }}',
+            enableAddressBookV2: {% if enable_address_book_v2 %} true {% else %} false {% endif %},
+            userDepartmentIdsMap: {% if user_department_ids_map %} {{ user_department_ids_map|safe }} {% else %} null {% endif %},
+            enableDepartmentColumnForAll: {% if enable_department_column_for_all %} true {% else %} false {% endif %},
+            isOpenDepartmentFeature: {% if is_open_department_feature %} true {% else %} false {% endif %},
+            loadDtableFromAPIGateway: {% if load_dtable_from_api_gateway %} true {% else %} false {% endif %},
+            enableAPIGatewayProxySocket: {% if enable_api_gateway_proxy_socket %} true {% else %} false {% endif %},
+        }
+     };
+
+    // param form parent window
+    window.app.pageOptions.isCollectionTableDesignView = false;
+    if (window.name && window.name.startsWith('content-collection-table')) {
+        window.app.pageOptions.isCollectionTableDesignView = true;
+    }
+</script>
+<script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js?v={{ version }}"></script>
+<script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+{% render_bundle 'dtableCollectionTableView' 'js' %}
+</body>
+</html>

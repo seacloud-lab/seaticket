@@ -1,0 +1,93 @@
+.org-admin-invite-user-dialog {
+  height: auto;
+  max-width: 652px;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-container {
+  height: 198px;
+  width: 100%;
+  padding: 0;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-item {
+  width: calc(100% - 198px);
+  padding: 0 16px;
+  border-right: 1px solid #e9ecef;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-item .org-admin-invite-user {
+  display: flex;
+  height: 80px;
+  line-height: 80px;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user .org-admin-invite-user-text {
+  display: inline-block;
+  width: 100%;
+  padding-left: 10px;
+  font-size: 14px;
+  color: #000;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-item .org-admin-invite-user-copy-link {
+  width: 100%;
+  height: 38px;
+  display: flex;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-item .org-admin-invite-user-link {
+  display: inline-block;
+  width: 80%;
+  height: 100%;
+  line-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border-right: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-user-item .org-admin-invite-user-link-btn {
+  width: 20%;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-qrcode {
+  height: 100%;
+  width: 198px;
+  padding: 30px 0;
+  font-size: 12px;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-qrcode .org-admin-invite-qrcode-content {
+  height: 100px;
+  width: 100px;
+  margin: 0 auto;
+  border: 1px solid #e9ecef;
+  padding: 9px;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-qrcode .org-admin-invite-qrcode-tip {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.org-admin-invite-user-dialog .org-admin-invite-qrcode-tip .qrcode-tip-content {
+  display: inline-block;
+  max-width: 100%;
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,27 @@
+.multicolor-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
+.multicolor-icon-customer-contract-management,
+.multicolor-icon-employee-management-system,
+.multicolor-icon-survey-by-questionnaire,
+.multicolor-icon-customer-service-system,
+.multicolor-icon-order-information-management,
+.multicolor-icon-work-schedule,
+.multicolor-icon-dealer-management,
+.multicolor-icon-project-management,
+.multicolor-icon-default,
+.multicolor-icon-supplier-management {
+  font-size: 30px;
+  fill: #fff; /* icon background color, use stable white color */
+  color: #fff; /* icon color, use JS to set color */
+}
+
+.multicolor-icon-active {
+  outline: 2px solid #b6e8e4;
+  border-radius: 10px;
+}

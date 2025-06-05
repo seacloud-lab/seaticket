@@ -1,0 +1,46 @@
+  .form-qr-code-wrapper {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .form-qr-code-wrapper span {
+    width: 128px;
+    font-size: 14px;
+    color: #6e7687;
+    text-align: center;
+  }
+  
+  .form-qr-code-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .form-qr-code-wrapper .form-qrcode-container {
+    height: 128px;
+  }
+  
+  .form-qr-code-wrapper .qrcode-download-btn,
+  .form-qr-code-wrapper .qrcode-copy-btn {
+    width: 100%;
+    font-size: 12px;
+    padding: 0px 12px;
+  }
+  
+  .form-qr-code-wrapper .qrcode-copy-btn {
+    background-color: #fff;
+    color: #ED7109;
+    border-color: #ED7109;
+  }
+  
+  .form-qr-code-wrapper .qrcode-copy-btn:hover,
+  .form-qr-code-wrapper .qrcode-copy-btn:active {
+    background-color: #ED7109 !important;
+    color: #fff;
+  }
+  
+  

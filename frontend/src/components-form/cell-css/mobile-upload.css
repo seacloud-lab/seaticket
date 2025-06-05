@@ -1,0 +1,23 @@
+.dtable-antd-mobile-mobile-upload .my-am-action {
+  padding: 0 16px;
+}
+
+.dtable-antd-mobile-mobile-upload .am-action-sheet-button-list {
+  text-align: left;
+  color: #212529;
+}
+
+.dtable-antd-mobile-mobile-upload .am-action-sheet-button-list .am-action-sheet-button-list-item {
+  padding: 0;
+  height: 56px;
+  line-height: 56px;
+  color: #212529;
+  font-size: 16px;
+  overflow-y: hidden;
+}
+
+.dtable-antd-mobile-mobile-upload .am-action-sheet-button-list .am-action-sheet-button-list-item .dtable-font {
+  color: #888;
+  font-size: 20px;
+  margin-right: 16px;
+}

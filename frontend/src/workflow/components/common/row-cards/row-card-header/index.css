@@ -1,0 +1,63 @@
+.workflow-row-card-header .row-card-column-names {
+  padding: 8px 32px;
+  width: 100%;
+  min-width: 100%;
+  position: relative;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.workflow-row-card-header .row-card-column-names .link-scroll-prev {
+  left: 4px;
+}
+
+.workflow-row-card-header .row-card-column-names .row-card-scroll {
+  color: #666666;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  line-height: 24px;
+  position: absolute;
+  top: 7px;
+  background-color: #fff;
+}
+
+.workflow-row-card-header .row-card-column-names .scroll-active {
+  color: #000;
+  cursor: pointer;
+}
+
+.workflow-row-card-header .row-card-column-names .link-scroll-next {
+  right: 4px;
+}
+
+.workflow-row-card-header .row-card-column-names .scroll-active:hover {
+  background: #efefef;
+  border-radius: 4px;
+}
+
+.workflow-row-card-header .row-card-columns-container {
+  width: 100%;
+  overflow: hidden;
+  overflow-x: scroll;
+  scrollbar-width: none;
+}
+
+.workflow-row-card-header .row-card-columns-container .row-card-column-name:first-child {
+  margin: 0 8px 0 0;
+}
+
+.workflow-row-card-header .row-card-columns-container .row-card-column-name {
+  flex-shrink: 0;
+  margin: 0 8px;
+  font-size: 14px;
+  color: #666666;
+  height: 20px;
+  cursor: default;
+}
+
+.workflow-row-card-header .row-card-columns-container::-webkit-scrollbar {
+  display: none;
+}

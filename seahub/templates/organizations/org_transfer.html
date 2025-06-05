@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block main_content %}
+<div class="text-panel">
+    <p class="">是否加入该团队？</p>
+    <p class="">（如果您的版本为个人收费版，加入团队后请联系客服处理）</p>
+    <a href={{redirect_to}}><button class="btn btn-secondary" id="cancel" style="background-image: none" >取消</button></a>
+    <a href={{org_transfer}}><button class="btn btn-primary" id="submit" style="background-image: none" >加入</button></a>
+</div>
+{% endblock %}

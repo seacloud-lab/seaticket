@@ -1,0 +1,29 @@
+.select-editor-container .select-option-item {
+  display: inline-flex;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+  height: 20px;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.select-editor-container .select-option-item .option-info {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  margin: 0 4px 0 2px;
+}
+
+.select-editor-container .select-option-item .option-remove {
+  height: 20px;
+  width: 16px;
+  cursor: pointer;
+  transform: scale(0.8);
+}
+
+.select-editor-container .select-option-item .option-remove .dtable-icon-fork-number {
+  font-size: 12px;
+  line-height: 20px;
+}

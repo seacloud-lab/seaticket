@@ -1,0 +1,148 @@
+.mobile-notifications-icon-container .unseen-notifications-count {
+  color: #fff;
+  font-size: 12px;
+  top: -2px;
+  right: -2px;
+  padding: 2px;
+  background: #fc6440;
+  border-radius: 50%;
+  min-width: 22px;
+  min-height: 22px;
+  text-align: center;
+  transform: scale(0.7);
+}
+
+.mobile-notification-modal .mobile-notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-bottom: 1px solid #ededed;
+  padding: 1rem;
+}
+
+.mobile-notification-modal .mobile-notification-header .mobile-notification-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.mobile-notification-modal .mobile-notification-header .mobile-notification-close {
+  position: absolute;
+  right: 0;
+  padding: 1rem;
+  font-size: 18px;
+}
+
+.mobile-notification-modal .mobile-notification-body .mobile-notification-tool {
+  padding: 0 1rem;
+  border-bottom: 1px solid #ededed;
+  font-size: 14px;
+  height: 46px;
+}
+
+.mobile-notification-modal .mobile-notification-content {
+  overflow: auto;
+  padding-bottom: 5px;
+  height: 70vh;
+  max-height: 70vh;
+}
+
+.mobile-notification-modal .mobile-notification-content .notification-app-item,
+.mobile-notification-modal .mobile-notification-content .notification-base-item {
+  padding: 20px 16px 20px 0;
+  margin-left: 16px;
+}
+
+.mobile-notification-modal .mobile-notification-content .notification-app-item,
+.mobile-notification-modal .mobile-notification-content .notification-base-item {
+  border-bottom: none;
+}
+
+.mobile-notification-modal .mobile-notification-content  .notification-bases,
+.mobile-notification-modal .mobile-notification-content .mobile-notification-list,
+.mobile-notification-modal .mobile-notification-content .notification-apps,
+.mobile-notification-modal .mobile-notification-content .notification-app-item:not(:last-child),
+.mobile-notification-modal .mobile-notification-content .notification-base-item:not(:last-child),
+.mobile-notification-modal .mobile-notification-content .mobile-notification-item:not(:last-child) {
+  border-bottom: 1px solid #ededed;
+}
+
+.mobile-notification-modal .mobile-notification-tool .notification-type-tabs .tab-item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 30px;
+  padding: 0.5rem 0;
+  height: 46px;
+  cursor: pointer;
+  color: #212529;
+}
+
+.mobile-notification-modal .mobile-notification-tool .notification-type-tabs .tab-item.active {
+  color: #ED7109;
+  border-bottom: 0.125rem solid #ED7109;
+}
+
+.mobile-notification-modal .mobile-notification-list {
+  color: #212529;
+}
+
+.mobile-notification-modal .mobile-notification-item {
+  padding: 14px 16px 14px 0;
+  margin-left: 16px;
+  text-align: left;
+}
+
+.mobile-notification-modal .mobile-notification-item .mobile-notification-item-header {
+  font-size: 16px;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-point {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fc6440;
+  top: 14px;
+  left: 18px;
+  border: 1px solid #fff;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-item-header-content {
+  justify-content: space-between;
+  flex: 1 1;
+  width: 100%;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-item-user-detail {
+  width: 65%;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-item-name {
+  font-weight: 500;
+}
+
+.mobile-notification-modal .mobile-notification-item-header .mobile-notification-item-time {
+  color: #666;
+  font-size: 12px;
+}
+
+.mobile-notification-modal .mobile-notification-item-content {
+  margin-left: 32px;
+  font-size: 14px;
+}
+
+.mobile-notification-modal .mobile-notification-item-content .brief {
+  margin-top: 5px;
+  display: inline-block;
+  word-break: break-word;
+}
+
+.mobile-notification-item .mobile-notification-item-content .notification-details {
+  white-space: pre-wrap;
+}

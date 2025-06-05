@@ -1,0 +1,31 @@
+.dtable-statistics-dialog {
+  max-width: 750px;
+  max-height: calc(100% - 3.5rem);
+  overflow: hidden;
+  display: flex;
+}
+
+.dtable-statistics-dialog .modal-content {
+  max-height: 100%;
+  flex: 1;
+}
+
+.dtable-statistics-dialog .dtable-statistics-body {
+  padding: 0;
+  min-height: 20rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.dtable-statistics-content {
+  padding: 1rem;
+  overflow: auto;
+}
+
+.dtable-statistics-content .statistic-item:hover {
+  background: #f5f5f5;
+}
+
+.dtable-statistics-content .statistic-item .statistic-item-deleted {
+  color: #a09b9b;
+}

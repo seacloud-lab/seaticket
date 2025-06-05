@@ -1,0 +1,80 @@
+.introduction-video {
+  width: 500px;
+  height: 440px;
+}
+
+.introduction-video p,
+.introduction-video h3 {
+  text-align: center;
+}
+
+.introduction-video p {
+  margin-bottom: 0.4rem;
+}
+
+.introduction-video .introduction-video-jump {
+  margin-top: 1rem;
+  color: #bbb;
+  cursor: pointer;
+}
+
+.introduction-video .modal-content .video-js {
+  width: 100%;
+  height: 280px;
+}
+
+.introduction-video .modal-content .modal-body {
+  height: 160px;
+}
+
+.introduction-video-mobile {
+  height: 100%;
+  margin: 0;
+}
+
+.introduction-video-mobile h3 {
+  margin: 3rem 0rem;
+  font-size: 30px;
+}
+
+.introduction-video-mobile .modal-content {
+  border: none;
+  border-radius: 0px;
+  height: 100%;
+  padding: 1rem;
+}
+
+.introduction-video-mobile .introduction-video-container {
+  box-shadow: 0 0 5px 0 #ccc;
+}
+
+.introduction-video-mobile .introduction-video-btn {
+  background-color: #ED7109;
+  margin-top: 5rem;
+  border-radius: 26px;
+}
+
+.introduction-video .video-js .vjs-control-bar {
+  background-color: rgba(255, 128, 0, 0.8);
+}
+
+.introduction-video .video-js .vjs-load-progress {
+  background-color: rgba(245, 245, 245, 0.75);
+}
+
+.introduction-video .video-js .vjs-load-progress div {
+  background-color: rgba(245, 245, 245, 0.75);
+}
+
+.introduction-video .video-js .vjs-slider {
+  background-color: rgba(245, 245, 245, 0.5);
+}
+
+.introduction-video-mobile .video-js .vjs-big-play-button {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 1.5em;
+  top: calc(50% - 23px);
+  left: calc(50% - 33px);
+  background-color: rgba(178, 178, 178, 0.8);
+}

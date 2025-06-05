@@ -1,0 +1,34 @@
+{% load i18n %}
+<style>
+.privacy-policy-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.privacy-policy-link-text {
+    color: #666666;
+    font-size: 12px;
+}
+
+.privacy-policy-link-split {
+    width: 1px;
+    background: #6e7687;
+    height: 12px;
+}
+</style>
+
+{% if privacy_policy_link or terms_of_service_link %}
+    <div class="privacy-policy-link">
+        {% if privacy_policy_link and terms_of_service_link %}
+            <a href="{{ privacy_policy_link }}" class="privacy-policy-link-text px-3">{% trans "Privacy policy" %}</a>
+            <span class="privacy-policy-link-split  "></span>
+            <a href="{{ terms_of_service_link }}" class="privacy-policy-link-text px-3">{% trans "Terms of service" %}</a>
+        {% elif privacy_policy_link %}
+            <a href="{{ privacy_policy_link }}" class="privacy-policy-link-text px-3">{% trans "Privacy policy" %}</a>
+        {% elif terms_of_service_link %}
+            <a href="{{ terms_of_service_link }}" class="privacy-policy-link-text px-3">{% trans "Terms of service" %}</a>
+        {% endif %}
+    </div>
+{% endif %}

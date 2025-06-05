@@ -1,0 +1,33 @@
+.common-add-tool {
+  color: #666666;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff;
+  padding: 0 1rem;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  border-top: none;
+}
+
+.common-add-tool.disabled {
+  color: #c2c2c2;
+}
+
+.common-add-tool:hover {
+  cursor: pointer;
+  background: #f5f5f5;
+}
+
+.common-add-tool.disabled:hover {
+  cursor: not-allowed;
+  background: #fff;
+}
+
+.common-add-tool .dtable-icon-add-table {
+  margin-right: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}

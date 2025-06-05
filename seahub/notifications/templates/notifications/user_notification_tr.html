@@ -1,0 +1,27 @@
+{% load i18n seahub_tags avatar_tags %}
+    {% for notice in notices %}
+        {% if notice.seen %}
+        <tr class="read">
+        {% else %}
+        <tr class="unread">
+        {% endif %}
+
+            <td class="avatar-cell">
+                {% if notice.msg_from %}
+                <a href="{% url 'user_profile' notice.msg_from %}">{% avatar notice.msg_from 32 %}</a>
+                {% else %}
+                <img src={{notice.default_avatar_url}} width="32" height="32" class="avatar" alt="" />
+                {% endif %}
+            </td>
+            <td>
+
+                {% if notice.is_share_dtable_to_user_msg %}
+                <p class="brief">{{ notice.format_share_dtable_to_user_msg|safe }}</p>
+                {% elif notice.is_add_user_to_group_msg %}
+                <p class="brief">{{ notice.format_add_user_to_group|safe }}</p>
+
+                {% endif %}
+            </td>
+            <td>{{ notice.timestamp|translate_seahub_time }}</td>
+        </tr>
+    {% endfor %}

@@ -1,0 +1,50 @@
+.dataset-view {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+}
+
+.dataset-view .dataset-view-header {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e9e9e9;
+}
+
+.dataset-view .dataset-view-content {
+  flex: 1;
+  padding: 1rem;
+  overflow: scroll;
+}
+
+.dataset-view .dataset-view-header .dataset-view-header-btn {
+  display: inline-block;
+  width: 50px;
+  height: 100%;
+  padding: 13px 16px;
+}
+
+.dataset-view .dataset-view-header .dataset-view-icon {
+  font-size: 14px;
+  color: #666666;
+}
+
+.dataset-view .dataset-view-header .dataset-view-header-title {
+  margin-bottom: 0;
+  color: #212529;
+  line-height: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dataset-view .dataset-view-content::-webkit-scrollbar {
+  width: 0;
+}

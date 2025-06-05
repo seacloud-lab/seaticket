@@ -1,0 +1,26 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+{% block sub_title %}{% trans "Log in or signup" %} - {% endblock %}
+{% block main_content %}
+  <div class="login-panel-outer-container mt-6">
+    <div class="mb-4 text-center"><p>{% blocktrans %}{{ shared_user }} has shared table {{ table_name }} to you. Please login or register to view the table.{% endblocktrans %}</p></div>
+    <div class="login-panel">
+      <button id="login" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
+      <button id="register" class="submit btn btn-outline-primary btn-block">{% trans "Sign up" %}</button>
+    </div>
+    <div class="mt-6 text-center">
+      {% trans "Powered by" %}
+      <a href="{% if powered_by_link %}{{ powered_by_link }}{% else %}https://seatable.cn/{% endif %}">{% trans "SeaTable" %}</a>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_script %}
+<script type="text/javascript">
+$('#login').on('click', function() {
+  location.href = "{% url 'auth_login' %}?next={{ next }}" + encodeURIComponent(document.location.hash);
+});
+$('#register').on('click', function() {
+  location.href = "{% if use_phone_registration_by_default %}{% url 'sms_register'%}{% else %}{% url 'registration_register'%}{% endif %}?next={{ next }}" + encodeURIComponent(document.location.hash);
+});
+</script>
+{% endblock %}

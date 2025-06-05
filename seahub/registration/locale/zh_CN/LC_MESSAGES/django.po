@@ -1,0 +1,140 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-05-08 21:10+0800\n"
+"PO-Revision-Date: 2008-03-20 23:22+0800\n"
+"Last-Translator: hutuworm <hutuworm@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: seahub/registration/admin.py:23
+msgid "Activate users"
+msgstr ""
+
+#: seahub/registration/admin.py:41
+#, fuzzy
+#| msgid "activation key"
+msgid "Re-send activation emails"
+msgstr "激活密钥"
+
+#: seahub/registration/forms.py:38
+msgid "Name"
+msgstr ""
+
+#: seahub/registration/forms.py:39
+#, fuzzy
+#| msgid "username"
+msgid "name"
+msgstr "用户名"
+
+#: seahub/registration/forms.py:40
+msgid "Email"
+msgstr ""
+
+#: seahub/registration/forms.py:41
+#, fuzzy
+#| msgid "email address"
+msgid "Email address"
+msgstr "Email 地址"
+
+#: seahub/registration/forms.py:46
+#, fuzzy
+#| msgid "username"
+msgid "Username"
+msgstr "用户名"
+
+#: seahub/registration/forms.py:47
+msgid "This value must be of length 40"
+msgstr ""
+
+#: seahub/registration/forms.py:48 seahub/registration/forms.py:49
+#, fuzzy
+#| msgid "password"
+msgid "Password"
+msgstr "密码"
+
+#: seahub/registration/forms.py:50
+msgid "Confirm Password"
+msgstr ""
+
+#: seahub/registration/forms.py:51
+#, fuzzy
+#| msgid "password (again)"
+msgid "Password (again)"
+msgstr "密码（重复）"
+
+#: seahub/registration/forms.py:61
+msgid "The number of users exceeds the limit."
+msgstr ""
+
+#: seahub/registration/forms.py:65
+#, fuzzy
+#| msgid "email address"
+msgid "Enter a valid email address."
+msgstr "Email 地址"
+
+#: seahub/registration/forms.py:68 seahub/registration/forms.py:74
+#, python-format
+msgid "User %s already exists."
+msgstr ""
+
+#: seahub/registration/forms.py:78
+msgid "Invalid user id."
+msgstr ""
+
+#: seahub/registration/forms.py:108
+msgid "The two password fields didn't match."
+msgstr ""
+
+#: seahub/registration/forms.py:119
+msgid "I have read and agree to the Terms of Service"
+msgstr "我已阅读并同意该服务条款"
+
+#: seahub/registration/forms.py:120
+msgid "You must agree to the terms to register"
+msgstr "您必须同意注册条款"
+
+#: seahub/registration/forms.py:136
+msgid ""
+"This email address is already in use. Please supply a different email "
+"address."
+msgstr "该 Email 地址已有人使用，请提供一个另外的 Email 地址。"
+
+#: seahub/registration/forms.py:164
+msgid ""
+"Registration using free email addresses is prohibited. Please supply a "
+"different email address."
+msgstr "禁止使用免费 Email 地址注册，请提供一个另外的 Email 地址。"
+
+#: seahub/registration/models.py:201
+msgid "activation key"
+msgstr "激活密钥"
+
+#: seahub/registration/models.py:206
+msgid "registration profile"
+msgstr "注册信息"
+
+#: seahub/registration/models.py:207
+msgid "registration profiles"
+msgstr "注册信息"
+
+#~ msgid "Usernames can only contain letters, numbers and underscores"
+#~ msgstr "用户名只能包含字母、数字和下划线"
+
+#~ msgid "This username is already taken. Please choose another."
+#~ msgstr "该用户名已被占用，请另选一个。"
+
+#~ msgid "You must type the same password each time"
+#~ msgstr "您必须输入两遍同样的密码"
+
+#~ msgid "user"
+#~ msgstr "用户"

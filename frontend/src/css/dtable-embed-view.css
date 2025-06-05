@@ -1,0 +1,109 @@
+#wrapper,
+.wrapper {
+  overflow: auto;
+}
+
+.dtable-embed-view-header {
+  height: 50px;
+  padding: 0.5rem 1rem;
+}
+
+.dtable-embed-view-code {
+  margin: 0px auto;
+}
+
+.dtable-embed-view-code .text-area-code {
+  min-height: 110px;
+  color: rgb(204, 204, 204);
+  border-color: rgba(0, 0, 0, 0);
+  border-width: 2px;
+  border-style: solid;
+  appearance: none;
+  outline: 0;
+  resize: none;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 6px;
+  padding: 1rem;
+  background-color: hsl(0, 0%, 20%);
+}
+
+.dtable-embed-view-embeds {
+  background-color: hsla(0, 0%, 0%, 0.03);
+}
+
+.dtable-embed-view-embeds > .desktop,
+.dtable-embed-view-embeds > .mobile {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.dtable-embed-view-embeds > .desktop {
+  width: calc(100% - 356px);
+}
+
+.dtable-embed-view-embeds > .mobile {
+  width: 344px;
+  margin-left: 12px;
+}
+
+.dtable-embed-view-embeds > .desktop .embed-container,
+.dtable-embed-view-embeds > .mobile .embed-container {
+  position: relative;
+  background: #fff;
+  height: 670px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+}
+
+.dtable-embed-view-embeds > .desktop .embed-container {
+  overflow-y: auto;
+}
+
+.dtable-embed-view-embeds > .desktop .embed-container .dtable-embed {
+  min-width: 768px;
+}
+
+.dtable-embed-view-embed-text {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+@media screen and (min-width: 767.8px) {
+  .dtable-embed-view-code {
+    width: 960px;
+    max-width: 100%;
+    height: 180px;
+  }
+  .dtable-embed-view-embeds {
+    padding: 4rem;
+  }
+}
+
+@media screen and (max-width: 767.8px) {
+  .dtable-embed-view-code {
+    flex: 0 0 1%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .dtable-embed-view-embeds > .mobile {
+    margin-bottom: 1rem;
+    margin: 12px;
+    width: calc(100% - 24px);
+  }
+
+  .dtable-embed-view-embed-text {
+    margin-top: 1rem;
+  }
+
+  .dtable-embed-view-code .text-area-code {
+    min-height: 300px;
+  }
+}

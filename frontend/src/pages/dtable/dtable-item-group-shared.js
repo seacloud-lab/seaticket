@@ -1,0 +1,347 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, UncontrolledTooltip } from 'reactstrap';
+import { DragSource } from 'react-dnd';
+import { Utils } from '../../utils/utils';
+import { siteRoot, gettext, canAddDTable } from '../../utils/constants';
+import UserInfoPopover from './dtable-popover/user-info-popover';
+import DTableItem from './dtable-item';
+import CopyDTablePasswordDialog from './dialog/copy-dtable-password-dialog';
+import CopyToCurrentGroupDialog from './dialog/copy-to-current-group-dialog';
+
+const dragSource = {
+  beginDrag: (props, monitor) => {
+    return {
+      data: props.table,
+      folder: props.folder,
+      mode: 'drag-base'
+    };
+  },
+  endDrag(props, monitor) {
+    const optionSource = monitor.getItem();
+    const didDrop = monitor.didDrop();
+    let optionTarget = {};
+    if (!didDrop) {
+      return { optionSource, optionTarget };
+    }
+  },
+};
+
+const dragCollect = (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  connectDragPreview: connect.dragPreview(),
+  isDragging: monitor.isDragging()
+});
+
+class DTableItemGroupShared extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      active: false,
+      dropdownOpen: false,
+      isUserDetailPopoverShow: false,
+      isCopyToCurrentGroupShow: false,
+      isPasswordDialogShow: false,
+      pwd: ''
+    };
+  }
+
+  onMouseEnter = () => {
+    if (this.props.getDropdownState && this.props.getDropdownState()) return;
+    if (!this.props.isItemFreezed) {
+      this.setState({ active: true });
+    }
+  };
+
+  onMouseLeave = () => {
+    if (this.props.getDropdownState && this.props.getDropdownState()) return;
+    if (!this.props.isItemFreezed) {
+      this.setState({ active: false });
+    }
+  };
+
+  onShareMouseEnter = () => {
+    const _this = this;
+    this.handleTimer = setTimeout(() => {
+      _this.setState({ isUserDetailPopoverShow: true });
+    }, 500);
+  };
+
+  onShareMouseLeave = () => {
+    clearTimeout(this.handleTimer);
+    this.setState({ isUserDetailPopoverShow: false });
+  };
+
+  onLeaveShare = (e) => {
+    e.stopPropagation();
+    this.props.onLeaveShare(this.props.table);
+  };
+
+  onAddStarDTable = () => {
+    this.props.onAddStarDTable(this.props.table);
+  };
+
+  onUnstarDTable = () => {
+    this.props.onUnstarDTable(this.props.table);
+  };
+
+  dropdownToggle = () => {
+    if (this.state.dropdownOpen) {
+      this.setState({ active: false });
+    }
+    if (this.props.setDropdownState) {
+      this.props.setDropdownState(!this.state.dropdownOpen);
+    }
+    this.setState({ dropdownOpen: !this.state.dropdownOpen });
+  };
+
+  onTableItemClick = (e, href) => {
+    Utils.openPage(e, href);
+  };
+
+  onMoveFolderItemToggle = () => {
+    let { table, folder } = this.props;
+    this.props.onMoveFolderItemToggle({
+      table,
+      item_type: table.view_share_id ? 'view_group_share' : 'dtable_group_share',
+      item_id: table.view_share_id || table.dtable_share_id,
+      folder_id: folder ? folder.id : '/'
+    });
+  };
+
+  onCopyDTableToggle = () => {
+    this.props.onCopyDTableToggle(this.props.table);
+  };
+
+  toggleCopyDTableToCurrentGroup = () => {
+    this.setState({ isCopyToCurrentGroupShow: !this.isCopyToCurrentGroupShow });
+  };
+
+  onCopyDTableToCurrentGroup = () => {
+    const { table } = this.props;
+    const { is_encrypted } = table;
+    if (is_encrypted) {
+      this.togglePwdDialog();
+    } else {
+      this.toggleCopyDTableToCurrentGroup();
+    }
+  };
+
+  togglePwdDialog = () => {
+    this.setState({ isPasswordDialogShow: !this.state.isPasswordDialogShow });
+  };
+
+  onPasswordSubmit = (pwd) => {
+    this.setState({ pwd: pwd }, () => {
+      this.toggleCopyDTableToCurrentGroup();
+    });
+  };
+
+  render() {
+    const { isUserDetailPopoverShow } = this.state;
+    let { table, isAdmin, sharedItemKey, connectDragSource, connectDragPreview,
+      connectDropTarget, isOver, canDrop } = this.props;
+    let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
+      starred, color, icon, view_share_id, shared_name, is_encrypted, permission } = table;
+    let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
+    let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(name) + '/';
+    if (view_share_id !== undefined) {
+      tableHref = `${siteRoot}dtable-shared-view/group/${view_share_id}/`;
+    }
+    let canCopy = !view_share_id && canAddDTable && (permission === 'r' || permission === 'rw');
+    const isDesktop = Utils.isDesktop();
+    const active = this.state.active;
+    const displayName = isFromGroup ? from_group_name : from_user_name;
+    const displayAvatar = isFromGroup ? from_group_avatar : from_user_avatar;
+
+    if (isDesktop) {
+      return (connectDropTarget(connectDragPreview(
+        <div
+          onMouseEnter={this.onMouseEnter}
+          onMouseLeave={this.onMouseLeave}
+          onClick={(e) => this.onTableItemClick(e, tableHref)}
+          className={`table-item ${active ? 'tr-highlight' : ''} ${isOver && canDrop ? 'tr-highlight' : ''}`}
+        >
+          {connectDragSource(
+            <div className="table-item-drag-container ml-0">
+              <DTableItem dtableColor={color} dtableIcon={icon} />
+              <div className="table-name">
+                <a className="table-href" href={tableHref}>{shared_name || name}</a>
+                <div
+                  className="dtable-sharer-information"
+                  onMouseEnter={this.onShareMouseEnter}
+                  onMouseLeave={this.onShareMouseLeave}
+                  id={`shared-item-group-${sharedItemKey}`}
+                >
+                  <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
+                  <span className="dtable-sharer-name">{displayName}</span>
+                  <UserInfoPopover
+                    target={`shared-item-group-${sharedItemKey}`}
+                    isUserDetailPopoverShow={!isFromGroup && isUserDetailPopoverShow}
+                    userEmail={from_user}
+                  >
+                  </UserInfoPopover>
+                </div>
+                {starred && <i className='dtable-font dtable-icon-star star'></i>}
+                {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
+              </div>
+            </div>
+          )}
+          <div className="table-dropdown-menu">
+            {active &&
+              <Dropdown
+                isOpen={this.state.dropdownOpen}
+                toggle={this.dropdownToggle}
+                direction="down"
+                className="table-item-more-operation"
+                onClick={(e) => {e.stopPropagation();}}
+              >
+                <DropdownToggle
+                  tag="i"
+                  role="button"
+                  className="dtable-font dtable-icon-more-vertical cursor-pointer attr-action-icon table-dropdown-menu-icon"
+                  title={gettext('More operations')}
+                  aria-label={gettext('More operations')}
+                  data-toggle="dropdown"
+                  aria-expanded={this.state.dropdownOpen}
+                  aria-haspopup={true}
+                />
+                <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
+                  {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
+                  {!starred &&
+                    <DropdownItem
+                      onClick={view_share_id ? () => {} : this.onAddStarDTable}
+                      className={classNames({ 'disabled': view_share_id })}
+                      id='dtable-item-group-shared-star'
+                    >
+                      <span>{gettext('Star')}</span>
+                      {view_share_id &&
+                        <UncontrolledTooltip
+                          placement='left'
+                          target='dtable-item-group-shared-star'
+                          fade={false}
+                          delay={{ show: 0, hide: 0 }}
+                        >
+                          {gettext('Shared view can not be starred')}
+                        </UncontrolledTooltip>
+                      }
+                    </DropdownItem>
+                  }
+                  {starred && <DropdownItem onClick={this.onUnstarDTable}>{gettext('Unstar')}</DropdownItem>}
+                  {canCopy && <DropdownItem onClick={this.onCopyDTableToggle}>{gettext('Copy')}</DropdownItem>}
+                  {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}
+                  {isAdmin && <DropdownItem onClick={this.onMoveFolderItemToggle}>{gettext('Move to folder')}</DropdownItem>}
+                </DropdownMenu>
+              </Dropdown>
+            }
+          </div>
+          {this.state.isPasswordDialogShow &&
+            <CopyDTablePasswordDialog
+              dtable={this.props.table}
+              toggle={this.togglePwdDialog}
+              onSubmit={this.onPasswordSubmit}
+            />
+          }
+          {this.state.isCopyToCurrentGroupShow &&
+            <CopyToCurrentGroupDialog
+              dtable={this.props.table}
+              onCopyDTableToggle={this.toggleCopyDTableToCurrentGroup}
+              onCopyDTable={this.props.onCopyDTable}
+              password={this.state.pwd}
+              currentWorkspace={this.props.currentWorkspace}
+            />
+          }
+        </div>
+      )));
+
+    }
+
+    return (
+      <div
+        className="table-mobile-item"
+        onClick={(e) => this.onTableItemClick(e, tableHref)}
+      >
+        <DTableItem dtableColor={color} dtableIcon={icon} className="table-mobile-icon"/>
+        <div className="table-mobile-name d-flex align-items-center">
+          <a className="table-href" href={tableHref}>{shared_name || name}</a>
+          <div className="dtable-sharer-information">
+            <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
+            <span className="dtable-sharer-name">{displayName}</span>
+          </div>
+          {starred && <i className='dtable-font dtable-icon-star star'></i>}
+          {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
+        </div>
+        <div className="table-mobile-dropdown-menu">
+          <Dropdown
+            isOpen={this.state.dropdownOpen}
+            toggle={this.dropdownToggle}
+            direction="down"
+            className="table-item-more-operation"
+            onClick={(e) => {e.stopPropagation();}}
+          >
+            <DropdownToggle
+              tag="i"
+              role="button"
+              className="dtable-font dtable-icon-more-vertical cursor-pointer attr-action-icon table-dropdown-menu-icon"
+              title={gettext('More operations')}
+              aria-label={gettext('More operations')}
+              data-toggle="dropdown"
+              aria-expanded={this.state.dropdownOpen}
+              aria-haspopup={true}
+            />
+            <div className={this.state.dropdownOpen ? '' : 'd-none'} onClick={this.dropdownToggle}>
+              <div className="mobile-operation-menu-bg-layer"></div>
+              <div className="mobile-operation-menu">
+                {isAdmin &&
+                  <DropdownItem onClick={this.onLeaveShare} className="mobile-dropdown-item">
+                    <span className="dtable-font dtable-icon-x"></span>
+                    <span className="mobile-dropdown-span">{gettext('Leave share')}</span>
+                  </DropdownItem>
+                }
+                {!starred &&
+                  <DropdownItem onClick={this.onAddStarDTable} className="mobile-dropdown-item" disabled={!!view_share_id}>
+                    <span className="dtable-font dtable-icon-star"></span>
+                    <span className="mobile-dropdown-span">{gettext('Star')}</span>
+                  </DropdownItem>
+                }
+                {starred &&
+                  <DropdownItem onClick={this.onUnstarDTable} className="mobile-dropdown-item">
+                    <span className="dtable-font dtable-icon-star"></span>
+                    <span className="mobile-dropdown-span">{gettext('Unstar')}</span>
+                  </DropdownItem>
+                }
+              </div>
+            </div>
+          </Dropdown>
+        </div>
+      </div>
+    );
+  }
+}
+
+DTableItemGroupShared.propTypes = {
+  connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
+  connectDragPreview: PropTypes.func,
+  isOver: PropTypes.bool,
+  canDrop: PropTypes.bool,
+  isDragging: PropTypes.bool,
+  isItemFreezed: PropTypes.bool.isRequired,
+  sharedItemKey: PropTypes.string,
+  table: PropTypes.object.isRequired,
+  folder: PropTypes.object,
+  onLeaveShare: PropTypes.func.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  onAddStarDTable: PropTypes.func.isRequired,
+  onUnstarDTable: PropTypes.func.isRequired,
+  setDropdownState: PropTypes.func,
+  getDropdownState: PropTypes.func,
+  onMoveFolderItemToggle: PropTypes.func,
+  onCopyDTableToggle: PropTypes.func,
+  onCopyDTable: PropTypes.func,
+  currentWorkspace: PropTypes.object,
+};
+
+export default DragSource('Base', dragSource, dragCollect)(DTableItemGroupShared);

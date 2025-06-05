@@ -1,0 +1,22 @@
+.workflow-title {
+  margin: 20px 0 14px;
+  font-size: 0.9375rem;
+  color: #000;
+}
+
+.dtable-icon-style {
+  color: #999;
+  font-size: 20px;
+}
+
+.workflow-item-content,
+.workflow-item-group-name {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.form-item-text {
+  font-size: 0.9375rem;
+}

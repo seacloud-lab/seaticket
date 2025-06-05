@@ -1,0 +1,7 @@
+.workflow-app-container .workflow-app-settings-content .workflow-node-action-addition {
+  margin-top: 10px;
+}
+
+.workflow-app-container .workflow-app-settings-content .workflow-node-action-addition-toggle:hover {
+  cursor: pointer;
+}

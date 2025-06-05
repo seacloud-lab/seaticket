@@ -1,0 +1,100 @@
+{% load seahub_tags avatar_tags group_avatar_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% block viewport %}
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+{% endblock %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
+{% render_bundle 'invitePoster' 'css'%}
+{% block extra_style %}{% endblock %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+
+<script type="text/javascript">
+    window.app = {
+        config: {
+            version: '{{ version }}',
+            mediaUrl: '{{ MEDIA_URL }}',
+            logoPath: '{{ logo_path }}',
+            logoWidth: '{{ logo_width }}',
+            logoHeight: '{{ logo_height }}',
+            faviconPath: '{{ favicon_path }}',
+            loginBGPath: '{{ login_bg_path }}',
+            siteTitle: '{{ site_title }}',
+            siteName: '{{ site_name }}',
+            siteRoot: '{{ SITE_ROOT }}',
+            loginUrl: '{{ LOGIN_URL }}',
+            isPro: '{{ is_pro }}',
+            isDocs: '{{ is_docs }}',
+            lang: '{{ LANGUAGE_CODE }}',
+            fileServerRoot: '{{ FILE_SERVER_ROOT }}',
+            serviceURL: '{{ service_url }}',
+            seafileVersion: '{{ seafile_version }}',
+            avatarURL: '{{ avatar_url }}'
+        },
+        pageOptions: {
+            csrfToken: "{{ csrf_token }}",
+            dtableSocketUrl: '{{dtable_socket_url}}',
+            name: "{{request.user.username|email2nickname|escapejs}}",
+            contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+            username: "{{request.user.username|escapejs}}",
+            canAddRepo: {% if user.permissions.can_add_repo %} true {% else %} false {% endif %},
+            canAddGroup: {% if user.permissions.can_add_group %} true {% else %} false {% endif %},
+            canGenerateUploadLink: {% if user.permissions.can_generate_upload_link %} true {% else %} false {% endif %},
+            canViewOrg:'{{ user.permissions.can_view_org }}',
+            fileAuditEnabled: {% if file_audit_enabled %} true {% else %} false {% endif %},
+            enableFileComment: {% if enableFileComment %} true {% else %} false {% endif %},
+            folderPermEnabled: {% if folder_perm_enabled %} true {% else %} false {% endif %},
+            isEmailConfigured: '{{ is_email_configured }}',
+            enableResumableFileUpload: '{{ enable_resumable_fileupload }}',
+            resumableUploadFileBlockSize: '{{ resumable_upload_file_block_size }}',
+            enableUserSetContactEmail: {% if enable_user_set_contact_email %} true {% else %} false {% endif %},
+            // storage backends
+            storages: (function () {
+              var storages = [];
+              {% for storage in storages %}
+              storages.push({
+                'id': '{{storage.storage_id|escapejs}}',
+                'name': '{{storage.storage_name|escapejs}}'
+              });
+              {% endfor %}
+              return storages;
+            })(),
+            shareLinkPasswordMinLength: {{ share_link_password_min_length }},
+            shareLinkExpireDaysDefault: {% if share_link_expire_days_default %} {{ share_link_expire_days_default }} {% else %} 0 {% endif %},
+            shareLinkExpireDaysMin: "{{ share_link_expire_days_min }}",
+            shareLinkExpireDaysMax: "{{ share_link_expire_days_max }}",
+            maxFileName: "{{ max_file_name }}",
+            enableEncryptedLibrary: {% if enable_encrypted_library %} true {% else %} false {% endif %},
+            isSystemStaff: {% if request.user.is_staff %} true {% else %} false {% endif %},
+            thumbnailSizeForOriginal: {{ thumbnail_size_for_original }},
+            canInvitePeople: {% if enable_guest_invitation and user.permissions.can_invite_guest %} true {% else %} false {% endif %},
+
+            qrcodeSrc: '{{ qrcode_src }}'
+        }
+     };
+</script>
+
+<script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js?v={{ version }}"></script>
+<script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+{% render_bundle 'invitePoster' 'js'%}
+</body>
+</html>

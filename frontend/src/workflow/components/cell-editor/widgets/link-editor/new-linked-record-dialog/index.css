@@ -1,0 +1,110 @@
+.workflow-task-link-dialog {
+  width: 800px;
+  min-width: 800px;
+  max-width: 800px;
+  height: calc(100% - 56px);
+}
+
+.workflow-task-link-dialog .modal-content {
+  height: 100%;
+}
+
+.workflow-task-link-dialog .new-linked-record-dialog-body {
+  padding: 30px;
+  overflow-y: scroll;
+}
+
+.workflow-task-link-dialog .new-linked-record-dialog-body .linked-record-column-item {
+  margin-bottom: 30px;
+}
+
+.workflow-task-link-dialog .new-linked-record-dialog-body .linked-record-column-item:last-child {
+  margin-bottom: 0;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .linked-record-column-title {
+  font-size: 14px;
+  font-weight: 400;
+  padding-top: 9px;
+  color: rgb(148, 148, 148);
+}
+
+.workflow-task-link-dialog .linked-record-column-item .collaborator-editor-container,
+.workflow-task-link-dialog .linked-record-column-item .grid-cell-type-single-select,
+.workflow-task-link-dialog .linked-record-column-item .collaborator-editor-add,
+.workflow-task-link-dialog .linked-record-column-item .grid-cell-type-long-text,
+.workflow-task-link-dialog .linked-record-column-item .grid-cell-type-geolocation,
+.workflow-task-link-dialog .linked-record-column-item .seatable-app-universal-table-expand-link-formatter {
+  padding-top: 9px;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .row-expand-checkbox {
+  margin-top: 5px;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .linked-record-column-title .dtable-font {
+  font-size: 14px;
+  color: #666666;
+  cursor: default;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .linked-record-column-title .cell-is-required {
+  color: #ff1920;
+  padding-left: 8px;
+  display: inline-block;
+  height: 18px;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .select-editor-add-show-always,
+.workflow-task-link-dialog .linked-record-column-item .table-add-collaborator {
+  padding: 0 12px;
+  height: 22px;
+  line-height: 22px;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #8f8f8f;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .long-text-editor-container {
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .seatable-app-from-cell-editor.grid-cell-type-collaborator {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .seatable-app-from-cell-editor.grid-cell-type-collaborator .seatable-app-form-collaborator-editor-container {
+  height: auto;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .grid-cell-type-collaborator .seatable-app-form-collaborator-editor-container .collaborator-option-item {
+  margin-top: 5px;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .seatable-app-from-cell-editor.grid-cell-type-multiple-select {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .grid-cell-type-multiple-select .select-option-item {
+  margin: 5px 10px 5px 0;
+}
+
+.workflow-task-link-dialog .linked-record-column-item .seatable-app-from-cell-editor .form-control {
+  border-color: rgba(0, 40, 100, .12);
+}
+
+.workflow-task-link-dialog .new-linked-record-dialog-body .grid-cell-type-checkbox {
+  margin-top: 0.5rem;
+}
+
+.workflow-task-link-dialog .new-linked-record-dialog-body .rate-formatter {
+  margin-top: 0.25rem;
+}

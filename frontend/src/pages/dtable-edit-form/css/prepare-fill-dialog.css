@@ -1,0 +1,247 @@
+.pre-fill-dialog {
+  height: auto;
+  max-width: 710px;
+}
+
+.pre-fill-dialog .modal-body {
+  padding-top: 0.75rem;
+}
+
+.pre-fill-dialog .ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.pre-fill-dialog .link-value.ellipsis {
+  cursor: pointer;
+}
+
+.pre-fill-dialog .preset-value .text-editor-content,
+.pre-fill-dialog .preset-value .date-editor-container .form-control,
+.pre-fill-dialog .preset-value .preset-rate-list {
+  border: 1px solid rgba(0,40,100,.12);
+}
+
+.pre-fill-dialog .preset-value .text-editor-content:hover,
+.pre-fill-dialog .preset-value .date-editor-container .form-control:hover,
+.pre-fill-dialog .preset-value .preset-rate-list:hover {
+  border-color: rgb(179, 179, 179);
+}
+
+.pre-fill-dialog .preset-value .text-editor-content:focus {
+  border-color: #1991eb;
+}
+
+.pre-fill-dialog .checkbox-editor-container .checkbox {
+  cursor: pointer;
+}
+
+.pre-fill-dialog .form-presets-header-return {
+  cursor: pointer;
+}
+
+.pre-fill-dialog .form-presets-header-return .dtable-font {
+  font-size: 13px;
+  color: #999;
+}
+
+.pre-fill-dialog .form-presets-header-return .dtable-font:hover {
+  color: #666666;
+}
+
+.pre-fill-dialog .form-preset-divider {
+  border-bottom: 1px solid #e2e2e2;
+  width: auto;
+  margin: 0.5rem 0rem;
+}
+
+.pre-fill-dialog .form-presets-empty-container {
+  flex-direction: column;
+  padding-top: 100px;
+}
+
+.pre-fill-dialog .no-preset-form-url-tip {
+  color: #666;
+}
+
+.pre-fill-dialog .form-presets-setting-content {
+  min-height: 440px;
+}
+
+.pre-fill-dialog .dtable-select .option-group-content {
+  overflow-y: auto;
+}
+
+.pre-fill-dialog .single-select-option,
+.pre-fill-dialog .multiple-select-option {
+  padding: 3px 10px;
+}
+
+.pre-fill-dialog .option-group .single-select-option,
+.pre-fill-dialog .option-group .multiple-select-option {
+  padding: 0px 10px;
+}
+
+.pre-fill-dialog .form-header-title {
+  font-weight: 500;
+}
+
+.pre-fill-dialog .form-presets-setting-title {
+  display: inline-block;
+}
+
+.form-presets-setting-title.enterprise-text {
+  font-weight: 400;
+  color: #666;
+}
+
+.pre-fill-dialog .add-item-btn {
+  width: fit-content;
+  border-top: none;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+  max-width: 100%;
+  background: #f5f5f5;
+  border-radius: 3px;
+  line-height: 28px;
+  margin: 0 0 10px;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pre-fill-dialog .add-item-btn:hover {
+  cursor: pointer;
+  color: #666666;
+  background: #f5f5f5;
+}
+
+.pre-fill-dialog .delete-field {
+  cursor: pointer;
+  font-size: 14px;
+  color: #999;
+  width: 14px;
+}
+
+.pre-fill-dialog .delete-field:hover {
+  color: #666666;
+}
+
+.pre-fill-dialog .delete-field .dtable-icon-fork-number {
+  font-size: 14px;
+}
+
+.pre-fill-dialog .preset-column {
+  width: 150px;
+}
+
+.pre-fill-dialog .preset-column .option:hover .filter-header-icon .dtable-font {
+  color: #fff;
+}
+
+.pre-fill-dialog .multiple-option-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pre-fill-dialog .selector-multiple-select .option:hover,
+.pre-fill-dialog .selector-single-select .option:hover {
+  background-color: #f7f7f7;
+}
+
+.pre-fill-dialog .preset-value {
+  width: 250px;
+}
+
+.pre-fill-dialog .preset-permission {
+  width: 170px;
+}
+
+.pre-fill-dialog .multiple-check-icon .dtable-icon-check-mark {
+  font-size: 12px;
+  color: #798d99;
+  margin-right: 0.5rem;
+}
+
+.pre-fill-dialog .preset-rate-list {
+  display: flex;
+  padding: 0 5px;
+  align-items: center;
+  border: 1px solid #AEAEAE;
+}
+
+.pre-fill-dialog .form-presets-links-container .dtable-font {
+  font-size: 16px;
+}
+
+.pre-fill-dialog .form-presets-links-container .multicolor-icon {
+  vertical-align: inherit;
+}
+
+.pre-fill-dialog .form-presets-links-container {
+  max-height: 440px;
+  overflow: auto;
+}
+
+.pre-fill-dialog .form-presets-links-container .preset-link-item:hover {
+  background-color: #f5f5f5;
+}
+
+.pre-fill-dialog .form-custom-url-static .input-pretext {
+  position: absolute;
+  left: 12px;
+  top: 0;
+  height: 38px;
+  line-height: 38px;
+  z-index: 10;
+  color: #666;
+}
+
+.pre-fill-dialog .form-custom-url-static .input-group-text {
+  padding: 0;
+  border: none;
+}
+
+.pre-fill-dialog .form-custom-url-static .input-group-text .btn {
+  border-radius: 0 4px 4px 0;
+}
+
+.dtable-select .option:hover .header-icon .dtable-font {
+  color: #fff;
+}
+
+.pre-fill-dialog .share-form-name {
+  color: #E16C0A;
+  word-wrap: break-word;
+}
+
+.pre-fill-dialog .edit-link-container .dtable-icon-use-help {
+  color: #bdbdbd;
+}
+
+.pre-fill-dialog .edit-link-container .dtable-icon-use-help:hover {
+  color: #666666;
+  cursor: pointer;
+}
+
+.pre-fill-dialog .edit-link-container .field-preset-item .dtable-icon-insert-right {
+  line-height: 38px;
+  font-size: 16px;
+  color: #bdbdbd;
+}
+
+.filter-header-icon.header-icon {
+  display: inline-block;
+  padding: 0 0.3125rem;
+  margin-left: -0.3125rem;
+}
+
+.filter-header-icon.header-icon .dtable-font {
+  font-size: 14px;
+  color: #aaa;
+  cursor: default;
+}

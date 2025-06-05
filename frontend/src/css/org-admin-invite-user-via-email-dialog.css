@@ -1,0 +1,25 @@
+.invite-user-email-dialog {
+  max-height: calc(100% - 56px);
+  display: flex;
+}
+
+.invite-user-email-dialog .modal-content {
+  flex: 1;
+}
+
+.invite-user-email-dialog .invite-user-email-body {
+  overflow: auto;
+}
+
+.invite-user-email-dialog .invite-user-email-body .org-invitation-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.org-invitation-container .delete-invitation-input {
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+}

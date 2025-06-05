@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block main_content %}
+<div class="text-panel">
+    <p class="error">请在微信客户端打开链接</p>
+    <p class="error">或保存图片到相册再微信扫码</p>
+    <div style="display: flex; justify-content: center; margin: 2em 0;">
+        <div id="qrcode"></div>
+    </div>
+    <button class="btn btn-primary" id="copy" style="background-image: none" >复制链接</button>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+    var copyButton = document.querySelector('#copy')
+    copyButton.onclick = function () {
+        copyUrlToClipboard()
+    }
+
+    function copyUrlToClipboard() {
+        var textArea = document.createElement("textarea")
+        textArea.style.position = 'fixed'
+        textArea.style.top = 0
+        textArea.style.left = 0
+        textArea.style.width = '2em'
+        textArea.style.height = '2em'
+        textArea.style.padding = 0
+        textArea.style.border = 'none'
+        textArea.style.outline = 'none'
+        textArea.style.boxShadow = 'none'
+        textArea.style.background = 'transparent'
+        textArea.value = window.location.href
+        document.body.appendChild(textArea)
+        textArea.select()
+
+        try {
+            document.execCommand('copy')
+            alert("复制成功");
+        } catch (err) {
+            console.log(err)
+        }
+        document.body.removeChild(textArea)
+    }
+</script>
+
+<script type="text/javascript" src="{{MEDIA_URL}}js/qrcode/qrcode.min.js"></script>
+<script type="text/javascript">
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: window.location.href,
+        width: 160,
+        height: 160,
+    });
+</script>
+{% endblock %}

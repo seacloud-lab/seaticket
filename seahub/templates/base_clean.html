@@ -1,0 +1,163 @@
+{% load seahub_tags i18n static %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaTable" {% endif %} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:image" content={% if og_image %} "{{ og_image }}" {% else %} "{{ MEDIA_URL }}img/og-seatable-logo.png" {% endif %} />
+<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaTable - As simple as Excel, with the power of a database" %}" {% endif %} />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% block viewport %}
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+{% endblock %}
+{% block extra_ogp_tags %}{% endblock %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+{% block extra_style %}
+<style type="text/css">
+html, body, #wrapper {
+  height: 100%;
+}
+
+#wrapper {
+  background: url('{{ MEDIA_URL }}{{login_bg_image_path}}') center top no-repeat scroll;
+  background-size: cover;
+  padding-top: 1px;
+}
+
+#lang {
+  margin: 0;
+}
+
+#lang-context {
+  font-weight: normal;
+  font-size: 12px;
+}
+
+#lang-context-selector {
+  text-align: left;
+}
+
+.dtable-container-fluid {
+  padding-top: 70px;
+  padding-bottom: 10px;
+  overflow-y: auto;
+}
+
+.head-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.universal-app-icon-container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.app_name {
+  margin: 0 0.5rem;
+  font-size: 28px;
+  font-weight: 700;
+  color: rgb(33, 37, 41);
+}
+
+#universal-app-icon {
+  border: 0 !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+{% block private_style %} {% endblock %}
+</style>
+{% endblock %}
+<body>
+  <div id="wrapper" class="{{ LANGUAGE_CODE }} d-flex flex-column">
+    <div id="header" class="hide">
+      {# for non-logged-in user #}
+      <div id="lang" class="pl-3">
+        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span class="dtable-font dtable-icon-down3"></span></a>
+        <div id="lang-context-selector" class="sf-popover hide">
+          <ul class="sf-popover-con">
+            {% for LANG in LANGUAGES %}
+            <li><a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div id="main" class="container-fluid dtable-container-fluid">
+      <div class="head-logo-container">
+        {% if app_icon or use_custom_icon %}
+        <div class="universal-app-icon-container">
+          {% if app_icon %}
+          <img id="universal-app-icon" src="{{ MEDIA_URL }}img/app-universal/{{ app_icon }}.png" height="40" width="40" />
+          {% elif use_custom_icon == True and custom_app_icon %}
+          <img class="universal-app-icon" src="{{ custom_app_icon }}" title="{{ site_title }}" alt="logo" height="40" />
+          {% endif %}
+        </div>
+        <p class="app_name"> {{ app_name }} </p>
+        {% else %}
+        <img class="login-logo" src="{{ MEDIA_URL }}{{ logo_path }}" title="{{ site_title }}" alt="logo" height="40" />
+        {% endif %}
+      </div>
+      {% block main_content %}
+      {% endblock %}
+    </div>
+  </div>
+  <script type="text/javascript">
+    var SEAFILE_GLOBAL = {
+      csrfCookieName: '{{ CSRF_COOKIE_NAME }}'
+    };
+    var app = {
+      ui: {
+        currentDropdown: false,
+        currentHighlightedItem: false,
+        freezeItemHightlight: false
+      }
+    }
+    </script>
+    <script type="text/javascript" src="{% static "scripts/lib/jquery-3.7.0.min.js" %}" id="jquery"></script>{# 'id="jquery"' is for pdf file view with pdf2html #}
+    <script type="text/javascript">
+      {# for non-logged-in user #}
+        (function() {
+          var lang_context = $('#lang-context');
+          var lang_selector = $('#lang-context-selector');
+
+          lang_context.parent().css({'position':'relative'});
+
+          lang_context.on('click', function() {
+            lang_selector.toggleClass('hide');
+            return false;
+          });
+
+          $(document).on('click', function(e) {
+            var element = e.target || e.srcElement;
+            if (element.id != 'lang-context-selector' && element.id != 'lang-context') {
+              lang_selector.addClass('hide');
+            }
+          });
+        })();
+    </script>
+    {% block extra_script %}{% endblock %}
+</body>
+</html>

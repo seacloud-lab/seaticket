@@ -1,0 +1,3389 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Seafile Info <info@seafile.com>, 2023
+# Ralf Dyllick <rdb@datamate.org>, 2025
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-08 11:21+0800\n"
+"PO-Revision-Date: 2020-04-29 02:39+0000\n"
+"Last-Translator: Ralf Dyllick <rdb@datamate.org>, 2025\n"
+"Language-Team: French (https://app.transifex.com/seafile-ltd/teams/109505/fr/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#: seahub/api2/endpoints/admin/account.py:183
+#: seahub/api2/endpoints/user.py:131 seahub/api2/views.py:304
+msgid "Name is too long (maximum is 64 characters)"
+msgstr "Le nom est trop long (le maximum est de 64 caractères)"
+
+#: seahub/api2/endpoints/admin/account.py:187
+#: seahub/api2/endpoints/user.py:135 seahub/api2/views.py:308
+#: seahub/forms.py:44 seahub/profile/forms.py:27
+msgid "Name should not include '/'."
+msgstr "Le nom ne doit pas comporter de '/'."
+
+#: seahub/api2/endpoints/admin/account.py:202
+msgid "Login id can't be empty"
+msgstr "L'identifiant de connexion ne peut être vide"
+
+#: seahub/api2/endpoints/admin/account.py:206
+#: seahub/api2/endpoints/admin/users.py:556
+#, python-format
+msgid "Login id %s already exists."
+msgstr "L'identifiant de connexion %s existe déjà."
+
+#: seahub/api2/endpoints/admin/account.py:213
+msgid "Department is too long (maximum is 512 characters)"
+msgstr "Le département est trop long (le maximum est de 512 caractères)"
+
+#: seahub/api2/endpoints/admin/account.py:220 seahub/forms.py:155
+msgid "Space quota can't be empty"
+msgstr "Le quota ne peut pas être vide"
+
+#: seahub/api2/endpoints/admin/account.py:226
+msgid "Must be an integer that is greater than or equal to 0."
+msgstr "Doit être un entier supérieur ou égal à 0."
+
+#: seahub/api2/endpoints/admin/account.py:230 seahub/forms.py:156
+msgid "Space quota is too low (minimum value is 0)"
+msgstr "Le quota est trop faible (la valeur minimale est 0)"
+
+#: seahub/api2/endpoints/admin/account.py:238
+#: seahub/api2/endpoints/org_admin/users.py:423
+#, python-format
+msgid "Failed to set quota: maximum quota is %d MB"
+msgstr "Impossible de définir le quota : quota maximum %d Mo"
+
+#: seahub/api2/endpoints/admin/account.py:313
+#: seahub/api2/endpoints/admin/users.py:334
+#: seahub/api2/endpoints/admin/users.py:525 seahub/forms.py:30
+#: seahub/invitations/views.py:66 seahub/saml/views.py:360
+msgid "The number of users exceeds the limit."
+msgstr "Le nombre d'utilisateurs dépasse la limite."
+
+#: seahub/api2/endpoints/admin/address_book/groups.py:78
+#: seahub/api2/endpoints/admin/address_book/groups.py:267
+#: seahub/api2/endpoints/admin/groups.py:149
+#: seahub/api2/endpoints/groups.py:150 seahub/api2/endpoints/groups.py:272
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:81
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:316
+#: seahub/api2/endpoints/org_admin/groups.py:126
+#: seahub/api2/endpoints/org_admin/groups.py:323
+msgid ""
+"Group name can only contain letters, numbers, blank, hyphen, dot, single "
+"quote or underscore"
+msgstr ""
+"Un nom de groupe ne peut contenir que des lettres, des chiffres, des "
+"espaces, des traits d'union et des traits de soulignement, des points et des"
+" guillemets simples."
+
+#: seahub/api2/endpoints/admin/address_book/groups.py:215
+msgid "There are sub-departments in this department."
+msgstr "Il y a des sous-sections dans cette section."
+
+#: seahub/api2/endpoints/admin/address_book/groups.py:222
+#: seahub/api2/endpoints/admin/address_book/org_groups.py:70
+#: seahub/api2/endpoints/admin/department_v2.py:444
+#: seahub/api2/endpoints/admin/groups.py:332
+#: seahub/api2/endpoints/admin/org_groups.py:127
+#: seahub/api2/endpoints/groups.py:392
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:260
+#: seahub/api2/endpoints/org_admin/department_v2.py:476
+#: seahub/api2/endpoints/org_admin/groups.py:381
+msgid "Cannot delete group with bases"
+msgstr "Il est impossible de supprimer un groupe qui contient des bases."
+
+#: seahub/api2/endpoints/admin/dtables.py:733
+#: seahub/api2/endpoints/admin/dtables.py:891
+#: seahub/api2/endpoints/dtable_io.py:127
+#: seahub/api2/endpoints/dtable_io.py:2516
+#: seahub/api2/endpoints/org_admin/dtable_export.py:73
+#: seahub/dtable/views.py:1859
+#, python-format
+msgid "Export failed. Base size is larger than %s mb."
+msgstr "L'export a échoué. La taille de la base est supérieur à  %s Mo."
+
+#: seahub/api2/endpoints/admin/dtables.py:1060
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:198
+msgid "This base cannot be shared to its group member."
+msgstr "Cette base ne peut pas être partagée avec un membre de son groupe."
+
+#: seahub/api2/endpoints/admin/dtables.py:1081
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:211
+#, python-format
+msgid "Base already shared to %s."
+msgstr "La base est déjà partagée avec %s."
+
+#: seahub/api2/endpoints/admin/dtables.py:1086
+#: seahub/api2/endpoints/dtable_share.py:196
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:216
+#: seahub/dtable/views.py:1521
+#, python-format
+msgid "Base cannot be shared to more than %s users."
+msgstr ""
+"Les bases ne peuvent pas être partagées avec plus de  %s utilisateurs."
+
+#: seahub/api2/endpoints/admin/dtables.py:1255
+#: seahub/api2/endpoints/dtable_share.py:527
+#: seahub/api2/endpoints/dtable_share.py:570
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:413
+#, python-format
+msgid "Base %s already shared to the group."
+msgstr "La base %s est déjà partagée avec le groupe."
+
+#: seahub/api2/endpoints/admin/group_dtables.py:64
+#: seahub/api2/endpoints/admin/group_dtables.py:100
+msgid "Group not found."
+msgstr "Le groupe n'a pas été trouvé."
+
+#: seahub/api2/endpoints/admin/group_dtables.py:69
+#: seahub/api2/endpoints/admin/group_dtables.py:106
+#: seahub/api2/endpoints/org_admin/group_dtables.py:55
+#: seahub/api2/endpoints/org_admin/group_dtables.py:103
+msgid "Workspace not found"
+msgstr "Le workspace n'a pas été trouvé."
+
+#: seahub/api2/endpoints/admin/group_dtables.py:111
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:51
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:96
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:167
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:264
+#: seahub/api2/endpoints/org_admin/dtable_shares.py:322
+#: seahub/api2/endpoints/org_admin/group_dtables.py:108
+msgid "Base not found."
+msgstr "La base n'a pas été trouvée."
+
+#: seahub/api2/endpoints/admin/group_members.py:171
+#: seahub/api2/endpoints/group_members.py:152
+#: seahub/api2/endpoints/group_members.py:395
+#: seahub/api2/endpoints/org_admin/group_members.py:136
+#: seahub/group/views.py:211
+msgid "Number of group members exceeds limit."
+msgstr "Le nombre de membres du groupe dépasse la limite."
+
+#: seahub/api2/endpoints/admin/groups.py:156
+#: seahub/api2/endpoints/groups.py:155 seahub/api2/endpoints/groups.py:277
+#: seahub/api2/endpoints/org_admin/groups.py:154
+#: seahub/api2/endpoints/org_admin/groups.py:328
+msgid "There is already a group with that name."
+msgstr "Un groupe portant ce nom existe déjà."
+
+#: seahub/api2/endpoints/admin/groups.py:253
+#: seahub/api2/endpoints/groups.py:311
+#: seahub/api2/endpoints/org_admin/groups.py:289
+#, python-format
+msgid "User %s is already group owner."
+msgstr "L'utilisateur %s est déjà propriétaire du groupe."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:102
+msgid "Broken"
+msgstr "Défectueux"
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:103
+msgid "This plugin is broken"
+msgstr "Ce plugin est défectueux."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:147
+#: seahub/api2/endpoints/admin/sys_plugins.py:260
+#: seahub/api2/endpoints/admin/sys_plugins.py:467
+#, python-format
+msgid "Plugin with name %s already exists."
+msgstr "Un plugin portant le nom %s existe déjà."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:176
+#: seahub/api2/endpoints/admin/sys_plugins.py:247
+#: seahub/api2/endpoints/admin/sys_plugins.py:377
+#: seahub/api2/endpoints/admin/sys_plugins.py:449
+msgid "\"info.json\" not found."
+msgstr "Le fichier \"info.json\" n'a pas été trouvé."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:230
+#: seahub/api2/endpoints/admin/sys_plugins.py:432
+msgid "File is too large."
+msgstr "Le fichier est trop volumineux."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:236
+#: seahub/api2/endpoints/admin/sys_plugins.py:437
+msgid "A zip file is required."
+msgstr "Un fichier ZIP est nécessaire."
+
+#: seahub/api2/endpoints/admin/sys_plugins.py:253
+#: seahub/api2/endpoints/admin/sys_plugins.py:455
+msgid "\"main.js\" not found."
+msgstr "Le fichier \"main.js\" n'a pas été trouvé."
+
+#: seahub/api2/endpoints/admin/users.py:427
+#, python-format
+msgid "Successfully added user %(user)s."
+msgstr "L'utilisateur %(user)sa été ajouté."
+
+#: seahub/api2/endpoints/admin/users.py:431
+#: seahub/api2/endpoints/admin/users_batch.py:363
+#: seahub/api2/endpoints/org_admin/users.py:618 seahub/views/sysadmin.py:205
+#, python-format
+msgid "You are invited to join %s"
+msgstr "Vous êtes invité à rejoindre %s"
+
+#: seahub/api2/endpoints/admin/users.py:433
+#, python-format
+msgid "Successfully added user %(user)s. An email notification has been sent."
+msgstr "L'utilisateur %(user)sa été ajouté. Un e-mail a été envoyé."
+
+#: seahub/api2/endpoints/admin/users.py:438
+#, python-format
+msgid ""
+"Successfully added user %(user)s. But email notification can not be sent, "
+"because email service is not properly configured."
+msgstr ""
+"L'utilisateur %(user)sa été ajouté, mais l'envoi d'un e-mail a échoué. "
+"Vérifiez la configuration du service e-mail."
+
+#: seahub/api2/endpoints/admin/users.py:665
+msgid "Edit succeeded"
+msgstr "L'édition a réussi."
+
+#: seahub/api2/endpoints/admin/users.py:672
+#: seahub/api2/endpoints/org_admin/users.py:476 seahub/views/sysadmin.py:181
+#, python-format
+msgid "Your account on %s is activated"
+msgstr "Votre compte sur %s a été activé."
+
+#: seahub/api2/endpoints/admin/users.py:675
+msgid "Edit succeeded, an email has been sent."
+msgstr "Édité avec succès, un e-mail a été envoyé."
+
+#: seahub/api2/endpoints/admin/users.py:679
+msgid ""
+"Edit succeeded, but failed to send email, please check your email "
+"configuration."
+msgstr ""
+"Édité avec succès, mais échec de l'envoi de l'e-mail, veuillez vérifier "
+"votre configuration."
+
+#: seahub/api2/endpoints/admin/users.py:913 seahub/auth/views.py:403
+msgid "Unable to reset password."
+msgstr "Vous ne pouvez pas réinitialiser le mot de passe."
+
+#: seahub/api2/endpoints/admin/users.py:943 seahub/views/sysadmin.py:194
+#, python-format
+msgid "Password has been reset on %s"
+msgstr "Le mot de passe a été réinitialisé sur %s"
+
+#: seahub/api2/endpoints/admin/users.py:945
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s, an email has been sent to "
+"%(user)s."
+msgstr ""
+"Le mot de passe a été réinitialisé à %(passwd)set un e-mail a été envoyé à "
+"%(user)s."
+
+#: seahub/api2/endpoints/admin/users.py:950
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s, but failed to send email to "
+"%(user)s, please check your email configuration."
+msgstr ""
+"Le mot de passe a été réinitialisé à %(passwd)s, mais l'envoi d'un e-mail à "
+"%(user)sa échoué. Vérifiez la configuration du service e-mail."
+
+#: seahub/api2/endpoints/admin/users.py:953
+#, python-format
+msgid "Successfully reset password to %(passwd)s for user %(user)s."
+msgstr "Le mot de passe a été réinitialisé à %(passwd)s pour %(user)s."
+
+#: seahub/api2/endpoints/admin/users.py:957
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s for user %(user)s. But email "
+"notification can not be sent, because email service is not properly "
+"configured."
+msgstr ""
+"Le mot de passe a été réinitialisé à %(passwd)s pour %(user)s, mais l'envoi "
+"d'un e-mail a échoué. Vérifiez la configuration du service e-mail."
+
+#: seahub/api2/endpoints/admin/virus_scan_records.py:271
+msgid "Virus file is not found."
+msgstr "Le fichier de virus n'a pas été trouvé."
+
+#: seahub/api2/endpoints/admin/virus_scan_records.py:289
+#: seahub/api2/endpoints/admin/virus_scan_records.py:304
+#: seahub/api2/endpoints/admin/virus_scan_records.py:319
+#: seahub/api2/endpoints/dtable_external_apps.py:465
+#: seahub/api2/endpoints/dtable_forms.py:1038
+#: seahub/api2/endpoints/dtable_forms.py:1074
+#: seahub/api2/endpoints/dtable_share_links.py:188
+#: seahub/api2/endpoints/dtable_share_links.py:214
+#: seahub/api2/endpoints/invitations.py:77
+#: seahub/api2/endpoints/invitations.py:148
+#: seahub/api2/endpoints/subscription.py:52
+#: seahub/api2/endpoints/subscription.py:92
+#: seahub/api2/endpoints/subscription.py:129
+#: seahub/api2/endpoints/subscription.py:166 seahub/auth/sms_login.py:132
+#: seahub/auth/sms_login.py:156 seahub/auth/sms_login.py:180
+#: seahub/auth/sms_two_factor_auth.py:83
+#: seahub/auth/sms_two_factor_auth.py:122
+#: seahub/dtable/external_app_views.py:202
+#: seahub/dtable/external_app_views.py:438
+#: seahub/dtable/external_app_views.py:450
+#: seahub/dtable/external_app_views.py:635
+#: seahub/dtable/external_app_views.py:646
+#: seahub/dtable/external_app_views.py:791
+#: seahub/dtable/external_app_views.py:800
+#: seahub/dtable/external_app_views.py:950
+#: seahub/dtable/external_app_views.py:962 seahub/dtable/views.py:1533
+#: seahub/dtable/views.py:1888 seahub/dtable/views.py:1896
+#: seahub/dtable/views.py:2090 seahub/dtable/views.py:2110
+#: seahub/dtable/views.py:2116 seahub/dtable/views.py:2122
+#: seahub/dtable/views.py:2126 seahub/dtable/views.py:2140
+#: seahub/dtable/views.py:2181 seahub/dtable/views.py:2201
+#: seahub/dtable/views.py:2207 seahub/dtable/views.py:2213
+#: seahub/dtable/views.py:2217 seahub/dtable/views.py:2230
+#: seahub/dtable/views.py:2274 seahub/dtable/views.py:2294
+#: seahub/dtable/views.py:2300 seahub/dtable/views.py:2306
+#: seahub/dtable/views.py:2310 seahub/dtable/views.py:2328
+#: seahub/dtable_apps/big_data_screen/apis.py:542
+#: seahub/dtable_apps/big_data_screen/apis.py:584
+#: seahub/dtable_apps/universal_app/admin_apis.py:760
+#: seahub/dtable_apps/universal_app/admin_apis.py:814
+#: seahub/dtable_apps/universal_app/admin_apis.py:881
+#: seahub/dtable_apps/universal_app/admin_apis.py:923
+#: seahub/dtable_apps/workflow/apis.py:1985
+#: seahub/dtable_apps/workflow/views.py:113 seahub/notifications/models.py:416
+#: seahub/notifications/models.py:436 seahub/notifications/models.py:460
+#: seahub/notifications/models.py:485 seahub/org_dingtalk/views.py:354
+#: seahub/org_work_weixin/views.py:310 seahub/org_work_weixin/views.py:339
+#: seahub/org_work_weixin/views.py:422 seahub/org_work_weixin/views.py:505
+#: seahub/org_work_weixin/views.py:649 seahub/org_work_weixin/views.py:699
+#: seahub/organizations/views.py:427 seahub/organizations/views.py:566
+#: seahub/profile/views.py:298 seahub/subscription/views.py:93
+#: seahub/subscription/views.py:138 seahub/utils/__init__.py:345
+#: seahub/utils/__init__.py:416 seahub/weixin/views.py:189
+#: seahub/work_weixin/views.py:78 seahub/work_weixin/views.py:112
+#: seahub/work_weixin/views.py:202
+msgid "Internal Server Error"
+msgstr "Erreur interne du serveur"
+
+#: seahub/api2/endpoints/admin/web_settings.py:80
+msgid "setting invalid."
+msgstr "paramètre invalide."
+
+#: seahub/api2/endpoints/admin/web_settings.py:85
+#: seahub/api2/endpoints/admin/web_settings.py:91
+#: seahub/api2/endpoints/admin/web_settings.py:95
+#: seahub/api2/endpoints/admin/web_settings.py:100
+msgid "value invalid."
+msgstr "valeur invalide."
+
+#: seahub/api2/endpoints/dtable.py:475 seahub/api2/endpoints/dtable.py:529
+#, python-format
+msgid "Base %s already exists in this workspace."
+msgstr "Une base portant le nom %s existe déjà dans le workspace."
+
+#: seahub/api2/endpoints/dtable.py:526 seahub/api2/endpoints/dtable.py:666
+msgid "Base name contains illegal characters"
+msgstr "Le nom de la base contient des caractères non autorisés."
+
+#: seahub/api2/endpoints/dtable.py:564
+msgid "Base name is invalid"
+msgstr "Le nom de la base est invalide."
+
+#: seahub/api2/endpoints/dtable.py:572
+msgid "New base name is invalid"
+msgstr "Le nom de la nouvelle base est invalide."
+
+#: seahub/api2/endpoints/dtable.py:576
+msgid "New base name is too long"
+msgstr "Le nom de la nouvelle base est trop longue."
+
+#: seahub/api2/endpoints/dtable.py:604 seahub/api2/endpoints/dtable.py:853
+#, python-format
+msgid "Base %s not found."
+msgstr "La base %s n'a pas été trouvé."
+
+#: seahub/api2/endpoints/dtable.py:608
+#, python-format
+msgid "%s exists."
+msgstr "%s existe."
+
+#: seahub/api2/endpoints/dtable.py:873
+msgid "Password already exists"
+msgstr "Le mot de passe existe déjà."
+
+#: seahub/api2/endpoints/dtable.py:877
+msgid "Password is invalid"
+msgstr "Le mot de passe est invalide."
+
+#: seahub/api2/endpoints/dtable.py:901
+msgid "Password is incorrect"
+msgstr "Le mot de passe est incorrect."
+
+#: seahub/api2/endpoints/dtable.py:948
+msgid "Password and new password cannot be empty"
+msgstr "Les mots de passe sont nécessaires."
+
+#: seahub/api2/endpoints/dtable.py:953
+msgid "Old password is incorrect"
+msgstr "L'ancien mot de passe est incorrect."
+
+#: seahub/api2/endpoints/dtable_api_token.py:67
+#: seahub/api2/endpoints/dtable_share_links.py:169
+#: seahub/api2/endpoints/dtable_share_links.py:207
+#: seahub/api2/endpoints/subscription.py:36
+#: seahub/api2/endpoints/subscription.py:72
+#: seahub/api2/endpoints/subscription.py:112
+#: seahub/api2/endpoints/subscription.py:148 seahub/dtable/views.py:217
+#: seahub/dtable/views.py:375 seahub/dtable/views.py:498
+#: seahub/dtable/views.py:659 seahub/dtable/views.py:708
+#: seahub/dtable/views.py:1571 seahub/dtable/views.py:2073
+#: seahub/dtable/views.py:2077 seahub/dtable/views.py:2080
+#: seahub/dtable/views.py:2164 seahub/dtable/views.py:2168
+#: seahub/dtable/views.py:2171 seahub/dtable/views.py:2255
+#: seahub/dtable/views.py:2259 seahub/dtable/views.py:2264
+#: seahub/dtable_apps/big_data_screen/apis.py:533
+#: seahub/dtable_apps/big_data_screen/apis.py:573
+#: seahub/dtable_apps/universal_app/admin_apis.py:745
+#: seahub/dtable_apps/universal_app/admin_apis.py:807
+#: seahub/dtable_apps/universal_app/admin_apis.py:872
+#: seahub/dtable_apps/universal_app/admin_apis.py:912
+#: seahub/dtable_apps/universal_app/admin_apis.py:1027
+#: seahub/dtable_apps/universal_app/admin_apis.py:1072
+#: seahub/profile/forms.py:24 seahub/profile/views.py:248
+#: seahub/profile/views.py:253 seahub/subscription/views.py:28
+#: seahub/subscription/views.py:44 seahub/subscription/views.py:106
+#: seahub/thumbnail/views.py:53 seahub/thumbnail/views.py:130
+msgid "Permission denied."
+msgstr "Autorisation refusée."
+
+#: seahub/api2/endpoints/dtable_big_data.py:75
+#: seahub/api2/endpoints/dtable_big_data.py:173
+#: seahub/api2/endpoints/dtable_io.py:192
+#: seahub/api2/endpoints/dtable_io.py:823
+#: seahub/api2/endpoints/dtable_io.py:1062
+#: seahub/api2/endpoints/dtable_io.py:1311
+#: seahub/api2/endpoints/dtable_io.py:1623
+#: seahub/api2/endpoints/dtable_io.py:1760
+#: seahub/api2/endpoints/dtable_io.py:1945
+#: seahub/api2/endpoints/dtable_io.py:2191
+#: seahub/api2/endpoints/dtable_io.py:2344
+#, python-format
+msgid "File %s is too large."
+msgstr "Le fichier %s est trop volumineux."
+
+#: seahub/api2/endpoints/dtable_collection_tables.py:221
+#: seahub/api2/endpoints/dtable_forms.py:330
+msgid "Submission deadline invalid"
+msgstr "La date limite de soumission est invalide."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:222
+#, python-format
+msgid "Common dataset with name: %s already exists."
+msgstr "Un jeu de données portant le nom %s existe déjà."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:236
+msgid "Common dataset could only be created from group owned dtables."
+msgstr ""
+"Un jeu de données ne peut être créé qu'à partir d'une base dont votre group "
+"est propriétaire."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:270
+#, python-format
+msgid "Common dataset for view %s already exists."
+msgstr "Un jeu de données pour la vue %s existe déjà."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:355
+#, python-format
+msgid "Table %s not found."
+msgstr "Le tableau %s n'a pas été trouvé."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:367
+#, python-format
+msgid "View %s not found."
+msgstr "La vue %s n'a pas été trouvée."
+
+#: seahub/api2/endpoints/dtable_common_dataset.py:831
+#: seahub/api2/endpoints/dtable_common_dataset.py:861
+#: seahub/api2/endpoints/dtable_common_dataset.py:1006
+msgid "A common dataset can only be synced once every 5 minutes"
+msgstr ""
+"Un jeu de données commun ne peut être synchroniśe qu'une fois toutes les 5 "
+"minutes."
+
+#: seahub/api2/endpoints/dtable_common_dataset_access_group.py:122
+#, python-format
+msgid "group %s accessible to dataset %s already exists."
+msgstr "Le groupe %s qui a accès au dataset %s existe déjà."
+
+#: seahub/api2/endpoints/dtable_common_dataset_access_group.py:178
+#, python-format
+msgid "Dataset %s is not accessible to group %s"
+msgstr "Le jeu de données  %s n'est pas accessible au groupe %s"
+
+#: seahub/api2/endpoints/dtable_data_syncs.py:259
+msgid "Cannot sync too many times in a short time"
+msgstr ""
+"Vous ne pouvez pas synchroniser le jeu de données pour le moment, car vous "
+"avez effectué plusieurs synchronisations en peu de temps. Veuillez attender "
+"quelques minutes."
+
+#: seahub/api2/endpoints/dtable_external_apps.py:126
+#, python-format
+msgid "Number of apps exceeds the %s limit."
+msgstr "Le nombre d'apps dépasse la limite de %s."
+
+#: seahub/api2/endpoints/dtable_external_apps.py:392
+#: seahub/dtable_apps/big_data_screen/apis.py:46
+#: seahub/dtable_apps/big_data_screen/apis.py:98
+#: seahub/dtable_apps/big_data_screen/apis.py:217
+#: seahub/dtable_apps/big_data_screen/apis.py:330
+#: seahub/dtable_apps/big_data_screen/apis.py:411
+#: seahub/dtable_apps/big_data_screen/apis.py:512
+#: seahub/dtable_apps/big_data_screen/apis.py:556
+#: seahub/dtable_apps/data_search/query.py:184
+#: seahub/dtable_apps/data_search/query.py:376
+#: seahub/dtable_apps/gallery/apis.py:31 seahub/dtable_apps/gallery/apis.py:77
+#: seahub/dtable_apps/map_cn/apis.py:31 seahub/dtable_apps/map_cn/apis.py:77
+#: seahub/dtable_apps/universal_app/admin_apis.py:71
+#: seahub/dtable_apps/universal_app/admin_apis.py:133
+#: seahub/dtable_apps/universal_app/admin_apis.py:206
+#: seahub/dtable_apps/universal_app/admin_apis.py:278
+#: seahub/dtable_apps/universal_app/admin_apis.py:339
+#: seahub/dtable_apps/universal_app/admin_apis.py:408
+#: seahub/dtable_apps/universal_app/admin_apis.py:468
+#: seahub/dtable_apps/universal_app/admin_apis.py:516
+#: seahub/dtable_apps/universal_app/admin_apis.py:579
+#: seahub/dtable_apps/universal_app/admin_apis.py:633
+#: seahub/dtable_apps/universal_app/admin_apis.py:715
+#: seahub/dtable_apps/universal_app/admin_apis.py:781
+#: seahub/dtable_apps/universal_app/admin_apis.py:842
+#: seahub/dtable_apps/universal_app/admin_apis.py:895
+#: seahub/dtable_apps/universal_app/admin_apis.py:1005
+#: seahub/dtable_apps/universal_app/admin_apis.py:1050
+#: seahub/dtable_apps/universal_app/admin_apis.py:1122
+#: seahub/dtable_apps/universal_app/admin_apis.py:1217
+#: seahub/dtable_apps/universal_app/admin_apis.py:1283
+#: seahub/dtable_apps/universal_app/admin_apis.py:1354
+#: seahub/dtable_apps/universal_app/admin_apis.py:1411
+#: seahub/dtable_apps/universal_app/admin_apis.py:1487
+#: seahub/dtable_apps/universal_app/admin_apis.py:1583
+#: seahub/dtable_apps/universal_app/admin_apis.py:1636
+#: seahub/dtable_apps/universal_app/admin_apis.py:1714
+#: seahub/dtable_apps/universal_app/admin_apis.py:1774
+#: seahub/dtable_apps/universal_app/admin_apis.py:1850
+#: seahub/dtable_apps/universal_app/admin_apis.py:1936
+#: seahub/dtable_apps/universal_app/admin_apis.py:1998
+#: seahub/dtable_apps/universal_app/admin_apis.py:2095
+#: seahub/dtable_apps/universal_app/admin_apis.py:2154
+#: seahub/dtable_apps/universal_app/admin_apis.py:2217
+#: seahub/dtable_apps/universal_app/apis.py:184
+#: seahub/dtable_apps/universal_app/apis.py:439
+#: seahub/dtable_apps/universal_app/apis.py:603
+#: seahub/dtable_apps/universal_app/apis.py:732
+#: seahub/dtable_apps/universal_app/apis.py:847
+#: seahub/dtable_apps/universal_app/apis.py:944
+#: seahub/dtable_apps/universal_app/apis.py:1078
+#: seahub/dtable_apps/universal_app/apis.py:1227
+#: seahub/dtable_apps/universal_app/apis.py:1420
+#: seahub/dtable_apps/universal_app/apis.py:1561
+#: seahub/dtable_apps/universal_app/apis.py:1661
+#: seahub/dtable_apps/universal_app/apis.py:1720
+#: seahub/dtable_apps/universal_app/apis.py:1785
+#: seahub/dtable_apps/universal_app/apis.py:1854
+#: seahub/dtable_apps/universal_app/apis.py:2083
+#: seahub/dtable_apps/universal_app/apis.py:2239
+#: seahub/dtable_apps/universal_app/apis.py:2407
+#: seahub/dtable_apps/universal_app/apis.py:2552
+#: seahub/dtable_apps/universal_app/apis.py:2701
+#: seahub/dtable_apps/universal_app/apis.py:2847
+#: seahub/dtable_apps/universal_app/apis.py:2979
+#: seahub/dtable_apps/universal_app/apis.py:3096
+#: seahub/dtable_apps/universal_app/apis.py:3206
+#: seahub/dtable_apps/universal_app/apis.py:3316
+#: seahub/dtable_apps/universal_app/apis.py:3505
+#: seahub/dtable_apps/universal_app/apis.py:3668
+#: seahub/dtable_apps/universal_app/apis.py:4256
+#: seahub/dtable_apps/universal_app/apis.py:4349
+#: seahub/dtable_apps/universal_app/apis.py:4602
+#: seahub/dtable_apps/universal_app/apis.py:5028
+#: seahub/dtable_apps/universal_app/apis.py:5195
+#: seahub/dtable_apps/universal_app/apis.py:5496
+#: seahub/dtable_apps/universal_app/apis.py:5587
+#: seahub/dtable_apps/universal_app/apis.py:5709
+#: seahub/dtable_apps/universal_app/apis.py:5768
+#: seahub/dtable_apps/universal_app/apis.py:5831
+#: seahub/dtable_apps/universal_app/apis.py:5873
+#: seahub/dtable_apps/universal_app/apis.py:5956
+#: seahub/dtable_apps/universal_app/apis.py:6049
+#: seahub/dtable_apps/universal_app/apis.py:6383
+#: seahub/dtable_apps/universal_app/apis.py:6498
+#: seahub/dtable_apps/universal_app/apis.py:6647
+msgid "This app is not available"
+msgstr "L'app n'est pas disponible."
+
+#: seahub/api2/endpoints/dtable_external_links.py:97
+#: seahub/api2/endpoints/dtable_external_links.py:160
+msgid "This URL already exists, please try another URL"
+msgstr "L'URL existe déjà. Veuillez utiliser une autre URL."
+
+#: seahub/api2/endpoints/dtable_external_links.py:114
+#: seahub/api2/endpoints/dtable_share_links.py:132
+#: seahub/api2/endpoints/dtable_view_external_links.py:124
+#: seahub/api2/endpoints/org_admin/invite_links.py:157
+#: seahub/dtable_apps/universal_app/admin_apis.py:688
+#, python-format
+msgid "Expire days should be greater or equal to %s"
+msgstr "Les jours d’expiration doivent être supérieurs ou égaux à %s"
+
+#: seahub/api2/endpoints/dtable_external_links.py:120
+#: seahub/api2/endpoints/dtable_share_links.py:138
+#: seahub/api2/endpoints/dtable_view_external_links.py:130
+#: seahub/api2/endpoints/org_admin/invite_links.py:163
+#: seahub/dtable_apps/universal_app/admin_apis.py:694
+#, python-format
+msgid "Expire days should be less than or equal to %s"
+msgstr "Les jours d’expiration doivent être inférieurs ou égaux à %s"
+
+#: seahub/api2/endpoints/dtable_forms.py:245
+#, python-format
+msgid "Number of forms exceeds the %s limit."
+msgstr "Le nombre de formulaires web dépasse la limite de %s ."
+
+#: seahub/api2/endpoints/dtable_forms.py:1019
+#: seahub/dtable_apps/big_data_screen/apis.py:499
+#: seahub/dtable_apps/universal_app/admin_apis.py:847
+msgid "URL is invalid"
+msgstr "L'URL est invalide."
+
+#: seahub/api2/endpoints/dtable_forms.py:1023
+#: seahub/dtable_apps/big_data_screen/apis.py:503
+#: seahub/dtable_apps/universal_app/admin_apis.py:851
+msgid "The custom part of URL should have 5-30 characters."
+msgstr ""
+"La partie personnalisée de l'URL doit comprendre de 5 à 30 caractères."
+
+#: seahub/api2/endpoints/dtable_forms.py:1027
+msgid "This custom domain is already in use and cannot be used for the form"
+msgstr ""
+"Ce domaine personnalisé est déjà utilisé. Vous ne pouvez pas l'utiliser pour"
+" votre formulaire web."
+
+#: seahub/api2/endpoints/dtable_io.py:199
+#: seahub/api2/endpoints/dtable_io.py:371
+#: seahub/api2/endpoints/dtable_io.py:436
+#: seahub/api2/endpoints/dtable_io.py:1767
+#, python-format
+msgid "Base %s already exists."
+msgstr "La base %s existe déjà."
+
+#: seahub/api2/endpoints/dtable_io.py:239
+#: seahub/api2/endpoints/dtable_io.py:469
+#: seahub/api2/endpoints/dtable_io.py:1838
+msgid "File name contains illegal characters"
+msgstr "Le nom du fichier contient des caractères non autorisés."
+
+#: seahub/api2/endpoints/dtable_io.py:248
+msgid "A *.dtable file is required."
+msgstr "Un fichier DTABLE est nécessaire."
+
+#: seahub/api2/endpoints/dtable_io.py:292
+#: seahub/api2/endpoints/dtable_io.py:1094
+#: seahub/api2/endpoints/dtable_io.py:1809
+#: seahub/api2/endpoints/dtable_io.py:2576
+#: seahub/api2/endpoints/dtable_io.py:2581
+#: seahub/api2/endpoints/dtable_io.py:2608
+msgid "File content invalid"
+msgstr "Le contenu du fichier est invalide."
+
+#: seahub/api2/endpoints/dtable_io.py:302
+#: seahub/api2/endpoints/dtable_io.py:1105
+#: seahub/api2/endpoints/dtable_io.py:1819
+#: seahub/api2/endpoints/dtable_io.py:2597
+#: seahub/api2/endpoints/dtable_io.py:2620
+msgid ""
+"The number of columns exceeds the limit of 500. Please check if your file "
+"contains empty columns."
+msgstr ""
+"Le nombre de colonnes dépasse la limite de 500. Veuillez vérifier si le "
+"fichier contient des colonnes vides."
+
+#: seahub/api2/endpoints/dtable_io.py:307
+#: seahub/api2/endpoints/dtable_io.py:1110
+#: seahub/api2/endpoints/dtable_io.py:1824
+#: seahub/api2/endpoints/dtable_io.py:2594
+#: seahub/api2/endpoints/dtable_io.py:2617
+msgid ""
+"The number of rows exceeds the limit of 50000. Please check if your file "
+"contains empty rows."
+msgstr ""
+"Le nombre de lignes dépasse la limite de 50000. Veuillez vérifier si le "
+"fichier contient des lignes vides."
+
+#: seahub/api2/endpoints/dtable_io.py:562
+msgid "Number of cells returned exceeds the limit of 1 million"
+msgstr "Le nombre de cellule retournées dépasse la limite de 1 million."
+
+#: seahub/api2/endpoints/dtable_io.py:565
+msgid "Excel format error"
+msgstr "Erreur de format XLSX"
+
+#: seahub/api2/endpoints/dtable_io.py:568
+msgid "Import excel or csv error"
+msgstr "Une erreur s'est produite lors de l'importation XLSX/CSV."
+
+#: seahub/api2/endpoints/dtable_io.py:571
+#: seahub/api2/endpoints/dtable_io.py:621
+msgid ""
+"The base size exceeds the limit of 200MB, the operation cannot be performed."
+msgstr ""
+"La taille de la base dépasse la limite de 200MB. L'opération ne peut pas "
+"être éxécutée"
+
+#: seahub/api2/endpoints/dtable_io.py:574
+msgid "Update excel or csv error"
+msgstr "Une erreur s'est produite lors de la mise à jour XLSX/CSV."
+
+#: seahub/api2/endpoints/dtable_io.py:585
+msgid "The column data in the source table is invalid and cannot be imported."
+msgstr ""
+"Les données dans les colonnes du tableau source ne sont pas valides et ne "
+"peuvent pas être importées."
+
+#: seahub/api2/endpoints/dtable_io.py:588
+msgid "Table exists."
+msgstr "Le tableau existe."
+
+#: seahub/api2/endpoints/dtable_io.py:591
+#: seahub/api2/endpoints/dtable_io.py:617
+msgid "Exceed the rows limit."
+msgstr "La limite de lignes est dépassée."
+
+#: seahub/api2/endpoints/dtable_io.py:594
+msgid "Number of tables exceeds 200 limit"
+msgstr "Le nombre de tableaux dépasse la limite de 200."
+
+#: seahub/api2/endpoints/dtable_io.py:613
+msgid ""
+"The filters of the corresponding view are invalid. Please reset filters in "
+"the view."
+msgstr ""
+"Les filtres dans la vue associée ne sont pas valable. Veuillez réinitialiser"
+" les fitres dans la vue."
+
+#: seahub/api2/endpoints/dtable_io.py:615
+msgid ""
+"The corresponding view contains unsupported filters. Please update the "
+"filter in the view."
+msgstr ""
+"La vue associée contient des filtres non-supportés. Veuillez mettre à jour "
+"le filtre dans la vue."
+
+#: seahub/api2/endpoints/dtable_io.py:619
+msgid "Exceed the columns limit."
+msgstr "La limite des colonnes est dépassée."
+
+#: seahub/api2/endpoints/dtable_io.py:625
+#, python-format
+msgid ""
+"The column %s exists in the selected common dataset, but its column ID is "
+"not identical to the column of the same name in this table. Please rename "
+"the column %s."
+msgstr ""
+"La colonne %s existe dans le jeu de données commun sélectionné, mais son ID "
+"n'est pas identique à la colonne du même nom dans ce tableau. Veuillez "
+"renommer la colonne %s."
+
+#: seahub/api2/endpoints/dtable_io.py:2589
+#: seahub/api2/endpoints/dtable_io.py:2613
+msgid "Sheet is empty."
+msgstr "La feuille est vide."
+
+#: seahub/api2/endpoints/dtable_io.py:2738
+#: seahub/api2/endpoints/dtable_io.py:2745
+#: seahub/dtable_apps/big_data_screen/apis.py:392
+#: seahub/dtable_apps/big_data_screen/apis.py:400
+msgid "A *.zip file is required."
+msgstr "Un fichier ZIP est nécessaire."
+
+#: seahub/api2/endpoints/dtable_share.py:145
+#, python-format
+msgid "Base sharing exceeds the limit of %(share_limit)s"
+msgstr ""
+"Le nombre de partages pour la base dépasse la limite de %(share_limit)s."
+
+#: seahub/api2/endpoints/dtable_share.py:156
+#: seahub/api2/endpoints/dtable_share.py:335
+#, python-format
+msgid "Base %s cannot be shared to group member."
+msgstr "La base %s ne peut pas être partagée avec des membres du group."
+
+#: seahub/api2/endpoints/dtable_share.py:165
+#: seahub/api2/endpoints/dtable_share.py:343
+#, python-format
+msgid "Base %s cannot be shared with its owner."
+msgstr "La base %s ne peut pas être partagée avec son propriétaire."
+
+#: seahub/api2/endpoints/dtable_share.py:191
+#, python-format
+msgid "Base %s already shared to %s."
+msgstr "La base %s est déjà partagée avec %s."
+
+#: seahub/api2/endpoints/dtable_share.py:294
+msgid "Can not set custom share permission to non-team members"
+msgstr ""
+"Les autorisations de partage personnalisées ne peuvent être effectués "
+"qu'avec les membres de l'équipe."
+
+#: seahub/api2/endpoints/dtable_share_links.py:65
+msgid "workspace_id invalid."
+msgstr "L'ID du workspace est invalide."
+
+#: seahub/api2/endpoints/dtable_share_links.py:69
+msgid "table_name invalid."
+msgstr "table_name invalide"
+
+#: seahub/api2/endpoints/dtable_share_links.py:75
+#: seahub/api2/endpoints/dtable_share_links.py:156
+#, python-format
+msgid "Workspace %(workspace)s not found"
+msgstr "Le workspace %(workspace)s n'a pas été trouvé."
+
+#: seahub/api2/endpoints/dtable_share_links.py:79
+#, python-format
+msgid "Library %(workspace)s not found"
+msgstr "La bibliothèque %(workspace)s n'a pas été trouvée."
+
+#: seahub/api2/endpoints/dtable_share_links.py:83
+#: seahub/api2/endpoints/dtable_share_links.py:164
+#, python-format
+msgid "DTable %(table)s not found"
+msgstr "La base%(table)s n'a pas été trouvée."
+
+#: seahub/api2/endpoints/dtable_share_links.py:109
+msgid "Permission invalid"
+msgstr "La permission est invalide."
+
+#: seahub/api2/endpoints/dtable_share_links.py:115
+#: seahub/dtable_apps/universal_app/admin_apis.py:671
+msgid "Password is too short."
+msgstr "Le mot de passe est trop court."
+
+#: seahub/api2/endpoints/dtable_share_links.py:160
+#, python-format
+msgid "Library %(repo)s not found"
+msgstr "La bibliothèque %(repo)s n'a pas été trouvée."
+
+#: seahub/api2/endpoints/dtable_share_permission.py:237
+#, python-format
+msgid "Number of share permissions exceeds the %s limit."
+msgstr "Le nombre d'autorisations de partage dépasse la limite de %s ."
+
+#: seahub/api2/endpoints/dtable_view_external_links.py:163
+#, python-format
+msgid "Number of external view links exceeds the %s limit."
+msgstr "Le nombre de liens externes pour les vues dépasse la %s ."
+
+#: seahub/api2/endpoints/dtable_view_user_share.py:151
+#, python-format
+msgid "View sharing exceeds the limit of %(share_limit)s"
+msgstr ""
+"Le nombre de partages pour la vue dépasse la limite de %(share_limit)s."
+
+#: seahub/api2/endpoints/dtable_view_user_share.py:163
+msgid "View is already shared to this user."
+msgstr "La vue est déjà partagé avec cet utilisateur."
+
+#: seahub/api2/endpoints/folder.py:48 seahub/api2/endpoints/folder.py:85
+#: seahub/api2/endpoints/folder.py:221
+msgid "Folder name contains illegal characters"
+msgstr "Le nom du dossier contient des caractères non autorisés."
+
+#: seahub/api2/endpoints/folder.py:51 seahub/api2/endpoints/folder.py:224
+#, python-format
+msgid "Folder %s already exists in this workspace."
+msgstr "Le dossier %s existe déjà dans le workspace."
+
+#: seahub/api2/endpoints/folder.py:119 seahub/api2/endpoints/folder.py:365
+#: seahub/api2/endpoints/folder.py:370
+#: seahub/dtable_apps/universal_app/apis.py:6248
+#: seahub/dtable_apps/workflow/apis.py:3675
+msgid "Folder is not empty. Can not be deleted."
+msgstr "Le dossier n'est pas vide et ne peut pas être supprimé."
+
+#: seahub/api2/endpoints/group_members.py:135
+#: seahub/api2/endpoints/group_members.py:364
+#, python-format
+msgid "User %s is already a group member."
+msgstr "L'utilisateur %s est déjà membre d'un groupe."
+
+#: seahub/api2/endpoints/group_members.py:141
+#: seahub/api2/endpoints/group_members.py:374
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:52
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:91
+#: seahub/api2/endpoints/org_admin/users.py:295
+#: seahub/api2/endpoints/org_admin/work_weixin.py:258
+#, python-format
+msgid "User %s not found in organization."
+msgstr "L'utilisateur %s n'a pas été trouvé dans l’organisation."
+
+#: seahub/api2/endpoints/groups.py:166 seahub/api2/endpoints/groups.py:168
+#: seahub/api2/endpoints/groups.py:170 seahub/api2/endpoints/groups.py:182
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:103
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:105
+#: seahub/api2/endpoints/org_admin/address_book/groups.py:107
+#: seahub/api2/endpoints/org_admin/groups.py:161
+#: seahub/api2/endpoints/org_admin/groups.py:163
+#: seahub/api2/endpoints/org_admin/groups.py:165
+#: seahub/api2/endpoints/org_admin/groups.py:172 seahub/group/views.py:221
+#, python-format
+msgid "Number of groups exceeds the %s limit."
+msgstr "Le nombre de groupes dépasse la limite de %s ."
+
+#: seahub/api2/endpoints/invitation.py:104
+#, python-format
+msgid "%(user)s revoke your access to %(site_name)s."
+msgstr "%(user)sa revoqué votre accès à %(site_name)s."
+
+#: seahub/api2/endpoints/invitations.py:50
+#: seahub/api2/endpoints/invitations.py:109
+#, python-format
+msgid "Email %s invalid."
+msgstr "L'e-mail %s n'est pas valide."
+
+#: seahub/api2/endpoints/invitations.py:54
+#: seahub/api2/endpoints/invitations.py:116
+msgid "The email address is not allowed to be invited as a guest."
+msgstr ""
+"L'adresse e-mail n'est pas autorisée à être invitée en tant qu'invité."
+
+#: seahub/api2/endpoints/invitations.py:59
+#: seahub/api2/endpoints/invitations.py:124
+#, python-format
+msgid "%s is already invited."
+msgstr "%s est déjà invité."
+
+#: seahub/api2/endpoints/invitations.py:66
+#: seahub/api2/endpoints/invitations.py:134
+#: seahub/api2/endpoints/org_admin/users.py:206
+#: seahub/api2/endpoints/org_admin/users.py:212
+#, python-format
+msgid "User %s already exists."
+msgstr "L'utilisateur %s existe déjà."
+
+#: seahub/api2/endpoints/org_admin/settings.py:55
+#: seahub/api2/endpoints/org_admin/settings.py:73
+#: seahub/api2/endpoints/org_admin/settings.py:105
+#: seahub/api2/endpoints/subscription.py:32
+#: seahub/api2/endpoints/subscription.py:68
+#: seahub/api2/endpoints/subscription.py:108
+#: seahub/api2/endpoints/subscription.py:144 seahub/auth/sms_login.py:73
+#: seahub/auth/sms_two_factor_auth.py:60 seahub/auth/views.py:352
+#: seahub/auth/views.py:366 seahub/dtable/external_app_views.py:716
+#: seahub/oauth/views.py:260 seahub/oauth/views.py:272
+#: seahub/org_dingtalk/views.py:143 seahub/org_dingtalk/views.py:172
+#: seahub/org_dingtalk/views.py:204 seahub/org_dingtalk/views.py:242
+#: seahub/org_dingtalk/views.py:403 seahub/org_dingtalk/views.py:427
+#: seahub/org_dingtalk/views.py:483 seahub/org_work_weixin/views.py:178
+#: seahub/org_work_weixin/views.py:205 seahub/org_work_weixin/views.py:233
+#: seahub/org_work_weixin/views.py:277 seahub/org_work_weixin/views.py:471
+#: seahub/org_work_weixin/views.py:491 seahub/org_work_weixin/views.py:551
+#: seahub/org_work_weixin/views.py:571 seahub/org_work_weixin/views.py:594
+#: seahub/org_work_weixin/views.py:621 seahub/org_work_weixin/views.py:638
+#: seahub/organizations/views.py:609 seahub/subscription/views.py:25
+#: seahub/subscription/views.py:41 seahub/subscription/views.py:103
+#: seahub/views/sso.py:127 seahub/weixin/views.py:44
+#: seahub/weixin/views.py:126 seahub/weixin/views.py:264
+#: seahub/weixin/views.py:308 seahub/weixin/views.py:362
+#: seahub/work_weixin/views.py:37 seahub/work_weixin/views.py:59
+#: seahub/work_weixin/views.py:166 seahub/work_weixin/views.py:186
+#: seahub/work_weixin/views.py:252
+msgid "Feature is not enabled."
+msgstr "Cette fonctionnalité n'est pas activée."
+
+#: seahub/api2/endpoints/org_admin/settings.py:88
+#: seahub/api2/endpoints/user_avatar.py:39 seahub/utils/error_msg.py:8
+#, python-format
+msgid ""
+"%(ext)s is an invalid file extension. Authorized extensions are : "
+"%(valid_exts_list)s"
+msgstr ""
+"%(ext)s est une extension de fichier non valide. Les extensions autorisées "
+"sont : %(valid_exts_list)s"
+
+#: seahub/api2/endpoints/org_admin/settings.py:92
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/utils/error_msg.py:13
+#, python-format
+msgid ""
+"Your file is too big (%(size)s), the maximum allowed size is "
+"%(max_valid_size)s"
+msgstr ""
+"Votre fichier est trop volumineux (%(size)s), le maximum autorisé est de "
+"%(max_valid_size)s"
+
+#: seahub/api2/endpoints/user.py:119 seahub/api2/endpoints/user.py:126
+#: seahub/api2/endpoints/user.py:192
+msgid "Feature disabled."
+msgstr "Fonction désactivée."
+
+#: seahub/api2/endpoints/user.py:207
+msgid "The email has been bound by someone else!"
+msgstr "Cet e-mail est déjà utilisée par une autre personne."
+
+#: seahub/auth/decorators.py:156
+msgid "Please log in."
+msgstr "Veuillez vous connecter."
+
+#: seahub/auth/forms.py:29
+msgid "Email or username"
+msgstr "E-mail ou nom d'utilisateur"
+
+#: seahub/auth/forms.py:30 seahub/auth/forms.py:249
+#: seahub/invitations/templates/invitations/token_view.html:13
+#: seahub/templates/app_access_validation.html:35
+#: seahub/templates/base_access_validation.html:12
+#: seahub/templates/base_snapshot_access_validation.html:13
+#: seahub/templates/external_link_access_validation.html:11
+#: seahub/templates/organizations/org_register.html:38
+#: seahub/templates/organizations/sms_org_register.html:163
+#: seahub/templates/registration/login.html:48
+#: seahub/templates/registration/password_set_form.html:22
+#: seahub/templates/share_access_validation.html:11
+#: seahub/templates/sysadmin/sudo_mode.html:36 seahub/views/sysadmin.py:510
+msgid "Password"
+msgstr "Mot de passe"
+
+#: seahub/auth/forms.py:56 seahub/auth/forms.py:57 seahub/auth/forms.py:92
+#: seahub/auth/forms.py:93
+msgid "This account is inactive."
+msgstr "Ce compte est inactif."
+
+#: seahub/auth/forms.py:71
+msgid ""
+"Please enter a correct email/username and password. Note that both fields "
+"are case-sensitive."
+msgstr ""
+"Saisissez un e-mail/nom d’utilisateur correct et un mot de passe. Notez que "
+"ces 2 champs sont sensibles à la casse."
+
+#: seahub/auth/forms.py:77 seahub/auth/forms.py:147
+msgid ""
+"That e-mail address doesn't have an associated user account. Are you sure "
+"you've registered?"
+msgstr ""
+"Cette adresse e-mail n'a pas de compte d'utilisateur associé. Êtes-vous "
+"certain d'être enregistré ?"
+
+#: seahub/auth/forms.py:108
+msgid "You cannot login with email and password."
+msgstr ""
+"Vous ne pouvez pas vous connecter avec votre e-mail et votre mot de passe."
+
+#: seahub/auth/forms.py:109
+msgid "You cannot login with email and password. "
+msgstr ""
+"Vous ne pouvez pas vous connecter avec votre e-mail et votre mot de passe."
+
+#: seahub/auth/forms.py:114
+msgid ""
+"Your web browser doesn't appear to have cookies enabled. Cookies are "
+"required for logging in."
+msgstr ""
+"Votre navigateur ne semble pas avoir les cookies activés. Les cookies sont "
+"requis pour se connecter."
+
+#: seahub/auth/forms.py:130
+msgid "E-mail"
+msgstr "E-mail"
+
+#: seahub/auth/forms.py:137
+msgid ""
+"Failed to send email, email service is not properly configured, please "
+"contact administrator."
+msgstr ""
+"Échec d'envoi de l'e-mail, le service de courrier électronique n'est pas "
+"correctement configuré, veuillez contacter l'administrateur."
+
+#: seahub/auth/forms.py:150
+msgid "Can not reset password, please contact LDAP admin."
+msgstr ""
+"Impossible de réinitialiser le mot de passe, veuillez contacter votre "
+"administrateur LDAP."
+
+#: seahub/auth/forms.py:179
+#, python-format
+msgid "Reset password on %s"
+msgstr "Réinitialiser le mot de passe sur %s"
+
+#: seahub/auth/forms.py:187
+#: seahub/templates/registration/password_change_form.html:19
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: seahub/auth/forms.py:188
+msgid "New password confirmation"
+msgstr "Confirmation du nouveau mot de passe"
+
+#: seahub/auth/forms.py:215 seahub/auth/forms.py:261
+#: seahub/organizations/forms.py:61 seahub/organizations/forms.py:75
+msgid "The two password fields didn't match."
+msgstr "Les deux mots de passe ne correspondent pas."
+
+#: seahub/auth/forms.py:229
+msgid "Old password"
+msgstr "Ancien mot de passe"
+
+#: seahub/auth/forms.py:237
+msgid "Your old password was entered incorrectly. Please enter it again."
+msgstr ""
+"Votre ancien mot de passe n'a pas été correctement saisi. Veuillez "
+"l'introduire à nouveau."
+
+#: seahub/auth/forms.py:250
+msgid "Password (again)"
+msgstr "Mot de passe (encore)"
+
+#: seahub/auth/forms.py:275
+#: seahub/base/management/commands/export_user_storage_report.py:41
+#: seahub/base/management/commands/export_users.py:43
+#: seahub/base/management/commands/export_users.py:47
+#: seahub/templates/registration/password_set_form.html:17
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+#: seahub/views/sysadmin.py:510
+msgid "Contact email"
+msgstr "E-mail de contact"
+
+#: seahub/auth/forms.py:281 seahub/forms.py:35 seahub/invitations/views.py:40
+#: seahub/invitations/views.py:55 seahub/organizations/forms.py:42
+#: seahub/organizations/forms.py:49
+msgid "A user with this email already exists."
+msgstr "Un utilisateur avec cette adresse e-mail existe déjà."
+
+#: seahub/auth/sms_login.py:134 seahub/auth/sms_login.py:182
+#: seahub/auth/sms_two_factor_auth.py:85 seahub/dingtalk/views.py:91
+#, python-format
+msgid "User %s not found or inactive."
+msgstr "L'utilisateur %s n'a pas été trouvé ou il est inactif."
+
+#: seahub/auth/sms_login.py:194 seahub/auth/views.py:190
+msgid "This account has been frozen due to too many failed login attempts."
+msgstr ""
+"Ce compte a été bloqué suite à de trop nombreuses tentatives de connexions."
+
+#: seahub/auth/views.py:324
+msgid "Logged out"
+msgstr "Déconnecté"
+
+#: seahub/auth/views.py:422
+msgid "Failed to send email, please contact administrator."
+msgstr "Échec de l'envoi de l'e-mail, veuillez contacter l'administrateur."
+
+#: seahub/auth/views.py:507
+msgid "Unable to change password."
+msgstr "Vous ne pouvez pas modifier le mot de passe."
+
+#: seahub/avatar/models.py:148 seahub/avatar/models.py:172
+#, python-format
+msgid "Avatar for %s"
+msgstr "Avatar pour %s"
+
+#: seahub/base/accounts.py:661
+#, python-format
+msgid "Account %(account)s froze on %(site)s."
+msgstr "Compte %(account)s bloqué sur %(site)s."
+
+#: seahub/base/decorators.py:57
+msgid "Files in this library can not be viewed online."
+msgstr ""
+"Les fichiers de cette bibliothèque ne peuvent pas être consultés en ligne."
+
+#: seahub/base/management/commands/createsuperuser.py:26
+msgid "Enter a valid e-mail address."
+msgstr "Entrez une adresse e-mail valide."
+
+#: seahub/base/management/commands/export_file_access_log.py:58
+#: seahub/notifications/templates/notifications/file_updates_email.html:17
+msgid "User"
+msgstr "Utilisateur"
+
+#: seahub/base/management/commands/export_file_access_log.py:58
+msgid "Type"
+msgstr "Type"
+
+#: seahub/base/management/commands/export_file_access_log.py:58
+msgid "IP"
+msgstr "IP"
+
+#: seahub/base/management/commands/export_file_access_log.py:58
+msgid "Device"
+msgstr "Appareil"
+
+#: seahub/base/management/commands/export_file_access_log.py:58
+msgid "Date"
+msgstr "Date"
+
+#: seahub/base/management/commands/export_file_access_log.py:59
+msgid "Library name"
+msgstr "Nom de la bibliothèque"
+
+#: seahub/base/management/commands/export_file_access_log.py:59
+msgid "Library ID"
+msgstr "ID de la bibliothèque"
+
+#: seahub/base/management/commands/export_file_access_log.py:59
+msgid "Library owner"
+msgstr "Propriétaire de la bibliothèque"
+
+#: seahub/base/management/commands/export_file_access_log.py:59
+msgid "File path"
+msgstr "Chemin"
+
+#: seahub/base/management/commands/export_file_access_log.py:85
+msgid "Deleted"
+msgstr "Supprimé"
+
+#: seahub/base/management/commands/export_file_access_log.py:88
+msgid "Anonymous user"
+msgstr "Utilisateur anonyme"
+
+#: seahub/base/management/commands/export_file_access_log.py:97
+msgid "file-access-logs"
+msgstr "Logs de l'accès aux fichiers"
+
+#: seahub/base/management/commands/export_user_storage_report.py:41
+#: seahub/base/management/commands/export_users.py:43
+#: seahub/base/management/commands/export_users.py:47
+#: seahub/invitations/templates/invitations/token_view.html:10
+#: seahub/templates/registration/login.html:45
+msgid "Email"
+msgstr "E-mail"
+
+#: seahub/base/management/commands/export_user_storage_report.py:41
+#: seahub/base/management/commands/export_users.py:43
+#: seahub/base/management/commands/export_users.py:47
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+#: seahub/views/sysadmin.py:449 seahub/views/sysadmin.py:510
+msgid "Name"
+msgstr "Nom"
+
+#: seahub/base/management/commands/export_user_storage_report.py:42
+#: seahub/base/management/commands/export_users.py:44
+#: seahub/base/management/commands/export_users.py:48
+#: seahub/views/sysadmin.py:311 seahub/views/sysadmin.py:315
+msgid "Space usage"
+msgstr "Espace utilisé"
+
+#: seahub/base/management/commands/export_user_storage_report.py:42
+#: seahub/base/management/commands/export_users.py:44
+#: seahub/base/management/commands/export_users.py:48
+#: seahub/views/sysadmin.py:311 seahub/views/sysadmin.py:315
+#: seahub/views/sysadmin.py:511
+msgid "Space quota"
+msgstr "Quota d'espace"
+
+#: seahub/base/management/commands/export_users.py:43
+#: seahub/base/management/commands/export_users.py:47
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+msgid "Status"
+msgstr "Statut"
+
+#: seahub/base/management/commands/export_users.py:43
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:511
+msgid "Role"
+msgstr "Rôle"
+
+#: seahub/base/management/commands/export_users.py:45
+#: seahub/base/management/commands/export_users.py:49
+#: seahub/views/sysadmin.py:312 seahub/views/sysadmin.py:316
+#: seahub/views/sysadmin.py:449
+msgid "Create at"
+msgstr "Créé le"
+
+#: seahub/base/management/commands/export_users.py:45
+#: seahub/base/management/commands/export_users.py:49
+#: seahub/views/sysadmin.py:312 seahub/views/sysadmin.py:316
+msgid "Last login"
+msgstr "Dernière connexion"
+
+#: seahub/base/management/commands/export_users.py:45
+#: seahub/base/management/commands/export_users.py:49
+#: seahub/templates/base.html:66 seahub/templates/base.html:69
+#: seahub/views/sysadmin.py:312 seahub/views/sysadmin.py:316
+msgid "Admin"
+msgstr "Administration"
+
+#: seahub/base/management/commands/export_users.py:45
+#: seahub/base/management/commands/export_users.py:49
+msgid "LDAP(imported)"
+msgstr "LDAP (importé)"
+
+#: seahub/base/management/commands/export_users.py:118
+#: seahub/views/sysadmin.py:376
+msgid "Active"
+msgstr "Actif"
+
+#: seahub/base/management/commands/export_users.py:120
+#: seahub/views/sysadmin.py:378
+msgid "Inactive"
+msgstr "Inactif"
+
+#: seahub/base/management/commands/export_users.py:126
+#: seahub/base/management/commands/export_users.py:127
+#: seahub/templates/base.html:118 seahub/views/sysadmin.py:385
+msgid "Yes"
+msgstr "Oui"
+
+#: seahub/base/management/commands/export_users.py:132
+#: seahub/invitations/models.py:18 seahub/invitations/models.py:46
+#: seahub/views/sysadmin.py:398
+msgid "Guest"
+msgstr "Invité"
+
+#: seahub/base/management/commands/export_users.py:134
+#: seahub/base/management/commands/export_users.py:138
+#: seahub/views/sysadmin.py:400 seahub/views/sysadmin.py:404
+msgid "Default"
+msgstr "Défaut"
+
+#: seahub/base/templatetags/seahub_tags.py:152
+#: seahub/base/templatetags/seahub_tags.py:188
+msgid "Just now"
+msgstr "À l'instant"
+
+#: seahub/base/templatetags/seahub_tags.py:163
+#, python-format
+msgid "%(days)d day ago"
+msgid_plural "%(days)d days ago"
+msgstr[0] "Il y a %(days)d jour"
+msgstr[1] "Il y a %(days)d jours"
+msgstr[2] "Il y a %(days)d jours"
+
+#: seahub/base/templatetags/seahub_tags.py:170
+#, python-format
+msgid "%(hours)d hour ago"
+msgid_plural "%(hours)d hours ago"
+msgstr[0] "Il y a %(hours)d heure"
+msgstr[1] "Il y a %(hours)d heures"
+msgstr[2] "Il y a %(hours)d heures"
+
+#: seahub/base/templatetags/seahub_tags.py:177
+#, python-format
+msgid "%(minutes)d minute ago"
+msgid_plural "%(minutes)d minutes ago"
+msgstr[0] "Il y a %(minutes)d minute"
+msgstr[1] "Il y a %(minutes)d minutes"
+msgstr[2] "Il y a %(minutes)d minutes"
+
+#: seahub/base/templatetags/seahub_tags.py:183
+#, python-format
+msgid "%(seconds)d second ago"
+msgid_plural "%(seconds)d seconds ago"
+msgstr[0] "Il y a %(seconds)d seconde"
+msgstr[1] "Il y a %(seconds)d secondes"
+msgstr[2] "Il y a %(seconds)d secondes"
+
+#: seahub/base/templatetags/seahub_tags.py:291
+#: seahub/base/templatetags/seahub_tags.py:303
+#, python-format
+msgid "%(size)d byte"
+msgid_plural "%(size)d bytes"
+msgstr[0] "%(size)d byte"
+msgstr[1] "%(size)d octets"
+msgstr[2] "%(size)d octets"
+
+#: seahub/base/templatetags/seahub_tags.py:305
+#, python-format
+msgid "%s KB"
+msgstr "%s Ko"
+
+#: seahub/base/templatetags/seahub_tags.py:307
+#, python-format
+msgid "%s MB"
+msgstr "%s Mo"
+
+#: seahub/base/templatetags/seahub_tags.py:309
+#, python-format
+msgid "%s GB"
+msgstr "%s Go"
+
+#: seahub/base/templatetags/seahub_tags.py:311
+#, python-format
+msgid "%s TB"
+msgstr "%s To"
+
+#: seahub/base/templatetags/seahub_tags.py:313
+#, python-format
+msgid "%s PB"
+msgstr "%s Po"
+
+#: seahub/dingtalk/views.py:32 seahub/dingtalk/views.py:53
+#: seahub/dingtalk/views.py:60 seahub/dingtalk/views.py:70
+#: seahub/dingtalk/views.py:88 seahub/dingtalk/views.py:130
+#: seahub/dingtalk/views.py:152 seahub/dingtalk/views.py:158
+#: seahub/dingtalk/views.py:168 seahub/dingtalk/views.py:202
+#: seahub/oauth/views.py:87 seahub/oauth/views.py:110
+#: seahub/oauth/views.py:180 seahub/oauth/views.py:196
+#: seahub/templates/remote_user/error.html:8
+msgid "Error, please contact administrator."
+msgstr "Erreur, veuillez contacter un administrateur."
+
+#: seahub/dtable/external_app_views.py:101
+#: seahub/dtable/external_app_views.py:218
+#: seahub/dtable/external_app_views.py:311
+#: seahub/dtable/external_app_views.py:721
+#: seahub/dtable/external_app_views.py:894
+msgid "App does not exist."
+msgstr "L'app n'existe pas."
+
+#: seahub/dtable/external_app_views.py:103
+#: seahub/dtable/external_app_views.py:154
+#: seahub/dtable/external_app_views.py:221
+#: seahub/dtable/external_app_views.py:314
+#: seahub/dtable/external_app_views.py:542
+#: seahub/dtable/external_app_views.py:724
+#: seahub/dtable/external_app_views.py:897
+msgid "App is not available."
+msgstr "L'app n'est pas disponible."
+
+#: seahub/dtable/external_app_views.py:106
+#: seahub/dtable/external_app_views.py:231
+#: seahub/dtable/external_app_views.py:340
+#: seahub/dtable/external_app_views.py:343
+#: seahub/dtable/external_app_views.py:578
+#: seahub/dtable/external_app_views.py:581
+#: seahub/dtable/external_app_views.py:729
+#: seahub/dtable/external_app_views.py:732
+#: seahub/dtable/external_app_views.py:918
+#: seahub/dtable/external_app_views.py:921 seahub/dtable/views.py:1225
+#: seahub/dtable/views.py:1385
+msgid "Base does not exist."
+msgstr "La base n'existe pas."
+
+#: seahub/dtable/external_app_views.py:152 seahub/dtable/views.py:1472
+msgid "The invite link does not exist"
+msgstr "Le lien d'invitation n'existe pas."
+
+#: seahub/dtable/external_app_views.py:156 seahub/dtable/views.py:1474
+msgid "The invite link has expired"
+msgstr "The lien d'invitation a expiré."
+
+#: seahub/dtable/external_app_views.py:281
+#: seahub/dtable/external_app_views.py:284
+msgid "App not found"
+msgstr "L'app n'a pas été trouvée."
+
+#: seahub/dtable/external_app_views.py:286 seahub/dtable/utils.py:1067
+#: seahub/dtable/utils.py:1106 seahub/dtable/utils.py:1131
+msgid "Password can't be empty"
+msgstr "Le mot de passe ne doit pas être vide."
+
+#: seahub/dtable/external_app_views.py:295 seahub/dtable/utils.py:1074
+#: seahub/dtable/utils.py:1113 seahub/dtable/utils.py:1138
+msgid "Please enter a correct password."
+msgstr "Entrez un mot de passe correct."
+
+#: seahub/dtable/external_app_views.py:368
+#, python-format
+msgid ""
+"You don't have permission to the application %(app_name)s on the SeaTable. "
+"Please contact the creator of the application for an invitation link."
+msgstr ""
+"Vous n'avez pas la permission pour accéder à l'application %(app_name)s sur "
+"ce serveur SeaTable. Veuillez contacter le créateur de l'application pour un"
+" lien d'invitation."
+
+#: seahub/dtable/external_app_views.py:539
+msgid "Page not found."
+msgstr "La page n'a pas été trouvée."
+
+#: seahub/dtable/external_app_views.py:589
+#, python-format
+msgid ""
+"You don't have permission to visit application %(app_name)s. Please contact "
+"the creator of the application for an invitation link."
+msgstr ""
+"Vous n'avez pas la permission de visiter l'application  %(app_name)s. "
+"Veuillez contacter le créateur de l'application pour obtenir un lien "
+"d'invitation."
+
+#: seahub/dtable/external_app_views.py:906
+msgid "Snapshot does not exist."
+msgstr "Le snapshot n'existe pas."
+
+#: seahub/dtable/views.py:173 seahub/dtable/views.py:384
+#: seahub/dtable/views.py:507 seahub/dtable/views.py:632
+#: seahub/dtable/views.py:693 seahub/dtable/views.py:1070
+#: seahub/dtable/views.py:1105 seahub/dtable/views.py:1511
+#: seahub/dtable/views.py:1553 seahub/dtable/views.py:1676
+#: seahub/dtable/views.py:1843 seahub/dtable/views.py:2401
+#: seahub/dtable/views.py:2426 seahub/dtable/views.py:2450
+#: seahub/seadoc/apis.py:491
+msgid "This base does not exist"
+msgstr "Cette base n'existe pas."
+
+#: seahub/dtable/views.py:650 seahub/dtable/views.py:700
+#: seahub/dtable/views.py:1635 seahub/dtable/views.py:2407
+#: seahub/dtable/views.py:2409 seahub/dtable/views.py:2432
+#: seahub/dtable/views.py:2434 seahub/dtable/views.py:2456
+#: seahub/dtable/views.py:2458
+msgid "Asset file does not exist"
+msgstr "Le fichier joint n'existe pas."
+
+#: seahub/dtable/views.py:802 seahub/dtable/views.py:2728
+msgid "Error when prepare Collabora Office file preview page."
+msgstr ""
+"Une erreur s'est produite lors de la prévisualisation du fichier dans "
+"Collabora Office."
+
+#: seahub/dtable/views.py:816 seahub/dtable/views.py:2739
+msgid "Error when prepare OnlyOffice file preview page."
+msgstr "La création de la page d'aperçu avec ONLYOFFICE a échoué."
+
+#: seahub/dtable/views.py:852 seahub/dtable/views.py:961
+msgid "You may not have permission to fill out this form"
+msgstr "Vous n'avez pas la permission pour ce formulaire."
+
+#: seahub/dtable/views.py:857 seahub/dtable/views.py:917
+#: seahub/dtable/views.py:966 seahub/dtable/views.py:1026
+msgid "Form from SeaTable"
+msgstr "Formulaire web de SeaTable"
+
+#: seahub/dtable/views.py:858 seahub/dtable/views.py:967
+msgid "This form requires login"
+msgstr "Ce formulaire web nécessite une connexion."
+
+#: seahub/dtable/views.py:859 seahub/dtable/views.py:968
+#: seahub/templates/dtable_collection_table_login.html:14
+#: seahub/templates/organizations/user_activation_email.html:15
+#: seahub/templates/registration/login.html:87
+#: seahub/templates/registration/multi_saml_sso.html:20
+#: seahub/templates/registration/password_reset_complete.html:8
+#: seahub/templates/sysadmin/user_activation_email.html:15
+#: seahub/templates/sysadmin/user_add_email.html:30
+#: seahub/templates/sysadmin/user_batch_add_email.html:21
+msgid "Log In"
+msgstr "Connexion"
+
+#: seahub/dtable/views.py:869 seahub/dtable/views.py:978
+msgid "Asset quota exceeded."
+msgstr "Vous dépassez la limite d'espace."
+
+#: seahub/dtable/views.py:872 seahub/dtable/views.py:981
+#: seahub/dtable/views.py:1158 seahub/dtable/views.py:1400
+msgid "Rows exceeded."
+msgstr "Vous dépassez la limite de lignes."
+
+#: seahub/dtable/views.py:887 seahub/dtable/views.py:996
+msgid "Form is not properly configured."
+msgstr "Le formulaire web n'est par correctement configuré."
+
+#: seahub/dtable/views.py:1051 seahub/dtable/views.py:1086
+#: seahub/dtable/views.py:1657 seahub/dtable/views.py:1749
+msgid "Share link has expired"
+msgstr "Le lien de partage a expiré."
+
+#: seahub/dtable/views.py:1215 seahub/dtable/views.py:1375
+msgid "Collection table does not exist."
+msgstr "Le formulaire collection n'existe pas."
+
+#: seahub/dtable/views.py:1246
+msgid "Collection table from SeaTable"
+msgstr "Formulaire collection de SeaTable"
+
+#: seahub/dtable/views.py:1504 seahub/dtable/views.py:1506
+msgid ""
+"The team admin has disabled sharing bases to external users outside the "
+"team."
+msgstr ""
+"L'administrateur de l'équipe a désactivé le partage des bases aux "
+"utilisateurs extérieur à l'équipe."
+
+#: seahub/dtable/views.py:1769
+msgid "DTable does not exist"
+msgstr "La base n'existe pas."
+
+#: seahub/dtable/views.py:2315
+msgid "This document does not exist"
+msgstr "Le document n'existe pas."
+
+#: seahub/dtable_apps/big_data_screen/apis.py:523
+#: seahub/dtable_apps/universal_app/admin_apis.py:855
+msgid "This custom domain is already in use and cannot be used for your app"
+msgstr ""
+"Cette URL personnalisée est déjà utilisée. Vous ne pouvez pas l'utiliser "
+"pour votre app."
+
+#: seahub/dtable_apps/universal_app/admin_apis.py:159
+#: seahub/dtable_apps/universal_app/admin_apis.py:1203
+#, python-format
+msgid "app user %s already exists."
+msgstr "L'utiliisateur app  %s existe déjà."
+
+#: seahub/dtable_apps/universal_app/admin_apis.py:421
+#: seahub/dtable_apps/universal_app/admin_apis.py:532
+#, python-format
+msgid "app role %s already exists."
+msgstr "Le role app %s existe déjà."
+
+#: seahub/dtable_apps/universal_app/admin_apis.py:1195
+#, python-format
+msgid "app role %s not found."
+msgstr "Rôle d'application %s n'a pas été trouvé."
+
+#: seahub/dtable_apps/universal_app/apis.py:3378
+#: seahub/dtable_apps/universal_app/apis.py:3554
+#: seahub/dtable_apps/universal_app/apis.py:5267
+msgid "Too many users use the statistic. Please try again later."
+msgstr ""
+"Trop d'utilisateurs utilisent les statistiques. Veuillez réessayer plus "
+"tard."
+
+#: seahub/dtable_apps/universal_app/apis.py:5985
+msgid "User has left the app and cannot participate in comments."
+msgstr ""
+"L'utilisateur a quitté l'application et ne peut pas participer aux "
+"commentaires."
+
+#: seahub/dtable_apps/workflow/apis.py:1206
+msgid "Canceled"
+msgstr "Annulé"
+
+#: seahub/dtable_apps/workflow/apis.py:1911
+msgid "Workflow not found"
+msgstr "Le workflow n'a pas été trouvé."
+
+#: seahub/dtable_apps/workflow/apis.py:1914
+msgid "Base not found"
+msgstr "La base n'a pas été trouvée."
+
+#: seahub/dtable_apps/workflow/apis.py:1974
+msgid "There is a workflow already in this table"
+msgstr "Il y a déjà un workflow dans ce tableau."
+
+#: seahub/dtable_apps/workflow/apis.py:1976
+#: seahub/dtable_apps/workflow/apis.py:2007
+msgid "Table not found"
+msgstr "Le tableau n'a pas été trouvé."
+
+#: seahub/dtable_apps/workflow/apis.py:1978
+#: seahub/dtable_apps/workflow/apis.py:2009
+msgid "State column not found or is not a single-select column"
+msgstr ""
+"La colonne d'état n'a pas été trouvée ou n'est pas une colonne de type "
+"sélection unique."
+
+#: seahub/dtable_apps/workflow/apis.py:1980
+#: seahub/dtable_apps/workflow/apis.py:2013
+msgid "Assignee column not found or is not a collaborator column"
+msgstr ""
+"La colonne pour la personne responsable n'a pas été trouvée ou n'est pas une"
+" colonne de type collaborateur."
+
+#: seahub/dtable_apps/workflow/apis.py:2003
+msgid "Forbidden to change workflow table and state column"
+msgstr ""
+"Il est impossible de changer le tableau workflow ou la colonne d'état."
+
+#: seahub/dtable_apps/workflow/apis.py:2011
+msgid "Forbidden to change assignee column"
+msgstr "Il est impossible to changer la colonne pour la personne responsable."
+
+#: seahub/dtable_apps/workflow/apis.py:2455
+#: seahub/dtable_apps/workflow/views.py:81
+msgid "Permission denied or you have operated"
+msgstr "L'accès a été refusé ou vous avez effectué"
+
+#: seahub/dtable_apps/workflow/apis.py:2866
+#, python-format
+msgid "group %s has been shared"
+msgstr "Le groupe %s a été partage."
+
+#: seahub/forms.py:59
+msgid "The two passwords didn't match."
+msgstr "Les deux mots de passe ne correspondent pas."
+
+#: seahub/forms.py:68
+msgid "Name can't be empty"
+msgstr "Le nom ne peut être vide"
+
+#: seahub/forms.py:69
+msgid "Name is too long (maximum is 255 characters)"
+msgstr "Le nom est trop long (le maximum est de 255 caractères)"
+
+#: seahub/forms.py:72
+msgid "Description can't be empty"
+msgstr "La description ne doit pas être vide"
+
+#: seahub/forms.py:73
+msgid "Description is too long (maximum is 100 characters)"
+msgstr "La description est trop longue (le maximum est de 100 caractères)"
+
+#: seahub/forms.py:83 seahub/forms.py:169
+#, python-format
+msgid "Name %s is not valid"
+msgstr "Le nom %s n'est pas valide"
+
+#: seahub/forms.py:97
+msgid "Argument missing"
+msgstr "Argument manquant"
+
+#: seahub/forms.py:111
+msgid "Oldname is required"
+msgstr "L'ancien nom est nécessaire"
+
+#: seahub/forms.py:114 seahub/forms.py:135
+msgid "It's too long."
+msgstr "C'est trop long."
+
+#: seahub/forms.py:115 seahub/forms.py:136
+msgid "It's required."
+msgstr "Nécessaire."
+
+#: seahub/forms.py:122 seahub/forms.py:143
+#, python-format
+msgid "Name \"%s\" is not valid"
+msgstr "Le nom \"%s\" n'est pas valide"
+
+#: seahub/forms.py:162
+msgid "Library name is required"
+msgstr "Le nom de la bibliothèque est nécessaire"
+
+#: seahub/forms.py:164
+msgid "Please enter a number"
+msgstr "Veuillez entrer un numéro"
+
+#: seahub/group/error_msg.py:8
+msgid "The group has already created"
+msgstr "Le groupe a déjà été créé"
+
+#: seahub/group/error_msg.py:9
+msgid "Failed to create group"
+msgstr "Impossible de créer le groupe"
+
+#: seahub/group/error_msg.py:12
+msgid "The group has already created in this org."
+msgstr "Ce groupe a déjà été créé dans cette organisation."
+
+#: seahub/group/error_msg.py:13
+msgid "Failed to create org group."
+msgstr "Impossible de créer le groupe de l'organisation."
+
+#: seahub/group/error_msg.py:16
+msgid "Permission error: only group staff can add member"
+msgstr ""
+"Erreur de permission : seuls les administrateurs du groupe peuvent ajouter "
+"des membres"
+
+#: seahub/group/error_msg.py:17 seahub/group/error_msg.py:23
+msgid "Group does not exist"
+msgstr "Le groupe n'existe pas"
+
+#: seahub/group/error_msg.py:18
+msgid "Group is full"
+msgstr "Le groupe est complet"
+
+#: seahub/group/error_msg.py:19
+msgid "Failed to add member to group"
+msgstr "Impossible d'ajouter des membres au groupe"
+
+#: seahub/group/error_msg.py:22
+msgid "Only group staff can remove member"
+msgstr "Seuls les administrateurs du groupe peuvent supprimer un membre"
+
+#: seahub/group/error_msg.py:24
+msgid "Can not remove myself"
+msgstr "Impossible de se supprimer soi-même"
+
+#: seahub/group/views.py:119
+msgid "Permission denied"
+msgstr "Autorisation refusée"
+
+#: seahub/group/views.py:164
+#, python-format
+msgid "You are invited to join a group on %s"
+msgstr "Vous êtes invité à joindre le groupe sur %s"
+
+#: seahub/group/views.py:178
+msgid "Group invite link does not exist"
+msgstr "Le lien d'invitation pour le groupe n'existe pas."
+
+#: seahub/group/views.py:181
+msgid "Forbidden invite user to department group"
+msgstr ""
+"Il est impossible d'inviter l'utilisateur dans le groupe du départment."
+
+#: seahub/group/views.py:194 seahub/group/views.py:198
+msgid "You cannot join this group"
+msgstr "Vous ne pouvez pas rejoindre ce groupe."
+
+#: seahub/group/views.py:201
+msgid "Group invite link broken"
+msgstr "Le lien d'invitation pour le groupe est défectueux."
+
+#: seahub/invitations/models.py:100
+#, python-format
+msgid "%(user)s invited you to join %(site_name)s."
+msgstr "%(user)s vous invite à rejoindre %(site_name)s."
+
+#: seahub/invitations/templates/invitations/invitation_email.html:9
+#: seahub/invitations/templates/invitations/invitation_revoke_email.html:9
+#: seahub/notifications/templates/notifications/dtable_notice_email.html:7
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:11
+#: seahub/notifications/templates/notifications/file_updates_email.html:7
+#: seahub/notifications/templates/notifications/notice_email.html:7
+#: seahub/notifications/templates/notifications/notify_virus.html:10
+#: seahub/notifications/templates/notifications/notify_virus.html:17
+#: seahub/templates/organizations/user_activation_email.html:9
+#: seahub/templates/profile/update_contact_email.html:9
+#: seahub/templates/registration/activation_email.html:9
+#: seahub/templates/registration/password_reset_email.html:9
+#: seahub/templates/sysadmin/user_activation_email.html:9
+#: seahub/templates/sysadmin/user_add_email.html:9
+#: seahub/templates/sysadmin/user_batch_add_email.html:9
+#: seahub/templates/sysadmin/user_freeze_email.html:9
+#: seahub/templates/sysadmin/user_reset_email.html:9
+msgid "Hi,"
+msgstr "Bonjour,"
+
+#: seahub/invitations/templates/invitations/invitation_email.html:12
+#, python-format
+msgid ""
+"%(inviter)s invited you to join %(site_name)s. Please click the link below:"
+msgstr ""
+"%(inviter)s vous invite à rejoindre %(site_name)s. Veuillez cliquer sur le "
+"lien ci-dessous :"
+
+#: seahub/invitations/templates/invitations/invitation_revoke_email.html:12
+#, python-format
+msgid "%(inviter)s revoke your access to %(site_name)s."
+msgstr "%(inviter)s a revoqué votre accès à %(site_name)s."
+
+#: seahub/invitations/templates/invitations/token_view.html:4
+msgid "Create account"
+msgstr "Créer un compte"
+
+#: seahub/invitations/templates/invitations/token_view.html:8
+msgid "Set your password"
+msgstr "Définir un mot de passe"
+
+#: seahub/invitations/templates/invitations/token_view.html:17
+#: seahub/notifications/templates/notifications/notification_list.html:15
+#: seahub/templates/app_access_validation.html:49
+#: seahub/templates/base_access_validation.html:18
+#: seahub/templates/base_snapshot_access_validation.html:19
+#: seahub/templates/external_link_access_validation.html:17
+#: seahub/templates/organizations/org_register.html:49
+#: seahub/templates/organizations/sms_org_register.html:180
+#: seahub/templates/registration/password_change_form.html:25
+#: seahub/templates/registration/password_reset_confirm.html:19
+#: seahub/templates/registration/password_reset_form.html:40
+#: seahub/templates/registration/password_set_form.html:28
+#: seahub/templates/share_access_validation.html:17
+msgid "Submit"
+msgstr "Soumettre"
+
+#: seahub/invitations/templates/invitations/token_view.html:26
+#: seahub/notifications/templates/notifications/notification_list.html:59
+msgid "It is required."
+msgstr "Cela est nécessaire."
+
+#: seahub/notifications/management/commands/notify_admins_on_virus.py:54
+#, python-format
+msgid "Virus detected on %s"
+msgstr "Un virus a été détecté dans %s"
+
+#: seahub/notifications/management/commands/send_dtable_updates.py:187
+#, python-format
+msgid "New table updates on %s"
+msgstr "Nouvelles mises à jour sur tableau %s"
+
+#: seahub/notifications/management/commands/send_email_notices.py:177
+#, python-format
+msgid "New notice on %s"
+msgstr "Nouvelle notification sur %s"
+
+#: seahub/notifications/management/commands/send_email_notices.py:214
+#, python-format
+msgid "New table notifications on %s"
+msgstr "Nouvelles notifications de tableau sur %s"
+
+#: seahub/notifications/management/commands/send_email_notices.py:251
+#, python-format
+msgid "New app notifications on %s"
+msgstr "Nouvelles notifications d'app sur %s"
+
+#: seahub/notifications/management/commands/send_file_updates.py:109
+msgid "Created library"
+msgstr "Bibliothèque créée"
+
+#: seahub/notifications/management/commands/send_file_updates.py:112
+msgid "Renamed library"
+msgstr "Bibliothèque renommée"
+
+#: seahub/notifications/management/commands/send_file_updates.py:115
+msgid "Deleted library"
+msgstr "Supprimer une bibliothèque"
+
+#: seahub/notifications/management/commands/send_file_updates.py:118
+msgid "Restored library"
+msgstr "Bibliothèque restaurée"
+
+#: seahub/notifications/management/commands/send_file_updates.py:122
+msgid "Removed all items from trash."
+msgstr "Supprimer tous les éléments de la corbeille."
+
+#: seahub/notifications/management/commands/send_file_updates.py:124
+#, python-format
+msgid "Removed items older than %s days from trash."
+msgstr "Supprimer les éléments de la corbeille de plus de %s jours."
+
+#: seahub/notifications/management/commands/send_file_updates.py:132
+msgid "Created file"
+msgstr "Fichier créé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:135
+msgid "Deleted file"
+msgstr "Fichier supprimé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:138
+msgid "Restored file"
+msgstr "Fichier restauré"
+
+#: seahub/notifications/management/commands/send_file_updates.py:141
+msgid "Renamed file"
+msgstr "Fichier renommé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:147
+msgid "Moved file"
+msgstr "Fichier déplacé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:153
+msgid "Updated file"
+msgstr "Fichier mis à jour"
+
+#: seahub/notifications/management/commands/send_file_updates.py:160
+msgid "Created folder"
+msgstr "Dossier créé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:163
+msgid "Deleted folder"
+msgstr "Dossier supprimé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:166
+msgid "Restored folder"
+msgstr "Dossier restauré"
+
+#: seahub/notifications/management/commands/send_file_updates.py:169
+msgid "Renamed folder"
+msgstr "Dossier renommé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:174
+msgid "Moved folder"
+msgstr "Dossier déplacé"
+
+#: seahub/notifications/management/commands/send_file_updates.py:268
+#, python-format
+msgid "New file updates on %s"
+msgstr "Nouvelles mises à jour fichier sur %s"
+
+#: seahub/notifications/management/commands/send_instant_notices.py:196
+#: seahub/notifications/management/commands/send_instant_notices.py:289
+#: seahub/notifications/management/commands/send_instant_notices.py:381
+#: seahub/notifications/templates/notifications/dtable_notice_email.html:9
+#: seahub/notifications/templates/notifications/notice_email.html:9
+#, python-format
+msgid ""
+"\n"
+"You've got %(num)s new notices on %(site_name)s:\n"
+msgstr ""
+"\n"
+"Vous avez eu %(num)s nouvelles notifications sur %(site_name)s:\n"
+
+#: seahub/notifications/models.py:426
+#, python-format
+msgid "User %(group_staff)s has added you to group %(group_name)s"
+msgstr "L'utilisateur %(group_staff)s vous a ajouté au groupe %(group_name)s."
+
+#: seahub/notifications/models.py:447
+#, python-format
+msgid ""
+"Guest %(user)s accepted your <a "
+"href=\"%(url_base)s%(inv_url)s\">invitation</a> at %(time)s."
+msgstr ""
+"L'invité %(user)s a accepté votre <a "
+"href=\"%(url_base)s%(inv_url)s\">invitation</a> à %(time)s."
+
+#: seahub/notifications/models.py:473
+#, python-format
+msgid ""
+"%(share_from)s has shared a base named <a "
+"href='%(table_link)s'>%(table_name)s</a> to you."
+msgstr ""
+"L'utilisateur %(share_from)s a partagé la base <a "
+"href='%(table_link)s'>%(table_name)s</a> avec vous."
+
+#: seahub/notifications/models.py:503
+#, python-format
+msgid "%(submit_user)s has submitted form %(form_name)s."
+msgstr ""
+"L'utilisateur %(submit_user)s a soumis le formulaire web%(form_name)s."
+
+#: seahub/notifications/models.py:509 seahub/notifications/utils.py:503
+#: seahub/notifications/utils.py:514 seahub/notifications/utils.py:522
+#: seahub/notifications/utils.py:532 seahub/notifications/utils.py:548
+#: seahub/notifications/utils.py:554
+msgid "Details"
+msgstr "Détails"
+
+#: seahub/notifications/models.py:530
+#, python-format
+msgid "You have a new %s task to handle."
+msgstr "Vous avez une  nouvelle %s tâche à accomplir. "
+
+#: seahub/notifications/models.py:545
+#, python-format
+msgid ""
+"%(workflow_name)s task submitted by you is finished. %(finish_task_message)s"
+msgstr ""
+"La tâche que vous avez soumise dans le workflow %(workflow_name)s est "
+"terminée. %(finish_task_message)s"
+
+#: seahub/notifications/models.py:568
+#, python-format
+msgid "You have a %s task that was dismissed. Resubmission is required."
+msgstr "Vous avez une %s tâche qui a été rejetée. Il faut le resoumettre."
+
+#: seahub/notifications/models.py:588
+msgid "day"
+msgstr "jour"
+
+#: seahub/notifications/models.py:588
+msgid "hour"
+msgstr "heure"
+
+#: seahub/notifications/models.py:590
+msgid "days"
+msgstr "jours"
+
+#: seahub/notifications/models.py:590
+msgid "hours"
+msgstr "heures"
+
+#: seahub/notifications/models.py:591
+#, python-format
+msgid ""
+"You have a %(workflow_name)s task unprocessed for more than %(expire_str)s."
+msgstr ""
+"Dans le workflow %(workflow_name)s, il y a une tâche qui n'a pas été traitée"
+" depuis plus de %(expire_str)s."
+
+#: seahub/notifications/models.py:604
+#, python-format
+msgid "Your service period will end in %(days)s days."
+msgstr "La période de licence arrivera à échéance dans %(days)s jours."
+
+#: seahub/notifications/models.py:607
+#, python-format
+msgid "Your license will expire in %(days)s days."
+msgstr "Votre licence expirera dans  %(days)s jours."
+
+#: seahub/notifications/templates/notifications/dtable_notice_email.html:17
+#: seahub/notifications/templates/notifications/notice_email.html:17
+#: seahub/notifications/templates/notifications/user_notification_list.html:22
+msgid "Message"
+msgstr "Message"
+
+#: seahub/notifications/templates/notifications/dtable_notice_email.html:18
+#: seahub/notifications/templates/notifications/file_updates_email.html:20
+#: seahub/notifications/templates/notifications/notice_email.html:18
+#: seahub/notifications/templates/notifications/user_notification_list.html:23
+msgid "Time"
+msgstr "Heure"
+
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:13
+#, python-format
+msgid ""
+"\n"
+"You've got %(num)s table updates on %(site_name)s:\n"
+msgstr ""
+"\n"
+"Vous avez eu %(num)s mises à jours de tableau sur%(site_name)s:\n"
+
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:37
+#, python-format
+msgid ""
+"\n"
+"inserted %(count)s row\n"
+msgid_plural ""
+"\n"
+"inserted %(count)s rows\n"
+msgstr[0] ""
+"\n"
+"%(count)s ligne insérée\n"
+msgstr[1] ""
+"\n"
+"%(count)s lignes insérées\n"
+msgstr[2] ""
+"\n"
+"%(count)s lignes insérées\n"
+
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:47
+#, python-format
+msgid ""
+"\n"
+"modified %(count)s row\n"
+msgid_plural ""
+"\n"
+"modified %(count)s rows\n"
+msgstr[0] ""
+"\n"
+"%(count)s ligne modifiée\n"
+msgstr[1] ""
+"\n"
+"%(count)s lignes modifiées\n"
+msgstr[2] ""
+"\n"
+"%(count)s lignes modifiées\n"
+
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:57
+#, python-format
+msgid ""
+"\n"
+"deleted %(count)s row\n"
+msgid_plural ""
+"\n"
+"deleted %(count)s rows\n"
+msgstr[0] ""
+"\n"
+"%(count)s ligne supprimée\n"
+msgstr[1] ""
+"\n"
+"%(count)s lignes supprimées\n"
+msgstr[2] ""
+"\n"
+"%(count)s lignes supprimées\n"
+
+#: seahub/notifications/templates/notifications/dtable_updates_email.html:72
+msgid "View details"
+msgstr "Voir détails"
+
+#: seahub/notifications/templates/notifications/file_updates_email.html:9
+#, python-format
+msgid ""
+"\n"
+"You've got %(num)s file updates on %(site_name)s:\n"
+msgstr ""
+"\n"
+"Vous avez eu %(num)s mises à jours de fichier sur %(site_name)s:\n"
+
+#: seahub/notifications/templates/notifications/file_updates_email.html:18
+msgid "Operation"
+msgstr "Opération"
+
+#: seahub/notifications/templates/notifications/file_updates_email.html:19
+msgid "File"
+msgstr "Fichier"
+
+#: seahub/notifications/templates/notifications/file_updates_email.html:19
+msgid "Library"
+msgstr "Bibliothèque"
+
+#: seahub/notifications/templates/notifications/notice_email.html:34
+msgid "Go check out at the following page:"
+msgstr "Veuillez vérifier sur la page suivante :"
+
+#: seahub/notifications/templates/notifications/notice_msg/folder_share_msg.html:1
+#, python-format
+msgid ""
+"%(user)s has shared a folder named <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> to you."
+msgstr ""
+"%(user)s à partagé avec vous un dossier nommé <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a>."
+
+#: seahub/notifications/templates/notifications/notice_msg/folder_share_to_group_msg.html:1
+#, python-format
+msgid ""
+"%(user)s has shared a folder named <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> to group <a "
+"href=\"%(url_base)s%(group_url)s\">%(group_name)s</a>."
+msgstr ""
+"%(user)s a partagé un dossier nommé <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> avec le groupe <a "
+"href=\"%(url_base)s%(group_url)s\">%(group_name)s</a>."
+
+#: seahub/notifications/templates/notifications/notice_msg/repo_share_msg.html:1
+#, python-format
+msgid ""
+"%(user)s has shared a library named <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> to you."
+msgstr ""
+"%(user)s a partagé une bibliothèque nommée <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> avec vous."
+
+#: seahub/notifications/templates/notifications/notice_msg/repo_share_to_group_msg.html:1
+#, python-format
+msgid ""
+"%(user)s has shared a library named <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> to group <a "
+"href=\"%(url_base)s%(group_url)s\">%(group_name)s</a>."
+msgstr ""
+"%(user)s a partagé une bibliothèque nommée <a "
+"href=\"%(url_base)s%(lib_url)s\">%(lib_name)s</a> au groupe <a "
+"href=\"%(url_base)s%(group_url)s\">%(group_name)s</a>."
+
+#: seahub/notifications/templates/notifications/notification_list.html:8
+msgid "All notifications"
+msgstr "Toutes les notifications"
+
+#: seahub/notifications/templates/notifications/notification_list.html:9
+#: seahub/notifications/templates/notifications/notification_list.html:12
+msgid "Add new notification"
+msgstr "Ajouter une nouvelle notification"
+
+#: seahub/notifications/templates/notifications/notification_list.html:22
+msgid "Notification detail"
+msgstr "Détail de la notification"
+
+#: seahub/notifications/templates/notifications/notification_list.html:23
+msgid "Operations"
+msgstr "Actions"
+
+#: seahub/notifications/templates/notifications/notification_list.html:31
+msgid "(current notification)"
+msgstr "(notification actuelle)"
+
+#: seahub/notifications/templates/notifications/notification_list.html:35
+msgid "Set to current"
+msgstr "Activer"
+
+#: seahub/notifications/templates/notifications/notification_list.html:37
+msgid "Delete"
+msgstr "Supprimer"
+
+#: seahub/notifications/templates/notifications/notification_list.html:44
+msgid "Empty"
+msgstr "Vide"
+
+#: seahub/notifications/templates/notifications/notification_list.html:64
+msgid "Delete notification"
+msgstr "Supprimer la notification"
+
+#: seahub/notifications/templates/notifications/notification_list.html:65
+#, python-format
+msgid "Are you sure you want to delete %s ?"
+msgstr "Êtes-vous sûr de supprimer %s ?"
+
+#: seahub/notifications/templates/notifications/notify_virus.html:13
+#, python-format
+msgid ""
+"Virus detected in file <a href=\"%(url_base)s%(file_url)s\" "
+"target=\"_blank\">%(file_name)s</a> during regular scanning."
+msgstr ""
+"Un virus a été détecté dans le fichier <a href=\"%(url_base)s%(file_url)s\" "
+"target=\"_blank\">%(file_name)s</a> pendant le scan de routine."
+
+#: seahub/notifications/templates/notifications/notify_virus.html:20
+msgid "Virus is detected on regular scanning. Please check the report at:"
+msgstr ""
+"Un virus a été détecté par un scan simple. Veuillez vérifier le rapport sur "
+":"
+
+#: seahub/notifications/templates/notifications/user_notification_list.html:4
+#: seahub/notifications/templates/notifications/user_notification_list.html:9
+msgid "Notices"
+msgstr "Notifications"
+
+#: seahub/notifications/templates/notifications/user_notification_list.html:12
+msgid "Mark all read"
+msgstr "Tout marquer comme lu"
+
+#: seahub/notifications/templates/notifications/user_notification_list.html:13
+msgid "Clear"
+msgstr "Effacer"
+
+#: seahub/notifications/templates/notifications/user_notification_list.html:33
+msgid "More"
+msgstr "Plus"
+
+#: seahub/notifications/templates/notifications/user_notification_list.html:91
+msgid "Failed. Please check the network."
+msgstr "Échec. Veuillez vérifier le réseau."
+
+#: seahub/notifications/utils.py:496
+#, python-format
+msgid "%(author)s added a new comment in base %(base_name)s"
+msgstr ""
+"%(author)s a ajouté un nouveau commentaire dans la base  %(base_name)s."
+
+#: seahub/notifications/utils.py:506
+#, python-format
+msgid "Rule %(rule_name)s has been triggered"
+msgstr "La règle %(rule_name)s a été déclenchée."
+
+#: seahub/notifications/utils.py:517
+#, python-format
+msgid "You are added as a row collaborator in base %(table_name)s"
+msgstr ""
+"Vous avez été ajouté comme collaborateur de ligne dans la base "
+"%(table_name)s."
+
+#: seahub/notifications/utils.py:525
+#, python-format
+msgid "Workflow %(workflow_name)s has been triggered"
+msgstr "Le workflow %(workflow_name)s a été déclenchée."
+
+#: seahub/notifications/views.py:102
+msgid "Successfully cleared all notices."
+msgstr "Effacement de toutes les notifications avec succès."
+
+#: seahub/oauth/views.py:156
+msgid ""
+"Error, please contact administrator: token might be expired or security code"
+" is not valid."
+msgstr ""
+"Erreur! Veuillez contacter votre administrateur. Le token peut avoir expiré "
+"ou le code de sécurité n'est pas valide."
+
+#: seahub/oauth/views.py:199 seahub/org_dingtalk/views.py:358
+#: seahub/org_work_weixin/views.py:426 seahub/org_work_weixin/views.py:702
+#: seahub/templates/remote_user/create_unknown_user_false.html:8
+#: seahub/weixin/views.py:193 seahub/work_weixin/views.py:116
+msgid ""
+"Error, new user registration is not allowed, please contact administrator."
+msgstr ""
+"Erreur, l'enregistrement d'un nouvel utilisateur n'est pas autorisé, "
+"veuillez contacter l'administrateur."
+
+#: seahub/oauth/views.py:222
+msgid ""
+"Error, please contact administrator: contact_email must be unique and might "
+"already be in use."
+msgstr ""
+"Erreur! Veuillez contacter votre administrateur. L'adresse e-mail doit être "
+"unique et peut déjà être utilisée."
+
+#: seahub/oauth/views.py:240 seahub/org_work_weixin/views.py:705
+#: seahub/templates/remote_user/not_active.html:6
+#: seahub/templates/shibboleth/complete.html:8 seahub/work_weixin/views.py:142
+msgid ""
+"Your account is created successfully, please wait for administrator to "
+"activate your account."
+msgstr ""
+"Votre compte a bien été créé avec succès, veuillez patienter le temps qu'un "
+"administrateur active votre compte."
+
+#: seahub/oauth/views.py:290
+msgid "Request not found"
+msgstr "La demande n'a pas été trouvée."
+
+#: seahub/organizations/forms.py:39
+msgid "Email address is not valid"
+msgstr "L'adresse e-mail n'est pas valide"
+
+#: seahub/profile/templates/profile/set_profile_react.html:5
+#: seahub/templates/base.html:60
+msgid "Personal settings"
+msgstr "Paramètres personnels"
+
+#: seahub/profile/templates/profile/set_profile_react.html:24
+msgctxt "true name"
+msgid "Name:"
+msgstr "Nom : "
+
+#: seahub/profile/templates/profile/set_profile_react.html:33
+#: seahub/templates/registration/password_set_form.html:4
+#: seahub/templates/registration/password_set_form.html:13
+msgid "Set password"
+msgstr "Définir un mot de passe"
+
+#: seahub/profile/templates/profile/set_profile_react.html:33
+msgid "Update"
+msgstr "Mettre à jour"
+
+#: seahub/profile/templates/profile/user_profile.html:4
+msgid "Profile"
+msgstr "Profil"
+
+#: seahub/profile/views.py:258
+msgid "Demo account can not be deleted."
+msgstr "Le compte de démo ne peut pas être supprimé."
+
+#: seahub/profile/views.py:289
+msgid "The email address has already been bound to another account."
+msgstr "Cet e-mail est déjà associée à un autre compte."
+
+#: seahub/profile/views.py:291 seahub/profile/views.py:302
+msgid "Back to SeaTable"
+msgstr "Retour vers SeaTable"
+
+#: seahub/profile/views.py:300
+msgid "Contact email has been updated."
+msgstr "L'adresse e-mail de contact a été mise à jour."
+
+#: seahub/saml/utils.py:51
+msgid "SAML login relevant settings invalid."
+msgstr "La configuration SAML est invalide."
+
+#: seahub/saml/views.py:109 seahub/saml/views.py:113 seahub/saml/views.py:133
+#: seahub/saml/views.py:151 seahub/saml/views.py:155 seahub/saml/views.py:193
+#: seahub/saml/views.py:305 seahub/saml/views.py:438 seahub/saml/views.py:442
+#: seahub/saml/views.py:471 seahub/saml/views.py:495 seahub/saml/views.py:499
+#: seahub/saml/views.py:503 seahub/saml/views.py:551 seahub/saml/views.py:555
+#: seahub/saml/views.py:559
+msgid "Internal server error. Please contact system administrator."
+msgstr "Erreur interne du serveur. Veuillez contacter l'administrateur."
+
+#: seahub/saml/views.py:129 seahub/saml/views.py:189 seahub/saml/views.py:467
+#: seahub/saml/views.py:524
+msgid ""
+"Login failed: ADFS/SAML service error. Please report to your organization "
+"(company) administrator."
+msgstr ""
+"La connextion a échoué: Error du service ADFS/SAML. Veuillez contacter "
+"l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:172 seahub/saml/views.py:227 seahub/saml/views.py:242
+#: seahub/saml/views.py:259 seahub/saml/views.py:274 seahub/saml/views.py:299
+#: seahub/saml/views.py:337
+msgid ""
+"Login failed: Bad response from ADFS/SAML service. Please report to your "
+"organization (company) administrator."
+msgstr ""
+"La connexion a échoué: Mauvaise réponse du service ADFS/SAML. Veuillez "
+"contacter l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:213
+msgid ""
+"Login failed: Bad response from ADFS/SAML service. Please make sure your SSO"
+" account has verified email and retry later, or report to your organization "
+"(company) administrator."
+msgstr ""
+"La connexion a échoué: Mauvaise réponse du service ADFS/SAML. Veuillez vous "
+"assurer que votre compte SSO dispose d'un adresse e-mail vérifié et "
+"réessayez plus tard, ou contacter l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:282
+msgid "Failed to bind SAML, please login first."
+msgstr "La connexion SAML a échoué. Veuillez d'abord vous connecter."
+
+#: seahub/saml/views.py:347
+msgid ""
+"This email address is already used by an existing account.You can connect "
+"both accounts from the personal settings of your local account."
+msgstr ""
+"Cette adresse e-mail est déjà utilisée par un compte utilisateur existant. "
+"Vous pouvez lier les deux comptes dans les paramètres personnels du compte "
+"local."
+
+#: seahub/saml/views.py:375
+msgid ""
+"Failed to create new user: the number of users exceeds the organization "
+"quota. Please report to your organization (company) administrator."
+msgstr ""
+"Erreur interne du serveur: Le nombre d'utilisateurs dépasse la limite. "
+"Veuillez contacter l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:392
+msgid ""
+"Login failed: failed to create user. Please report to your organization "
+"(company) administrator."
+msgstr ""
+"La connexion a échoué: L'utilisateur n'a pas pu être créé. Veuillez "
+"contacter l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:417
+msgid ""
+"Login failed: user is deactivated. Please report to your organization "
+"(company) administrator."
+msgstr ""
+"La connexion a échoué: L'utilisateur est inactif. Veuillez contacter "
+"l'administrateur de votre organisation."
+
+#: seahub/saml/views.py:528
+msgid "Failed to get ADFS/SAML config, please check your ADFS/SAML service."
+msgstr ""
+"La configuration ADFS/SAML n'a pas pu être obtenu. Veuillez vérifier votre "
+"service ADFS/SAML."
+
+#: seahub/seadoc/apis.py:303
+msgid "Out of quota."
+msgstr "Vous dépassez votre quota."
+
+#: seahub/templates/404.html:6
+msgid "Sorry, but the requested page could not be found."
+msgstr "Désolé, mais la page demandée est introuvable."
+
+#: seahub/templates/app_access_validation.html:31
+msgid "Password required"
+msgstr "Un mot de passe est nécessaire."
+
+#: seahub/templates/app_access_validation.html:33
+msgid "This app is password-protected. Enter password to proceed."
+msgstr ""
+"Cette app est protégée par un mot de passe. Veuillez entrer le mot de passe "
+"pour continuer."
+
+#: seahub/templates/app_access_validation.html:69
+#: seahub/templates/organizations/sms_org_register.html:239
+#: seahub/templates/registration/login.html:259
+#: seahub/templates/registration/password_change_form.html:53
+#: seahub/templates/registration/password_set_form.html:51
+#: seahub/templates/registration/registration_form.html:160
+#: seahub/templates/registration/sms_registration_form.html:204
+#: seahub/templates/sysadmin/sudo_mode.html:59
+msgid "Password cannot be blank"
+msgstr "Le mot de passe ne peut pas être vide"
+
+#: seahub/templates/base.html:11 seahub/templates/base_clean.html:11
+#: seahub/templates/base_for_external_app.html:11
+#: seahub/templates/base_for_react.html:11
+msgid "SeaTable - As simple as Excel, with the power of a database"
+msgstr "SeaTable - simple like a spreadsheet Excel, powerful like a database"
+
+#: seahub/templates/base.html:13 seahub/templates/base.html:22
+#: seahub/templates/base_for_external_app.html:22
+#: seahub/templates/base_for_page_design.html:17
+#: seahub/templates/base_for_react.html:13
+#: seahub/templates/base_for_react.html:23
+#: seahub/templates/dtable_collection_table_react.html:15
+#: seahub/templates/dtable_external_link_view_react.html:20
+#: seahub/templates/dtable_file_view_react.html:17
+#: seahub/templates/dtable_snapshot_view_react.html:15
+#: seahub/templates/react_dtable.html:17
+msgid "File, Collaboration, Team, Organization"
+msgstr "Fichier, Collaboration, Equipe, Organisation"
+
+#: seahub/templates/base.html:39
+msgid "Side nav menu"
+msgstr "Menu de navigation sur le côté"
+
+#: seahub/templates/base.html:46 seahub/templates/base.html:49
+msgid "View profile and more"
+msgstr "Voir le profil et plus"
+
+#: seahub/templates/base.html:63
+msgid "System admin"
+msgstr "Administration système"
+
+#: seahub/templates/base.html:66
+msgid "Team admin"
+msgstr "Administration d'équipe"
+
+#: seahub/templates/base.html:72
+#: seahub/templates/registration/logged_out.html:4
+#: seahub/templates/registration/logout.html:4
+msgid "Log out"
+msgstr "Déconnexion"
+
+#: seahub/templates/base.html:119 seahub/views/sysadmin.py:391
+msgid "No"
+msgstr "Non"
+
+#: seahub/templates/base_access_validation.html:3
+#: seahub/templates/base_snapshot_access_validation.html:3
+msgid "Base"
+msgstr "Base"
+
+#: seahub/templates/base_access_validation.html:6
+#: seahub/templates/base_snapshot_access_validation.html:6
+#: seahub/templates/external_link_access_validation.html:6
+#: seahub/templates/share_access_validation.html:6
+msgid "This base is password protected. Enter password to view it."
+msgstr ""
+"Cette base est protégée par un mot de passe. Veuillez entrer le mot de passe"
+" pour continuer."
+
+#: seahub/templates/base_clean.html:13
+#: seahub/templates/dtable_edit_collection_table_react.html:10
+#: seahub/templates/dtable_edit_form_view_react.html:10
+#: seahub/templates/dtable_embed.html:10
+#: seahub/templates/dtable_external_app_edit_react.html:9
+#: seahub/templates/dtable_external_app_snapshot_view_react.html:9
+#: seahub/templates/dtable_external_app_view_react.html:9
+#: seahub/templates/dtable_page_design_react.html:10
+#: seahub/templates/dtable_row_page_design_react.html:10
+#: seahub/templates/dtable_share_form_view_react.html:10
+#: seahub/templates/dtable_shared_row_view_react.html:10
+#: seahub/templates/dtable_workflow_edit_react.html:10
+#: seahub/templates/dtable_workflow_submitted_react.html:10
+#: seahub/templates/dtable_workflow_transfer_react.html:10
+#: seahub/templates/invite_poster.html:9
+msgid "File Collaboration Team Organization"
+msgstr "Organisation des fichiers de collaboration d'équipe"
+
+#: seahub/templates/choose_register.html:3
+#: seahub/templates/choose_register.html:8
+#: seahub/templates/organizations/org_register.html:3
+#: seahub/templates/organizations/org_register.html:21
+#: seahub/templates/organizations/sms_org_register.html:3
+#: seahub/templates/organizations/sms_org_register.html:139
+#: seahub/templates/registration/login.html:158
+#: seahub/templates/registration/registration_form.html:3
+#: seahub/templates/registration/registration_form.html:30
+#: seahub/templates/registration/sms_registration_form.html:3
+#: seahub/templates/registration/sms_registration_form.html:36
+msgid "Signup"
+msgstr "S'inscrire"
+
+#: seahub/templates/dtable_collection_table_login.html:12
+msgid "You need to login to fill in data collection table."
+msgstr "Connectez-vous pour remplir le formulaire collection."
+
+#: seahub/templates/dtable_external_app_login_react.html:3
+#: seahub/templates/dtable_share_react.html:3
+msgid "Log in or signup"
+msgstr "Se connecter ou s'inscrire"
+
+#: seahub/templates/dtable_external_app_login_react.html:8
+#, python-format
+msgid ""
+"You will visit App %(app_name)s on SeaTable App Platform. Please register or"
+" log in to SeaTable platform before proceeding to App %(app_name)s."
+msgstr ""
+"Vous allez visiter l'application  %(app_name)s sur la plateforme "
+"d'application SeaTable. Veuillez vous inscrire ou vous conncter à la "
+"plateforme avant de passer à app  %(app_name)s."
+
+#: seahub/templates/dtable_external_app_login_react.html:12
+#: seahub/templates/dtable_share_react.html:8
+#: seahub/templates/registration/login.html:4
+#: seahub/templates/registration/login.html:40
+#: seahub/templates/registration/multi_saml_sso.html:4
+#: seahub/templates/registration/multi_saml_sso.html:9
+msgid "Log in"
+msgstr "Connexion"
+
+#: seahub/templates/dtable_external_app_login_react.html:13
+#: seahub/templates/dtable_share_react.html:9
+#: seahub/templates/registration/activation_email.html:18
+#: seahub/templates/registration/registration_form.html:65
+#: seahub/templates/registration/sms_registration_form.html:64
+msgid "Sign up"
+msgstr "S'inscrire"
+
+#: seahub/templates/dtable_external_app_login_react.html:16
+#: seahub/templates/dtable_external_app_permission_react.html:70
+#: seahub/templates/dtable_share_react.html:12
+msgid "Powered by"
+msgstr "Powered by"
+
+#: seahub/templates/dtable_external_app_login_react.html:17
+#: seahub/templates/dtable_external_app_permission_react.html:71
+#: seahub/templates/dtable_share_react.html:13
+msgid "SeaTable"
+msgstr "SeaTable"
+
+#: seahub/templates/dtable_external_link_view_react.html:12
+msgid "Base shared from SeaTable"
+msgstr "Base partagée par SeaTable"
+
+#: seahub/templates/dtable_share_react.html:6
+#, python-format
+msgid ""
+"%(shared_user)s has shared table %(table_name)s to you. Please login or "
+"register to view the table."
+msgstr ""
+"%(shared_user)s a partagé le tableau  %(table_name)s avec vous. Connectez-"
+"vous ou inscrivez-vous afin de l'afficher."
+
+#: seahub/templates/email_base.html:9
+msgid "Thanks for using our site!"
+msgstr "Merci d'utiliser notre service !"
+
+#: seahub/templates/email_base.html:13
+#, python-format
+msgid "The %(site_name)s team"
+msgstr "L'équipe de %(site_name)s"
+
+#: seahub/templates/error_collection_table.html:7
+msgid "This collection table has passed the submission deadline!"
+msgstr "Ce formulaire collection a dépassé la date limite de soumission !"
+
+#: seahub/templates/error_form.html:7
+msgid "This form has passed the submission deadline!"
+msgstr "Ce formulaire web a dépassé la date limite de soumission !"
+
+#: seahub/templates/external_link_access_validation.html:3
+msgid "External link"
+msgstr "Lien externe"
+
+#: seahub/templates/organizations/org_register.html:23
+#: seahub/templates/organizations/sms_org_register.html:141
+#: seahub/templates/registration/registration_form.html:32
+#: seahub/templates/registration/sms_registration_form.html:38
+msgid "Welcome back, you are already signed in."
+msgstr "Bienvenue à nouveau, vous êtes déjà inscrit."
+
+#: seahub/templates/organizations/org_register.html:23
+#: seahub/templates/organizations/sms_org_register.html:141
+#: seahub/templates/registration/registration_form.html:32
+#: seahub/templates/registration/sms_registration_form.html:38
+msgid "Return to the homepage"
+msgstr "Retour à la page d'acceuil"
+
+#: seahub/templates/organizations/org_register.html:26
+#: seahub/templates/organizations/sms_org_register.html:156
+msgid "Team name"
+msgstr "Nom de l'équipe"
+
+#: seahub/templates/organizations/org_register.html:30
+#: seahub/templates/organizations/sms_org_register.html:159
+msgid "Admin name"
+msgstr "Nom d'administrateur"
+
+#: seahub/templates/organizations/org_register.html:34
+msgid "Admin email"
+msgstr "E-mail de l'administrateur"
+
+#: seahub/templates/organizations/org_register.html:42
+#: seahub/templates/organizations/sms_org_register.html:168
+#: seahub/templates/registration/password_change_form.html:22
+#: seahub/templates/registration/password_set_form.html:25
+#: seahub/templates/sysadmin/sudo_mode.html:4
+#: seahub/templates/sysadmin/sudo_mode.html:44
+msgid "Confirm password"
+msgstr "Confirmer le mot de passe"
+
+#: seahub/templates/organizations/sms_org_register.html:235
+#: seahub/templates/registration/sms_registration_form.html:200
+msgid "Name cannot be blank"
+msgstr "Le nom est nécessaire."
+
+#: seahub/templates/organizations/sms_org_register.html:243
+#: seahub/templates/registration/password_change_form.html:57
+#: seahub/templates/registration/password_set_form.html:55
+#: seahub/templates/registration/registration_form.html:164
+#: seahub/templates/registration/sms_registration_form.html:208
+msgid "Please enter the password again"
+msgstr "Veuillez ressaisir le mot de passe"
+
+#: seahub/templates/organizations/sms_org_register.html:247
+#: seahub/templates/registration/password_change_form.html:61
+#: seahub/templates/registration/password_set_form.html:59
+#: seahub/templates/registration/registration_form.html:168
+#: seahub/templates/registration/sms_registration_form.html:212
+msgid "Passwords don't match"
+msgstr "Les mots de passe ne correspondent pas"
+
+#: seahub/templates/organizations/user_activation_email.html:12
+#: seahub/templates/sysadmin/user_activation_email.html:12
+#, python-format
+msgid "Your account %(username)s on %(site_name)s has been activated."
+msgstr "Votre compte %(username)s sur %(site_name)s a été activé."
+
+#: seahub/templates/police_service_link.html:25
+#: seahub/templates/police_service_link.html:29
+msgid "Privacy policy"
+msgstr "Politique de confidentialité"
+
+#: seahub/templates/police_service_link.html:27
+#: seahub/templates/police_service_link.html:31
+msgid "Terms of service"
+msgstr "Conditions de service"
+
+#: seahub/templates/profile/update_contact_email.html:12
+#, python-format
+msgid ""
+"You (or someone pretending to be you) have asked to update contact email at "
+"%(site_name)s. If this wasn't you, please ignore this email and your address"
+" will be removed from our records."
+msgstr ""
+"Vous (ou quelqu'un se faisant passer pour vous) avez demandé une mise à jour"
+" de l'adresse e-mail de contact à  %(site_name)s. Si vous ne l'avez pas "
+"fait, veuillez ignorer cet e-mail et votre adresse sera supprimée de nos "
+"bases de données."
+
+#: seahub/templates/profile/update_contact_email.html:14
+#, python-format
+msgid ""
+"\n"
+"To update email, please click the following link within the next %(count)s day:\n"
+msgid_plural ""
+"\n"
+"To update email, please click the following link within the next %(count)s days:\n"
+msgstr[0] ""
+"\n"
+"Afin de mettre à jour l'e-mail, veuillez cliquer sur le lien suivant dans le prochain %(count)s jour:\n"
+msgstr[1] ""
+"\n"
+"Afin de mettre à jour l'e-mail, veuillez cliquer sur le lien suivant dans les prochains %(count)s jours:\n"
+msgstr[2] ""
+"\n"
+"Afin de mettre à jour l'e-mail, veuillez cliquer sur le lien suivant dans les prochains %(count)s jours:\n"
+
+#: seahub/templates/profile/update_contact_email.html:22
+#: seahub/two_factor/templates/two_factor/core/login.html:35
+#: seahub/two_factor/templates/two_factor/core/login.html:55
+msgid "Verify"
+msgstr "Vérifié"
+
+#: seahub/templates/profile/update_contact_email_complete.html:4
+msgid "Update contact email"
+msgstr "Mettre à jour l'e-mail de contact"
+
+#: seahub/templates/registration/activation_email.html:12
+#, python-format
+msgid ""
+"You (or someone pretending to be you) have asked to register an account at "
+"%(site_name)s. If this wasn't you, please ignore this email and your address"
+" will be removed from our records."
+msgstr ""
+"Vous (ou quelqu'un se faisant passer pour vous) avez demandé la création "
+"d'un compte sur %(site_name)s. Si vous ne l'avez pas fait, veuillez ignorer "
+"cet e-mail et votre adresse sera supprimée de nos bases de données."
+
+#: seahub/templates/registration/activation_email.html:14
+#, python-format
+msgid ""
+"To activate this account, please click the following link within the next "
+"%(expiration_days)s days: "
+msgstr ""
+"Pour activer ce compte, veuillez cliquer sur le lien suivant dans les "
+"%(expiration_days)s prochains jours : "
+
+#: seahub/templates/registration/logged_out.html:8
+#: seahub/templates/registration/logout.html:8
+msgid "Thanks for your participation! "
+msgstr "Merci pour votre participation ! "
+
+#: seahub/templates/registration/logged_out.html:8
+#: seahub/templates/registration/logout.html:8
+#: seahub/templates/registration/password_change_done.html:10
+msgid "Log in again"
+msgstr "Vous connecter à nouveau"
+
+#: seahub/templates/registration/login.html:43
+msgid "Phone, email or username"
+msgstr "Numéro de téléphone, e-mail ou nom d'utilisateur"
+
+#: seahub/templates/registration/login.html:54
+msgid "Refresh"
+msgstr "Rafraichir"
+
+#: seahub/templates/registration/login.html:74
+msgid "Incorrect account or password"
+msgstr "Compte ou mot de passe incorrect"
+
+#: seahub/templates/registration/login.html:83
+#, python-format
+msgid "Remember me for %(remember_days)s days "
+msgstr "Se souvenir de moi pendant %(remember_days)s jours"
+
+#: seahub/templates/registration/login.html:91
+#: seahub/templates/registration/login.html:95
+msgid "Single Sign-On"
+msgstr "Authentification unique"
+
+#: seahub/templates/registration/login.html:102
+msgid "Login with"
+msgstr "Se connecter avec"
+
+#: seahub/templates/registration/login.html:154
+msgid "Forgot password?"
+msgstr "Mot de passe oublié ?"
+
+#: seahub/templates/registration/login.html:233
+msgid "Failed to refresh the CAPTCHA, please try again later."
+msgstr "Impossible de rafraîchir le CAPTCHA. Veuillez essayer ultérieurement."
+
+#: seahub/templates/registration/login.html:252
+msgid "Phone, email or username cannot be blank"
+msgstr "Un numéro de téléphone, e-mail ou nom d'utilisateur est nécessaire."
+
+#: seahub/templates/registration/login.html:254
+#: seahub/templates/registration/registration_form.html:156
+msgid "Email cannot be blank"
+msgstr "L'adresse e-mail ne peut pas être vide"
+
+#: seahub/templates/registration/multi_saml_sso.html:11
+msgid "Email or Username"
+msgstr "E-mail ou nom d'utilisateur"
+
+#: seahub/templates/registration/multi_saml_sso.html:57
+msgid "Email or username cannot be blank"
+msgstr "L'e-mail ou le nom d'utilisateur ne peut être vide"
+
+#: seahub/templates/registration/password_change_done.html:4
+msgid "Password change successfully"
+msgstr "Le mot de passe a été modifié."
+
+#: seahub/templates/registration/password_change_done.html:9
+msgid "Your password has been changed successfully."
+msgstr "Votre mot de passe a été modifié avec succès."
+
+#: seahub/templates/registration/password_change_form.html:3
+#: seahub/templates/registration/password_change_form.html:12
+msgid "Password modification"
+msgstr "Modification du mot de passe"
+
+#: seahub/templates/registration/password_change_form.html:15
+msgid "Please update your password before continue."
+msgstr "Veuillez mettre à jour votre mot de passe avant de poursuivre."
+
+#: seahub/templates/registration/password_change_form.html:17
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+#: seahub/templates/registration/password_change_form.html:49
+msgid "Current password cannot be blank"
+msgstr "Le mot de passe actuel ne peut être vide"
+
+#: seahub/templates/registration/password_reset_complete.html:4
+msgid "Successfully reset password"
+msgstr "Mot de passe réinitialisé avec succès"
+
+#: seahub/templates/registration/password_reset_complete.html:8
+msgid "Successfully reset password."
+msgstr "Mot de passe réinitialisé avec succès."
+
+#: seahub/templates/registration/password_reset_confirm.html:4
+#: seahub/templates/registration/password_reset_done.html:4
+#: seahub/templates/registration/password_reset_done.html:25
+#: seahub/templates/registration/password_reset_form.html:4
+#: seahub/templates/registration/password_reset_form.html:35
+msgid "Password reset"
+msgstr "Réinitialisation du mot de passe"
+
+#: seahub/templates/registration/password_reset_confirm.html:11
+msgid "Reset password"
+msgstr "Réinitialisation du mot de passe"
+
+#: seahub/templates/registration/password_reset_confirm.html:13
+msgid "New password: "
+msgstr "Nouveau mot de passe : "
+
+#: seahub/templates/registration/password_reset_confirm.html:16
+msgid "Confirm password: "
+msgstr "Confirmez le mot de passe : "
+
+#: seahub/templates/registration/password_reset_confirm.html:26
+msgid "Failed to reset password: this link is no longer available."
+msgstr ""
+"Impossible de réinitialiser le mot de passe : ce lien n'est plus disponible."
+
+#: seahub/templates/registration/password_reset_done.html:27
+msgid "We've sent a password reset email to your mailbox."
+msgstr ""
+"Un message de réinitialisation de votre mot de passe a été envoyé dans votre"
+" boîte mail."
+
+#: seahub/templates/registration/password_reset_done.html:28
+msgid "Back to the login page"
+msgstr "Retour à la page de connexion"
+
+#: seahub/templates/registration/password_reset_email.html:12
+#, python-format
+msgid ""
+"To reset the password of your account %(account)s on %(site_name)s, please "
+"click the following link: "
+msgstr ""
+"Pour réinitialiser le mot de passe de votre compte %(account)s sur "
+"%(site_name)s, cliquez sur le lien suivant :"
+
+#: seahub/templates/registration/password_reset_email.html:20
+msgid "If you did not request it, just skip it."
+msgstr ""
+"Si vous n'êtes pas à l'origine de cette demande, vous pouvez l'ignorer."
+
+#: seahub/templates/registration/password_reset_form.html:36
+msgid "We will send you an email to set new password"
+msgstr "Nous vous enverrons un e-mail pour définir un nouveau mot de passe"
+
+#: seahub/templates/registration/password_reset_form.html:38
+msgid "Your email used in login"
+msgstr "E-mail utilisé pour se connecter"
+
+#: seahub/templates/registration/register_complete_email.html:1
+#, python-format
+msgid ""
+"You're receiving this e-mail because you are the admin of %(site_name)s, and"
+" a new user %(reg_email)s is joined."
+msgstr ""
+"Vous recevez cette invitation en tant qu'admin du site%(site_name)set parce "
+"que l'utilisateur %(reg_email)s l'a rejoint."
+
+#: seahub/templates/registration/register_complete_email.html:3
+msgid "Please click the following link to view the new account:"
+msgstr "Cliquez sur le lien suivant pour voir le nouveau compte :"
+
+#: seahub/templates/registration/register_complete_email_subject.html:1
+#, python-format
+msgid "New account created on %(site_name)s"
+msgstr "Nouveau compte créé sur le site %(site_name)s"
+
+#: seahub/templates/registration/registration_complete.html:4
+#: seahub/templates/shibboleth/complete.html:4
+msgid "Registration complete"
+msgstr "Enregistrement terminé"
+
+#: seahub/templates/registration/registration_complete.html:10
+msgid ""
+"An activation email has been sent. Please check your email and click on the "
+"link to activate your account."
+msgstr ""
+"Un e-mail d'activation a été envoyé. Veuillez vérifier vos messages et "
+"cliquer sur le lien pour activer votre compte."
+
+#: seahub/templates/registration/registration_complete.html:12
+msgid ""
+"Registration complete, please wait for administrator to activate your "
+"account."
+msgstr ""
+"Enregistrement terminé, veuillez attendre qu'un administrateur active votre "
+"compte."
+
+#: seahub/templates/registration/registration_complete.html:15
+msgid "Signup function is not enabled."
+msgstr "La fonction d'inscription n'est pas activée."
+
+#: seahub/templates/registration/registration_form.html:47
+msgid "Department"
+msgstr "Département"
+
+#: seahub/templates/registration/registration_form.html:52
+msgid "Telephone"
+msgstr "Téléphone"
+
+#: seahub/templates/registration/registration_form.html:57
+msgid "Note"
+msgstr "Remarque"
+
+#: seahub/templates/registration/registration_form.html:73
+#: seahub/templates/registration/sms_registration_form.html:72
+msgid "Signup with"
+msgstr "Se connecter avec"
+
+#: seahub/templates/registration/registration_form.html:132
+#, python-format
+msgid ""
+"Passwords must have at least %(min_len)s characters and contain %(level)s of"
+" the following: uppercase letters, lowercase letters, numbers, and symbols."
+msgstr ""
+"Le mot de passe doit avoir au moins %(min_len)s caractères et contenir "
+"%(level)s des éléments suivants : lettres majuscules, lettres minuscules,  "
+"chiffres et symboles."
+
+#: seahub/templates/remote_user/create_unknown_user_false.html:4
+#: seahub/templates/remote_user/error.html:4
+msgid "Error"
+msgstr "Erreur "
+
+#: seahub/templates/share_access_validation.html:3
+msgid "Share"
+msgstr "Partager"
+
+#: seahub/templates/snippets/password_strength_js.html:7
+msgid "Password strength should be strong or very strong"
+msgstr "La robustesse du mot de passe doit être forte ou très forte."
+
+#: seahub/templates/snippets/password_strength_js.html:11
+#: seahub/templates/snippets/password_strength_js.html:97
+msgid "Password strength"
+msgstr "Robustesse du mot de passe"
+
+#: seahub/templates/snippets/password_strength_js.html:18
+msgid ""
+"The password should contain different types of characters to make it strong:"
+" uppercase letters, lowercase letters, numbers and special characters."
+msgstr ""
+"Le mot de passe doit contenir différents types de caractères afin d'offrir "
+"une protection efficace: lettres majuscules, lettres minuscules, chiffres et"
+" caractères spéciaux."
+
+#: seahub/templates/sysadmin/sudo_mode.html:32
+msgid "Confirm password to continue"
+msgstr "Confirmer le mot de passe pour continuer"
+
+#: seahub/templates/sysadmin/sudo_mode.html:33
+msgid ""
+"You are entering admin area, we won't ask for your password again for a few "
+"hours."
+msgstr ""
+"Vous entrez dans l'espace d'administration, nous ne vous demanderons plus "
+"votre mot de passe pour quelques heures."
+
+#: seahub/templates/sysadmin/sudo_mode.html:40
+msgid "Incorrect password"
+msgstr "Mot de passe incorrect"
+
+#: seahub/templates/sysadmin/user_add_email.html:13
+#, python-format
+msgid ""
+"%(escaped_nickname)s invited you to join organization \"%(org_name)s\" on "
+"%(site_name)s."
+msgstr ""
+"%(escaped_nickname)s est invité à rejoindre l'organisation \"%(org_name)s\" "
+"sur %(site_name)s."
+
+#: seahub/templates/sysadmin/user_add_email.html:15
+#: seahub/templates/sysadmin/user_batch_add_email.html:12
+#, python-format
+msgid "%(escaped_nickname)s invited you to join %(site_name)s."
+msgstr "%(escaped_nickname)s vous a invité à rejoindre %(site_name)s."
+
+#: seahub/templates/sysadmin/user_add_email.html:21
+#: seahub/templates/sysadmin/user_batch_add_email.html:16
+msgid "Here is your account information:"
+msgstr "Informations de votre compte :"
+
+#: seahub/templates/sysadmin/user_add_email.html:22
+#: seahub/templates/sysadmin/user_batch_add_email.html:17
+#, python-format
+msgid "Email: %(email)s"
+msgstr "E-mail : %(email)s"
+
+#: seahub/templates/sysadmin/user_add_email.html:23
+#: seahub/templates/sysadmin/user_batch_add_email.html:18
+#, python-format
+msgid "Password: %(password)s"
+msgstr "Mot de passe : %(password)s"
+
+#: seahub/templates/sysadmin/user_add_email.html:28
+msgid "Create account and log in"
+msgstr "Créer un compte et se connecter"
+
+#: seahub/templates/sysadmin/user_freeze_email.html:12
+#, python-format
+msgid ""
+"Account %(user)s froze due to excessive failed logins. Please check at:"
+msgstr ""
+"Le compte %(user)s est bloqué suite à un nombre excessif d'échecs de "
+"connexion. Veuillez vérifier sur:"
+
+#: seahub/templates/sysadmin/user_reset_email.html:12
+#, python-format
+msgid ""
+"Your password on %(site_name)s has been reset. Now it is %(password)s. "
+"Please change it as soon as possible. "
+msgstr ""
+"Votre mot de passe sur %(site_name)s a été réinitialisé. Votre mot de passe "
+"est maintenant %(password)s. Veuillez le changer dès que possible."
+
+#: seahub/templates/termsandconditions/tc_accept_terms.html:10
+msgid "Accept"
+msgstr "Accepter"
+
+#: seahub/templates/termsandconditions/tc_accept_terms.html:11
+#: seahub/two_factor/templates/two_factor/_wizard_actions.html:4
+#: seahub/two_factor/templates/two_factor/profile/disable.html:12
+msgid "Cancel"
+msgstr "Annuler"
+
+#: seahub/thumbnail/views.py:41
+msgid "Library does not exist."
+msgstr "La bibliothèque n'existe pas."
+
+#: seahub/thumbnail/views.py:47
+msgid "Invalid arguments."
+msgstr "Arguments non valides."
+
+#: seahub/thumbnail/views.py:64
+msgid "Failed to create thumbnail."
+msgstr "Échec de la création de la vignette."
+
+#: seahub/two_factor/forms.py:39 seahub/two_factor/forms.py:63
+#: seahub/two_factor/forms.py:167 seahub/two_factor/forms.py:173
+#: seahub/two_factor/forms.py:297
+msgid "Token"
+msgstr "Token"
+
+#: seahub/two_factor/templates/two_factor/_wizard_actions.html:5
+msgid "Next"
+msgstr "Suivant"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:6
+msgid "Backup Tokens"
+msgstr "Sauvegarde de tokens"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:8
+msgid ""
+"Backup tokens can be used when your primary and backup\n"
+"      phone numbers aren't available. The backup tokens below can be used\n"
+"      for login verification. If you've used up all your backup tokens, you\n"
+"      can generate a new set of backup tokens. Only the backup tokens shown\n"
+"      below will be valid."
+msgstr ""
+"Les jetons de sauvegarde peuvent être utilisés lorsque les principaux et\n"
+"les numéros de téléphones sont indisponibles. Les jetons de sauvegarde\n"
+"ci-dessous peuvent être utilisés pour la vérification de connexion. Si vous\n"
+"avez utilisé tous vos jetons de sauvegarde, vous pouvez générer un nouvel\n"
+"ensemble de jetons de sauvegarde. Seuls les jetons de sauvegarde affichés\n"
+"ci-dessous seront valides."
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:20
+msgid "Print these tokens and keep them somewhere safe."
+msgstr "Imprimez ces jetons et gardez-les dans un endroit sûr."
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:22
+msgid "You don't have any backup codes yet."
+msgstr "Vous n'avez aucune sauvegarde de code pour l'instant"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:26
+msgid "Back"
+msgstr "Retour"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:27
+msgid "Generate Tokens"
+msgstr "Générer des tokens"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:7
+msgid "Two-Factor Authentication"
+msgstr "Vérification en deux étapes"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:19
+msgid ""
+"Open the two-factor authentication app on your device to view your "
+"authentication token and verify your identify."
+msgstr ""
+"Ouvrez l'application de vérification en deux étapes sur votre périphérique "
+"pour voir votre token d'authentification et vérifier votre identité."
+
+#: seahub/two_factor/templates/two_factor/core/login.html:22
+msgid "Authentication token"
+msgstr "Token d'authentification"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:27
+#, python-format
+msgid "Remember this computer for %(remember_days)s days"
+msgstr "Se souvenir de cet ordinateur pendant %(remember_days)s jour(s)"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:31
+#: seahub/two_factor/templates/two_factor/core/login.html:50
+msgid "Incorrect code"
+msgstr "Le code est incorrect."
+
+#: seahub/two_factor/templates/two_factor/core/login.html:40
+msgid "Don't have your phone?"
+msgstr "Vous n'avez pas votre téléphone ?"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:41
+msgid "Enter a two-factor backup code"
+msgstr "Entrer un code de secours à deux facteurs"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:47
+msgid "Backup code"
+msgstr "Code de secours"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:54
+msgid ""
+"You can enter one of your backup codes in case you lost access to your "
+"mobile device."
+msgstr ""
+"Vous pouvez entrer l'un de vos codes de sauvegarde au cas où vous perderiez "
+"l'accès à votre appareil mobile."
+
+#: seahub/two_factor/templates/two_factor/core/setup.html:6
+msgid "Enable Two-Factor Authentication"
+msgstr "Activer la vérification en deux étapes"
+
+#: seahub/two_factor/templates/two_factor/core/setup.html:16
+msgid ""
+"To start using a token generator, please use your\n"
+"        smartphone to scan the QR code below. For example, use Google\n"
+"        Authenticator. Then, enter the token generated by the app.\n"
+"        "
+msgstr ""
+"Pour commencer à utiliser un générateur de jetons, utilisez votre\n"
+"smartphone pour scanner le QR code ci-dessous. Par exemple, utilisez\n"
+"l'Identificateur de Google. Ensuite, entrez le jeton généré par l'application."
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:6
+msgid "Disable Two-Factor Authentication"
+msgstr "Désactiver la vérification en deux étapes"
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:8
+msgid ""
+"You are about to disable two-factor authentication. This\n"
+"    compromises your account security, are you sure?"
+msgstr ""
+"Êtes-vous sûr de vouloir désactiver la vérification en deux étapes. Ceci \n"
+"compromet la sécurité de votre compte, êtes-vous certain ?"
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:11
+msgid "Disable"
+msgstr "Désactiver"
+
+#: seahub/utils/__init__.py:402
+msgid "permission error"
+msgstr "Erreur de permission"
+
+#: seahub/utils/http.py:82
+msgid "Too many requests"
+msgstr "Trop de requêtes"
+
+#: seahub/views/file.py:130
+msgid "HTTPError: failed to open file online"
+msgstr "HTTPError: impossible d'ouvrir le fichier en ligne"
+
+#: seahub/views/file.py:134
+msgid "URLError: failed to open file online"
+msgstr "URLError: impossible d'ouvrir le fichier en ligne"
+
+#: seahub/views/file.py:141
+msgid "The encoding you chose is not proper."
+msgstr "L'encodage que vous avez choisi n'est pas approprié."
+
+#: seahub/views/file.py:158 seahub/views/file.py:161
+msgid "Unknown file encoding"
+msgstr "Encodage de fichier inconnu"
+
+#: seahub/views/file.py:206 seahub/views/file.py:244
+#, python-format
+msgid "File size surpasses %s, can not be opened online."
+msgstr ""
+"La taille du fichier dépasse %s, il ne peut donc pas être visionné en ligne."
+
+#: seahub/views/file.py:216
+msgid "The library is encrypted, can not open file online."
+msgstr "La bibliothèque est cryptée. Elle ne peut pas être ouverte en ligne."
+
+#: seahub/views/sysadmin.py:301 seahub/views/sysadmin.py:423
+#: seahub/views/sysadmin.py:446 seahub/views/sysadmin.py:458
+#: seahub/views/sysadmin.py:524
+msgid "Failed to export Excel"
+msgstr "L'exportation en Excel a échoué."
+
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+msgid "ID"
+msgstr "ID"
+
+#: seahub/views/sysadmin.py:310 seahub/views/sysadmin.py:314
+msgid "Rows used"
+msgstr "Lignes utilisées"
+
+#: seahub/views/sysadmin.py:312 seahub/views/sysadmin.py:316
+msgid "Admin role"
+msgstr "Rôle d'administrateur"
+
+#: seahub/views/sysadmin.py:449
+msgid "Creator"
+msgstr "Créateur"
+
+#: seahub/views/sysadmin.py:510 seahub/views/sysadmin.py:511
+msgid "Optional"
+msgstr "Optional"
+
+#: seahub/views/sysadmin.py:511
+msgid "Row quota"
+msgstr "Quota de ligne"
+
+#: tests/api/endpoints/test_dtable_related_users.py:28
+#: tests/api/endpoints/test_dtable_related_users.py:29
+#: tests/api/endpoints/test_dtable_share.py:97
+#: tests/api/endpoints/test_dtable_share.py:98
+msgid "My workspace"
+msgstr "Mon workspace"

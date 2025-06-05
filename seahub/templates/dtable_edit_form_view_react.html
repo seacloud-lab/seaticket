@@ -1,0 +1,51 @@
+{% extends "base_for_react.html" %}
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+{% block extra_style %}
+{% render_bundle 'dtableEditFormView' 'css' %}
+{% endblock %}
+{% block mobile_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endblock %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    {% block extra_script %}
+    <script type="text/javascript">
+        window.shared = {
+            pageOptions: {
+                dtableMetadata: '{{ dtable_metadata | escapejs }}',
+                dtableName: '{{ dtable_name | escapejs }}',
+                dtableUuid: '{{ dtable_uuid }}',
+                workspaceID: '{{ workspace_id }}',
+                formConfig: '{{ form_config | escapejs}}',
+                dtableWebURL: '{{ dtable_web_service_url }}',
+                token: '{{ form_token }}',
+                shareType: '{{ share_type }}',
+                sharedGroups: '{{ shared_groups | escapejs }}',
+                canUseAdvancedCustomization: {% if user_permission.can_use_advanced_customization %} true {% else %} false {% endif %},
+                user: '{{ user | escapejs }}',
+                customPoweredBy: '{{ custom_powered_by | escapejs }}',
+            }
+        };
+    </script>
+    {% render_bundle 'dtableEditFormView' 'js' %}
+    {% endblock %}
+</body>
+</html>

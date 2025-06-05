@@ -1,0 +1,65 @@
+{% extends "base_for_external_app.html" %}
+{% load seahub_tags i18n static %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{% if app_name_display %}{{ app_name_display }}{% else %}{{ site_title }}{% endif %}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}dtable-apps/{{ app_type }}/icon.png" />
+{% block extra_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}dtable-apps/{{ app_type }}/main.css?version={{ app_version }}" />
+{% endblock %}
+</head>
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    {% block extra_script %}
+    <script type="text/javascript">
+        window.shared = {
+            pageOptions: {
+                workspaceID: '{{ workspace_id }}',
+                dtableName: '{{ dtable_name | escapejs }}',
+                dtableUuid: '{{ dtable_uuid }}',
+                appUuid: '{{ app_uuid }}',
+                appId: '{{ app_id }}',
+                appType: '{{ app_type }}',
+                appConfig: '{{ app_config | escapejs }}',
+                customPages: '{{ custom_pages | escapejs }}',
+                singleRecordPages: '{{ single_record_pages | escapejs }}',
+                accessToken: '{{ access_token}}',
+                dtableWebServer: '{{ service_url }}',
+                dtableServer: '{{ dtable_server }}',
+                dtableBaiduMapKey: '{{ dtable_baidu_map_key }}',
+                dtableMineMapKey: '{{ dtable_mine_map_key }}',
+                dtableGoogleMapKey: '{{ dtable_google_map_key }}',
+                permission: '{{ permission }}',
+                roleId: '{{ role_id }}',
+                userIdInOrg: '{{ id_in_org }}',
+                columns: '{{ columns | escapejs }}',
+                isAdmin: {% if is_admin %} true {% else %} false {% endif %},
+                canUseAdvancedPerms: {% if user.permissions.can_use_advanced_permissions %}true{% else %}false{% endif %},
+                canUseAdvancedCustomization: {% if user.permissions.can_use_advanced_customization %}true{% else %}false{% endif %},
+                ownerCanUseAdvancedPerms: {% if owner_can_use_advanced_permissions %}true{% else %}false{% endif %},
+                ownerCanUseAdvancedCustomization: {% if owner_can_use_advanced_customization %}true{% else %}false{% endif %},
+                customPermission: '{{ custom_permission | escapejs }}',
+                isOpenRegistration: {% if is_open_registration %} true {% else %} false {% endif %},
+                useExternalTeamAdmin: {% if use_external_team_admin %} true {% else %} false {% endif %},
+                isOrgStaff: {% if is_org_staff %} true {% else %} false {% endif %},
+                snapshotID: '{{ snapshot_id }}',
+                userDepartmentIdsMap: {% if user_department_ids_map %} {{ user_department_ids_map|safe }} {% else %} null {% endif %},
+                canUseAIAssistant: {% if can_use_ai_assistant %} true {% else %} false {% endif %},
+            }
+        };
+    </script>
+    <script src="{{ MEDIA_URL }}dtable-apps/{{ app_type }}/main.js?version={{ app_version }}"></script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+
+{% block private_style %}
+.login-panel.app-validation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.app-validation .tip-content {
+    color: #666;
+}
+
+.show-password-toggle {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+}
+
+.show-password-toggle:hover {
+    color: #666;
+}
+{% endblock %}
+
+{% block main_content %}
+<div class="login-panel-outer-container mt-6">
+<div class="login-panel app-validation">
+    <h1 class="login-panel-hd">{% trans "Password required" %}</h1>
+    <form action="" method="post" id="login-form">{% csrf_token %}
+        <span class="tip-content">{% trans "This app is password-protected. Enter password to proceed." %}</span>
+        <div class="position-relative mt-4">
+            <input type="password" name="password" placeholder="{% trans "Password" %}" aria-label="{% trans "Password" %}" title="{% trans "Password" %}" value="" class="input passwd-input" id="id_password" autocomplete="off" />
+            <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+            {% if from %}
+            <input type="hidden" name="from" id="from" value="{{ from }}" />
+            {% endif %}
+            {% if custom_url %}
+            <input type="hidden" name="custom_url" id="custom_url" value="{{ custom_url }}" />
+            {% endif %}
+        </div>
+        {% if err_msg %}
+        <p class="error w-100">{{err_msg}}</p>
+        {% else %}
+        <p class="error hide"></p>
+        {% endif %}
+        <button type="submit" class="submit btn btn-primary btn-block mt-2 mb-4">{% trans "Submit" %}</button>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$("body").on('click', '.show-password-toggle', function(){
+    var $pass1 = document.getElementById("id_password");
+    if ($pass1.type === "password") {
+        $pass1.type = "text";
+    } else {
+        $pass1.type = "password";
+    }
+    $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye")
+});
+
+$('#login-form').on('submit', function(){
+    if (!$.trim($('input[name="password"]').val())) {
+        $('.error').removeClass('hide').html("{% trans "Password cannot be blank" %}");
+        return false;
+    }
+});
+</script>
+{% endblock %}

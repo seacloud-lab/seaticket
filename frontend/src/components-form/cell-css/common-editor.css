@@ -1,0 +1,105 @@
+.cell-editor {
+  display: flex;
+  width: 100%;
+}
+
+.preview-form-content .cell-editor .form-control {
+  border: 1px solid #AEAEAE;
+}
+
+.text-editor-container .form-control:focus {
+  border-color: #1991eb;
+}
+
+.text-editor-container {
+  width: 100%;
+}
+
+.text-editor-container .form-control.readOnly {
+  background-color: #f8f9fa;
+  border-color: rgba(0, 40, 100, 0.12);
+  min-height: 36px;
+}
+
+.text-editor-container .form-control.readOnly:hover,
+.setting-row-item.editing-setting-row-item .text-editor-container .form-control.readOnly:hover {
+  cursor: not-allowed;
+}
+
+.setting-row-item .text-editor-container .form-control.readOnly:hover{
+  cursor: inherit;
+}
+
+.text-editor-container .form-control:-webkit-autofill,
+.number-editor-container .form-control:-webkit-autofill {
+  box-shadow: 0 0 0px 19px #fff inset !important;
+}
+
+.cell-editor .checkbox-editor-container {
+  width: 18px;
+  height: 18px;
+  box-shadow: none;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cell-editor .checkbox-editor-container.focus {
+  box-shadow: 0 0 0 2px #66afe9;
+}
+
+.checkbox-editor-container .checkbox {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-left: 50%;
+  transform: translate(-10px, 0);
+  box-shadow: none;
+  outline: none;
+}
+
+.form-checkbox-editor-view {
+  height: 13px;
+  width: 13px;
+  user-select: none;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  position: relative;
+}
+
+.form-checkbox-editor-view .mobile-form-checkbox {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+.form-checkbox-editor-view .form-checkbox-editor-indicator {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background-color: #ffffff;
+  border: 1px solid #d8d8d8;
+  position: relative;
+  transform: scale(1.2);
+}
+
+.form-checkbox-editor-view .form-checkbox-editor-selected-indicator {
+  background-color: #3B88FD;
+  border: unset !important;
+}
+
+.form-checkbox-editor-view .form-checkbox-editor-selected-indicator::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}

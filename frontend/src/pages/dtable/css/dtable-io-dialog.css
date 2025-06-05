@@ -1,0 +1,11 @@
+.dtable-io-dialog .modal-body {
+  height: 142px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dtable-io-dialog .modal-body .dtable-io-dialog-parsing-text {
+  text-align: center;
+  margin-top: 14px;
+}

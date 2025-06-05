@@ -1,0 +1,241 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+{% block sub_title %}{% trans "Signup" %} - {% endblock %}
+
+{% block extra_style %}{{block.super}}
+{% endblock %}
+
+{% block private_style %}
+.login-form-weixin-line {
+    width: 30%;
+    border-bottom: 1px solid #a6a6a6;
+}
+.show-password-toggle {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+}
+.show-password-toggle:hover {
+    color: #666;
+}
+.sms-org-register {
+    position: relative;
+}
+.sms-org-register #sms-send-form {
+    position: absolute;
+    top: 230px;
+    margin-right: 25px;
+}
+{% endblock %}
+
+{% block main_content %}
+<div class="login-panel-outer-container mt-6">
+    <div class="login-panel sms-org-register">
+        <h1 class="login-panel-hd">{% trans "Signup" %}</h1>
+        {% if request.user.is_authenticated %}
+        <p class="text-center">{% trans "Welcome back, you are already signed in." %} <a href="{{ redirect_to }}" class="normal">{% trans "Return to the homepage" %}</a></p>
+        {% else %}
+        <form action="" method="post" id="sms-send-form">{% csrf_token %}
+            <div class="position-relative justify-content-between row m-0">
+                <input id="send_sms_code_phone" type="text" name="phone" placeholder="请输入手机号" {% if phone %}value={{ phone }}{% else %}{% endif %} autocomplete="off" class="input name-input" style="height: 40px; max-width: calc(100% - 120px); box-sizing: border-box;" />
+                <button id="send_sms_code" type="button" class="submit btn btn-primary btn-block ml-2" style="width: 110px">发送验证码</button>
+            </div>
+        </form>
+        <form action="" method="post" id="signup-form">{% csrf_token %}
+            {{ form.name }} {{ form.name.errors }}
+
+            <div class="position-relative" id="password-input1">
+                {{ form.password1 }}        {{ form.password1.errors }}
+                <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+            </div>
+            <div class="position-relative" id="password-input2">
+                {{ form.password2 }}        {{ form.password2.errors }}
+            </div>
+            <!-- for sms-send-form -->
+            <div style="height: 50px"></div>
+
+            <input id="id_sms_code" type="text" name="sms_code" placeholder="请输入短信验证码" value="" class="input name-input w-100" style="height: 40px; box-sizing: border-box;" autocomplete="off" />
+            <p class="error mt-2 mb-2">{{ error_msg }}</p>
+            {% if cn_force_check_user_agreement %}
+            {% include "registration/user_terms_check.html" %}
+            {% endif %}
+            <button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
+        </form>
+
+        {% if enable_weixin %}
+        <div class="mt-5">
+            <span class="d-flex align-items-center justify-content-center">
+                <span class="mr-2 login-form-weixin-line"></span>
+                <span style="color: #a6a6a6">
+                    {% trans "Signup with" %}
+                </span>
+                <span class="ml-2 login-form-weixin-line"></span>
+            </span>
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{{ SITE_ROOT }}weixin/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/weixin.png" width="32" alt="" title="{% if LANGUAGE_CODE == 'zh-cn' %}微信{% else %}WeChat{% endif %}" />
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="login-panel-bottom-container">
+            {# language will be shown here #}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.popover.min.js"></script>
+<script type="text/javascript" src="{{MEDIA_URL}}bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript">
+$('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
+
+document.addEventListener("DOMContentLoaded", function() {
+  var userTermsDiv = document.querySelector('.user-terms-label');
+  if (userTermsDiv) {
+      document.getElementById('id_sms_code').style.marginBottom = '0px';
+  } else {
+      document.getElementById('id_sms_code').style.marginBottom = '12px';
+  }
+});
+
+$("body").on('click', '.show-password-toggle', function(){
+    var $pass1 = document.getElementById("id_password1");
+    var $pass2 = document.getElementById("id_password2");
+    var toggle = $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye");
+    [$pass1, $pass2].forEach(function($passwords) {
+        if ($passwords.type === "password") {
+            $passwords.type = "text";
+            toggle.toggleClass()
+        } else {
+            $passwords.type = "password";
+        }
+    })
+});
+
+$('#lang-context').on('click', function() {
+    var langTop = $('#lang').offset().top;
+    var langSelectorTop;
+    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    if (langSelectorHeight > langTop) {
+        langSelectorTop = '-' + (langTop - 5) + 'px';
+    } else {
+        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+    }
+    $('#lang-context-selector').css({
+        'top': langSelectorTop,
+        'right': 0
+    });
+    $('#lang-context-selector .sf-popover-con').css({
+        'max-height': $('#lang').offset().top - 10
+    });
+});
+
+{% include "snippets/password_strength_js.html" %}
+
+$(function () {
+    setupPasswordField("id_password1", passwd_tip, template);
+});
+
+function changeButtonText() {
+    var init = 60;
+    $("#send_sms_code_phone").attr('readonly', 'readonly');
+    $("#send_sms_code").attr('disabled', 'disabled');
+    $("#send_sms_code").text(init + 's 重新获取');
+    this.timer = setInterval(() => {
+        init = init - 1;
+        if (init <= 0) {
+            clearInterval(this.timer);
+            this.timer = null;
+            document.getElementById('send_sms_code_phone').readOnly = false;
+            document.getElementById('send_sms_code').removeAttribute('disabled');
+            $("#send_sms_code").text('发送验证码');
+        } else {
+            $("#send_sms_code").text(init + 's 重新获取');
+        }
+    }, 1000);
+}
+
+$.ajaxSetup({data:{csrfmiddlewaretoken:'{{ csrf_token }}'}});
+
+$('#send_sms_code').on('click', function() {
+    $('.error').text('').removeClass('show').addClass('hide');
+    $.ajax({
+        type: 'post',
+        url: '/accounts/sms-register/',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token }}'
+        },
+        data: {
+            phone: $("#send_sms_code_phone").val(),
+        },
+        success: function(result) {
+            if (result.success === true) {
+                changeButtonText();
+            } else {
+                if (result && result.error) {
+                    $('.error').text(String(result.error)).removeClass('hide');
+                } else {
+                    $('.error').text('网络错误，请重试！').removeClass('hide');
+                }
+            }
+        },
+        error: function(result) {
+            $('.error').text('网络错误，请重试！').removeClass('hide');
+        },
+    });
+});
+
+$('#signup-form').on('submit', function(){
+    var name = $.trim($('input[name="name"]').val()),
+        pwd1 = $.trim($('input[name="password1"]').val()),
+        pwd2 = $.trim($('input[name="password2"]').val());
+
+        if (!name) {
+            $('.error').html("{% trans "Name cannot be blank" %}").removeClass('hide');
+            return false;
+        }
+        if (!pwd1) {
+            $('.error').html("{% trans "Password cannot be blank" %}").removeClass('hide');
+            return false;
+        }
+        if (!pwd2) {
+            $('.error').html("{% trans "Please enter the password again" %}").removeClass('hide');
+            return false;
+        }
+        if (pwd1 != pwd2) {
+            $('.error').html("{% trans "Passwords don't match" %}").removeClass('hide');
+            return false;
+        }
+        if (!checkPasswordStrength(pwd1, {{strong_pwd_required}})) {
+            $('.error').html(passwd_tip).removeClass('hide');
+            return false;
+        }
+        {% if cn_force_check_user_agreement %}
+            if (!$('.user-terms-input').prop('checked')) {
+                showUserTermsTip();
+                return false;
+            }
+        {% endif %}
+});
+
+{% if cn_force_check_user_agreement %}
+$('a[href*="weixin/oauth-login"]').on('click', function(event) {
+  if (!$('.user-terms-input').prop('checked')) {
+    showUserTermsTip();
+    event.preventDefault();
+  }
+});
+{% endif %}
+
+// for refresh page
+if (window.history.replaceState) {
+    window.history.replaceState( null, null, window.location.href );
+}
+</script>
+{% endblock %}

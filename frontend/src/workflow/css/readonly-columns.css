@@ -1,0 +1,37 @@
+.readonly-columns {
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  margin: 0px -10px 20px -10px;
+}
+
+.readonly-columns .compose-editor:last-child {
+  margin-bottom: 0 !important;
+}
+
+.readonly-columns .readOnly {
+  background-color: #f5f5f5 !important;
+  cursor: default !important;
+}
+
+.readonly-columns .form-control.readOnly {
+  border-color: rgba(0, 40, 100, 0.12);
+  height: 2.375rem;
+}
+
+.readonly-columns .select-editor-container .select-option-item,
+.readonly-columns .date-editor-container:hover {
+  cursor: default;
+}
+
+.readonly-columns .geolocation-content.readOnly {
+  padding: 4px 0;
+}
+
+.readonly-columns .setting-row-item.read-only-hover-item {
+  background-color: #ddd !important;
+}
+
+.readonly-columns .operation-button-drag {
+  cursor: pointer;
+}

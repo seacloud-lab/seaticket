@@ -1,0 +1,27 @@
+{% extends 'email_base.html' %}
+
+{% load i18n %}
+
+{% block email_con %}
+
+{% autoescape off %}
+
+<p style="color:#121214;font-size:14px;">{% trans "Hi," %}</p>
+
+<p style="font-size:14px;color:#434144;">
+{% blocktrans %}You (or someone pretending to be you) have asked to update contact email at {{ site_name }}. If this wasn't you, please ignore this email and your address will be removed from our records.{% endblocktrans %}
+<br />
+{% blocktrans count count=expiration_days %}
+To update email, please click the following link within the next {{ count }} day:
+{% plural %}
+To update email, please click the following link within the next {{ count }} days:
+{% endblocktrans %}
+</p>
+
+<p>
+<a href="{{ url_base }}{% url 'update_contact_email' update_key %}">{% trans "Verify" %}</a>
+</p>
+
+{% endautoescape %}
+
+{% endblock %}

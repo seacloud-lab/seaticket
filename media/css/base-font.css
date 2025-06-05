@@ -1,0 +1,142 @@
+@font-face {
+  font-family: "base-font"; /* Project id 1949442 */
+  src: url('./base-font/base-font.eot?t=1648620441182'); /* IE9 */
+  src: url('./base-font/base-font.eot?t=1648620441182#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('./base-font/base-font.woff2?t=1648620441182') format('woff2'),
+       url('./base-font/base-font.woff?t=1648620441182') format('woff'),
+       url('./base-font/base-font.ttf?t=1648620441182') format('truetype'),
+       url('./base-font/base-font.svg?t=1648620441182#base-font') format('svg');
+}
+
+.base-font {
+  font-family: "base-font" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-workflow:before {
+  content: "\e76a";
+}
+
+.icon-customer-relationship:before {
+  content: "\e6fb";
+}
+
+.icon-dollar:before {
+  content: "\e6f8";
+}
+
+.icon-research:before {
+  content: "\e6fa";
+}
+
+.icon-time-management:before {
+  content: "\e6f7";
+}
+
+.icon-financial-information-record:before {
+  content: "\e6f6";
+}
+
+.icon-add:before {
+  content: "\e6f4";
+}
+
+.icon-task-management:before {
+  content: "\e6ef";
+}
+
+.icon-worksheet:before {
+  content: "\e710";
+}
+
+.icon-book-library:before {
+  content: "\e6e5";
+}
+
+.icon-administrative-matters-calendar:before {
+  content: "\e6e6";
+}
+
+.icon-client-review:before {
+  content: "\e6e7";
+}
+
+.icon-customer-inquiry:before {
+  content: "\e6e8";
+}
+
+.icon-leave-record:before {
+  content: "\e6e9";
+}
+
+.icon-data-analysis:before {
+  content: "\e6ea";
+}
+
+.icon-customer-list:before {
+  content: "\e6eb";
+}
+
+.icon-asset-management:before {
+  content: "\e6ec";
+}
+
+.icon-club-members:before {
+  content: "\e6ed";
+}
+
+.icon-design-assignment:before {
+  content: "\e6ee";
+}
+
+.icon-company-inventory:before {
+  content: "\e6f0";
+}
+
+.icon-market-analysis:before {
+  content: "\e6f3";
+}
+
+.icon-product-list:before {
+  content: "\e6f5";
+}
+
+.icon-online-promotion:before {
+  content: "\e6f9";
+}
+
+.icon-product-knowledge-base:before {
+  content: "\e6ff";
+}
+
+.icon-software-test-management:before {
+  content: "\e704";
+}
+
+.icon-server-management:before {
+  content: "\e706";
+}
+
+.icon-teachers-list:before {
+  content: "\e707";
+}
+
+.icon-work-log:before {
+  content: "\e70b";
+}
+
+.icon-video-production:before {
+  content: "\e70d";
+}
+
+.icon-store-address:before {
+  content: "\e70e";
+}
+
+.icon-user-interview:before {
+  content: "\e70f";
+}
+

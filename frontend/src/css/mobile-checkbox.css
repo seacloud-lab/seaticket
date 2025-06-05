@@ -1,0 +1,45 @@
+.seatable-checkbox-view {
+  user-select: none;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.seatable-checkbox-view .seatable-checkbox-input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+.seatable-checkbox-view .seatable-checkbox-indicator {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: #ffffff;
+  border: 1px solid #d8d8d8;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.seatable-checkbox-view .seatable-checkbox-selected-indicator {
+  background-color: #3b88fd;
+  border: unset !important;
+}
+
+.seatable-checkbox-view .seatable-checkbox-selected-indicator::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.seatable-checkbox-view .seatable-checkbox-disable {
+  background-color: #f5f5f5;
+}

@@ -1,0 +1,434 @@
+/* collaborator */
+.dtable-print .collaborators-formatter {
+  display: inline-flex;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.dtable-print.row-height-32 .collaborators-formatter {
+  align-items: center;
+}
+
+.dtable-print .collaborators-formatter .formatter-show {
+  display: inline-flex;
+  min-height: 28px;
+}
+
+.dtable-print.row-height-32 .collaborators-formatter .formatter-show {
+  align-items: center;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .formatter-show,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .formatter-show,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .formatter-show {
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .formatter-show {
+  max-height: 52px;
+}
+
+.dtable-print .collaborators-formatter .collaborator {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-right: 10px;
+  padding: 0 8px 0 2px;
+  border-radius: 10px;
+  background: #eaeaea;
+}
+
+.dtable-print.row-height-32 .collaborators-formatter .collaborator {
+  align-items: center;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .collaborator,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .collaborator,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .collaborators-formatter .collaborator {
+  margin-top: 0;
+  margin-bottom: 5px;
+  margin-right: 10px;
+}
+
+.dtable-print .collaborators-formatter .collaborator-avatar-container {
+  width: 16px;
+}
+
+.dtable-print .collaborator-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.dtable-print .collaborators-formatter .collaborator-name {
+  margin-left: 5px;
+}
+
+/* department-single-select */
+.dtable-print .department-single-select-formatter {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-right: 10px;
+  padding: 0 8px 0 2px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #eaeaea;
+}
+
+.dtable-print .department-single-select-formatter .department-name {
+  margin-left: 4px;
+  flex: 1 1;
+  line-height: 20px;
+}
+
+/* long-text */
+.dtable-print .longtext-icon-container {
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dtable-print .longtext-formatter-links-container {
+  background-color: #f0f0f0;
+  color: #666;
+  padding: 0 3px;
+  height: 20px;
+  line-height: 20px;
+  margin: 0 4px;
+}
+
+.dtable-print .longtext-formatter-image-container {
+  line-height: 30px;
+  margin-right: -10px;
+}
+
+.dtable-print .longtext-formatter-image-container img {
+  height: 28px;
+  width: 28px;
+  max-width: 28px;
+  border: 1px solid #f0f0f0;
+  max-height: 28px;
+  box-sizing: border-box;
+  border-radius: 3px;
+}
+
+.dtable-print .longtext-formatter-image-container .image-number {
+  font-style: normal;
+  display: inline-block;
+  font-size: 12px;
+  border-radius: 6px;
+  background-color: #999;
+  color: #fff;
+  transform: translate(-50%, 9px) scale(0.8);
+  min-width: 14px;
+  line-height: 14px;
+  padding: 0 3px;
+}
+
+.dtable-print .longtext-formatter-links-container .dtable-font {
+  margin-right: 4px;
+}
+
+.dtable-print .longtext-formatter-checklist-completed {
+  color: #61BD4F;
+}
+
+.dtable-print .longtext-modal {
+  position: fixed;
+  background-color:rgba(0, 0, 0, 0.5);
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1049;
+}
+
+/* multiple select */
+.dtable-print .multiple-selects-formatter {
+  display: inline-flex;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.dtable-print.row-height-32 .multiple-selects-formatter {
+  align-items: center;
+}
+
+.dtable-print .multiple-selects-formatter .formatter-show {
+  display: inline-flex;
+  min-height: 28px;
+}
+
+.dtable-print.row-height-32 .multiple-selects-formatter .formatter-show {
+  align-items: center;
+}
+
+.dtable-print .multiple-selects-formatter .multiple-select {
+  display: inline-flex;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 10px;
+  padding: 0 10px;
+  text-align: center;
+  line-height: 20px;
+  font-size: 13px;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .formatter-show,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .formatter-show,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .formatter-show {
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .formatter-show {
+  max-height: 52px;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .multiple-select,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .multiple-select,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .multiple-selects-formatter .multiple-select {
+  margin-top: 0;
+  margin-bottom: 5px;
+  margin-right: 10px;
+}
+
+
+/* single-select */
+
+/* checkbox */
+.dtable-print .dtable-print-grid-checkbox {
+  display: block;
+  border: 2px solid #e0e0e0;
+  border-radius: 3px;
+  width: 24px;
+  height: 24px;
+}
+
+.dtable-print .dtable-print-grid-checkbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24px;
+  line-height: 12px;
+}
+
+.dtable-print .dtable-print-grid-checkbox .dtable-icon-check-mark {
+  font-size: 14px;
+  color: #20C933;
+  font-weight: 600;
+}
+
+/* img */
+.dtable-print.row-height-56 .image-formatter {
+  height: 100%;
+}
+
+.dtable-print .image-formatter img {
+  max-height: 28px;
+  margin-right: 4px;
+  border: 1px solid #f0f0f0;
+}
+
+.dtable-print.row-height-56 .image-formatter img,
+.dtable-print.row-height-88 .image-formatter img,
+.dtable-print.row-height-128 .image-formatter img {
+  max-height: 100%;
+}
+
+/* file */
+.dtable-print .dtable-file-editor-formatter img,
+.dtable-print .file-formatter img {
+  max-height: 28px;
+  margin-right: 4px;
+  border: 1px solid #f0f0f0;
+}
+
+.dtable-print .file-editor-formatter {
+  padding: 2px 0;
+  display: inline-block;
+}
+
+.dtable-print.row-height-56 .file-editor-formatter,
+.dtable-print.row-height-88 .file-editor-formatter,
+.dtable-print.row-height-128 .file-editor-formatter {
+  height: 100%;
+}
+
+.dtable-print .file-editor-formatter img {
+  max-height: 28px;
+  margin-right: 4px;
+  border: 1px solid #f0f0f0;
+}
+
+.dtable-print.row-height-56 .file-editor-formatter img,
+.dtable-print.row-height-88 .file-editor-formatter img,
+.dtable-print.row-height-128 .file-editor-formatter img {
+  max-height: 100%;
+}
+
+/* button */
+.dtable-print button {
+  background: #fff;
+  border: 0;
+}
+
+.dtable-print .button-formatter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid rgb(197, 235, 158);
+  border-radius: 3px;
+  min-width: 80px;
+  width: fit-content;
+  height: 26px;
+}
+
+/* geolocation */
+
+/* number */
+.dtable-print .grid-cell-type-number {
+  text-align: right;
+  width: 100%;
+}
+
+/* link */
+.dtable-print .links-formatter {
+  display: inline-flex;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.dtable-print.row-height-32 .links-formatter {
+  align-items: center;
+}
+
+.dtable-print .links-formatter .formatter-show {
+  display: inline-flex;
+  min-height: 28px;
+}
+
+.dtable-print.row-height-32 .links-formatter .formatter-show {
+  align-items: center;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .formatter-show,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .formatter-show,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .formatter-show {
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .formatter-show {
+  max-height: 52px;
+}
+
+
+.dtable-print .links-formatter .link-formatter-container .dtable-link-item,
+.dtable-print .links-formatter .link {
+  display: inline-flex;
+  height: 20px;
+  line-height: 20px;
+  margin-right: 4px;
+  font-size: 13px;
+  padding: 0 2px;
+  max-width: 100%;
+  background: #eceff4;
+  border-radius: 3px;
+}
+
+.dtable-print .links-formatter .formatter-item {
+  background: none;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .link,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .link,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .links-formatter .link {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.dtable-print .dtable-link-item {
+  margin: 5px !important;
+}
+
+.dtable-print .links-formatter .link-name {
+  margin-left: 4px;
+  max-width: 230px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ctime、 mtime */
+
+/* default */
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text ,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text ,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  text-overflow: -o-ellipsis-lastline;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-56 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text {
+  max-height: 52px;
+  line-height: 1.5;
+  -webkit-line-clamp: 2;
+}
+
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-88 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text {
+  max-height: 98px;
+  line-height: 1.4;
+  -webkit-line-clamp: 4;
+}
+
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-default,
+.dtable-print.row-height-128 .dtable-print-react-grid-Cell.dtable-print-ellipsis .grid-cell-type-formula-text {
+  max-height: 138px;
+  line-height: 1.4;
+  -webkit-line-clamp: 6;
+}
+
+/* formula */
+.dtable-print .formula-formatter-column {
+  display: inline-flex;
+}
+
+.dtable-print .formula-formatter-column .formula-formatter-content-item.simple-cell-text-formatter {
+  padding: 0 8px;
+  align-items: center;
+  background: #eceff4;
+  border-radius: 3px;
+  height: 20px;
+  line-height: 20px;
+  margin-right: 4px;
+  font-size: 13px;
+  max-width: 100%;
+  display: inline-flex;
+}
+
+.dtable-print.row-height-56 .formula-formatter-column,
+.dtable-print.row-height-88 .formula-formatter-column,
+.dtable-print.row-height-128 .formula-formatter-column {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+.dtable-print.row-height-56 .formula-formatter-column .formula-formatter-content-item.simple-cell-text-formatter,
+.dtable-print.row-height-88 .formula-formatter-column .formula-formatter-content-item.simple-cell-text-formatter,
+.dtable-print.row-height-128 .formula-formatter-column .formula-formatter-content-item.simple-cell-text-formatter {
+  margin-bottom: 4px;
+  height: fit-content;
+}

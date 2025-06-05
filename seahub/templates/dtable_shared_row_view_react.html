@@ -1,0 +1,41 @@
+{% extends "base_for_react.html" %}
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+{% block extra_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+{% render_bundle 'dtableSharedRowView' 'css' %}
+{% endblock %}
+</head>
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    {% block extra_script %}
+    <script type="text/javascript">
+        window.shared = {
+            pageOptions: {
+                workspaceID: '{{ workspace_id }}',
+                dtableName: '{{ dtable_name }}',
+                rowContent: '{{ row_content|escapejs }}',
+                columns: '{{ columns|escapejs }}',
+            }
+        };
+    </script>
+    <script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+    {% render_bundle 'dtableSharedRowView' 'js' %}
+    {% endblock %}
+</body>
+</html>

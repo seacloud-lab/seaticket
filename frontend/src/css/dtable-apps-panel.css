@@ -1,0 +1,292 @@
+.main-panel-app-header {
+  margin: 20px 0;
+  justify-content: space-between;
+}
+
+.main-panel-app-header .main-panel-app-title {
+  font-size: 18px;
+  color: #000;
+  font-weight: 700;
+}
+
+.main-panel-app-header .main-panel-app-help {
+  cursor: pointer;
+}
+
+.main-panel-app-header .main-panel-app-help .dtable-icon-use-help {
+  font-size: 20px;
+  line-height: 1;
+  color: #bdbdbd;
+}
+
+.main-panel-app-header .main-panel-app-help:hover .dtable-icon-use-help {
+  color: #888;
+}
+
+.main-panel-app-todo {
+  margin-bottom: 40px;
+}
+
+.main-panel-app-todo .app-todo-title,
+.app-group-container .app-group-name {
+  font-size: 16px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.app-group-container .app-group-name .toggle-icon {
+  display: inline-flex;
+  transform: scale(0.8);
+  transition: all 0.1s;
+  margin-left: 5px;
+  font-size: 12px;
+  color: #666666;
+  cursor: pointer;
+}
+
+.app-group-container .app-group-name .toggle-icon:hover {
+  color: #666;
+}
+
+.main-panel-app-todo .app-todo-content {
+  width: 300px;
+  height: 120px;
+  background-color: #fff5eb;
+  border-radius: 6px;
+}
+
+.main-panel-app-todo .app-todo-content:hover {
+  cursor: pointer;
+}
+
+.main-panel-app-todo .app-todo-image-container {
+  margin-right: 54px;
+}
+
+.main-panel-app-todo .app-todo-image-container .app-todo-image {
+  width: 64px;
+  height: 64px;
+}
+
+.main-panel-app-todo .app-todo-count-container {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 17px 0;
+}
+
+.main-panel-app-todo .app-todo-count-container .app-todo-count-title {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.main-panel-app-todo .app-todo-count-container .app-todo-count {
+  font-size: 36px;
+}
+
+.main-panel-my-apps-title {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.main-panel-my-apps {
+  margin-bottom: 150px;
+}
+
+.app-group-container {
+  margin-bottom: 30px;
+}
+
+.app-group-container:last-child {
+  margin-bottom: 0;
+}
+
+.app-group-container .app-group-content {
+  flex-wrap: wrap;
+}
+
+.app-group-container .app-group-content .load-more-apps {
+  width: 100%;
+  margin-top: 14px;
+  margin-bottom: 10px;
+}
+
+.app-group-container .load-more-apps .load-more-apps-tip {
+  color: #ED7109;
+  margin: 0 16px;
+  cursor: pointer;
+}
+
+.app-group-container .load-more-apps .load-more-apps-line {
+  flex: 1;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+/* app item and app folder */
+.app-group-container .app-item,
+.app-group-container .app-folder-item {
+  min-width: 168px;
+  height: 176px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  padding: 14px;
+  cursor: pointer;
+  flex-direction: column;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.12);
+}
+
+.app-group-container .app-folder-item:hover,
+.app-group-container .app-item:hover {
+  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.18);
+}
+
+.app-group-container .app-item .app-item-icon {
+  width: 100%;
+}
+
+.app-group-container .empty-tip .no-items-img-tip {
+  width: 60px;
+  height: 60px;
+}
+
+.app-item .multicolor-icon {
+  height: 50px;
+  width: 50px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.app-item .app-item-icon-font {
+  font-size: 35px;
+}
+
+.app-item .app-item-group {
+  height: 18px;
+  width: 100%;
+  line-height: 18px;
+  font-size: 12px;
+  color: #666666;
+}
+
+.app-item .app-item-group .table-workspace-icon {
+  font-size: 12px;
+}
+
+.app-item .app-item-records {
+  width: 100%;
+  font-size: 12px;
+  color: #666666;
+}
+
+.app-group-container .apps-dropdown .create-app-folder-item {
+  padding: 3px 12px;
+  min-height: 32px;
+  line-height: 1.5;
+  width: 160px;
+  cursor: pointer;
+}
+
+.app-group-container .apps-dropdown .create-app-folder-item .item-icon {
+  font-size: 14px;
+  margin-right: 10px;
+  color: #8c8c8c;
+}
+
+.app-folder-dropdown .dropdown-item:hover .operation-icon,
+.app-group-container .apps-dropdown .create-app-folder-item:hover .item-icon {
+  color: #fff;
+}
+
+.app-item .app-item-icon,
+.app-folder-item .app-folder-item-icon {
+  height: 32px;
+  width: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.app-item .app-item-more,
+.app-folder-item .app-folder-item-more {
+  position: absolute;
+  right: 0;
+  line-height: 1;
+  color: #999;
+}
+
+.app-item .app-item-more:hover,
+.app-folder-item .app-folder-item-more:hover {
+  color: #555;
+}
+
+.app-folder-dropdown {
+  margin-left: -16px;
+  min-width: 10rem;
+}
+
+.app-folder-dropdown .dropdown-item {
+  line-height: 1.5;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 3px 12px;
+}
+
+.app-folder-dropdown .operation-icon {
+  font-size: 14px;
+  margin-right: 10px;
+  color: #8c8c8c;
+}
+
+.app-item .app-item-name,
+.app-folder-item .app-folder-item-name {
+  height: 42px;
+  width: 100%;
+  margin-top: 14px;
+  margin-bottom: 19px;
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+@media (max-width: 767px) {
+  .mobile-main-panel-app {
+    background-color: #fff;
+  }
+
+  .main-panel-app .cur-view-content {
+    padding: 0 16px;
+  }
+
+  .main-panel-app-header {
+    margin: 10px 0 14px;
+  }
+
+  .main-panel-app-header .main-panel-app-help:hover .dtable-icon-use-help {
+    color: #aaa;
+  }
+
+  .main-panel-app-todo {
+    margin-bottom: 30px;
+  }
+
+  .main-panel-app-todo .app-todo-content {
+    width: 100%;
+  }
+
+  .app-group-container .app-group-content {
+    flex-wrap: initial;
+  }
+
+  .workspace:last-child {
+    margin-bottom: 50px;
+  }
+
+  .app-group-container .mobile-operation-menu {
+    text-align: left;
+  }
+}

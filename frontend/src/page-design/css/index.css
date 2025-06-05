@@ -1,0 +1,483 @@
+.page-design-error-message {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: red;
+}
+
+.page-design-container .page-design-record {
+  overflow: hidden;
+  position: relative;
+  page-break-after: always;
+}
+
+.page-design-container .page-design-record .page-design-row-widget-container {
+  cursor: default;
+}
+
+.page-design-container .page-design-record .page-design-row-widget.pdf {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  white-space: pre-wrap;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* cell display in canvas */
+.page-design-row-widget.pdf .page-design-multiple-select-pdf-formatter .select-item,
+.page-design-row-widget.pdf .page-design-collaborator-pdf-formatter .collaborator-item,
+.page-design-row-widget.pdf .multiple-select-pdf-formatter .select-item,
+.page-design-row-widget.pdf .collaborator-pdf-formatter .collaborator-item,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item,
+.page-design-row-widget.pdf .collaborator-formatter .collaborator-item,
+.page-design-row-widget.pdf .multiple-select-formatter .select-item,
+.page-design-row-widget.pdf .page-design-collaborator-formatter .collaborator-item,
+.page-design-row-widget.pdf .page-design-multiple-select-formatter .select-item {
+  margin-bottom: 4px;
+}
+
+.page-design-row-widget.pdf .page-design-multiple-select-pdf-formatter .select-item,
+.page-design-row-widget.pdf .page-design-collaborator-pdf-formatter .collaborator-name,
+.page-design-row-widget.pdf .multiple-select-pdf-formatter .select-item,
+.page-design-row-widget.pdf .collaborator-pdf-formatter .collaborator-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* long text formatter */
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter,
+.page-design-row-widget.pdf .long-text-pdf-formatter {
+  display: block;
+  height: inherit;
+  width: inherit;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .article,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .longtext-preview-container,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .longtext-preview-container .sf-slate-viewer-scroll-container,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .longtext-preview-container .sf-slate-viewer-article-container {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  height: inherit;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: inherit;
+  max-width: inherit;
+  padding: 0 !important;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .longtext-preview-container {
+  padding: 0;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter ol,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter ul {
+  -webkit-padding-start: 40px;
+  padding-inline-start: 40px;
+  margin-bottom: 1em;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .seafile-ed-image-viwer:hover .image-full-button {
+  display: none;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .long-text-check-list,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .long-text-links {
+  margin: 0 4px;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .task-list-item input[type="checkbox"] {
+  top: 0.2em;
+}
+
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .long-text-links,
+.page-design-row-widget.pdf .page-design-long-text-pdf-formatter .long-text-images,
+.page-design-row-widget.pdf .long-text-pdf-formatter .long-text-links,
+.page-design-row-widget.pdf .long-text-pdf-formatter .long-text-images {
+  white-space: nowrap;
+}
+
+.page-design-row-widget.pdf .page-design-text-pdf-formatter,
+.page-design-row-widget.pdf .page-design-number-pdf-formatter,
+.page-design-row-widget.pdf .page-design-email-pdf-formatter,
+.page-design-row-widget.pdf .page-design-url-pdf-formatter,
+.page-design-row-widget.pdf .page-design-duration-pdf-formatter,
+.page-design-row-widget.pdf .page-design-date-pdf-formatter,
+.page-design-row-widget.pdf .page-design-geolocation-pdf-formatter,
+.page-design-row-widget.pdf .page-design-ctime-pdf-formatter,
+.page-design-row-widget.pdf .page-design-mtime-pdf-formatter,
+.page-design-row-widget.pdf .long-text-pdf-formatter,
+.page-design-row-widget.pdf .text-pdf-formatter,
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.dtable-ui.cell-formatter-container {
+  line-height: inherit;
+}
+
+.page-design-row-widget.pdf .page-design-single-select-pdf-formatter .select-item,
+.page-design-row-widget.pdf .single-select-pdf-formatter .select-item {
+  margin-right: 0 !important;
+  white-space: nowrap;
+}
+
+/* creator、last-modifier */
+.page-design-row-widget.pdf .page-design-creator-pdf-formatter .collaborator-item,
+.page-design-row-widget.pdf .page-design-last-modifier-pdf-formatter .collaborator-item {
+  width: 100%;
+  margin-right: 0;
+}
+
+.page-design-row-widget.pdf .page-design-creator-pdf-formatter .collaborator-avatar,
+.page-design-row-widget.pdf .page-design-last-modifier-pdf-formatter .collaborator-avatar {
+  width: 20px;
+}
+
+.page-design-row-widget.pdf .page-design-creator-pdf-formatter .collaborator-name,
+.page-design-row-widget.pdf .page-design-last-modifier-pdf-formatter .collaborator-name {
+  display: inline-block;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-design-row-widget.pdf .page-design-button-pdf-formatter {
+  height: 100% !important;
+  width: 100% !important;
+  display: inherit !important;
+  align-items: inherit !important;
+  justify-content: inherit !important;
+  border: inherit !important;
+  padding: 0 !important;
+  color: inherit !important;
+  background-color: inherit !important;
+}
+
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .ctime-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .mtime-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .text-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .number-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .email-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .url-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .duration-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .date-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .rate-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .auto-number-formatter,
+.page-design-row-widget.pdf .formula-formatter.multiple .formula-formatter-content-item .geolocation-formatter {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* link text */
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.page-design-link-text-formatter {
+  width: fit-content !important;
+  max-width: 100% !important;
+}
+
+/* link table */
+.page-design-row-widget.pdf .page-design-table.link-formatter {
+  display: table;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.page-design-table {
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.page-design-table .page-design-table-display {
+  overflow: hidden;
+  height: fit-content;
+  max-height: 100%;
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  border-color: inherit;
+  background-color: inherit;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.page-design-table .page-design-table-display-auto {
+  display: table;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row {
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: #fff;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-header {
+  border-top: 1px solid transparent;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row.page-design-table-row-header {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  background-color: inherit;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row .page-design-table-display-cell {
+  flex-shrink: 0;
+  height: 100%;
+  line-height: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: inherit;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row.page-design-table-display-row-auto {
+  display: table-row !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row-auto .page-design-table-display-cell {
+  border-bottom: inherit !important;
+  display: table-cell !important;
+  vertical-align: top !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row-auto .page-design-table-display-cell.page-design-table-display-link-cell {
+  padding: 4px 8px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row-auto .page-design-table-display-link-cell .link-item {
+  margin-top: 2px;
+  margin-bottom: 2px !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row .page-design-table-display-link-cell {
+  display: inline-flex;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-rows {
+  border-color: inherit;
+  background-color: inherit;
+  flex: 1;
+  overflow-y: hidden;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-rows::-webkit-scrollbar,
+.page-design-row-widget.pdf .page-design-link-pdf-formatter.page-design-table::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row .page-design-table-display-cell.page-design-table-column {
+  padding: 6px 8px;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row .page-design-table-display-cell:first-child {
+  border-left: 1px solid transparent;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-row .page-design-table-display-cell.index {
+  text-align: center;
+  padding: 6px 2px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-cell {
+  padding: 6px 8px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-cell.page-design-table-display-file-cell,
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-cell.page-design-table-display-image-cell {
+  padding: 2px 8px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-display-cell.page-design-table-display-button-cell {
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-file-pdf-formatter .file-item-icon {
+  margin-right: 4px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-image-pdf-formatter .image-item {
+  flex-shrink: 0;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-rate-pdf-formatter .dtable-font {
+  font-size: inherit;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container {
+  height: 100%;
+  width: 100%;
+  line-height: inherit;
+  overflow: hidden;
+  text-overflow: unset;
+  white-space: nowrap;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container.page-design-long-text-pdf-formatter {
+  line-height: unset;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container.page-design-single-select-pdf-formatter {
+  display: flex;
+  align-items: center;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container.page-design-link-pdf-formatter,
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container.page-design-multiple-select-pdf-formatter,
+.page-design-row-widget.pdf .page-design-table-display-cell .dtable-ui.cell-formatter-container.page-design-collaborator-pdf-formatter {
+  text-overflow: unset;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .page-design-long-text-pdf-formatter {
+  display: inline-block;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .page-design-number-pdf-formatter,
+.page-design-row-widget.pdf .page-design-table-display-cell .page-design-date-pdf-formatter {
+  text-align: right;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-cell .page-design-creator-pdf-formatter .collaborator-item,
+.page-design-row-widget.pdf .page-design-table-display-cell .page-design-last-modifier-pdf-formatter .collaborator-item {
+  width: auto;
+  padding-left: 0;
+  font-size: 14px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display .page-design-table-button-formatter {
+  height: 26px !important;
+  line-height: 12px !important;
+  border-width: 2px;
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-width: 80px !important;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter {
+  display: inline-flex;
+  min-height: 20px;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter .link-item {
+  display: inline-flex;
+  height: 20px;
+  margin-right: 4px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 400;
+  max-width: 100%;
+  background: #eceff4;
+  border-radius: 3px;
+  align-items: center;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.page-design-row-widget.pdf .page-design-link-pdf-formatter .link-name {
+  max-width: 230px;
+  height: 20px;
+  line-height: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-cell .page-design-long-text-pdf-formatter {
+  display: block !important;
+  white-space: pre-wrap !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-cell .page-design-single-select-pdf-formatter {
+  align-items: flex-start !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-multiple-select-cell .multiple-select-formatter .select-item {
+  flex: unset;
+  flex-shrink: 0;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-image-cell .image-item,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-file-cell .file-item-icon {
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row-auto .page-design-table-display-image-cell .image-item,
+.page-design-row-widget.pdf .page-design-table-display-row-auto .page-design-table-display-file-cell .file-item-icon {
+  max-height: 124px !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-link-cell .link-item {
+  margin-bottom: 4px;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-text-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-number-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-long-text-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-date-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-email-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-geolocation-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-url-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-duration-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-ctime-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-mtime-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-auto-number-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-rate-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-formula-cell .formula-formatter:not(.multiple),
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-link-formula-cell .formula-formatter:not(.multiple) {
+  white-space: pre-wrap !important;
+}
+
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-multiple-select-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-collaborator-cell .cell-formatter-container,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-link-cell .page-design-link-pdf-formatter,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-formula-cell .formula-formatter.multiple,
+.page-design-row-widget.pdf .page-design-table-display-row:not(.page-design-table-display-row-default) .page-design-table-display-link-formula-cell .formula-formatter.multiple {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  place-content: flex-start;
+}
+
+.page-design-row-widget.pdf .page-design-page-header-footer .page-design-page-header-content {
+  justify-content: space-between;
+}
+
+.page-design-row-widget.pdf .page-design-checkbox-pdf-formatter {
+  height: 100%;
+  width: 100%;
+}
+
+.page-design-row-widget.pdf .page-design-page-header-footer {
+  background-color: #fff;
+}
+
+/* Special support */
+.page-design-row-widget.pdf .page-design-table-display-row-auto .page-design-table-display-formula-cell .long-text-content {
+  white-space: normal;
+}

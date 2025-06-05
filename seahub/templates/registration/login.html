@@ -1,0 +1,284 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+
+{% block sub_title %}{% trans "Log in" %} - {% endblock %}
+
+{% block private_style %}
+.login-form-pass-member {
+    font-size: 12px;
+}
+
+.login-form-pass-member-text {
+    color: #212529;
+}
+
+.login-form-weixin-line {
+    width: 30%;
+    border-bottom: 1px solid #a6a6a6;
+}
+
+.login-panel-bottom-split {
+    width: 1px;
+    background: #eb8025;
+    height: 12px;
+}
+.show-password-toggle {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+}
+.show-password-toggle:hover {
+    color: #666;
+}
+{% endblock %}
+
+{% block main_content %}
+<div class="login-panel-outer-container mt-6 vh">
+<div class="login-panel">
+    <h1 class="login-panel-hd">{% trans "Log in" %}</h1>
+    <form action="" method="post" id="login-form">{% csrf_token %}
+        {% if cur_language == "zh-cn" %}
+        <input type="text" name="login" placeholder="{% trans "Phone, email or username" %}" aria-label="{% trans "Phone, email or username" %}" title="{% trans "Phone, email or username" %}" value="" class="input name-input" /><br />
+        {% else %}
+        <input type="text" name="login" placeholder="{% trans "Email" %}" aria-label="{% trans "Email" %}" title="{% trans "Email" %}" value="" class="input name-input" /><br />
+        {% endif %}
+        <div class="position-relative">
+            <input type="password" name="password" placeholder="{% trans "Password" %}" aria-label="{% trans "Password" %}" title="{% trans "Password" %}" value="" class="input passwd-input" id="id_password1" autocomplete="off" />
+            <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+        </div>
+
+        {% if form.captcha %}
+        <div class="ovhd">
+            <span id="refresh-captcha" title="{% trans "Refresh" %}" class="icon-refresh op-icon fright"></span>
+            {{ form.captcha }}
+        </div>
+        {% endif %}
+
+        <input type="hidden" name="next" value="{% if next %}{{ next|escape }}{% else %}{{ SITE_ROOT }}{% endif %}" />
+        {% if form.errors %}
+        {% if form.captcha.errors %}
+        {{ form.captcha.errors}}
+        {% elif form.errors.freeze_account %}
+        <p class="error">{{ form.errors.freeze_account }}</p>
+        {% elif form.errors.inactive %}
+        <p class="error">{{ form.errors.inactive }}</p>
+        {% elif form.errors.not_found %}
+        <p class="error">{{ form.errors.not_found }}</p>
+        {% elif form.password.errors %}
+        <p class="error">{{ form.password.errors }}</p>
+        {% elif form.errors.disable_pwd_login %}
+        <p class="error">{{ form.errors.disable_pwd_login }}</p>
+        {% else %}
+        <p class="error">{% trans "Incorrect account or password" %}</p>
+        {% endif %}
+        {% else %}
+        <p class="error hide"></p>
+        {% endif %}
+
+        {% if remember_days > 0 %}
+        <label class="remember login-form-pass-member d-flex align-items-center">
+            <input type="checkbox" name="remember_me" class="vam remember-input" checked="checked" />
+            <span class="vam login-form-pass-member-text ml-1">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+        </label>
+        {% endif %}
+
+        <button type="submit" class="submit btn btn-primary btn-block">{% trans "Log In" %}</button>
+    </form>
+
+    {% if enable_sso %}
+    <a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+    {% endif %}
+
+    {% if enable_multi_saml %}
+    <a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+    {% endif %}
+
+    {% if enable_weixin or enable_work_weixin or enable_org_work_weixin or enable_dingtalk or enable_org_dingtalk or enable_sms_login %}
+    <div class="mt-5">
+        <span class="d-flex align-items-center justify-content-center">
+            <span class="mr-2 login-form-weixin-line"></span>
+            <span style="color: #a6a6a6;">{% trans "Login with" %}</span>
+            <span class="ml-2 login-form-weixin-line"></span>
+        </span>
+        <div class="d-flex justify-content-center">
+            {% if enable_weixin %}
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{{ SITE_ROOT }}weixin/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/weixin.png" width="32" alt="" title="{% if LANGUAGE_CODE == 'zh-cn' %}微信{% else %}WeChat{% endif %}" />
+                </a>
+            </div>
+            {% endif %}
+            {% if enable_org_work_weixin %}
+            <div class="d-flex justify-content-center mt-4 ml-4">
+                <a href="{{ SITE_ROOT }}org-work-weixin/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/work-weixin.png" width="32" alt="" title="企业微信" />
+                </a>
+            </div>
+            {% endif %}
+            {% if enable_org_dingtalk %}
+            <div class="d-flex justify-content-center mt-4 ml-4">
+                <a href="{{ SITE_ROOT }}org-dingtalk/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/dingtalk.png" width="32" alt="" title="钉钉" />
+                </a>
+            </div>
+            {% endif %}
+            {% if enable_work_weixin %}
+            <div class="d-flex justify-content-center mt-4 ml-4">
+                <a href="{{ SITE_ROOT }}work-weixin/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/work-weixin.png" width="32" alt="" title="企业微信" />
+                </a>
+            </div>
+            {% endif %}
+            {% if enable_dingtalk %}
+            <div class="d-flex justify-content-center mt-4 ml-4">
+                <a href="{{ SITE_ROOT }}dingtalk/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/dingtalk.png" width="32" alt="" title="钉钉" />
+                </a>
+            </div>
+            {% endif %}
+            {% if enable_sms_login %}
+            <div class="d-flex justify-content-center mt-4 ml-4">
+                <a href="{{ SITE_ROOT }}accounts/login/sms-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
+                    <img src="{{MEDIA_URL}}img/sms-login.png" width="32" alt="" title="短信" />
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="login-panel-bottom-container">
+        {% if email_host %}
+        <a href="{{ SITE_ROOT }}accounts/password/reset/" class="normal forgot-passwd px-3">{% trans "Forgot password?" %}</a>
+        <span class="login-panel-bottom-split"></span>
+        {% endif %}
+        {% if enable_signup %}
+        <a href="{{ signup_url }}" class="normal px-3" id="sign-up">{% trans "Signup" %}</a>
+        <span class="login-panel-bottom-split"></span>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% include "police_service_link.html" %}
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
+
+var currentLanguage = "{{ cur_language }}";
+var $el = $('.login-panel-outer-container');
+$el.removeClass('vh');
+
+$(document).ready(function() {
+    let currentLang = $('html').attr('lang');
+    let longVocabularyLangTypes = ['de', 'es', 'pt'];
+
+    if (longVocabularyLangTypes.includes(currentLang)) {
+        $('.login-panel-bottom-container a').each(function() {
+            let classNames = $(this).attr('class');
+            if (classNames && classNames.includes('px-3')) {
+                let updatedClassNames = classNames.replace('px-3', 'px-2');
+                $(this).attr('class', updatedClassNames);
+            }
+        });
+
+        $('#lang').each(function() {
+            let classNames = $(this).attr('class');
+            if (classNames && classNames.includes('pl-3')) {
+                let updatedClassNames = classNames.replace('pl-3', 'pl-2');
+                $(this).attr('class', updatedClassNames);
+            }
+        });
+    }
+});
+
+$('#lang-context').on('click', function() {
+    var langTop = $('#lang').offset().top;
+    var langSelectorTop;
+    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    if (langSelectorHeight > langTop) {
+        langSelectorTop = '-' + (langTop - 5) + 'px';
+    } else {
+        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+    }
+    $('#lang-context-selector').css({
+        'top': langSelectorTop,
+        'right': 0
+    });
+    $('#lang-context-selector .sf-popover-con').css({
+        'max-height': $('#lang').offset().top - 10
+    });
+});
+
+$('[name="login"]').trigger('focus');
+
+function setCaptchaInputWidth() {
+    $('#id_captcha_1').outerWidth($('.input').outerWidth() - $('.captcha').width() - $('#refresh-captcha').outerWidth(true) - 10);
+}
+$(window).on('load', setCaptchaInputWidth);
+$('.captcha').on('load', setCaptchaInputWidth);
+$('#refresh-captcha').on('click', function() {
+    $.ajax({
+        url: '{% url 'captcha-refresh' %}',
+        dataType:'json',
+        cache:false,
+        success: function(data) {
+            $('.captcha').attr('src', data['image_url']);
+            $('#id_captcha_0').val(data['key']);
+        },
+        error: function() {
+            $('.error').removeClass('hide').html("{% trans "Failed to refresh the CAPTCHA, please try again later." %}");
+        }
+    });
+    return false;
+});
+
+$("body").on('click', '.show-password-toggle', function(){
+    var $pass1 = document.getElementById("id_password1");
+    if ($pass1.type === "password") {
+        $pass1.type = "text";
+    } else {
+        $pass1.type = "password";
+    }
+    $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye")
+});
+
+$('#login-form').on('submit', function(){
+    if (!$.trim($('input[name="login"]').val())) {
+        if (currentLanguage === 'zh-cn') {
+            $('.error').removeClass('hide').html("{% trans "Phone, email or username cannot be blank" %}");
+        } else {
+            $('.error').removeClass('hide').html("{% trans "Email cannot be blank" %}");
+        }
+        return false;
+    }
+    if (!$.trim($('input[name="password"]').val())) {
+        $('.error').removeClass('hide').html("{% trans "Password cannot be blank" %}");
+        return false;
+    }
+});
+
+{% if enable_sso %}
+$(function() {
+    $('#sso').on('click', function() {
+        window.location = "{% url 'sso' %}{% if next %}?next={{ next|urlencode }}{% endif %}" + encodeURIComponent(document.location.hash);
+        return false;
+    });
+});
+{% endif %}
+
+{% if enable_multi_saml %}
+$(function() {
+    $('#multi_saml_sso').on('click', function() {
+        window.location = "{% url 'multi_saml_sso' %}{% if next %}?next={{ next|urlencode }}{% endif %}" + encodeURIComponent(document.location.hash);
+        return false;
+    });
+});
+{% endif %}
+
+
+</script>
+{% endblock %}

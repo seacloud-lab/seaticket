@@ -1,0 +1,84 @@
+{% extends 'base_clean.html' %}
+{% load i18n %}
+
+{% block sub_title %}{% trans "Confirm password" %}{% endblock %}
+
+{% block private_style %}
+.container-fluid.dtable-container-fluid {
+    height: 100%;
+}
+
+.show-password-toggle {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+}
+
+.show-password-toggle:hover {
+    color: #666;
+}
+
+.tips {
+    color: #808080;
+}
+
+{% endblock %}
+
+{% block main_content %}
+<div class="confirm-password-panel-container mt-6">
+    <div class="confirm-password-panel">
+        <h1 class="confirm-password-panel-hd">{% trans "Confirm password to continue" %}</h1>
+        <p class="text-center tips">{% trans "You are entering admin area, we won't ask for your password again for a few hours." %}</p>
+        <form action="" method="post" id="confirm-password-form">{% csrf_token %}
+            <div class="position-relative">
+                <input type="password" class="input password-input" id="confirm-password-input" name="password" placeholder="{% trans "Password" %}" />
+                <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+            </div>
+            {% if password_error %}
+            <p class="error">{% trans "Incorrect password" %}</p>
+            {% else %}
+            <p class="error hide"></p>
+            {% endif %}
+            <button type="submit" class="submit btn btn-primary btn-block">{% trans "Confirm password" %}</button>
+            {% if enable_sso %}
+            <button id="shib-login" class="btn btn-secondary btn-sso btn-block">SSO</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$('.confirm-password-panel input[name="password"]').trigger('focus');
+
+$('#confirm-password-form').on('submit', function() {
+    if (!$.trim($('input[name="password"]').val())) {
+        $('.error').removeClass('hide').html("{% trans "Password cannot be blank" %}");
+        return false;
+    }
+});
+
+$("#confirm-password-form").on('click', '.show-password-toggle', function(){
+    var $confirmPasswordInput = document.getElementById("confirm-password-input");
+    if ($confirmPasswordInput.type === "password") {
+        $confirmPasswordInput.type = "text";
+    } else {
+        $confirmPasswordInput.type = "password";
+    }
+    $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye")
+});
+
+{% if enable_sso %}
+$(function() {
+    $('#shib-login').on('click', function() {
+        window.location = "{% url 'shib_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}";
+        return false;
+    });
+});
+{% endif %}
+
+</script>
+{% endblock %}

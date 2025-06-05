@@ -1,0 +1,218 @@
+{% load seahub_tags avatar_tags group_avatar_tags i18n static %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaTable" {% endif %} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:image" content={% if og_image %} "{{ og_image }}" {% else %} "{{ MEDIA_URL }}img/og-seatable-logo.png" {% endif %} />
+<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaTable - As simple as Excel, with the power of a database" %}" {% endif %} />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
+{% block viewport %}
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+{% endblock %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
+<link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
+{% block extra_style %}{% endblock %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }} d-flex flex-column h100">
+        <div id="header" class="{% block header_css_class %}d-flex{% endblock %}">
+            <a href="{{ SITE_ROOT }}" id="logo">
+                <img src="{{ MEDIA_URL }}{{ logo_path }}" title="{{ site_title }}" alt="logo" width="{{logo_width}}" height="{{logo_height}}" />
+            </a>
+            <span class="sf2-icon-menu side-nav-toggle hidden-md-up hide" title="{% trans "Side nav menu" %}" id="js-toggle-side-nav" aria-label="{% trans "Side nav menu" %}"></span>
+
+            {% block header_right %}
+            {% if request.user.is_authenticated %}
+            <div class="d-flex">
+
+                <div id="account">
+                    <a id="my-info" href="#" class="account-toggle no-deco hidden-sm-down" aria-label="{% trans "View profile and more" %}">
+                        {% avatar request.user 32 %} <span class="dtable-font dtable-icon-down3 vam"></span>
+                    </a>
+                    <span class="mobile-icon account-toggle dtable-font dtable-icon-more-vertical hidden-md-up" aria-label="{% trans "View profile and more" %}"></span>
+                    <div id="user-info-popup" class="account-popup sf-popover hide">
+                        <div class="outer-caret up-outer-caret"><div class="inner-caret"></div></div>
+                        <div class="sf-popover-con">
+                            <div class="item ovhd">
+                                {% avatar request.user 36 %}
+                                <div class="txt">
+                                    {{ request.user.username|email2nickname }}
+                                </div>
+                            </div>
+                            <span class="loading-icon loading-tip"></span>
+                            <a class="item" href="{{ SITE_ROOT }}profile/">{% trans "Personal settings" %}</a>
+                            {% block admin_link %}
+                            {% if request.user.is_staff %}
+                            <a href="{% url 'sys_info' %}" title="{% trans "System admin" %}" class="item">{% trans "System admin" %}</a>
+                            {% endif %}
+                            {% if request.user.org and request.user.org.is_staff %}
+                            <a href="{% url 'org_user_admin'%}" title="{% trans "Admin" %}" class="item">{% trans "Team admin" %}</a>
+                            {% endif %}
+                            {% if request.user.inst_admin %}
+                            <a href="{% url "institutions:useradmin" %}" title="{% trans "Admin" %}" class="item">{% trans "Admin" %}</a>
+                            {% endif %}
+                            {% endblock %}
+                            <a href="{{ SITE_ROOT }}accounts/logout/" class="item" id="logout">{% trans "Log out" %}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %} {# for non-logged-in user #}
+            <div id="lang">
+                <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span class="dtable-font dtable-icon-down3"></span></a>
+                <div id="lang-context-selector" class="sf-popover hide">
+                    <ul class="sf-popover-con">
+                        {% for LANG in LANGUAGES %}
+                        <li><a href="{% url 'i18n' %}?lang={{ LANG.0 }}">{{ LANG.1 }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            {% endblock %}
+        </div>
+
+        <div id="main" class="container-fluid w100 h100">{# since #wrapper is `d-flex`, 'w100' is necessary here. #}
+            {% block main_content %}
+            <div class="row">
+                <div id="main-panel" class="w100 ovhd">
+                    {% block main_panel %}{% endblock %}
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+
+        {% if messages %}
+        <ul class="messages hide">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">
+                {% if 'safe' in message.tags %}
+                    {{ message|safe }}
+                {% else %}
+                    {{ message }}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div id="confirm-popup" class="hide">
+            <div id="confirm-con"></div>
+            <button id="confirm-yes">{% trans "Yes" %}</button>
+            <button class="simplemodal-close">{% trans "No" %}</button>
+        </div>
+</div><!-- wrapper -->
+<script type="text/javascript">
+var SEAFILE_GLOBAL = {
+    csrfCookieName: '{{ CSRF_COOKIE_NAME }}'
+};
+var app = {
+    ui : {
+        currentDropdown: false,
+        currentHighlightedItem: false,
+        freezeItemHightlight: false
+    }
+}
+</script>
+<script type="text/javascript" src="{% static "scripts/lib/jquery-3.7.0.min.js" %}" id="jquery"></script>{# 'id="jquery"' is for pdf file view with pdf2html #}
+<script type="text/javascript">
+function prepareAjaxErrorMsg(xhr) {
+    var error_msg;
+    if (xhr.responseText) {
+        var parsed_resp = JSON.parse(xhr.responseText);
+        // use `HTMLescape` for msgs which contain variable like 'path'
+        error_msg = HTMLescape(parsed_resp.error ||
+                parsed_resp.error_msg || parsed_resp.detail);
+    } else {
+        error_msg = gettext("Failed. Please check the network.");
+    }
+    return error_msg;
+}
+function ajaxErrorHandler(xhr, textStatus, errorThrown) {
+    var error_msg = prepareAjaxErrorMsg(xhr);
+    feedback(error_msg, 'error');
+}
+{% if not request.user.is_authenticated %}
+(function() {
+    var lang_context = $('#lang-context'),
+        lang_selector = $('#lang-context-selector');
+
+    lang_context.parent().css({'position':'relative'});
+
+    if ($('#header').is(':visible')) { // for login page
+        lang_selector.css({
+            'top': lang_context.position().top + lang_context.height() + 5,
+            'right': 0
+        });
+    }
+
+    var setLangSelectorMaxHeight = function() {
+        if ($('#header').is(':visible')) { // for login page
+            $('.sf-popover-con', lang_selector).css({
+                'max-height': $(window).height() - lang_selector.offset().top - 12
+            });
+        }
+    };
+    $(window).on('resize', function() {
+        if (lang_selector.is(':visible')) {
+            setLangSelectorMaxHeight();
+        }
+    });
+
+    lang_context.on('click', function() {
+        lang_selector.toggleClass('hide');
+        if (lang_selector.is(':visible')) {
+            setLangSelectorMaxHeight();
+        }
+        return false;
+    });
+
+    $(document).on('click', function(e) {
+        var element = e.target || e.srcElement;
+        if (element.id != 'lang-context-selector' && element.id != 'lang-context') {
+            lang_selector.addClass('hide');
+        }
+    });
+})();
+{% endif %}
+
+if ($('.side-nav').length) {
+    $('#logo').addClass('hidden-sm-down');
+    $('#js-toggle-side-nav').removeClass('hide');
+}
+$('#js-toggle-side-nav').on('click', function() {
+    $('.side-nav').addClass('side-nav-shown');
+    $('').modal({
+        overlayClose: true,
+        onClose: function() {
+            $('.side-nav').removeClass('side-nav-shown');
+            $.modal.close();
+        }});
+    $('#simplemodal-container').css({'display':'none'});
+    return false;
+});
+$('.js-close-side-nav').on('click', function() {
+    $('.side-nav').removeClass('side-nav-shown');
+    return false;
+});
+</script>
+{% block extra_script %}{% endblock %}
+</body>
+</html>

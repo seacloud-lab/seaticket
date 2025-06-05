@@ -1,0 +1,1308 @@
+# Copyright (c) 2012-2016 Seafile Ltd.
+# -*- coding: utf-8 -*-
+# Django settings for dtable-web project.
+
+import sys
+import os
+import re
+
+# The usage of following three settings should be removed
+FILE_SERVER_ROOT = ''
+FILE_SERVER_PORT = '8082'
+SERVICE_URL = 'http://127.0.0.1'
+
+PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
+
+DEBUG = False
+
+CLOUD_MODE = False
+
+ADMINS = [
+    # ('Your Name', 'your_email@domain.com'),
+]
+
+MANAGERS = ADMINS
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'dtable',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
+
+# New in Django 3.2
+# Default primary key field type to use for models that don’t have a field with primary_key=True.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Local time zone for this installation. Choices can be found here:
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# although not all choices may be available on all operating systems.
+# If running in a Windows environment this must be set to the same as your
+# system time zone.
+TIME_ZONE = os.environ.get('TIME_ZONE', 'UTC')
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'en'
+
+SITE_ID = 1
+
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery.
+USE_I18N = True
+
+# If you set this to False, Django will not format dates, numbers and
+# calendars according to the current locale.
+USE_L10N = True
+
+# If you set this to False, Django will not use timezone-aware datetimes.
+USE_TZ = False
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/home/media/media.lawrence.com/media/"
+MEDIA_ROOT = '%s/media/' % PROJECT_ROOT
+
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash if there is a path component (optional in other cases).
+# Examples: "http://media.lawrence.com", "http://example.com/media/"
+MEDIA_URL = '/media/'
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = '%s/assets/' % MEDIA_ROOT
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = '/media/assets/'
+
+# Additional locations of static files
+STATICFILES_DIRS = [
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    '%s/static' % PROJECT_ROOT,
+]
+# %s/frontend/build perhaps not exists
+if os.path.isdir('%s/frontend/build' % PROJECT_ROOT):
+    STATICFILES_DIRS.append('%s/frontend/build' % PROJECT_ROOT)
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'frontend/',
+        'STATS_FILE': os.path.join(PROJECT_ROOT, 'frontend/webpack-stats.pro.json'),
+    }
+}
+
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# StaticI18N config
+STATICI18N_ROOT = '%s/static/scripts' % PROJECT_ROOT
+STATICI18N_OUTPUT_DIR = 'i18n'
+
+# List of finder classes that know how to find static files in
+# various locations.
+ENABLE_DTABLE_SERVER_CLUSTER = False
+ETCD_SERVER_HOST = ""
+ETCD_SERVER_HOST_LIST = []
+DTABLE_PROXY_SERVER_URL = ''
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'compressor.finders.CompressorFinder',
+)
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = 'y7=z$9*0+^@sdbbcibd9&e9&z-mu087!ee=efsjvbrs2wfbkr%'
+
+ENABLE_REMOTE_USER_AUTHENTICATION = False
+
+# Order is important
+MIDDLEWARE = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'seahub.auth.middleware.AuthenticationMiddleware',
+    'seahub.base.middleware.BaseMiddleware',
+    'seahub.base.middleware.InfobarMiddleware',
+    'seahub.password_session.middleware.CheckPasswordHash',
+    'seahub.base.middleware.ForcePasswdChangeMiddleware',
+    'seahub.two_factor.middleware.OTPMiddleware',
+    'seahub.two_factor.middleware.ForceTwoFactorAuthMiddleware',
+    'seahub.base.middleware.UserAgentMiddleWare',
+    # 'seahub.base.middleware.SqlPrintMiddleware',
+]
+
+
+SITE_ROOT_URLCONF = 'seahub.urls'
+ROOT_URLCONF = 'seahub.utils.rooturl'
+SITE_ROOT = '/'
+CSRF_COOKIE_NAME = 'dtable_csrftoken'
+
+# Python dotted path to the WSGI application used by Django's runserver.
+WSGI_APPLICATION = 'seahub.wsgi.application'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(PROJECT_ROOT, '../../seahub-data/custom/templates'),
+            os.path.join(PROJECT_ROOT, 'seahub/templates'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.request',
+                'django.contrib.messages.context_processors.messages',
+
+                'seahub.auth.context_processors.auth',
+                'seahub.base.context_processors.base',
+                'seahub.base.context_processors.debug',
+            ],
+        },
+    },
+]
+
+
+LANGUAGES = [
+    ('de', 'Deutsch'),
+    ('en', 'English'),
+    ('es', 'Español'),
+    ('fr', 'Français'),
+    ('ru', 'Русский'),
+    ('pt', 'Portuguese'),
+    ('zh-cn', '简体中文'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(PROJECT_ROOT, 'locale'),
+]
+
+FORCE_DEFAULT_LANGUAGE = ''
+
+INSTALLED_APPS = [
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    # In order to overide command `createsuperuser`, base app *must* before auth app.
+    # ref: https://docs.djangoproject.com/en/1.11/howto/custom-management-commands/#overriding-commands
+    'seahub.base',
+    'django.contrib.auth',
+
+    'captcha',
+    'compressor',
+    'statici18n',
+    'constance',
+    'constance.backends.database',
+    'post_office',
+    'webpack_loader',
+    'pwa',
+    'djangosaml2',
+
+    'seahub.api2',
+    'seahub.avatar',
+    #'seahub.contacts',
+    'seahub.subscription',
+    'seahub.invitations',
+    #'seahub.wiki',
+    'seahub.group',
+    'seahub.notifications',
+    'seahub.onlyoffice',
+    'seahub.options',
+    'seahub.profile',
+    #'seahub.thumbnail',
+    'seahub.password_session',
+    'seahub.admin_log',
+    'seahub.audit_log',
+    #'seahub.tags',
+    'seahub.two_factor',
+    'seahub.role_permissions',
+    'seahub.work_weixin',
+    'seahub.weixin',
+    'seahub.dingtalk',
+    'seahub.dtable',
+    'seahub.organizations',
+    'seahub.org_work_weixin',
+    'seahub.org_dingtalk',
+    'seahub.registration',
+    'seahub.sysadmin_extra',
+    'seahub.dtable_apps.workflow',
+    'seahub.dtable_apps.universal_app',
+    'seahub.ai',
+    'seahub.department_v2',
+    'seahub.seadoc'
+]
+
+# Enable or disable multiple storage backends.
+ENABLE_STORAGE_CLASSES = False
+
+# `USER_SELECT` or `ROLE_BASED` or `REPO_ID_MAPPING`
+STORAGE_CLASS_MAPPING_POLICY = 'USER_SELECT'
+
+# Enable or disable constance(web settings).
+ENABLE_SETTINGS_VIA_WEB = True
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+CONSTANCE_DATABASE_CACHE_BACKEND = 'default'
+
+AUTHENTICATION_BACKENDS = (
+    'seahub.base.accounts.AuthBackend',
+)
+
+# if ENABLE_HTTP_OAUTH set to True will enable OAuth when use http
+ENABLE_CUSTOM_OAUTH = False
+ENABLE_OAUTH = False
+ENABLE_SAML = False
+ENABLE_MULTI_SAML = False
+
+DISABLE_SSO_USER_PWD_LOGIN = False
+
+LDAP_SAML_USE_SAME_UID = False
+
+# is show user's unit
+IS_SHOW_UNIT = False
+
+# enable work weixin
+ENABLE_WORK_WEIXIN = False
+
+# enable dingtalk
+ENABLE_DINGTALK = False
+
+# enable weixin
+ENABLE_WEIXIN = False
+
+ENABLE_LDAP = False
+LDAP_USER_FIRST_NAME_ATTR = ''
+LDAP_USER_LAST_NAME_ATTR = ''
+LDAP_USER_NAME_REVERSE = False
+LDAP_FILTER = ''
+LDAP_CONTACT_EMAIL_ATTR = ''
+LDAP_EMPLOYEE_ID_ATTR = ''
+LDAP_USER_ROLE_ATTR = ''
+ACTIVATE_USER_WHEN_IMPORT = True
+
+# ldap group sync
+LDAP_SYNC_GROUP = False
+LDAP_GROUP_FILTER = ''
+LDAP_GROUP_MEMBER_ATTR = 'member'
+LDAP_GROUP_MEMBER_UID_ATTR = 'uid'
+LDAP_USER_OBJECT_CLASS = 'person'
+LDAP_GROUP_OBJECT_CLASS = 'group'
+LDAP_GROUP_UUID_ATTR = 'objectGUID'
+SYNC_GROUP_AS_DEPARTMENT = False
+LDAP_DEPARTMENT_NAME_ATTR = ''
+
+# ldap sasl auth
+ENABLE_SASL = False
+SASL_MECHANISM = ''
+SASL_AUTHC_ID_ATTR = ''
+
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/'
+LOGIN_ERROR_DETAILS = False
+LOGOUT_URL = '/accounts/logout/'
+LOGOUT_REDIRECT_URL = None
+
+ACCOUNT_ACTIVATION_DAYS = 7
+
+# enable resumable fileupload or not
+ENABLE_RESUMABLE_FILEUPLOAD = False
+RESUMABLE_UPLOAD_FILE_BLOCK_SIZE = 8
+
+# token length for the share link
+SHARE_LINK_TOKEN_LENGTH = 20
+
+# min/max expire days for a share link
+SHARE_LINK_EXPIRE_DAYS_MIN = 0 # 0 means no limit
+SHARE_LINK_EXPIRE_DAYS_MAX = 0 # 0 means no limit
+
+# default expire days should be
+# greater than or equal to MIN and less than or equal to MAX
+SHARE_LINK_EXPIRE_DAYS_DEFAULT = 0
+
+# mininum length for the password of a share link
+SHARE_LINK_PASSWORD_MIN_LENGTH = 8
+
+# mininum length for user's password
+USER_PASSWORD_MIN_LENGTH = 6
+
+# LEVEL based on four types of input:
+# num, upper letter, lower letter, other symbols
+# '3' means password must have at least 3 types of the above.
+USER_PASSWORD_STRENGTH_LEVEL = 3
+
+# default False, only check USER_PASSWORD_MIN_LENGTH
+# when True, check password strength level, STRONG(or above) is allowed
+USER_STRONG_PASSWORD_REQUIRED = False
+
+# Force user to change password when admin add/reset a user.
+FORCE_PASSWORD_CHANGE = True
+
+# Enable a sso user to change password in 'settings' page.
+ENABLE_SSO_USER_CHANGE_PASSWORD = True
+ENABLE_LDAP_USER_CHANGE_PASSWORD = False
+
+ENABLE_DELETE_ACCOUNT = True
+ENABLE_UPDATE_USER_INFO = True
+
+ENABLE_CONVERT_TO_TEAM_ACCOUNT = False
+
+# Enable or disable org repo creation by user
+ENABLE_USER_CREATE_ORG_REPO = True
+
+# Enable or disable org department
+ENABLE_ORG_DEPARTMENT = True
+
+ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL = False
+
+DISABLE_SYNC_WITH_ANY_FOLDER = False
+
+# Enable or disable sharing to all groups
+ENABLE_SHARE_TO_ALL_GROUPS = False
+
+ENABLE_USER_TO_SET_NUMBER_SEPARATOR = True
+
+ENABLE_ABUSE_REPORT = True
+
+# File preview
+FILE_PREVIEW_MAX_SIZE = 30 * 1024 * 1024
+FILE_ENCODING_LIST = ['auto', 'utf-8', 'gbk', 'ISO-8859-1', 'ISO-8859-5']
+FILE_ENCODING_TRY_LIST = ['utf-8', 'gbk']
+
+# extensions of previewed files
+TEXT_PREVIEW_EXT = """ac, am, bat, c, cc, cmake, cpp, cs, css, diff, el, h, html, htm, java, js, json, less, make, org, php, pl, properties, py, rb, scala, script, sh, sql, txt, text, tex, vi, vim, xhtml, xml, log, csv, groovy, rst, patch, go, yml"""
+
+# document file preview
+HAS_OFFICE_CONVERTER = False
+OFFICE_CONVERTOR_ROOT = ''
+
+# Common settings(file extension, storage) for avatar and group avatar.
+AVATAR_FILE_STORAGE = '' # Replace with 'seahub.base.database_storage.DatabaseStorage' if save avatar files to database
+AVATAR_ALLOWED_FILE_EXTS = ('.jpg', '.png', '.jpeg', '.gif')
+# Avatar
+AVATAR_STORAGE_DIR = 'avatars'
+AVATAR_HASH_USERDIRNAMES = True
+AVATAR_HASH_FILENAMES = True
+AVATAR_GRAVATAR_BACKUP = False
+AVATAR_DEFAULT_URL = '/avatars/default.png'
+AVATAR_DEFAULT_NON_REGISTERED_URL = '/avatars/default.png'
+AVATAR_CACHE_TIMEOUT = 14 * 24 * 60 * 60
+AVATAR_DEFAULT_SIZE = 256
+APP_AVATAR_DEFAULT_URL = '/avatars/app.png'
+# Group avatar
+GROUP_AVATAR_STORAGE_DIR = 'avatars/groups'
+GROUP_AVATAR_DEFAULT_URL = 'avatars/groups/default.png'
+AUTO_GENERATE_GROUP_AVATAR_SIZES = (20, 24, 32, 36, 48, 56)
+
+LOG_DIR = os.environ.get('SEAHUB_LOG_DIR', '/tmp')
+CACHE_DIR = "/tmp"
+central_conf_dir = os.environ.get('SEAFILE_CENTRAL_CONF_DIR', '')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    },
+}
+BROWSER_CACHE_MAX_AGE = 60 * 60 * 24 * 30
+
+# rest_framework
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'ping': '3000/minute',
+        'anon': '60/minute',
+        'user': '3000/minute',
+        'sms_verify': '1/minute',
+        'sync_common_dataset': '60/minute',
+        'org-admin': '1000/day',
+        'org_register': '3/day',
+        'app': '1000/minute',
+        'import': '20/minute',
+        'export': '20/minute',
+        'repair-base': '6/minute'
+    },
+    # https://github.com/tomchristie/django-rest-framework/issues/2891
+    'UNICODE_JSON': False,
+    # Authentication
+    'UNAUTHENTICATED_USER': 'seahub.auth.models.AnonymousUser',
+}
+
+API_THROTTLE_RATES = {}
+
+REST_FRAMEWORK_THROTTING_WHITELIST = []
+
+# sync common dataset
+SYNC_COMMON_DATASET_INTERVAL = 5 * 60
+
+# sync data
+SYNC_DATA_INTERVAL = 5 * 60
+
+# trash cleanning interval by days
+TRASH_CLEAN_AFTER_DAYS = 30
+
+# file and path
+MAX_UPLOAD_FILE_NAME_LEN    = 255
+MAX_FILE_NAME 		    = MAX_UPLOAD_FILE_NAME_LEN
+
+# Whether or not activate user when registration complete.
+# If set to ``False``, new user will be activated by admin or via activate link.
+ACTIVATE_AFTER_REGISTRATION = True
+# Whether or not send activation Email to user when registration complete.
+# This option will be ignored if ``ACTIVATE_AFTER_REGISTRATION`` set to ``True``.
+REGISTRATION_SEND_MAIL = False
+
+# Whether or not send notify email to sytem admins when user registered or
+# first login through Shibboleth.
+NOTIFY_ADMIN_AFTER_REGISTRATION = False
+
+# Whether or not activate inactive user on first login. Mainly used in LDAP user sync.
+ACTIVATE_AFTER_FIRST_LOGIN = False
+
+REQUIRE_DETAIL_ON_REGISTRATION = False
+
+# Account initial password, for password resetting.
+# INIT_PASSWD can either be a string, or a function (function has to be set without the brackets)
+def genpassword():
+    from django.utils.crypto import get_random_string
+    return get_random_string(10)
+INIT_PASSWD = genpassword
+
+# browser tab title
+SITE_TITLE = 'Private SeaTable'
+
+# Base name used in email sending
+SITE_NAME = 'SeaTable'
+
+# Path to the license file(relative to the media path)
+LICENSE_PATH = os.path.join(PROJECT_ROOT, '../../seatable-license.txt')
+
+# Path to the background image file of login page(relative to the media path)
+LOGIN_BG_IMAGE_PATH = 'img/login-bg.jpg'
+
+# Path to the favicon file (relative to the media path)
+# tip: use a different name when modify it.
+FAVICON_PATH = 'favicons/seatable-favicon.png'
+FAVICON_NOTIFICATION_PATH = 'favicons/seatable-notification.png'
+
+APPLE_TOUCH_ICON_PATH = 'favicons/seatable-favicon.png'
+
+# Path to the Logo Imagefile (relative to the media path)
+LOGO_PATH = 'img/seatable-logo.png'
+# logo size. the unit is 'px'
+LOGO_WIDTH = ''
+LOGO_HEIGHT = 32
+
+CUSTOM_LOGO_PATH = 'custom/mylogo.png'
+CUSTOM_FAVICON_PATH = 'custom/seatable-favicon.ico'
+CUSTOM_FAVICON_NOTIFICATION_PATH = 'custom/seatable-notification.ico'
+CUSTOM_LOGIN_BG_PATH = 'custom/login-bg.jpg'
+
+# used before version 6.3: the relative path of css file under seahub-data (e.g. custom/custom.css)
+BRANDING_CSS = ''
+
+# used in 6.3+, enable setting custom css via admin web interface
+ENABLE_BRANDING_CSS = False
+
+# Using Django to server static file. Set to `False` if deployed behide a web
+# server.
+SERVE_STATIC = True
+
+# Enable or disable registration on web.
+ENABLE_SIGNUP = False
+
+USE_PHONE_REGISTRATION_BY_DEFAULT = False
+
+# show 'log out' icon in top-bar or not.
+SHOW_LOGOUT_ICON = False
+
+# introduction video link
+INTRODUCTION_VIDEO_LINK = 'https://cloud.seafile.com/f/b0caa92cbce74f7396bd/?raw=1'
+
+# enable show introduction video when first login
+ENABLE_INTRODUCTION_VIDEO = False
+
+# enable show user guide panel
+ENABLE_USER_GUIDE = False
+GETTING_START_LINK = ''
+USE_CASES_LINK = ''
+TRAINING_SERVICES_LINK = ''
+VIDEO_TUTORIALS_LINK = ''
+
+#enable create base from template
+SHOW_TEMPLATES_LINK = os.environ.get('SEATABLE_SHOW_TEMPLATES_LINK', False)
+TEMPLATE_BASE_API_TOKEN = os.environ.get('SEATABLE_TEMPLATE_BASE_API_TOKEN', '')
+TEMPLATE_TABLE_NAME = os.environ.get('SEATABLE_TEMPLATE_TABLE_NAME', '')
+ENABLE_CREATE_BASE_FROM_TEMPLATE = os.environ.get('SEATABLE_ENABLE_CREATE_BASE_FROM_TEMPLATE', True)
+
+# help link
+HELP_LINK = os.environ.get('SEATABLE_HELP_LINK', 'https://docs.seatable.io')
+
+# powered by link
+POWERED_BY_LINK = 'https://seatable.cn/'
+
+# Enable or disable login with phone
+ENABLE_BIND_PHONE = False
+
+CAN_REMOVE_BASE_PASSWORD_VIA_PHONE = False
+
+# aliyun sms config
+ALIYUN_SMS_CONFIG = {}
+
+# privacy policy link and service link
+PRIVACY_POLICY_LINK = ''
+TERMS_OF_SERVICE_LINK = ''
+
+# reject registration org prefix
+REJECT_REGISTRATION_ORG_PREFIX = []
+
+# reject registration org re str
+REJECT_REGISTRATION_ORG_RE_STR = []
+
+# org common dataset
+ENABLE_ORG_COMMON_DATASET = True
+
+# enable invite a friend
+ENABLE_INVITE_A_FRIEND = False
+
+# enable tell a friend for cloud.seatable.io
+ENABLE_TELL_A_FRIEND = False
+
+# friend notification link for cloud.seatable.io
+FRIEND_INVITATION_LINK = ''
+
+# workflow
+ENABLE_WORKFLOW = False
+
+# universal app cn help link
+UNIVERSAL_APP_CN_HELP_LINK = 'https://docs.seatable.cn/published/seatable-user-manual/universal-application.md'
+
+# slide captcha
+ENABLE_SLIDE_CAPTCHA = False
+SLIDE_CAPTCHA_IMAGE_URL = ''
+
+DISABLE_ADDRESSBOOK_V1 = False
+
+# addressbook_v2
+ENABLE_ADDRESSBOOK_V2 = False
+ENABLE_DEPARTMENT_ADMIN_MANAGE_MEMBER_BASES = False
+
+# rate limit
+REQUEST_RATE_LIMIT_NUMBER = 3
+REQUEST_RATE_LIMIT_PERIOD = 60  # seconds
+
+# custom colors，example [{'color': '#FDFF55', 'text_color': '#212529'}, {'color': '#F5C043', 'text_color': '#FFFFFF'}]
+CUSTOM_COLORS = []
+
+# For security consideration, please set to match the host/domain of your site, e.g., ALLOWED_HOSTS = ['.example.com'].
+# Please refer https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts for details.
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = ["https://*", "http://*", "chrome-extension://*"]
+
+# Logging
+LOG_LEVEL = os.environ.get('SEATABLE_LOG_LEVEL', '"INFO"')
+SEATABLE_LOGS_HANDLERS = ['console'] if os.environ.get('SEATABLE_LOG_TO_STDOUT', 'false') == 'true' else ['file']
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': '[dtable-web] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'file': {
+            'format': '[%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'dtable_web.log'),
+            'formatter': 'file'
+        },
+    },
+    'loggers': {
+        '': {
+            'level': "INFO",
+            'handlers': SEATABLE_LOGS_HANDLERS,
+            'propagate': False
+        },
+        'django.request': {
+            'level': "INFO",
+            'handlers': SEATABLE_LOGS_HANDLERS,
+            'propagate': False
+        },
+        'py.warnings': {
+            'level': "INFO",
+            'handlers': SEATABLE_LOGS_HANDLERS,
+            'propagate': False
+        }
+    }
+}
+
+#Login Attempt
+LOGIN_ATTEMPT_LIMIT = 5
+LOGIN_ATTEMPT_TIMEOUT = 15 * 60 # in seconds (default: 15 minutes)
+FREEZE_USER_ON_LOGIN_FAILED = False # deactivate user account when login attempts exceed limit
+
+# Age of cookie, in seconds (default: 1 day).
+SESSION_COOKIE_AGE = 24 * 60 * 60
+
+# Days of remembered login info (deafult: 7 days)
+LOGIN_REMEMBER_DAYS = 7
+
+# Need to check user agreement before logging in and registering(Domestic cloud services)
+CN_FORCE_USER_AGREE_TERMS = False
+
+SEAFILE_VERSION = '6.3.3'
+
+CAPTCHA_IMAGE_SIZE = (90, 42)
+
+###################
+# Image Thumbnail #
+###################
+
+# Enable or disable thumbnail
+ENABLE_THUMBNAIL = True
+
+# Absolute filesystem path to the directory that will hold thumbnail files.
+SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../../seahub-data')
+if os.path.exists(SEAHUB_DATA_ROOT):
+    THUMBNAIL_ROOT = os.path.join(SEAHUB_DATA_ROOT, 'thumbnail')
+else:
+    THUMBNAIL_ROOT = os.path.join(PROJECT_ROOT, 'seahub/thumbnail/thumb')
+
+THUMBNAIL_EXTENSION = 'png'
+
+# for thumbnail: height(px) and width(px)
+THUMBNAIL_DEFAULT_SIZE = 48
+THUMBNAIL_SIZE_FOR_GRID = 192
+THUMBNAIL_SIZE_FOR_ORIGINAL = 1024
+
+# size(MB) limit for generate thumbnail
+THUMBNAIL_IMAGE_SIZE_LIMIT = 30
+THUMBNAIL_IMAGE_ORIGINAL_SIZE_LIMIT = 256
+
+# video thumbnails
+ENABLE_VIDEO_THUMBNAIL = False
+THUMBNAIL_VIDEO_FRAME_TIME = 5  # use the frame at 5 second as thumbnail
+
+ENABLE_WEBDAV_SECRET = False
+ENABLE_USER_SET_CONTACT_EMAIL = False
+ENABLE_USER_SET_NAME = True
+
+ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER = False
+
+# office file template root
+OFFICE_TEMPLATE_ROOT = os.path.join(MEDIA_ROOT, 'office-template')
+
+####################
+# Guest Invite     #
+####################
+ENABLE_GUEST_INVITATION = False
+INVITATION_ACCEPTER_BLACKLIST = []
+
+########################
+# Security Enhancements #
+########################
+
+ENABLE_SUDO_MODE = True
+FILESERVER_TOKEN_ONCE_ONLY = True
+
+#################
+# Email sending #
+#################
+
+EMAIL_USE_TLS = os.environ.get('SEATABLE_EMAIL_USE_TLS', False)
+EMAIL_HOST = os.environ.get('SEATABLE_EMAIL_HOST', '')
+EMAIL_HOST_USER = os.environ.get('SEATABLE_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('SEATABLE_EMAIL_HOST_PASSWORD', '')
+EMAIL_PORT = os.environ.get('SEATABLE_EMAIL_PORT', 25)
+DEFAULT_FROM_EMAIL = os.environ.get('SEATABLE_DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+SERVER_EMAIL = os.environ.get('SEATABLE_SERVER_EMAIL', EMAIL_HOST_USER)
+
+SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER = True # Whether to send email when a system staff adding new member.
+SEND_EMAIL_ON_RESETTING_USER_PASSWD = True # Whether to send email when a system staff resetting user's password.
+SEND_EMAIL_ON_ORG_ADD_NEW_USER = True  # Whether to send email when add new user.
+SEND_EMAIL_ON_ACTIVATING_USER = True  # Whether to send email when a system staff activating a member
+SEND_EMAIL_ON_ACTIVATING_ORG_USER = False # Whether to send email when org admin activating a member
+
+############################################
+# File download type through external link #
+############################################
+
+ACCESS_FILE_TYPES_THROUGH_EXTERNAL_LINK = ['Image', 'Document', 'PDF', 'SpreadSheet']
+
+EXTERNAL_LINK_SUPPORT_DOWNLOAD_TYPE =  ['TEXT', 'IMAGE', 'DOCUMENT', 'SVG' , 'PDF' , 'MARKDOWN']
+
+EXTERNAL_LINK_SUPPORT_DOWNLOAD_SIZE = 50000000
+
+##########################
+# Settings for frontend  #
+##########################
+
+DTABLE_SOCKET_URL = ''
+
+##########################
+# Settings for dtable    #
+##########################
+
+
+# dtable server url
+DTABLE_SERVER_URL = ''
+
+# dtable private key
+DTABLE_PRIVATE_KEY = ''
+
+DTABLE_WEB_SERVICE_URL = ''
+
+ENABLE_SEATABLE_AI = False
+SEATABLE_AI_SERVER_URL = ''
+ENABLED_ASSISTANT_TYPES = ['document_and_receipt_recognition_assistant', 'issue_manage_assistant']
+
+AI_PRICES = {}
+BAIDU_OCR_TOKENS = {}
+
+DTABLE_DB_URL = ''
+INNER_DTABLE_DB_URL = 'http://127.0.0.1:7777'
+
+DTABLE_STORAGE_SERVER_URL = 'http://127.0.0.1:6666'
+NEW_DTABLE_IN_STORAGE_SERVER = False
+
+DTABLE_BAIDU_MAP_KEY = ''
+
+DTABLE_MINE_MAP_KEY = ''
+# settings for local deployment of mineMap
+DTABLE_MINE_MAP_DOMAIN_URL = ''
+DTABLE_MINE_MAP_DATA_DOMAIN_URL = ''
+DTABLE_MINE_MAP_SERVER_DOMAIN_URL = ''
+DTABLE_MINE_MAP_SPRITE_URL = ''
+DTABLE_MINE_MAP_SERVICE_URL = ''
+
+DTABLE_GOOGLE_MAP_KEY = ''
+
+SSO_SECRET_KEY = ''
+
+USE_EXTERNAL_TEAM_ADMIN = False
+EXTERNAL_TEAM_ADMIN_SECRET_KEY = ''
+EXTERNAL_TEAM_ADMIN_URL = ''
+
+# enable show department column for all languages
+ENABLE_DEPARTMENT_COLUMN_FOR_ALL = False
+
+# enable show wechat support
+SHOW_WECHAT_SUPPORT_GROUP = False
+
+ENABLE_DEMO_USER = False
+CLOUD_DEMO_USER = 'demo@seafile.com'
+
+ENABLE_TWO_FACTOR_AUTH = False
+OTP_LOGIN_URL = '/profile/two_factor_authentication/setup/'
+TWO_FACTOR_DEVICE_REMEMBER_DAYS = 90
+ENABLE_FORCE_2FA_TO_ALL_USERS = False
+
+ENABLE_SMS_TWO_FACTOR_AUTH = False
+
+ENABLE_SMS_LOGIN = False
+
+SEND_SMS_ATTEMPT_LIMIT = 5
+SEND_SMS_ATTEMPT_TIMEOUT = 60 * 60  # 1h
+
+DTABLE_EVENTS_IO_SERVER_URL = 'http://127.0.0.1:6000'
+
+# enable show archiving rows
+ENABLE_ARCHIVING_ROWS = False
+
+# dtable enable email column
+DTABLE_ENABLE_EMAIL_COLUMN = True
+
+SEATABLE_MARKET_URL = ''
+
+DTABLE_EXPORT_MAX_SIZE = 100 # mb
+
+USE_INNER_FILESERVER_FOR_DTABLE_SERVER = True
+
+USE_INNER_DTABLE_SERVER = True
+
+# enable record user common operations
+AUDIT_LOGS_RECORD_USER_OPERATIONS = False
+
+# Opearation Log DB
+ENABLE_OPERATION_LOG_DB = False
+
+# Python Pipeline
+SEATABLE_FAAS_URL = os.environ.get('PYTHON_SCHEDULER_URL', 'http://python-scheduler')
+SEATABLE_FAAS_AUTH_TOKEN = os.environ.get('PYTHON_SCHEDULER_AUTH_TOKEN', '')
+
+EXPORT2EXCEL_DEFAULT_STRING = 'illegal character in excel'
+
+GROUP_MEMBER_LIMIT = 500
+
+ARCHIVE_VIEW_EXPORT_ROW_LIMIT = 250000
+BIG_DATA_ROW_IMPORT_LIMIT = 500000
+BIG_DATA_ROW_UPDATE_LIMIT = 500000
+
+PERSONAL_GROUP_LIMIT = 500
+
+PERSONAL_BASE_LIMIT = 500
+
+DISABLE_ADDING_PERSONAL_BASES = False
+
+FREE_ORG_BASE_LIMIT = 500
+
+GROUP_BASE_LIMIT = 500
+
+DEFAULT_DTABLE_FORMAT_VERSION = 9
+
+# base rows total count limit
+BASE_WRITABLE_LIMIT = 100000
+
+DEFAULT_SEAFILE_SERVER = ''
+
+INIT_BASE_CONF = {
+    'TEMPLATES_WORKSPACE_ID': 0,
+    'BASES': ['']
+}
+
+# whether load dtable via api-gateway
+LOAD_DTABLE_FROM_API_GATEWAY = True
+
+# whether proxy socket.io via api-gateway
+ENABLE_API_GATEWAY_PROXY_SOCKET = True
+
+########################
+# internal plugins     #
+########################
+
+INTERNAL_PLUGINS_CONFIG = [
+    {
+        'isInternal': 1,
+        'name': 'calendar',
+        'version': '5.0.9',
+        "display_type": "overlay",
+        'display_name': {
+            'de': '',
+            'en': 'Calendar',
+            'fr': '',
+            'zh-cn': '日历'
+        },
+        'description': {
+            'de': '',
+            'en': 'View your records in a calendar.',
+            'fr': '',
+            'zh-cn': '在日历中查看你的记录。'
+        },
+        'has_css': 1,
+        'has_icon': 1,
+        'has_card_image': 0
+    }
+]
+
+# PWA
+PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
+PWA_APP_NAME = 'SeaTable'
+PWA_APP_DESCRIPTION = "Online rich form application"
+PWA_APP_THEME_COLOR = '#0A0302'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/media/favicons/seatable-favicon.png',
+        'sizes': '512x512',
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/media/favicons/seatable-favicon.png',
+        'sizes': '512x512',
+    }
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'
+ADVANCED_PLUGINS = []
+
+########################
+# external apps     #
+########################
+DTABLE_APPS_CONFIG = [
+    {
+        "app_name": "universal-app",
+        "app_type": "universal-app",
+        "version": "5.3.90",
+        "display_name": {
+            "de": "Universelle App",
+            "en": "Universal App",
+            "fr": "Universal App",
+            "zh-cn": "通用应用"
+        },
+        "description": {
+            "de": "Erstellen Sie eine mehrseitige Anwendung mit Formularen, Tabellen, Galerien und anderen Elementen, die Sie in Ihre Webseite einbinden können",
+            "en": "Create a complex app by combining a variety of predefined page types (e.g. table, form, kanban, gallery).",
+            "fr": "Build your own specific application, better cooperate with your customers, suppliers or users.",
+            "zh-cn": "通过组合各种预定义的页面类型（例如表格、表单、看板、图库）创建一个复杂的应用程序。"
+        }
+    },
+    {
+        "app_name": "gallery",
+        "app_type": "gallery",
+        "version": "0.1.29",
+        "display_name": {
+            "de": "Galerie",
+            "en": "Gallery",
+            "fr": "Galerie",
+            "zh-cn": "图库"
+        },
+        "description": {
+            "de": "Zeigen Sie Ihre Datensätze in einer Galerie an.",
+            "en": "Share your image assets including meta-information publicly in a gallery.",
+            "fr": "Affichez vos enregistrements dans une galerie.",
+            "zh-cn": "在图库中公开分享你的图片文件，包括元信息。"
+        }
+    },
+    {
+        "app_name": "sql-query",
+        "app_type": "sql-query",
+        "version": "4.4.1",
+        "display_name": {
+            "de": "Datenabfrage",
+            "en": "Data query",
+            "fr": "requête de données",
+            "zh-cn": "数据查询"
+        },
+        "description": {
+            "de": "Erstellen Sie eine Datenabfrageanwendung, mit der Benutzer Datensätze über ein bestimmtes Feld abfragen können.",
+            "en": "Allow a public audience to query a base using predefined search and result parameters.",
+            "fr": "Créez une application de requête de données qui permet aux utilisateurs d'interroger des enregistrements via un certain champ.",
+            "zh-cn": "构建一个数据查询应用程序，允许用户通过某些字段查询记录。用户不需要登录即可使用。"
+        }
+    },
+    {
+        "app_name": "map-cn",
+        "app_type": "map-cn",
+        "version": "0.1.32",
+        "display_name": {
+            "de": "Karte",
+            "en": "Map",
+            "fr": "carte",
+            "zh-cn": "地图"
+        },
+        "description": {
+            "de": "Das Karten-Plugin kann Datensätze auf der Karte anzeigen",
+            "en": "Map plugin can display records on the map",
+            "fr": "Le plugin de carte peut afficher des enregistrements sur la carte",
+            "zh-cn": "地图app能把记录显示到地图上"
+        }
+    },
+    {
+        "app_name": "big-data-screen",
+        "app_type": "big-data-screen",
+        "version": "0.0.44",
+        "display_name": {
+            "de": "",
+            "en": "Statistics on big screen",
+            "fr": "",
+            "zh-cn": "数据大屏"
+        },
+        "description": {
+            "de": "Zeigen Sie statistische Diagramme auf dem großen Bildschirm an",
+            "en": "Show statistics on big screen",
+            "fr": "Affichez des graphiques statistiques sur grand écran",
+            "zh-cn": "在大屏展示统计图表"
+        }
+    }
+]
+
+
+ENABLED_EXTERNAL_APPS = [
+    "gallery",
+    "sql-query",
+    "universal-app",
+]
+
+UNIVERSAL_APP_SNAPSHOT_LIMITS = 30
+
+BIG_DATA_SCREENS_APP_SUPPORT_REFRESH = False
+
+##########################
+# Settings for seadoc    #
+##########################
+
+ENABLE_SEADOC = False
+SEADOC_SERVER_URL = 'http://127.0.0.1:7070'
+
+# For dtable query app
+DATA_SEARCH_MAX_QUERY_TIMES_PER_MINUTE = 120
+
+AUDIT_FILE_TYPES = ['md', 'pdf', 'docx', 'doc', 'xlsx', 'ppt', 'pptx', 'xls', 'csv', 'txt']
+
+# If False, the configuration will always be read from settings.py instead of from the database
+CONSTANCE_ENABLED = True
+
+d = os.path.dirname
+DTABLE_EVENTS_CONFIG_FILE = os.environ.get(
+    'DTABLE_EVENTS_CONFIG_FILE',
+    os.path.join(
+        d(d(d(d(os.path.abspath(__file__))))), 'conf', 'dtable-events.conf'
+    )
+)
+
+del d
+if not os.path.exists(DTABLE_EVENTS_CONFIG_FILE):
+    del DTABLE_EVENTS_CONFIG_FILE
+
+
+# custom navigation settings
+CUSTOM_NAV_ITEMS = []
+# example nav items
+# CUSTOM_NAV_ITEMS = [
+#     {
+#         'icon': 'dtable-icon-cancel-freeze',
+#         'desc': 'Demo',
+#         'link': 'http://example.com/'
+#     }
+# ]
+
+#####################
+# External settings #
+#####################
+
+def load_local_settings(module):
+    '''Import any symbols that begin with A-Z. Append to lists any symbols
+    that begin with "EXTRA_".
+
+    '''
+    for attr in dir(module):
+        match = re.search('^EXTRA_(\w+)', attr)
+        if match:
+            name = match.group(1)
+            value = getattr(module, attr)
+            try:
+                globals()[name] += value
+            except KeyError:
+                globals()[name] = value
+        elif re.search('^[A-Z]', attr):
+            globals()[attr] = getattr(module, attr)
+
+
+# Load local_settings.py
+try:
+    import seahub.local_settings
+except ImportError:
+    pass
+else:
+    load_local_settings(seahub.local_settings)
+    del seahub.local_settings
+
+# Load seahub_settings.py in server release
+try:
+    if os.path.exists(central_conf_dir):
+        sys.path.insert(0, central_conf_dir)
+    import dtable_web_settings
+except ImportError:
+    pass
+else:
+    INSTALLED_APPS.append('gunicorn')
+
+    load_local_settings(dtable_web_settings)
+    del dtable_web_settings
+
+
+# config in env
+# jwt private key
+DTABLE_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or DTABLE_PRIVATE_KEY
+
+if os.environ.get('ENABLE_SEADOC', ''):
+    ENABLE_SEADOC = os.environ.get('ENABLE_SEADOC', '').lower() == 'true'
+SEADOC_SERVER_URL = os.environ.get('SEADOC_SERVER_URL', '') or SEADOC_SERVER_URL
+
+# For database conf., now only support mysql
+if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
+    ## For dtable_db
+    _rewrite_db_env_key_map = {
+        'HOST': 'SEATABLE_MYSQL_DB_HOST',
+        'PORT': 'SEATABLE_MYSQL_DB_PORT',
+        'USER': 'SEATABLE_MYSQL_DB_USER',
+        'PASSWORD': 'SEATABLE_MYSQL_DB_PASSWORD',
+        'NAME': 'SEATABLE_MYSQL_DB_DTABLE_DB_NAME'
+    }
+
+    for db_key, env_key in _rewrite_db_env_key_map.items():
+        if env_value := os.environ.get(env_key):
+            DATABASES['default'][db_key] = env_value
+
+    if DATABASES['default'].get('PORT'):
+        try:
+            int(DATABASES['default']['PORT'])
+        except:
+            raise ValueError(f"Invalid database port: {DATABASES['default']['PORT']}")
+
+## For operation logs DB (optional)
+ENABLE_OPERATION_LOG_DB = os.environ.get('SEATABLE_ENABLE_OPERATION_LOG_DB') or ENABLE_OPERATION_LOG_DB
+
+if ENABLE_OPERATION_LOG_DB:
+    _rewrite_oplog_db_env_key_map = {
+        'HOST': 'SEATABLE_OPERATION_LOG_DB_HOST',
+        'PORT': 'SEATABLE_OPERATION_LOG_DB_PORT',
+        'USER': 'SEATABLE_OPERATION_LOG_DB_USER',
+        'PASSWORD': 'SEATABLE_OPERATION_LOG_DB_PASSWORD',
+        'NAME': 'SEATABLE_OPERATION_LOG_DB_NAME'
+    }
+
+    if 'operation_log' not in DATABASES:
+        DATABASES['operation_log'] = {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'dtable',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        }
+    for db_key, env_key in _rewrite_oplog_db_env_key_map.items():
+        if env_value := os.environ.get(env_key):
+            DATABASES['operation_log'][db_key] = env_value
+
+    if DATABASES['operation_log'].get('PORT'):
+        try:
+            int(DATABASES['operation_log']['PORT'])
+        except:
+            raise ValueError(f"Invalid operation log database port: {DATABASES['operation_log']['PORT']}")
+elif not ENABLE_OPERATION_LOG_DB:
+    try:
+        del DATABASES['operation_log']
+    except:
+        pass
+
+## For cache
+if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default'].get('BACKEND'):
+    redis_cache = 'RedisCache' in CACHES['default'].get('BACKEND')
+    cache_cfg = CACHES['default'].get('LOCATION').split('://', 1)[-1]
+    if redis_cache:
+        try:
+            redis_pwd, redis_host_info = cache_cfg.split('@', 1)
+            redis_host, redis_port = redis_host_info.split(':', 1)
+        except:
+            redis_pwd = ''
+            redis_host, redis_port = cache_cfg.split(':', 1)
+        redis_host = os.environ.get('REDIS_HOST') or redis_host
+        redis_port = os.environ.get('REDIS_PORT') or redis_port
+        try:
+            int(redis_port.split('/', 1)[0])
+        except:
+            raise ValueError(f"Invalid radis port: {redis_port}")
+        redis_pwd = os.environ.get('REDIS_PASSWORD') or redis_pwd
+
+        CACHES['default']['LOCATION'] = f'redis://{(redis_pwd + "@") if redis_pwd else ""}{redis_host}:{redis_port}'
+
+        if redis_pwd:
+            try:
+                del CACHES['default']['OPTIONS']['PASSWORD']
+            except:
+                pass
+
+# merge RESTFUL API RATES
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
+
+# Remove install_topdir from path
+sys.path.pop(0)
+
+# Following settings are private, can not be overwrite.
+IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
+
+INNER_FILE_SERVER_ROOT = 'http://127.0.0.1:' + FILE_SERVER_PORT
+
+INNER_DTABLE_SERVER_URL = 'http://127.0.0.1:5000/'
+
+CONSTANCE_CONFIG = {
+    'DTABLE_WEB_SERVICE_URL': (DTABLE_WEB_SERVICE_URL, ''),
+    'SERVICE_URL': (SERVICE_URL, ''),
+    'FILE_SERVER_ROOT': (FILE_SERVER_ROOT, ''),
+    'DISABLE_SYNC_WITH_ANY_FOLDER': (DISABLE_SYNC_WITH_ANY_FOLDER, ''),
+
+    'ENABLE_SIGNUP': (ENABLE_SIGNUP, ''),
+    'ACTIVATE_AFTER_REGISTRATION': (ACTIVATE_AFTER_REGISTRATION, ''),
+    'REGISTRATION_SEND_MAIL': (REGISTRATION_SEND_MAIL, ''),
+    'LOGIN_REMEMBER_DAYS': (LOGIN_REMEMBER_DAYS, ''),
+    'LOGIN_ATTEMPT_LIMIT': (LOGIN_ATTEMPT_LIMIT, ''),
+    'FREEZE_USER_ON_LOGIN_FAILED': (FREEZE_USER_ON_LOGIN_FAILED, ''),
+
+    'ENABLE_USER_CREATE_ORG_REPO': (ENABLE_USER_CREATE_ORG_REPO, ''),
+
+    'FORCE_PASSWORD_CHANGE': (FORCE_PASSWORD_CHANGE, ''),
+
+    'USER_STRONG_PASSWORD_REQUIRED': (USER_STRONG_PASSWORD_REQUIRED, ''),
+    'USER_PASSWORD_MIN_LENGTH': (USER_PASSWORD_MIN_LENGTH, ''),
+    'USER_PASSWORD_STRENGTH_LEVEL': (USER_PASSWORD_STRENGTH_LEVEL, ''),
+
+    'SHARE_LINK_TOKEN_LENGTH': (SHARE_LINK_TOKEN_LENGTH, ''),
+    'SHARE_LINK_PASSWORD_MIN_LENGTH': (SHARE_LINK_PASSWORD_MIN_LENGTH, ''),
+    'ENABLE_TWO_FACTOR_AUTH': (ENABLE_TWO_FACTOR_AUTH, ''),
+
+    'TEXT_PREVIEW_EXT': (TEXT_PREVIEW_EXT, ''),
+    'ENABLE_SHARE_TO_ALL_GROUPS': (ENABLE_SHARE_TO_ALL_GROUPS, ''),
+
+    'SITE_NAME': (SITE_NAME, ''),
+    'SITE_TITLE': (SITE_TITLE, ''),
+
+    'ENABLE_BRANDING_CSS': (ENABLE_BRANDING_CSS, ''),
+    'CUSTOM_CSS': ('', ''),
+
+    'DTABLE_EXPORT_MAX_SIZE': (DTABLE_EXPORT_MAX_SIZE, ''),
+}
+
+# if Seafile admin enable remote user authentication in conf/seahub_settings.py
+# then add 'seahub.auth.middleware.SeafileRemoteUserMiddleware' and
+# 'seahub.auth.backends.SeafileRemoteUserBackend' to settings.
+if ENABLE_REMOTE_USER_AUTHENTICATION:
+    MIDDLEWARE.append('seahub.auth.middleware.SeafileRemoteUserMiddleware')
+    AUTHENTICATION_BACKENDS += ('seahub.auth.backends.SeafileRemoteUserBackend',)
+
+if ENABLE_CUSTOM_OAUTH or ENABLE_OAUTH or ENABLE_WORK_WEIXIN or ENABLE_DINGTALK or ENABLE_WEIXIN:
+    AUTHENTICATION_BACKENDS += ('seahub.oauth.backends.OauthRemoteUserBackend',)
+
+if ENABLE_SAML or ENABLE_MULTI_SAML:
+    MIDDLEWARE.append('djangosaml2.middleware.SamlSessionMiddleware')
+    AUTHENTICATION_BACKENDS += ('seahub.saml.backends.SAMLRemoteUserBackend',)
+    SAML_CONFIG_LOADER = 'seahub.saml.utils.config_settings_loader'
+
+if ENABLE_LDAP:
+    AUTHENTICATION_BACKENDS += ('seahub.base.accounts.CustomLDAPBackend',)
+
+if DTABLE_BAIDU_MAP_KEY or DTABLE_MINE_MAP_KEY:
+    ENABLED_EXTERNAL_APPS.append('map-cn')
+
+if ENABLE_SEATABLE_AI and SEATABLE_AI_SERVER_URL:
+    ENABLED_EXTERNAL_APPS.append('search-across-bases')
+
+# set the log level
+if LOG_LEVEL in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+    try:
+        LOGGING['loggers']['']['level'] = LOG_LEVEL
+        LOGGING['loggers']['django.request']['level'] = LOG_LEVEL
+        LOGGING['loggers']['py.warnings']['level'] = LOG_LEVEL
+    except:
+        pass

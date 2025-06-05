@@ -1,0 +1,59 @@
+{% extends "base_for_react.html" %}
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="{% trans "File Collaboration Team Organization" %}" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
+{% block extra_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/base-font.css?v={{ version }}" />
+{% render_bundle 'dtableWorkflowEdit' 'css' %}
+{% endblock %}
+{% block mobile_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endblock %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    {% block extra_script %}
+    <script type="text/javascript">
+        window.app.pageOptions.isOrgContext = {% if org is not None %} true {% else %} false {% endif %};
+        window.app.pageOptions.orgID = {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %};
+        window.app.pageOptions.canUseAdvancedPerms = {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %};
+        window.app.pageOptions.canRunPythonScript = {% if can_run_python_script %} true {% else %} false {% endif %};
+        window.app.pageOptions.canUseAutomationRules = {% if can_use_automation_rules %} true {% else %} false {% endif %};
+        window.app.pageOptions.enableAddressBookV2 = {% if enable_address_book_v2 %} true {% else %} false {% endif %};
+        window.app.pageOptions.enableDepartmentAdminManageMemberBases = {% if enable_department_admin_manage_member_bases %} true {% else %} false {% endif %};
+        window.shared = {
+            pageOptions: {
+                workspaceID: '{{ workspace_id }}',
+                dtableName: '{{ dtable_name }}',
+                dtableUuid: '{{ dtable_uuid }}',
+                dtableGroupId: '{{ dtable_group_id }}',
+                token: '{{ token }}',
+                workflowConfig: '{{ workflow_config | escapejs}}',
+                accessToken: '{{ access_token }}',
+                dtableServer: '{{ dtable_server }}',
+                workflowId: '{{ workflow_id }}',
+                dtableWebURL: '{{ dtable_web_service_url }}',
+                userDepartmentIdsMap: {% if user_department_ids_map %} {{ user_department_ids_map|safe }} {% else %} null {% endif %},
+            }
+        };
+    </script>
+    {% render_bundle 'dtableWorkflowEdit' 'js' %}
+    {% endblock %}
+</body>
+</html>

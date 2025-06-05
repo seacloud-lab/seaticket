@@ -1,0 +1,53 @@
+{% extends "base_for_page_design.html" %}
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+    <head>
+        <title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta
+            name="keywords"
+            content="{% trans "
+            File
+            Collaboration
+            Team
+            Organization
+            " %}"
+        >
+        {% if request.is_mobile or request.is_tablet %}
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        {% else %}
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% endif %}
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+        {% block extra_style %}
+        <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}">
+        <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}sdoc-editor/sdoc-editor-print.css?v={{ version }}">
+        {% render_bundle 'rowDocument' 'css' %}
+{% endblock %}
+    </head>
+    <body>
+        <div id="wrapper" class="page-design-container"></div>
+        {% block extra_script %}
+        <script type="text/javascript">
+        window.app.pageOptions.documentSetting = '{{ document_setting | escapejs }}';
+        window.app.pageOptions.dtableMetadata = '{{ dtable_metadata | escapejs }}';
+        window.app.pageOptions.page_id = '{{ page_id | safe }}';
+        window.app.pageOptions.row_id = '{{ row_id | safe }}';
+        window.app.pageOptions.collaborators = '{{ collaborators | escapejs }}'
+        window.app.pageOptions.dtable_uuid = "{{ dtable_uuid }}";
+        window.app.pageOptions.access_token = "{{ access_token }}";
+        window.app.pageOptions.dtableWebURL = "{{ dtable_web_service_url }}";
+        window.app.pageOptions.workspaceID = "{{ workspaceID | safe }}";
+        window.app.pageOptions.seadocServerUrl = "{{ seadoc_server_url }}";
+        window.app.pageOptions.id_in_org = "{{ id_in_org | escapejs }}";
+        window.app.pageOptions.departments = "{{ departments | escapejs }}";
+        window.app.pageOptions.userDepartmentIdsMap = "{{ user_department_ids_map | escapejs }}";
+        window.app.collaboratorsCache = {};
+        </script>
+        {% render_bundle 'rowDocument' 'js' %}
+    {% endblock %}
+    </body>
+</html>

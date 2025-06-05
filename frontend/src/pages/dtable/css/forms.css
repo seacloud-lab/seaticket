@@ -1,0 +1,36 @@
+.form-category {
+  margin: 20px 0 14px;
+  font-size: 16px;
+  color: #000;
+}
+
+.forms-title {
+  margin: 20px 0 14px;
+  font-size: 18px;
+  color: #000;
+  font-weight: 700;
+}
+
+.dtable-icon-style {
+  color: #999;
+  font-size: 24px;
+}
+
+.form-item-content, .form-item-group-name {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.form-item-text, .form-item-text:hover {
+  color: #212529;
+}
+
+.item-icon {
+  margin-right: 10px;
+}
+
+.main-panel-forms-table th {
+  font-size: 14px;
+}

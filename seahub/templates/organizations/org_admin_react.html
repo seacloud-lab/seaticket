@@ -1,0 +1,47 @@
+{% extends "base_for_react.html" %}
+{% load render_bundle from webpack_loader %}
+
+{% block extra_style %}
+{% render_bundle 'orgAdmin' 'css' %}
+{% endblock %}
+
+{% block extra_script %}
+   <script type="text/javascript">
+     window.org = {
+       pageOptions: {
+         orgID: '{{ org_id }}',
+         groupID: '{{ group_id }}',
+         invitationLink: '{{ invitation_link|escapejs }}',
+         enableMultiSAML: {% if enable_multi_saml %} true {% else %} false {% endif %},
+         canUseSAML: {% if can_use_saml %} true {% else %} false {% endif %},
+         enable_org_department: {% if enable_org_department %} true {% else %} false {% endif %},
+         enable_org_logo: {% if enable_org_logo %} true {% else %} false {% endif %},
+         enable_org_admin_invite_via_email: {% if enable_org_admin_invite_via_email %} true {% else %} false {% endif %},
+         orgMemberQuotaEnabled: '{{ org_member_quota_enabled }}',
+         displayTwoFactorAuth: {% if display_two_factor_auth %} true {% else %} false {% endif %},
+         enableOrgWorkWeixin: {% if enable_org_work_weixin %} true {% else %} false {% endif %},
+         enableOrgDingtalk: {% if enable_org_dingtalk %} true {% else %} false {% endif %},
+         orgCorpBindType: '{{ org_corp_bind_type|escapejs }}',
+         twoFactorAuthEnabled: {% if two_factor_auth_enabled %} true {% else %} false {% endif %},
+       }
+      };
+      window.app.pageOptions = Object.assign(window.app.pageOptions, {
+        isOrgContext: true,
+        orgName: '{{ org_name }}',
+        enableSubscription: {% if enable_subscription %} true {% else %} false {% endif %},
+        enableSlideCaptcha: {% if enable_slide_captcha %} true {% else %} false {% endif %},
+        trashCleanExpireDays: '{{trash_clean_expire_days}}',
+        disableAddressBookV1: {% if disable_addressbook_v1 %} true {% else %} false {% endif %},
+        enableAddressBookV2: {% if enable_addressbook_v2 %} true {% else %} false {% endif %},
+        canUseAdvancedCustomization: {% if user.permissions.can_use_advanced_customization %} true {% else %} false {% endif %},
+        enableSeatableAI: {% if enable_seatable_ai %} true {% else %} false {% endif %},
+      });
+    </script>
+
+    {% if enable_org_work_weixin %}
+      <script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js" referrerpolicy="origin"></script>
+      <script src="https://open.work.weixin.qq.com/wwopen/js/jwxwork-1.0.0.js" referrerpolicy="origin"></script>
+    {% endif %}
+
+    {% render_bundle 'orgAdmin' 'js' %}
+{% endblock %}

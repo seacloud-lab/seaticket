@@ -1,0 +1,104 @@
+.trash-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.trash-table .trash-table-base-detail .trash-table-base-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 4px;
+}
+
+.trash-table .trash-table-base-detail .table-icon-content {
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #eee;
+}
+
+.trash-table .trash-table-base-detail .table-icon-content .dtable-icon-style {
+  font-size: 16px;
+}
+
+.trash-table tbody tr {
+  height: 56px;
+}
+
+.trash-table .trash-table-base-detail .trash-table-name {
+  color: #212529;
+  font-weight: 500;
+  padding-right: 20px;
+}
+
+.trash-table .trash-table-base-detail .trash-table-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.trash-table .trash-table-base-detail .trash-table-restore {
+  opacity: 0;
+  color: #E16C0A;
+  border: none;
+  background-color: transparent;
+  font-weight: 400;
+}
+
+.trash-table .trash-table-base-detail:hover .trash-table-restore {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.trash-table .trash-table-base-detail .trash-table-restore:hover {
+  text-decoration: underline;
+  color: #E16C0A;
+}
+
+.trash-tables-title {
+  margin: 20px 15px 14px 0px;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+.trash-table td,
+.trash-table th {
+  font-size: 14px;
+}
+
+@media screen and (max-width: 767.8px) {
+  .trash-tables-title {
+    margin-right: 0px;
+    font-weight: normal;
+  }
+}
+
+.trash-tables-title button {
+  width: 78px;
+  height: 25px;
+  padding: 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*mobile*/
+.trash-table .trash-table-base-detail .trash-table-name-mobile {
+  font-weight: 500;
+  font-size: 14px;
+  padding-right: 10px;
+}
+
+.trash-table-col-name-mobile {
+  height: 0;
+}
+
+.trash-table .trash-table-base-detail .trash-table-restore-mobile {
+  cursor: pointer;
+  color: #ED7109;
+}

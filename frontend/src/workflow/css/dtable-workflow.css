@@ -1,0 +1,401 @@
+.workflow-app-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.workflow-app-container .workflow-form:after {
+  content: "";
+  display: block;
+  height: 100px;
+}
+
+@media (max-width: 767px) { 
+  .workflow-app-container .workflow-form:after { 
+    height: 0px;
+  }
+}
+
+.workflow-app-container .app-content-container .form-items-container {
+  width: -webkit-fill-available;
+}
+
+.workflow-app-container .workflow-app-header {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.workflow-app-container .workflow-app-main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.workflow-app-container .workflow-app-main .form-share-end-remark-container {
+  width: 100%;
+}
+
+.workflow-app-container .workflow-app-content {
+  background-color: #fff;
+  position: relative;
+}
+
+.workflow-app-container .workflow-nodes-container {
+  height: 100%;
+  width: 400px;
+  border-right: 1px solid #e4e4e4;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-app-container .workflow-nodes-container .select-node-tip {
+  width: 60%;
+  margin: auto;
+  color: #666666;
+  margin-top: 100px;
+  text-align: center;
+}
+
+.workflow-app-container .grid-pane-divider {
+  position: absolute;
+  bottom: 0;
+  width: 6px;
+  right: 0;
+  opacity: 0;
+}
+
+.workflow-app-container .grid-pane-divider .drag-handler {
+  transform: translate(-50%, 0);
+  margin-left: 1px;
+  border-radius: 10px;
+  width: 6px;
+  background: #2d7ff9;
+  position: absolute;
+}
+
+.workflow-app-container .grid-pane-divider.hover {
+  top: 0 !important;
+  opacity: 1;
+  cursor: grab;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+}
+
+.workflow-app-container .grid-pane-divider .line {
+  height: 100%;
+  width: 2px;
+  background-color: #aaa;
+}
+
+.workflow-app-container .workflow-app-content .workflow-nodes-title {
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.workflow-app-container .workflow-app-content .setting-row-active {
+  background-color: #FEF5EB;
+}
+
+.workflow-app-container .workflow-app-main .app-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  border-right: 1px solid #e4e4e4;
+  overflow: auto;
+}
+
+.workflow-app-container .app-content-container .long-text-editor-container {
+  position: relative;
+}
+
+.workflow-app-container .long-text-editor-container .dtable-icon-rename {
+  position: absolute;
+  right: 35px;
+  top: 0px;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.workflow-app-container .long-text-editor-container .dtable-icon-delete {
+  position: absolute;
+  right: 10px;
+  top: 0px;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.workflow-app-container .long-text-editor-container .dtable-icon-delete:hover,
+.workflow-app-container .long-text-editor-container .dtable-icon-rename:hover {
+  color: #666666;
+}
+
+.workflow-app-container .workflow-app-main .workflow-app-nodes-content {
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workflow-app-container .workflow-app-nodes-content .workflow-nodes-title {
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.workflow-app-container .workflow-app-nodes-content .workflow-add-node {
+  flex-shrink: 0;
+  margin-bottom: 54px;
+  height: 38px;
+  max-width: 250px;
+}
+
+.workflow-app-container .workflow-app-settings-container {
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .workflow-app-container .workflow-app-settings {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+
+  .workflow-app-container .workflow-app-settings-container {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #fff;
+  }
+}
+
+.workflow-app-container .workflow-app-settings .workflow-app-settings-container {
+  width: 300px;
+  min-width: 300px;
+}
+
+.workflow-app-container .workflow-app-settings-header {
+  height: 48px;
+  padding: 0 20px;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.workflow-app-container .workflow-app-settings-header .workflow-app-settings-header-content {
+  height: 100%;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.workflow-app-container .workflow-app-settings-header .workflow-app-settings-header-return {
+  height: 20px;
+  width: 20px;
+  text-align: center;
+  line-height: 20px;
+}
+
+.workflow-app-container .workflow-app-settings-header .workflow-app-settings-header-return:hover {
+  cursor: pointer;
+}
+
+.workflow-app-container .workflow-app-settings-header-return .dtable-icon-return {
+  color: #666666;
+  font-size: 14px;
+}
+
+.workflow-app-container .workflow-app-settings-header-return:hover .dtable-icon-return {
+  color: #000;
+  opacity: .75;
+}
+
+.workflow-app-container .workflow-app-settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 10px 150px 10px;
+  overflow: auto;
+  position: relative;
+}
+
+.workflow-app-container .workflow-app-settings-content .setting-item {
+  padding: 0 10px;
+  margin: 0;
+}
+
+.workflow-app-container .workflow-app-settings-content .workflow-app-setting-divider {
+  margin: 14px 10px;
+  border-bottom: 1px solid #e2e2e2;
+  width: calc(100% - 20px); /* 20: 10(margin-left/right) * 2 */
+  height: 1px;
+}
+
+.workflow-app-container .workflow-app-settings-content .setting-item .title {
+  margin-bottom: 10px;
+}
+
+.workflow-app-settings-container .fields-shown-setting .fields-setting-body {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.workflow-app-settings-container .fields-setting-header {
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.workflow-app-settings-container .fields-setting-header:first-child {
+  margin-bottom: 10px;
+}
+
+.workflow-app-settings-container .fields-setting-header .setting-choose-all {
+  color: #ED7109;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.workflow-app-settings-container .fields-setting-header .setting-choose-all.disabled {
+  opacity: .5;
+  color: #000;
+  cursor: default;
+}
+
+.workflow-app-settings-container .note-setting-switch .note-setting-tip {
+  color: #212529;
+}
+
+.workflow-app-settings-container .workflow-setting-divider {
+  border-bottom: 1px solid #e2e2e2;
+  width: auto;
+  margin: 14px 10px;
+}
+
+.workflow-app-settings-container .workflow-switch-tip {
+  padding-left: 10px;
+}
+
+/* cell display common css */
+.workflow-app-container .formula-formatter.multiple {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item {
+  margin-right: 8px;
+}
+
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .text-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .number-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .date-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .url-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .email-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .duration-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .geolocation-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .ctime-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .mtime-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .auto-number-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .rate-formatter,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item.simple-cell-formatter {
+  line-height: 20px;
+  flex-shrink: 0;
+}
+
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .select-item,
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .collaborator-item {
+  margin-right: 0 !important;
+}
+
+.workflow-app-container .formula-formatter.multiple .formula-formatter-content-item .single-select-formatter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.workflow-app-container .form-items-container .editing-default-value {
+  min-height: 30px;
+}
+
+.workflow-app-container .form-items-container .editing-default-value .editing-default-value-switch {
+  margin-bottom: 0;
+}
+
+.workflow-app-container .participants-settings .participants-type-container {
+  height: 36px;
+  flex-direction: row;
+  background-color: #ffffff;
+  border: 1px solid hsl(0, 0%, 80%);
+  border-radius: 3px;
+}
+
+.workflow-app-container .participants-type-container .participants-type-item {
+  flex: 1 1;
+  text-align: center;
+  line-height: 36px;
+  color: #666666;
+  cursor: pointer;
+}
+
+.workflow-app-container .participants-type-container .selected-participants-type-item {
+  box-shadow: 0 0 0 1px #ED7109;
+  color: #ED7109;
+  background-color: rgba(229, 161, 82, .1);
+}
+
+.workflow-app-container .participants-type-container .participants-type-item:first-child.selected-participants-type-item {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.workflow-app-container .participants-type-container .participants-type-item:last-child.selected-participants-type-item {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.workflow-app-container .participants-all-assignees-submit .form-column-switch {
+  padding-left: 0;
+}
+
+.workflow-app-container .form-setting-item .custom-switch .custom-switch-indicator {
+  margin-right: 0;
+}
+
+.finish-task-message-settings-container .custom-switch-description {
+  line-height: 1.5;
+}
+
+.new-workflow-settings-dialog .cell-is-required {
+  color: #FF1920;
+  padding-left: 8px;
+  display: inline-block;
+  height: 18px;
+}

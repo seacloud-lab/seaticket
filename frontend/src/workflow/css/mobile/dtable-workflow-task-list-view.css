@@ -1,0 +1,551 @@
+.workflow-list-view {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #f5f5f5;
+  z-index: 101;
+  line-height: 1.3;
+}
+
+.workflow-list-view .workflow-task-view-form {
+  height: 100%;
+  overflow-y: scroll;
+  background: #fff;
+  padding: 10px 20px 110px 20px;
+}
+
+.workflow-list-view .workflow-task-view-form .compose-editor {
+  margin-bottom: 20px;
+}
+
+.workflow-list-view .workflow-task-view-form .long-text-editor-container {
+  color: #666666;
+  font-size: 13px;
+  background-color: #f9f9f9;
+}
+
+.workflow-list-view .workflow-task-view-form .option-item-name {
+  max-width: 240px;
+}
+
+.workflow-list-view .grid-cell-type-long-text .long-text-editor-container {
+  color: #212529;
+  font-size: 14px;
+  background-color: #f5f5f5;
+}
+
+.workflow-list-view .workflow-task-log-list .log-list {
+  margin-top: 10px;
+  margin-bottom: 100px;
+}
+
+.workflow-list-view .specific-list-view-sidebar,
+.workflow-list-view .share-item-view-sidebar,
+.workflow-list-view .list-view-sidebar {
+  height: 50px;
+  width: 100%;
+  border-bottom: 1px solid #e9e9e9;
+  background: #ffffff;
+}
+
+.workflow-list-view .specific-icon-content {
+  height: 24px;
+  width: 24px;
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.workflow-list-view .workflow-close-add-btn {
+  height: 32px;
+}
+
+.workflow-list-view .view-header {
+  height: 50px;
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e9e9e9;
+  background: #ffffff;
+}
+
+.workflow-list-view .list-view-container {
+  width: 100%;
+  height: calc(100% - 100px);
+  overflow-y: auto;
+}
+
+.workflow-list-view .list-view-content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.workflow-list-view .view-header .view-header-left {
+  width: 60%;
+  height: 100%;
+  padding: 13px;
+}
+
+.workflow-list-view .view-header .specific-view-header-left {
+  width: 60%;
+  height: 100%;
+  padding: 13px;
+  display: flex;
+  align-items: center;
+}
+
+.workflow-list-view .view-header .view-header-right {
+  width: 40%;
+  height: 100%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.workflow-list-view .view-header .view-header-left span {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.workflow-list-view .detail-view-header-left .view-header-back-btn {
+  color: #666666;
+}
+
+.workflow-list-view .view-header .specific-view-header-left span {
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline-block;
+  width: 150px;
+}
+
+.workflow-list-view .view-header .dtable-icon-workflow {
+  color: #ED7109;
+}
+
+.workflow-list-view .detail-view-header-left {
+  display: flex;
+  align-items: center;
+  width: 80%;
+  height: 100%;
+  padding: 13px;
+}
+
+.workflow-list-view .detail-view-header-left .header-current-node {
+  font-size: 12px !important;
+  padding: 2px 5px;
+  border-radius: 20px;
+  margin-top: -2px;
+}
+
+.workflow-list-view .detail-view-header-left-name {
+  font-size: 16px;
+  font-weight: 500;
+  max-width: 160px;
+}
+
+.workflow-list-view .view-detail-right {
+  display: flex;
+  width: 20% !important;
+  color: #666666;
+  align-items: center;
+  flex-direction: row-reverse;
+}
+
+.workflow-list-view .specific-list-view-sidebar ul,
+.workflow-list-view .share-item-view-sidebar ul,
+.workflow-list-view .list-view-sidebar ul {
+  height: 100%;
+}
+
+.workflow-list-view .list-view-sidebar li {
+  width: 33.3%;
+  height: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: #ED7109;
+  border-bottom: 2px solid #ED7109;
+}
+
+.workflow-list-view .specific-list-view-sidebar li {
+  width: 33.3%;
+  height: 100%;
+  color: #666666;
+  font-size: 16px;
+  font-weight: 500;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.workflow-list-view .share-item-view-sidebar li {
+  width: 50%;
+  height: 100%;
+  color: #666666;
+  font-size: 16px;
+  font-weight: 500;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.workflow-list-view .specific-list-view-sidebar .sidebar-item-active,
+.workflow-list-view .share-item-view-sidebar .sidebar-item-active {
+  color: #ED7109;
+  border-bottom: 2px solid #ED7109;
+}
+
+.workflow-list-view .list-view-content .list-item-card {
+  width: 96%;
+  position: relative;
+  margin: 10px auto;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: -1px 1px 5px #ccc;
+}
+
+.workflow-list-view .list-item-card .list-item-card-more {
+  width: 50px;
+  height: 50px;
+  top: 0;
+  right: 0;
+  color: #666666;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  position: absolute;
+}
+
+.workflow-list-view .list-view-content .list-item-card h5 {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 15px;
+  padding-bottom: 0px;
+  width: 90%;
+}
+
+.workflow-list-view .list-item-card .list-item-card-content {
+  width: 100%;
+  padding-bottom: 10px;
+  background-color: #ffffff;
+}
+
+.workflow-list-view .list-item-card-content .content-item {
+  display: flex;
+  height: fit-content;
+  margin: 8px 15px;
+}
+
+.workflow-list-view .list-item-card-content .content-item span:first-child {
+  color: #666666;
+}
+
+.workflow-list-view .list-item-card-content .collaborator {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px 0 2px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #eaeaea;
+}
+
+.workflow-list-view .list-item-card-content .collaborator-avatar-container {
+  width: 16px;
+}
+
+.workflow-list-view .list-item-card-content .collaborator-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+
+.workflow-list-view .list-item-card-content .collaborator-name {
+  margin-left: 5px;
+  line-height: 20px;
+}
+
+.workflow-list-view .list-item-card-content .current-node {
+  width: fit-content;
+  display: inline-block;
+  font-size: 13px;
+}
+
+.workflow-list-view .list-item-card-content .current-node-option {
+  padding: 2px 5px;
+  border-radius: 10px;
+}
+
+/* collaborator */
+.workflow-list-view .content-item .collaborator-option-item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  padding: 0 8px 0 2px;
+  height: 20px;
+  font-size: 13px;
+  border-radius: 10px;
+  background-color: #eaeaea;
+}
+
+.workflow-list-view .content-item .collaborator-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  border-radius: 50%;
+}
+
+.workflow-list-view .workflow-task-item-time {
+  text-align: right;
+  color: #666666;
+  font-size: 13px;
+  width: 80%;
+}
+
+.workflow-list-view .content-item .workflow-task-item-state-option {
+  display: inline-block;
+  padding: 0px 10px;
+  height: 20px;
+  line-height: 20px;
+  max-width: 200px;
+  width: fit-content;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* single select、multiple select */
+.workflow-list-view .workflow-task-item-submitted-option {
+  display: inline-flex;
+  padding: 0px 10px;
+  height: 20px;
+  line-height: 20px;
+  max-width: 200px;
+  width: fit-content;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* multiple select */
+.workflow-list-view .workflow-task-item-detail-multiple-select-value-display .workflow-task-item-submitted-option {
+  margin-right: 10px;
+}
+
+/* rate、checkbox */
+.workflow-list-view .workflow-task-item-detail-rate-value-display,
+.workflow-list-view .workflow-task-item-detail-checkbox-value-display {
+  display: flex;
+  align-items: center;
+}
+
+/* long text */
+.workflow-list-view .view-content-item-longtext {
+  display: inline-flex;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display {
+  align-items: center;
+}
+
+.workflow-list-view .workflow-longtext-preview-text {
+  width: 120px;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display .workflow-longtext-icon-container {
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display .workflow-longtext-links-container {
+  background-color: #f0f0f0;
+  color: #666666;
+  padding: 0 3px;
+  height: 20px;
+  line-height: 20px;
+  margin: 0 4px;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display .workflow-longtext-images-container {
+  max-width: 28px;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 3px;
+  margin-right: 10px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display .workflow-longtext-image {
+  display: inline-block;
+  height: 18px;
+  max-width: 28px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.workflow-list-view .workflow-task-item-detail-long-text-value-display .workflow-longtext-image-count {
+  font-style: normal;
+  display: inline-block;
+  font-size: 12px;
+  border-radius: 6px;
+  background-color: #666666;
+  color: #fff;
+  transform: scale(0.8);
+  min-width: 14px;
+  line-height: 14px;
+  padding: 0 3px;
+  position: absolute;
+  bottom: -2px;
+  left: 16px;
+}
+
+/* image、file */
+.workflow-list-view .workflow-task-item-detail-file-value-display,
+.workflow-list-view .workflow-task-item-detail-image-value-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.workflow-list-view .workflow-task-item-detail-value-display {
+  display: inline-block;
+}
+
+.workflow-list-view .workflow-task-item-detail-value-display .workflow-task-item-detail-image-value {
+  display: inline-block;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.workflow-list-view .workflow-task-item-detail-value-display .workflow-image-image-count {
+  position: absolute;
+  bottom: -2px;
+  left: 16px;
+  display: inline-block;
+  height: 12px;
+  padding: 0 4px;
+  border-radius: 6px;
+  text-align: center;
+  background-color: #666666;
+  font-size: 10px;
+  line-height: 12px;
+  color: #fff;
+  transform: scale(0.8);
+}
+
+.workflow-list-view .workflow-task-item-detail-file-value-display .workflow-image-image-count {
+  left: 8px;
+}
+
+/* Link formatter */
+.workflow-list-view .dtable-dataset-link-formatter {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  width: 100%;
+  height: 100%;
+}
+
+.workflow-list-view .dtable-dataset-link-formatter .dtable-dataset-link-item {
+  flex-shrink: 0;
+  height: 20px;
+  margin-right: 4px;
+  padding: 0 6px;
+  font-size: 13px;
+  max-width: 100%;
+  background: #eceff4;
+  border-radius: 3px;
+  align-items: center;
+  vertical-align: middle;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 20px;
+  width: fit-content;
+}
+
+.workflow-list-view .workflow-task-item-detail-link-value {
+  display: inline-block;
+  height: 20px;
+  margin-right: 4px;
+  padding: 0 2px;
+  font-size: 13px;
+  max-width: 100%;
+  background: #eceff4;
+  border-radius: 5px;
+}
+
+.workflow-list-view .workflow-task-item-detail-link-value .link-name {
+  margin: 0 4px;
+  max-width: 50px;
+  height: 20px;
+  line-height: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #212529 !important;
+}
+
+/* common */
+.workflow-list-view .workflow-task-item-detail-text-value-display,
+.workflow-list-view .workflow-task-item-detail-email-value-display,
+.workflow-list-view .workflow-task-item-detail-url-value-display,
+.workflow-list-view .workflow-task-item-detail-geolocation-value-display,
+.workflow-list-view .workflow-task-item-detail-date-value-display,
+.workflow-list-view .workflow-task-item-detail-duration-value-display,
+.workflow-list-view .workflow-task-item-detail-number-value-display {
+  width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* nodes */
+.workflow-list-view .workflow-task-nodes-content {
+  padding: 20px;
+  padding-top: 0px;
+  display: flex;
+  height: calc(100% - 100px);
+  overflow-y: scroll;
+  flex-direction: column;
+}
+
+.workflow-list-view .workflow-task-main-nodes-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 54px 0;
+}
+
+.workflow-list-view .workflow-task-outside-nodes-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.workflow-list-view .workflow-task-outside-nodes-content .workflow-app-node {
+  margin-bottom: 54px;
+}
+
+.workflow-list-view .workflow-paths-content {
+  margin: 0 auto !important;
+}

@@ -1,0 +1,63 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+
+{% block sub_title %}{% trans "Log in" %} - {% endblock %}
+
+{% block main_content %}
+<div class="login-panel-outer-container mt-6 vh">
+<div class="login-panel">
+    <h1 class="login-panel-hd">{% trans "Log in" %}</h1>
+    <form action="" method="post" id="login-form">{% csrf_token %}
+        <input type="text" name="login" placeholder="{% trans "Email or Username" %}" aria-label="{% trans "Email or Username" %}" title="{% trans "Email or Username" %}" value="" class="input name-input" /><br />
+
+        <input type="hidden" name="next" value="{% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}" />
+        {% if error_msg %}
+        <p class="error">{{ error_msg }}</p>
+        {% else %}
+        <p class="error hide"></p>
+        {% endif %}
+
+        <button type="submit" class="submit btn btn-primary btn-block">{% trans "Log In" %}</button>
+    </form>
+    <div class="login-panel-bottom-container"></div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+$('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
+
+var $el = $('.login-panel-outer-container');
+$el.removeClass('vh');
+
+$('#lang-context').on('click', function() {
+    var langTop = $('#lang').offset().top;
+    var langSelectorTop;
+    var langSelectorHeight = $('#lang-context-selector .sf-popover-con').outerHeight();
+    if (langSelectorHeight > langTop) {
+        langSelectorTop = '-' + (langTop - 5) + 'px';
+    } else {
+        langSelectorTop = '-' + (langSelectorHeight + 5) + 'px';
+    }
+    $('#lang-context-selector').css({
+        'top': langSelectorTop,
+        'right': 0
+    });
+    $('#lang-context-selector .sf-popover-con').css({
+        'max-height': $('#lang').offset().top - 10
+    });
+});
+
+$('[name="login"]').trigger('focus');
+
+$('#login-form').on('submit', function(){
+    if (!$.trim($('input[name="login"]').val())) {
+        $('.error').removeClass('hide').html("{% trans "Email or username cannot be blank" %}");
+        return false;
+    }
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+export const DTABLE_ICON_LIST = [
+  'icon-worksheet',
+  'icon-task-management',
+  'icon-software-test-management',
+  'icon-design-assignment',
+  'icon-video-production',
+  'icon-market-analysis',
+  'icon-data-analysis',
+  'icon-product-knowledge-base',
+  'icon-asset-management',
+  'icon-financial-information-record',
+  'icon-dollar',
+  'icon-company-inventory',
+  'icon-customer-inquiry',
+  'icon-customer-list',
+  'icon-product-list',
+  'icon-store-address',
+  'icon-leave-record',
+  'icon-administrative-matters-calendar',
+  'icon-customer-relationship',
+  'icon-teachers-list',
+  'icon-book-library',
+  'icon-server-management',
+  'icon-time-management',
+  'icon-work-log',
+  'icon-online-promotion',
+  'icon-research',
+  'icon-user-interview',
+  'icon-client-review',
+  'icon-club-members',
+];
+
+export const DTABLE_ICON_COLORS = [
+  '#FF8000',
+  '#FFB600',
+  '#E91E63',
+  '#EB00B1',
+  '#7626FD',
+  '#972CB0',
+  '#1DDD1D',
+  '#4CAF50',
+  '#02C0FF',
+  '#00C9C7',
+  '#1688FC',
+  '#656463'
+];
+
+export const DEFAULT_MARKER_STYLE = { type: 'check', color: '#1DDD1D' };

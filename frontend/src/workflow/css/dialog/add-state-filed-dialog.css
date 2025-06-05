@@ -1,0 +1,11 @@
+.add-state-field-dialog .add-state-field-type-content {
+  display: flex;
+  align-items: center;
+}
+
+.add-state-field-dialog .workflow-state-field-icon {
+  margin-right: 0.3125rem;
+  font-size: 14px;
+  color: #aaa;
+  cursor: inherit;
+}

@@ -1,0 +1,31 @@
+.mobile-main-panel.mobile-main-panel-mine .am-tab-bar {
+  height: 50px;
+}
+
+.mobile-main-panel .mobile-mine {
+  height: calc(100% - 100px);
+  overflow: auto;
+  background-color: #f5f5f5;
+}
+
+.mobile-main-panel .mine-info-item {
+  min-height: 70px;
+}
+
+.mobile-main-panel .mine-info-item img {
+  height: 3rem;
+  width: 3rem;
+}
+
+.mobile-main-panel .account-info.row-used {
+  font-size: 14px;
+  padding: 7px 0;
+}
+
+.mobile-main-panel .account-info p {
+  font-size: 14px;
+}
+
+.system-management a {
+  color: #000;
+}

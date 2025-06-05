@@ -1,0 +1,184 @@
+{% load i18n %}
+
+<style type="text/css">
+.user-terms-label {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.user-terms-label input {
+  margin: 3px 0;
+  cursor: pointer;
+}
+
+.user-terms-label .user-terms-text { 
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.user-terms-label .user-terms-text a {
+  font-weight: normal;
+  color: #E16C0A;
+}
+
+.user-terms-toast-container {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  height: 60px;
+  padding: 8px;
+  position: absolute;
+  left: -260px;
+  top: -20px;
+  transition: all 240ms cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+.mobile-toast-container {
+  top: -60px;
+  left: -20px;
+}
+
+.user-terms-toast-alert {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-radius: 3px;
+  border: 1px solid #cdcdcd;
+  padding: 10px 16px;
+  background-color: #fff;
+  color: rgb(236, 76, 71);
+}
+
+.user-terms-toast-alert::before {
+  border-left: 10px solid #cdcdcd;
+  border-top: 8px solid #0000;
+  border-bottom: 8px solid #0000;
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 22px;
+}
+
+.user-terms-toast-alert::after {
+  border-left: 10px solid #fff;
+  border-top: 8px solid #0000;
+  border-bottom: 8px solid #0000;
+  content: "";
+  position: absolute;
+  right: 0px;
+  top: 22px;
+}
+
+.mobile-toast-container .user-terms-toast-alert::after {
+  border-top: 10px solid #fff;
+  border-left: 8px solid #0000;
+  border-right: 8px solid #0000;
+  content: "";
+  position: absolute;
+  right: 220px;
+  top: 49px;
+}
+
+.mobile-toast-container .user-terms-toast-alert::before {
+  border-top: 10px solid #cdcdcd;
+  border-left: 8px solid #0000;
+  border-right: 8px solid #0000;
+  content: "";
+  position: absolute;
+  right: 220px;
+  top: 50px;
+}
+
+.user-terms-toast-alert .dtable-icon-exclamation-circle {
+  margin-right: 10px;
+  width: 14px;
+  height: 20px;
+  line-height: 20px;
+  color: rgb(236, 76, 71);
+}
+
+.user-terms-toast-alert .user-terms-toast-text {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #435a6f;
+}
+
+@keyframes user-terms-toast-openAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(-120%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes user-terms-toast-closeAnimation {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.user-terms-toast-entering {
+  animation: user-terms-toast-openAnimation 240ms cubic-bezier(0.175, 0.885, 0.320, 1.175) both;
+}
+
+.user-terms-toast-exiting {
+  animation: user-terms-toast-closeAnimation 120ms cubic-bezier(0.4, 0.0, 1, 1) both;
+}
+
+</style>
+
+{% block main_content %}
+{% if cn_force_check_user_agreement %}
+<label class="user-terms-label d-flex align-items-start">
+  <div class="user-terms-toast-container">
+    <div class="user-terms-toast-alert">
+      <span class="dtable-font dtable-icon-exclamation-circle"></span>
+      <p class="user-terms-toast-text">请先勾选用户协议和隐私条款</p>
+    </div>
+  </div>
+  <input type="checkbox" name="user_terms" class="vam user-terms-input" />
+  <span class="vam user-terms-text ml-1">
+    我已阅读并同意 SeaTable
+    <a class="normal" target="_blank" href="{{ terms_of_service_link }}">用户协议</a>
+    和
+    <a class="normal" target="_blank" href="{{ privacy_policy_link }}">隐私条款</a>
+  </span>
+</label>
+{% endif %}
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+function isMobile() {
+  return (typeof (window) !== 'undefined') && (window.innerWidth < 768 || navigator.userAgent.toLowerCase().match(/(ipod|ipad|iphone|android|coolpad|mmp|smartphone|midp|wap|xoom|symbian|j2me|blackberry|wince)/i) != null);
+}
+
+function showUserTermsTip() {
+  var toastContainer = document.querySelector('.user-terms-toast-container');
+  if (isMobile()) {
+    toastContainer.classList.add('mobile-toast-container');
+  }
+  toastContainer.style.display = 'flex';
+  if (isMobile()) {
+    document.addEventListener('touchstart', function(event) {
+      toastContainer.style.display = 'none';
+    });
+  } else {
+    document.addEventListener('mousedown', function(event) {
+      toastContainer.style.display = 'none';
+    });
+  }
+}
+
+</script>
+{% endblock %}

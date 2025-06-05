@@ -1,0 +1,77 @@
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{{ filename }}</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
+<link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seafile-editor-font.css" />
+{% if request.is_mobile or request.is_tablet %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endif %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+{% render_bundle 'viewDataGrid' 'css' %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="plugin-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="widget-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+
+<script type="text/javascript">
+    window.app = {
+        config: {
+            version: '{{ version }}',
+            siteRoot: '{{ SITE_ROOT }}',
+            mediaUrl: '{{ media_url }}',
+            lang: '{{ LANGUAGE_CODE }}',
+            loginUrl: '{{ LOGIN_URL }}',
+            dtableBaiduMapKey: '{{ dtable_baidu_map_key }}',
+            dtableMineMapKey: '{{ dtable_mine_map_key }}',
+            dtableMineMapCustomConfig: {% if dtable_mine_map_custom_config %} {{ dtable_mine_map_custom_config|safe }} {% else %} null {% endif %},
+            dtableGoogleMapKey: '{{ dtable_google_map_key }}',
+            faviconPath: '{{ favicon_path }}',
+            faviconNotificationPath: '{{ favicon_notification_path }}'
+        },
+        pageOptions: {
+            id_in_org: '{{ id_in_org }}',
+            server: '{{ service_url }}',
+            csrfToken: "{{ csrf_token }}",
+            name: "{{request.user.username|email2nickname|escapejs}}",
+            username: "{{request.user.username|escapejs}}",
+            contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+
+            fileName: '{{ file_name|escapejs }}',
+            workspaceID: '{{ workspace_id }}',
+            dtableUuid: '{{ dtable_uuid }}',
+            permission: '{{ permission }}',
+            seafileUrl: '{{ seafile_url }}',
+            repoApiToken: '{{ repo_api_token }}',
+            dtableServer: '{{ dtable_server }}',
+            dtableSocket: '{{ dtable_socket }}',
+            snapshotCommitID: '{{ snapshot_commit_id }}',
+            seatableMarketUrl: '{{ seatable_market_url }}',
+            accessToken: '{{ access_token }}',
+        }
+     };
+</script>
+<script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js?v={{ version }}"></script>
+<script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+{% render_bundle 'viewDataGrid' 'js' %}
+</body>
+</html>
+

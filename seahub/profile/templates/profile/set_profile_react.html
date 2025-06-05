@@ -1,0 +1,124 @@
+{% extends 'base_for_react.html' %}
+{% load seahub_tags avatar_tags i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block sub_title %}{% trans "Personal settings" %} - {% endblock %}
+
+{% block mobile_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
+{% endblock %}
+
+{% block extra_style %}
+{% render_bundle 'settings' 'css' %}
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript">
+// overwrite the one in base_for_react.html
+window.app.pageOptions = {
+  avatarURL: '{% avatar_url request.user 160 %}',
+  csrfToken: '{{ csrf_token }}',
+
+  enableUpdateUserInfo: {% if ENABLE_UPDATE_USER_INFO %} true {% else %} false {% endif %},
+  enableMemberModifyName: {% if enable_member_modify_name %} true {% else %} false {% endif %},
+  nameLabel: "{% trans "Name:" context "true name" %}",
+  enableUserSetContactEmail: {% if ENABLE_USER_SET_CONTACT_EMAIL %} true {% else %} false {% endif %},
+  enableUserSetName: {% if ENABLE_USER_SET_NAME %} true {% else %} false {% endif %},
+
+  
+  canUpdatePassword: {% if can_update_password %} true {% else %} false {% endif %},
+  userStrongPasswordRequired: {% if strong_password_required %} true {% else %} false {% endif %},
+  {% if can_update_password %}
+  userUnusablePassword: {% if user_unusable_password %} true {% else %} false {% endif %},
+  passwordOperationText: {% if user_unusable_password %}"{% trans "Set password" %}"{% else %}"{% trans "Update" %}"{% endif %},
+  {% endif %}
+
+  enableWebdavSecret: {% if ENABLE_WEBDAV_SECRET %} true {% else %} false {% endif %},
+  {% if ENABLE_WEBDAV_SECRET %}
+  webdavPasswd: '{{ webdav_passwd|escapejs }}',
+  {% endif %}
+
+  currentLang: {
+    langCode: '{{ LANGUAGE_CODE|escapejs }}',
+    langName: '{{ LANGUAGE_CODE|language_name_local|capfirst|escapejs }}'
+  },
+  langList: (function() {
+    var list = [];
+    {% for LANG in LANGUAGES %}
+    list.push({
+      langCode: '{{LANG.0|escapejs}}',
+      langName: '{{LANG.1|escapejs}}'
+    });
+    {% endfor %}
+    return list;
+  })(),
+
+  initialDTableUpdatesEmailInterval: {{ dtable_updates_email_interval }},
+  initialDTableCollaborateEmailInterval: {{ dtable_collaborate_email_interval }},
+
+  twoFactorAuthEnabled: {% if two_factor_auth_enabled %} true {% else %} false {% endif %},
+  {% if two_factor_auth_enabled %}
+  defaultDevice: {% if default_device %} true {% else %} false {% endif %},
+  backupTokens: {{backup_tokens}},
+  {% endif %}
+
+  langCode: "{{LANGUAGE_CODE|escapejs}}",
+  socialNextPage: "{{ social_next_page|escapejs }}",
+
+  orgID: "{{ org_id }}",
+
+  useExternalTeamAdmin: {% if use_external_team_admin %} true {% else %} false {% endif %},
+
+  enableWorkWeixin: {% if enable_work_weixin %} true {% else %} false {% endif %},
+  {% if enable_work_weixin %}
+  workWeixinConnected: {% if work_weixin_connected %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableDingtalk: {% if enable_dingtalk %} true {% else %} false {% endif %},
+  {% if enable_dingtalk %}
+  dingtalkConnected: {% if dingtalk_connected %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableOrgWorkWeixin: {% if enable_org_work_weixin %} true {% else %} false {% endif %},
+  {% if enable_org_work_weixin %}
+  orgWorkWeixinConnected: {% if org_work_weixin_connected %} true {% else %} false {% endif %},
+  orgWorkWeixinLicenseStatus: {{ org_work_weixin_license_status }},
+  {% endif %}
+
+  enableWeixin: {% if enable_weixin %} true {% else %} false {% endif %},
+  {% if enable_weixin %}
+  weixinConnected: {% if weixin_connected %} true {% else %} false {% endif %},
+  weixinOfficialAccountsFollowed: {% if weixin_official_accounts_followed %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableOrgDingtalk: {% if enable_org_dingtalk %} true {% else %} false {% endif %},
+  {% if enable_org_dingtalk %}
+  orgDingtalkConnected: {% if org_dingtalk_connected %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableSAML: {% if enable_saml %} true {% else %} false {% endif %},
+  {% if enable_saml %}
+  samlConnected: {% if saml_connected %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableMultiSAML: {% if enable_multi_saml %} true {% else %} false {% endif %},
+  {% if enable_multi_saml %}
+  orgSamlConnected: {% if org_saml_connected %} true {% else %} false {% endif %},
+  {% endif %}
+
+  enableConvertToTeamAccount: {% if ENABLE_CONVERT_TO_TEAM_ACCOUNT %} true {% else %} false {% endif %},
+
+  enableDeleteAccount: {% if ENABLE_DELETE_ACCOUNT %} true {% else %} false {% endif %},
+
+  enableBindPhone: {% if enable_bind_phone %} true {% else %} false {% endif %},
+
+  cloudMode: {% if cloud_mode %} true {% else %} false {% endif %},
+  isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
+
+  {% if org is not None %}
+  orgCorpBindType: "{{ org_corp_bind_type|escapejs }}",
+  {% endif %}
+};
+</script>
+{% render_bundle 'settings' 'js' %}
+{% endblock %}

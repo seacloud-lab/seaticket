@@ -1,0 +1,216 @@
+.form_mode.compose-editor {
+  margin-bottom: 30px;
+}
+
+.workflow-select-table.dtable-select.custom-select.disabled,
+.workflow-select-table.dtable-select.custom-select.disabled .selected-option,
+.workflow-select-state-field.dtable-select.custom-select.disabled,
+.workflow-select-state-field.dtable-select.custom-select.disabled .selected-option {
+  background: #f7f7f7 !important;
+  color: #212529;
+}
+
+.workflow-app-settings-content .workflow-name-input {
+  height: 38px;
+}
+
+.workflow-app-settings-content .workflow-name-input:hover {
+  border-color: rgb(179, 179, 179);
+}
+
+.workflow-app-settings-content .workflow-name-input:hover:focus {
+  border-color: #1991eb;
+}
+
+.workflow-app-settings-container .workflow-app-select-other-nodes .workflow-app-other-node-select,
+.workflow-app-settings-container .workflow-app-select-next-node .workflow-app-next-node-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.null-option-name {
+  color: #C2C2C2 !important;
+}
+
+.workflow-app-settings-container .workflow-app-select-other-nodes .workflow-app-other-node-name,
+.workflow-app-settings-container .workflow-app-select-next-node .workflow-app-next-node-name {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.workflow-app-settings-container .workflow-app-select-other-nodes .option:hover .workflow-app-other-node-selected,
+.workflow-app-settings-container .workflow-app-select-next-node .option:hover .workflow-app-next-node-selected {
+  color: #fff;
+}
+
+.workflow-app-settings-container .workflow-app-selected-nodes-display {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0%;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.workflow-app-settings-container .workflow-app-selected-nodes-display .workflow-app-selected-node-display {
+  background-color: rgb(230, 230, 230);
+  border-radius: 2px;
+  display: flex;
+  margin-right: 4px;
+  min-width: 0px;
+  padding: 2px 6px;
+  height: 20px;
+  line-height: 16px;
+  flex-shrink: 0;
+}
+
+.workflow-app-settings-container .workflow-app-selected-nodes-display .workflow-app-selected-node-display:last-child {
+  margin-right: 0;
+}
+
+.workflow-app-settings-container .workflow-app-selected-node-display .remove-icon {
+  margin-top: 1px;
+}
+
+/* fields settings */
+.workflow-app-settings-container .form-fields-row .form-fields-select-all {
+  margin-left: 8px;
+  font-size: 16px;
+  color: '#666';
+}
+
+.workflow-app-settings-container .form-fields-row .form-field-icon {
+  font-size: 14px;
+  color: '#666';
+}
+
+.workflow-state-field-tip {
+  color: #666666;
+  font-size: 13px;
+}
+
+/* state option */
+.workflow-select-state-field .create-new-option-group .option-group-content {
+  padding-bottom: 0.5rem;
+}
+
+.workflow-select-state-field .workflow-state-field-icon {
+  margin-right: 0.3125rem;
+  font-size: 14px;
+  color: #aaa;
+  cursor: inherit;
+}
+
+/* add state option */
+.workflow-select-state-field .create-new-option-group.option-group {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-select-state-field .option-active .workflow-state-field-icon {
+  color: #fff;
+}
+
+.workflow-select-state-field .workflow-select-state-option-add {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  border-top: 1px solid #dedede;
+  background: #fff;
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+.workflow-select-state-field .workflow-select-state-option-add:hover {
+  cursor: pointer;
+  background: #f5f5f5;
+}
+
+.workflow-select-state-field .workflow-select-state-option-add .dtable-icon-add-table {
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.workflow-app-settings-content .finish-task-message-settings .workflow-form-group-input {
+  min-height: 80px;
+}
+
+.workflow-app-settings-content .finish-task-message-settings-container .form-setting-item:hover {
+  background: inherit;
+}
+
+.workflow-app-settings-content .node-action-item {
+  justify-content: space-between;
+  height: 38px;
+  border: 1px solid hsl(0, 0%, 80%);
+  border-radius: 3px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  line-height: 1.5;
+}
+
+.workflow-app-settings-content .node-actions-settings .node-action-item:last-of-type {
+  margin-bottom: 10px;
+}
+
+.workflow-app-settings-content .node-action-item .node-action-item-operation {
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.workflow-app-settings-content .node-action-item .node-action-item-operation .dtable-font {
+  color: #666666;
+  font-size: 14px;
+}
+
+.workflow-app-settings-content .node-action-item .node-action-item-operation:hover {
+  cursor: pointer;
+}
+
+.workflow-app-settings-content .node-action-item .node-action-item-operation:hover .dtable-font,
+.workflow-app-settings-content .workflow-node-action-addition-toggle:hover {
+  color: #212529;
+}
+
+.workflow-app-settings-content .workflow-node-action-addition-toggle {
+  color: #666666;
+}
+
+/* condition next nodes */
+.workflow-app-settings-content .next-node-settings .settings-common-icon {
+  font-size: 12px;
+  color: #666666;
+}
+
+.workflow-app-settings-content .next-node-settings .settings-common-icon .dtable-font {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.workflow-app-settings-content .next-node-settings .settings-common-icon:hover {
+  cursor: pointer;
+  color: #212529;
+}
+
+.workflow-app-settings-content .next-node-settings .next-node-conditions .dtable-font {
+  font-size: 14px;
+  color: #666666;
+}
+
+.workflow-app-settings-content .next-node-settings .next-node-conditions {
+  width: fit-content;
+  padding: 0 0.5rem;
+  border-radius: 4px;
+  line-height: 22px;
+}
+
+.workflow-app-settings-content .next-node-settings .next-node-conditions:hover {
+  cursor: pointer;
+  background-color: #efefef;
+}

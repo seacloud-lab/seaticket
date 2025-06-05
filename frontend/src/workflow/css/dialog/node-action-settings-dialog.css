@@ -1,0 +1,146 @@
+.workflow-node-action-settings-dialog {
+  max-height: calc(100% - 56px);
+  height: calc(100% - 56px);
+  overflow: hidden;
+}
+
+.workflow-node-action-settings-dialog .modal-content {
+  height: auto;
+  max-height: 100%;
+}
+
+.workflow-node-action-settings-dialog .node-action-settings-body {
+  height: calc(100% - 128px);
+  display: flex;
+  overflow-y: scroll;
+  flex-direction: column;
+}
+
+.workflow-node-action-settings-dialog .dingtalk-msg-type .seatable-radio,
+.workflow-node-action-settings-dialog .wechat-msg-type .seatable-radio {
+  margin: 10px 10px 0 0;
+}
+
+.workflow-node-action-settings-dialog .node-action-settings-body .lock-record-tip-content {
+  font-weight: 500;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-update-record-action-fields .node-action-update-record-field-item-delete {
+  width: 12px;
+  height: 20px;
+  margin-right: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-delete .dtable-icon-fork-number {
+  display: inline-block;
+  font-size: 12px;
+  color: #999999;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-delete .dtable-icon-fork-number:hover {
+  color: #555555;
+  cursor: pointer;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-select-column-content {
+  min-width: 150px;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-set {
+  flex-shrink: 0;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-select-column .node-action-update-record-field-item-select-column-set {
+  color: #666666;
+  white-space: nowrap;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-action-add-update-record-field {
+  width: 100%;
+  border-top: none;
+  padding: 0;
+  max-width: 100%;
+  margin: 10px 0 0 0;
+  color: #666666;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-action-add-update-record-field:hover {
+  cursor: pointer;
+  background-color: #fff;
+  color: #666666;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-action-add-update-record-field .dtable-icon-add-table {
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-date-value-container {
+  flex: 1;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .form-control {
+  min-width: 300px;
+  width: auto;
+  max-width: 100%;
+  border-color: rgba(0, 40, 100, .12);
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .form-control:hover {
+  border-color: rgb(179, 179, 179);
+  cursor: pointer;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .form-control:focus {
+  border-color: #1991eb;
+  cursor: text;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-single-select-container .select-editor-add {
+  display: none;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-single-select-container .grid-cell-type-single-select {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-checkbox-container .grid-cell-type-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .grid-cell-type-date {
+  flex: 1;
+  overflow: hidden;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .date-editor-container {
+  min-width: 300px;
+  width: auto;
+}
+
+.workflow-node-action-settings-dialog .node-action-update-record-field-item-value-container .node-action-update-record-field-item-time-days {
+  min-width: 100px;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-link-record-action-condition-equals,
+.workflow-node-action-settings-dialog .workflow-node-link-record-action-condition-delete {
+  color: #666666;
+  align-items: flex-end;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.workflow-node-action-settings-dialog .workflow-node-link-record-action-condition-delete:hover {
+  color: #666666;
+  cursor: pointer;
+}

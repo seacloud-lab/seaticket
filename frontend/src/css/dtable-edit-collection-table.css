@@ -1,0 +1,240 @@
+html,
+body,
+#wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.collection-table-container {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: calc(100% - 50px);
+  min-height: 0;
+}
+
+.collection-table-container .collection-table-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.collection-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  border-bottom: 1px solid #e4e4e4;
+  padding: 0 16px;
+  height: 50px;
+  background-color: white;
+}
+
+.collection-table-header .collection-table-name {
+  display: flex;
+  align-items: center;
+}
+
+.collection-table-name .tip-message {
+  margin-left: 12px;
+  font-size: 12px;
+  color: #666;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.collection-table-header .operations .op-item:first-child {
+  margin-right: 10px;
+}
+
+.collection-table-main .collection-table-iframes {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.collection-table-container .collection-table-iframe-pc iframe {
+  width: 100%;
+  height: 667px;
+  border: 1px solid #aaa;
+}
+
+.collection-table-container .collection-table-iframe-mobile iframe {
+  width: 375px;
+  height: 667px;
+  border: 1px solid #aaa;
+}
+
+.collection-table-main .collection-table-iframes .collection-table-iframe-name {
+  color: #666;
+}
+
+
+.collection-table-side .collection-table-settings {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e4e4e4;
+  width: 300px;
+  height: 100%;
+  background: #fff;
+}
+
+.collection-table-settings .setting-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e4e4e4;
+  padding: 0 16px;
+  min-height: 50px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.collection-table-settings .setting-body {
+  overflow: auto;
+  padding: 16px;
+}
+
+.collection-table-settings .setting-divider {
+  margin: 14px 0;
+  border-bottom: 1px solid #e2e2e2;
+  width: auto;
+}
+
+.collection-table-settings .setting-item.form-setting-remarks {
+  margin-bottom: -2px;
+}
+
+.collection-table-settings .setting-item .title {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.collection-table-settings .column-setting .setting-list-container {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.column-setting .form-setting-item {
+  position: relative;
+  font-size: 14px;
+  min-height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+}
+
+.collection-table-settings .column-setting .setting-list-container .form-setting-item {
+  border-radius: 4px;
+}
+
+.collection-table-settings .column-setting .setting-list-container .form-setting-item:hover {
+  background: #f0f0f0;
+}
+
+.column-setting .form-setting-item .custom-switch .custom-switch-description {
+  width: 222px;
+  margin: 0;
+  padding-right: 5px;
+}
+
+.column-setting .form-setting-item .custom-switch .dtable-font {
+  transform: scale(0.8);
+  display: inline-block;
+  line-height: 24px;
+  margin-right: 8px;
+  color: #666;
+}
+
+.column-setting .form-setting-item .custom-switch .custom-switch-indicator {
+  width: 22px;
+  height: 12px;
+  border-radius: 6px;
+  margin-right: 10px;
+}
+
+.column-setting .form-setting-item .custom-switch .custom-switch-indicator:before {
+  height: 8px;
+  width: 8px;
+}
+
+.column-setting .form-setting-item .custom-switch .custom-switch-input:checked ~ .custom-switch-indicator:before {
+  left: 12px;
+}
+
+.dtable-edit-collection-table-rename span {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dtable-edit-collection-table-rename i {
+  color: #999;
+  cursor: pointer;
+}
+
+.dtable-edit-collection-table-rename i:hover {
+  color: #666;
+}
+
+@media screen and (max-width: 767.8px) {
+  .collection-table-container {
+    height: 100%;
+  }
+
+  .collection-table-side-mask {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    inset: 0;
+    background-color: #000;
+    opacity: 0.3;
+  }
+
+  .collection-table-side {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #fff;
+  }
+}
+
+.mobile-collection-table-header .mobile-collection-table-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mobile-collection-table-header .mobile-collection-table-name .mobile-collection-table-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+  font-weight: 700;
+}
+
+.dtable-collection .am-action-sheet-button-list {
+  text-align: left;
+  color: #212529;
+}
+
+.dtable-collection .my-am-action {
+  padding: 0 16px;
+}
+
+.dtable-collection .am-action-sheet-button-list .am-action-sheet-button-list-item .dtable-font {
+  color: #888;
+  font-size: 20px;
+  margin-right: 16px;
+}
+
+.mobile-rename-collection-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #f5f5f5;
+  z-index: 101;
+}

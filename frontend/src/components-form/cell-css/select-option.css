@@ -1,0 +1,14 @@
+.select-option {
+  display: inline-block;
+  padding: 0px 10px;
+  height: 20px;
+  text-align: center;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-left: 8px;
+  line-height: 20px;
+}
+
+.select-option:first-child {
+  margin-left: 0;
+}

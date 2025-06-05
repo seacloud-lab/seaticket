@@ -1,0 +1,46 @@
+{% extends "base_clean.html" %}
+{% load i18n %}
+{% block sub_title %}{% trans "Log in or signup" %} - {% endblock %}
+{% block main_content %}
+  <div class="login-panel-outer-container mt-6">
+    <div class="external-app-tip mb-4 text-center">
+        <p>
+          {% blocktrans %}You will visit App {{ app_name }} on SeaTable App Platform. Please register or log in to SeaTable platform before proceeding to App {{ app_name }}.{% endblocktrans %}
+        </p>
+    </div>
+    <div class="login-panel">
+      <button id="login" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
+      <button id="register" class="submit btn btn-outline-primary btn-block">{% trans "Sign up" %}</button>
+    </div>
+    <div class="mt-6 text-center">
+      {% trans "Powered by" %}
+      <a href="{% if powered_by_link %}{{ powered_by_link }}{% else %}https://seatable.cn/{% endif %}">{% trans "SeaTable" %}</a>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_script %}
+<script type="text/javascript">
+$('#login').on('click', function() {
+  location.href = "{% url 'auth_login' %}?next={{ next|escapejs }}" + encodeURIComponent(document.location.hash);
+});
+$('#register').on('click', function() {
+  location.href = "{% if use_phone_registration_by_default %}{% url 'sms_register'%}{% else %}{% url 'registration_register'%}{% endif %}?next={{ next }}" + encodeURIComponent(document.location.hash);
+});
+
+  var ICON_COLOR_MATRIX = [
+    ['FACF55', 'F6AB2F'],
+    ['F652B6', 'E91E63'],
+    ['FE52E9', 'EB00B1'],
+    ['B154FF', '7626FD'],
+    ['D661E7', '972CB0'],
+    ['5AF95A', '00D500'],
+    ['66E16D', '4CAF50'],
+    ['05E1FF', '02C0FF'],
+    ['00E9E6', '00C9C7'],
+    ['35BEFE', '1688FC'],
+  ];
+  var colors = ICON_COLOR_MATRIX[{{icon_color_index}}];
+  var iconContainer = document.getElementsByClassName('universal-app-icon-container')[0];
+  iconContainer.setAttribute('style', `background: linear-gradient(to left, #${colors[0]}, #${colors[1]})`);
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block sub_title %}{% trans "Update contact email" %} - {% endblock %}
+
+{% block main_content %}
+<div class="text-panel">
+	<p>{{ tip }}&nbsp;&nbsp;<a href="{{ url_base }}{% url next_url %}">{{ operation_text }}</a></p>
+</div>
+{% endblock %}

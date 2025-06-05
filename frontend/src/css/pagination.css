@@ -1,0 +1,44 @@
+.paginator .btn {
+  min-width: 2.375rem;
+  font-weight: normal;
+}
+
+.paginator .paginator-disabled-btn {
+  color: #999;
+  font-size: 12px;
+}
+
+.paginator .paginator-dropdown .btn:active,
+.paginator .paginator-dropdown .btn:focus {
+  background-color: #fff;
+  border-color: #1991eb;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
+}
+
+.paginator-dropdown .dropdown-menu {
+  min-width: auto;
+}
+
+.paginator-dropdown .dropdown-menu .dropdown-item {
+  display: flex;
+  padding-left: 10px;
+  padding-right: 24px;
+}
+
+.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick {
+  display: inline-block;
+  width: 14px;
+  margin-right: 4px;
+}
+
+.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .dtable-font,
+.paginator-dropdown>.btn .dtable-font {
+  color: #999;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.paginator-dropdown .dropdown-menu .dropdown-item:hover .paginator-dropdown-tick .dtable-font {
+  color: #fff;
+}

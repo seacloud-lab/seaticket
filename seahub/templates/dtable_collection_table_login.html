@@ -1,0 +1,17 @@
+
+{% extends 'base.html' %}
+{% load seahub_tags avatar_tags group_avatar_tags i18n static %}
+
+{% block extra_style %}
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/share_form_permission_error.css" />
+{% endblock %}
+
+{% block main_content %}
+<div class="text-panel share-form-no-permission">
+    <img class="model-no-permission-img" src="{{ MEDIA_URL }}img/seatable_share_form_no_permission.png" alt="" />
+    <div class="requires-login-tip">{% trans "You need to login to fill in data collection table." %}</div>
+    {% if url %}
+        <a id="re-login" class="log-in-immediately btn btn-primary btn-block" href="{{ SITE_ROOT }}accounts/login?next={{ url }}">{% trans "Log In" %}</a>
+    {% endif %}
+</div>
+{% endblock %}

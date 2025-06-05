@@ -1,0 +1,64 @@
+.user-info-popover .user-popover-container {
+  background-color: #fff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  width: 280px;
+  min-height: 130px;
+}
+
+.user-popover-container .user-popover-header {
+  padding: 10px 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 68px;
+}
+
+.user-popover-container .user-popover-header .user-popover-title {
+  width: 100%;
+  border-bottom: 1px solid #ededed;
+  padding-bottom: 14px;
+  height: 100%;
+  display: flex;
+}
+
+.user-popover-container .user-popover-header .user-not-found {
+  justify-content: center;
+  align-items: center;
+}
+
+.user-popover-container .user-popover-header .user-popover-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.user-popover-container .user-popover-header .user-popover-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 500;
+  min-width: 0;
+}
+
+.user-popover-container .user-popover-body .user-detail-list {
+  padding: 10px;
+  display: flex;
+}
+
+.user-popover-container .user-popover-body .user-detail-email {
+  margin-right: 15px;
+  color: #bcbcbc;
+}
+
+.user-popover-container .user-popover-body .user-detail-email-content {
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+}

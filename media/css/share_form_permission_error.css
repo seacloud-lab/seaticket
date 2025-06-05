@@ -1,0 +1,27 @@
+.share-form-no-permission {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 0;
+}
+
+.share-form-no-permission .requires-login-tip {
+  font-weight: bold;
+  margin: 6px 0 20px 0;
+}
+
+.share-form-no-permission .log-in-immediately {
+  min-width: 140px;
+  width: max-content;
+  margin-bottom: 100px;
+}
+
+.share-form-no-permission .model-no-permission-img {
+  display: inline-block;
+  height: 100px;
+  width: 100px;
+  border: none;
+  margin-top: -24px;
+}

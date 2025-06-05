@@ -1,0 +1,36 @@
+.org-logo-form {
+  margin-top: 1rem;
+}
+
+.org-logo-image {
+  width: 260px;
+  height: 68px;
+  border: 2px dashed #dbdbdb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.org-logo-image img {
+  max-height: 68px;
+}
+
+.org-logo-image-tip {
+  color: #666;
+  font-size: 13px;
+  padding-top: 8px;
+  display: block;
+}
+
+.org-logo-mask {
+  position: absolute;
+  width: 260px;
+  height: 68px;
+  background-color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  top: 0;
+  color: #fff;
+  font-size: 44px;
+  line-height: 68px;
+  text-align: center;
+}

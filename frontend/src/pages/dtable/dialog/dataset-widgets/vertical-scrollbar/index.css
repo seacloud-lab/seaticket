@@ -1,0 +1,11 @@
+.vertical-scrollbar {
+  width: 20px;
+  overflow: auto;
+  position: fixed;
+  top: 136px;
+  right: 18px;
+}
+
+.vertical-scrollbar-inner {
+  width: 1px;
+}

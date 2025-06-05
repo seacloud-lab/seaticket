@@ -1,0 +1,17 @@
+.dtable-dropdown-more {
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666666;
+  font-size: 0.875rem;
+}
+
+.delete-archives-confirm-btn {
+  height: 38px;
+}
+
+.delete-archives-confirm-btn .loading-tip {
+  margin: 0 auto;
+}
