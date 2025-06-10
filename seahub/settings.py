@@ -1,6 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # -*- coding: utf-8 -*-
-# Django settings for dtable-web project.
+# Django settings for seaqa-web project.
 
 import sys
 import os
@@ -603,7 +603,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-            'format': '[dtable-web] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'format': '[seaqa-web] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
         'file': {

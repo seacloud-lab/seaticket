@@ -102,7 +102,7 @@ def sms_two_factor_auth(request):
                 error_msg = '请 %s 秒后再次发送验证码' % (lock_time - int(time.time()))
                 send_button_disabled = 'disabled'
             else:
-                # same as dtable-web/seahub/api2/endpoints/verify.py     
+                # same as seaqa-web/seahub/api2/endpoints/verify.py     
                 try:
                     from seahub.utils.verify import get_random_code, set_sms_verify_code_cache
                     from seahub.utils.sms_clients import AliyunSmsClient
@@ -122,7 +122,7 @@ def sms_two_factor_auth(request):
                     error_msg = _('Internal Server Error')
         # verify code
         elif sms_code:
-            # same as dtable-web/seahub/api2/endpoints/profile.py
+            # same as seaqa-web/seahub/api2/endpoints/profile.py
             from seahub.utils.verify import verify_sms_code
             verify_success = verify_sms_code(phone, SMS_TWO_FACTOR_AUTH_SMS_TYPE, sms_code)
             # success

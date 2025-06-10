@@ -134,7 +134,7 @@ def sms_login(request):
                 error_msg = _('User %s not found or inactive.') % phone
                 return render_sms_login_error(request, redirect_to, error_msg, send_button_disabled, phone, is_android)
 
-            # same as dtable-web/seahub/api2/endpoints/verify.py
+            # same as seaqa-web/seahub/api2/endpoints/verify.py
             try:
                 from seahub.utils.verify import get_random_code, set_sms_verify_code_cache
                 from seahub.utils.sms_clients import AliyunSmsClient
@@ -182,7 +182,7 @@ def sms_login(request):
                 error_msg = _('User %s not found or inactive.') % phone
                 return render_sms_login_error(request, redirect_to, error_msg, send_button_disabled, phone, is_android)
 
-            # same as dtable-web/seahub/api2/endpoints/profile.py
+            # same as seaqa-web/seahub/api2/endpoints/profile.py
             from seahub.utils.verify import verify_sms_code
             verify_success = verify_sms_code(phone, SMS_LOGIN_SMS_TYPE, sms_code)
 

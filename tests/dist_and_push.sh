@@ -11,7 +11,7 @@ cd "$DTABLE_WEB_SRCDIR"
 set +x
 
 function commit_dist_files() {
-    echo 'commit dtable-web'
+    echo 'commit seaqa-web'
     git checkout -b dist-$GITHUB_BRANCH
     git add -u . && git add -A media/assets && git add -A static/scripts && git add -A frontend && git add -A locale
     git config --global user.email "github_actions@seafile.com"
@@ -20,8 +20,8 @@ function commit_dist_files() {
 }
 
 function upload_files() {
-    echo 'push dist to dtable-web'
-    git remote add token-origin https://x-access-token:$GITHUB_TOKEN@github.com/seafileltd/dtable-web.git
+    echo 'push dist to seaqa-web'
+    git remote add token-origin https://x-access-token:$GITHUB_TOKEN@github.com/seafileltd/seaqa-web.git
     git push -f token-origin dist-$GITHUB_BRANCH
 }
 

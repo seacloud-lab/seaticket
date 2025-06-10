@@ -419,7 +419,7 @@ def sms_register(request, backend, success_url=None, form_class=None,
                 error_msg = '手机号已注册'
                 return render_sms_registration_json_error(error_msg)
 
-            # same as dtable-web/seahub/api2/endpoints/verify.py
+            # same as seaqa-web/seahub/api2/endpoints/verify.py
             try:
                 from seahub.utils.sms_clients import AliyunSmsClient
 
@@ -458,7 +458,7 @@ def sms_register(request, backend, success_url=None, form_class=None,
                 error_msg = '手机号已注册'
                 return render_sms_registration_error(request, redirect_to, error_msg, send_button_disabled, phone, is_android)
 
-            # same as dtable-web/seahub/api2/endpoints/profile.py
+            # same as seaqa-web/seahub/api2/endpoints/profile.py
             verify_success = verify_sms_code(phone, SMS_REGISTRATION_SMS_TYPE, sms_code)
 
             if not verify_success:
