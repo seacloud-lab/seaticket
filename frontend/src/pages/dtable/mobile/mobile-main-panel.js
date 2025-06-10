@@ -4,24 +4,17 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
 import { toaster } from 'dtable-ui-component';
-import { MainPanelDTables, DTablesInWorkspace, MainPanelDataset, MainPanelApps, MainPanelTempletes,
-  MainPanelTrashDTables, MainPanelActivities, MainPanelInvitationLink,
-  MainPanelWorkflowsPanel, MainPanelUniversalApps, MainPanelUserGuide } from '../index.js';
+import { MainPanelDTables, DTablesInWorkspace } from '../index.js';
 import { Utils } from '../../../utils/utils';
-import { TASK_TYPE } from '../../../workflow/constants';
 import { dtableWebAPI } from '../../../api/dtable-web-api';
 import Workspace from '../model/workspace';
-import { cloudMode, isOrgContext, enableOrgCommonDataset, enableInviteAFriend, gettext, siteRoot, enableUserGuide,
-  workflowHelpLink, enableUniversalApp } from '../../../utils/constants';
+import { gettext, siteRoot } from '../../../utils/constants';
 import MobileMine from './mobile-mine';
-import MobileTemplateList from './mobile-template-list';
-import IconSvg from '../../../components/icon';
 import MobileHeader from './mobile-header';
 
 import '../../../css/mobile/mobile-main-panel.css';
 
 const propTypes = {
-  isShowWorkflow: PropTypes.bool,
   searchPlaceholder: PropTypes.string,
   updateSidePanelGroups: PropTypes.func,
   onShowSidePanel: PropTypes.func,
@@ -33,24 +26,6 @@ const BAR_ITEMS = [
     title: gettext('Bases'),
     icon: <span className="dtable-font dtable-icon-dtable-logo tab-item"></span>,
     selectedIcon: <span className="dtable-font dtable-icon-dtable-logo selected-tab-item"></span>
-  },
-  {
-    key: 'Workflow',
-    title: gettext('Workflow'),
-    icon: <span className="dtable-font dtable-icon-workflow tab-item"></span>,
-    selectedIcon: <span className="dtable-font dtable-icon-workflow selected-tab-item"></span>
-  },
-  {
-    key: 'Apps',
-    title: gettext('Apps'),
-    icon: <IconSvg symbol="external-apps" className="tab-item"/>,
-    selectedIcon: <IconSvg symbol="external-apps" className="selected-tab-item"/>
-  },
-  {
-    key: 'Templates',
-    title: gettext('Templates'),
-    icon: <span className="dtable-font dtable-icon-templates tab-item"></span>,
-    selectedIcon: <span className="dtable-font dtable-icon-templates selected-tab-item"></span>
   },
   {
     key: 'Mine',
@@ -71,7 +46,6 @@ class MobileMainPanel extends React.Component {
       workflowTag: '',
       workflowTask: null,
       isWorkspaceListLoading: true,
-      isWorkflowHeaderPopoverVisible: false,
       starredDTableList: [],
     };
   }
@@ -242,22 +216,6 @@ class MobileMainPanel extends React.Component {
     this.setState({ workspaceList });
   };
 
-  onOpenWorkflowTaskByNotification = (notification) => {
-    const { detail } = notification;
-    const { workflow_task } = detail;
-    const { task_state } = workflow_task;
-    let workflowTag = '';
-    let workflowTask = '';
-    if (task_state === 'finished') {
-      workflowTag = TASK_TYPE.HANDLED;
-      const message = gettext('Permission denied or you have operated');
-      toaster.danger(message);
-    } else {
-      workflowTag = TASK_TYPE.PENDING;
-      workflowTask = workflow_task;
-    }
-    this.setState({ workflowTag, workflowTask, selectedTab: 'workflow' });
-  };
 
   addDtableFromExternalLink = (externalLink) => {
     const { workspaceList } = this.state;
@@ -285,7 +243,6 @@ class MobileMainPanel extends React.Component {
   };
 
   renderMainContent = () => {
-    const { isShowWorkflow } = this.props;
 
     return (
       <Router className="reach-router" role='group'>
@@ -343,45 +300,18 @@ class MobileMainPanel extends React.Component {
           onAddDTable={this.onAddDTable}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
-        <MainPanelActivities path={siteRoot + 'activities/'} />
-        {(!cloudMode || (isOrgContext && enableOrgCommonDataset)) && <MainPanelDataset path={siteRoot + 'common-datasets/'} loadWorkspaceList={this.loadWorkspaceList}/>}
-        <MainPanelApps path={siteRoot + 'dtable/apps/'} />
-        <MainPanelTempletes path={siteRoot + 'dtable/templetes/'} />
-        {(!isOrgContext && enableInviteAFriend) && <MainPanelInvitationLink path={siteRoot + 'invitation-link/'} />}
-        <MainPanelTrashDTables path={siteRoot + 'dtable/trash/'}/>
-        {isShowWorkflow && <MainPanelWorkflowsPanel path={siteRoot + 'workflows'}/>}
-        <MainPanelUniversalApps path={siteRoot + 'universal-apps/'} />
-        {enableUserGuide && <MainPanelUserGuide path={siteRoot + 'user-guide/'}/>}
       </Router>
     );
   };
 
-  toggleWorkflowHeaderPopoverVisible = (isWorkflowHeaderPopoverVisible) => {
-    this.setState({ isWorkflowHeaderPopoverVisible });
-  };
-
-  onWorkflowToolSelect = (opt) => {
-    this.setState({ isWorkflowHeaderPopoverVisible: false });
-    const value = opt.props.value;
-    if (value === 'using-help') {
-      window.open(workflowHelpLink);
-    }
-  };
 
   getTabBarItems = () => {
-    const { isShowWorkflow } = this.props;
     let tabBarItems = BAR_ITEMS.slice(0);
-    if (!isShowWorkflow) {
-      tabBarItems = tabBarItems.filter(item => item.key !== 'Workflow');
-    }
-    if (!enableUniversalApp) {
-      tabBarItems = tabBarItems.filter(item => item.key !== 'Apps');
-    }
     return tabBarItems;
   };
 
   renderTabBarContent = () => {
-    const { selectedTab, workflowTag, workflowTask } = this.state;
+    const { selectedTab } = this.state;
     let tabBarItems = this.getTabBarItems();
     return (
       <TabBar
@@ -394,17 +324,6 @@ class MobileMainPanel extends React.Component {
           let itemTabValue = item.key.toLocaleLowerCase();
           if (selectedTab === 'bases' && itemTabValue === 'bases') {
             innerContent = this.renderMainContent();
-          } else if (selectedTab === 'workflow' && itemTabValue === 'workflow') {
-            innerContent = (
-              <MainPanelWorkflowsPanel
-                isShowHeader={false}
-                workflowTag={workflowTag}
-                workflowTask={workflowTask}
-                clearWorkflowState={this.clearWorkflowState}
-              />
-            );
-          } else if (selectedTab === 'apps' && itemTabValue === 'apps') {
-            innerContent = <MainPanelUniversalApps />;
           }
           return (
             <TabBar.Item
@@ -424,29 +343,17 @@ class MobileMainPanel extends React.Component {
   };
 
   render() {
-    const { selectedTab, isWorkflowHeaderPopoverVisible } = this.state;
+    const { selectedTab } = this.state;
     return (
-      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' },
-        { 'mobile-main-panel-templates': selectedTab === 'templates' })} >
+      <div className={classnames('mobile-main-panel', { 'mobile-main-panel-mine': selectedTab === 'mine' })} >
         <MobileHeader
           selectedTab={selectedTab}
-          isWorkflowHeaderPopoverVisible={isWorkflowHeaderPopoverVisible}
           searchPlaceholder={this.props.searchPlaceholder}
           onShowSidePanel={this.props.onShowSidePanel}
           onSearchedClick={this.onSearchedClick}
-          onOpenWorkflowTaskByNotification={this.onOpenWorkflowTaskByNotification}
           loadWorkspaceList={this.loadWorkspaceList}
-          onWorkflowToolSelect={this.onWorkflowToolSelect}
-          toggleWorkflowHeaderPopoverVisible={this.toggleWorkflowHeaderPopoverVisible}
         />
         {selectedTab === 'mine' && <MobileMine />}
-        {selectedTab === 'templates' &&
-          <MobileTemplateList
-            isSinglePage={false}
-            addDtableFromExternalLink={this.addDtableFromExternalLink}
-            isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
-          />
-        }
         {this.renderTabBarContent()}
       </div>
     );

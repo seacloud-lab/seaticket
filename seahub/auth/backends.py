@@ -4,8 +4,6 @@ from collections import OrderedDict
 
 from django.conf import settings
 
-from seaserv import ccnet_api, seafile_api
-
 from seahub.base.accounts import User, AuthBackend
 from seahub.profile.models import Profile
 from seahub.utils.file_size import get_quota_from_string

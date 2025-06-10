@@ -1,22 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Router } from '@gatsbyjs/reach-router';
-import SystemNotification from '../../components/system-notification';
-import SystemUserNotification from '../../components/system-user-notification';
 import {
-  MainPanelDTables, DTablesInWorkspace, MainPanelDataset, MainPanelApps,
-  MainPanelTempletes, MainPanelUserGuide, MainPanelTrashDTables,
-  MainPanelActivities, MainPanelInvitationLink, MainPanelWorkflowsPanel,
-  MainPanelUniversalApps,
+  MainPanelDTables, DTablesInWorkspace
 } from './index';
-import MainPanelDepartmentsV2 from './main-panel-departments-v2';
 import { dtableWebAPI } from '../../api/dtable-web-api';
 import Workspace from './model/workspace';
-import {
-  cloudMode, isOrgContext, enableOrgCommonDataset, enableInviteAFriend,
-  enableUserGuide, enableAddressBookV2, enableDepartmentAdminManageMemberBases,
-} from '../../utils/constants';
-import { isDingTalkBuiltInBrowser } from '../../components-form/utils/utils';
 
 import '../../css/dtable-search.css';
 
@@ -27,9 +16,6 @@ const propTypes = {
   currentTab: PropTypes.string,
   onShowSidePanel: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func,
-  showWorkflow: PropTypes.bool.isRequired,
-  workflowTag: PropTypes.string,
-  workflowTask: PropTypes.object,
 };
 
 class MainPanel extends React.Component {
@@ -210,11 +196,8 @@ class MainPanel extends React.Component {
   };
 
   render() {
-    const isDingTalk = isDingTalkBuiltInBrowser();
     return (
       <div className="main-panel" aria-label={gettext('Main panel')}>
-        {!isDingTalk && <SystemNotification />}
-        <SystemUserNotification />
         <Router className="reach-router" role='group'>
           <MainPanelDTables
             path={siteRoot}
@@ -270,28 +253,6 @@ class MainPanel extends React.Component {
             onAddDTable={this.onAddDTable}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
-          <MainPanelActivities path={siteRoot + 'activities/'} />
-          {(!cloudMode || (isOrgContext && enableOrgCommonDataset)) &&
-            <MainPanelDataset path={siteRoot + 'common-datasets/'} loadWorkspaceList={this.loadWorkspaceList}/>
-          }
-          <MainPanelApps path={siteRoot + 'dtable/apps/'} />
-          <MainPanelUniversalApps path={siteRoot + 'universal-apps/'} />
-          <MainPanelTempletes path={siteRoot + 'dtable/templetes/'} />
-          {(!isOrgContext && enableInviteAFriend) && <MainPanelInvitationLink path={siteRoot + 'invitation-link/'} />}
-          <MainPanelTrashDTables path={siteRoot + 'dtable/trash/'}/>
-          {enableUserGuide && <MainPanelUserGuide path={siteRoot + 'user-guide/'}/>}
-          {this.props.showWorkflow && (
-            <MainPanelWorkflowsPanel
-              path={siteRoot + 'workflows'}
-              workflowTag={this.props.workflowTag}
-              workflowTask={this.props.workflowTask}
-            />
-          )}
-          {enableAddressBookV2 && enableDepartmentAdminManageMemberBases &&
-            <MainPanelDepartmentsV2
-              path={siteRoot + 'departments-v2'}
-            />
-          }
         </Router>
       </div>
     );

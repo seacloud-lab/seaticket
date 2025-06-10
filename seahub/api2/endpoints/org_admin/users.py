@@ -6,10 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from django.utils.translation import gettext as _
-from django.urls import reverse
 from django.conf import settings
-
-from seaserv import ccnet_api, seafile_api
 
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
@@ -19,30 +16,19 @@ from seahub.api2.endpoints.utils import is_org_user
 from seahub.base.accounts import User
 from seahub.base.models import UserLastLogin
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.ccnet_db.ccnet.organizations import get_org_staff_count, get_org_email_users
-from seahub.dtable.utils import create_repo_and_workspace
 from seahub.profile.models import Profile
-from seahub.auth.models import SocialAuthUser
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, send_html_email, get_site_name
-from seahub.utils.file_size import get_file_size_unit
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
-from seahub.views.sysadmin import send_user_add_mail
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.dtable.models import IdInOrgTuple, Workspaces
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
-from seahub.invitations.utils import record_registration_logs
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.two_factor.models import default_device, user_has_device
 from seahub.options.models import UserOptions
-from seahub.settings import SEND_EMAIL_ON_ORG_ADD_NEW_USER, SEND_EMAIL_ON_ACTIVATING_ORG_USER
-from seahub.two_factor.models.static import StaticDevice
+from seahub.settings import SEND_EMAIL_ON_ACTIVATING_ORG_USER
 
-from pysearpc import SearpcError
-
-from seahub.organizations.models import OrgAdminSettings
+from seahub.organizations.models import Organization, OrgUser
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
-from seahub.organizations.views import get_org_user_self_usage, get_org_user_quota, \
-    is_org_staff, org_user_exists, unset_org_user, set_org_user, set_org_staff, unset_org_staff
+from seahub.organizations.views import is_org_staff, unset_org_user, set_org_user, set_org_staff, unset_org_staff
 from seahub.weixin.utils import weixin_check
 from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_dingtalk.utils import org_dingtalk_check
@@ -65,7 +51,7 @@ class OrgAdminUsers(APIView):
         # resource check
 
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -81,7 +67,8 @@ class OrgAdminUsers(APIView):
         user_list_info = {}
 
         if is_staff:
-            org_users = ccnet_api.get_org_users_by_url_prefix(org.url_prefix, -1, -1)
+            # org_users = ccnet_api.get_org_users_by_url_prefix(org.url_prefix, -1, -1)
+            org_users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
             users = []
             if is_staff:
                 for user in org_users:
@@ -96,7 +83,9 @@ class OrgAdminUsers(APIView):
                 current_page = 1
                 per_page = 25
 
-            users_plus_one = get_org_email_users(org_id, current_page, per_page)
+            start = (current_page - 1) * per_page
+            limit = per_page
+            users_plus_one = OrgUser.objects.get_org_email_users(org_id, start, limit)
 
             if len(users_plus_one) == per_page:
                 page_next = True
@@ -117,7 +106,6 @@ class OrgAdminUsers(APIView):
         for user in users:
             user_info = get_user_info(user.email, org_id)
             user_info['id_in_org'] = email2id_in_org.get(user.email, '')
-            workspace = Workspaces.objects.get_workspace_by_owner(user.email)
 
             # populate user last login time
             user_info['last_login'] = None
@@ -132,7 +120,6 @@ class OrgAdminUsers(APIView):
             # these two fields are designed to be compatible with the old API
             user_info['self_usage'] = user_info.get('quota_usage')
             user_info['quota'] = user_info.get('quota_total')
-            user_info['workspace_id'] = workspace and workspace.id or None
             try:
                 user_info['is_org_admin'] = True if is_org_staff(org.org_id, user.email) == 1 else False
             except Exception as e:
@@ -158,13 +145,13 @@ class OrgAdminUsers(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # check plan
         url_prefix = request.user.org.url_prefix
-        org_members = ccnet_api.get_org_users_by_url_prefix(url_prefix, -1, -1)
+        org_members = Organization.objects.get_org_users_by_url_prefix(url_prefix)
         org_active_members = len([m for m in org_members if m.is_active])
 
         if ORG_MEMBER_QUOTA_ENABLED:
@@ -177,7 +164,6 @@ class OrgAdminUsers(APIView):
         email = request.data.get('email', '')
         name = request.data.get('name', '')
         password = request.data.get('password', '')
-        with_workspace = request.data.get('with_workspace', False)
 
         if not email or not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'Email invalid.')
@@ -224,19 +210,6 @@ class OrgAdminUsers(APIView):
             Profile.objects.add_or_update(username=user.username, nickname=name)
 
         set_org_user(org_id, user.username)
-
-        try:
-            record_registration_logs(user, 'org-admin-add')
-        except Exception as e:
-            logger.warning('Failed to record registration log, error: %s' % e)
-
-        if IS_EMAIL_CONFIGURED and SEND_EMAIL_ON_ORG_ADD_NEW_USER:
-            if OrgAdminSettings.objects.is_enable_new_user_email_by_org_id(org_id):
-                try:
-                    send_user_add_mail(request, email, password)
-                except Exception as e:
-                    logger.error(str(e))
-
         user_info = {}
         user_info['id'] = user.id
         user_info['is_active'] = user.is_active
@@ -245,17 +218,6 @@ class OrgAdminUsers(APIView):
         user_info['email'] = user.email
         user_info['contact_email'] = email2contact_email(user.email)
         user_info['last_login'] = None
-        user_info['self_usage'] = 0 # get_org_user_self_usage(org.org_id, user.email)
-        try:
-            user_info['quota'] = get_org_user_quota(org_id, user.email)
-        except SearpcError as e:
-            logger.error(e)
-            user_info['quota'] = -1
-
-        if with_workspace:
-            workspace = create_repo_and_workspace(user.username, org_id)
-            user_info["workspace_id"] = workspace.id
-
         # send org admin operation log signal
         admin_op_detail = {
             "email": email,
@@ -280,7 +242,7 @@ class OrgAdminUser(APIView):
 
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -291,7 +253,7 @@ class OrgAdminUser(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
         # permission check
-        if not ccnet_api.org_user_exists(org_id, email):
+        if not OrgUser.objects.org_user_exists(org_id, email):
             err_msg = _('User %s not found in organization.') % email
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
@@ -322,8 +284,8 @@ class OrgAdminUser(APIView):
 
         # resource check
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        org = Organization.objects.get_org_by_id(org_id)
+        if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -397,39 +359,11 @@ class OrgAdminUser(APIView):
                 if not is_org_staff(org_id, user.username):
                     error_msg = '%s is not organization staff.' % email
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                if get_org_staff_count(org_id) == 1:
+                if OrgUser.objects.get_org_staff_count(org_id) == 1:
                     err_msg = 'At least one administrator required for an organization.'
                     return api_error(status.HTTP_400_BAD_REQUEST, err_msg)
 
                 unset_org_staff(org_id, user.username)
-
-        quota_total_mb = request.data.get("quota_total", None)
-        if quota_total_mb:
-            try:
-                quota_total_mb = int(quota_total_mb)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if quota_total_mb < 0:
-                error_msg = "Space quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            org_quota = seafile_api.get_org_quota(org_id)
-            org_quota_mb = org_quota / get_file_size_unit('MB')
-
-            # -1 means org has unlimited quota
-            if org_quota > 0 and quota_total_mb > org_quota_mb:
-                error_msg = _(u'Failed to set quota: maximum quota is %d MB' % org_quota_mb)
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            quota_total = int(quota_total_mb) * get_file_size_unit('MB')
-            try:
-                seafile_api.set_org_user_quota(org_id, email, quota_total)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         id_in_org = request.data.get("id_in_org", None)
         if id_in_org is not None:
@@ -447,16 +381,8 @@ class OrgAdminUser(APIView):
             if email == request.user.username:
                 error_msg = "Cannot activate or inactivate yourself."
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            url_prefix = org.url_prefix
-            org_members = ccnet_api.get_org_users_by_url_prefix(url_prefix, -1, -1)
-            org_active_members = len([m for m in org_members if m.is_active])
+
             is_active_bool = to_python_boolean(is_active)
-            if is_active_bool and ORG_MEMBER_QUOTA_ENABLED:
-                from seahub.organizations.models import OrgMemberQuota
-                org_members_quota = OrgMemberQuota.objects.get_quota(org_id)
-                if org_members_quota is not None and org_active_members >= org_members_quota:
-                    err_msg = 'Failed. You can only invite %d members.' % org_members_quota
-                    return api_error(status.HTTP_409_CONFLICT, err_msg)
             user.is_active = is_active_bool
             user.save()
             if is_active_bool == False:
@@ -497,10 +423,6 @@ class OrgAdminUser(APIView):
         except UserLastLogin.DoesNotExist:
             info['last_login'] = None
 
-        # these two fields are designed to be compatible with the old API
-        info['self_usage'] = info.get('quota_usage')
-        info['quota'] = info.get('quota_total')
-
         return Response(info)
 
     def delete(self, request, org_id, email):
@@ -508,7 +430,7 @@ class OrgAdminUser(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -518,13 +440,13 @@ class OrgAdminUser(APIView):
             err_msg = 'User %s not found.' % email
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
-        if ccnet_api.is_org_staff(org_id, email) and get_org_staff_count(org_id) == 1:
+        if OrgUser.objects.is_org_staff(org_id, email) and OrgUser.objects.get_org_staff_count(org_id):
             err_msg = 'At least one administrator required for an organization.'
             return api_error(status.HTTP_400_BAD_REQUEST, err_msg)
 
         # permission check
         org = request.user.org
-        if not org_user_exists(org.org_id, user.username):
+        if not OrgUser.objects.org_user_exists(org.org_id, user.username):
             err_msg = 'User %s does not exist in the organization.' % email
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
@@ -541,92 +463,6 @@ class OrgAdminUser(APIView):
                                  operation=USER_DELETE, detail=admin_op_detail, org_id=org_id)
 
         return Response({'success': True})
-
-
-class OrgAdminInviteUserEmail(APIView):
-
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
-
-    def post(self, request, org_id):
-        if not settings.ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL:
-            error_msg = 'feature not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not IS_EMAIL_CONFIGURED:
-            error_msg = 'email not configured.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        org_id = int(org_id)
-        try:
-            org = ccnet_api.get_org_by_id(org_id)
-        except Exception as e:
-            logger.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        if not org:
-            error_msg = 'Organization %s not found.' % org_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # check plan
-        url_prefix = request.user.org.url_prefix
-        org_members = ccnet_api.get_org_users_by_url_prefix(url_prefix, -1, -1)
-        org_active_members = len([m for m in org_members if m.is_active])
-
-        if ORG_MEMBER_QUOTA_ENABLED:
-            from seahub.organizations.models import OrgMemberQuota
-            org_members_quota = OrgMemberQuota.objects.get_quota(request.user.org.org_id)
-            if org_members_quota is not None and org_active_members >= org_members_quota:
-                err_msg = 'Failed. You can only invite %d members.' % org_members_quota
-                return api_error(status.HTTP_403_FORBIDDEN, err_msg)
-
-        emails = request.data.getlist('email', '')
-        if not emails:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
-
-        success_email_list = []
-        valid_email_list = []
-        failed_email_list = []
-        duplicate_email_list = []
-
-        for email in emails:
-            if not is_valid_email(email):
-                failed_email_list.append(email)
-            elif Profile.objects.filter(contact_email=email).exists():
-                failed_email_list.append(email)             # duplicate emails are also in failed list
-                duplicate_email_list.append(email)
-            else:
-                valid_email_list.append(email)
-
-        if not valid_email_list:
-            return Response({
-                    'success_list': success_email_list,
-                    'failed_list': failed_email_list,
-                    'duplicate_list': duplicate_email_list,
-                    })
-
-        org_user_register_url = reverse('registration_org_register', kwargs={'org_id': org_id}) #+ #'?token=' + token.decode()
-
-        context = {
-            'user': request.user.username,
-            'org': org,
-            'org_user_register_url': org_user_register_url,
-        }
-        for email in valid_email_list:
-            try:
-                send_html_email(_('You are invited to join %s') % get_site_name(),
-                        'sysadmin/user_add_email.html', context, None, [email])
-                success_email_list.append(email)
-            except Exception as e:
-                logger.error(e)
-                failed_email_list.append(email)
-
-        return Response({
-            'success_list': success_email_list,
-            'failed_list': failed_email_list,
-            'duplicate_list': duplicate_email_list,
-            })
 
 
 class OrgAdminSearchUsers(APIView):
@@ -731,13 +567,5 @@ def get_user_info(email, org_id):
     info['email'] = email
     info['name'] = email2nickname(email)
     info['contact_email'] = email2contact_email(email)
-
-    try:
-        info['quota_usage'] = Workspaces.objects.get_owner_total_storage(email)
-        info['quota_total'] = get_org_user_quota(org_id, email)
-    except SearpcError as e:
-        logger.error(e)
-        info['quota_usage'] = -1
-        info['quota_total'] = -1
 
     return info

@@ -2,7 +2,6 @@
 import logging
 
 from rest_framework import serializers
-from seaserv import ccnet_api
 
 from seahub.auth import authenticate
 from seahub.api2.models import DESKTOP_PLATFORMS

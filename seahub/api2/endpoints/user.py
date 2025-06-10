@@ -3,7 +3,6 @@ import hashlib
 import json
 import logging
 import random
-import requests
 
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
@@ -15,29 +14,22 @@ from django.core.cache import cache
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
-from constance import config
 
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
-from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils import is_valid_email
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.base.templatetags.seahub_tags import email2nickname, \
-        email2contact_email
 from seahub.dtable.models import IdInOrgTuple
 from seahub.profile.models import Profile
 from seahub.settings import ENABLE_UPDATE_USER_INFO, ENABLE_USER_SET_CONTACT_EMAIL, SEND_SMS_ATTEMPT_LIMIT, \
-    SEND_SMS_ATTEMPT_TIMEOUT, ENABLE_CONVERT_TO_TEAM_ACCOUNT, ENABLE_USER_SET_NAME
-from seahub.utils import is_org_context, send_html_email, get_update_contact_email_cache_key, is_user_password_strong
-from seaserv import ccnet_api
+    SEND_SMS_ATTEMPT_TIMEOUT, ENABLE_USER_SET_NAME
+from seahub.utils import is_org_context, send_html_email, get_update_contact_email_cache_key
 from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
 from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
 from seahub.weixin.settings import WEIXIN_PROVIDER
 from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
 from seahub.dingtalk.settings import DINGTALK_PROVIDER
 from seahub.auth.models import SocialAuthUser
-from seahub.ccnet_db.ccnet.users import remove_user_password
 from seahub.base.accounts import User as AccountUser
 from seahub.utils.verify import verify_sms_code
 from seahub.auth.utils import get_send_sms_attempts, increase_send_sms_attempts, clear_send_sms_attempts
@@ -229,40 +221,6 @@ class UserContactEmailView(APIView):
         })
 
 
-class UserCommonInfoView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
-
-    def get(self, request, email):
-        # checkout valid username
-        user = ccnet_api.get_emailuser_with_import(email)
-        if not user:
-            return api_error(status.HTTP_404_NOT_FOUND, 'User not found.')
-
-        info = {}
-        info['email'] = email
-        info['name'] = email2nickname(email)
-        info['avatar_url'] = api_avatar_url(email)[0]
-
-        # about some private info(such as contact_email) so far, like following table
-        # +-------------------+----------------+------------------------------+
-        # |  request/target   |   not org      |   org                        |
-        # +-------------------------------------------------------------------+
-        # |      not org      |   excluding    |   exluding                   |
-        # +-------------------------------------------------------------------+
-        # |       org         |   excluding    |   including if org identical |
-        # +-------------------+----------------+------------------------------+
-
-        if is_org_context(request):  # request-user is an org user
-            orgs = ccnet_api.get_orgs_by_user(email)  # target user's org(s)
-            if orgs:
-                if orgs[0].org_id == request.user.org.org_id:
-                    info['contact_email'] = email2contact_email(email)
-
-        return Response(info)
-
-
 class RemovePasswordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -316,7 +274,7 @@ class UserResetPasswordByPhoneView(APIView):
         if not all([new_password, confirm_password]) or new_password != confirm_password:
             error_msg = 'password invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         if len(new_password) > 4096:
             error_msg = 'Password is too long (maximum is 4096 characters).'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -348,90 +306,6 @@ class UserResetPasswordByPhoneView(APIView):
 
         return Response({'success': True})
 
-
-class UserConvertToTeamView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    def post(self, request):
-        from seahub.constants import ORG_DEFAULT
-        from seahub.subscription.utils import subscription_check, get_customer_id, \
-            get_subscription_api_headers
-        from seahub.subscription.settings import SUBSCRIPTION_SERVER_URL, SUBSCRIPTION_ORG_PREFIX
-        from seahub.invitations.utils import record_registration_logs, record_org_registration_logs
-        from seahub.organizations.utils import user_convert_to_org, gen_org_url_prefix
-        from seahub.organizations.signals import org_created
-        from seahub.organizations.models import OrgSettings
-        from seahub.organizations.settings import ORG_AUTO_URL_PREFIX
-
-        if not ENABLE_CONVERT_TO_TEAM_ACCOUNT:
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        if request.user.org:
-            error_msg = 'User is already in team.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # main
-        if ORG_AUTO_URL_PREFIX:
-            url_prefix = gen_org_url_prefix(3)
-            if url_prefix is None:
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        username = request.user.username
-        # Use the nickname as the org_name, but the org_name does not support emoji
-        nickname = email2nickname(username)
-        nickname_characters = []
-        for character in nickname:
-            if len(character.encode('utf-8')) > 3:
-                nickname_characters.append('_')
-            else:
-                nickname_characters.append(character)
-        org_name = ''.join(nickname_characters)
-
-        try:
-            org_id = ccnet_api.create_org(org_name, url_prefix, username)
-        except Exception as e:
-            logger.exception(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        new_org = ccnet_api.get_org_by_id(org_id)
-        org_created.send(sender=None, org=new_org)
-        OrgSettings.objects.add_or_update(new_org, ORG_DEFAULT)
-
-        convert_status = user_convert_to_org(username, new_org.org_id)
-        if not convert_status:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        source = request.COOKIES.get('REGISTRATION_SOURCE', '')
-        invitation_token = request.COOKIES.get('INVITATION_TOKEN', '')
-        try:
-            record_org_registration_logs(new_org, source)
-            record_registration_logs(request.user, source, invitation_token)
-        except Exception as e:
-            logger.warning('Failed to record registration log, error: %s' % e)
-
-        # subscription
-        if subscription_check():
-            try:
-                customer_id = get_customer_id(request)
-                headers = get_subscription_api_headers()
-                data = {
-                    'customer_id': customer_id,
-                    'new_customer_id': SUBSCRIPTION_ORG_PREFIX + str(new_org.org_id),
-                }
-                url = SUBSCRIPTION_SERVER_URL.rstrip('/') + '/api/subscription/user-convert-to-team/'
-                response = requests.post(url, json=data, headers=headers)
-                if response.status_code != 200:
-                    logger.warning(response.text)
-            except Exception as e:
-                logger.warning(e)
-
-        return Response({'success': True})
-    
 
 class ResetPasswordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

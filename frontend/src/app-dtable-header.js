@@ -1,14 +1,11 @@
 import React from 'react';
 import classnames from 'classnames';
-import { toaster } from 'dtable-ui-component';
 import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from './utils/constants';
 import { isMac } from './utils/utils';
 import { isEnter, isModF } from './utils/hotkey';
 import Account from './components/common/account';
-import Notification from './components/common/notification';
 import DtableSearcher from './pages/dtable/search/dtable-searcher';
 import { QUERY_TYPE } from './pages/dtable/search/dtable-searcher/constant';
-import { TASK_TYPE } from './workflow/constants';
 
 const gettext = window.gettext;
 const controlKey = isMac() ? '⌘' : 'Ctrl';
@@ -45,12 +42,6 @@ class AppDTableHeader extends React.Component {
 
   getQueryTypeByActiveTab = () => {
     switch (this.props.currentTab) {
-      case 'workflows': {
-        return QUERY_TYPE.WORKFLOW;
-      }
-      case 'universal-apps': {
-        return QUERY_TYPE.APP;
-      }
       default: {
         return QUERY_TYPE.BASE;
       }
@@ -71,24 +62,6 @@ class AppDTableHeader extends React.Component {
         }, 0);
       });
     }
-  };
-
-  onOpenWorkflowTaskByNotification = (notification) => {
-    this.props.onWorkflowTabClick();
-    const { detail } = notification;
-    const { workflow_task } = detail;
-    const { task_state } = workflow_task;
-    let workflowTag = '';
-    let workflowTask = '';
-    if (task_state === 'finished') {
-      workflowTag = TASK_TYPE.HANDLED;
-      const message = gettext('Permission denied or you have operated');
-      toaster.danger(message);
-    } else {
-      workflowTag = TASK_TYPE.PENDING;
-      workflowTask = workflow_task;
-    }
-    this.props.updateWorkflow(workflowTag, workflowTask);
   };
 
   renderSearchBar = () => {
@@ -123,7 +96,6 @@ class AppDTableHeader extends React.Component {
             <DtableSearcher
               defaultQueryType={this.getQueryTypeByActiveTab()}
               onCloseDtableSearcher={this.onCloseDtableSearcher}
-              showWorkflow={this.props.showWorkflow}
             />
           }
         </div>
@@ -150,7 +122,6 @@ class AppDTableHeader extends React.Component {
         <div className="main-panel-north" style={{ flex: '1 0 78%' }}>
           <div className="common-toolbar">
             {this.renderSearchBar()}
-            <Notification onOpenWorkflowTaskByNotification={this.onOpenWorkflowTaskByNotification} />
             <Account />
           </div>
         </div>

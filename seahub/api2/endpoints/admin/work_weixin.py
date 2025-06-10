@@ -5,7 +5,6 @@ import logging
 import requests
 import json
 
-from seaserv import seafile_api, ccnet_api
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response

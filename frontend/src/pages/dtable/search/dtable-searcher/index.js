@@ -6,7 +6,7 @@ import SearchedList from './searched-list';
 import Loading from '../../../../components/loading';
 import { dtableWebAPI } from '../../../../api/dtable-web-api';
 import { getValueLength } from '../search-utils';
-import { gettext, enableUniversalApp } from '../../../../utils/constants';
+import { gettext } from '../../../../utils/constants';
 import { QUERY_TYPE, SEARCHED_STORE_KEY, QUERY_TYPE_DISPLAY } from './constant';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 
@@ -188,12 +188,6 @@ const DtableSearcher = (props) => {
   };
 
   let queryTypes = [QUERY_TYPE.BASE];
-  if (props.showWorkflow) {
-    queryTypes.push(QUERY_TYPE.WORKFLOW);
-  }
-  if (enableUniversalApp) {
-    queryTypes.push(QUERY_TYPE.APP);
-  }
 
   return (
     <div className='dtable-searcher' ref={dtableSearcherRef}>
@@ -235,7 +229,6 @@ const DtableSearcher = (props) => {
 DtableSearcher.propTypes = {
   onCloseDtableSearcher: PropTypes.func,
   defaultQueryType: PropTypes.string,
-  showWorkflow: PropTypes.bool.isRequired,
 };
 
 export default DtableSearcher;

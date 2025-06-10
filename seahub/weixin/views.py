@@ -13,8 +13,6 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api
-
 from seahub.auth.decorators import login_required
 from seahub.utils import get_site_scheme_and_netloc
 from seahub.api2.utils import get_api_token
@@ -71,7 +69,7 @@ def weixin_oauth_login(request):
             # transfer user to org
             request.session['org_transfer_org_id'] = org_id
             request.session['org_transfer_redirect'] = redirect_url
-            return render(request, "organizations/org_transfer.html", 
+            return render(request, "organizations/org_transfer.html",
                 {'org_transfer': reverse('org_transfer'),
                 'redirect_to': redirect_url,})
         else:
@@ -246,7 +244,7 @@ def weixin_oauth_callback(request):
     if org_id and not is_new_user:
         request.session['org_transfer_org_id'] = org_id
         request.session['org_transfer_redirect'] = weixin_oauth_redirect
-        response = render(request, "organizations/org_transfer.html", 
+        response = render(request, "organizations/org_transfer.html",
             {'org_transfer': reverse('org_transfer'),
             'redirect_to': weixin_oauth_redirect,})
 

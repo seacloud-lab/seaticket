@@ -5,24 +5,20 @@ import json
 from django.conf import settings
 from django.core.cache import cache
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from constance import config
 
-import seaserv
-from seaserv import seafile_api, ccnet_api
-
 from seahub.organizations.models import OrgAdminSettings
-from .forms import ProfileForm
 from .models import Profile
 from seahub.auth.decorators import login_required
 from seahub.utils import is_org_context, is_pro_version, is_valid_username
 from seahub.base.accounts import User, UNUSABLE_PASSWORD
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.options.models import UserOptions, CryptoOptionNotSetError
-from seahub.utils import is_ldap_user, render_error, get_update_contact_email_cache_key
+from seahub.options.models import UserOptions
+from seahub.utils import render_error, get_update_contact_email_cache_key
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.work_weixin.utils import work_weixin_oauth_check
 from seahub.weixin.utils import weixin_check, get_mp_weixin_users_openid
@@ -32,7 +28,6 @@ from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOU
 from seahub.auth.models import SocialAuthUser
 from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
 from seahub.weixin.settings import WEIXIN_PROVIDER, MP_OPENID
-from seahub.ccnet_db.ccnet.organizations import get_org_staff_count
 from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
 from seahub.org_dingtalk.utils import org_dingtalk_check
@@ -40,8 +35,6 @@ from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
 from seahub.dingtalk.settings import DINGTALK_PROVIDER
 from seahub.dingtalk.utils import dingtalk_check
 from seahub.organizations.utils import get_org_corp_bind_type
-from seahub.audit_log.signals import audit_operation
-from seahub.audit_log.models import ACCOUNT_DELETE
 
 try:
     from seahub.settings import ENABLE_LDAP, LDAP_PROVIDER
@@ -258,7 +251,7 @@ def delete_user_account(request):
         messages.error(request, _('Demo account can not be deleted.'))
         next_page = request.META.get('HTTP_REFERER', settings.SITE_ROOT)
         return HttpResponseRedirect(next_page)
-    
+
     detail = {
         'name': email2nickname(username),
         'contact_email': email2contact_email(username)
@@ -268,8 +261,6 @@ def delete_user_account(request):
 
     user = User.objects.get(email=username)
     user.delete()
-
-    audit_operation.send(None, username=username, operation=ACCOUNT_DELETE, detail=detail, org_id=org_id)
 
     return HttpResponseRedirect(settings.LOGIN_URL)
 

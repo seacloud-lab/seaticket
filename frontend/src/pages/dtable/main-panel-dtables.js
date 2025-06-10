@@ -1,14 +1,13 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Loading from '../../components/loading';
-import { gettext, canAddGroup, isOrgContext, orgName, enableUserGuide } from '../../utils/constants';
+import { gettext, canAddGroup, isOrgContext, orgName } from '../../utils/constants';
 import DTableWorkspaceCommon from './dtable-workspace-common';
 import DTableWorkspaceShared from './dtable-workspace-shared';
 import CreateDtableGroupDialog from './dialog/create-dtable-group-dialog';
 import { Utils } from '../../utils/utils';
 import SessionStorage from '../../utils/session-utils';
 import DTableWorkspaceStarred from './dtable-workspace-starred';
-import DtablesUserGuide from './main-panel-dtables-user-guide';
 
 const propTypes = {
   isWorkspaceListLoading: PropTypes.bool.isRequired,
@@ -112,7 +111,6 @@ class MainPanelDTables extends React.Component {
               onScroll={Utils.debounce(this.onScroll)}
               ref={ref => this.viewContent = ref}
             >
-              {enableUserGuide && <DtablesUserGuide/>}
               {isOrgContext &&
                 <div className={`py-4 dtable-org-title ${isDesktop ? '' : 'dtable-mobile-org-title'}`}>
                   <i aria-hidden="true" className="dtable-org-icon dtable-font dtable-icon-organization-name"></i>

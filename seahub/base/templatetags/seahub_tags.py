@@ -12,7 +12,6 @@ from django.utils import translation, formats
 from django.utils.dateformat import DateFormat
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext, ngettext
-from django.utils.translation import pgettext
 from django.utils.html import escape
 
 from seahub.base.accounts import User
@@ -20,9 +19,8 @@ from seahub.profile.models import Profile
 from seahub.profile.settings import NICKNAME_CACHE_TIMEOUT, NICKNAME_CACHE_PREFIX, \
     EMAIL_ID_CACHE_TIMEOUT, EMAIL_ID_CACHE_PREFIX, CONTACT_CACHE_TIMEOUT, \
     CONTACT_CACHE_PREFIX
-from seahub.po import TRANSLATION_MAP
 from seahub.shortcuts import get_first_object_or_none
-from seahub.utils import normalize_cache_key, CMMT_DESC_PATT
+from seahub.utils import normalize_cache_key
 from seahub.utils.html import avoid_wrapping
 from seahub.utils.file_size import get_file_size_unit
 

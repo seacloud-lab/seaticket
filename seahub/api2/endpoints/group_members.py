@@ -10,22 +10,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-import seaserv
-from seaserv import seafile_api, ccnet_api
-from pysearpc import SearpcError
-
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.dtable.utils import clean_related_users_cache_by_group
 from seahub.group.signals import add_user_to_group
 from seahub.group.utils import is_group_member, is_group_admin, \
     is_group_owner, is_group_admin_or_owner, get_group_member_info, \
-    get_group_members, is_department_v2_group
+    get_group_members
 from seahub.profile.models import Profile
 from seahub.settings import GROUP_MEMBER_LIMIT
 from seahub.utils import string2list, is_org_context

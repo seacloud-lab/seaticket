@@ -7,13 +7,11 @@ import logging
 
 from rest_framework import status
 
-from seaserv import ccnet_api, seafile_api
-from pysearpc import SearpcError
-
 from seahub.api2.utils import api_error
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 from seahub.utils import is_pro_version, is_org_context
+from seahub.organizations.models import OrgUser, Organization
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -67,10 +65,12 @@ def is_org_user(username, org_id=None):
     try:
         if org_id:
             # Return non-zero if True, otherwise 0.
-            return ccnet_api.org_user_exists(org_id, username) != 0
+            return OrgUser.objects.org_user_exists(org_id, username) != 0
         else:
-            orgs = ccnet_api.get_orgs_by_user(username)
-            return len(orgs) > 0
+            org = Organization.objects.get_org_by_username(username)
+            if not org:
+                return False
+            return True
     except Exception as e:
         logger.error(e)
         return False

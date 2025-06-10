@@ -1,572 +1,91 @@
 {
   "status": "done",
   "assets": {
-    "static/css/appDTable.chunk.css": {
-      "name": "static/css/appDTable.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/appDTable.chunk.css"
-    },
-    "static/css/appDTable.chunk.css.map": {
-      "name": "static/css/appDTable.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/appDTable.chunk.css.map"
-    },
-    "static/css/appTemplates.chunk.css": {
-      "name": "static/css/appTemplates.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/appTemplates.chunk.css"
-    },
-    "static/css/appTemplates.chunk.css.map": {
-      "name": "static/css/appTemplates.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/appTemplates.chunk.css.map"
-    },
-    "static/css/baseStatistic.chunk.css": {
-      "name": "static/css/baseStatistic.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/baseStatistic.chunk.css"
-    },
-    "static/css/baseStatistic.chunk.css.map": {
-      "name": "static/css/baseStatistic.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/baseStatistic.chunk.css.map"
-    },
-    "static/css/commons.chunk.css": {
-      "name": "static/css/commons.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/commons.chunk.css"
-    },
-    "static/css/commons.chunk.css.map": {
-      "name": "static/css/commons.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/commons.chunk.css.map"
-    },
-    "static/css/dtableAssetFileView.chunk.css": {
-      "name": "static/css/dtableAssetFileView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableAssetFileView.chunk.css"
-    },
-    "static/css/dtableAssetFileView.chunk.css.map": {
-      "name": "static/css/dtableAssetFileView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableAssetFileView.chunk.css.map"
-    },
-    "static/css/dtableCollectionTableView.chunk.css": {
-      "name": "static/css/dtableCollectionTableView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableCollectionTableView.chunk.css"
-    },
-    "static/css/dtableCollectionTableView.chunk.css.map": {
-      "name": "static/css/dtableCollectionTableView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableCollectionTableView.chunk.css.map"
-    },
-    "static/css/dtableEditCollectionTableView.chunk.css": {
-      "name": "static/css/dtableEditCollectionTableView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEditCollectionTableView.chunk.css"
-    },
-    "static/css/dtableEditCollectionTableView.chunk.css.map": {
-      "name": "static/css/dtableEditCollectionTableView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEditCollectionTableView.chunk.css.map"
-    },
-    "static/css/dtableEditFormView.chunk.css": {
-      "name": "static/css/dtableEditFormView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEditFormView.chunk.css"
-    },
-    "static/css/dtableEditFormView.chunk.css.map": {
-      "name": "static/css/dtableEditFormView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEditFormView.chunk.css.map"
-    },
-    "static/css/dtableEmbedView.chunk.css": {
-      "name": "static/css/dtableEmbedView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEmbedView.chunk.css"
-    },
-    "static/css/dtableEmbedView.chunk.css.map": {
-      "name": "static/css/dtableEmbedView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableEmbedView.chunk.css.map"
-    },
-    "static/css/dtableFormView.chunk.css": {
-      "name": "static/css/dtableFormView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableFormView.chunk.css"
-    },
-    "static/css/dtableFormView.chunk.css.map": {
-      "name": "static/css/dtableFormView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableFormView.chunk.css.map"
-    },
-    "static/css/dtableSharedRowView.chunk.css": {
-      "name": "static/css/dtableSharedRowView.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableSharedRowView.chunk.css"
-    },
-    "static/css/dtableSharedRowView.chunk.css.map": {
-      "name": "static/css/dtableSharedRowView.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableSharedRowView.chunk.css.map"
-    },
-    "static/css/dtableWorkflowEdit.chunk.css": {
-      "name": "static/css/dtableWorkflowEdit.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableWorkflowEdit.chunk.css"
-    },
-    "static/css/dtableWorkflowEdit.chunk.css.map": {
-      "name": "static/css/dtableWorkflowEdit.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableWorkflowEdit.chunk.css.map"
-    },
-    "static/css/dtableWorkflowTransfer.chunk.css": {
-      "name": "static/css/dtableWorkflowTransfer.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableWorkflowTransfer.chunk.css"
-    },
-    "static/css/dtableWorkflowTransfer.chunk.css.map": {
-      "name": "static/css/dtableWorkflowTransfer.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/dtableWorkflowTransfer.chunk.css.map"
-    },
-    "static/css/invitePoster.chunk.css": {
-      "name": "static/css/invitePoster.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/invitePoster.chunk.css"
-    },
-    "static/css/invitePoster.chunk.css.map": {
-      "name": "static/css/invitePoster.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/invitePoster.chunk.css.map"
-    },
-    "static/css/orgAdmin.chunk.css": {
-      "name": "static/css/orgAdmin.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/orgAdmin.chunk.css"
-    },
-    "static/css/orgAdmin.chunk.css.map": {
-      "name": "static/css/orgAdmin.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/orgAdmin.chunk.css.map"
-    },
-    "static/css/pageDesign.chunk.css": {
-      "name": "static/css/pageDesign.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/pageDesign.chunk.css"
-    },
-    "static/css/pageDesign.chunk.css.map": {
-      "name": "static/css/pageDesign.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/pageDesign.chunk.css.map"
-    },
-    "static/css/rowPageDesign.chunk.css": {
-      "name": "static/css/rowPageDesign.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/rowPageDesign.chunk.css"
-    },
-    "static/css/rowPageDesign.chunk.css.map": {
-      "name": "static/css/rowPageDesign.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/rowPageDesign.chunk.css.map"
-    },
-    "static/css/settings.chunk.css": {
-      "name": "static/css/settings.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/settings.chunk.css"
-    },
-    "static/css/settings.chunk.css.map": {
-      "name": "static/css/settings.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/settings.chunk.css.map"
-    },
-    "static/css/subscription.chunk.css": {
-      "name": "static/css/subscription.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/subscription.chunk.css"
-    },
-    "static/css/subscription.chunk.css.map": {
-      "name": "static/css/subscription.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/subscription.chunk.css.map"
-    },
-    "static/css/sysAdmin.chunk.css": {
-      "name": "static/css/sysAdmin.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/sysAdmin.chunk.css"
-    },
-    "static/css/sysAdmin.chunk.css.map": {
-      "name": "static/css/sysAdmin.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/sysAdmin.chunk.css.map"
-    },
-    "static/css/viewDataGrid.chunk.css": {
-      "name": "static/css/viewDataGrid.chunk.css",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/viewDataGrid.chunk.css"
-    },
-    "static/css/viewDataGrid.chunk.css.map": {
-      "name": "static/css/viewDataGrid.chunk.css.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/css/viewDataGrid.chunk.css.map"
-    },
-    "static/js/appDTable.chunk.js": {
-      "name": "static/js/appDTable.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/appDTable.chunk.js"
-    },
-    "static/js/appDTable.chunk.js.map": {
-      "name": "static/js/appDTable.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/appDTable.chunk.js.map"
-    },
-    "static/js/appTemplates.chunk.js": {
-      "name": "static/js/appTemplates.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/appTemplates.chunk.js"
-    },
-    "static/js/appTemplates.chunk.js.map": {
-      "name": "static/js/appTemplates.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/appTemplates.chunk.js.map"
-    },
-    "static/js/baseStatistic.chunk.js": {
-      "name": "static/js/baseStatistic.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/baseStatistic.chunk.js"
-    },
-    "static/js/baseStatistic.chunk.js.map": {
-      "name": "static/js/baseStatistic.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/baseStatistic.chunk.js.map"
-    },
-    "static/js/commons.chunk.js": {
-      "name": "static/js/commons.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/commons.chunk.js"
-    },
-    "static/js/commons.chunk.js.map": {
-      "name": "static/js/commons.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/commons.chunk.js.map"
-    },
-    "static/js/dtableAssetFileView.chunk.js": {
-      "name": "static/js/dtableAssetFileView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableAssetFileView.chunk.js"
-    },
-    "static/js/dtableAssetFileView.chunk.js.map": {
-      "name": "static/js/dtableAssetFileView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableAssetFileView.chunk.js.map"
-    },
-    "static/js/dtableCollectionTableView.chunk.js": {
-      "name": "static/js/dtableCollectionTableView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableCollectionTableView.chunk.js"
-    },
-    "static/js/dtableCollectionTableView.chunk.js.map": {
-      "name": "static/js/dtableCollectionTableView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableCollectionTableView.chunk.js.map"
-    },
-    "static/js/dtableEditCollectionTableView.chunk.js": {
-      "name": "static/js/dtableEditCollectionTableView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEditCollectionTableView.chunk.js"
-    },
-    "static/js/dtableEditCollectionTableView.chunk.js.map": {
-      "name": "static/js/dtableEditCollectionTableView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEditCollectionTableView.chunk.js.map"
-    },
-    "static/js/dtableEditFormView.chunk.js": {
-      "name": "static/js/dtableEditFormView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEditFormView.chunk.js"
-    },
-    "static/js/dtableEditFormView.chunk.js.map": {
-      "name": "static/js/dtableEditFormView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEditFormView.chunk.js.map"
-    },
-    "static/js/dtableEmbedView.chunk.js": {
-      "name": "static/js/dtableEmbedView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEmbedView.chunk.js"
-    },
-    "static/js/dtableEmbedView.chunk.js.map": {
-      "name": "static/js/dtableEmbedView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableEmbedView.chunk.js.map"
-    },
-    "static/js/dtableFormView.chunk.js": {
-      "name": "static/js/dtableFormView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableFormView.chunk.js"
-    },
-    "static/js/dtableFormView.chunk.js.map": {
-      "name": "static/js/dtableFormView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableFormView.chunk.js.map"
-    },
-    "static/js/dtableSharedRowView.chunk.js": {
-      "name": "static/js/dtableSharedRowView.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableSharedRowView.chunk.js"
-    },
-    "static/js/dtableSharedRowView.chunk.js.map": {
-      "name": "static/js/dtableSharedRowView.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableSharedRowView.chunk.js.map"
-    },
-    "static/js/dtableWorkflowEdit.chunk.js": {
-      "name": "static/js/dtableWorkflowEdit.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowEdit.chunk.js"
-    },
-    "static/js/dtableWorkflowEdit.chunk.js.map": {
-      "name": "static/js/dtableWorkflowEdit.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowEdit.chunk.js.map"
-    },
-    "static/js/dtableWorkflowSubmitted.chunk.js": {
-      "name": "static/js/dtableWorkflowSubmitted.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowSubmitted.chunk.js"
-    },
-    "static/js/dtableWorkflowSubmitted.chunk.js.map": {
-      "name": "static/js/dtableWorkflowSubmitted.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowSubmitted.chunk.js.map"
-    },
-    "static/js/dtableWorkflowTransfer.chunk.js": {
-      "name": "static/js/dtableWorkflowTransfer.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowTransfer.chunk.js"
-    },
-    "static/js/dtableWorkflowTransfer.chunk.js.map": {
-      "name": "static/js/dtableWorkflowTransfer.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/dtableWorkflowTransfer.chunk.js.map"
-    },
-    "static/js/invitePoster.chunk.js": {
-      "name": "static/js/invitePoster.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/invitePoster.chunk.js"
-    },
-    "static/js/invitePoster.chunk.js.map": {
-      "name": "static/js/invitePoster.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/invitePoster.chunk.js.map"
-    },
-    "static/js/orgAdmin.chunk.js": {
-      "name": "static/js/orgAdmin.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/orgAdmin.chunk.js"
-    },
-    "static/js/orgAdmin.chunk.js.map": {
-      "name": "static/js/orgAdmin.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/orgAdmin.chunk.js.map"
-    },
-    "static/js/pageDesign.chunk.js": {
-      "name": "static/js/pageDesign.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/pageDesign.chunk.js"
-    },
-    "static/js/pageDesign.chunk.js.map": {
-      "name": "static/js/pageDesign.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/pageDesign.chunk.js.map"
-    },
-    "static/js/rowPageDesign.chunk.js": {
-      "name": "static/js/rowPageDesign.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/rowPageDesign.chunk.js"
-    },
-    "static/js/rowPageDesign.chunk.js.map": {
-      "name": "static/js/rowPageDesign.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/rowPageDesign.chunk.js.map"
-    },
-    "static/js/runtime.js": {
-      "name": "static/js/runtime.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/runtime.js"
-    },
-    "static/js/runtime.js.map": {
-      "name": "static/js/runtime.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/runtime.js.map"
-    },
-    "static/js/settings.chunk.js": {
-      "name": "static/js/settings.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/settings.chunk.js"
-    },
-    "static/js/settings.chunk.js.map": {
-      "name": "static/js/settings.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/settings.chunk.js.map"
-    },
-    "static/js/subscription.chunk.js": {
-      "name": "static/js/subscription.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/subscription.chunk.js"
-    },
-    "static/js/subscription.chunk.js.map": {
-      "name": "static/js/subscription.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/subscription.chunk.js.map"
-    },
-    "static/js/sysAdmin.chunk.js": {
-      "name": "static/js/sysAdmin.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/sysAdmin.chunk.js"
-    },
-    "static/js/sysAdmin.chunk.js.map": {
-      "name": "static/js/sysAdmin.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/sysAdmin.chunk.js.map"
-    },
-    "static/js/viewDataGrid.chunk.js": {
-      "name": "static/js/viewDataGrid.chunk.js",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/viewDataGrid.chunk.js"
-    },
-    "static/js/viewDataGrid.chunk.js.map": {
-      "name": "static/js/viewDataGrid.chunk.js.map",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/js/viewDataGrid.chunk.js.map"
-    },
-    "static/media/search-empty-status.7304f713.png": {
-      "name": "static/media/search-empty-status.7304f713.png",
-      "path": "/Users/lidongze/seafile/dtable-dev/data/dev/dtable-web/frontend/build/frontend/static/media/search-empty-status.7304f713.png"
+    "static/css/appDTable.7e5770e0.css": {
+      "name": "static/css/appDTable.7e5770e0.css",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/css/appDTable.7e5770e0.css"
+    },
+    "static/css/commons.37a8b0df.css": {
+      "name": "static/css/commons.37a8b0df.css",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/css/commons.37a8b0df.css"
+    },
+    "static/css/orgAdmin.b3890647.css": {
+      "name": "static/css/orgAdmin.b3890647.css",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/css/orgAdmin.b3890647.css"
+    },
+    "static/css/settings.f080580a.css": {
+      "name": "static/css/settings.f080580a.css",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/css/settings.f080580a.css"
+    },
+    "static/css/sysAdmin.34b15c6e.css": {
+      "name": "static/css/sysAdmin.34b15c6e.css",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/css/sysAdmin.34b15c6e.css"
+    },
+    "static/js/appDTable.924d8782.js": {
+      "name": "static/js/appDTable.924d8782.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/appDTable.924d8782.js"
+    },
+    "static/js/appDTable.924d8782.js.LICENSE.txt": {
+      "name": "static/js/appDTable.924d8782.js.LICENSE.txt",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/appDTable.924d8782.js.LICENSE.txt"
+    },
+    "static/js/commons.d90bb00b.js": {
+      "name": "static/js/commons.d90bb00b.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/commons.d90bb00b.js"
+    },
+    "static/js/commons.d90bb00b.js.LICENSE.txt": {
+      "name": "static/js/commons.d90bb00b.js.LICENSE.txt",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/commons.d90bb00b.js.LICENSE.txt"
+    },
+    "static/js/orgAdmin.315d5be4.js": {
+      "name": "static/js/orgAdmin.315d5be4.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/orgAdmin.315d5be4.js"
+    },
+    "static/js/orgAdmin.315d5be4.js.LICENSE.txt": {
+      "name": "static/js/orgAdmin.315d5be4.js.LICENSE.txt",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/orgAdmin.315d5be4.js.LICENSE.txt"
+    },
+    "static/js/runtime.242ff780.js": {
+      "name": "static/js/runtime.242ff780.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/runtime.242ff780.js"
+    },
+    "static/js/settings.cff5753b.js": {
+      "name": "static/js/settings.cff5753b.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/settings.cff5753b.js"
+    },
+    "static/js/sysAdmin.dbe198ea.js": {
+      "name": "static/js/sysAdmin.dbe198ea.js",
+      "path": "/Users/yangtong/dev_test/dtable-dev/data/dev/seaqa/seaqa-web/frontend/build/frontend/static/js/sysAdmin.dbe198ea.js"
     }
   },
   "chunks": {
     "appDTable": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/appDTable.chunk.css",
-      "static/js/appDTable.chunk.js",
-      "static/js/appDTable.chunk.js.map"
-    ],
-    "appTemplates": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/appTemplates.chunk.css",
-      "static/js/appTemplates.chunk.js",
-      "static/js/appTemplates.chunk.js.map"
-    ],
-    "baseStatistic": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/baseStatistic.chunk.css",
-      "static/js/baseStatistic.chunk.js",
-      "static/js/baseStatistic.chunk.js.map"
-    ],
-    "dtableAssetFileView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableAssetFileView.chunk.css",
-      "static/js/dtableAssetFileView.chunk.js",
-      "static/js/dtableAssetFileView.chunk.js.map"
-    ],
-    "dtableCollectionTableView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableCollectionTableView.chunk.css",
-      "static/js/dtableCollectionTableView.chunk.js",
-      "static/js/dtableCollectionTableView.chunk.js.map"
-    ],
-    "dtableEditCollectionTableView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableEditCollectionTableView.chunk.css",
-      "static/js/dtableEditCollectionTableView.chunk.js",
-      "static/js/dtableEditCollectionTableView.chunk.js.map"
-    ],
-    "dtableEditFormView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableEditFormView.chunk.css",
-      "static/js/dtableEditFormView.chunk.js",
-      "static/js/dtableEditFormView.chunk.js.map"
-    ],
-    "dtableEmbedView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableEmbedView.chunk.css",
-      "static/js/dtableEmbedView.chunk.js",
-      "static/js/dtableEmbedView.chunk.js.map"
-    ],
-    "dtableFormView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableFormView.chunk.css",
-      "static/js/dtableFormView.chunk.js",
-      "static/js/dtableFormView.chunk.js.map"
-    ],
-    "dtableSharedRowView": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableSharedRowView.chunk.css",
-      "static/js/dtableSharedRowView.chunk.js",
-      "static/js/dtableSharedRowView.chunk.js.map"
-    ],
-    "dtableWorkflowEdit": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableWorkflowEdit.chunk.css",
-      "static/js/dtableWorkflowEdit.chunk.js",
-      "static/js/dtableWorkflowEdit.chunk.js.map"
-    ],
-    "dtableWorkflowSubmitted": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/js/dtableWorkflowSubmitted.chunk.js",
-      "static/js/dtableWorkflowSubmitted.chunk.js.map"
-    ],
-    "dtableWorkflowTransfer": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/dtableWorkflowTransfer.chunk.css",
-      "static/js/dtableWorkflowTransfer.chunk.js",
-      "static/js/dtableWorkflowTransfer.chunk.js.map"
-    ],
-    "invitePoster": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/invitePoster.chunk.css",
-      "static/js/invitePoster.chunk.js",
-      "static/js/invitePoster.chunk.js.map"
+      "static/js/runtime.242ff780.js",
+      "static/css/commons.37a8b0df.css",
+      "static/js/commons.d90bb00b.js",
+      "static/css/appDTable.7e5770e0.css",
+      "static/js/appDTable.924d8782.js"
     ],
     "orgAdmin": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/orgAdmin.chunk.css",
-      "static/js/orgAdmin.chunk.js",
-      "static/js/orgAdmin.chunk.js.map"
-    ],
-    "pageDesign": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/pageDesign.chunk.css",
-      "static/js/pageDesign.chunk.js",
-      "static/js/pageDesign.chunk.js.map"
-    ],
-    "rowPageDesign": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/rowPageDesign.chunk.css",
-      "static/js/rowPageDesign.chunk.js",
-      "static/js/rowPageDesign.chunk.js.map"
+      "static/js/runtime.242ff780.js",
+      "static/css/commons.37a8b0df.css",
+      "static/js/commons.d90bb00b.js",
+      "static/css/orgAdmin.b3890647.css",
+      "static/js/orgAdmin.315d5be4.js"
     ],
     "settings": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/settings.chunk.css",
-      "static/js/settings.chunk.js",
-      "static/js/settings.chunk.js.map"
-    ],
-    "subscription": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/subscription.chunk.css",
-      "static/js/subscription.chunk.js",
-      "static/js/subscription.chunk.js.map"
+      "static/js/runtime.242ff780.js",
+      "static/css/commons.37a8b0df.css",
+      "static/js/commons.d90bb00b.js",
+      "static/css/settings.f080580a.css",
+      "static/js/settings.cff5753b.js"
     ],
     "sysAdmin": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/sysAdmin.chunk.css",
-      "static/js/sysAdmin.chunk.js",
-      "static/js/sysAdmin.chunk.js.map"
-    ],
-    "viewDataGrid": [
-      "static/js/runtime.js",
-      "static/js/runtime.js.map",
-      "static/css/commons.chunk.css",
-      "static/js/commons.chunk.js",
-      "static/js/commons.chunk.js.map",
-      "static/css/viewDataGrid.chunk.css",
-      "static/js/viewDataGrid.chunk.js",
-      "static/js/viewDataGrid.chunk.js.map"
+      "static/js/runtime.242ff780.js",
+      "static/css/commons.37a8b0df.css",
+      "static/js/commons.d90bb00b.js",
+      "static/css/sysAdmin.34b15c6e.css",
+      "static/js/sysAdmin.dbe198ea.js"
     ]
   }
 }

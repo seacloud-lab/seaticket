@@ -11,8 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import gettext as _
 from django.urls import reverse
 
-from seaserv import ccnet_api
-
 from seahub import auth, settings
 from seahub.organizations.decorators import org_staff_required, org_user_required
 from seahub.auth.decorators import login_required

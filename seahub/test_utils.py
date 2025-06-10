@@ -12,9 +12,6 @@ from django.test import RequestFactory
 from django.test import TestCase
 from exam.decorators import fixture
 from exam.cases import Exam
-import seaserv
-from seaserv import seafile_api, ccnet_threaded_rpc, ccnet_api, create_org,\
-        seafserv_threaded_rpc
 
 from seahub.group.utils import is_group_member
 from seahub.utils import mkstemp
@@ -307,12 +304,12 @@ class Fixtures(Exam):
         ExtraSharePermission.objects.create_share_permission(self.repo.id, self.admin.username, 'admin')
 
     def share_org_repo_to_org_admin_with_rw_permission(self):
-        seaserv.seafserv_threaded_rpc.org_add_share(self.org.org_id, self.org_repo.repo_id, 
+        seaserv.seafserv_threaded_rpc.org_add_share(self.org.org_id, self.org_repo.repo_id,
                                                     self.org_user.username, self.org_admin.username,
                                                     'rw')
 
     def share_org_repo_to_org_admin_with_r_permission(self):
-        seaserv.seafserv_threaded_rpc.org_add_share(self.org.org_id, self.org_repo.repo_id, 
+        seaserv.seafserv_threaded_rpc.org_add_share(self.org.org_id, self.org_repo.repo_id,
                                                     self.org_user.username, self.org_admin.username,
                                                     'r')
 

@@ -7,16 +7,13 @@ from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import APIException
 
-from seaserv import ccnet_api
 from seahub.base.accounts import User
 from seahub.api2.models import Token, TokenV2
-from seahub.api2.utils import get_client_ip
 from seahub.constants import DEFAULT_USER
 from seahub.profile.settings import ROLE_CACHE_PREFIX, ROLE_CACHE_TIMEOUT
 from seahub.utils import within_time_range, normalize_cache_key
 from seahub.utils.auth import AUTHORIZATION_PREFIX
 from django.core.cache import cache
-from seahub.settings import DTABLE_PRIVATE_KEY
 try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
@@ -129,62 +126,3 @@ class SdocJWTTokenAuthentication(BaseAuthentication):
             return None
 
         return user, auth[1]
-
-class AIAssistantTokenAuthentication(BaseAuthentication):
-    """
-    Simple token based authentication.
-
-    Clients should authenticate by passing the token key in the "Authorization"
-    HTTP header, prepended with the string "Token ".  For example:
-
-        Authorization: Token 401f7ac837da42b97f613d789819ff93537bee6a
-
-    A custom token model may be used, but must have the following properties.
-
-    * key -- The string identifying the token
-    * user -- The user to which the token belongs
-    """
-    def user_role(self, user):
-        role_cache_key = normalize_cache_key(str(user.org.org_id), ROLE_CACHE_PREFIX)
-        role = cache.get(role_cache_key, None)
-        if role:
-            return role
-        if not user.role or user.role == DEFAULT_USER:
-            from seahub.organizations.models import OrgSettings
-            role = OrgSettings.objects.get_role_by_org(user.org)
-            cache.set(role_cache_key, role, ROLE_CACHE_TIMEOUT)
-            return role
-
-    def authenticate(self, request):
-        from seahub.ai.utils import is_valid_ai_assistant_access_token
-        assistant_uuid = request.resolver_match.kwargs.get('assistant_uuid')
-
-        if not assistant_uuid:
-            assistant_uuid = request.data.get('assistant_uuid')
-
-        if not assistant_uuid:
-            assistant_uuid = request.GET.get('assistant_uuid')
-
-        auth = request.META.get('HTTP_AUTHORIZATION', '').split()
-        is_valid, payload = is_valid_ai_assistant_access_token(auth, assistant_uuid)
-
-        if not is_valid:
-            return None
-
-        username = payload.get('username')
-        if not username:
-            return None
-        try:
-            user = User.objects.get(email=username)
-        except User.DoesNotExist:
-            raise AuthenticationFailed('User inactive or deleted')
-
-        if MULTI_TENANCY:
-            orgs = ccnet_api.get_orgs_by_user(username)
-            if orgs:
-                user.org = orgs[0]
-                user.role = self.user_role(user)
-
-        user.is_auth_by_jwt = True
-        if user.is_active:
-            return user, auth[1]

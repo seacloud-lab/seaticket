@@ -1,11 +1,9 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import re
-import json
 import logging
 
 from django.conf import settings
 
-from seahub.utils import events_redis_connection
 from seahub.invitations.models import InvitationLinks, RegistrationLogs
 
 
@@ -25,14 +23,6 @@ def record_registration_logs(user, source='', token=''):
             RegistrationLogs.objects.create(accepter=user.username, source=source)
         except Exception as e:
             logging.error(e)
-
-    message = {'username': user.username, 'source': source, 'token': token}
-    try:
-        events_redis_connection.publish('registration-logs', json.dumps(message))
-    except Exception as e:
-        logging.error("Failed to publish registration logs: %s " % e)
-    finally:
-        events_redis_connection.close()
 
 
 def record_org_registration_logs(org, source=''):

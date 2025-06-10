@@ -1,24 +1,13 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import datetime
 import hashlib
-import urllib.request, urllib.parse, urllib.error
+import time
 import logging
 
-# import auth
-from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.db.models.manager import EmptyManager
-from django.contrib.contenttypes.models import ContentType
 from django.utils.encoding import smart_str
-from django.utils.translation import gettext_lazy as _
 
-from seaserv import ccnet_api, seafile_api
-
-from seahub.constants import DEFAULT_USER
-from seahub.ccnet_db.ccnet.users import get_users_role
-from seahub.dtable.signals import move_dtable_to_trash
-from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
-from seahub.utils.file_size import get_quota_from_string
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
@@ -181,107 +170,6 @@ class UserQuotaManager(models.Manager):
             us = super(UserQuotaManager, self).create(username=username)
         return us
 
-    def get_row_limit(self, username, role=None, user_obj=None):
-        """
-        return:
-        (row_limit, error)
-        if it is org.user error is not None
-        """
-        if ccnet_api.get_orgs_by_user(username):
-            return (None, Exception('user: %s is org user' % (username,)))
-        uq = super(UserQuotaManager, self).filter(username=username).first()
-        if uq and uq.row_limit is not None and uq.row_limit != 0:
-            return (uq.row_limit, None)
-        if not role:
-            if not user_obj:
-                user_obj = ccnet_api.get_emailuser_with_import(username)
-            role = user_obj.role
-        row_limit = get_enabled_role_permissions_by_role(role).get('row_limit', -1)
-        return (row_limit, None)
-
-    def get_asset_quota(self, username, role=None, user_obj=None):
-        """
-        return:
-        (asset_quota, error)
-        if it is org.user error is not None
-        """
-        if ccnet_api.get_orgs_by_user(username):
-            return (None, Exception('user: %s is org user' % (username,)))
-        uq = super(UserQuotaManager, self).filter(username=username).first()
-        if uq and uq.asset_quota is not None and uq.asset_quota != 0:
-            return (uq.asset_quota, None)
-        else:
-            if not role:
-                if not user_obj:
-                    user_obj = ccnet_api.get_emailuser_with_import(username)
-                role = user_obj.role
-            asset_quota = get_enabled_role_permissions_by_role(role).get('role_asset_quota', '')
-            return (get_quota_from_string(asset_quota) if asset_quota else -2, None)
-
-    def get_monthly_api_call_limit_per_user(self, username, role=None, user_obj=None):
-        uq = super(UserQuotaManager, self).filter(username=username).first()
-        if uq:
-            if uq.monthly_api_call_limit_per_user and uq.monthly_api_call_limit_per_user > 0:
-                return uq.monthly_api_call_limit_per_user
-
-        if not role:
-            if not user_obj:
-                user_obj = ccnet_api.get_emailuser_with_import(username)
-            role = user_obj.role
-        monthly_api_call_limit_per_user = get_enabled_role_permissions_by_role(role).get('monthly_api_call_limit_per_user', -1)
-        return monthly_api_call_limit_per_user
-
-    def batch_get_monthly_api_call_limit(self, usernames):
-        """
-        return:
-        a dict of {org_id: number of api_call_limit}
-        """
-        limit_per_user_dict = {}  # {username: limit_per_user}
-        roles_dict = {}           # {username: role}
-        # query limits per user
-        ## query limits in db
-        queryset = list(super(UserQuotaManager, self).filter(username__in=usernames))
-        for item in queryset:
-            if item.monthly_api_call_limit_per_user:
-                limit_per_user_dict[item.username] = item.monthly_api_call_limit_per_user
-
-        # query roles
-        users_role_dict = get_users_role(usernames)
-        for username in usernames:
-            role = users_role_dict.get(username) or DEFAULT_USER
-            roles_dict[username] = role
-
-        # query limits not in db
-        for username in usernames:
-            if username in limit_per_user_dict:
-                continue
-            role = roles_dict[username]
-            limit_per_user_dict[username] = get_enabled_role_permissions_by_role(role).get('monthly_api_call_limit_per_user', -1)
-
-        results = {}
-        for username in usernames:
-            limit_per_user = limit_per_user_dict[username]
-            if limit_per_user < 0:
-                results[username] = -1
-                continue
-            results[username] = limit_per_user
-
-        return results
-
-    def get_scripts_running_limit(self, username, role=None, user_obj=None):
-        """
-        return: (scripts_running_limit, error)
-        scripts_running_limit: a number, int
-        """
-        if ccnet_api.get_orgs_by_user(username):
-            return (None, 'user: %s is org user' % (username,))
-        if not role:
-            if not user_obj:
-                user_obj = ccnet_api.get_emailuser_with_import(username)
-            role = user_obj.role if user_obj else role
-        scripts_running_limit = get_enabled_role_permissions_by_role(role).get('scripts_running_limit', -1)
-        return (scripts_running_limit, None)
-
 
 class UserQuota(models.Model):
     username = models.CharField(max_length=255, db_index=True, unique=True)
@@ -352,3 +240,68 @@ def _handle_auth_login(sender, request, user, **kwargs):
             SessionLog.objects.create(user.username, user_agent, remote_address, session_key)
         except Exception as e:
             logger.error('save session log error: %s', e)
+
+from django.contrib.auth.hashers import make_password
+class EmailUserManager(models.Manager):
+    # emailuser.id, self.password, int(self.is_staff), int(self.is_active)
+    def update_emailuser(self, user_id, password, is_staff, is_active):
+        # self.model.password = make_password(password)
+        # try:
+        #     return self.get(username=username)
+        # except EmailUser.DoesNotExist:
+        #     return None
+
+        try:
+            user = self.get(id=user_id)
+            user.password = make_password(password)
+            user.is_staff = is_staff
+            user.is_active = is_active
+        except EmailUser.DoesNotExist:
+            logger.warn('%s email user does not exists' % user_id)
+            return None
+
+        user.save(using=self._db)
+        return user
+
+    def add_emailuser(self, username, password, is_staff, is_active):
+        ctime = int(time.time_ns() / 1000)
+        password = make_password(password)
+        model = super(EmailUserManager, self).create(email=username, password=password,
+                                                     is_staff=is_staff, is_active=is_active, ctime=ctime)
+        # self.model.passwd = make_password(self.password)
+        model.save()
+        return model
+
+    def get_user_by_email(self, email):
+        try:
+            return super(EmailUserManager, self).get(email=email)
+        except EmailUser.DoesNotExist:
+            return None
+
+    def get_user_by_id(self, user_id):
+        try:
+            return super(EmailUserManager, self).get(id=user_id)
+        except EmailUser.DoesNotExist:
+            return None
+
+    def remove_emailuser(self, email):
+        self.model.objects.filter(email=email).delete()
+
+    def get_superusers(self):
+        return self.filter(is_staff=True)
+
+
+
+class EmailUser(models.Model):
+    email = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=256)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    ctime = models.BigIntegerField()
+    reference_id = models.CharField(max_length=255, default=None)
+
+    objects = EmailUserManager()
+
+    class Meta:
+        db_table = 'email_user'
+        app_label = 'base'

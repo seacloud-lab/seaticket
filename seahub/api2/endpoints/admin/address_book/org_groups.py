@@ -9,7 +9,6 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api
 from seahub.api2.utils import api_error
 from seahub.signals import group_deleted
 from seahub.organizations.views import get_org_id_by_group

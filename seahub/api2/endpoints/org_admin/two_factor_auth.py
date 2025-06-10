@@ -11,7 +11,6 @@ from seahub.api2.utils import api_error
 from seahub.api2.authentication import TokenAuthentication
 from seahub.options.models import UserOptions
 from seahub.two_factor.models import devices_for_user
-from seaserv import ccnet_api, seafile_api
 from constance import config
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 import logging

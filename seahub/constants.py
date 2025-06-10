@@ -71,14 +71,6 @@ PASSWORD_MODIFY = 'password_modify'
 PASSWORD_UNSET = 'password_unset'
 PASSWORD_UNSET_BY_PHONE = 'password_unset_by_phone'
 
-# config for local deployment of mineMap
-DTABLE_MINE_MAP_CUSTOM_CONFIG = {
-    'domain_url': settings.DTABLE_MINE_MAP_DOMAIN_URL,
-    'data_domain_url': settings.DTABLE_MINE_MAP_DATA_DOMAIN_URL,
-    'server_domain_url': settings.DTABLE_MINE_MAP_SERVER_DOMAIN_URL,
-    'sprite_url': settings.DTABLE_MINE_MAP_SPRITE_URL,
-    'service_url': settings.DTABLE_MINE_MAP_SERVICE_URL
-}
 
 SAML_CERTS_DIR = '/opt/seatable/seahub-data/certs'
 SAML_ATTRIBUTE_MAP = {

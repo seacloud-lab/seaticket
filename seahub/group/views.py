@@ -8,34 +8,18 @@ import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 from django.urls import reverse
-from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, Http404, \
-    HttpResponseBadRequest
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from urllib.parse import quote
 from django.utils.translation import gettext as _
 
-from seahub.auth.decorators import login_required, login_required_ajax
-from seahub.constants import PERMISSION_PREVIEW
-from seahub.department_v2.utils import is_department_v2_group
-from seahub.settings import DTABLE_WEB_SERVICE_URL, GROUP_MEMBER_LIMIT, PERSONAL_GROUP_LIMIT
-import seaserv
-from seaserv import ccnet_threaded_rpc, ccnet_api, \
-    get_group_repos, get_group, \
-    remove_repo, get_file_id_by_path, post_empty_file, del_file
-from pysearpc import SearpcError
-
 from seahub.auth import REDIRECT_FIELD_NAME
-from seahub.base.decorators import sys_staff_required, require_POST
 from seahub.group.utils import validate_group_name, BadGroupNameError, \
     ConflictGroupNameError, is_group_member
-from seahub.group.models import GroupInviteLinkModel
-from seahub.settings import SITE_ROOT
-from seahub.utils import render_error, send_html_email, is_org_context, \
+from seahub.utils import send_html_email, is_org_context, \
     get_site_name
 
-from seahub.forms import SharedRepoCreateForm
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -163,68 +147,3 @@ def send_group_member_add_mail(request, group, from_user, to_user):
 
     subject = _('You are invited to join a group on %s') % get_site_name()
     send_html_email(subject, 'group/add_member_email.html', c, None, [to_user])
-
-
-@login_required
-def group_invite(request, token):
-    """
-    reigsterd user add to group
-    """
-    email = request.user.username
-    next_url = request.GET.get('next', '/')
-    redirect_to = DTABLE_WEB_SERVICE_URL.rstrip('/') + '/' + next_url.lstrip('/')
-    group_invite_link = GroupInviteLinkModel.objects.filter(token=token).first()
-    if not group_invite_link:
-        return render_error(request, _('Group invite link does not exist'))
-
-    if is_department_v2_group(group_invite_link.group_id):
-        return render_error(request, _('Forbidden invite user to department group'))
-
-    if is_group_member(group_invite_link.group_id, email):
-        return HttpResponseRedirect(redirect_to)
-
-    try:
-        group_org_id = ccnet_api.get_org_id_by_group(group_invite_link.group_id)
-    except Exception as e:
-        logger.error(f'get org id by group failed. {e}')
-        return render_error(request, 'Internal Server Error')
-
-    # org user but not same org
-    if request.user.org and request.user.org.org_id != group_org_id:
-        return render_error(request, _('You cannot join this group'))
-
-    # non-org user but group is in org
-    if not request.user.org and group_org_id > 0:
-        return render_error(request, _('You cannot join this group'))
-
-    if not group_invite_link.created_by:
-        return render_error(request, _('Group invite link broken'))
-
-    group_members = []
-    try:
-        group_members = ccnet_api.get_group_members(group_invite_link.group_id)
-    except Exception as e:
-        logger.error(f'get group members failed. {e}')
-        return render_error(request, 'Internal Server Error')
-
-    if group_members and len(group_members) >= GROUP_MEMBER_LIMIT:
-        return render_error(request, _('Number of group members exceeds limit.'))
-
-    # personal group limit
-    if is_org_context(request):
-        org_id = request.user.org.org_id
-        user_groups = ccnet_api.get_org_groups_by_user(org_id, email)
-    else:
-        user_groups = ccnet_api.get_groups(email)
-
-    if len(user_groups) >= PERSONAL_GROUP_LIMIT:
-        error_msg = _('Number of groups exceeds the %s limit.') % PERSONAL_GROUP_LIMIT
-        return render_error(request, error_msg)
-
-    try:
-        ccnet_api.group_add_member(group_invite_link.group_id, group_invite_link.created_by, email)
-    except Exception as e:
-        logger.error(f'group invite add user failed. {e}')
-        return render_error(request, 'Internal Server Error')
-
-    return HttpResponseRedirect(redirect_to)

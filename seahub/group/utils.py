@@ -6,18 +6,10 @@ import logging
 from django.conf import settings
 from django.core.cache import cache
 
-import seaserv
-from seaserv import ccnet_api
-
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
-from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.ccnet_db.ccnet.groups import get_groups_members as ccnet_get_groups_members, get_user_admin_group_ids as ccnet_get_user_admin_group_ids, \
-    get_groups_info, FakeGroup
-from seahub.department_v2.utils import is_department_v2_group_admin, is_department_v2_group_member, \
-    is_department_v2_group, get_department_v2_groups_members, get_department_v2_groups_by_user
 from seahub.profile.models import Profile
 from seahub.utils import is_org_context, normalize_cache_key
+from seahub.group.models import Group
 
 logger = logging.getLogger(__name__)
 
@@ -46,15 +38,14 @@ def check_group_name_conflict(request, new_group_name):
     username = request.user.username
     if is_org_context(request):
         org_id = request.user.org.org_id
-        checked_groups = seaserv.get_org_groups_by_user(org_id, username)
-    else:
-        if request.cloud_mode:
-            checked_groups = seaserv.get_personal_groups_by_user(username)
-        else:
-            checked_groups = ccnet_api.search_groups(new_group_name, -1, -1)
 
-    for g in checked_groups:
-        if g.group_name == new_group_name:
+        sql = """SELECT a.group_id, count(*) as total_count FROM `group` a 
+        INNER JOIN group_user b ON a.group_id=b.group_id 
+        INNER JOIN org_group c ON c.group_id=a.group_id 
+        WHERE a.group_name=%s AND c.org_id=%s AND b.user_name=%s"""
+        group_count = Group.objects.raw(sql, (new_group_name, org_id, username))[0].total_count
+
+        if group_count > 0:
             return True
 
     return False

@@ -13,8 +13,6 @@ from seahub.collabora.utils import get_file_info_by_token
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.avatar.util import get_primary_avatar
 from seahub.utils import gen_file_get_url, gen_file_upload_url, get_site_scheme_and_netloc
-from seaserv import seafile_api
-
 
 logger = logging.getLogger(__name__)
 

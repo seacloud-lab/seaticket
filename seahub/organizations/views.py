@@ -17,25 +17,13 @@ from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 
-import seaserv
-from seaserv import seafile_api, get_group, get_group_members, ccnet_api
-
 from seahub.auth import login, REDIRECT_FIELD_NAME
 from seahub.auth.decorators import login_required, login_required_ajax
-from seahub.base.decorators import require_POST
 from seahub.base.accounts import User
-from seahub.base.models import UserLastLogin
-from seahub.constants import DEFAULT_USER, ORG_DEFAULT
-from seahub.forms import AddUserForm
+from seahub.constants import ORG_DEFAULT
 from seahub.group.views import remove_group_common
-from seahub.profile.models import Profile
-from seahub.profile.utils import convert_contact_emails
-from seahub.utils import is_valid_username, IS_EMAIL_CONFIGURED, get_service_url, string2list,\
-    render_error, check_slide_captcha_verified_time
-from seahub.utils.file_size import get_file_size_unit
+from seahub.utils import get_service_url, render_error, check_slide_captcha_verified_time
 from seahub.utils.auth import get_login_bg_image_path
-from seahub.views.sysadmin import email_user_on_activation, populate_user_info, \
-        send_user_add_mail, send_user_reset_email
 from seahub.organizations.signals import org_created
 from seahub.organizations.decorators import org_staff_required
 from seahub.organizations.forms import OrgRegistrationForm, SmsOrgRegistrationForm
@@ -43,16 +31,15 @@ from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_
 from seahub.organizations.utils import get_or_create_invitation_link, \
     transfer_user_to_org, get_org_corp_bind_type, can_org_use_saml
 from seahub.organizations.models import OrgSettings
-from seahub.subscription.utils import subscription_check
 from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_dingtalk.utils import org_dingtalk_check
-from seahub.invitations.utils import record_registration_logs, record_org_registration_logs
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
 from seahub.utils.ip import get_remote_ip
-from seahub.utils.user_permissions import get_user_role
 from seahub.api2.throttling import OrgRegisterRateThrottle
 from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML
+
+from seahub.organizations.models import OrgUser
 
 SESSION_KEY_SMS_ORG_REGISTRATION_PHONE = 'sms-org-registration-phone'
 SESSION_KEY_SMS_ORG_REGISTRATION_LOCK_TIME = 'sms-org-registration-lock-time'
@@ -76,19 +63,27 @@ def get_org_by_url_prefix(url_prefix):
 
 
 def set_org_user(org_id, username, is_staff=False):
-    return ccnet_api.add_org_user(org_id, username, int(is_staff))
+    return OrgUser.objects.create_org_user(org_id, username, is_staff)
 
 
 def unset_org_user(org_id, username):
-    return ccnet_api.remove_org_user(org_id, username)
+    return OrgUser.objects.remove_org_user(org_id, username)
 
 
 def org_user_exists(org_id, username):
-    return ccnet_api.org_user_exists(org_id, username)
+    return OrgUser.objects.org_user_exists(org_id, username)
 
 
 def get_org_groups(org_id, start, limit):
-    return ccnet_api.get_org_groups(org_id, start, limit)
+    from seahub.organizations.models import OrgGroup
+
+    sql = """SELECT g.*, og.org_id, og.id FROM `group` g 
+    INNER JOIN org_group og ON g.group_id=og.group_id 
+    WHERE og.org_id=%s LIMIT %s OFFSET %s"""
+
+    org_groups = OrgGroup.objects.raw(sql, (org_id, limit, start))
+
+    return org_groups
 
 
 def get_org_id_by_group(group_id):
@@ -101,15 +96,15 @@ def remove_org_group(org_id, group_id, username):
 
 
 def is_org_staff(org_id, username):
-    return ccnet_api.is_org_staff(org_id, username)
+    return OrgUser.objects.is_org_staff(org_id, username)
 
 
 def set_org_staff(org_id, username):
-    return ccnet_api.set_org_staff(org_id, username)
+    return OrgUser.objects.set_org_staff(org_id, username)
 
 
 def unset_org_staff(org_id, username):
-    return ccnet_api.unset_org_staff(org_id, username)
+    return OrgUser.objects.unset_org_staff(org_id, username)
 
 
 # seafile rpc wrapper
@@ -276,14 +271,6 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 response = HttpResponseRedirect(reverse('dtable'))
             else:
                 response = HttpResponseRedirect(redirect_to)
-
-            source = request.COOKIES.get('REGISTRATION_SOURCE', '')
-            invitation_token = request.COOKIES.get('INVITATION_TOKEN', '')
-            try:
-                record_org_registration_logs(new_org, source)
-                record_registration_logs(new_user, source, invitation_token)
-            except Exception as e:
-                logger.warning('Failed to record registration log, error: %s' % e)
 
             response.delete_cookie('REGISTRATION_SOURCE')
             response.delete_cookie('INVITATION_TOKEN')
@@ -497,14 +484,6 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 else:
                     response = HttpResponseRedirect(redirect_to)
 
-                source = request.COOKIES.get('REGISTRATION_SOURCE', '')
-                invitation_token = request.COOKIES.get('INVITATION_TOKEN', '')
-                try:
-                    record_org_registration_logs(new_org, source)
-                    record_registration_logs(new_user, source, invitation_token)
-                except Exception as e:
-                    logger.warning('Failed to record registration log, error: %s' % e)
-
                 response.delete_cookie('REGISTRATION_SOURCE')
                 response.delete_cookie('INVITATION_TOKEN')
                 return response
@@ -590,7 +569,6 @@ def react_fake_view(request, **kwargs):
         'enable_org_department': settings.ENABLE_ORG_DEPARTMENT,
         'enable_org_logo': enable_org_logo,
         'enable_org_admin_invite_via_email': settings.ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL,
-        'enable_subscription': subscription_check(),
         'enable_slide_captcha': settings.ENABLE_SLIDE_CAPTCHA,
         'enable_org_work_weixin': org_work_weixin_check(),
         'enable_org_dingtalk': org_dingtalk_check(),

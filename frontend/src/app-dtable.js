@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { globalHistory, LocationProvider, navigate } from '@gatsbyjs/reach-router';
 import { createRoot } from 'react-dom/client';
 import MediaQuery from 'react-responsive';
-import { siteRoot, isOrgContext, enableWorkflow, cloudMode } from './utils/constants';
+import { siteRoot } from './utils/constants';
 import { Modal } from 'reactstrap';
 import SidePanel from './pages/dtable/side-panel';
 import MainPanel from './pages/dtable/main-panel';
@@ -25,31 +25,12 @@ class AppDTable extends React.Component {
       isUpdateSidePanelGroups: false,
       isOpenGroupExpanded: false,
       isIntroductionOpen: false,
-      workflowTag: '',
-      workflowTask: null,
     };
     this.isDesktop = Utils.isDesktop();
   }
 
   componentDidMount() {
     const selectedTabs = [
-      'dtable/trash',
-      'apps',
-      'forms',
-      'templetes',
-      'activities',
-      'common-datasets',
-      'invitation-link',
-      'more/data-sync',
-      'more',
-      // 'workflows/shared',
-      'workflows/ongoing-tasks',
-      'workflows/submitted-tasks',
-      'workflows',
-      'workflows/panel',
-      'user-guide',
-      'universal-apps',
-      'departments-v2'
     ];
     let currentTab = selectedTabs.find(tab => {
       return location.href.indexOf(`${siteRoot}${tab}`) > -1;
@@ -86,7 +67,6 @@ class AppDTable extends React.Component {
     if (tab !== this.state.currentTab) {
       this.setState({ currentTab: tab });
     }
-    this.clearWorkflowState();
   };
 
   toggleIntroductionDialog = () => {
@@ -119,43 +99,13 @@ class AppDTable extends React.Component {
     this.setState({ isUpdateSidePanelGroups: status });
   };
 
-  onWorkflowTabClick = () => {
-    if ('workflows' !== this.state.currentTab) {
-      this.setState({ currentTab: 'workflows' });
-    }
-    this.toggleSidePanel();
-  };
-
-  getWorkflowPermission = () => {
-    if (!enableWorkflow) {
-      return false;
-    }
-    // In cloud mode, personal accounts are not suport. Multi-tenancy(Org) users are suport.
-    if (cloudMode && !isOrgContext) {
-      return false;
-    }
-    return true;
-  };
-
-  updateWorkflow = (workflowTag, workflowTask) => {
-    this.setState({ workflowTag, workflowTask });
-  };
-
-  clearWorkflowState = () => {
-    this.setState({ workflowTag: '', workflowTask: null });
-  };
-
   render() {
     let { isSidePanelClosed, isIntroductionOpen } = this.state;
-    const showWorkflow = this.getWorkflowPermission();
     return (
       <Fragment>
         {this.isDesktop &&
           <AppDTableHeader
-            showWorkflow={showWorkflow}
             currentTab={this.state.currentTab}
-            onWorkflowTabClick={this.onWorkflowTabClick}
-            updateWorkflow={this.updateWorkflow}
           />
         }
         <div id="main">
@@ -169,7 +119,6 @@ class AppDTable extends React.Component {
               isUpdateSidePanelGroups={this.state.isUpdateSidePanelGroups}
               isOpenGroupExpanded={this.state.isOpenGroupExpanded}
               toggleGroupExpanded={this.toggleGroupExpanded}
-              showWorkflow={showWorkflow}
               isDesktop={this.isDesktop}
             />
           }
@@ -178,15 +127,11 @@ class AppDTable extends React.Component {
               currentTab={this.state.currentTab}
               onShowSidePanel={this.toggleSidePanel}
               updateSidePanelGroups={this.updateSidePanelGroups}
-              showWorkflow={showWorkflow}
-              workflowTag={this.state.workflowTag}
-              workflowTask={this.state.workflowTask}
             />
             :
             <MobileMainPanel
               onShowSidePanel={this.toggleSidePanel}
               updateSidePanelGroups={this.updateSidePanelGroups}
-              isShowWorkflow={showWorkflow}
             />
           }
           <MediaQuery query="(max-width: 767.8px)">

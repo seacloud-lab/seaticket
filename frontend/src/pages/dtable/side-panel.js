@@ -4,19 +4,12 @@ import { DropTarget } from 'react-dnd';
 import isHotkey from 'is-hotkey';
 import { Link } from '@gatsbyjs/reach-router';
 import { toaster } from 'dtable-ui-component';
-import { helpLink, cloudMode, isOrgContext, showWechatSupportGroup, showTemplatesLink, seatableMarketUrl,
-  mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, enableUserGuide, enableOrgCommonDataset,
-  enableTellAFriend, friendInvitationLink, enableInviteAFriend, customNavItems, enableUniversalApp,
-  isPro, enableAddressBookV2, enableDepartmentAdminManageMemberBases,
+import { seatableMarketUrl, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink
 } from '../../utils/constants';
-import WechatDialog from './dialog/wechat-dialog';
 import { Utils } from '../../utils/utils';
 import { dtableWebAPI } from '../../api/dtable-web-api';
 import html5DragDropContext from '../../utils/html5DragDropContext';
-import { isWorkWeixin } from '../../components-form/utils/weixin-utils';
 import SidePanelGroupItem from './side-panel-group-item';
-import Icon from '../../components/icon';
-import { isDingTalkBuiltInBrowser } from '../../components-form/utils/utils';
 
 const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
@@ -30,7 +23,6 @@ const propTypes = {
   onCloseSidePanel: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func,
   toggleGroupExpanded: PropTypes.func,
-  showWorkflow: PropTypes.bool.isRequired,
   isDesktop: PropTypes.bool.isRequired,
 };
 
@@ -51,7 +43,6 @@ class SidePanel extends React.Component {
     this.moreHeight = 1 * GROUP_ITEM_HEIGHT; // 1 is data sync
     this.workflowsHeight = 4 * GROUP_ITEM_HEIGHT;
     this.isDesktop = Utils.isDesktop();
-    this.isWorkWeixin = isWorkWeixin(window.navigator.userAgent.toLowerCase());
   }
 
   componentDidMount() {
@@ -89,10 +80,6 @@ class SidePanel extends React.Component {
     } else {
       toaster.danger(gettext('Please check the network.'));
     }
-  };
-
-  toggleWechatDialog = () => {
-    this.setState({ isShowWechatDialog: !this.state.isShowWechatDialog });
   };
 
   onKeyDown = (e) => {
@@ -245,40 +232,9 @@ class SidePanel extends React.Component {
     );
   };
 
-  renderMoreItems = () => {
-    return (
-      <div
-        className={`nav-item workspace-nav-item ${this.getActiveClass('more/data-sync') ? 'seatable-bg-orange active' : ''}`}
-        onClick={this.onTabClick.bind(this, 'more/data-sync')}
-      >
-        <Link to={siteRoot + 'more/data-sync/'} className="workspace-nav-link ellipsis">
-          <span className="table-workspace-icon dtable-font dtable-icon-sync" aria-hidden="true"></span>
-          <span className="nav-text">{gettext('Data sync')}</span>
-        </Link>
-      </div>
-    );
-  };
-
-  renderCustomNavItems() {
-    return (
-      customNavItems.map((item, idx) => {
-        return (
-          <div key={idx} className='nav-item dtable-nav-item'>
-            <a href={item.link} className='nav-link dtable-nav-link' title={item.desc}>
-              <span className={`dtable-font ${item.icon} nav-icon`} aria-hidden="true"></span>
-              <span className="nav-text">{item.desc}</span>
-            </a>
-          </div>
-        );
-      })
-    );
-  }
-
   render() {
     let style = { height: this.props.isOpenGroupExpanded ? this.groupsHeight : 0 };
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
-
-    const isDingTalk = isDingTalkBuiltInBrowser();
 
     return (
       <div
@@ -338,149 +294,9 @@ class SidePanel extends React.Component {
               >
                 {!this.state.isDataLoading && this.renderWorkspaceItems()}
               </div>
-              {this.isDesktop && isPro && enableAddressBookV2 && enableDepartmentAdminManageMemberBases &&
-                <div
-                  className={`nav-item dtable-nav-item flex-column ${this.getActiveClass('departments-v2')}`}
-                  onClick={this.onTabClick.bind(this, 'departments-v2')}
-                >
-                  <Link to={siteRoot + 'departments-v2/'} className={`nav-link dtable-nav-link ${this.getActiveClass('departments-v2') ? 'seatable-bg-orange' : ''}`}>
-                    <span className="dtable-font dtable-icon-organization nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text departments-v2">{gettext('Departments')}</span>
-                  </Link>
-                </div>
-              }
-              {this.isDesktop && this.props.showWorkflow &&
-                <div
-                  className={`nav-item dtable-nav-item flex-column ${this.getActiveClass('workflows')}`}
-                  onClick={this.onTabClick.bind(this, 'workflows')}
-                >
-                  <Link to={siteRoot + 'workflows/'} className={`nav-link dtable-nav-link ${this.getActiveClass('workflows') ? 'seatable-bg-orange' : ''}`}>
-                    <span className="dtable-font dtable-icon-workflow nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text workflow">{gettext('Workflow')}</span>
-                  </Link>
-                </div>
-              }
-              {this.isDesktop && enableUniversalApp &&
-                <div
-                  className={`nav-item dtable-nav-item ${this.getActiveClass('universal-apps')}`}
-                  onClick={this.onTabClick.bind(this, 'universal-apps')}
-                >
-                  <Link to={siteRoot + 'universal-apps/'} className={`nav-link dtable-nav-link ${this.getActiveClass('universal-apps') ? 'seatable-bg-orange' : ''}`}>
-                    <Icon symbol="external-apps" className="mr-2" aria-hidden="true"/>
-                    <div>
-                      <span className="nav-text">{gettext('Apps')}</span>
-                    </div>
-                  </Link>
-                </div>
-              }
-              <div
-                className={`nav-item dtable-nav-item ${this.getActiveClass('activities')}`}
-                onClick={this.onTabClick.bind(this, 'activities')}
-              >
-                <Link to={siteRoot + 'activities/'} className={`nav-link dtable-nav-link ${this.getActiveClass('activities') ? 'seatable-bg-orange' : ''}`}>
-                  <span className="dtable-font dtable-icon-modification-record nav-icon" aria-hidden="true"></span>
-                  <span className="nav-text">{gettext('Activities')}</span>
-                </Link>
-              </div>
-              {(!cloudMode || (isOrgContext && enableOrgCommonDataset)) &&
-                <div
-                  className={`nav-item dtable-nav-item ${this.getActiveClass('common-datasets')}`}
-                  onClick={this.onTabClick.bind(this, 'common-datasets')}
-                >
-                  <Link to={siteRoot + 'common-datasets/'} className={`nav-link dtable-nav-link ${this.getActiveClass('common-datasets') ? 'seatable-bg-orange' : ''}`}>
-                    <span className="dtable-font dtable-icon-common-dataset nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text">{gettext('Common datasets')}</span>
-                  </Link>
-                </div>
-              }
-              <div
-                className={`nav-item dtable-nav-item ${this.getActiveClass('dtable/trash')}`}
-                onClick={this.onTabClick.bind(this, 'dtable/trash')}
-              >
-                <Link to={siteRoot + 'dtable/trash/'} className={`nav-link dtable-nav-link ${this.getActiveClass('dtable/trash') ? 'seatable-bg-orange' : ''}`}>
-                  <span className="dtable-font dtable-icon-recycle-bin nav-icon" aria-hidden="true"></span>
-                  <span className="nav-text">{gettext('Trash')}</span>
-                </Link>
-              </div>
-            </div>
-            <span className="dtable-nav-overview">{gettext('Help and resources')}</span>
-            <div className="nav nav-pills flex-column dtable-nav-list">
-              {showTemplatesLink && !isDingTalk && (
-                <div className={`nav-item dtable-nav-item ${this.getActiveClass('templates')}`}>
-                  <span
-                    className={`nav-link dtable-nav-link ${this.getActiveClass('templates') ? 'seatable-bg-orange' : ''}`}
-                    onClick={this.onOpenSeaTableMarket}
-                    role="link"
-                  >
-                    <span className="dtable-font dtable-icon-templates nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text">{gettext('Templates')}</span>
-                  </span>
-                </div>
-              )}
-              {!isDingTalk && (
-                <div className={`nav-item dtable-nav-item ${this.getActiveClass('help')}`}>
-                  <a href={helpLink} target='_blank' rel="noreferrer" className={'nav-link dtable-nav-link'}>
-                    <span className="dtable-font dtable-icon-use-help nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text">{gettext('Manual')}</span>
-                  </a>
-                </div>
-              )}
-              {enableUserGuide && !isDingTalk && (
-                <div
-                  className={`nav-item dtable-nav-item ${this.getActiveClass('user-guide')}`}
-                  onClick={this.onTabClick.bind(this, 'user-guide')}
-                >
-                  <Link to={siteRoot + 'user-guide'} className={`nav-link dtable-nav-link ${this.getActiveClass('user-guide') ? 'seatable-bg-orange' : ''}`}>
-                    <Icon symbol="novice-guide" className="mr-2"/>
-                    <div>
-                      <span className="nav-text">新手引导</span>
-                    </div>
-                  </Link>
-                </div>
-              )}
-              {cloudMode && enableTellAFriend && friendInvitationLink && (
-                <div className={`nav-item dtable-nav-item ${this.getActiveClass('tell-a-friend')}`}>
-                  <span
-                    className={`nav-link dtable-nav-link ${this.getActiveClass('tell-a-friend') ? 'seatable-bg-orange' : ''}`}
-                    onClick={this.onOpenSeaTableFriendInvitation}
-                    role="link"
-                    tabIndex={0}
-                  >
-                    <span className="dtable-font dtable-icon-invite nav-icon" aria-hidden="true"></span>
-                    <span className="nav-text">{gettext('Tell a friend')}</span>
-                  </span>
-                </div>
-              )}
-              {(!isOrgContext && enableInviteAFriend) &&
-              <div
-                className={`nav-item dtable-nav-item ${this.getActiveClass('invitation-link')}`}
-                onClick={this.onTabClick.bind(this, 'invitation-link')}
-              >
-                <Link to={siteRoot + 'invitation-link/'} className={`nav-link dtable-nav-link ${this.getActiveClass('invitation-link') ? 'seatable-bg-orange' : ''}`}>
-                  <span className="dtable-font dtable-icon-invite nav-icon" aria-hidden="true"></span>
-                  <span className="nav-text">{gettext('Invite a friend')}</span>
-                </Link>
-              </div>
-              }
-              {customNavItems && this.renderCustomNavItems()}
             </div>
           </nav>
         </div>
-        {showWechatSupportGroup && (
-          <footer className="side-panel-footer">
-            <div
-              className="side-nav-footer"
-              onClick={this.toggleWechatDialog}
-              title={gettext('Join SeaTable WeChat Group')}
-              aria-label={gettext('Join SeaTable WeChat Group')}
-              role="button"
-            >
-              <i className="dtable-font dtable-icon-hi join-us-icon" aria-hidden="true" />
-              {`加入 SeaTable ${this.isWorkWeixin ? '企业' : ''}微信咨询群`}
-            </div>
-          </footer>
-        )}
-        {this.state.isShowWechatDialog && <WechatDialog toggleWechatDialog={this.toggleWechatDialog}/>}
       </div>
     );
   }

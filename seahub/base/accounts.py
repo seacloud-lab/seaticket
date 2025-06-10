@@ -11,9 +11,6 @@ from django.utils import translation
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
-import seaserv
-from seaserv import ccnet_threaded_rpc, unset_repo_passwd, \
-    seafile_api, ccnet_api
 from constance import config
 from seahub.constants import DEFAULT_ADMIN
 from seahub.profile.models import Profile
@@ -26,7 +23,7 @@ from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.models import SocialAuthUser, UserQuota
 from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, SASL_AUTHC_ID_ATTR
-from seahub.utils.storage_backend import storage_backend
+from seahub.auth.models import EmailUser
 
 try:
     from seahub.settings import CLOUD_MODE
@@ -112,69 +109,70 @@ class UserManager(object):
         user.is_staff = is_staff
         user.is_active = is_active
         user.set_password(password)
-        if user.save() == 0:
+        # if user.save() == 0:
+        if user.save():
 
             # Set email as contact email.
             Profile.objects.add_or_update(username=virtual_id, contact_email=email, need_show_video=True)
 
         return self.get(email=virtual_id)
 
-    def create_oauth_user(self, email=None, password=None, is_staff=False, is_active=False):
-        """
-        Creates and saves an oauth User which can without email.
-        """
-        virtual_id = gen_user_virtual_id()
-
-        user = User(email=virtual_id)
-        user.is_staff = is_staff
-        user.is_active = is_active
-        user.set_password(password)
-        if user.save() == 0:
-
-            # Set email as contact email.
-            if email:
-                email = email.lower()
-            Profile.objects.add_or_update(username=virtual_id, contact_email=email)
-
-        return self.get(email=virtual_id)
-
-    def create_ldap_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
-        """
-        Creates and saves an ldap User which can without email.
-        """
-        virtual_id = gen_user_virtual_id()
-
-        user = User(email=virtual_id)
-        user.is_staff = is_staff
-        user.is_active = is_active
-        user.set_password(password)
-        if user.save() == 0:
-
-            # Set email as contact email.
-            if email:
-                email = email.lower()
-            Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
-
-        return self.get(email=virtual_id)
-
-    def create_saml_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
-        """
-        Creates and saves an saml User which can without email.
-        """
-        virtual_id = gen_user_virtual_id()
-
-        user = User(email=virtual_id)
-        user.is_staff = is_staff
-        user.is_active = is_active
-        user.set_password(password)
-        if user.save() == 0:
-
-            # Set email as contact email.
-            if email:
-                email = email.lower()
-            Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
-
-        return self.get(email=virtual_id)
+    # def create_oauth_user(self, email=None, password=None, is_staff=False, is_active=False):
+    #     """
+    #     Creates and saves an oauth User which can without email.
+    #     """
+    #     virtual_id = gen_user_virtual_id()
+    #
+    #     user = User(email=virtual_id)
+    #     user.is_staff = is_staff
+    #     user.is_active = is_active
+    #     user.set_password(password)
+    #     if user.save() == 0:
+    #
+    #         # Set email as contact email.
+    #         if email:
+    #             email = email.lower()
+    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email)
+    #
+    #     return self.get(email=virtual_id)
+    #
+    # def create_ldap_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
+    #     """
+    #     Creates and saves an ldap User which can without email.
+    #     """
+    #     virtual_id = gen_user_virtual_id()
+    #
+    #     user = User(email=virtual_id)
+    #     user.is_staff = is_staff
+    #     user.is_active = is_active
+    #     user.set_password(password)
+    #     if user.save() == 0:
+    #
+    #         # Set email as contact email.
+    #         if email:
+    #             email = email.lower()
+    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
+    #
+    #     return self.get(email=virtual_id)
+    #
+    # def create_saml_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
+    #     """
+    #     Creates and saves an saml User which can without email.
+    #     """
+    #     virtual_id = gen_user_virtual_id()
+    #
+    #     user = User(email=virtual_id)
+    #     user.is_staff = is_staff
+    #     user.is_active = is_active
+    #     user.set_password(password)
+    #     if user.save() == 0:
+    #
+    #         # Set email as contact email.
+    #         if email:
+    #             email = email.lower()
+    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
+    #
+    #     return self.get(email=virtual_id)
 
     def update_role(self, email, role):
         """
@@ -191,7 +189,8 @@ class UserManager(object):
     def get_superusers(self):
         """Return a list of admins.
         """
-        emailusers = ccnet_threaded_rpc.get_superusers()
+        # emailusers = ccnet_threaded_rpc.get_superusers()
+        emailusers = EmailUser.objects.get_superusers()
 
         user_list = []
         for e in emailusers:
@@ -209,11 +208,21 @@ class UserManager(object):
             raise User.DoesNotExist('User matching query does not exits.')
 
         if email:
-            emailuser = ccnet_threaded_rpc.get_emailuser(email)
+            # emailuser = ccnet_threaded_rpc.get_emailuser(email)
+            emailuser = EmailUser.objects.get_user_by_email(email)
         if id:
-            emailuser = ccnet_threaded_rpc.get_emailuser_by_id(id)
+            emailuser = EmailUser.objects.get_user_by_id(id)
         if not emailuser:
             raise User.DoesNotExist('User matching query does not exits.')
+
+        from seahub.organizations.models import Organization
+        from seahub.role_permissions.models import UserRole
+        org = Organization.objects.get_org_by_username(email)
+
+        try:
+            user_role = UserRole.objects.get_user_role(email)
+        except UserRole.DoesNotExist:
+            user_role = None
 
         user = User(emailuser.email)
         user.id = emailuser.id
@@ -221,9 +230,9 @@ class UserManager(object):
         user.is_staff = emailuser.is_staff
         user.is_active = emailuser.is_active
         user.ctime = emailuser.ctime
-        user.org = emailuser.org
-        user.source = emailuser.source
-        user.role = emailuser.role
+        user.org = org
+        # user.source = emailuser.source
+        user.role = user_role
         user.reference_id = emailuser.reference_id
 
         if user.is_staff:
@@ -366,7 +375,7 @@ class AdminPermissions(object):
 
     def can_view_user_log(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_view_user_log']
-    
+
     def can_view_audit_log(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_view_audit_log']
 
@@ -375,7 +384,7 @@ class AdminPermissions(object):
 
     def can_update_user(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_update_user']
-    
+
     def can_manage_app(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_app']
 
@@ -454,15 +463,16 @@ class User(object):
         return True
 
     def save(self):
-        emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
+        # emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
+        emailuser = EmailUser.objects.get_user_by_email(email=self.username)
         if emailuser:
             if not hasattr(self, 'password'):
                 self.set_unusable_password()
 
-            if emailuser.source == "DB":
-                source = "DB"
-            else:
-                source = "LDAP"
+            # if emailuser.source == "DB":
+            #     source = "DB"
+            # else:
+            #     source = "LDAP"
 
             if not self.is_active:
                 # clear web api and repo sync token
@@ -472,65 +482,72 @@ class User(object):
                 except Exception as e:
                     logger.error(e)
 
-            result_code = ccnet_threaded_rpc.update_emailuser(source,
-                                                              emailuser.id,
-                                                              self.password,
-                                                              int(self.is_staff),
-                                                              int(self.is_active))
+            emailuser = EmailUser.objects.update_emailuser(emailuser.id, self.password, int(self.is_staff), int(self.is_active))
+            # result_code = ccnet_threaded_rpc.update_emailuser(source,
+            #                                                   emailuser.id,
+            #                                                   self.password,
+            #                                                   int(self.is_staff),
+            #                                                   int(self.is_active))
             if self.password_changed:
-                emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
+                # emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
+                emailuser = EmailUser.objects.get(email=self.username)
                 self.enc_password = emailuser.password
                 self.password_changed = False
         else:
-            result_code = ccnet_threaded_rpc.add_emailuser(self.username,
+            # result_code = ccnet_threaded_rpc.add_emailuser(self.username,
+            #                                                self.password,
+            #                                                int(self.is_staff),
+            #                                                int(self.is_active))
+            emailuser = EmailUser.objects.add_emailuser(self.username,
                                                            self.password,
                                                            int(self.is_staff),
                                                            int(self.is_active))
         # -1 stands for failed; 0 stands for success
-        return result_code
+        # return result_code
+        return emailuser
 
     def delete(self):
         """
         When delete user, we should also delete group relationships.
         """
-        if self.source == "DB":
-            source = "DB"
-        else:
-            source = "LDAP"
+        # if self.source == "DB":
+        #     source = "DB"
+        # else:
+        #     source = "LDAP"
 
         username = self.username
 
-        orgs = []
-        if is_pro_version():
-            orgs = ccnet_api.get_orgs_by_user(username)
+        # orgs = []
+        # if is_pro_version():
+        #     orgs = ccnet_api.get_orgs_by_user(username)
 
-        # remove owned repos
-        owned_repos = []
-        if orgs:
-            for org in orgs:
-                owned_repos += seafile_api.get_org_owned_repo_list(org.org_id,
-                                                                   username)
-        else:
-            owned_repos += seafile_api.get_owned_repo_list(username)
-
-        for r in owned_repos:
-            seafile_api.remove_repo(r.id)
-
-        # remove shared in repos
-        shared_in_repos = []
-        if orgs:
-            for org in orgs:
-                org_id = org.org_id
-                shared_in_repos = seafile_api.get_org_share_in_repo_list(org_id,
-                        username, -1, -1)
-
-                for r in shared_in_repos:
-                    seafile_api.org_remove_share(org_id,
-                            r.repo_id, r.user, username)
-        else:
-            shared_in_repos = seafile_api.get_share_in_repo_list(username, -1, -1)
-            for r in shared_in_repos:
-                seafile_api.remove_share(r.repo_id, r.user, username)
+        # # remove owned repos
+        # owned_repos = []
+        # if orgs:
+        #     for org in orgs:
+        #         owned_repos += seafile_api.get_org_owned_repo_list(org.org_id,
+        #                                                            username)
+        # else:
+        #     owned_repos += seafile_api.get_owned_repo_list(username)
+        #
+        # for r in owned_repos:
+        #     seafile_api.remove_repo(r.id)
+        #
+        # # remove shared in repos
+        # shared_in_repos = []
+        # if orgs:
+        #     for org in orgs:
+        #         org_id = org.org_id
+        #         shared_in_repos = seafile_api.get_org_share_in_repo_list(org_id,
+        #                 username, -1, -1)
+        #
+        #         for r in shared_in_repos:
+        #             seafile_api.org_remove_share(org_id,
+        #                     r.repo_id, r.user, username)
+        # else:
+        #     shared_in_repos = seafile_api.get_share_in_repo_list(username, -1, -1)
+        #     for r in shared_in_repos:
+        #         seafile_api.remove_share(r.repo_id, r.user, username)
 
         # clear web api and repo sync token
         # when delete user
@@ -540,49 +557,20 @@ class User(object):
             logger.error(e)
 
         # remove current user from joined groups
-        ccnet_api.remove_group_user(username)
+        from seahub.group.models import GroupUser
 
-        ccnet_api.remove_emailuser(source, username)
+        # team 被删除了，这个team下某个用户的所有用户数据就都删除了
+        GroupUser.objects.remove_group_user(username)
+        # ccnet_api.remove_group_user(username)
+        EmailUser.objects.remove_emailuser(username)
+        # ccnet_api.remove_emailuser(source, username)
 
         SocialAuthUser.objects.filter(username=username).delete()
-        UserQuota.objects.filter(username=username).delete()
+        # UserQuota.objects.filter(username=username).delete()
 
         from seahub.registration.signals import user_deleted
-        from seahub.dtable.signals import move_dtable_to_trash
-        from seahub.dtable.models import Workspaces, DTables, IdInOrgTuple
-        from seahub.dtable.utils import convert_dtable_trash_names
 
         user_deleted.send(sender=self.__class__, username=username)
-
-        # delete id_in_org
-        IdInOrgTuple.objects.filter(virtual_id=username).delete()
-
-        # move user's personal bases to trash
-        user_dtables = DTables.objects.get_personal_dtables_by_username(username)
-        for dtable in user_dtables:
-            table_file_name = dtable.name + '.dtable'
-            repo_id = dtable.workspace.repo_id
-            # rename .dtable file
-            new_dtable_name, old_dtable_file_name, new_dtable_file_name = convert_dtable_trash_names(dtable)
-
-            # if has .dtable file, then rename, else skip
-            try:
-                storage_backend.rename_dtable(dtable, old_dtable_file_name, new_dtable_file_name, username)
-            except Exception as e:
-                logger.error('delete base file: %s error: %s', dtable.id, e)
-
-            try:
-                DTables.objects.filter(id=dtable.id).update(
-                    deleted=True, delete_time=datetime.now(), name=new_dtable_name)
-                move_dtable_to_trash.send(None, dtable_uuid=dtable.uuid.hex)
-            except Exception as e:
-                logger.error('delete base: %s error: %s', dtable.id, e)
-
-        # mark user's workspace as deleted
-        try:
-            Workspaces.objects.filter(owner=username).update(deleted=True, delete_time=datetime.now())
-        except Exception as e:
-            logger.error('Failed to delete workspace, owner: %s, error: %s' % (username, e))
 
         Profile.objects.delete_profile_by_user(username)
         self.delete_user_options(username)
@@ -627,7 +615,8 @@ class User(object):
         #     is_correct = (self.password == \
         #                       get_hexdigest('sha1', '', raw_password))
         #     return is_correct
-        return (ccnet_threaded_rpc.validate_emailuser(self.username, raw_password) == 0)
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_password, self.enc_password)
 
     def set_unusable_password(self):
         # Sets a value that will never be a valid hash
@@ -654,7 +643,7 @@ class User(object):
                 send_to = u.email
                 profile = Profile.objects.get_profile_by_user(u.email)
                 if profile and profile.contact_email:
-                    send_to = profile.contact_email 
+                    send_to = profile.contact_email
 
                 send_html_email_with_dj_template(
                     send_to, dj_template='sysadmin/user_freeze_email.html',
@@ -668,70 +657,29 @@ class User(object):
                 # restore current language
                 translation.activate(cur_language)
 
-    def remove_repo_passwds(self):
-        """
-        Remove all repo decryption passwords stored on server.
-        """
-        from seahub.utils import get_user_repos
-        owned_repos, shared_repos, groups_repos, public_repos = get_user_repos(self.email)
-
-        def has_repo(repos, repo):
-            for r in repos:
-                if repo.id == r.id:
-                    return True
-            return False
-
-        passwd_setted_repos = []
-        for r in owned_repos + shared_repos + groups_repos + public_repos:
-            if not has_repo(passwd_setted_repos, r) and r.encrypted and \
-                    seafile_api.is_password_set(r.id, self.email):
-                passwd_setted_repos.append(r)
-
-        for r in passwd_setted_repos:
-            unset_repo_passwd(r.id, self.email)
-
-    def remove_org_repo_passwds(self, org_id):
-        """
-        Remove all org repo decryption passwords stored on server.
-        """
-        from seahub.utils import get_user_repos
-        owned_repos, shared_repos, groups_repos, public_repos = get_user_repos(self.email, org_id=org_id)
-
-        def has_repo(repos, repo):
-            for r in repos:
-                if repo.id == r.id:
-                    return True
-            return False
-
-        passwd_setted_repos = []
-        for r in owned_repos + shared_repos + groups_repos + public_repos:
-            if not has_repo(passwd_setted_repos, r) and r.encrypted and \
-                    seafile_api.is_password_set(r.id, self.email):
-                passwd_setted_repos.append(r)
-
-        for r in passwd_setted_repos:
-            unset_repo_passwd(r.id, self.email)
 
 class AuthBackend(object):
 
     def get_user_with_import(self, username):
-        emailuser = seaserv.get_emailuser_with_import(username)
-        if not emailuser:
-            raise User.DoesNotExist('User matching query does not exits.')
+        # emailuser = seaserv.get_emailuser_with_import(username)
+        # if not emailuser:
+        #     raise User.DoesNotExist('User matching query does not exits.')
+        #
+        # user = User(emailuser.email)
+        # user.id = emailuser.id
+        # user.enc_password = emailuser.password
+        # user.is_staff = emailuser.is_staff
+        # user.is_active = emailuser.is_active
+        # user.ctime = emailuser.ctime
+        # user.org = emailuser.org
+        # user.source = emailuser.source
+        # user.role = emailuser.role
 
-        user = User(emailuser.email)
-        user.id = emailuser.id
-        user.enc_password = emailuser.password
-        user.is_staff = emailuser.is_staff
-        user.is_active = emailuser.is_active
-        user.ctime = emailuser.ctime
-        user.org = emailuser.org
-        user.source = emailuser.source
-        user.role = emailuser.role
+        user = User.objects.get(username)
 
         if user.is_staff:
             try:
-                role_obj = AdminRole.objects.get_admin_role(emailuser.email)
+                role_obj = AdminRole.objects.get_admin_role(user.email)
                 admin_role = role_obj.role
             except AdminRole.DoesNotExist:
                 admin_role = DEFAULT_ADMIN
@@ -753,7 +701,6 @@ class AuthBackend(object):
         user = self.get_user(username)
         if not user:
             return None
-
         if user.check_password(password):
             return user
 

@@ -6,19 +6,15 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
-from django.conf import settings
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api, seafile_api
-from pysearpc import SearpcError
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.dtable.models import DTables, Workspaces
-from seahub.dtable.utils import create_repo_and_workspace
+from seahub.dtable.models import Workspaces
 from seahub.group.utils import validate_group_name, is_group_member, is_group_admin, check_group_name_conflict, \
     refresh_group_name_cache
 from seahub.signals import group_deleted
@@ -30,8 +26,7 @@ from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.views import get_org_groups, get_org_id_by_group
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER
-from seahub.department_v2.models import DepartmentV2Groups
-from seahub.ccnet_db.ccnet.groups import search_org_group
+from seahub.organizations.models import Organization, OrgUser, OrgGroup
 
 
 logger = logging.getLogger(__name__)
@@ -48,7 +43,7 @@ class OrgAdminGroups(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -60,25 +55,14 @@ class OrgAdminGroups(APIView):
             current_page = 1
             per_page = 100
 
-        groups_plus_one = get_org_groups(org_id, per_page * (current_page - 1), per_page + 1)
-        groups = groups_plus_one[:per_page]
-        group_ids = [g.id for g in groups]
-        if settings.ENABLE_ADDRESSBOOK_V2:
-            department_v2_groups = DepartmentV2Groups.objects.filter(group_id__in=group_ids)
-            group_id_department_dict = {d2g.group_id: d2g.department_id for d2g in department_v2_groups}
-        else:
-            group_id_department_dict = {}
+        groups = get_org_groups(org_id, per_page * (current_page - 1), per_page)
 
         groups_list = []
         for i in groups:
             group = {}
-            group['id'] = i.id
+            group['id'] = i.group_id
             group['group_name'] = i.group_name
             group['ctime'] = timestamp_to_isoformat_timestr(i.timestamp)
-            if i.id in group_id_department_dict:
-                group['department_id'] = group_id_department_dict[i.id]
-            # parent_group_id != 0 department
-            # parent_group_id == 0 ordinary group
             if i.parent_group_id == 0:
                 group['creator_name'] = email2nickname(i.creator_name)
                 group['creator_email'] = i.creator_name
@@ -89,15 +73,9 @@ class OrgAdminGroups(APIView):
                 group['creator_email'] = 'system admin'
                 group['creator_contact_email'] = ''
 
-            owner = '%s@seafile_group' % i.id
-            workspace = Workspaces.objects.get_workspace_by_owner(owner)
-            if workspace:
-                repo = seafile_api.get_repo(workspace.repo_id)
-                group['size'] = repo.size if repo else -1
-
             groups_list.append(group)
 
-        if len(groups_plus_one) == per_page + 1:
+        if len(groups) == per_page:
             page_next = True
         else:
             page_next = False
@@ -136,13 +114,13 @@ class OrgAdminGroups(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
             # check if group_owner a memeber of org
-            if not ccnet_api.org_user_exists(org_id, group_owner):
+            if not OrgUser.objects.org_user_exists(org_id, group_owner):
                 error_msg = 'User %s not found in organization.' % email2nickname(group_owner)
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # Default by login org admin user if group_owner not set
         group_owner = group_owner or request.user.username
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %s not found' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -179,17 +157,6 @@ class OrgAdminGroups(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        # if the group has no workspace, create a workspace
-        owner = '%s@seafile_group' % group_id
-        workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if not workspace:
-            try:
-                create_repo_and_workspace(owner, org_id)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         username = request.user.username
         new_owner = group_owner or username
@@ -250,7 +217,7 @@ class OrgAdminGroup(APIView):
         }
 
         return Response(group_info)
-    
+
     def put(self, request, org_id, group_id):
 
         # recourse check
@@ -409,7 +376,7 @@ class OrgAdminGroup(APIView):
                                  operation=GROUP_DELETE, detail=admin_op_detail, org_id=org_id)
 
         return Response({'success': True})
-    
+
 class OrgAdminSearchGroups(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
@@ -425,7 +392,7 @@ class OrgAdminSearchGroups(APIView):
         except:
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         if not ccnet_api.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -434,18 +401,18 @@ class OrgAdminSearchGroups(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         group_infos = [{
                 'id': group_info['group_id'],
                 'name': group_info['group_name'],
                 'owner': group_info['creator_name'],
                 'created_at': timestamp_to_isoformat_timestr(group_info['timestamp']),
-            } 
+            }
             for group_info in search_org_group(org_id, query, 0, 25)
         ]
 
         results = {
             'group_list': group_infos
         }
-        
+
         return Response(results)

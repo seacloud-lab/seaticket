@@ -1,9 +1,0 @@
-@media print {
-  .seatable-rows-record-container {
-    overflow: hidden;
-  }
-
-  .seatable-rows-record-container table tr {
-    border: none !important;
-  }
-}

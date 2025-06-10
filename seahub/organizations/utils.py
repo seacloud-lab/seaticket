@@ -1,6 +1,5 @@
 import requests
 import logging
-from uuid import uuid4
 from rest_framework import status
 from django.core.cache import cache
 from django.urls import reverse
@@ -8,12 +7,10 @@ from django.urls import reverse
 from seahub.api2.utils import api_error
 from seahub.utils import gen_token, get_site_scheme_and_netloc
 from seahub.weixin.utils import weixin_check
-from seahub.dtable.models import Workspaces, DTableCommonDataset
+from seahub.dtable.models import Workspaces
 from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from django.utils.crypto import get_random_string
-
-from seaserv import ccnet_api
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +79,6 @@ def get_or_create_invitation_link(org_id):
 def transfer_user_to_org(username, org_id):
     from seahub.base.accounts import User
     from seahub.constants import DEFAULT_USER
-    from seahub.dtable.models import DTableExternalApps, DTableAutomationRules, \
-        DTableAutomationRulesTaskLog, DTableRowsCount
     try:
         # transfer user to org
         ccnet_api.add_org_user(org_id, username, int(False))
@@ -97,11 +92,6 @@ def transfer_user_to_org(username, org_id):
             workspace.org_id = org_id
             workspace.save(update_fields=['org_id'])
 
-        #
-        DTableExternalApps.objects.filter(creator=username).update(org_id=org_id)
-        DTableAutomationRules.objects.filter(creator=username).update(org_id=org_id)
-        DTableAutomationRulesTaskLog.objects.filter(owner=username).update(org_id=org_id)
-        DTableRowsCount.objects.filter(owner=username).update(org_id=org_id)
         return True
 
     except Exception as e:
@@ -110,19 +100,12 @@ def transfer_user_to_org(username, org_id):
 
 
 def user_convert_to_org(username, org_id):
-    from seahub.dtable.models import DTableExternalApps, DTableAutomationRules, \
-        DTableAutomationRulesTaskLog, DTableRowsCount
     try:
         # transfer workspace to org
         workspace = Workspaces.objects.get_workspace_by_owner(username)
         workspace.org_id = org_id
         workspace.save(update_fields=['org_id'])
 
-        #
-        DTableExternalApps.objects.filter(creator=username).update(org_id=org_id)
-        DTableAutomationRules.objects.filter(creator=username).update(org_id=org_id)
-        DTableAutomationRulesTaskLog.objects.filter(owner=username).update(org_id=org_id)
-        DTableRowsCount.objects.filter(owner=username).update(org_id=org_id)
         return True
 
     except Exception as e:

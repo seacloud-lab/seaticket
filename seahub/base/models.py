@@ -1,19 +1,10 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-import os
-import datetime
 import logging
 from django.db import models
-from django.db.models import Q
 from django.utils import timezone
 
-from pysearpc import SearpcError
-from seaserv import seafile_api
 
 from seahub.auth.signals import user_logged_in
-from seahub.utils import calc_file_path_hash, within_time_range, \
-        normalize_file_path, normalize_dir_path
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
-from .fields import LowerCaseCharField
 
 
 # Get an instance of a logger

@@ -4,7 +4,6 @@ import { navigate } from '@gatsbyjs/reach-router';
 import { toaster } from 'dtable-ui-component';
 import OrgNormalDTables from './org-normal-dtables';
 import { gettext } from '../../utils/constants';
-import OrgTrashDTables from './org-trash-dtables';
 import MainPanelTopbar from './main-panel-topbar';
 import { dtableWebAPI } from '../../api/dtable-web-api';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
@@ -149,13 +148,6 @@ class OrgDTables extends React.Component {
             {this.props.currentTab === 'bases' &&
               <OrgNormalDTables
                 exportDtable={this.exportDtable}
-              />
-            }
-            {this.props.currentTab === 'trash' &&
-              <OrgTrashDTables
-                exportDtable={this.exportDtable}
-                isShowTrashEmptyConfirmDialog={this.state.isShowTrashEmptyConfirmDialog}
-                onTrashEmptyConfirmDialogToggle={this.onTrashEmptyConfirmDialogToggle}
               />
             }
           </div>

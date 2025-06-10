@@ -13,8 +13,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from seaserv import ccnet_api
-
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.endpoints.utils import is_org_user
 from seahub.api2.throttling import UserRateThrottle
@@ -27,6 +25,8 @@ from seahub.profile.models import Profile
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.dtable.models import IdInOrgTuple
 from seahub.settings import CLOUD_MODE, ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER
+from seahub.organizations.models import OrgUser, Organization
+from seahub.auth.models import EmailUser
 
 logger = logging.getLogger(__name__)
 
@@ -79,8 +79,8 @@ class SearchUser(APIView):
                         return err
                     email_list += result_users
                 else:
-                    # search from ccnet
-                    email_list += search_user_from_ccnet(q)
+                    # # search from ccnet
+                    # email_list += search_user_from_ccnet(q)
 
                     # search from profile, NOT limit search range
                     email_list += search_user_from_profile(q)
@@ -90,17 +90,10 @@ class SearchUser(APIView):
                 # search user from user's contacts
                 email_list += search_user_with_exact_match(request, q)
 
-        ## search finished, now filter out some users
-
-        # remove duplicate emails
-        email_list = list({}.fromkeys(email_list).keys())
-
         email_result = []
 
         # remove nonexistent or inactive user
-        email_list_json = json.dumps(email_list)
-        user_obj_list = ccnet_api.get_emailusers_in_list('DB', email_list_json) + \
-                ccnet_api.get_emailusers_in_list('LDAP', email_list_json)
+        user_obj_list = EmailUser.objects.filter(is_active=True, email__in=email_list)
         for user_obj in user_obj_list:
             if user_obj.is_active:
                 email_result.append(user_obj.email)
@@ -214,7 +207,8 @@ def search_user_in_org(request, q):
     # get all org users
     url_prefix = request.user.org.url_prefix
     try:
-        all_org_users = ccnet_api.get_org_emailusers(url_prefix, -1, -1)
+        all_org_users = Organization.objects.get_org_users_by_url_prefix(url_prefix)
+        # all_org_users = ccnet_api.get_org_emailusers(url_prefix, -1, -1)
     except Exception as e:
         logger.error(e)
         error_msg = 'Internal Server Error'

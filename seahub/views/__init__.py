@@ -1,7 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # encoding: utf-8
 import hashlib
-import json
 import mimetypes
 import logging
 import json
@@ -13,29 +12,21 @@ from django.http import HttpResponse, Http404, \
 from django.shortcuts import render
 from django.views.decorators.http import condition
 
-import seaserv
-from seaserv import is_repo_owner, seafile_api
-from pysearpc import SearpcError
-
 from seahub.avatar.util import get_avatar_file_storage
 from seahub.auth.decorators import login_required
 from seahub.auth import login as auth_login
 from seahub.auth import get_backends
 from seahub.base.accounts import User
-from seahub.dtable.utils import can_user_run_python, can_org_run_python
 from seahub.profile.models import Profile
-from seahub.utils import is_org_context, get_workflow_help_link_by_lang, is_pro_version
 from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
-from seahub.settings import AVATAR_FILE_STORAGE, ENABLE_WORKFLOW, SHARE_LINK_EXPIRE_DAYS_MIN, \
+from seahub.settings import AVATAR_FILE_STORAGE, SHARE_LINK_EXPIRE_DAYS_MIN, \
     SHARE_LINK_EXPIRE_DAYS_MAX, USE_PHONE_REGISTRATION_BY_DEFAULT, \
     SHOW_WECHAT_SUPPORT_GROUP, SEATABLE_MARKET_URL, SHOW_TEMPLATES_LINK, \
     VIDEO_TUTORIALS_LINK, ENABLE_CREATE_BASE_FROM_TEMPLATE, ENABLE_INTRODUCTION_VIDEO, \
     ENABLE_USER_GUIDE, GETTING_START_LINK, USE_CASES_LINK, TRAINING_SERVICES_LINK, \
-    INTRODUCTION_VIDEO_LINK, ENABLE_INVITE_A_FRIEND, SEATABLE_FAAS_URL, ENABLED_EXTERNAL_APPS, \
-    DTABLE_BAIDU_MAP_KEY
+    INTRODUCTION_VIDEO_LINK, ENABLE_INVITE_A_FRIEND
 
-from seahub.constants import PERMISSION_READ
 
 LIBRARY_TEMPLATES = getattr(settings, 'LIBRARY_TEMPLATES', {})
 SEATABLE_VERSION = getattr(settings, 'SEATABLE_VERSION', 'Dev')
@@ -46,14 +37,6 @@ from constance import config
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-def validate_owner(request, repo_id):
-    """
-    Check whether user in the request owns the repo.
-
-    """
-    ret = is_repo_owner(request.user.username, repo_id)
-
-    return True if ret else False
 
 def is_registered_user(email):
     """
@@ -67,30 +50,6 @@ def is_registered_user(email):
 
     return True if user else False
 
-_default_repo_id = None
-def get_system_default_repo_id():
-    global _default_repo_id
-    if not _default_repo_id:
-        try:
-            _default_repo_id = seaserv.seafserv_threaded_rpc.get_system_default_repo_id()
-        except SearpcError as e:
-            logger.error(e)
-    return _default_repo_id
-
-def check_folder_permission(request, repo_id, path):
-    """Check repo/folder/file access permission of a user.
-
-    Arguments:
-    - `request`:
-    - `repo_id`:
-    - `path`:
-    """
-    repo_status = seafile_api.get_repo_status(repo_id)
-    if repo_status == 1:
-        return PERMISSION_READ
-
-    username = request.user.username
-    return seafile_api.check_permission_by_path(repo_id, path, username)
 
 def gen_path_link(path, repo_name):
     """
@@ -139,18 +98,6 @@ def demo(request):
     redirect_to = settings.SITE_ROOT
     return HttpResponseRedirect(redirect_to)
 
-def list_inner_pub_repos(request):
-    """List inner pub repos.
-    """
-    username = request.user.username
-    if is_org_context(request):
-        org_id = request.user.org.org_id
-        return seafile_api.list_org_inner_pub_repos(org_id)
-
-    if not request.cloud_mode:
-        return seafile_api.get_inner_pub_repo_list()
-
-    return []
 
 def i18n(request):
     """
@@ -282,17 +229,6 @@ def dtable_fake_view(request, **kwargs):
         except Exception as e:
             logger.error('get user phone failed. {}'.format(e))
 
-    can_run_python = False
-
-    if SEATABLE_FAAS_URL and is_org_context(request):
-        can_run_python = can_org_run_python(request.user.org)
-    elif SEATABLE_FAAS_URL and not is_org_context(request):
-        can_run_python = can_user_run_python(request.user.username)
-
-    enable_workflow = ENABLE_WORKFLOW
-    workflow_help_link = get_workflow_help_link_by_lang()
-    enable_universal_app = 'universal-app' in ENABLED_EXTERNAL_APPS
-    is_pro = is_pro_version()
     return render(request, 'react_dtable.html', {
         'version': SEATABLE_VERSION,
         'show_wechat_support_group': SHOW_WECHAT_SUPPORT_GROUP,
@@ -314,13 +250,8 @@ def dtable_fake_view(request, **kwargs):
         'enable_invite_a_friend': ENABLE_INVITE_A_FRIEND,
         'enable_tell_a_friend': settings.ENABLE_TELL_A_FRIEND,
         'friend_invitation_link': settings.FRIEND_INVITATION_LINK if settings.ENABLE_TELL_A_FRIEND else '',
-        'can_run_python': can_run_python,
-        'enable_workflow': enable_workflow,
         'use_external_team_admin': settings.USE_EXTERNAL_TEAM_ADMIN,
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
-        'workflow_help_link': workflow_help_link,
-        'dtable_baidu_map_key': DTABLE_BAIDU_MAP_KEY,
-        'enable_universal_app': is_pro and enable_universal_app,
         'can_remove_base_password_via_phone': settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE if settings.ENABLE_BIND_PHONE else False,
         'has_bound_phone': True if phone else False,
         'disable_adding_personal_bases': True if settings.DISABLE_ADDING_PERSONAL_BASES else False,

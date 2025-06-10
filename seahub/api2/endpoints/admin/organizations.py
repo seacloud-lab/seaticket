@@ -8,13 +8,11 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from django.utils.crypto import get_random_string
-from seaserv import ccnet_api, seafile_api, ccnet_threaded_rpc
 
-from seahub.ccnet_db.ccnet.organizations import get_org_staffs, get_orgs_base_info
 from seahub.constants import ORG_DEFAULT
 from seahub.utils.file_size import get_file_size_unit
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
-from seahub.utils import is_valid_email, publish_api_gateway_calls_changed
+from seahub.utils import is_valid_email
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
@@ -23,11 +21,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.permissions import IsProVersion
 from seahub.role_permissions.utils import get_available_roles
-from seahub.dtable.models import Workspaces, OrgRowsCount, OrgBigDataStorageStats, StatsAPIGatewayByTeam, ExceedAPIQuotaTeams
-from seahub.dtable.utils import get_orgs_rows_count, create_repo_and_workspace
 from seahub.profile.models import Profile
-from seahub.auth.models import SocialAuthUser
-from seahub.organizations.models import OrgSAMLConfig
+from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup
 from seahub.organizations.signals import org_role_updated
 
 try:
@@ -57,7 +52,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def get_org_info(org, rows_count_dict=None):
+def get_org_info(org):
     org_id = org.org_id
 
     org_info = {}
@@ -81,23 +76,6 @@ def get_org_info(org, rows_count_dict=None):
     org_info['creator_name'] = email2nickname(creator)
     org_info['creator_contact_email'] = email2contact_email(creator)
 
-    org_info['big_data_row_limit'] = OrgQuota.objects.get_big_data_row_limit(org_id)
-    org_info['quota'] = seafile_api.get_org_quota(org_id)
-    org_info['storage_usage'] = Workspaces.objects.get_org_total_storage(org_id)
-    org_info['storage_quota'] = OrgQuota.objects.get_asset_quota(org_id)
-    org_info['big_data_storage_quota'] = OrgQuota.objects.get_big_data_storage_quota(org_id)
-
-    if ORG_MEMBER_QUOTA_ENABLED:
-        org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
-
-    if rows_count_dict:
-        org_info['rows_count'] = rows_count_dict.get(org_id, 0)
-    else:
-        org_info['rows_count'] = OrgRowsCount.objects.get_org_rows_count(org_id)
-    org_info['row_limit'] = OrgQuota.objects.get_row_limit(org_id)
-
-    org_info['monthly_api_call_limit_per_user'] = OrgQuota.objects.get_monthly_api_call_limit_per_user(org_id)
-
     return org_info
 
 
@@ -105,12 +83,8 @@ def get_org_detailed_info(org):
     org_id = org.org_id
     org_info = get_org_info(org)
 
-    org_big_data_total_rows = OrgBigDataStorageStats.objects.get_org_big_data_total_rows(org_id)
-    org_big_data_total_storage = OrgBigDataStorageStats.objects.get_org_big_data_total_storage(org_id)
-    org_info['big_data_total_rows'] = org_big_data_total_rows
-    org_info['big_data_total_storage'] = org_big_data_total_storage
-
     # users
+
     users = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
     org_info['users_count'] = len(users)
 
@@ -130,9 +104,6 @@ def get_org_detailed_info(org):
             org_info['metadata_url'] = org_saml_config.metadata_url
             org_info['domain'] = org_saml_config.domain
 
-    # api calls count and limit
-    org_info['api_calls_count'] = StatsAPIGatewayByTeam.objects.get_month_all_count(org_id)
-
     return org_info
 
 
@@ -147,7 +118,7 @@ def gen_org_url_prefix(max_trial=None, length=20):
     def _gen_prefix():
         url_prefix = 'org-' + get_random_string(
             length, allowed_chars='abcdefghijklmnopqrstuvwxyz0123456789')
-        if ccnet_api.get_org_by_url_prefix(url_prefix) is not None:
+        if Organization.objects.get_org_by_url_prefix(url_prefix) is not None:
             logger.error("org url prefix, %s is duplicated" % url_prefix)
             return None
         else:
@@ -177,7 +148,6 @@ def get_orgs_info_by_role(role, page, per_page):
     org_settings_queryset = OrgSettings.objects.filter(role=role)[start:end]
     org_ids = [org_setting.org_id for org_setting in org_settings_queryset]
     if org_ids:
-        rows_count_dict = get_orgs_rows_count(org_ids)
         orgs_info_dict = get_orgs_base_info(org_ids)
         for org_id in org_ids:
             try:
@@ -191,16 +161,9 @@ def get_orgs_info_by_role(role, page, per_page):
                 org_info['creator_contact_email'] = email2contact_email(creator)
 
                 org_info['quota'] = seafile_api.get_org_quota(org_id)
-                org_info['storage_usage'] = Workspaces.objects.get_org_total_storage(org_id)
-                org_info['storage_quota'] = OrgQuota.objects.get_asset_quota(org_id)
                 if ORG_MEMBER_QUOTA_ENABLED:
                     org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
 
-                if rows_count_dict:
-                    org_info['rows_count'] = rows_count_dict.get(org_id, 0)
-                else:
-                    org_info['rows_count'] = OrgRowsCount.objects.get_org_rows_count(org_id)
-                org_info['row_limit'] = OrgQuota.objects.get_row_limit(org_id)
                 result.append(org_info)
             except Exception as e:
                 logger.error(e)
@@ -238,22 +201,34 @@ class AdminOrganizations(APIView):
         start = (page - 1) * per_page
         role = request.GET.get('role', None)
         if role:
-            result = get_orgs_info_by_role(role, page, per_page)
+            sql = """SELECT a.org_id, org_name, url_prefix, b.role FROM organization_organization a 
+                        INNER JOIN organizations_orgsettings b ON a.org_id=b.org_id WHERE b.role=%s
+                        ORDER BY a.ctime desc LIMIT %s OFFSET %s"""
+
+            organizations = Organization.objects.raw(sql, (role, per_page, start))
+            result = []
+            for org in organizations:
+                org_info = get_org_info(org)
+                result.append(org_info)
+
             total_count = OrgSettings.objects.filter(role=role).count()
             return Response({'organizations': result, 'count': total_count})
 
         try:
-            orgs = ccnet_api.get_all_orgs(start, per_page)
-            total_count = ccnet_api.count_orgs()
+            end = start + per_page
+            org_objects = Organization.objects.all()
+
+            orgs = org_objects.order_by('-ctime')[start: end]
+            total_count = org_objects.count()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         result = []
-        rows_count_dict = get_orgs_rows_count([org.org_id for org in orgs])
+        # rows_count_dict = get_orgs_rows_count([org.org_id for org in orgs])
         for org in orgs:
-            org_info = get_org_info(org, rows_count_dict=rows_count_dict)
+            org_info = get_org_info(org)
             result.append(org_info)
 
         return Response({'organizations': result, 'count': total_count})
@@ -268,7 +243,7 @@ class AdminOrganizations(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not request.user.admin_permissions.can_manage_organization(): 
+        if not request.user.admin_permissions.can_manage_organization():
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         org_name = request.data.get('org_name', None)
@@ -289,7 +264,7 @@ class AdminOrganizations(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         url_prefix = gen_org_url_prefix(5, 20)
-        if ccnet_api.get_org_by_url_prefix(url_prefix):
+        if Organization.objects.get_org_by_url_prefix(url_prefix):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
@@ -313,19 +288,18 @@ class AdminOrganizations(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         # update profile nickname
         if admin_name:
             Profile.objects.add_or_update(new_user.username, nickname=admin_name)
 
         try:
-            org_id = ccnet_api.create_org(org_name, url_prefix, new_user.username)
+            org = Organization.objects.create_org(org_name, url_prefix, new_user.username)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
         OrgSettings.objects.add_or_update(org, ORG_DEFAULT)
         try:
             org_info = get_org_info(org)
@@ -333,16 +307,6 @@ class AdminOrganizations(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        with_workspace = request.data.get('with_workspace', False)
-        if with_workspace:
-            try:
-                workspace = create_repo_and_workspace(new_user.username, org_id)
-                org_info['workspace_id'] = workspace.id
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response(org_info)
 
@@ -372,7 +336,7 @@ class AdminOrganization(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -552,8 +516,6 @@ class AdminOrganization(APIView):
                 if not exceed_obj:
                     ExceedAPIQuotaTeams.objects.create(org_id=org_id, owner_id='', api_limit=api_calls_limit)
                     need_publish_redis = True
-            if need_publish_redis:
-                publish_api_gateway_calls_changed()
         except Exception as e:
             logger.exception('check org_id: %s exceed api quota error: %s', org_id, e)
 
@@ -580,48 +542,31 @@ class AdminOrganization(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id=org_id)
         if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
             # remove org users
-            users = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
+            users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
             for u in users:
-                ccnet_api.remove_org_user(org_id, u.email)
+                OrgUser.objects.remove_org_user(org_id, u.email)
                 User.objects.get(email=u.email).delete()
 
             # remove org groups
-            groups = ccnet_api.get_org_groups(org_id, -1, -1)
-            for g in groups:
-                ccnet_api.remove_org_group(org_id, g.gid)
-
-            # remove org repos
-            seafile_api.remove_org_repo_by_org_id(org_id)
-
-            # remove org workspaces
-            workspaces = Workspaces.objects.list_workspaces_by_org_id(org_id)
-            for workspace in workspaces:
-                Workspaces.objects.delete_workspace(workspace.id)
-
-            # remove workspaces' repos
-            for workspace in workspaces:
-                seafile_api.remove_repo(workspace.repo_id)
-
-            # remove org saml config
-            OrgSAMLConfig.objects.filter(org_id=org_id).delete()
+            OrgGroup.objects.remove_org_group(org_id)
 
             # remove org
-            ccnet_api.remove_org(org_id)
+            Organization.objects.remove_org(org_id)
 
             # remove org settings
             OrgSettings.objects.filter(org_id=org_id).delete()
 
-            # remove org org quota
-            OrgQuota.objects.filter(org_id=org_id).delete()
+            # # remove org org quota
+            # OrgQuota.objects.filter(org_id=org_id).delete()
 
-            # reset org corp
+            # # reset org corp
             OrgCorpAuth.objects.filter(org_id=org_id).update(org_id=None)
         except Exception as e:
             logger.error(e)
@@ -709,137 +654,3 @@ class AdminOrganizationsBaseInfo(APIView):
                 base_info.update({'org_staffs': staffs})
             orgs.append(base_info)
         return Response({'organization_list': orgs})
-
-
-class AdminOrgBigDataStorageStats(APIView):
-
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request):
-        """ Get all organizations big data storage stats
-        Permission checking:
-        1. only admin can perform this action.
-        """
-
-        if not (CLOUD_MODE and MULTI_TENANCY):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Feature is not enabled.')
-
-        if not request.user.admin_permissions.can_manage_organization():
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        try:
-            page = int(request.GET.get('page', 1))
-            per_page = int(request.GET.get('per_page', 25))
-        except ValueError:
-            page = 1
-            per_page = 25
-
-        start = (page - 1) * per_page
-        end = page * per_page
-        total_count = OrgBigDataStorageStats.objects.all().count()
-        try:
-            results = OrgBigDataStorageStats.objects.all()[start:end]
-        except Exception as e:
-            logger.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        org_ids = [res.org_id for res in results]
-        orgs_info_dict = get_orgs_base_info(org_ids)
-        big_data_storage_stats = []
-        for result in results:
-            res = result.to_dict()
-            org_id = res['org_id']
-            res['org_name'] = orgs_info_dict.get(res['org_id'], {}).get('org_name')
-            res['big_data_row_limit'] = OrgQuota.objects.get_big_data_row_limit(org_id)
-            res['big_data_storage_quota'] = OrgQuota.objects.get_big_data_storage_quota(org_id)
-            big_data_storage_stats.append(res)
-
-        return Response({'big_data_storage_stats': big_data_storage_stats, 'total_count': total_count})
-
-
-class AdminOrganizationOrgWorkWeixinCorpInfo(APIView):
-
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAdminUser, IsProVersion)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request):
-        """ for org work weixin license in subscription-server
-        """
-        from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER, ENABLE_ORG_WORK_WEIXIN
-        from seahub.org_work_weixin.utils import get_provider_access_token, get_corp_access_token, get_suite_access_token
-        from seahub.subscription.settings import ENABLE_SUBSCRIPTION
-
-        if not ENABLE_SUBSCRIPTION or not ENABLE_ORG_WORK_WEIXIN:
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not (CLOUD_MODE and MULTI_TENANCY):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if not (request.user.admin_permissions.can_manage_organization() or \
-                request.user.admin_permissions.can_update_organization()):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        org_id = request.GET.get('org_id')
-        corp_id = request.GET.get('corp_id')
-
-        org_info = {
-            'org_id': '',
-            'org_name': '',
-            'corp_id': '',
-            'corp_name': '',
-            'users_with_unionid': [],
-            'provider_access_token': get_provider_access_token(),
-            'get_suite_access_token': get_suite_access_token(),
-            'corp_access_token': '',
-        }
-
-        if not org_id and not corp_id:
-            # return provider_access_token
-            return Response(org_info)
-
-        # corp
-        if corp_id:
-            corp_auth = OrgCorpAuth.objects.get_by_corp_id(corp_id)
-        elif org_id:
-            corp_auth = OrgCorpAuth.objects.get_by_org_id(int(org_id))
-        if not corp_auth or not corp_auth.permanent_code:
-            error_msg = 'Corp not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # org
-        org_id = corp_auth.org_id
-        org = ccnet_api.get_org_by_id(org_id)
-        if not org:
-            error_msg = 'Organization %s not found.' % org_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # main
-        org_info['org_id'] = org.org_id
-        org_info['org_name'] = org.org_name
-        org_info['corp_id'] = corp_auth.corp_id
-        org_info['corp_name'] = corp_auth.corp_name
-        org_info['corp_access_token'] = get_corp_access_token(
-            corp_auth.corp_id, corp_auth.permanent_code)
-        if ORG_MEMBER_QUOTA_ENABLED:
-            org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
-        else:
-            org_info['max_user_number'] = None
-
-        social_auth_queryset = SocialAuthUser.objects.filter(
-            provider=ORG_WORK_WEIXIN_PROVIDER, uid__contains=corp_auth.corp_id)        
-        for social_auth in social_auth_queryset:
-            user = User.objects.get(social_auth.username)
-            if not user.is_active:
-                continue
-            data = {
-                'username': social_auth.username,
-                'uid': social_auth.uid[len(corp_auth.corp_id) + 1:],
-            }
-            org_info['users_with_unionid'].append(data)
-
-        return Response(org_info)

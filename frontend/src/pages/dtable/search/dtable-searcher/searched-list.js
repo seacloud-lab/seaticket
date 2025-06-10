@@ -1,8 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SearchedBase from './searched-base';
-import SearchedWorkflow from './searched-workflow';
-import SearchedApp from './searched-app';
 import { Utils } from '../../../../utils/utils';
 import { QUERY_TYPE } from './constant';
 
@@ -34,14 +32,6 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
   const clickSearchedBase = (searchedBase) => {
     props.handleClickSearchedItem(searchedBase);
     openBaseOnBlankWindow(searchedBase);
-  };
-
-  const clickSearchedWorkflow = (searchedWorkflow) => {
-    props.handleClickSearchedItem(searchedWorkflow);
-  };
-
-  const clickSearchedApp = (searchedApp) => {
-    props.handleClickSearchedItem(searchedApp);
   };
 
   if (ref) {
@@ -158,34 +148,6 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
                 searchedBase={searchedItem}
                 selected={selected}
                 clickSearchedBase={clickSearchedBase}
-              />
-            );
-          }
-          case QUERY_TYPE.WORKFLOW: {
-            if (!searchedWorkflowsRef.current[index]) {
-              searchedWorkflowsRef.current[index] = {};
-            }
-            return (
-              <SearchedWorkflow
-                key={`${query_type}-${searchedItem.id}-${index}`}
-                ref={searchedWorkflowsRef.current[index]}
-                searchedWorkflow={searchedItem}
-                selected={selected}
-                clickSearchedWorkflow={clickSearchedWorkflow}
-              />
-            );
-          }
-          case QUERY_TYPE.APP: {
-            if (!searchedAppsRef.current[index]) {
-              searchedAppsRef.current[index] = {};
-            }
-            return (
-              <SearchedApp
-                key={`${query_type}-${searchedItem.app_id}-${index}`}
-                ref={searchedAppsRef.current[index]}
-                searchedApp={searchedItem}
-                selected={selected}
-                clickSearchedApp={clickSearchedApp}
               />
             );
           }

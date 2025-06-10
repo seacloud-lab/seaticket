@@ -11,10 +11,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-import seaserv
-from seaserv import ccnet_api
-from pysearpc import SearpcError
-
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -24,22 +20,18 @@ from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner
-from seahub.dtable.utils import create_repo_and_workspace
-from seahub.dtable.models import Workspaces, DTables, DTableGroupOrders
-from seahub.ccnet_db.ccnet.groups import get_non_org_all_dep_ids, get_org_all_dep_ids
+from seahub.dtable.models import Workspaces
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
-from seahub.department_v2.utils import get_department_v2_groups_by_user
-from seahub.audit_log.models import GROUP_TRANSFER, GROUP_DELETE, GROUP_RENAME
-from seahub.audit_log.signals import audit_operation
+from seahub.organizations.models import OrgGroup
+from seahub.group.models import Group as GGroup, GroupUser
 
 from .utils import api_check_group
 
 logger = logging.getLogger(__name__)
 
 def get_group_admins(group_id):
-    members = seaserv.get_group_members(group_id)
-    admin_members = [m for m in members if m.is_staff]
+    admin_members = GroupUser.objects.filter(group_id=group_id, is_staff=True)
 
     admins = []
     for u in admin_members:
@@ -48,16 +40,16 @@ def get_group_admins(group_id):
     return admins
 
 def get_group_info(request, group_id):
-    group = seaserv.get_group(group_id)
+    group = GGroup.objects.get(group_id=group_id)
 
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
     group_info = {
-        "id": group.id,
+        "id": group.group_id,
         "parent_group_id": group.parent_group_id,
         "name": group.group_name,
         "owner": group.creator_name,
         "created_at": isoformat_timestr,
-        "admins": get_group_admins(group.id),
+        "admins": get_group_admins(group.group_id),
     }
 
     return group_info
@@ -111,14 +103,6 @@ class Groups(APIView):
                 continue
             groups.append(group_info)
 
-        if settings.ENABLE_ADDRESSBOOK_V2:
-            department_v2_groups = get_department_v2_groups_by_user(username)
-            for item in department_v2_groups:
-                if can_admin and not is_group_admin_or_owner(item.group_id, username):
-                    continue
-                group_info = get_group_info(request, item.group_id)
-                groups.append(group_info)
-
         return Response(groups)
 
     def post(self, request):
@@ -127,6 +111,10 @@ class Groups(APIView):
         if not self._can_add_group(request):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Only org user can create group.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
         group_name = request.data.get('name', '')
@@ -143,63 +131,42 @@ class Groups(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # quota
-        if is_org_context(request):
-            org_id = request.user.org.org_id
-            org_groups = ccnet_api.get_org_groups(org_id, -1, -1)
-            group_count = len(org_groups)
-            error_msg = ''
+        org_id = request.user.org.org_id
+        group_count = OrgGroup.objects.filter(org_id=org_id).count()
+        # org_groups = ccnet_api.get_org_groups(org_id, -1, -1)
+        # group_count = len(org_groups)
+        error_msg = ''
 
-            if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-                error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-            elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-                error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-            elif group_count >= ORG_GROUP_QUOTA:
-                error_msg = _('Number of groups exceeds the %s limit.') % ORG_GROUP_QUOTA
-            if error_msg:
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+        elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+        elif group_count >= ORG_GROUP_QUOTA:
+            error_msg = _('Number of groups exceeds the %s limit.') % ORG_GROUP_QUOTA
+        if error_msg:
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # personal group limit
-        if is_org_context(request):
-            org_id = request.user.org.org_id
-            user_groups = ccnet_api.get_org_groups_by_user(org_id, username)
-        else:
-            user_groups = ccnet_api.get_groups(username)
+        org_id = request.user.org.org_id
+        sql = """SELECT a.id, count(*) as user_group_count FROM group_user a 
+        INNER JOIN org_group b ON a.group_id=b.group_id WHERE a.user_name=%s AND b.org_id=%s"""
+        user_group_count = OrgGroup.objects.raw(sql, (username, org_id))[0].user_group_count
 
-        if len(user_groups) >= PERSONAL_GROUP_LIMIT:
+        if user_group_count >= PERSONAL_GROUP_LIMIT:
             error_msg = _('Number of groups exceeds the %s limit.') % PERSONAL_GROUP_LIMIT
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # create group.
         try:
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                group_id = seaserv.ccnet_threaded_rpc.create_org_group(org_id,
-                                                                       group_name,
-                                                                       username)
-            else:
-                group_id = seaserv.ccnet_threaded_rpc.create_group(group_name,
-                                                                   username)
-        except SearpcError as e:
+            org_id = request.user.org.org_id
+            org_group = OrgGroup.objects.create_org_group(org_id, group_name, username)
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # if the group has no workspace, create a workspace
-        owner = '%s@seafile_group' % group_id
-        workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if not workspace:
-            try:
-                org_id = -1
-                if is_org_context(request):
-                    org_id = request.user.org.org_id
-                create_repo_and_workspace(owner, org_id)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
         # get info of new group
-        group_info = get_group_info(request, group_id)
+        group_info = get_group_info(request, org_group.group_id)
 
         return Response(group_info, status=status.HTTP_201_CREATED)
 
@@ -262,11 +229,6 @@ class Group(APIView):
                 group = ccnet_api.get_group(int(group_id))
                 old_group_name = group.group_name
                 seaserv.ccnet_threaded_rpc.set_group_name(group_id, new_group_name)
-                audit_operation.send(None, username=username, operation=GROUP_RENAME, detail={
-                    'id': group_id,
-                    'name': new_group_name,
-                    'old_name': old_group_name
-                }, org_id=org_id)
 
             except SearpcError as e:
                 logger.error(e)
@@ -300,15 +262,8 @@ class Group(APIView):
                 if not is_group_admin(group_id, new_owner):
                     ccnet_api.group_set_admin(group_id, new_owner)
 
-                group = ccnet_api.get_group(int(group_id))
                 ccnet_api.set_group_creator(group_id, new_owner)
                 ccnet_api.group_unset_admin(group_id, username)
-                audit_operation.send(None, username=username, operation=GROUP_TRANSFER, detail={
-                    'id': group_id,
-                    'name': group.group_name,
-                    'from': username,
-                    'to': new_owner
-                }, org_id=org_id)
 
             except SearpcError as e:
                 logger.error(e)
@@ -388,10 +343,6 @@ class Group(APIView):
                 ccnet_api.remove_org_group(org_id, group_id)
             ccnet_api.remove_group(group_id)
             group_deleted.send(sender=None, group_id=group_id)
-            audit_operation.send(None, username=username, operation=GROUP_DELETE, detail={
-                'id': group_id,
-                'name': group_name
-            }, org_id=org_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

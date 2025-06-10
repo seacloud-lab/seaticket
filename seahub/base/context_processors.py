@@ -152,8 +152,7 @@ def base(request):
         'privacy_policy_link': PRIVACY_POLICY_LINK,
         'terms_of_service_link': TERMS_OF_SERVICE_LINK,
         'cn_force_check_user_agreement': request.cloud_mode and CN_FORCE_USER_AGREE_TERMS,
-        'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL,
-        'enable_seatable_ai': dj_settings.ENABLE_SEATABLE_AI
+        'enable_user_set_contact_email': dj_settings.ENABLE_USER_SET_CONTACT_EMAIL
     }
 
     if request.user.is_staff:

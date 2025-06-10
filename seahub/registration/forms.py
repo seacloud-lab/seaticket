@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from constance import config
-from seaserv import ccnet_api
 
 from seahub.utils.licenseparse import user_number_over_limit
 from seahub.utils import is_user_password_strong
@@ -116,7 +115,7 @@ class RegistrationFormTermsOfService(RegistrationForm):
     """
     Subclass of ``RegistrationForm`` which adds a required checkbox
     for agreeing to a site's Terms of Service.
-    
+
     """
     tos = forms.BooleanField(widget=forms.CheckboxInput(attrs=attrs_dict),
                              label=_('I have read and agree to the Terms of Service'),
@@ -127,13 +126,13 @@ class RegistrationFormUniqueEmail(RegistrationForm):
     """
     Subclass of ``RegistrationForm`` which enforces uniqueness of
     email addresses.
-    
+
     """
     def clean_email(self):
         """
         Validate that the supplied email address is unique for the
         site.
-        
+
         """
         if User.objects.filter(email__iexact=self.cleaned_data['email']):
             raise forms.ValidationError(_("This email address is already in use. "
@@ -146,21 +145,21 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
     Subclass of ``RegistrationForm`` which disallows registration with
     email addresses from popular free webmail services; moderately
     useful for preventing automated spam registrations.
-    
+
     To change the list of banned domains, subclass this form and
     override the attribute ``bad_domains``.
-    
+
     """
     bad_domains = ['aim.com', 'aol.com', 'email.com', 'gmail.com',
                    'googlemail.com', 'hotmail.com', 'hushmail.com',
                    'msn.com', 'mail.ru', 'mailinator.com', 'live.com',
                    'yahoo.com']
-    
+
     def clean_email(self):
         """
         Check the supplied email address against a list of known free
         webmail domains.
-        
+
         """
         email_domain = self.cleaned_data['email'].split('@')[1]
         if email_domain in self.bad_domains:

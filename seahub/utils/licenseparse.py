@@ -3,8 +3,6 @@ import logging
 from django.conf import settings
 from seahub.utils import is_pro_version
 
-from seaserv import ccnet_api
-
 logger = logging.getLogger(__name__)
 
 

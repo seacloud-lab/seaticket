@@ -3,7 +3,6 @@
 import logging
 from importlib import import_module
 
-import requests
 from rest_framework import parsers
 from rest_framework import status
 from rest_framework import renderers
@@ -18,22 +17,12 @@ from .authentication import TokenAuthentication
 from .serializers import AuthTokenSerializer
 from .utils import api_error
 from seahub.api2.base import APIView
-from seahub.auth.models import UserQuota
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.dtable.models import Workspaces, UserRowsCount, OrgRowsCount, OrgBigDataStorageStats, \
-    StatsAPIGatewayByOwner, StatsAPIGatewayByTeam
-from seahub.dtable.utils import can_user_run_python, can_org_run_python
 from seahub.options.models import UserOptions
-from seahub.organizations.models import OrgQuota, OrgSettings
 from seahub.profile.models import Profile
 from seahub.utils import is_org_context
-from seahub.utils.file_size import get_quota_from_string
-from seaserv import seafile_api
 import seahub.settings as settings
-from seahub.subscription.utils import subscription_check
-from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
-from seahub.ai.utils import get_ai_cost_by_org_id, get_ai_cost_by_owner_id, get_ai_credit_by_org_id, get_ai_credit_by_owner_id
 
 logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
@@ -143,92 +132,15 @@ class AccountInfo(APIView):
         info = {}
         email = request.user.username
         p = Profile.objects.get_profile_by_user(email)
-        can_run_python = False
         is_cloud_personal_account = False
         if is_org_context(request):
             org_id = request.user.org.org_id
             is_org_staff = request.user.org.is_staff
             info['org_id'] = org_id
             info['is_org_staff'] = is_org_staff
-            # quota
-            quota_total = OrgQuota.objects.get_asset_quota(org_id)
-            quota_usage = Workspaces.objects.get_org_total_storage(org_id)
-            if quota_total is not None and quota_total > 0:
-                info['space_usage'] = str(float(quota_usage) / quota_total * 100) + '%'
-            else:                       # no space quota set in config
-                info['space_usage'] = '0%'
-            info['total'] = quota_total
-            info['usage'] = quota_usage
-            # rows
-            row_usage = OrgRowsCount.objects.get_org_rows_count(org_id)
-            row_total = OrgQuota.objects.get_row_limit(org_id)
-            if row_total is not None and row_total > 0:
-                info['row_usage_rate'] = str(float(row_usage) / row_total * 100) + '%'
-            else:
-                info['row_usage_rate'] = '0%'
-            info['row_total'] = row_total
-            info['row_usage'] = row_usage
-            # scripts running
-            role = OrgSettings.objects.get_role_by_org(request.user.org)
-            can_run_python = can_org_run_python(request.user.org)
-            # org big_data info
-            big_data_total_rows = OrgBigDataStorageStats.objects.get_org_big_data_total_rows(org_id)
-            big_data_row_limit = OrgQuota.objects.get_big_data_row_limit(org_id)
-            big_data_total_storage = OrgBigDataStorageStats.objects.get_org_big_data_total_storage(org_id)
-            big_data_storage_quota = OrgQuota.objects.get_big_data_storage_quota(org_id)
-
-            info['big_data_total_rows'] = big_data_total_rows
-            info['big_data_row_limit'] = big_data_row_limit
-            if big_data_row_limit is not None and big_data_row_limit > 0:
-                info['big_data_row_usage_rate'] = str(float(big_data_total_rows) / big_data_row_limit * 100) + '%'
-            else:
-                info['big_data_row_usage_rate'] = '0%'
-
-            info['big_data_total_storage'] = big_data_total_storage
-            info['big_data_storage_quota'] = big_data_storage_quota
-            if big_data_storage_quota is not None and big_data_storage_quota > 0:
-                info['big_data_storage_usage_rate'] = str(float(big_data_total_storage) / big_data_storage_quota * 100) + '%'
-            else:
-                info['big_data_storage_usage_rate'] = '0%'
-
-            # api calls
-            info['api_calls_count'] = StatsAPIGatewayByTeam.objects.get_month_all_count(org_id)
-            info['api_calls_limit'] = OrgQuota.objects.get_monthly_api_call_limit(org_id)
-            if info['api_calls_limit'] > 0:
-                info['api_calls_usage_rate'] = str(float(info['api_calls_count']) / info['api_calls_limit'] * 100) + '%'
-            else:
-                info['api_calls_usage_rate'] = '0%'
         else:
             if request.cloud_mode:
                 is_cloud_personal_account = True
-            # quota
-            quota_total = UserQuota.objects.get_asset_quota(request.user.username, user_obj=request.user)[0]
-            quota_usage = Workspaces.objects.get_owner_total_storage(request.user.username)
-            if quota_total is not None and quota_total > 0:
-                info['space_usage'] = str(float(quota_usage) / quota_total * 100) + '%'
-            else:                       # no space quota set in config
-                info['space_usage'] = '0%'
-            info['total'] = quota_total
-            info['usage'] = quota_usage
-            # rows
-            row_usage = UserRowsCount.objects.get_user_rows_count(email)
-            row_total = UserQuota.objects.get_row_limit(request.user.username, user_obj=request.user)[0]
-            if row_total is not None and row_total > 0:
-                info['row_usage_rate'] = str(float(row_usage) / row_total * 100) + '%'
-            else:
-                info['row_usage_rate'] = '0%'
-            info['row_total'] = row_total
-            info['row_usage'] = row_usage
-            # run scripts
-            role = request.user.role
-            can_run_python = can_user_run_python(request.user.username)
-            # api calls
-            info['api_calls_count'] = StatsAPIGatewayByOwner.objects.get_month_all_count(request.user.username)
-            info['api_calls_limit'] = UserQuota.objects.get_monthly_api_call_limit_per_user(request.user.username, user_obj=request.user)
-            if info['api_calls_limit'] > 0:
-                info['api_calls_usage_rate'] = str(float(info['api_calls_count']) / info['api_calls_limit'] * 100) + '%'
-            else:
-                info['api_calls_usage_rate'] = '0%'
 
         url, _, _ = api_avatar_url(email)
         info['is_cloud_personal_account'] = is_cloud_personal_account
@@ -239,54 +151,16 @@ class AccountInfo(APIView):
         info['contact_email'] = p.contact_email if p else ""
         info['institution'] = p.institution if p and p.institution else ""
         info['is_staff'] = request.user.is_staff
-        info['enable_subscription'] = subscription_check()
-
-        if dj_settings.SEATABLE_FAAS_URL and can_run_python:
-            info['scripts_running_total'] = get_enabled_role_permissions_by_role(role).get('scripts_running_limit', -1)
-            # get user/org scripts-running count
-            try:
-                url = dj_settings.SEATABLE_FAAS_URL.strip('/') + '/scripts-running-count/'
-                headers = {'Authorization': 'Token ' + dj_settings.SEATABLE_FAAS_AUTH_TOKEN}
-                if is_org_context(request):
-                    params = {'org_id': request.user.org.org_id}
-                else:
-                    params = {'username': request.user.username}
-                response = requests.get(url, params=params, headers=headers, timeout=10)
-                if response.status_code != 200:
-                    logger.error('get scripts_running_count error response: %s', response)
-                    scripts_running_count = -1
-                else:
-                    scripts_running_count = response.json()['count']
-            except Exception as e:
-                logger.error('scripts_running_count error: %s', e)
-                scripts_running_count = -1
-
-            info['scripts_running_count'] = scripts_running_count
-            if scripts_running_count == -1 or info['scripts_running_total'] == -1:
-                info['scripts_running_usage_rate'] = '0%'
-            else:
-                info['scripts_running_usage_rate'] = str(float(scripts_running_count) / info['scripts_running_total'] * 100) + '%'
-
-        if getattr(settings, 'ENABLE_SEATABLE_AI', False) and getattr(settings, 'SEATABLE_AI_SERVER_URL', ''):
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                info['ai_credit'] = get_ai_credit_by_org_id(org_id)
-                info['ai_cost'] = round(get_ai_cost_by_org_id(org_id), 2)
-            else:
-                info['ai_credit'] = get_ai_credit_by_owner_id(request.user.username)
-                info['ai_cost'] = round(get_ai_cost_by_owner_id(request.user.username), 2)
-            if info['ai_credit'] == -1:
-                info['ai_usage_rate'] = '0%'
-            else:
-                info['ai_usage_rate'] = str(info['ai_cost'] / info['ai_credit'] * 100) + '%'
 
         if getattr(settings, 'MULTI_INSTITUTION', False):
             info['is_inst_admin'] = request.user.inst_admin
 
         dtable_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(email)
-        info['dtable_updates_email_interval'] = dtable_updates_email_interval if dtable_updates_email_interval is not None else 0
+        info[
+            'dtable_updates_email_interval'] = dtable_updates_email_interval if dtable_updates_email_interval is not None else 0
         dtable_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(email)
-        info['dtable_collaborate_email_interval'] = dtable_collaborate_email_interval if dtable_collaborate_email_interval is not None else 0
+        info[
+            'dtable_collaborate_email_interval'] = dtable_collaborate_email_interval if dtable_collaborate_email_interval is not None else 0
         return info
 
     def get(self, request, format=None):

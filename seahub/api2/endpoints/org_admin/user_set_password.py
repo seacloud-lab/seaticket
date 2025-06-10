@@ -7,8 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 
-from seaserv import ccnet_api
-
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
@@ -20,8 +18,6 @@ from seahub.views.sysadmin import send_user_reset_email
 from seahub.profile.models import Profile
 
 from seahub.organizations.views import org_user_exists
-
-from pysearpc import SearpcError
 
 
 logger = logging.getLogger(__name__)

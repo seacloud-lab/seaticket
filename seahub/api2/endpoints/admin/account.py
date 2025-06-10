@@ -10,8 +10,6 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-import seaserv
-from seaserv import seafile_api, ccnet_threaded_rpc
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.serializers import AccountSerializer

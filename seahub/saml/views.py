@@ -22,8 +22,6 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from seaserv import ccnet_api
-
 from seahub import auth
 from seahub.base.accounts import User
 from seahub.base.sudo_mode import update_sudo_mode_ts
@@ -358,7 +356,7 @@ def acs(request, org_id=None):
             for admin in admins:
                 saml_sso_failed.send(sender=None, to_user=admin.email, error_msg=error_msg)
             return render_error(request, _('The number of users exceeds the limit.'))
-    
+
         # check user number limit by org member quota
         if org:
             org_members = len(ccnet_api.get_org_emailusers(org.url_prefix, -1, -1))

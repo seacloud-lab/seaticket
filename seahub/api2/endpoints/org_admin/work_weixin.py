@@ -13,8 +13,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from seaserv import ccnet_api
-
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.permissions import IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle

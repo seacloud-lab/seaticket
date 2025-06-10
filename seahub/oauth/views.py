@@ -6,8 +6,6 @@ import logging
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api
-
 from seahub import auth
 from seahub.auth.models import SocialAuthUser
 from seahub.profile.models import Profile
@@ -272,108 +270,4 @@ def custom_oauth_callback_view(request):
         return render_error(request, _('Feature is not enabled.'))
 
     return custom_oauth_callback(request)
-
-
-#### Thirdparty OAuth account using to send email - callback
-def thirdparty_email_account_oauth_callback(request):
-    """ Step 3: Retrieving an access token.
-    The user has been redirected back from the provider to your registered
-    callback URL. With this redirection comes an authorization code included
-    in the redirect URL. We will use that to obtain an access token.
-    """
-    try:
-        oauth_data = request.session['oauth_email_accounts']
-        account_detail = oauth_data.get('account_detail')
-        account_name = oauth_data.get('account_name')
-        dtable_uuid = oauth_data.get('dtable_uuid')
-    except Exception as e:
-        return render_error(request, _('Request not found'))
-    
-    if not all([account_detail, account_name, dtable_uuid]):
-        error_msg = 'Invalid request.'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        logger.error('Invalid request: ' + str({
-            'account_detail': account_detail,
-            'account_name': account_name, 
-            'dtable_uuid': dtable_uuid
-        }))
-        return render_error(request, _(error_msg))
-    if not all([account_detail.get('client_id'), account_detail.get('client_secret'), account_detail.get('token_url')]):
-        error_msg = 'Invalid request.'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        logger.error('Invalid request: ' + str({
-            'client_id': account_detail.get('client_id'),
-            'client_secret': account_detail.get('client_secret'), 
-            'token_url': account_detail.get('token_url')
-        }))
-        return render_error(request, _(error_msg))
-    
-    callback_url = settings.DTABLE_WEB_SERVICE_URL + 'oauth/third-party-email-accounts/callback/'
-    authorization_response_url = settings.DTABLE_WEB_SERVICE_URL + request.get_full_path().split('/', 1)[1]
-
-    try:
-        session = OAuth2Session(client_id=account_detail.get('client_id'),
-                            scope=account_detail.get('scopes'),
-                            state=oauth_data.get('oauth_state', None),
-                            redirect_uri=callback_url)
-    except Exception as e:
-        error_msg = 'Error, please contact administrator.'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        logger.error(e)
-        return render_error(request, _(error_msg))
-
-    try:
-        token = session.fetch_token(
-            account_detail.get('token_url'),
-            client_secret=account_detail.get('client_secret'),
-            authorization_response=authorization_response_url)
-    except Exception as e:
-        error_msg = 'Failure to request token'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        logger.error(e)
-        return render_error(request, _(error_msg))
-
-    refresh_token = token.get('refresh_token')
-    if not refresh_token:
-        error_msg = 'Failure to request refresh_token'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        return render_error(request, _(error_msg))
-    
-    ### save emailtype, client_id, client_secret, refresh_token
-    detail = account_detail
-    detail['refresh_token'] = refresh_token
-    try:
-        detail['access_token'] = token.get('access_token')
-        detail['expires_at'] = token.get('expires_at')
-    except:
-        pass
-    try:
-        BoundThirdPartyAccounts.objects.create(
-            dtable_uuid=uuid_str_to_32_chars(dtable_uuid),
-            account_name=account_name,
-            account_type='email',
-            detail=_encrypt_detail(detail)
-        )
-    except Exception as e:
-        error_msg = 'Error, please contact administrator.'
-        request.session['oauth_email_accounts']['status'] = 'failure'
-        request.session['oauth_email_accounts']['error_msg'] = error_msg
-        request.session.modified = True
-        logger.error(e)
-        return render_error(request, _(error_msg))
-    
-    request.session['oauth_email_accounts']['status'] = 'success'
-    request.session.modified = True
-    
-    return render(request, 'authorization_success.html')
 

@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-from django.db import transaction, connection
 from django.utils.translation import gettext as _
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
@@ -9,22 +8,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from seaserv import seafile_api, ccnet_api, ccnet_threaded_rpc
-from pysearpc import SearpcError
-
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_DELETE
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.permissions import IsProVersion
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import to_python_boolean, api_error
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
-from seahub.dtable.models import Workspaces, DTables
-from seahub.dtable.utils import create_repo_and_workspace, convert_dtable_trash_names
-from seahub.dtable.signals import move_dtable_to_trash
+from seahub.dtable.models import Workspaces
 from seahub.group.utils import validate_group_name, refresh_group_name_cache
 from seahub.signals import group_deleted
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr

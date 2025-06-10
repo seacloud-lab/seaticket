@@ -5,7 +5,6 @@ import { List, InputItem } from 'antd-mobile';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
 import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
-import { WORKFLOW_ICONS, WORKFLOW_COLORS } from '../../../workflow/constants';
 import { gettext } from '../../../utils/constants';
 import { validateName } from '../../../utils/utils';
 
@@ -73,7 +72,7 @@ class RenameBaseView extends React.Component {
 
   renderColorSettings = () => {
     let { itemColor } = this.state;
-    const iconColorList = this.props.isWorkflow ? WORKFLOW_COLORS : DTABLE_ICON_COLORS;
+    const iconColorList = DTABLE_ICON_COLORS;
     return (
       <div className="row dtable-color-content">
         {iconColorList.map((color, index) => {
@@ -93,7 +92,7 @@ class RenameBaseView extends React.Component {
 
   renderIconSettings = () => {
     let { itemColor, itemIcon } = this.state;
-    const iconList = this.props.isWorkflow ? WORKFLOW_ICONS : DTABLE_ICON_LIST;
+    const iconList = DTABLE_ICON_LIST;
 
     return (
       <div className="row dtable-icon-content mt-4">

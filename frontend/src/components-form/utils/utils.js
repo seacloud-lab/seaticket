@@ -1,6 +1,5 @@
 import { CellType, isValidEmail, DateUtils, formatStringToNumber, formatDurationToNumber } from 'dtable-utils';
 import { formatStringToRegexp } from '../../utils/utils';
-import { FORMAT_REG_EXP_LIST } from '../../pages/dtable-edit-form/widgets/CheckFormatRegExp';
 
 // [FIX] work weixin chrome 53 not support String.padEnd
 // https://github.com/uxitten/polyfill/blob/master/string.polyfill.js
@@ -140,9 +139,6 @@ export const getInvalidTextRegColumns = (columns, rowData = {}) => {
       if (format_check_type === 'custom_format') {
         const reg = formatStringToRegexp(format_specification_value);
         return colValue && reg && !reg.test(colValue);
-      } else {
-        const reg = FORMAT_REG_EXP_LIST[format_check_type];
-        return colValue && !reg.test(colValue);
       }
     }
     return false;

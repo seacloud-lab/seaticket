@@ -19,7 +19,6 @@ from urllib.parse import quote
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
-from seaserv import seafile_api
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import login as auth_login
@@ -125,6 +124,8 @@ def login(request, template_name='registration/login.html',
 
     redirect_to = request.GET.get(redirect_field_name, '')
     if request.user.is_authenticated:
+        if request.user.is_staff:
+            return HttpResponseRedirect(reverse('sys_info'))
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:

@@ -4,7 +4,6 @@ import logging
 from . import settings
 import datetime
 
-from seaserv import seafile_api, get_org_id_by_repo_id
 logger = logging.getLogger(__name__)
 
 try:

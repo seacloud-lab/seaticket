@@ -8,44 +8,21 @@ import json
 import re
 import logging
 
-from collections import defaultdict
 from functools import wraps
 
-import jwt
-from django.core.paginator import EmptyPage, InvalidPage
 from django.http import HttpResponse
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
-from rest_framework.permissions import BasePermission
 from rest_framework import status, serializers
-from seaserv import seafile_api, get_personal_groups_by_user, \
-        get_group, seafserv_threaded_rpc
-from pysearpc import SearpcError
 
-from seahub.base.accounts import User
-from seahub.base.templatetags.seahub_tags import email2nickname, \
-    translate_seahub_time, file_icon_filter, email2contact_email
-from seahub.constants import PERMISSION_READ_WRITE
+from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.group.views import is_group_staff
 from seahub.group.utils import is_group_member
-from seahub.notifications.models import UserNotification
-from seahub.profile.settings import USER_DEPT_CACHE_PREFIX, USER_DEPT_CACHE_TIMEOUT
-from seahub.utils import get_file_type_and_ext, \
-    gen_file_get_url, get_site_scheme_and_netloc, normalize_cache_key, get_inner_dtable_server_url
-from seahub.utils.paginator import Paginator
-from seahub.utils.file_types import IMAGE
 from seahub.api2.models import Token, TokenV2, DESKTOP_PLATFORMS
 from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
-from seahub.avatar.templatetags.avatar_tags import api_avatar_url, \
-    get_default_avatar_url
-from seahub.profile.models import Profile
+from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 
-from seahub.settings import INSTALLED_APPS, INNER_DTABLE_SERVER_URL, USE_INNER_DTABLE_SERVER, DTABLE_PRIVATE_KEY, \
-    DTABLE_PROXY_SERVER_URL, ENABLE_DTABLE_SERVER_CLUSTER, DTABLE_SERVER_URL
-import requests
-from seaserv import ccnet_api
-from django.core.cache import cache
-from seahub.dtable_apps.dtable_server_api import DTableServerAPI
+from seahub.settings import INSTALLED_APPS
 
 
 logger = logging.getLogger(__name__)
@@ -55,9 +32,6 @@ def api_error(code, msg):
     err_resp = {'error_msg': msg}
     return Response(err_resp, status=code)
 
-def get_file_size(store_id, repo_version, file_id):
-    size = seafile_api.get_file_size(store_id, repo_version, file_id)
-    return size if size else 0
 
 def get_groups(email):
     group_json = []
@@ -67,32 +41,7 @@ def get_groups(email):
     for g in joined_groups:
         grpmsgs[g.id] = 0
 
-    notes = UserNotification.objects.get_user_notifications(email, seen=False)
     replynum = 0
-    for n in notes:
-        if n.is_group_msg():
-            try:
-                gid  = n.group_message_detail_to_dict().get('group_id')
-            except UserNotification.InvalidDetailError:
-                continue
-            if gid not in grpmsgs:
-                continue
-            grpmsgs[gid] = grpmsgs[gid] + 1
-
-    for g in joined_groups:
-        msg = GroupMessage.objects.filter(group_id=g.id).order_by('-timestamp')[:1]
-        mtime = 0
-        if len(msg) >= 1:
-            mtime = get_timestamp(msg[0].timestamp)
-        group = {
-            "id": g.id,
-            "name": g.group_name,
-            "creator": g.creator_name,
-            "ctime": g.timestamp,
-            "mtime": mtime,
-            "msgnum": grpmsgs[g.id],
-            }
-        group_json.append(group)
 
     return group_json, replynum
 
@@ -266,14 +215,6 @@ def is_web_request(request):
         return True
     else:
         return False
-
-def send_signal_to_dtable_server(signal_name, dtable):
-    dtable_server_api = DTableServerAPI('dtable-web', dtable.uuid.hex, get_inner_dtable_server_url())
-    try:
-        dtable_server_api.send_signal(signal_name)
-    except Exception as e:
-        logger.exception('send signal: %s to dtable: %s error: %s', signal_name, dtable, e)
-
 
 def get_user_social_auth_info(username, org_id):
     from seahub.auth.models import SocialAuthUser

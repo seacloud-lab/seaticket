@@ -8,16 +8,11 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.utils.translation import gettext as _
 
-from seaserv import seafile_api, ccnet_api
-from pysearpc import SearpcError
-
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.dtable.models import Workspaces, DTables
-from seahub.dtable.utils import create_repo_and_workspace, convert_dtable_trash_names
-from seahub.dtable.signals import move_dtable_to_trash
+from seahub.dtable.models import Workspaces
 from seahub.signals import group_deleted
-from seahub.utils import is_valid_username, is_pro_version, is_org_context, normalize_file_path
+from seahub.utils import is_valid_username, is_pro_version
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import is_group_member, is_group_admin, \
         validate_group_name
@@ -27,43 +22,25 @@ from seahub.api2.utils import api_error
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.endpoints.utils import is_org_user
-from seahub.department_v2.models import DepartmentV2Groups
+
+from seahub.group.models import Group
 
 logger = logging.getLogger(__name__)
 
-def get_group_info(group_id, show_size=False):
-    group = ccnet_api.get_group(group_id)
-    department_v2_group = DepartmentV2Groups.objects.filter(group_id=group_id).first()
+def get_group_info(group, show_size=False):
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
     group_info = {
-        "id": group.id,
+        "id": group.group_id,
         "name": group.group_name,
         "owner": group.creator_name,
         "owner_name": email2nickname(group.creator_name),
         "created_at": isoformat_timestr,
-        "quota": seafile_api.get_group_quota(group_id) if is_pro_version() else 0,
         "parent_group_id": group.parent_group_id if is_pro_version() else 0
     }
-    if department_v2_group:
-        group_info['department_id'] = department_v2_group.department_id
     # Explicit set owner for department
     if group.parent_group_id != 0:
         group_info['owner'] = 'system admin'
         group_info['owner_name'] = 'system admin'
-    if ccnet_api.is_org_group(group_id):
-        org_id = ccnet_api.get_org_id_by_group(group_id)
-        group_info['org_id'] = org_id
-        if org_id:
-            org = ccnet_api.get_org_by_id(org_id)
-            if org:
-                group_info['org_name'] = org.org_name
-
-    if show_size:
-        owner = '%s@seafile_group' % group_id
-        workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if workspace:
-            repo = seafile_api.get_repo(workspace.repo_id)
-            group_info['size'] = repo.size if repo else -1
 
     return group_info
 
@@ -88,8 +65,7 @@ class AdminGroups(APIView):
         group_name = group_name.strip()
         return_results = []
         if group_name:
-            # search by name(keyword in name)
-            groups_all = ccnet_api.search_groups(group_name, -1, -1)
+            groups_all = Group.objects.filter(name__icontains=group_name)
             for group in groups_all:
                 group_info = get_group_info(group.id)
                 return_results.append(group_info)
@@ -104,20 +80,23 @@ class AdminGroups(APIView):
             per_page = 100
 
         start = (current_page - 1) * per_page
-        limit = per_page + 1
+        end = start + per_page
 
-        groups = ccnet_api.get_all_groups(start, limit)
+        try:
+            groups = Group.objects.all().order_by('-timestamp')[start:end]
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if len(groups) > per_page:
-            groups = groups[:per_page]
-            has_next_page = True
-        else:
+        has_next_page = True
+        if len(groups) < per_page:
             has_next_page = False
 
         return_results = []
 
         for group in groups:
-            group_info = get_group_info(group.id, show_size=True)
+            group_info = get_group_info(group)
             return_results.append(group_info)
 
         page_info = {
@@ -174,19 +153,6 @@ class AdminGroups(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        owner = '%s@seafile_group' % group_id
-        workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if not workspace:
-            try:
-                org_id = -1
-                if is_org_context(request):
-                    org_id = request.user.org.org_id
-                create_repo_and_workspace(owner, org_id)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # send admin operation log signal
         admin_op_detail = {

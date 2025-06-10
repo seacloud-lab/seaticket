@@ -1,7 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 import re
-import stat
 from django.db.models import Q
 from types import FunctionType
 from constance import config
@@ -12,10 +11,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.cache import cache
-from django.urls import reverse
 from django.utils.translation import gettext as _
-
-from seaserv import seafile_api, ccnet_api, get_personal_groups_by_user
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
@@ -23,18 +19,16 @@ from seahub.api2.utils import api_error, to_python_boolean, get_user_social_auth
 
 import seahub.settings as settings
 from seahub.organizations.views import is_org_staff
-from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER
 from seahub.base.models import UserLastLogin
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, \
     email2contact_email
-from seahub.auth.models import SocialAuthUser
 from seahub.profile.models import Profile
 from seahub.profile.settings import CONTACT_CACHE_TIMEOUT, CONTACT_CACHE_PREFIX, \
     NICKNAME_CACHE_PREFIX, NICKNAME_CACHE_TIMEOUT
 from seahub.utils import is_valid_username, is_org_context, \
     is_pro_version, normalize_cache_key, is_valid_email, \
-    IS_EMAIL_CONFIGURED, send_html_email, get_site_name, publish_api_gateway_calls_changed
+    IS_EMAIL_CONFIGURED, send_html_email, get_site_name
 from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
     SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_EMAIL_ON_ACTIVATING_USER, ENABLE_LDAP, \
     ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_LDAP_USER_CHANGE_PASSWORD
@@ -49,20 +43,15 @@ from seahub.utils.licenseparse import user_number_over_limit
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_ACTIVATE, USER_DEACTIVATE
 from seahub.options.models import UserOptions
-from seahub.dtable.models import IdInOrgTuple, Workspaces, StatsAPIGatewayByOwner, ExceedAPIQuotaTeams
-from seahub.dtable.utils import get_users_rows_count, create_repo_and_workspace
 from seahub.auth.models import UserQuota, SocialAuthUser
-from seahub.ccnet_db.ccnet.organizations import get_org_staff_count
-from seahub.utils.repo import get_repo_owner
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.two_factor.models import default_device
 from seahub.weixin.utils import weixin_check
 from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_dingtalk.utils import org_dingtalk_check
-from seahub.ccnet_db.ccnet.users import filter_profile_users
-from seahub.ccnet_db.ccnet.groups import get_groups_info, get_user_group_ids
-from seahub.seafile_db.seafile.repo import get_users_storage
-from seahub.organizations.models import OrgSettings
+from seahub.organizations.models import Organization
+from seahub.auth.models import EmailUser
+from seahub.dtable.models import IdInOrgTuple
 
 try:
     from seahub.settings import LDAP_PROVIDER
@@ -175,7 +164,7 @@ def update_user_info(request, user, password, is_active, is_staff, role,
 def get_user_info(email):
     # this function is currently used in three api:
     # post a new user
-    # get single user 
+    # get single user
     # put single user
 
     user = User.objects.get(email=email)
@@ -205,10 +194,6 @@ def get_user_info(email):
     info['is_active'] = user.is_active
     info['phone'] = profile.phone if profile and profile.phone else ''
 
-    if not orgs:
-        info['api_calls_count'] = StatsAPIGatewayByOwner.objects.get_month_all_count(email)
-        info['monthly_api_call_limit_per_user'] = UserQuota.objects.get_monthly_api_call_limit_per_user(email)
-
     info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
 
     if getattr(settings, 'MULTI_INSTITUTION', False):
@@ -225,7 +210,7 @@ class AdminUsers(APIView):
     throttle_classes = (UserRateThrottle, )
 
     def get(self, request):
-        """List all users in DB or LDAPImport
+        """List all users
 
         Permission checking:
         1. only admin can perform this action.
@@ -246,23 +231,16 @@ class AdminUsers(APIView):
         # source: 'DB' or 'LDAPImport', default is 'DB'
         source = request.GET.get('source', 'DB')
         source = source.lower()
-        if source not in ['db', 'ldapimport']:
-            error_msg = 'source %s invalid.' % source
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if source == 'db':
-            users = ccnet_api.get_emailusers('DB', start, per_page)
-            total_count = ccnet_api.count_emailusers('DB') + \
-                          ccnet_api.count_inactive_emailusers('DB')
-        elif source == 'ldapimport':
-            users = ccnet_api.get_emailusers('LDAPImport', start, per_page)
-            # api param is 'LDAP', but actually get count of 'LDAPImport' users
-            total_count = ccnet_api.count_emailusers('LDAP') + \
-                          ccnet_api.count_inactive_emailusers('LDAP')
+        start = (page - 1) * per_page
+        sql = """SELECT a.*, b.role FROM email_user a 
+        LEFT JOIN user_role b ON a.email=b.email ORDER BY a.ctime DESC LIMIT %s OFFSET %s"""
+        users = EmailUser.objects.raw(sql, (per_page, start))
+
+        total_count = EmailUser.objects.count()
 
         data = []
         email_list = [user.email for user in users]
-        rows_count_dict = get_users_rows_count(email_list)
         email2id_in_org = IdInOrgTuple.objects.gen_virtual_id2id_in_org_dict(email_list)
         social_auth_user_queryset = SocialAuthUser.objects.filter(username__in=email_list)
         social_auth_user_dict = {}
@@ -272,50 +250,41 @@ class AdminUsers(APIView):
             else:
                 social_auth_user_dict[item.username] = [item]
 
-        
-
         profiles = list(Profile.objects.filter(user__in=email_list))
         profiles_dict = {p.user: p for p in profiles}
-        workspaces = list(Workspaces.objects.filter(owner__in=email_list))
-        workspaces_dict = {w.owner: w for w in workspaces}
-        storages_dict = get_users_storage(email_list)
 
         for user in users:
-            profile = profiles_dict.get(user.email)
-            workspace = workspaces_dict.get(user.email)
+            username = user.email
+            profile = profiles_dict.get(username)
             info = {}
-            info['email'] = user.email
-            info['name'] = email2nickname(user.email)
-            info['contact_email'] = email2contact_email(user.email)
+            info['email'] = username
+            info['name'] = email2nickname(username)
+            info['contact_email'] = email2contact_email(username)
             info['unit'] = profile.unit if profile and profile.unit else ''
             info['login_id'] = profile.login_id if profile and profile.login_id else ''
             info['is_staff'] = user.is_staff
             info['is_active'] = user.is_active
             info['id_in_org'] = email2id_in_org.get(user.email, '')
-            info['workspace_id'] = workspace and workspace.id
 
-            orgs = ccnet_api.get_orgs_by_user(user.email)
+            org = Organization.objects.get_org_by_username(username)
             try:
-                if orgs:
-                    org_id = orgs[0].org_id
+                if org:
+                    org_id = org.org_id
                     info['org_id'] = org_id
-                    info['org_name'] = orgs[0].org_name
-                    info['is_org_admin'] = True if is_org_staff(org_id, user.email) == 1 else False
+                    info['org_name'] = org.org_name
+                    info['is_org_admin'] = True if is_org_staff(org_id, username) == 1 else False
             except Exception as e:
                 logger.error(e)
 
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
-            last_login_obj = UserLastLogin.objects.get_by_username(user.email)
+            last_login_obj = UserLastLogin.objects.get_by_username(username)
             info['last_login'] = datetime_to_isoformat_timestr(last_login_obj.last_login) if last_login_obj else ''
             if not info.get('org_id'):
                 info['role'] = get_user_role(user)
             else:
                 info['role'] = None
-            info['storage_usage'] = storages_dict.get(user.email) or 0
             if getattr(settings, 'MULTI_INSTITUTION', False):
                 info['institution'] = profile.institution if profile else ''
-
-            info['rows_count'] = rows_count_dict.get(user.email, 0)
 
             social_auth_user = social_auth_user_dict.get(user.email, [])
             info['social_auth'] = [{'provider': item.provider, 'uid': item.uid} for item in social_auth_user]
@@ -409,7 +378,7 @@ class AdminUsers(APIView):
         if len(password) > 4096:
             error_msg = 'Password is too long (maximum is 4096 characters).'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-    
+
         # create user
         try:
             user_obj = User.objects.create_user(email, password, is_staff, is_active)
@@ -442,12 +411,6 @@ class AdminUsers(APIView):
         user_info = get_user_info(virtual_id)
         user_info['add_user_tip'] = add_user_tip
 
-        with_workspace = request.data.get('with_workspace', False)
-        if with_workspace:
-            org_id = user_info.get('org_id', -1)
-            workspace = create_repo_and_workspace(user_obj.username, org_id)
-            user_info['workspace_id'] = workspace.id
-
         # send admin operation log signal
         admin_op_detail = {
             "username": user_obj.username,
@@ -479,16 +442,6 @@ class AdminUser(APIView):
 
         # get other detailed info
         user_info['avatar_url'], _, _ = api_avatar_url(email)
-        try:
-            if 'org_id' not in user_info:
-                user_info['storage_usage'] = Workspaces.objects.get_owner_total_storage(owner=email)
-                user_info['storage_quota'] = UserQuota.objects.get_asset_quota(email)[0]
-                user_info['row_usage'] = get_users_rows_count([email])[email]
-                user_info['row_limit'] = UserQuota.objects.get_row_limit(email)[0]
-        except Exception as e:
-            logging.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
         if has_two_factor_auth():
             user_info['has_default_device'] = True if default_device(user) else False
             user_info['is_force_2fa'] = UserOptions.objects.is_force_2fa(email)
@@ -681,32 +634,7 @@ class AdminUser(APIView):
         user_info = get_user_info(email)
         user_info['update_status_tip'] = update_status_tip
 
-        try:
-            if 'org_id' not in user_info:
-                user_info['storage_usage'] = Workspaces.objects.get_owner_total_storage(owner=email)
-                user_info['storage_quota'] = UserQuota.objects.get_asset_quota(email)[0]
-                user_info['row_usage'] = get_users_rows_count([email])[email]
-                user_info['row_limit'] = UserQuota.objects.get_row_limit(email)[0]
-        except Exception as e:
-            logging.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
         # perhaps need to update exceed api calls status
-        if 'org_id' not in user_info:
-            api_calls_count = StatsAPIGatewayByOwner.objects.get_month_all_count(email)
-            api_calls_limit = UserQuota.objects.get_monthly_api_call_limit_per_user(email)
-            exceed_obj = ExceedAPIQuotaTeams.objects.filter(org_id=-1, owner_id=email).first()
-            need_publish_redis = False
-            if api_calls_limit < 0 or api_calls_count < api_calls_limit:
-                if exceed_obj:
-                    exceed_obj.delete()
-                    need_publish_redis = True
-            else:
-                if not exceed_obj:
-                    ExceedAPIQuotaTeams.objects.create(org_id=-1, owner_id=email, api_limit=api_calls_limit)
-                    need_publish_redis = True
-            if need_publish_redis:
-                publish_api_gateway_calls_changed()
 
         return Response(user_info)
 
@@ -927,7 +855,7 @@ class AdminUserResetPassword(APIView):
         if len(new_password) > 4096:
             error_msg = 'Password is too long (maximum is 4096 characters).'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         user.set_password(new_password)
         user.save()
 
@@ -1092,14 +1020,16 @@ class AdminAdminUsers(APIView):
         """List all admins from database and ldap imported
         """
         try:
-            admin_users = ccnet_api.get_superusers()
+            # admin_users = ccnet_api.get_superusers()
+            # EmailUser
+            admin_users = User.objects.get_superusers()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         admin_users_info = []
-        rows_count_dict = get_users_rows_count([user.email for user in admin_users])
+        # rows_count_dict = get_users_rows_count([user.email for user in admin_users])
         for user in admin_users:
             user_info = {}
             profile = Profile.objects.get_profile_by_user(user.email)
@@ -1110,15 +1040,16 @@ class AdminAdminUsers(APIView):
 
             user_info['is_staff'] = user.is_staff
             user_info['is_active'] = user.is_active
-            user_info['storage_usage'] = Workspaces.objects.get_owner_total_storage(owner=user.email)
-            user_info['rows_count'] = rows_count_dict.get(user.email, 0)
+            # user_info['storage_usage'] = Workspaces.objects.get_owner_total_storage(owner=user.email)
+            # user_info['rows_count'] = rows_count_dict.get(user.email, 0)
 
-            orgs = ccnet_api.get_orgs_by_user(user.email)
+            # orgs = ccnet_api.get_orgs_by_user(user.email)
+            org = Organization.objects.get_org_by_username(user.email)
             try:
-                if orgs:
-                    org_id = orgs[0].org_id
+                if org:
+                    org_id = org.org_id
                     user_info['org_id'] = org_id
-                    user_info['org_name'] = orgs[0].org_name
+                    user_info['org_name'] = org.org_name
             except Exception as e:
                 logger.error(e)
 

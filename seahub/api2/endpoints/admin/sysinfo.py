@@ -7,19 +7,13 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from seaserv import ccnet_api
-
 from seahub import settings
 from seahub.utils import is_pro_version
 from seahub.utils.licenseparse import parse_license
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.endpoints.admin.utils import get_dtable_server_info, \
-    get_base_archives_stats
 from seahub.api2.utils import api_error
-from seahub.dtable.models import DTables
-from seahub.utils.utils_etcd import get_servers_info
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -115,29 +109,6 @@ class SysInfo(APIView):
             logger.error(e)
             dtables_count = 0
 
-        try:
-            base_stats = get_base_archives_stats()
-            archived_base_count = base_stats.get('number_of_bases', 0)
-            archived_row_count = base_stats.get('total_rows', 0)
-            archived_base_storage = base_stats.get('total_storage', 0)
-        except Exception as e:
-            logger.error(e)
-            archived_base_count = 0
-            archived_row_count = 0
-            archived_base_storage = 0
-
-        try:
-            dtable_server_info = get_dtable_server_info(request.user.username)
-        except Exception as e:
-            logger.error(e)
-            dtable_server_info = []
-
-        try:
-            dtable_server_info_in_etcd = get_servers_info()
-        except Exception as e:
-            logger.error(e)
-            dtable_server_info_in_etcd = []
-
         info = {
             'version': SEATABLE_VERSION,
             'users_count': active_users + inactive_users,
@@ -152,11 +123,6 @@ class SysInfo(APIView):
             'license_mode': license_dict.get('Mode', ''),
             'license_maxusers': max_users,
             'license_to': license_dict.get('Name', ''),
-            'dtable_server_info': dtable_server_info,
-            'dtable_server_info_in_etcd': dtable_server_info_in_etcd,
-            'archived_base_count': archived_base_count,
-            'archived_row_count': archived_row_count,
-            'archived_base_storage': archived_base_storage
         }
 
         return Response(info)

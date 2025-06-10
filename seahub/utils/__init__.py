@@ -11,35 +11,28 @@ import hashlib
 import tempfile
 import locale
 import configparser
-import mimetypes
-import contextlib
 import unicodedata
 from datetime import datetime
-from urllib.parse import urlparse, urljoin
-import json
+from urllib.parse import urlparse
 
 from constance import config
-import seaserv
 from django.utils import translation
-from seaserv import seafile_api
 
 from django.urls import reverse
 from django.core.mail import EmailMessage
 from django.shortcuts import render
 from django.template import Context, loader
 from django.utils.translation import gettext as _
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotModified
+from django.http import HttpResponseRedirect
 from urllib.parse import quote
 from django.utils.html import escape
-from django.views.static import serve as django_static_serve
 from rest_framework.authentication import SessionAuthentication
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.api2.models import Token, TokenV2
 import seahub.settings
-from seahub.settings import SITE_NAME, MEDIA_URL, LOGO_PATH, \
-        MEDIA_ROOT, CUSTOM_LOGO_PATH, HAS_OFFICE_CONVERTER, \
-        OFFICE_CONVERTOR_ROOT, ENABLE_WORKFLOW
+from seahub.settings import MEDIA_URL, LOGO_PATH, \
+        MEDIA_ROOT, CUSTOM_LOGO_PATH, ENABLE_WORKFLOW
 try:
     from seahub.settings import DTABLE_EVENTS_CONFIG_FILE
 except ImportError:
@@ -63,197 +56,6 @@ except ImportError:
     CHECK_SHARE_LINK_TRAFFIC = False
 
 logger = logging.getLogger(__name__)
-
-if DTABLE_EVENTS_CONFIG_FILE:
-    try:
-        import dtable_events
-        DTABLE_EVENTS_ENABLED = True
-    except ImportError:
-        dtable_events = None
-        DTABLE_EVENTS_ENABLED = False
-
-    try:
-        events_config = configparser.ConfigParser()
-        events_config.read(DTABLE_EVENTS_CONFIG_FILE)
-        events_db_session = dtable_events.init_db_session_class(events_config)
-        events_redis_connection = dtable_events.RedisClient(events_config, socket_timeout=30).connection
-        update_page_design_static_image = dtable_events.update_page_design_static_image
-        rename_universal_app_static_assets_dir = dtable_events.rename_universal_app_static_assets_dir
-        update_universal_app_custom_page_static_image = dtable_events.update_universal_app_custom_page_static_image
-        update_universal_app_single_record_page_static_assets = dtable_events.update_universal_app_single_record_page_static_assets
-    except (configparser.NoOptionError, configparser.NoSectionError) as e:
-        logger.exception('DTable events config error: %s' % e)
-
-    def publish_count_rows(dtable_uuids):
-        """
-        publish count-rows message to make dtable-event count rows of user/org who own the dtables
-        """
-        try:
-            events_redis_connection.publish('count-rows', json.dumps(dtable_uuids))
-        except Exception as err:
-            logger.error('Publish count-rows msg error: %s' % err)
-        finally:
-            events_redis_connection.close()
-
-    def publish_workflow_actions(task_id, node_id):
-        """
-        publish workflow-actions message to make dtable-event do workflow node actions
-        """
-        try:
-            events_redis_connection.publish('workflow-actions', json.dumps({
-                'task_id': task_id,
-                'node_id': node_id
-            }))
-        except Exception as err:
-            logger.error('Publish workflow-actions msg error: %s' % err)
-        finally:
-            events_redis_connection.close()
-
-    def publish_api_gateway_calls_changed():
-        try:
-            events_redis_connection.publish('exceed_api_quota', json.dumps({
-                'changed': True
-            }))
-        except Exception as err:
-            logger.error('Publish exceed_api_quota msg error: %s' % err)
-        finally:
-            events_redis_connection.close()
-
-    def get_table_activities(uuid_list, days, start, count, to_tz):
-        session = events_db_session()
-        try:
-            activities = dtable_events.get_table_activities(session, uuid_list, days, start, count, to_tz)
-        finally:
-            session.close()
-        return activities
-
-    def get_table_activities_detail(dtable_uuid, start_time, end_time, start, count, to_tz):
-        session = events_db_session()
-        try:
-            activities_detail = dtable_events.get_activities_detail(
-                session, dtable_uuid, start_time, end_time, start, count, to_tz)
-        finally:
-            session.close()
-        return activities_detail
-
-    def get_user_activity_stats_by_day(start, end, offset):
-        session = events_db_session()
-        try:
-            res = dtable_events.get_user_activity_stats_by_day(session, start, end, offset)
-        finally:
-            session.close()
-        return res
-
-    def get_daily_active_users(date_day, start, count):
-        session = events_db_session()
-        try:
-            active_users, total_count = dtable_events.get_daily_active_users(session, date_day, start, count)
-        finally:
-            session.close()
-        return active_users, total_count
-
-    def get_email_sending_logs(start, end):
-        session = events_db_session()
-        try:
-            logs, total_count = dtable_events.get_email_sending_logs(session, start, end)
-        finally:
-            session.close()
-        return logs, total_count
-
-    def get_insert_update_rows(dtable_col_name_to_type, excel_rows, dtable_rows, key_columns):
-        insert_rows, update_rows, excel_select_column_options = dtable_events.get_insert_update_rows(dtable_col_name_to_type, excel_rows, dtable_rows, key_columns)
-        return insert_rows, update_rows, excel_select_column_options
-
-    def convert_db_rows(metadata, results):
-        converted_rows = dtable_events.convert_db_rows(metadata, results)
-        return converted_rows
-
-    def get_virus_files(repo_id=None, has_handled=None, start=-1, limit=-1):
-        session = events_db_session()
-        try:
-            r = dtable_events.get_virus_files(session, repo_id, has_handled, start, limit)
-        finally:
-            session.close()
-        return r if r else []
-
-    def delete_virus_file(vid):
-        session = events_db_session()
-        try:
-            return True if dtable_events.delete_virus_file(session, vid) == 0 else False
-        finally:
-            session.close()
-
-    def operate_virus_file(vid, ignore):
-        session = events_db_session()
-        try:
-            return True if dtable_events.operate_virus_file(session, vid, ignore) == 0 else False
-        finally:
-            session.close()
-
-    def get_virus_file_by_vid(vid):
-        session = events_db_session()
-        try:
-            return dtable_events.get_virus_file_by_vid(session, vid)
-        finally:
-            session.close()
-
-else:
-    DTABLE_EVENTS_ENABLED = False
-    events_redis_connection = None
-
-    def get_user_activity_stats_by_day():
-        pass
-
-    def get_table_activities():
-        pass
-
-    def get_table_activities_detail():
-        pass
-
-    def get_daily_active_users():
-        pass
-
-    def publish_count_rows():
-        pass
-
-    def publish_workflow_actions():
-        pass
-
-    def publish_api_gateway_calls_changed():
-        pass
-
-    def get_email_sending_logs():
-        pass
-
-    def get_insert_update_rows():
-        pass
-
-    def update_page_design_static_image():
-        pass
-
-    def rename_universal_app_static_assets_dir():
-        pass
-
-    def update_universal_app_custom_page_static_image():
-        pass
-
-    def update_universal_app_single_record_page_static_assets():
-        pass
-
-    def convert_db_rows():
-        pass
-
-    def get_virus_files(repo_id=None, has_handled=None, start=-1, limit=-1):
-        pass
-
-    def delete_virus_file(vid):
-        pass
-
-    def operate_virus_file(vid, ignore):
-        pass
-
-    def get_virus_file_by_vid(vid):
-        pass
 
 
 def is_pro_version():
@@ -282,116 +84,6 @@ def is_cluster_mode():
 
 CLUSTER_MODE = is_cluster_mode()
 
-OFFICE_PREVIEW_MAX_SIZE = 2 * 1024 * 1024
-if HAS_OFFICE_CONVERTER:
-
-    import time
-    import requests
-    import jwt
-
-    def add_office_convert_task(file_id, doctype, raw_path):
-        payload = {'exp': int(time.time()) + 300, }
-        token = jwt.encode(payload, seahub.settings.SECRET_KEY, algorithm='HS256')
-        headers = {"Authorization": "Token %s" % token}
-        params = {'file_id': file_id, 'doctype': doctype, 'raw_path': raw_path}
-        url = urljoin(OFFICE_CONVERTOR_ROOT, '/add-task')
-        requests.get(url, params, headers=headers)
-        return {'exists': False}
-
-    def query_office_convert_status(file_id, doctype):
-        payload = {'exp': int(time.time()) + 300, }
-        token = jwt.encode(payload, seahub.settings.SECRET_KEY, algorithm='HS256')
-        headers = {"Authorization": "Token %s" % token}
-        params = {'file_id': file_id, 'doctype': doctype}
-        url = urljoin(OFFICE_CONVERTOR_ROOT, '/query-status')
-        d = requests.get(url, params, headers=headers)
-        d = d.json()
-        ret = {}
-        if 'error' in d:
-            ret['error'] = d['error']
-            ret['status'] = 'ERROR'
-        else:
-            ret['success'] = True
-            ret['status'] = d['status']
-        return ret
-
-    def get_office_converted_page_by_http(path, static_filename, file_id):
-        url = urljoin(OFFICE_CONVERTOR_ROOT, '/get-converted-page')
-        payload = {'exp': int(time.time()) + 300, }
-        token = jwt.encode(payload, seahub.settings.SECRET_KEY, algorithm='HS256')
-        headers = {"Authorization": "Token %s" % token}
-        params = {'static_filename': static_filename, 'file_id': file_id}
-        try:
-            ret = requests.get(url, params, headers=headers)
-        except urllib.error.HTTPError as e:
-            raise Exception(e)
-
-        content_type = ret.headers.get('content-type', None)
-        if content_type is None:
-            dummy, ext = os.path.splitext(os.path.basename(path))
-            content_type = mimetypes.types_map.get(ext, 'application/octet-stream')
-
-        resp = HttpResponse(ret, content_type=content_type)
-        if 'last-modified' in ret.headers:
-            resp['Last-Modified'] = ret.headers.get('last-modified')
-
-        return resp
-
-    def prepare_converted_html(raw_path, obj_id, doctype, ret_dict):
-        try:
-            add_office_convert_task(obj_id, doctype, raw_path)
-        except Exception as e:
-            logger.error('failed to add_office_convert_task: %s' % e)
-            return _('Internal Server Error')
-        return None
-
-
-else:
-    def add_office_convert_task(file_id, doctype, raw_path):
-        pass
-
-    def query_office_convert_status(file_id, doctype):
-        pass
-
-    def get_office_converted_page_by_http(path, static_filename, file_id):
-        pass
-
-    def prepare_converted_html(raw_path, obj_id, doctype, ret_dict):
-        pass
-
-
-from seahub.utils.file_types import *
-
-EMPTY_SHA1 = '0000000000000000000000000000000000000000'
-MAX_INT = 2147483647
-
-PREVIEW_FILEEXT = {
-    IMAGE: ('gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'psd', 'webp', 'svg'),
-    DOCUMENT: ('doc', 'docx', 'ppt', 'pptx', 'odt', 'fodt', 'odp', 'fodp', 'odg', 'xlsx', 'ods'),
-    SPREADSHEET: ('xls', 'xlsx', 'ods', 'fods'),
-    DRAW: ('draw',),
-    PDF: ('pdf', 'ai'),
-    MARKDOWN: ('markdown', 'md'),
-    VIDEO: ('mp4', 'ogv', 'webm', 'mov'),
-    AUDIO: ('mp3', 'oga', 'ogg'),
-    #'3D': ('stl', 'obj'),
-    XMIND: ('xmind',),
-    CDOC: ('cdoc',),
-    SEADOC: ('sdoc',),
-}
-
-def gen_fileext_type_map():
-    """
-    Generate previewed file extension and file type relation map.
-
-    """
-    d = {}
-    for filetype in list(PREVIEW_FILEEXT.keys()):
-        for fileext in PREVIEW_FILEEXT.get(filetype):
-            d[fileext] = filetype
-
-    return d
-FILEEXT_TYPE_MAP = gen_fileext_type_map()
 
 def render_permission_error(request, msg=None, extra_ctx=None):
     """
@@ -478,50 +170,6 @@ def normalize_cache_key(value, prefix=None, token=None, max_length=200):
     key = key if token is None else key + '_' + token
     return quote(key)[:max_length]
 
-def get_repo_last_modify(repo):
-    """ Get last modification time for a repo.
-
-    If head commit id of a repo is provided, we use that commit as last commit,
-    otherwise falls back to getting last commit of a repo which is time
-    consuming.
-    """
-    if repo.head_cmmt_id is not None:
-        last_cmmt = seaserv.get_commit(repo.id, repo.version, repo.head_cmmt_id)
-    else:
-        logger = logging.getLogger(__name__)
-        logger.info('[repo %s] head_cmmt_id is missing.' % repo.id)
-        last_cmmt = seafile_api.get_commit_list(repo.id, 0, 1)[0]
-    return last_cmmt.ctime if last_cmmt else 0
-
-def calculate_repos_last_modify(repo_list):
-    """ Get last modification time for repos.
-    """
-    for repo in repo_list:
-        repo.latest_modify = get_repo_last_modify(repo)
-
-def normalize_dir_path(path):
-    """Add '/' at the end of directory path if necessary.
-
-    And make sure path starts with '/'
-    """
-
-    path = path.strip('/')
-    if path == '':
-        return '/'
-    else:
-        return '/' + path + '/'
-
-def normalize_file_path(path):
-    """Remove '/' at the end of file path if necessary.
-
-    And make sure path starts with '/'
-    """
-
-    path = path.strip('/')
-    if path == '':
-        return ''
-    else:
-        return '/' + path
 
 # modified from django1.5:/core/validators, and remove the support for single
 # quote in email address
@@ -542,11 +190,6 @@ def is_valid_username(username):
     """
     return is_valid_email(username)
 
-def is_valid_dirent_name(name):
-    """Check whether repo/dir/file name is valid.
-    """
-    # `repo_id` parameter is not used in seafile api
-    return seafile_api.is_valid_filename('fake_repo_id', name)
 
 def is_ldap_user(user):
     """Check whether user is a LDAP user.
@@ -580,56 +223,36 @@ def get_no_duplicate_obj_name(obj_name, exist_obj_names):
             else:
                 i += 1
 
-def check_filename_with_rename(repo_id, parent_dir, obj_name):
-    cmmts = seafile_api.get_commit_list(repo_id, 0, 1)
-    latest_commit = cmmts[0] if cmmts else None
-    if not latest_commit:
-        return ''
-    # TODO: what if parrent_dir does not exist?
-    dirents = seafile_api.list_dir_by_commit_and_path(repo_id,
-            latest_commit.id, parent_dir)
+from seahub.utils.file_types import *
 
-    exist_obj_names = [dirent.obj_name for dirent in dirents]
-    return get_no_duplicate_obj_name(obj_name, exist_obj_names)
+PREVIEW_FILEEXT = {
+    IMAGE: ('gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'psd', 'webp', 'svg'),
+    DOCUMENT: ('doc', 'docx', 'ppt', 'pptx', 'odt', 'fodt', 'odp', 'fodp', 'odg', 'xlsx', 'ods'),
+    SPREADSHEET: ('xls', 'xlsx', 'ods', 'fods'),
+    DRAW: ('draw',),
+    PDF: ('pdf', 'ai'),
+    MARKDOWN: ('markdown', 'md'),
+    VIDEO: ('mp4', 'ogv', 'webm', 'mov'),
+    AUDIO: ('mp3', 'oga', 'ogg'),
+    #'3D': ('stl', 'obj'),
+    XMIND: ('xmind',),
+    CDOC: ('cdoc',),
+    SEADOC: ('sdoc',),
+}
 
-def get_user_repos(username, org_id=None):
+def gen_fileext_type_map():
     """
-    Get all repos that user can access, including owns, shared, public, and
-    repo in groups.
-    If ``org_id`` is not None, get org repos that user can access.
+    Generate previewed file extension and file type relation map.
+
     """
-    if org_id is None:
-        owned_repos = seafile_api.get_owned_repo_list(username)
-        shared_repos = seafile_api.get_share_in_repo_list(username, -1, -1)
-        groups_repos = seafile_api.get_group_repos_by_user(username)
-        if CLOUD_MODE:
-            public_repos = []
-        else:
-            public_repos = seafile_api.get_inner_pub_repo_list()
+    d = {}
+    for filetype in list(PREVIEW_FILEEXT.keys()):
+        for fileext in PREVIEW_FILEEXT.get(filetype):
+            d[fileext] = filetype
 
-        for r in shared_repos + public_repos:
-            # collumn names in shared_repo struct are not same as owned or group
-            # repos.
-            r.id = r.repo_id
-            r.name = r.repo_name
-            r.last_modify = r.last_modified
-    else:
-        owned_repos = seafile_api.get_org_owned_repo_list(org_id,
-                username)
-        shared_repos = seafile_api.get_org_share_in_repo_list(org_id,
-                username, -1, -1)
-        groups_repos = seafile_api.get_org_group_repos_by_user(username,
-                org_id)
-        public_repos = seaserv.seafserv_threaded_rpc.list_org_inner_pub_repos(org_id)
+    return d
 
-        for r in shared_repos + groups_repos + public_repos:
-            # collumn names in shared_repo struct are not same as owned
-            # repos.
-            r.id = r.repo_id
-            r.name = r.repo_name
-            r.last_modify = r.last_modified
-
-    return (owned_repos, shared_repos, groups_repos, public_repos)
+FILEEXT_TYPE_MAP = gen_fileext_type_map()
 
 def get_conf_text_ext():
     """
@@ -639,41 +262,6 @@ def get_conf_text_ext():
         text_ext = getattr(config, 'TEXT_PREVIEW_EXT').split(',')
         return [x.strip() for x in text_ext]
     return []
-
-def get_file_type_and_ext(filename):
-    """
-    Return file type and extension if the file can be previewd online,
-    otherwise, return unknown type.
-    """
-    fileExt = os.path.splitext(filename)[1][1:].lower()
-    if fileExt in get_conf_text_ext():
-        return (TEXT, fileExt)
-
-    filetype = FILEEXT_TYPE_MAP.get(fileExt)
-    if filetype:
-        return (filetype, fileExt)
-    else:
-        return ('Unknown', fileExt)
-
-def is_image_asset_type(filename):
-    return get_file_type_and_ext(filename)[0] == IMAGE
-
-def get_file_revision_id_size(repo_id, commit_id, path):
-    """Given a commit and a file path in that commit, return the seafile id
-    and size of the file blob
-
-    """
-    repo = seafile_api.get_repo(repo_id)
-    dirname  = os.path.dirname(path)
-    filename = os.path.basename(path)
-    seafdir = seafile_api.list_dir_by_commit_and_path(repo_id, commit_id, dirname)
-    for dirent in seafdir:
-        if dirent.obj_name == filename:
-            file_size = seafile_api.get_file_size(repo.store_id, repo.version,
-                                                  dirent.obj_id)
-            return dirent.obj_id, file_size
-
-    return None, None
 
 def new_merge_with_no_conflict(commit):
     """Check whether a commit is a new merge, and no conflict.
@@ -687,82 +275,6 @@ def new_merge_with_no_conflict(commit):
     else:
         return False
 
-def get_commit_before_new_merge(commit):
-    """Traverse parents of ``commit``, and get a commit which is not a new merge.
-
-    Pre-condition: ``commit`` must be a new merge and not conflict.
-
-    Arguments:
-    - `commit`:
-    """
-    assert new_merge_with_no_conflict(commit) is True
-
-    while(new_merge_with_no_conflict(commit)):
-        p1 = seaserv.get_commit(commit.repo_id, commit.version, commit.parent_id)
-        p2 = seaserv.get_commit(commit.repo_id, commit.version, commit.second_parent_id)
-        commit = p1 if p1.ctime > p2.ctime else p2
-
-    assert new_merge_with_no_conflict(commit) is False
-
-    return commit
-
-def get_inner_dtable_server_url():
-    """ only for api
-    """
-    from seahub.settings import ENABLE_DTABLE_SERVER_CLUSTER, DTABLE_PROXY_SERVER_URL, \
-        USE_INNER_DTABLE_SERVER, INNER_DTABLE_SERVER_URL, DTABLE_SERVER_URL
-
-    if ENABLE_DTABLE_SERVER_CLUSTER:
-        return DTABLE_PROXY_SERVER_URL
-    elif USE_INNER_DTABLE_SERVER:
-        return INNER_DTABLE_SERVER_URL
-    else:
-        return DTABLE_SERVER_URL
-
-def gen_inner_file_get_url(token, filename):
-    """Generate inner fileserver file url.
-
-    If ``ENABLE_INNER_FILESERVER`` set to False(defaults to True), will
-    returns outer fileserver file url.
-
-    Arguments:
-    - `token`:
-    - `filename`:
-
-    Returns:
-    	e.g., http://127.0.0.1:<port>/files/<token>/<filename>
-    """
-    if ENABLE_INNER_FILESERVER:
-        return '%s/files/%s/%s' % (get_inner_fileserver_root(), token,
-                                   quote(filename))
-    else:
-        return gen_file_get_url(token, filename)
-
-def gen_inner_file_upload_url(op, token):
-    """Generate inner fileserver upload url.
-
-    If ``ENABLE_INNER_FILESERVER`` set to False(defaults to True), will
-    returns outer fileserver file url.
-
-    Arguments:
-    - `op`:
-    - `token`:
-
-    Returns:
-        e.g., http://127.0.0.1:<port>/<op>/<token>
-        http://127.0.0.1:8082/update-api/80c69afa-9438-4ee6-a297-a24fadb10750
-    """
-    if ENABLE_INNER_FILESERVER:
-        return '%s/%s/%s' % (get_inner_fileserver_root(), op, token)
-    else:
-        return gen_file_upload_url(token, op)
-
-def get_max_upload_file_size():
-    """Get max upload file size from config file, defaults to no limit.
-
-    Returns ``None`` if this value is not set.
-    """
-    return seaserv.MAX_UPLOAD_FILE_SIZE
 
 def gen_block_get_url(token, blkid):
     """
@@ -794,9 +306,6 @@ def gen_dir_zip_download_url(token):
     """
     return '%s/zip/%s' % (get_fileserver_root(), token)
 
-def get_ccnet_server_addr_port():
-    """get ccnet server host and port"""
-    return seaserv.CCNET_SERVER_ADDR, seaserv.CCNET_SERVER_PORT
 
 def string2list(string):
     """
@@ -835,11 +344,6 @@ def get_service_url():
     """Get service url from seaserv.
     """
     return seahub.settings.DTABLE_WEB_SERVICE_URL
-
-def get_server_id():
-    """Get server id from seaserv.
-    """
-    return getattr(seaserv, 'SERVER_ID', '-')
 
 def get_site_scheme_and_netloc():
     """Return a string contains site scheme and network location part from
@@ -930,15 +434,6 @@ def show_delete_days(request):
         days = 7
 
     return days
-
-def is_textual_file(file_type):
-    """
-    Check whether a file type is a textual file.
-    """
-    if file_type == TEXT or file_type == MARKDOWN:
-        return True
-    else:
-        return False
 
 def redirect_to_login(request):
     from django.conf import settings
@@ -1068,52 +563,16 @@ def clear_token(username):
     '''
     Token.objects.filter(user = username).delete()
     TokenV2.objects.filter(user = username).delete()
-    seafile_api.delete_repo_tokens_by_email(username)
 
 
 def inactive_user(username):
     # del tokens and personal dtable api tokens (not group)
     from seahub.utils import clear_token
-    from seahub.dtable.models import DTables, DTableAPIToken
     try:
         clear_token(username)
     except Exception as e:
         logger.error("Failed to delete tokens for user %s: %s." % (username, e))
-    try:
-        dtables = DTables.objects.get_personal_dtables_by_username(username)
-        DTableAPIToken.objects.filter(dtable__in=dtables).delete()
-    except Exception as e:
-        logger.error("Failed to delete api tokens for user %s: %s." % (username, e))
 
-
-def send_perm_audit_msg(etype, from_user, to, repo_id, path, perm):
-    """Send repo permission audit msg.
-
-    Arguments:
-    - `etype`: add/modify/delete-repo-perm
-    - `from_user`: email
-    - `to`: email or group_id or all(public)
-    - `repo_id`: origin repo id
-    - `path`: dir path
-    - `perm`: r or rw
-    """
-    msg = 'perm-change\t%s\t%s\t%s\t%s\t%s\t%s' % \
-        (etype, from_user, to, repo_id, path, perm)
-
-    try:
-        seafile_api.publish_event('seahub.audit', msg)
-    except Exception as e:
-        logger.error("Error when sending perm-audit-%s message: %s" %
-                     (etype, str(e)))
-
-def get_origin_repo_info(repo_id):
-    repo = seafile_api.get_repo(repo_id)
-    if repo.origin_repo_id is not None:
-        origin_repo_id = repo.origin_repo_id
-        origin_path = repo.origin_path
-        return (origin_repo_id, origin_path)
-
-    return (None, None)
 
 def within_time_range(d1, d2, maxdiff_seconds):
     '''Return true if two datetime.datetime object differs less than the given seconds'''
@@ -1133,6 +592,22 @@ def get_system_admins():
 
     return admins
 
+
+def get_file_type_and_ext(filename):
+    """
+    Return file type and extension if the file can be previewd online,
+    otherwise, return unknown type.
+    """
+    fileExt = os.path.splitext(filename)[1][1:].lower()
+    if fileExt in get_conf_text_ext():
+        return (TEXT, fileExt)
+
+    filetype = FILEEXT_TYPE_MAP.get(fileExt)
+    if filetype:
+        return (filetype, fileExt)
+    else:
+        return ('Unknown', fileExt)
+
 def is_windows_operating_system(request):
     if 'HTTP_USER_AGENT' not in request.META:
         return False
@@ -1142,23 +617,6 @@ def is_windows_operating_system(request):
     else:
         return False
 
-def get_folder_permission_recursively(username, repo_id, path):
-    """ Get folder permission recursively
-
-    Ger permission from the innermost layer of subdirectories to root
-    directory.
-    """
-    if not path or not isinstance(path, str):
-        raise Exception('path invalid.')
-
-    if not seafile_api.get_dir_id_by_path(repo_id, path):
-       # get current folder's parent directory
-        path = os.path.dirname(path.rstrip('/'))
-        return get_folder_permission_recursively(
-                username, repo_id, path)
-    else:
-        return seafile_api.check_permission_by_path(
-                repo_id, path, username)
 
 def is_valid_org_id(org_id):
     if org_id and org_id > 0:

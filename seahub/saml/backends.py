@@ -1,12 +1,10 @@
 from django.conf import settings
 
-from seaserv import ccnet_api
 
 from seahub.auth.backends import RemoteUserBackend
 from seahub.base.accounts import User
 from seahub.registration.models import notify_admins_on_register_complete,\
      notify_admins_on_activate_request
-from seahub.auth.utils import get_virtual_id_by_email
 
 
 class SAMLRemoteUserBackend(RemoteUserBackend):

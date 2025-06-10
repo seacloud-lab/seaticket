@@ -12,8 +12,6 @@ from urllib.parse import quote
 from django.utils.translation import gettext as _
 from django.shortcuts import render
 
-from seaserv import ccnet_api
-
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import login as auth_login
 from seahub.utils import render_error, is_valid_email

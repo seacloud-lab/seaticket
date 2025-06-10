@@ -11,8 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import gettext as _
 from django.urls import reverse
 
-from seaserv import ccnet_api
-
 from seahub import auth, settings
 from seahub.organizations.decorators import org_staff_required, org_user_required
 from seahub.auth.decorators import login_required
@@ -162,7 +160,7 @@ def receive_suite_view(request):
             order_id = xml_tree.find('OrderId').text
             logger.info('org work weixin refund PaidCorpId: ' + paid_corp_id + ', OrderId: ' + order_id)
             org_work_weixin_pay(info_type, order_id, paid_corp_id)
-      
+
         return HttpResponse(SUCCESS_MSG)
 
     else:
@@ -301,7 +299,7 @@ def org_work_weixin_oauth_callback(request):
     logger.info('user login callback state: %s, method: %s, is_mobile: %s, auth_code: %s' % (
         state, request.method, is_mobile, code))
 
-    # get api user 
+    # get api user
     # work weixin client
     if 'micromessenger' in user_agent:
         suite_access_token = get_suite_access_token()

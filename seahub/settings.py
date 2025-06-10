@@ -105,12 +105,6 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICI18N_ROOT = '%s/static/scripts' % PROJECT_ROOT
 STATICI18N_OUTPUT_DIR = 'i18n'
 
-# List of finder classes that know how to find static files in
-# various locations.
-ENABLE_DTABLE_SERVER_CLUSTER = False
-ETCD_SERVER_HOST = ""
-ETCD_SERVER_HOST_LIST = []
-DTABLE_PROXY_SERVER_URL = ''
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -133,7 +127,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'seahub.auth.middleware.AuthenticationMiddleware',
     'seahub.base.middleware.BaseMiddleware',
-    'seahub.base.middleware.InfobarMiddleware',
     'seahub.password_session.middleware.CheckPasswordHash',
     'seahub.base.middleware.ForcePasswdChangeMiddleware',
     'seahub.two_factor.middleware.OTPMiddleware',
@@ -215,20 +208,12 @@ INSTALLED_APPS = [
 
     'seahub.api2',
     'seahub.avatar',
-    #'seahub.contacts',
-    'seahub.subscription',
     'seahub.invitations',
-    #'seahub.wiki',
     'seahub.group',
-    'seahub.notifications',
-    'seahub.onlyoffice',
     'seahub.options',
     'seahub.profile',
-    #'seahub.thumbnail',
     'seahub.password_session',
     'seahub.admin_log',
-    'seahub.audit_log',
-    #'seahub.tags',
     'seahub.two_factor',
     'seahub.role_permissions',
     'seahub.work_weixin',
@@ -240,11 +225,6 @@ INSTALLED_APPS = [
     'seahub.org_dingtalk',
     'seahub.registration',
     'seahub.sysadmin_extra',
-    'seahub.dtable_apps.workflow',
-    'seahub.dtable_apps.universal_app',
-    'seahub.ai',
-    'seahub.department_v2',
-    'seahub.seadoc'
 ]
 
 # Enable or disable multiple storage backends.
@@ -638,7 +618,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'dtable_web.log'),
+            'filename': os.path.join(LOG_DIR, 'seaqa_web.log'),
             'formatter': 'file'
         },
     },
@@ -714,9 +694,6 @@ ENABLE_USER_SET_NAME = True
 
 ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER = False
 
-# office file template root
-OFFICE_TEMPLATE_ROOT = os.path.join(MEDIA_ROOT, 'office-template')
-
 ####################
 # Guest Invite     #
 ####################
@@ -748,15 +725,6 @@ SEND_EMAIL_ON_ORG_ADD_NEW_USER = True  # Whether to send email when add new user
 SEND_EMAIL_ON_ACTIVATING_USER = True  # Whether to send email when a system staff activating a member
 SEND_EMAIL_ON_ACTIVATING_ORG_USER = False # Whether to send email when org admin activating a member
 
-############################################
-# File download type through external link #
-############################################
-
-ACCESS_FILE_TYPES_THROUGH_EXTERNAL_LINK = ['Image', 'Document', 'PDF', 'SpreadSheet']
-
-EXTERNAL_LINK_SUPPORT_DOWNLOAD_TYPE =  ['TEXT', 'IMAGE', 'DOCUMENT', 'SVG' , 'PDF' , 'MARKDOWN']
-
-EXTERNAL_LINK_SUPPORT_DOWNLOAD_SIZE = 50000000
 
 ##########################
 # Settings for frontend  #
@@ -777,30 +745,8 @@ DTABLE_PRIVATE_KEY = ''
 
 DTABLE_WEB_SERVICE_URL = ''
 
-ENABLE_SEATABLE_AI = False
-SEATABLE_AI_SERVER_URL = ''
-ENABLED_ASSISTANT_TYPES = ['document_and_receipt_recognition_assistant', 'issue_manage_assistant']
-
 AI_PRICES = {}
 BAIDU_OCR_TOKENS = {}
-
-DTABLE_DB_URL = ''
-INNER_DTABLE_DB_URL = 'http://127.0.0.1:7777'
-
-DTABLE_STORAGE_SERVER_URL = 'http://127.0.0.1:6666'
-NEW_DTABLE_IN_STORAGE_SERVER = False
-
-DTABLE_BAIDU_MAP_KEY = ''
-
-DTABLE_MINE_MAP_KEY = ''
-# settings for local deployment of mineMap
-DTABLE_MINE_MAP_DOMAIN_URL = ''
-DTABLE_MINE_MAP_DATA_DOMAIN_URL = ''
-DTABLE_MINE_MAP_SERVER_DOMAIN_URL = ''
-DTABLE_MINE_MAP_SPRITE_URL = ''
-DTABLE_MINE_MAP_SERVICE_URL = ''
-
-DTABLE_GOOGLE_MAP_KEY = ''
 
 SSO_SECRET_KEY = ''
 
@@ -829,33 +775,10 @@ ENABLE_SMS_LOGIN = False
 SEND_SMS_ATTEMPT_LIMIT = 5
 SEND_SMS_ATTEMPT_TIMEOUT = 60 * 60  # 1h
 
-DTABLE_EVENTS_IO_SERVER_URL = 'http://127.0.0.1:6000'
-
-# enable show archiving rows
-ENABLE_ARCHIVING_ROWS = False
-
-# dtable enable email column
-DTABLE_ENABLE_EMAIL_COLUMN = True
-
 SEATABLE_MARKET_URL = ''
-
-DTABLE_EXPORT_MAX_SIZE = 100 # mb
-
-USE_INNER_FILESERVER_FOR_DTABLE_SERVER = True
-
-USE_INNER_DTABLE_SERVER = True
-
-# enable record user common operations
-AUDIT_LOGS_RECORD_USER_OPERATIONS = False
 
 # Opearation Log DB
 ENABLE_OPERATION_LOG_DB = False
-
-# Python Pipeline
-SEATABLE_FAAS_URL = os.environ.get('PYTHON_SCHEDULER_URL', 'http://python-scheduler')
-SEATABLE_FAAS_AUTH_TOKEN = os.environ.get('PYTHON_SCHEDULER_AUTH_TOKEN', '')
-
-EXPORT2EXCEL_DEFAULT_STRING = 'illegal character in excel'
 
 GROUP_MEMBER_LIMIT = 500
 
@@ -885,40 +808,6 @@ INIT_BASE_CONF = {
     'BASES': ['']
 }
 
-# whether load dtable via api-gateway
-LOAD_DTABLE_FROM_API_GATEWAY = True
-
-# whether proxy socket.io via api-gateway
-ENABLE_API_GATEWAY_PROXY_SOCKET = True
-
-########################
-# internal plugins     #
-########################
-
-INTERNAL_PLUGINS_CONFIG = [
-    {
-        'isInternal': 1,
-        'name': 'calendar',
-        'version': '5.0.9',
-        "display_type": "overlay",
-        'display_name': {
-            'de': '',
-            'en': 'Calendar',
-            'fr': '',
-            'zh-cn': '日历'
-        },
-        'description': {
-            'de': '',
-            'en': 'View your records in a calendar.',
-            'fr': '',
-            'zh-cn': '在日历中查看你的记录。'
-        },
-        'has_css': 1,
-        'has_icon': 1,
-        'has_card_image': 0
-    }
-]
-
 # PWA
 PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
 PWA_APP_NAME = 'SeaTable'
@@ -944,136 +833,21 @@ PWA_APP_ICONS_APPLE = [
 ]
 PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
-ADVANCED_PLUGINS = []
-
-########################
-# external apps     #
-########################
-DTABLE_APPS_CONFIG = [
-    {
-        "app_name": "universal-app",
-        "app_type": "universal-app",
-        "version": "5.3.90",
-        "display_name": {
-            "de": "Universelle App",
-            "en": "Universal App",
-            "fr": "Universal App",
-            "zh-cn": "通用应用"
-        },
-        "description": {
-            "de": "Erstellen Sie eine mehrseitige Anwendung mit Formularen, Tabellen, Galerien und anderen Elementen, die Sie in Ihre Webseite einbinden können",
-            "en": "Create a complex app by combining a variety of predefined page types (e.g. table, form, kanban, gallery).",
-            "fr": "Build your own specific application, better cooperate with your customers, suppliers or users.",
-            "zh-cn": "通过组合各种预定义的页面类型（例如表格、表单、看板、图库）创建一个复杂的应用程序。"
-        }
-    },
-    {
-        "app_name": "gallery",
-        "app_type": "gallery",
-        "version": "0.1.29",
-        "display_name": {
-            "de": "Galerie",
-            "en": "Gallery",
-            "fr": "Galerie",
-            "zh-cn": "图库"
-        },
-        "description": {
-            "de": "Zeigen Sie Ihre Datensätze in einer Galerie an.",
-            "en": "Share your image assets including meta-information publicly in a gallery.",
-            "fr": "Affichez vos enregistrements dans une galerie.",
-            "zh-cn": "在图库中公开分享你的图片文件，包括元信息。"
-        }
-    },
-    {
-        "app_name": "sql-query",
-        "app_type": "sql-query",
-        "version": "4.4.1",
-        "display_name": {
-            "de": "Datenabfrage",
-            "en": "Data query",
-            "fr": "requête de données",
-            "zh-cn": "数据查询"
-        },
-        "description": {
-            "de": "Erstellen Sie eine Datenabfrageanwendung, mit der Benutzer Datensätze über ein bestimmtes Feld abfragen können.",
-            "en": "Allow a public audience to query a base using predefined search and result parameters.",
-            "fr": "Créez une application de requête de données qui permet aux utilisateurs d'interroger des enregistrements via un certain champ.",
-            "zh-cn": "构建一个数据查询应用程序，允许用户通过某些字段查询记录。用户不需要登录即可使用。"
-        }
-    },
-    {
-        "app_name": "map-cn",
-        "app_type": "map-cn",
-        "version": "0.1.32",
-        "display_name": {
-            "de": "Karte",
-            "en": "Map",
-            "fr": "carte",
-            "zh-cn": "地图"
-        },
-        "description": {
-            "de": "Das Karten-Plugin kann Datensätze auf der Karte anzeigen",
-            "en": "Map plugin can display records on the map",
-            "fr": "Le plugin de carte peut afficher des enregistrements sur la carte",
-            "zh-cn": "地图app能把记录显示到地图上"
-        }
-    },
-    {
-        "app_name": "big-data-screen",
-        "app_type": "big-data-screen",
-        "version": "0.0.44",
-        "display_name": {
-            "de": "",
-            "en": "Statistics on big screen",
-            "fr": "",
-            "zh-cn": "数据大屏"
-        },
-        "description": {
-            "de": "Zeigen Sie statistische Diagramme auf dem großen Bildschirm an",
-            "en": "Show statistics on big screen",
-            "fr": "Affichez des graphiques statistiques sur grand écran",
-            "zh-cn": "在大屏展示统计图表"
-        }
-    }
-]
-
-
-ENABLED_EXTERNAL_APPS = [
-    "gallery",
-    "sql-query",
-    "universal-app",
-]
-
-UNIVERSAL_APP_SNAPSHOT_LIMITS = 30
-
-BIG_DATA_SCREENS_APP_SUPPORT_REFRESH = False
-
-##########################
-# Settings for seadoc    #
-##########################
-
-ENABLE_SEADOC = False
-SEADOC_SERVER_URL = 'http://127.0.0.1:7070'
-
-# For dtable query app
-DATA_SEARCH_MAX_QUERY_TIMES_PER_MINUTE = 120
-
-AUDIT_FILE_TYPES = ['md', 'pdf', 'docx', 'doc', 'xlsx', 'ppt', 'pptx', 'xls', 'csv', 'txt']
 
 # If False, the configuration will always be read from settings.py instead of from the database
 CONSTANCE_ENABLED = True
 
 d = os.path.dirname
-DTABLE_EVENTS_CONFIG_FILE = os.environ.get(
-    'DTABLE_EVENTS_CONFIG_FILE',
-    os.path.join(
-        d(d(d(d(os.path.abspath(__file__))))), 'conf', 'dtable-events.conf'
-    )
-)
-
-del d
-if not os.path.exists(DTABLE_EVENTS_CONFIG_FILE):
-    del DTABLE_EVENTS_CONFIG_FILE
+# DTABLE_EVENTS_CONFIG_FILE = os.environ.get(
+#     'DTABLE_EVENTS_CONFIG_FILE',
+#     os.path.join(
+#         d(d(d(d(os.path.abspath(__file__))))), 'conf', 'dtable-events.conf'
+#     )
+# )
+#
+# del d
+# if not os.path.exists(DTABLE_EVENTS_CONFIG_FILE):
+#     del DTABLE_EVENTS_CONFIG_FILE
 
 
 # custom navigation settings
@@ -1122,23 +896,19 @@ else:
 try:
     if os.path.exists(central_conf_dir):
         sys.path.insert(0, central_conf_dir)
-    import dtable_web_settings
+    import seaqa_web_settings
 except ImportError:
     pass
 else:
     INSTALLED_APPS.append('gunicorn')
 
-    load_local_settings(dtable_web_settings)
-    del dtable_web_settings
+    load_local_settings(seaqa_web_settings)
+    del seaqa_web_settings
 
 
 # config in env
 # jwt private key
 DTABLE_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or DTABLE_PRIVATE_KEY
-
-if os.environ.get('ENABLE_SEADOC', ''):
-    ENABLE_SEADOC = os.environ.get('ENABLE_SEADOC', '').lower() == 'true'
-SEADOC_SERVER_URL = os.environ.get('SEADOC_SERVER_URL', '') or SEADOC_SERVER_URL
 
 # For database conf., now only support mysql
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
@@ -1270,8 +1040,6 @@ CONSTANCE_CONFIG = {
 
     'ENABLE_BRANDING_CSS': (ENABLE_BRANDING_CSS, ''),
     'CUSTOM_CSS': ('', ''),
-
-    'DTABLE_EXPORT_MAX_SIZE': (DTABLE_EXPORT_MAX_SIZE, ''),
 }
 
 # if Seafile admin enable remote user authentication in conf/seahub_settings.py
@@ -1291,12 +1059,6 @@ if ENABLE_SAML or ENABLE_MULTI_SAML:
 
 if ENABLE_LDAP:
     AUTHENTICATION_BACKENDS += ('seahub.base.accounts.CustomLDAPBackend',)
-
-if DTABLE_BAIDU_MAP_KEY or DTABLE_MINE_MAP_KEY:
-    ENABLED_EXTERNAL_APPS.append('map-cn')
-
-if ENABLE_SEATABLE_AI and SEATABLE_AI_SERVER_URL:
-    ENABLED_EXTERNAL_APPS.append('search-across-bases')
 
 # set the log level
 if LOG_LEVEL in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:

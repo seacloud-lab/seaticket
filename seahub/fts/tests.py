@@ -9,11 +9,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from seahub.base.accounts import User
-from seaserv import remove_repo
-from seaserv import seafile_api
+
 
 class BaseTest(LiveServerTestCase):
-    
+
     def setUp(self):
         self.site_url = 'localhost:8000'
 
@@ -59,7 +58,7 @@ class BaseTest(LiveServerTestCase):
         self.browser.find_elements_by_link_text('Log out')[0].click()
         if remove_user:
             self._teardown_new_user(username)
-        
+
     def test_can_login_and_logout(self):
         self._setup_new_user(self.username, self.passwd)
         # A user goes to the login page, and inputs username and password
@@ -99,7 +98,7 @@ class BaseTest(LiveServerTestCase):
 
         intro_field = self.browser.find_element_by_name('intro')
         intro_field.send_keys('Hi, My name is test.')
-        
+
         self.browser.find_element_by_css_selector('.submit').click()
 
         body = self.browser.find_element_by_tag_name('body')
@@ -139,7 +138,7 @@ class BaseTest(LiveServerTestCase):
         # listed as a clickable link
         new_repo_links = self.browser.find_elements_by_link_text(name)
         self.assertNotEqual(len(new_repo_links), 0)
-        
+
     def test_can_create_new_library(self):
         self._login_user()
 
@@ -151,7 +150,7 @@ class BaseTest(LiveServerTestCase):
         self.assertIn('Upload', body.text)
         # He backs to Myhome page
         self.browser.find_elements_by_link_text('My Home')[0].click()
-        
+
         '''Create an encrypte repo'''
         passwd = '123'
         self._create_new_library('test_enc_repo', 'test repo desc', encrypt=True,
@@ -199,7 +198,7 @@ class BaseTest(LiveServerTestCase):
         # Clean first user's libraries
         self._login_user()
         self._logout_user()
-        
+
 
     def _create_new_folder(self, folder_name):
         # He clicks the New Directory button
@@ -207,7 +206,7 @@ class BaseTest(LiveServerTestCase):
         new_dir_input = self.browser.find_element_by_name('new_dir_name')
         new_dir_input.send_keys(folder_name)
         new_dir_input.send_keys(Keys.RETURN)
-        
+
     def test_folder_operations(self):
         self._login_user()
 
@@ -241,7 +240,7 @@ class BaseTest(LiveServerTestCase):
         # He sees seccessfull message
         body = self.browser.find_element_by_tag_name('body')
         self.assertIn('Successfully moving', body.text)
-        
+
         self._logout_user()
 
-        
+

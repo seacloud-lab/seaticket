@@ -8,7 +8,6 @@ from seahub.api2.permissions import IsOrgMember
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seaserv import ccnet_api
 
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email

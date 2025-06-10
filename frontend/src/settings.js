@@ -17,8 +17,6 @@ import UserConvertToTeam from './components/user-settings/user-convert-to-team';
 import BindPhone from './components/user-settings/bind-phone';
 import EmailNotice from './components/user-settings/email-notice';
 import Account from './components/common/account';
-import Notification from './components/common/notification';
-import MobileNotifications from './pages/dtable/mobile/mobile-notifications';
 import BindContactEmail from './components/user-settings/bind-contact-email';
 import LoggedInSessions from './components/user-settings/logged_in_sessions';
 import UserSetPassword from './components/dialog/user-password-widgets/user-set-password-dialog';
@@ -159,11 +157,6 @@ class Settings extends React.Component {
               <img src={logoUrl} height={logoHeight} width={logoWidth} title={siteTitle} alt="logo" />
             </a>
             <div className="common-toolbar">
-              {this.isMobile ? (
-                <MobileNotifications />
-              ) : (
-                <Notification />
-              )}
               <Account />
             </div>
           </div>

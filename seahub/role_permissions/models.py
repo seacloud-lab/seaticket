@@ -29,3 +29,37 @@ class AdminRole(models.Model):
     role = models.CharField(max_length=255)
 
     objects = AdminRoleManager()
+
+
+class UserRoleManager(models.Manager):
+
+    def add_user_role(self, username, role):
+        """ Add user role.
+        """
+        user_role = self.model(email=username, role=role)
+        user_role.save(using=self._db)
+        return role
+
+    def update_user_role(self, username, role):
+        """ Update admin role.
+        """
+        user_role = self.get(email=username)
+        user_role.role = role
+        user_role.save(using=self._db)
+        return user_role
+
+    def get_user_role(self, username):
+        """ Get user role of a user.
+        """
+        return super(UserRoleManager, self).get(email=username)
+
+
+class UserRole(models.Model):
+    email = models.EmailField(unique=True, db_index=True)
+    role = models.CharField(max_length=255)
+    is_manual_set = models.IntegerField()
+
+    objects = UserRoleManager()
+
+    class Meta:
+        db_table = 'user_role'

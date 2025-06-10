@@ -1,3 +1,3 @@
-# dtable web server
+# seaqa web server
 
 test

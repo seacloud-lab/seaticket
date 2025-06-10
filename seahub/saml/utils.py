@@ -11,8 +11,6 @@ from saml2 import BINDING_HTTP_REDIRECT, BINDING_HTTP_POST, NAMEID_FORMAT_EMAILA
 from saml2.config import SPConfig
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api
-
 from seahub.utils import get_service_url
 from seahub.organizations.models import OrgSAMLConfig
 from seahub import settings

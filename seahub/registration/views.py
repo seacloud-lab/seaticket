@@ -11,10 +11,8 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 from constance import config
-
-from seaserv import ccnet_api
 
 from seahub import settings
 from seahub.auth import REDIRECT_FIELD_NAME
@@ -23,7 +21,6 @@ from seahub.utils.auth import get_login_bg_image_path
 from seahub.utils import render_error
 from seahub.weixin.utils import weixin_check
 from seahub.profile.models import Profile
-from seahub.invitations.utils import record_registration_logs
 from seahub.registration.forms import SmsRegistrationForm
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.utils import get_api_token

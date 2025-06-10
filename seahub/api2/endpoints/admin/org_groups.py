@@ -8,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from seaserv import ccnet_api, seafile_api
-
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
@@ -17,7 +15,7 @@ from seahub.api2.permissions import IsProVersion
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.signals import group_deleted
-from seahub.dtable.models import DTables, Workspaces
+from seahub.dtable.models import Workspaces
 from seahub.organizations.views import get_org_id_by_group
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_DELETE
@@ -42,12 +40,6 @@ def get_org_group_info(group):
         group_info['creator_email'] = 'system admin'
     group_info['created_at'] = timestamp_to_isoformat_timestr(group.timestamp)
     group_info['group_id'] = group.id
-
-    owner = '%s@seafile_group' % group.id
-    workspace = Workspaces.objects.get_workspace_by_owner(owner)
-    if workspace:
-        repo = seafile_api.get_repo(workspace.repo_id)
-        group_info['size'] = repo.size if repo else -1
 
     return group_info
 
@@ -116,7 +108,7 @@ class AdminOrgGroup(APIView):
         if not group or get_org_id_by_group(group_id) != org_id:
             error_msg = 'Group %s not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         group_owner = group.creator_name
         group_name = group.group_name
 
@@ -140,7 +132,7 @@ class AdminOrgGroup(APIView):
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-        
+
         admin_op_detail = {
             "id": group_id,
             "name": group_name,

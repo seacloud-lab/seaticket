@@ -8,8 +8,6 @@ from rest_framework import status
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from seaserv import ccnet_api, seafile_api, ccnet_threaded_rpc
-from pysearpc import SearpcError
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.signals import group_deleted
 from seahub.organizations.views import get_org_id_by_group
@@ -279,7 +277,7 @@ class AdminAddressBookGroup(APIView):
         if ret_code == -1:
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         detail = {
             'name': group_name
         }

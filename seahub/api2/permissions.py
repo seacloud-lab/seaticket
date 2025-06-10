@@ -7,7 +7,6 @@ from rest_framework.permissions import BasePermission
 
 from django.conf import settings
 
-from seaserv import check_permission, is_repo_owner
 from seahub.utils import is_pro_version
 from seahub.group.utils import is_group_member
 
@@ -72,7 +71,7 @@ class CanSendShareLinkMail(BasePermission):
     """
     def has_permission(self, request, *args, **kwargs):
         return request.user.permissions.can_send_share_link_mail()
-   
+
 class IsProVersion(BasePermission):
     """
     Check whether Seafile is pro version

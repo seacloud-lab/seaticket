@@ -4,7 +4,6 @@ from django.http import Http404, HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import render
 
 from urllib.parse import quote
-from seaserv import get_repo, seafile_api
 
 from seahub.options.models import UserOptions, CryptoOptionNotSetError
 

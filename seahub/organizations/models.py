@@ -1,6 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import os
 import uuid
+import time
 import logging
 from copy import deepcopy
 from django.db import models
@@ -14,6 +15,7 @@ from seahub.constants import ORG_DEFAULT
 from seahub.role_permissions.utils import get_available_roles, get_enabled_role_permissions_by_role
 from seahub.utils.file_size import get_quota_from_string
 from django.core.cache import cache
+from seahub.group.models import Group, GroupUser
 
 logger = logging.getLogger(__name__)
 
@@ -512,4 +514,201 @@ class OrgSAMLConfig(models.Model):
             'dns_txt': self.dns_txt,
             'domain_verified': self.domain_verified,
             'idp_certificate': self.idp_certificate,
+        }
+
+
+class OrganizationManager(models.Manager):
+    def get_org_by_id(self, org_id):
+        try:
+            organization = self.get(org_id=org_id)
+            return organization
+        except Organization.DoesNotExist:
+            return None
+
+    def get_orgs_by_org_ids(self, org_ids):
+        orgs = self.filter(org_id__in=org_ids)
+        return orgs
+
+    def get_org_by_username(self, username):
+        try:
+            org_user = OrgUser.objects.get_org_user_by_username(username)
+            if not org_user:
+                return None
+            return self.get_org_by_id(org_user.org_id)
+        except Organization.DoesNotExist:
+            return None
+
+    def get_org_by_url_prefix(self, url_prefix):
+        try:
+            org = super(OrganizationManager, self).get(url_prefix=url_prefix)
+            return org
+        except Organization.DoesNotExist:
+            return None
+
+    def create_org(self, org_name, url_prefix, creator):
+        try:
+            return super(OrganizationManager, self).get(url_prefix=url_prefix)
+        except self.model.DoesNotExist:
+            ctime = int(time.time_ns() / 1000)
+            org = self.model(org_name=org_name, url_prefix=url_prefix, creator=creator, ctime=ctime)
+            org.save()
+            org_id = org.org_id
+            is_staff = True
+            OrgUser.objects.create_org_user(org_id, creator, is_staff)
+            return org
+
+    def get_org_users_by_url_prefix(self, url_prefix):
+        sql = """SELECT a.org_id, b.email, b.is_staff, c.ctime, c.is_active, c.id FROM organization_organization a 
+        INNER JOIN org_user b ON a.org_id=b.org_id 
+        INNER JOIN email_user c ON b.email=c.email WHERE a.url_prefix=%s"""
+        users = Organization.objects.raw(sql, (url_prefix, ))
+        return users
+
+    def remove_org(self, org_id):
+        self.filter(org_id=org_id).delete()
+
+
+class Organization(models.Model):
+    org_id = models.AutoField(primary_key=True)
+    org_name = models.CharField(max_length=255, null=True, blank=True)
+    url_prefix = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    creator = models.CharField(max_length=255)
+    ctime = models.BigIntegerField()
+
+    objects = OrganizationManager()
+
+    class Meta:
+        db_table = 'organization_organization'
+
+    def to_dict(self):
+        return {
+            'id': self.pk,
+            'org_id': self.org_id,
+            'org_name': self.org_name,
+            'url_prefix': self.url_prefix,
+            'creator': self.creator,
+            'ctime': self.ctime,
+        }
+
+
+class OrgUserManager(models.Manager):
+    def get_org_user_by_username(self, username):
+        try:
+            return self.get(email=username)
+        except OrgUser.DoesNotExist:
+            return None
+
+    def create_org_user(self, org_id, username, is_staff=False):
+        try:
+            return super(OrgUserManager, self).get(org_id=org_id, email=username)
+        except self.model.DoesNotExist:
+            org = self.model(org_id=org_id, email=username, is_staff=is_staff)
+            org.save()
+            return org
+
+    def is_org_staff(self, org_id, username):
+        org_user = self.get(org_id=org_id, email=username)
+        return org_user.is_staff
+
+    def remove_org_user(self, org_id, username):
+        self.model.objects.filter(org_id=org_id, email=username).delete()
+
+    def org_user_exists(self, org_id, username):
+        return self.filter(org_id=org_id, email=username).exists()
+
+    def set_org_staff(self, org_id, username):
+        return self.filter(org_id=org_id, email=username).update(is_staff=True)
+
+    def unset_org_staff(self, org_id, username):
+        return self.filter(org_id=org_id, email=username).update(is_staff=False)
+
+    def get_org_staff_count(self, org_id):
+        return self.filter(org_id=org_id).count()
+
+    def get_org_email_users(self, org_id, start, limit):
+        sql = """SELECT
+                  ou.org_id,
+                  ou.is_staff,
+                  ou.email,
+                  eu.ctime,
+                  eu.id,
+                  eu.is_active 
+                FROM
+                    org_user ou
+                    JOIN email_user eu ON ou.email = eu.email 
+                WHERE
+                    ou.org_id = %s
+                ORDER BY
+                    eu.ctime DESC
+                LIMIT 
+                    %s OFFSET %s"""
+        org_users = self.model.objects.raw(sql, (org_id, limit, start))
+
+        return org_users
+
+
+class OrgUser(models.Model):
+    org_id = models.IntegerField()
+    email = models.CharField(max_length=255)
+    is_staff = models.BooleanField(default=False)
+
+    objects = OrgUserManager()
+
+    class Meta:
+        db_table = 'org_user'
+        indexes = [
+            models.Index(fields=['org_id', 'email'], name='org_user_org_id_email')
+        ]
+
+    def to_dict(self):
+        return {
+            'id': self.pk,
+            'org_id': self.org_id,
+            'email': self.email,
+            'is_staff': self.is_staff
+        }
+
+
+class OrgGroupManager(models.Manager):
+    def get_org_group_by_org_id(self, org_id):
+        try:
+            org_group = self.get(org_id=org_id)
+            return org_group
+        except OrgGroup.DoesNotExist:
+            return None
+
+    def get_org_group_by_group_id(self, group_id):
+        try:
+            org_group = self.get(group_id=group_id)
+            return org_group
+        except OrgGroup.DoesNotExist:
+            return None
+
+    def remove_org_group(self, org_id):
+        org_groups = self.model.objects.filter(org_id=org_id)
+        for group in org_groups:
+            group_id = group.group_id
+            Group.objects.remove_group(group_id)
+
+    def create_org_group(self, org_id, group_name, username, parent_group_id=0):
+        ctime = int(time.time_ns() / 1000)
+        group = Group.objects.create(group_name=group_name, creator_name=username, parent_group_id=parent_group_id, timestamp=ctime)
+        GroupUser.objects.create(group_id=group.group_id, user_name=username, is_staff=True)
+        org_group = self.create(org_id=org_id, group_id=group.group_id)
+        return org_group
+
+class OrgGroup(models.Model):
+    org_id = models.IntegerField()
+    group_id = models.IntegerField()
+
+    objects = OrgGroupManager()
+
+    class Meta:
+        db_table = 'org_group'
+
+    def to_dict(self):
+        return {
+            'id': self.pk,
+            'org_id': self.org_id,
+            'group_id': self.group_id,
         }

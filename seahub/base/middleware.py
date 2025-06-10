@@ -8,14 +8,12 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.utils import translation
 from django.utils.deprecation import MiddlewareMixin
 
-from seaserv import ccnet_api
 
 from seahub.api2.utils import to_python_boolean
 from seahub.auth.models import AnonymousUser
-from seahub.notifications.models import Notification
-from seahub.notifications.utils import refresh_cache
 from seahub.constants import DEFAULT_ADMIN, DEFAULT_USER
 from seahub.profile.models import Profile
+from seahub.organizations.models import Organization
 
 try:
     from seahub.settings import CLOUD_MODE
@@ -40,9 +38,11 @@ class BaseMiddleware(MiddlewareMixin):
         lang = None
         if not isinstance(request.user, AnonymousUser):
             if MULTI_TENANCY:
-                orgs = ccnet_api.get_orgs_by_user(username)
-                if orgs:
-                    request.user.org = orgs[0]
+                sql = """SELECT a.org_id, org_name, url_prefix, is_staff FROM organization_organization a 
+                                INNER JOIN org_user b ON a.org_id=b.org_id WHERE b.email=%s"""
+                org = Organization.objects.raw(sql, (username,))
+                if org:
+                    request.user.org = org[0]
                     if not request.user.role or request.user.role == DEFAULT_USER:
                         from seahub.organizations.models import OrgSettings
                         request.user.role = OrgSettings.objects.get_role_by_org(request.user.org)
@@ -55,36 +55,6 @@ class BaseMiddleware(MiddlewareMixin):
                 lang = getattr(settings, 'FORCE_DEFAULT_LANGUAGE')
         if lang:
             translation.activate(lang)
-        return None
-
-    def process_response(self, request, response):
-        return response
-
-class InfobarMiddleware(MiddlewareMixin):
-    """Query info bar close status, and store into request."""
-
-    def get_from_db(self):
-        ret = Notification.objects.all().filter(primary=1)
-        refresh_cache()
-        return ret
-
-    def process_request(self, request):
-
-        # filter AJAX request out
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return None
-
-        # filter API request out
-        if "api2/" in request.path or "api/v2.1/" in request.path:
-            return None
-
-        cur_note = cache.get('CUR_TOPINFO') if cache.get('CUR_TOPINFO') else \
-            self.get_from_db()
-        if not cur_note:
-            request.cur_note = None
-        else:
-            request.cur_note = cur_note
-
         return None
 
     def process_response(self, request, response):

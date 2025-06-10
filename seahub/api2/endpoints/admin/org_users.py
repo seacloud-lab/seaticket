@@ -9,10 +9,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from constance import config
-from seaserv import ccnet_api, seafile_api
 
 from seahub.dtable.models import Workspaces
-from seahub.dtable.utils import create_repo_and_workspace
 from seahub.organizations.views import is_org_staff
 from seahub.utils import is_valid_email
 from seahub.utils.licenseparse import user_number_over_limit
@@ -322,7 +320,7 @@ class AdminOrgUser(APIView):
             error_msg = 'User %s is not member of organization %s.' \
                     % (email, org.org_name)
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         if not request.user.admin_permissions.can_manage_organization():
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -359,7 +357,7 @@ class AdminOrgUser(APIView):
             if result_code == -1:
                 error_msg = 'Fail to update user %s.' % email
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-            
+
             detail = {
                     'username': email,
                     }
@@ -450,7 +448,7 @@ class AdminOrgUser(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         # send admin operation log signal
         admin_op_detail = {
             "email": email,
