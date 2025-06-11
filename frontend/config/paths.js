@@ -25,7 +25,7 @@ const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 const CONFIG_HOST = process.env.HOST;
 const isRunInDocker = CONFIG_HOST === '0.0.0.0';
 const HOST = isRunInDocker ? '127.0.0.1' : CONFIG_HOST;
-const PORT = process.env.PORT || '3001';
+const PORT = process.env.PORT || '3003';
 const publicPath = process.env.PUBLIC_PATH || '/assets/bundles/';
 const publicUrlOrPath = `http://${HOST}:${PORT}${publicPath}`;
 

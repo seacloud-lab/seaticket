@@ -10,7 +10,7 @@ const paths = require('./paths');
 const getHttpsConfig = require('./getHttpsConfig');
 
 const HOST = process.env.HOST || '0.0.0.0';
-const PORT = process.env.PORT || '3001';
+const PORT = process.env.PORT || '3003';
 const publicPath = process.env.PUBLIC_PATH || '/assets/bundles/';
 
 const devServerOptions = {

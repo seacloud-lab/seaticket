@@ -26,7 +26,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'dtable',
+        'NAME': 'sea_qa',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': '127.0.0.1',
@@ -914,11 +914,11 @@ DTABLE_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or DTABLE_PRIVATE_KEY
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
     ## For dtable_db
     _rewrite_db_env_key_map = {
-        'HOST': 'SEATABLE_MYSQL_DB_HOST',
-        'PORT': 'SEATABLE_MYSQL_DB_PORT',
-        'USER': 'SEATABLE_MYSQL_DB_USER',
-        'PASSWORD': 'SEATABLE_MYSQL_DB_PASSWORD',
-        'NAME': 'SEATABLE_MYSQL_DB_DTABLE_DB_NAME'
+        'HOST': 'SEAQA_MYSQL_DB_HOST',
+        'PORT': 'SEAQA_MYSQL_DB_PORT',
+        'USER': 'SEAQA_MYSQL_DB_USER',
+        'PASSWORD': 'SEAQA_MYSQL_DB_PASSWORD',
+        'NAME': 'SEAQA_MYSQL_DB_DTABLE_DB_NAME'
     }
 
     for db_key, env_key in _rewrite_db_env_key_map.items():
@@ -946,7 +946,7 @@ if ENABLE_OPERATION_LOG_DB:
     if 'operation_log' not in DATABASES:
         DATABASES['operation_log'] = {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'dtable',
+            'NAME': 'sea_qa',
             'USER': 'root',
             'PASSWORD': '',
             'HOST': '127.0.0.1',

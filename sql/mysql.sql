@@ -1,28 +1,3 @@
-/*!999999\- enable the sandbox mode */ 
--- MariaDB dump 10.19  Distrib 10.6.18-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: sea_qa
--- ------------------------------------------------------
--- Server version	10.6.18-MariaDB-ubu2004
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `admin_log_orgadminlog`
---
-
-DROP TABLE IF EXISTS `admin_log_orgadminlog`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `admin_log_orgadminlog` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(254) NOT NULL,
@@ -35,30 +10,33 @@ CREATE TABLE `admin_log_orgadminlog` (
   KEY `admin_log_orgadminlog_operation_4bad7bd1` (`operation`) USING BTREE,
   KEY `admin_log_org_id` (`org_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `auth_group`
---
+CREATE TABLE `django_content_type` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_label` varchar(100) NOT NULL,
+  `model` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `django_content_type_app_label_model_76bd3d3b_uniq` (`app_label`,`model`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `auth_group`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `auth_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(150) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `auth_group_permissions`
---
+CREATE TABLE `auth_permission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `content_type_id` int(11) NOT NULL,
+  `codename` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`),
+  CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `auth_group_permissions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth_group_permissions` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `group_id` int(11) NOT NULL,
@@ -69,33 +47,7 @@ CREATE TABLE `auth_group_permissions` (
   CONSTRAINT `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`),
   CONSTRAINT `auth_group_permissions_group_id_b120cbf9_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `auth_permission`
---
-
-DROP TABLE IF EXISTS `auth_permission`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `auth_permission` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `content_type_id` int(11) NOT NULL,
-  `codename` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`),
-  CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `auth_user`
---
-
-DROP TABLE IF EXISTS `auth_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `password` varchar(128) NOT NULL,
@@ -111,15 +63,7 @@ CREATE TABLE `auth_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `auth_user_groups`
---
-
-DROP TABLE IF EXISTS `auth_user_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth_user_groups` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -130,15 +74,7 @@ CREATE TABLE `auth_user_groups` (
   CONSTRAINT `auth_user_groups_group_id_97559544_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`),
   CONSTRAINT `auth_user_groups_user_id_6a12ed8b_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `auth_user_user_permissions`
---
-
-DROP TABLE IF EXISTS `auth_user_user_permissions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `auth_user_user_permissions` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -149,15 +85,7 @@ CREATE TABLE `auth_user_user_permissions` (
   CONSTRAINT `auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`),
   CONSTRAINT `auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `avatar_avatar`
---
-
-DROP TABLE IF EXISTS `avatar_avatar`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `avatar_avatar` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `emailuser` varchar(255) NOT NULL,
@@ -167,15 +95,7 @@ CREATE TABLE `avatar_avatar` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_emailuser` (`emailuser`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `base_userlastlogin`
---
-
-DROP TABLE IF EXISTS `base_userlastlogin`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `base_userlastlogin` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -183,15 +103,7 @@ CREATE TABLE `base_userlastlogin` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `base_userlastlogin_username_270de06f` (`username`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `captcha_captchastore`
---
-
-DROP TABLE IF EXISTS `captcha_captchastore`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `captcha_captchastore` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `challenge` varchar(32) NOT NULL,
@@ -201,15 +113,7 @@ CREATE TABLE `captcha_captchastore` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `hashkey` (`hashkey`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `django_admin_log`
---
-
-DROP TABLE IF EXISTS `django_admin_log`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `django_admin_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `action_time` datetime(6) NOT NULL,
@@ -225,31 +129,7 @@ CREATE TABLE `django_admin_log` (
   CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
   CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `django_content_type`
---
-
-DROP TABLE IF EXISTS `django_content_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `django_content_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `app_label` varchar(100) NOT NULL,
-  `model` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `django_content_type_app_label_model_76bd3d3b_uniq` (`app_label`,`model`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `django_migrations`
---
-
-DROP TABLE IF EXISTS `django_migrations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `django_migrations` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `app` varchar(255) NOT NULL,
@@ -257,15 +137,7 @@ CREATE TABLE `django_migrations` (
   `applied` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `django_session`
---
-
-DROP TABLE IF EXISTS `django_session`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `django_session` (
   `session_key` varchar(40) NOT NULL,
   `session_data` longtext NOT NULL,
@@ -273,15 +145,7 @@ CREATE TABLE `django_session` (
   PRIMARY KEY (`session_key`),
   KEY `django_session_expire_date_a5c62663` (`expire_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `email_user`
---
-
-DROP TABLE IF EXISTS `email_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `email_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) DEFAULT NULL,
@@ -294,15 +158,7 @@ CREATE TABLE `email_user` (
   UNIQUE KEY `email` (`email`) USING BTREE,
   UNIQUE KEY `reference_id` (`reference_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `group`
---
-
-DROP TABLE IF EXISTS `group`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `group` (
   `group_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `group_name` varchar(255) DEFAULT NULL,
@@ -312,15 +168,7 @@ CREATE TABLE `group` (
   `parent_group_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`group_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `group_user`
---
-
-DROP TABLE IF EXISTS `group_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `group_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `group_id` bigint(20) DEFAULT NULL,
@@ -330,15 +178,7 @@ CREATE TABLE `group_user` (
   UNIQUE KEY `group_id` (`group_id`,`user_name`) USING BTREE,
   KEY `user_name` (`user_name`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `id_in_org_tuple`
---
-
-DROP TABLE IF EXISTS `id_in_org_tuple`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `id_in_org_tuple` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `virtual_id` varchar(255) NOT NULL,
@@ -349,15 +189,7 @@ CREATE TABLE `id_in_org_tuple` (
   KEY `id_in_org_id_in_org_ffee1607` (`id_in_org`) USING BTREE,
   KEY `id_in_org_org_id_169def82` (`org_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `notifications_notification`
---
-
-DROP TABLE IF EXISTS `notifications_notification`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `notifications_notification` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `message` varchar(512) NOT NULL,
@@ -365,15 +197,7 @@ CREATE TABLE `notifications_notification` (
   PRIMARY KEY (`id`),
   KEY `notifications_notification_primary_4f95ec21` (`primary`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `options_useroptions`
---
-
-DROP TABLE IF EXISTS `options_useroptions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `options_useroptions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
@@ -383,15 +207,7 @@ CREATE TABLE `options_useroptions` (
   KEY `options_useroptions_email_77d5726a` (`email`),
   KEY `options_useroptions_option_key_7bf7ae4b` (`option_key`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `org_group`
---
-
-DROP TABLE IF EXISTS `org_group`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `org_group` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
@@ -400,15 +216,7 @@ CREATE TABLE `org_group` (
   UNIQUE KEY `org_id` (`org_id`,`group_id`) USING BTREE,
   KEY `group_id` (`group_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `org_user`
---
-
-DROP TABLE IF EXISTS `org_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `org_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
@@ -418,15 +226,7 @@ CREATE TABLE `org_user` (
   UNIQUE KEY `org_id` (`org_id`,`email`) USING BTREE,
   KEY `email` (`email`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `organization_organization`
---
-
-DROP TABLE IF EXISTS `organization_organization`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `organization_organization` (
   `org_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_name` varchar(255) DEFAULT NULL,
@@ -436,15 +236,7 @@ CREATE TABLE `organization_organization` (
   PRIMARY KEY (`org_id`) USING BTREE,
   UNIQUE KEY `url_prefix` (`url_prefix`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `organizations_org_corp_auth`
---
-
-DROP TABLE IF EXISTS `organizations_org_corp_auth`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `organizations_org_corp_auth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
@@ -456,15 +248,7 @@ CREATE TABLE `organizations_org_corp_auth` (
   UNIQUE KEY `org_id` (`org_id`) USING BTREE,
   UNIQUE KEY `corp_id` (`corp_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `organizations_orgadminsettings`
---
-
-DROP TABLE IF EXISTS `organizations_orgadminsettings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `organizations_orgadminsettings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
@@ -474,15 +258,7 @@ CREATE TABLE `organizations_orgadminsettings` (
   UNIQUE KEY `org_id_key_o0u4b7x9_unique_key` (`org_id`,`key`) USING BTREE,
   KEY `org_id_n3x9b4v0_key` (`org_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `organizations_orgmemberquota`
---
-
-DROP TABLE IF EXISTS `organizations_orgmemberquota`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `organizations_orgmemberquota` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
@@ -490,15 +266,7 @@ CREATE TABLE `organizations_orgmemberquota` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `organizations_orgmemberquota_org_id_93dde51d` (`org_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `organizations_orgsettings`
---
-
-DROP TABLE IF EXISTS `organizations_orgsettings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `organizations_orgsettings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
@@ -506,15 +274,7 @@ CREATE TABLE `organizations_orgsettings` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `organizations_orgsettings_org_id_630f6843_uniq` (`org_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `profile_profile`
---
-
-DROP TABLE IF EXISTS `profile_profile`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `profile_profile` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(254) NOT NULL,
@@ -538,15 +298,7 @@ CREATE TABLE `profile_profile` (
   KEY `profile_profile_institution_c0286bd1` (`institution`) USING BTREE,
   KEY `profile_profile_list_in_address_book_b1009a78` (`list_in_address_book`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `role_permissions_adminrole`
---
-
-DROP TABLE IF EXISTS `role_permissions_adminrole`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `role_permissions_adminrole` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(254) NOT NULL,
@@ -554,15 +306,7 @@ CREATE TABLE `role_permissions_adminrole` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `email` (`email`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `session_log`
---
-
-DROP TABLE IF EXISTS `session_log`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `session_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_name` varchar(255) NOT NULL,
@@ -576,15 +320,7 @@ CREATE TABLE `session_log` (
   KEY `session_key` (`session_key`) USING BTREE,
   KEY `op_time_g4i9u7k1_key` (`op_time`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `social_auth_usersocialauth`
---
-
-DROP TABLE IF EXISTS `social_auth_usersocialauth`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `social_auth_usersocialauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -595,15 +331,7 @@ CREATE TABLE `social_auth_usersocialauth` (
   UNIQUE KEY `social_auth_usersocialauth_provider_uid_e6b5e668_uniq` (`provider`,`uid`) USING BTREE,
   KEY `social_auth_usersocialauth_username_3f06b5cf` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `sysadmin_extra_userloginlog`
---
-
-DROP TABLE IF EXISTS `sysadmin_extra_userloginlog`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sysadmin_extra_userloginlog` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -614,15 +342,7 @@ CREATE TABLE `sysadmin_extra_userloginlog` (
   KEY `sysadmin_extra_userloginlog_username_5748b9e3` (`username`) USING BTREE,
   KEY `sysadmin_extra_userloginlog_login_date_c171d790` (`login_date`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `two_factor_phonedevice`
---
-
-DROP TABLE IF EXISTS `two_factor_phonedevice`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `two_factor_phonedevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(255) NOT NULL,
@@ -634,15 +354,7 @@ CREATE TABLE `two_factor_phonedevice` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `user` (`user`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `two_factor_staticdevice`
---
-
-DROP TABLE IF EXISTS `two_factor_staticdevice`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `two_factor_staticdevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(255) NOT NULL,
@@ -651,15 +363,7 @@ CREATE TABLE `two_factor_staticdevice` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `user` (`user`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `two_factor_statictoken`
---
-
-DROP TABLE IF EXISTS `two_factor_statictoken`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `two_factor_statictoken` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `token` varchar(16) NOT NULL,
@@ -667,17 +371,9 @@ CREATE TABLE `two_factor_statictoken` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `two_factor_statictok_device_id_93095b45_fk_two_facto` (`device_id`) USING BTREE,
   KEY `two_factor_statictoken_token_2ade1084` (`token`) USING BTREE,
-  CONSTRAINT `two_factor_statictok_device_id_93095b45_fk_two_facto` FOREIGN KEY (`device_id`) REFERENCES `dtable`.`two_factor_staticdevice` (`id`)
+  CONSTRAINT `two_factor_statictok_device_id_93095b45_fk_two_facto` FOREIGN KEY (`device_id`) REFERENCES `two_factor_staticdevice` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `two_factor_totpdevice`
---
-
-DROP TABLE IF EXISTS `two_factor_totpdevice`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `two_factor_totpdevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(255) NOT NULL,
@@ -693,15 +389,7 @@ CREATE TABLE `two_factor_totpdevice` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `user` (`user`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `user_role`
---
-
-DROP TABLE IF EXISTS `user_role`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_role` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) DEFAULT NULL,
@@ -710,15 +398,3 @@ CREATE TABLE `user_role` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `email` (`email`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-06-10  3:06:15
