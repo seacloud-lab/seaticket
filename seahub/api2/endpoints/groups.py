@@ -168,7 +168,7 @@ class Groups(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # get info of new group
-        group_info = get_group_info(request, org_group.group_id)
+        group_info = get_group_info(request, org_group)
 
         return Response(group_info, status=status.HTTP_201_CREATED)
 
