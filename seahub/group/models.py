@@ -88,6 +88,12 @@ class GroupManager(models.Manager):
     def remove_group(self, group_id):
         self.filter(group_id=group_id).delete()
 
+    def get_group(self, group_id):
+        try:
+            return super(GroupManager, self).get(group_id=group_id)
+        except Group.DoesNotExist:
+            return None
+
 
 class Group(models.Model):
     group_id = models.BigAutoField(primary_key=True)
@@ -97,7 +103,7 @@ class Group(models.Model):
     type = models.CharField(max_length=32)
     parent_group_id = models.IntegerField()
 
-    objects = GroupUserManager()
+    objects = GroupManager()
 
     class Meta:
         db_table = 'group'

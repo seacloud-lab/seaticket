@@ -19,16 +19,18 @@ from seahub.signals import group_deleted
 from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
-    is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner
-from seahub.dtable.models import Workspaces
-from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+    is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner_by_group
+from seahub.project.models import Workspaces
+from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
+    ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
-from seahub.group.models import Group as GGroup, GroupUser
+from seahub.group.models import GroupUser
 
 from .utils import api_check_group
 
 logger = logging.getLogger(__name__)
+
 
 def get_group_admins(group_id):
     admin_members = GroupUser.objects.filter(group_id=group_id, is_staff=True)
@@ -39,9 +41,8 @@ def get_group_admins(group_id):
 
     return admins
 
-def get_group_info(request, group_id):
-    group = GGroup.objects.get(group_id=group_id)
 
+def get_group_info(request, group):
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
     group_info = {
         "id": group.group_id,
@@ -56,10 +57,9 @@ def get_group_info(request, group_id):
 
 
 class Groups(APIView):
-
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle, )
+    throttle_classes = (UserRateThrottle,)
 
     def _can_add_group(self, request):
         return request.user.permissions.can_add_group()
@@ -76,30 +76,19 @@ class Groups(APIView):
         except:
             return api_error(status.HTTP_400_BAD_REQUEST, 'including_all_deps or can_admin invalid')
 
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         groups = []
 
-        org_id = None
         username = request.user.username
-        if is_org_context(request):
-            org_id = request.user.org.org_id
-            user_groups = seaserv.get_org_groups_by_user(org_id, username)
-        else:
-            user_groups = ccnet_api.get_groups(username, return_ancestors=True)
+        org_id = request.user.org.org_id
+        user_groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
 
-        group_ids = [g.id for g in user_groups]
-
-        if including_all_deps:
-            if org_id:
-                g_ids = get_org_all_dep_ids(org_id)
-            else:
-                g_ids = get_non_org_all_dep_ids()
-            for g_id in g_ids:
-                if g_id not in group_ids:
-                    group_ids.append(g_id)
-
-        for group_id in group_ids:
-            group_info = get_group_info(request, group_id)
-            if can_admin and not is_group_admin_or_owner(group_id, username):
+        for group in user_groups:
+            group_info = get_group_info(request, group)
+            if can_admin and not is_group_admin_or_owner_by_group(group, username):
                 continue
             groups.append(group_info)
 
@@ -113,8 +102,8 @@ class Groups(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not is_org_context(request):
-            error_msg = 'Only org user can create group.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         group_name = request.data.get('name', '')
@@ -122,7 +111,8 @@ class Groups(APIView):
 
         # Check whether group name is validate.
         if not validate_group_name(group_name):
-            error_msg = _('Group name can only contain letters, numbers, blank, hyphen, dot, single quote or underscore')
+            error_msg = _(
+                'Group name can only contain letters, numbers, blank, hyphen, dot, single quote or underscore')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # Check whether group name is duplicated.
@@ -133,8 +123,6 @@ class Groups(APIView):
         # quota
         org_id = request.user.org.org_id
         group_count = OrgGroup.objects.filter(org_id=org_id).count()
-        # org_groups = ccnet_api.get_org_groups(org_id, -1, -1)
-        # group_count = len(org_groups)
         error_msg = ''
 
         if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
@@ -165,6 +153,20 @@ class Groups(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        # if the group has no workspace, create a workspace
+        owner = '%s@seafile_group' % org_group.group_id
+        workspace = Workspaces.objects.get_workspace_by_owner(owner)
+        if not workspace:
+            try:
+                org_id = -1
+                if is_org_context(request):
+                    org_id = request.user.org.org_id
+                Workspaces.objects.create_workspace(owner, org_id)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         # get info of new group
         group_info = get_group_info(request, org_group.group_id)
 
@@ -172,10 +174,9 @@ class Groups(APIView):
 
 
 class Group(APIView):
-
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle, )
+    throttle_classes = (UserRateThrottle,)
 
     @api_check_group
     def get(self, request, group_id):
@@ -218,7 +219,8 @@ class Group(APIView):
 
                 # Check whether group name is validate.
                 if not validate_group_name(new_group_name):
-                    error_msg = _('Group name can only contain letters, numbers, blank, hyphen, dot, single quote or underscore')
+                    error_msg = _(
+                        'Group name can only contain letters, numbers, blank, hyphen, dot, single quote or underscore')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
                 # Check whether group name is duplicated.
@@ -352,10 +354,9 @@ class Group(APIView):
 
 
 class GroupMoveView(APIView):
-
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle, )
+    throttle_classes = (UserRateThrottle,)
 
     def put(self, request):
         """ change the orders of users group
@@ -383,7 +384,8 @@ class GroupMoveView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
         try:
-            new_ordered_group_ids, error = group_order.move(group_id, anchor_group_id=anchor_group_id, append_to_last=to_last)
+            new_ordered_group_ids, error = group_order.move(group_id, anchor_group_id=anchor_group_id,
+                                                            append_to_last=to_last)
             if error:
                 err_msg = "group_id or anchor_group_id invalid"
                 return api_error(status.HTTP_400_BAD_REQUEST, err_msg)

@@ -19,8 +19,6 @@ import DTableNav from './dtables-nav';
 import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-external-links-dialog';
 import UnsetPasswordConfirmDialog from '../../dtable/dialog/unset-password-confirm-dialog';
 import DTableAllAPITokensDialog from '../../dtable/dialog/dtable-all-api-tokens-dialog';
-import DTableIODialog from '../../dtable/dialog/dtable-io-dialog';
-import SysAdminCopyDTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-copy-dtable-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 import '../../../css/system-dtable.css';
 
@@ -323,19 +321,6 @@ class Item extends Component {
               toggle={this.toggleAPITokenDialog}
             />
           </ModalPortal>
-        )}
-        {this.state.isShowDTableIODialog && (
-          <DTableIODialog
-            isExporting={true}
-            toggle={this.onDTableIODialogToggle}
-            cancelDTableIOTask={this.cancelDTableIOTask}
-          />
-        )}
-        {this.state.isShowCopyDTable && (
-          <SysAdminCopyDTableDialog
-            dtable={item}
-            onCopyDTableToggle={this.onCopyDTableToggle}
-          />
         )}
         {this.state.isShowShareDTableDialog && (
           <SysAdminShareTableDialog

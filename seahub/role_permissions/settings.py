@@ -45,7 +45,7 @@ def merge_roles(default, custom, fallback_role):
 
 DEFAULT_ENABLED_ROLE_PERMISSIONS = {
     DEFAULT_USER: {
-        'can_add_dtable': True,
+        'can_add_project': True,
         'can_add_group': True,
         'can_use_global_address_book': True,
         'can_invite_guest': False,
@@ -68,7 +68,7 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'ai_credit_per_user': -1
     },
     GUEST_USER: {
-        'can_add_dtable': False,
+        'can_add_project': False,
         'can_add_group': False,
         'can_use_global_address_book': False,
         'role_quota': '',
@@ -78,7 +78,7 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'share_limit': 100,
     },
     ORG_DEFAULT: {
-        'can_add_dtable': True,
+        'can_add_project': True,
         'can_add_group': True,
         'role_asset_quota': '',
         'row_limit': -1,

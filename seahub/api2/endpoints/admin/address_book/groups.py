@@ -17,7 +17,7 @@ from seahub.api2.utils import to_python_boolean, api_error
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.group.utils import validate_group_name, refresh_group_name_cache
 from seahub.signals import group_deleted
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr

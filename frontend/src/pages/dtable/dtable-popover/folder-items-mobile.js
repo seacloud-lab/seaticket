@@ -12,9 +12,8 @@ class FolderItems extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableList: [],
-      shareTableList: [],
-      shareViewList: [],
+      projectList: [],
+      shareProjectList: [],
       isItemFreezed: false,
       isShowVirtualDtable: false,
     };
@@ -30,34 +29,27 @@ class FolderItems extends React.Component {
   }
 
   initValue = (props) => {
-    let { folder, tableList, groupSharedTables, groupSharedViews } = props;
+    let { folder, projectList, groupSharedTables } = props;
     let folderItems = folder.items;
     if (!folderItems) {
       return;
     }
     const folderMap = this.getFolderItemsMap(folderItems);
-    let folderTables = [];
-    let folderShareTables = [];
-    let folderShareViews = [];
-    tableList.forEach((table) => {
-      if (folderMap.get(table.uuid)) {
-        folderTables.push(table);
+    let folderProjects = [];
+    let folderShareProjects = [];
+    projectList.forEach((project) => {
+      if (folderMap.get(project.uuid)) {
+        folderProjects.push(project);
       }
     });
-    groupSharedTables.forEach((shareTable) => {
-      if (folderMap.get(shareTable.dtable_share_id.toString())) {
-        folderShareTables.push(shareTable);
-      }
-    });
-    groupSharedViews.forEach((shareView) => {
-      if (folderMap.get(shareView.view_share_id.toString())) {
-        folderShareViews.push(shareView);
+    groupSharedTables.forEach((shareProject) => {
+      if (folderMap.get(shareProject.dtable_share_id.toString())) {
+        folderShareProjects.push(shareProject);
       }
     });
     this.setState({
-      tableList: folderTables,
-      shareTableList: folderShareTables,
-      shareViewList: folderShareViews,
+      projectList: folderProjects,
+      shareProjectList: folderShareProjects,
     });
   };
 
@@ -90,17 +82,13 @@ class FolderItems extends React.Component {
     this.setState({ isShowVirtualDtable: false });
   };
 
-  uploadDTableFile = (workspaceID, file) => {
-    this.props.uploadDTableFile(workspaceID, file, this.props.folder.id);
-  };
-
   onFolderToggle = () => {
     this.eventBus.dispatch('folder-close');
     this.props.onFolderToggle(null);
   };
 
-  createTableInFolder = (tableName, owner, dtableIcon, dtableColor) => {
-    this.props.createTableInFolder(tableName, owner, dtableIcon, dtableColor, this.props.folder);
+  createProjectInFolder = (tableName, owner, dtableIcon, dtableColor) => {
+    this.props.createProjectInFolder(tableName, owner, dtableIcon, dtableColor, this.props.folder);
   };
 
   getFolderIndex = () => {
@@ -109,8 +97,8 @@ class FolderItems extends React.Component {
   };
 
   render() {
-    const { folder, isOwner, isAdmin, workspace, canAddDTable } = this.props;
-    let { tableList, shareTableList, shareViewList, isItemFreezed, isShowVirtualDtable } = this.state;
+    const { folder, isOwner, isAdmin, workspace, canAddProject } = this.props;
+    let { projectList, shareProjectList, isItemFreezed, isShowVirtualDtable } = this.state;
     return (
       <div className="add-blank-table dtable-folder-view">
         <MobileCommonHeader
@@ -120,10 +108,10 @@ class FolderItems extends React.Component {
         />
         <div className='folder'>
           <div className='folder-items table-mobile-item-container'>
-            {tableList.map((table, index) => {
+            {projectList.map((project, index) => {
               return (
                 <DTableItemCommon
-                  table={table}
+                  project={project}
                   key={index}
                   isItemFreezed={isItemFreezed}
                   renameTable={this.props.renameTable}
@@ -132,11 +120,9 @@ class FolderItems extends React.Component {
                   onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
                   onDeleteTableToggle={this.props.onDeleteTableToggle}
                   onTableAPITokenToggle={this.props.onTableAPITokenToggle}
-                  onWebhookToggle={this.props.onWebhookToggle}
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
                   onTableSnapshotsToggle={this.props.onTableSnapshotsToggle}
-                  onCopyDTableToggle={this.props.onCopyDTableToggle}
                   isOwner={isOwner}
                   isAdmin={isAdmin}
                   onAddStarDTable={this.props.onAddStarDTable}
@@ -159,12 +145,12 @@ class FolderItems extends React.Component {
                 currentFolder={folder}
               />
             )}
-            {shareTableList.map((table, index) => {
+            {shareProjectList.map((project, index) => {
               return (
                 <DTableItemGroupShared
                   key={`share-table-${index}`}
                   sharedItemKey={`table-${index}`}
-                  table={table}
+                  project={project}
                   folder={folder}
                   isItemFreezed={isItemFreezed}
                   isAdmin={isAdmin}
@@ -177,33 +163,12 @@ class FolderItems extends React.Component {
                 />
               );
             })}
-            {shareViewList.map((view, index) => {
-              return (
-                <DTableItemGroupShared
-                  key={`share-view-${index}`}
-                  sharedItemKey={`view-${index}`}
-                  table={view}
-                  folder={folder}
-                  isItemFreezed={isItemFreezed}
-                  isAdmin={isAdmin}
-                  onLeaveShare={this.props.onLeaveGroupSharedView}
-                  onAddStarDTable={this.props.onAddStarDTable}
-                  onUnstarDTable={this.props.onUnstarDTable}
-                  setDropdownState={this.props.setDropdownState}
-                  getDropdownState={this.props.getDropdownState}
-                  onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}
-                />
-              );
-            })}
-            {canAddDTable && (isOwner || isAdmin) &&
+            {canAddProject && (isOwner || isAdmin) &&
               <MobileAddBase
-                addDtableFromExternalLink={this.addDtableFromExternalLink}
                 currentWorkspace={workspace}
-                uploadDTableFile={this.uploadDTableFile}
-                createDTable={this.createTableInFolder}
+                createProject={this.createProjectInFolder}
                 ref={ref => this.addBaseRef = ref}
                 folder={folder}
-                isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
               />
             }
           </div>

@@ -251,8 +251,8 @@ def register(request, backend, success_url=None, form_class=None,
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
     context['enable_weixin'] = weixin_check()
-    context['redirect_to'] = redirect_to or reverse('dtable')
-    context[redirect_field_name] = redirect_to or reverse('dtable')
+    context['redirect_to'] = redirect_to or reverse('project')
+    context[redirect_field_name] = redirect_to or reverse('project')
 
     return render(request, template_name, context)
 
@@ -320,8 +320,8 @@ def org_register(request, org_id, backend, success_url=None, form_class=None,
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
     context['enable_weixin'] = weixin_check()
-    context['redirect_to'] = redirect_to or reverse('dtable')
-    context[redirect_field_name] = redirect_to or reverse('dtable')
+    context['redirect_to'] = redirect_to or reverse('project')
+    context[redirect_field_name] = redirect_to or reverse('project')
 
     return render(request, template_name, context)
 
@@ -339,8 +339,8 @@ def render_sms_registration_error(request, redirect_to, error_msg, send_button_d
 
     from seahub.auth import REDIRECT_FIELD_NAME
     return render(request, 'registration/sms_registration_form.html', {
-        REDIRECT_FIELD_NAME: redirect_to or reverse('dtable'),
-        'redirect_to': redirect_to or reverse('dtable'),
+        REDIRECT_FIELD_NAME: redirect_to or reverse('project'),
+        'redirect_to': redirect_to or reverse('project'),
         'login_bg_image_path': get_login_bg_image_path(),
         'error_msg': error_msg,
         'send_button_disabled': send_button_disabled,
@@ -513,8 +513,8 @@ def sms_register(request, backend, success_url=None, form_class=None,
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
     context['enable_weixin'] = weixin_check()
-    context['redirect_to'] = redirect_to or reverse('dtable')
-    context[redirect_field_name] = redirect_to or reverse('dtable')
+    context['redirect_to'] = redirect_to or reverse('project')
+    context[redirect_field_name] = redirect_to or reverse('project')
 
     context['phone'] = phone
     context['error_msg'] = error_msg

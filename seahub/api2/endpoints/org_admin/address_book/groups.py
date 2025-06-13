@@ -16,12 +16,12 @@ from seahub.api2.permissions import IsProVersion
 from seahub.api2.authentication import TokenAuthentication
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.organizations.utils import check_org_admin
-from seahub.dtable.models import Workspaces, DTables
+from seahub.project.models import Workspaces, DTables
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, refresh_group_name_cache
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-from seahub.dtable.utils import create_repo_and_workspace
+from seahub.project.utils import create_repo_and_workspace
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.avatar.settings import AVATAR_DEFAULT_SIZE

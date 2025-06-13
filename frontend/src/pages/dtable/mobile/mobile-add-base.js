@@ -1,21 +1,16 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
-import { enableCreateBaseFromTemplate } from '../../../utils/constants';
 import AddBlankTable from './add-blank-table';
 import AddBlankFolder from './add-blank-folder';
 import ModalPortal from '../../../components/modal-portal';
-import MobileTemplateList from './mobile-template-list';
 
 const gettext = window.gettext;
 
 const propTypes = {
-  isCreatedTemplateLoading: PropTypes.bool,
-  createDTable: PropTypes.func,
+  createProject: PropTypes.func,
   createBlankFolder: PropTypes.func,
   currentWorkspace: PropTypes.object,
-  addDtableFromExternalLink: PropTypes.func,
-  uploadDTableFile: PropTypes.func.isRequired,
   folder: PropTypes.object,
 };
 
@@ -24,9 +19,8 @@ class MobileAddBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isShowCreateTable: false,
+      isShowCreateProject: false,
       isShowCreateFolder: false,
-      isShowTemplateList: false,
       dropdownOpen: false,
       isWeChat: this.isWeChat(),
     };
@@ -48,12 +42,8 @@ class MobileAddBase extends React.Component {
     return false;
   };
 
-  onShowTemplateListToggle = () => {
-    this.setState({ dropdownOpen: !this.state.dropdownOpen, isShowTemplateList: !this.state.isShowTemplateList });
-  };
-
-  onCreateTableToggle = () => {
-    this.setState({ dropdownOpen: !this.state.dropdownOpen, isShowCreateTable: !this.state.isShowCreateTable });
+  onCreateProjectToggle = () => {
+    this.setState({ dropdownOpen: !this.state.dropdownOpen, isShowCreateProject: !this.state.isShowCreateProject });
   };
 
   onCreateFolderToggle = () => {
@@ -70,18 +60,9 @@ class MobileAddBase extends React.Component {
     event.nativeEvent.stopImmediatePropagation();
   };
 
-  uploadDTableFile = () => {
-    // no file selected
-    if (!this.uploadInput.files.length) {
-      return;
-    }
-    const file = this.uploadInput.files[0];
-    this.props.uploadDTableFile(this.props.currentWorkspace.id, file);
-  };
-
   render() {
     const { currentWorkspace } = this.props;
-    const { isShowCreateTable, isShowTemplateList, isShowCreateFolder, isWeChat } = this.state;
+    const { isShowCreateProject, isShowCreateFolder } = this.state;
     const isFolder = !!this.props.folder;
     return (
       <Fragment>
@@ -104,45 +85,32 @@ class MobileAddBase extends React.Component {
                 </span>
               </div>
               <div className="table-mobile-name">
-                <span>{isFolder ? gettext('Add a base') : gettext('Add a base or folder')}</span>
+                <span>{isFolder ? gettext('Add a project') : gettext('Add a project or folder')}</span>
               </div>
               <div className="table-mobile-dropdown-menu"></div>
             </DropdownToggle>
             <div className={this.state.dropdownOpen ? '' : 'd-none'} onClick={this.dropdownToggle}>
               <div className="mobile-operation-menu-bg-layer"></div>
               <div className="mobile-operation-menu">
-                <DropdownItem onClick={this.onCreateTableToggle} className="mobile-dropdown-item" >
+                <DropdownItem onClick={this.onCreateProjectToggle} className="mobile-dropdown-item" >
                   <span className="item-icon dtable-font dtable-icon-add-table"></span>
-                  <span className="mobile-dropdown-span">{gettext('Create a blank base')}</span>
+                  <span className="mobile-dropdown-span">{gettext('Create a blank project')}</span>
                 </DropdownItem>
-                {enableCreateBaseFromTemplate &&
-                  <DropdownItem onClick={this.onShowTemplateListToggle} className="mobile-dropdown-item">
-                    <span className="item-icon dtable-font dtable-icon-templates"></span>
-                    <span className="mobile-dropdown-span">{gettext('Create from a template')}</span>
-                  </DropdownItem>
-                }
                 {!isFolder &&
                   <DropdownItem onClick={this.onCreateFolderToggle} className="mobile-dropdown-item">
                     <span className="item-icon dtable-font dtable-icon-folders"></span>
                     <span className="mobile-dropdown-span">{gettext('Create a folder')}</span>
                   </DropdownItem>
                 }
-                {!isWeChat &&
-                  <DropdownItem onClick={this.onOpenUploadInput} className="mobile-dropdown-item" >
-                    <span className="item-icon dtable-font dtable-icon-import"></span>
-                    <span className="mobile-dropdown-span">{gettext('Import from file (*.xlsx *.csv *.dtable)')}</span>
-                    <input className="d-none" type="file" accept=".dtable, .csv, .xlsx" ref={ref => this.uploadInput = ref} onChange={this.uploadDTableFile} onClick={this.onUploadClick}/>
-                  </DropdownItem>
-                }
               </div>
             </div>
           </Dropdown>
         </div>
-        {isShowCreateTable &&
+        {isShowCreateProject &&
           <ModalPortal>
             <AddBlankTable
-              onCreateTableToggle={this.onCreateTableToggle}
-              createDTable={this.props.createDTable}
+              onCreateProjectToggle={this.onCreateProjectToggle}
+              createProject={this.props.createProject}
               currentWorkspace={currentWorkspace}
             />
           </ModalPortal>
@@ -153,16 +121,6 @@ class MobileAddBase extends React.Component {
               onCreateFolderToggle={this.onCreateFolderToggle}
               createBlankFolder={this.props.createBlankFolder}
               currentWorkspace={this.props.currentWorkspace}
-            />
-          </ModalPortal>
-        }
-        {isShowTemplateList &&
-          <ModalPortal>
-            <MobileTemplateList
-              isSinglePage={true}
-              onShowTemplateListToggle={this.onShowTemplateListToggle}
-              addDtableFromExternalLink={this.props.addDtableFromExternalLink}
-              isCreatedTemplateLoading={this.props.isCreatedTemplateLoading}
             />
           </ModalPortal>
         }

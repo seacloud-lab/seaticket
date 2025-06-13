@@ -2,23 +2,23 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import dayjs from 'dayjs';
-import { toaster } from 'dtable-ui-component';
+import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { orgID, gettext } from '../../utils/constants';
+import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../../components/modal-portal';
-import DeleteTableDialog from '../dtable/dialog/delete-table-dialog';
+import RestoreTableDialog from '../dtable/dialog/restore-table-dialog';
 import Paginator from '../../components/paginator';
-import OrgAdminShareTableDialog from '../../components/dialog/orgadmin-dialog/orgadmin-share-table-dialog';
+import EmptyProjectTrashDialog from '../dtable/dialog/empty-project-trash-dialog';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,
-  isItemFreezed: PropTypes.bool.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
-  exportDtable: PropTypes.func.isRequired,
+  isItemFreezed: PropTypes.bool.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
+
 
 class Item extends React.Component {
 
@@ -28,8 +28,7 @@ class Item extends React.Component {
       isOpIconShown: false,
       isItemMenuShow: false,
       highlight: false,
-      isDeleteDialogOpen: false,
-      isShareDialogOpen: false
+      isRestoreDialogOpen: false,
     };
   }
 
@@ -62,35 +61,32 @@ class Item extends React.Component {
   onMenuItemClick = (operation) => {
     switch (operation) {
       case 'Delete':
-        this.toggleDeleteDialog();
+        this.toggleRestoreDialog();
         break;
       default:
         break;
     }
   };
 
-  onDeleteDTable = () => {
+  onRestoreDTable = () => {
     const item = this.props.item;
-    let dtableName = item.name;
+    let projectName = item.name;
+    let owner_deleted = item.owner_deleted;
 
-    orgAdminServiceApi.orgAdminDeleteDTable(orgID, item.id).then(() => {
-      this.props.deleteDTable(item);
-      const msg = gettext('Successfully deleted {name}.').replace('{name}', dtableName);
+    orgAdminServiceApi.orgAdminRestoreTrashProject(orgID, item.id, owner_deleted).then(() => {
+      this.props.restoreProject(item);
+      const msg = gettext('Successfully restore {name}.').replace('{name}', projectName);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
 
-    this.toggleDeleteDialog();
+    this.toggleRestoreDialog();
   };
 
-  toggleDeleteDialog = () => {
-    this.setState({ isDeleteDialogOpen: !this.state.isDeleteDialogOpen });
-  };
-
-  toggleShareDialog = () => {
-    this.setState({ isShareDialogOpen: !this.state.isShareDialogOpen });
+  toggleRestoreDialog = () => {
+    this.setState({ isRestoreDialogOpen: !this.state.isRestoreDialogOpen });
   };
 
   onMouseEnter = () => {
@@ -118,11 +114,6 @@ class Item extends React.Component {
     });
   };
 
-  onExportDtable = () => {
-    const item = this.props.item;
-    this.props.exportDtable(item.uuid);
-  };
-
   render() {
     const item = this.props.item;
     let { isOpIconShown } = this.state;
@@ -136,9 +127,8 @@ class Item extends React.Component {
             {item.name}
           </td>
           <td>{item.uuid}</td>
-          <td>{item.rows_count}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
@@ -152,28 +142,19 @@ class Item extends React.Component {
                   aria-expanded={this.state.isItemMenuShow}
                 />
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
-                  <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
-                  <DropdownItem onClick={this.onExportDtable}>{gettext('Export')}</DropdownItem>
-                  <DropdownItem onClick={this.toggleShareDialog}>{gettext('Share')}</DropdownItem>
+                  <DropdownItem onClick={this.toggleRestoreDialog}>{gettext('Restore')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             )}
           </td>
         </tr>
-        {this.state.isDeleteDialogOpen &&
+        {this.state.isRestoreDialogOpen &&
           <ModalPortal>
-            <DeleteTableDialog
+            <RestoreTableDialog
               currentTable={item}
-              onDeleteDTable={this.onDeleteDTable}
-              deleteCancel={this.toggleDeleteDialog}
-            />
-          </ModalPortal>
-        }
-        {this.state.isShareDialogOpen &&
-          <ModalPortal>
-            <OrgAdminShareTableDialog
-              currentTable={item}
-              shareCancel={this.toggleShareDialog}
+              handleSubmit={this.onRestoreDTable}
+              restoreCancel={this.toggleRestoreDialog}
+              owner_deleted={item.owner_deleted}
             />
           </ModalPortal>
         }
@@ -184,36 +165,38 @@ class Item extends React.Component {
 
 Item.propTypes = ItemPropTypes;
 
-const OrgNormalDtablesPropTypes = {
-  exportDtable: PropTypes.func.isRequired,
+const OrgTrashProjectsPropTypes = {
+  onTrashEmptyConfirmDialogToggle: PropTypes.func.isRequired,
+  isShowTrashEmptyConfirmDialog: PropTypes.bool.isRequired,
 };
 
-class OrgNormalDTables extends React.Component {
+class OrgTrashProjects extends React.Component {
   constructor(props) {
     super(props);
     this.state = ({
       isItemFreezed: false,
-      dtableList: [],
+      projectList: [],
       page: 1,
       per_page: 25,
+      expireDays: trashCleanExpireDays,
     });
   }
 
   componentDidMount() {
-    this.loadDTables(this.state.page);
+    this.loadDTables(1);
   }
 
-  loadDTables(page) {
-    orgAdminServiceApi.orgAdminListDTables(orgID, page, this.state.per_page).then((res) => {
+  loadDTables = (page) => {
+    orgAdminServiceApi.orgAdminListTrashProjects(orgID, page, this.state.per_page).then((res) => {
       this.setState({
-        dtableList: res.data.dtable_list,
+        projectList: res.data.project_list,
         count: res.data.count
       });
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  }
+  };
 
   onFreezedItem = () => {
     this.setState({ isItemFreezed: true });
@@ -223,14 +206,10 @@ class OrgNormalDTables extends React.Component {
     this.setState({ isItemFreezed: false });
   };
 
-  deleteDTable = (item) => {
-    let dtableList = this.state.dtableList.slice();
-    dtableList = dtableList.filter((dtable) => {return dtable.id !== item.id;});
-    this.setState({ dtableList: dtableList });
-  };
-
-  exportDtable = (dtable_uuid) => {
-    this.props.exportDtable(dtable_uuid);
+  restoreProject = (item) => {
+    let projectList = this.state.projectList.slice();
+    projectList = projectList.filter((project) => {return project.id !== item.id;});
+    this.setState({ projectList: projectList });
   };
 
   getPreviousPageList = () => {
@@ -257,24 +236,49 @@ class OrgNormalDTables extends React.Component {
     });
   };
 
+  handleEmptyTrashTables = () => {
+    const { orgID } = window.org.pageOptions;
+    orgAdminServiceApi.orgAdminCleanTrashDTables(orgID).then((res) => {
+      this.setState({
+        projectList: [],
+        page: 1
+      });
+      const msg = gettext('Trash cleaned');
+      toaster.success(msg);
+      this.props.onTrashEmptyConfirmDialogToggle();
+    }).catch((error) => {
+      let errMsg = Utils.getErrorMsg(error, true);
+      if (!error.response || error.response.status !== 403) {
+        toaster.danger(errMsg);
+      }
+    });
+  };
+
   render() {
-    let { dtableList, page, per_page, count } = this.state;
+    let { projectList, page, per_page, count, expireDays } = this.state;
+    if (!projectList.length) {
+      return (
+        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+      );
+    }
     return (
       <div className='cur-view-content'>
+        <p className="mt-4 text-secondary">
+          {gettext('Tip: tables deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', expireDays)}
+        </p>
         <table>
           <thead>
             <tr>
               <th width="5%">{/* icon*/}</th>
-              <th width="15%">{gettext('Name')}</th>
-              <th width="30%">ID</th>
-              <th width="10%">{gettext('Rows')}</th>
-              <th width="20%">{gettext('Owner')}</th>
-              <th width="15%">{gettext('Created at')}</th>
+              <th width="18%">{gettext('Name')}</th>
+              <th width="32%">ID</th>
+              <th width="25%">{gettext('Owner')}</th>
+              <th width="15%">{gettext('Deleted at')}</th>
               <th width="5%">{/* Operations*/}</th>
             </tr>
           </thead>
           <tbody>
-            {dtableList.map((item, index) => {
+            {projectList.map((item, index) => {
               return (
                 <Item
                   key={index}
@@ -282,8 +286,7 @@ class OrgNormalDTables extends React.Component {
                   isItemFreezed={this.state.isItemFreezed}
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
-                  deleteDTable={this.deleteDTable}
-                  exportDtable={this.exportDtable}
+                  restoreProject={this.restoreProject}
                 />
               );
             })}
@@ -298,11 +301,17 @@ class OrgNormalDTables extends React.Component {
           curPerPage={per_page}
           resetPerPage={this.resetPerPage}
         />
+        {this.props.isShowTrashEmptyConfirmDialog && (
+          <EmptyProjectTrashDialog
+            emptyTrashCancel={this.props.onTrashEmptyConfirmDialogToggle}
+            emptyTrashConfirm={this.handleEmptyTrashTables}
+          />
+        )}
       </div>
     );
   }
 }
 
-OrgNormalDTables.propTypes = OrgNormalDtablesPropTypes;
+OrgTrashProjects.propTypes = OrgTrashProjectsPropTypes;
 
-export default OrgNormalDTables;
+export default OrgTrashProjects;

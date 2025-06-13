@@ -9,7 +9,7 @@ from django.core.cache import cache
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.profile.models import Profile
 from seahub.utils import is_org_context, normalize_cache_key
-from seahub.group.models import Group
+from seahub.group.models import Group, GroupUser
 
 logger = logging.getLogger(__name__)
 
@@ -92,12 +92,19 @@ def is_group_owner(group_id, email):
     else:
         return False
 
+
 def is_group_admin_or_owner(group_id, email):
-    if is_group_admin(group_id, email) or \
-        is_group_owner(group_id, email):
+    group = Group.objects.get(group_id=group_id)
+    if group.creator_name == email:
         return True
-    else:
-        return False
+    group_user = GroupUser.objects.get(group_id=group_id, user_name=email)
+    if group_user.is_staff:
+        return True
+    return False
+
+
+def is_group_admin_or_owner_by_group(group, email):
+    return group.is_staff or group.creator_name == email
 
 def get_group_member_info(request, group_id, email):
     p = Profile.objects.get_profile_by_user(email)
@@ -153,7 +160,7 @@ def group_id_to_name(group_id):
     if cached_group_name:
         return cached_group_name
 
-    group = ccnet_api.get_group(int(group_id))
+    group = Group.objects.get(group_id=int(group_id))
     if not group:
         return ''
 

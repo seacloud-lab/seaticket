@@ -370,8 +370,8 @@ class OrgAdminServiceApi {
     return this.req.put(url, data);
   }
 
-  orgAdminListDTables(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/';
+  orgAdminListProjects(orgID, page, perPage) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -379,18 +379,13 @@ class OrgAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminDeleteDTable(orgID, dtableID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableID + '/';
+  orgAdminDeleteProject(orgID, dtableID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableID + '/';
     return this.req.delete(url);
   }
 
-  orgAdminAddExportDTableTask(orgID, dtableUuid) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/export-dtable/';
-    return this.req.get(url);
-  }
-
-  orgAdminListTrashDTables(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/';
+  orgAdminListTrashProjects(orgID, page, perPage) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -403,7 +398,7 @@ class OrgAdminServiceApi {
     return this.req.delete(url);
   }
 
-  orgAdminRestoreTrashDTable(orgID, dtableID, restoreToAdminAccount) {
+  orgAdminRestoreTrashProject(orgID, dtableID, restoreToAdminAccount) {
     const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/' + dtableID + '/';
     const data = {
       restore_to_admin_account: restoreToAdminAccount

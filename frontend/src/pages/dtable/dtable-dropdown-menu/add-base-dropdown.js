@@ -1,14 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { enableCreateBaseFromTemplate } from '../../../utils/constants';
 
 const gettext = window.gettext;
 
 const propTypes = {
   currentWorkspace: PropTypes.object.isRequired,
-  onShowTemplateListToggle: PropTypes.func.isRequired,
-  uploadDTableFile: PropTypes.func.isRequired,
   onCreateTableToggle: PropTypes.func.isRequired,
   onCreateFolderToggle: PropTypes.func,
   folder: PropTypes.object,
@@ -28,10 +25,6 @@ class AddBaseDropdownMenu extends React.Component {
     this.setState({ dropdownOpen: !this.state.dropdownOpen });
   };
 
-  onShowTemplateListToggle = () => {
-    this.props.onShowTemplateListToggle();
-  };
-
   onCreateTableToggle = () => {
     this.props.onCreateTableToggle(this.props.folder);
   };
@@ -39,16 +32,6 @@ class AddBaseDropdownMenu extends React.Component {
   openUploadInput = (e) => {
     e.stopPropagation();
     this.uploadInput.click();
-  };
-
-  uploadDTableFile = () => {
-    // no file selected
-    if (!this.uploadInput.files.length) {
-      return;
-    }
-    const file = this.uploadInput.files[0];
-    this.props.uploadDTableFile(this.props.currentWorkspace.id, file);
-    this.dropdownToggle();
   };
 
   onUploadClick = (event) => {
@@ -88,34 +71,15 @@ class AddBaseDropdownMenu extends React.Component {
             </span>
           </div>
           <div className="table-name">
-            <span className="a-simulate">{isFolder ? gettext('Add a base') : gettext('Add a base or folder')}</span>
+            <span className="a-simulate">{isFolder ? gettext('Add a base') : gettext('Add a project or folder')}</span>
           </div>
           <div className="table-dropdown-menu"></div>
         </DropdownToggle>
         <DropdownMenu className="dtable-dropdown-menu dropdown-menu dropdown-menu-list large">
           <DropdownItem onClick={this.onCreateTableToggle} >
             <span className="item-icon dtable-font dtable-icon-add-table" aria-hidden="true"></span>
-            <span aria-label={gettext('Create a blank base')}>{gettext('Create a blank base')}</span>
+            <span aria-label={gettext('Create a blank project')}>{gettext('Create a blank project')}</span>
           </DropdownItem>
-          <DropdownItem onClick={this.openUploadInput} toggle={false}>
-            <span className="item-icon dtable-font dtable-icon-import" aria-hidden="true"></span>
-            <span aria-label={gettext('Import from file (*.xlsx *.csv *.dtable)')}>{gettext('Import from file (*.xlsx *.csv *.dtable)')}</span>
-            <input
-              className="d-none"
-              type="file"
-              accept=".dtable, .csv, .xlsx"
-              ref={ref => this.uploadInput = ref}
-              onChange={this.uploadDTableFile}
-              onClick={this.onUploadClick}
-              aria-label={gettext('Import from file')}
-            />
-          </DropdownItem>
-          {enableCreateBaseFromTemplate &&
-            <DropdownItem onClick={this.onShowTemplateListToggle}>
-              <span className="item-icon dtable-font dtable-icon-templates" aria-hidden="true"></span>
-              <span aria-label={gettext('Create from a template')}>{gettext('Create from a template')}</span>
-            </DropdownItem>
-          }
           {!this.props.folder &&
             <DropdownItem onClick={this.onCreateFolderToggle} >
               <span className="item-icon dtable-font dtable-icon-folders" aria-hidden="true"></span>

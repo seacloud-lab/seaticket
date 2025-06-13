@@ -203,7 +203,7 @@ def choose_register(request):
 
 
 @login_required
-def dtable_fake_view(request, **kwargs):
+def seaqa_fake_view(request, **kwargs):
     username = request.user.username
 
     cache_key = username + '_need_show_video'
@@ -229,7 +229,7 @@ def dtable_fake_view(request, **kwargs):
         except Exception as e:
             logger.error('get user phone failed. {}'.format(e))
 
-    return render(request, 'react_dtable.html', {
+    return render(request, 'react_project.html', {
         'version': SEATABLE_VERSION,
         'show_wechat_support_group': SHOW_WECHAT_SUPPORT_GROUP,
         'show_templates_link': SHOW_TEMPLATES_LINK,

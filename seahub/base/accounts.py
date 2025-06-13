@@ -259,8 +259,8 @@ class UserPermissions(object):
     def can_add_group(self):
         return self._get_perm_by_roles('can_add_group')
 
-    def can_add_dtable(self):
-        return self._get_perm_by_roles('can_add_dtable')
+    def can_add_project(self):
+        return self._get_perm_by_roles('can_add_project')
 
     def can_use_global_address_book(self):
         return self._get_perm_by_roles('can_use_global_address_book')
@@ -896,7 +896,7 @@ class CustomLDAPBackend(object):
         if orgs:
             org_id = orgs[0].org_id
         if id_in_org:
-            from seahub.dtable.models import IdInOrgTuple
+            from seahub.project.models import IdInOrgTuple
             IdInOrgTuple.objects.add_or_update(username, id_in_org, org_id)
 
         if LDAP_UPDATE_USER_WHEN_LOGIN:

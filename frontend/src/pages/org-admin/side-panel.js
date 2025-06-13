@@ -53,9 +53,9 @@ class SidePanel extends React.Component {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ellipsis ${this.getActiveClass('bases') || this.getActiveClass('trash')}`} to={siteRoot + 'org/dtableadmin/'} onClick={() => this.tabItemClick('bases')}>
+                  <Link className={`nav-link ellipsis ${this.getActiveClass('projects') || this.getActiveClass('trash')}`} to={siteRoot + 'org/projectadmin/'} onClick={() => this.tabItemClick('projects')}>
                     <span className="dtable-font dtable-icon-dtable-logo"></span>
-                    <span className="nav-text">{gettext('Bases')}</span>
+                    <span className="nav-text">{gettext('Projects')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">

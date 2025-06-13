@@ -14,19 +14,19 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces, Projects
 from seahub.group.utils import validate_group_name, is_group_member, is_group_admin, check_group_name_conflict, \
     refresh_group_name_cache
-from seahub.signals import group_deleted
 from seahub.utils import is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
 
-from seahub.organizations.views import get_org_groups, get_org_id_by_group
+from seahub.organizations.views import get_org_groups
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER
 from seahub.organizations.models import Organization, OrgUser, OrgGroup
+from seahub.group.models import Group
 
 
 logger = logging.getLogger(__name__)
@@ -184,8 +184,8 @@ class OrgAdminGroups(APIView):
 
         return Response(group_info)
 
-class OrgAdminGroup(APIView):
 
+class OrgAdminGroup(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
     permission_classes = (IsProVersion, IsOrgAdminUser)
@@ -195,20 +195,24 @@ class OrgAdminGroup(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        if get_org_id_by_group(group_id) != org_id:
+        try:
+            org_group = OrgGroup.objects.get(group_id=group_id)
+        except OrgGroup.DoesNotExist:
+            error_msg = 'group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if org_group.org_id != org_id:
             error_msg = 'Group %s not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # main
-        group = ccnet_api.get_group(group_id)
-
+        group = Group.objects.get_group(group_id)
         group_info = {
-            "id": group.id,
+            "id": group.group_id,
             "group_name": group.group_name,
             "ctime": timestamp_to_isoformat_timestr(group.timestamp),
             "creator_email": group.creator_name,
@@ -325,26 +329,26 @@ class OrgAdminGroup(APIView):
         """Remove an organization group
         """
         # resource check
-
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get(group_id=group_id)
         if not group:
             return Response({'success': True})
 
         # permission checking
-        if get_org_id_by_group(group_id) != org_id:
+        org_group = OrgGroup.objects.get(group_id=group_id)
+        if org_group.org_id != org_id:
             error_msg = 'Group %s not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # dtables check
         owner = '%s@seafile_group' % (group_id)
         workspace = Workspaces.objects.filter(owner=owner).first()
-        if workspace and DTables.objects.filter(workspace=workspace, deleted=False).exists():
+        if workspace and Projects.objects.filter(workspace=workspace, deleted=False).exists():
             return api_error(status.HTTP_400_BAD_REQUEST, _('Cannot delete group with bases'))
 
         # mark group's workspace as deleted
@@ -355,9 +359,7 @@ class OrgAdminGroup(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            ccnet_api.remove_org_group(org_id, group_id)
-            ccnet_api.remove_group(group_id)
-            group_deleted.send(sender=None, group_id=group_id)
+            OrgGroup.objects.remove_org_group(org_id, group_id)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

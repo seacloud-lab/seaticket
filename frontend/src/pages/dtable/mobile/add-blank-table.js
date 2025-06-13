@@ -13,8 +13,8 @@ import '../../../css/mobile/add-blank-table.css';
 
 const propTypes = {
   currentWorkspace: PropTypes.object.isRequired,
-  onCreateTableToggle: PropTypes.func.isRequired,
-  createDTable: PropTypes.func.isRequired,
+  onCreateProjectToggle: PropTypes.func.isRequired,
+  createProject: PropTypes.func.isRequired,
 };
 
 class AddBlankTable extends React.Component {
@@ -62,8 +62,8 @@ class AddBlankTable extends React.Component {
     }) ;
   };
 
-  onCreateTableToggle = () => {
-    this.props.onCreateTableToggle();
+  onCreateProjectToggle = () => {
+    this.props.onCreateProjectToggle();
   };
 
   onCreateTable = () => {
@@ -85,8 +85,8 @@ class AddBlankTable extends React.Component {
         }
       }
     }
-    this.props.createDTable(response.message, email, dtableIcon, dtableColor);
-    this.props.onCreateTableToggle();
+    this.props.createProject(response.message, email, dtableIcon, dtableColor);
+    this.props.onCreateProjectToggle();
   };
 
   onIconChange = (dtableIcon) => {
@@ -141,10 +141,10 @@ class AddBlankTable extends React.Component {
     return (
       <div className="add-blank-table">
         <MobileCommonHeader
-          title={gettext('Create a blank base')}
+          title={gettext('Create a blank project')}
           leftName={gettext('Cancel')}
           rightName={gettext('Done')}
-          onLeftClick={this.onCreateTableToggle}
+          onLeftClick={this.onCreateProjectToggle}
           onRightClick={this.onCreateTable}
         />
 

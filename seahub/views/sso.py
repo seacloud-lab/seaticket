@@ -30,7 +30,7 @@ def sso(request):
         if not url_has_allowed_host_and_scheme(url=next_page, allowed_hosts=request.get_host()):
             next_page = settings.LOGIN_REDIRECT_URL
     else:
-        next_page = reverse('dtable')
+        next_page = reverse('project')
 
     if getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False):
         return HttpResponseRedirect(next_page)

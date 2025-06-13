@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.signals import group_deleted
 from seahub.utils import is_valid_username, is_pro_version
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr

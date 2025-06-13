@@ -21,7 +21,7 @@ class VirtualDtable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dtableName: gettext('Untitled base'),
+      ProjectName: gettext('Untitled project'),
       dtableIcon: '',
       dtableColor: '',
       isChange: true,
@@ -58,14 +58,14 @@ class VirtualDtable extends React.Component {
   }
 
   onCreateTable = () => {
-    const { dtableName, dtableIcon, dtableColor, baseCreated, isChange } = this.state;
+    const { ProjectName, dtableIcon, dtableColor, baseCreated, isChange } = this.state;
     if (!isChange) return;
     const { currentWorkspace, currentFolder } = this.props;
     let folderID;
     if (currentFolder) {
       folderID = currentFolder.id;
     }
-    let response = validateName(dtableName);
+    let response = validateName(ProjectName);
     if (!response.isValid) {
       toaster.danger(response.message);
       return;
@@ -80,9 +80,9 @@ class VirtualDtable extends React.Component {
         }
       }
     }
-    dtableWebAPI.createTable(response.message, email, dtableIcon, dtableColor, null, folderID).then((res) => {
-      let newTable = new Base(res.data.table);
-      this.props.createBlankTable(newTable);
+    dtableWebAPI.createProject(response.message, email, dtableIcon, dtableColor, null, folderID).then((res) => {
+      let newProject = new Base(res.data.project);
+      this.props.createBlankTable(newProject);
     }).catch((error) => {
       this.setState({ isChange: false });
       this.handleError(error);
@@ -104,26 +104,26 @@ class VirtualDtable extends React.Component {
     this.setState({ dtableIcon, isChange: true });
   };
 
-  onNameChange = (dtableName) => {
-    this.setState({ dtableName, isChange: true });
+  onNameChange = (ProjectName) => {
+    this.setState({ ProjectName, isChange: true });
   };
 
   render() {
-    const { dtableName, dtableIcon, dtableColor } = this.state;
+    const { ProjectName, dtableIcon, dtableColor } = this.state;
     return (
       <div
         className={'virtual-table table-item tr-highlight'}
         id="create-base"
       >
         <DTableItem dtableColor={''} dtableIcon={''} />
-        <div className="table-name">{gettext('Untitled base')}</div>
+        <div className="table-name">{gettext('Untitled project')}</div>
         {this.state.isDataLoaded && (
           <DtableSettingPopover
             placement='bottom-start'
             popoverClassName='virtual-table-icon-settings'
             tableIconSettingsId={'create-base'}
             onTableIconToggle={this.onCreateTable}
-            dtableName={dtableName}
+            ProjectName={ProjectName}
             dtableColor={dtableColor}
             dtableIcon={dtableIcon}
             onColorChange={this.onColorChange}

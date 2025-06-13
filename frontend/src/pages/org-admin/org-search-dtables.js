@@ -6,23 +6,18 @@ import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, Dr
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../utils/utils';
 import { gettext, siteRoot, loginUrl, mediaUrl } from '../../utils/constants';
-import { dtableWebAPI } from '../../api/dtable-web-api';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import Loading from '../../components/loading';
 import Paginator from '../../components/paginator';
 import ModalPortal from '../../components/modal-portal';
 import MainPanelTopbar from './main-panel-topbar';
 import DeleteTableDialog from '../dtable/dialog/delete-table-dialog';
-import DTableIODialog from '../dtable/dialog/dtable-io-dialog';
-import OrgAdminShareTableDialog from '../../components/dialog/orgadmin-dialog/orgadmin-share-table-dialog';
-
 
 const { orgID } = window.org.pageOptions;
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
   deleteDTable: PropTypes.func.isRequired,
-  exportDtable: PropTypes.func.isRequired,
 };
 
 class Item extends Component {
@@ -34,7 +29,6 @@ class Item extends Component {
       isOpIconShown: false,
       isDeleteDialogOpen: false,
       isExternalLinkDialogOpen: false,
-      isShareDialogOpen: false
     };
   }
 
@@ -88,15 +82,6 @@ class Item extends Component {
     this.toggleDeleteDialog();
   };
 
-  onExportDtable = () => {
-    const { item } = this.props;
-    this.props.exportDtable(item.uuid);
-  };
-
-  toggleShareDialog = () => {
-    this.setState({ isShareDialogOpen: !this.state.isShareDialogOpen });
-  };
-
   linkedTo = (item) => {
     if (item.group_id === -1) {
       return `${siteRoot}org/useradmin/info/${encodeURIComponent(item.email)}/`;
@@ -136,8 +121,6 @@ class Item extends Component {
                 />
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
-                  <DropdownItem onClick={this.onExportDtable}>{gettext('Export')}</DropdownItem>
-                  <DropdownItem onClick={this.toggleShareDialog}>{gettext('Share')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             )}
@@ -149,14 +132,6 @@ class Item extends Component {
               currentTable={item}
               onDeleteDTable={this.onDeleteDTable}
               deleteCancel={this.toggleDeleteDialog}
-            />
-          </ModalPortal>
-        }
-        {this.state.isShareDialogOpen &&
-          <ModalPortal>
-            <OrgAdminShareTableDialog
-              currentTable={item}
-              shareCancel={this.toggleShareDialog}
             />
           </ModalPortal>
         }
@@ -177,7 +152,6 @@ const contentPropTypes = {
   resetPerPage: PropTypes.func,
   getListByPage: PropTypes.func,
   deleteDTable: PropTypes.func.isRequired,
-  exportDtable: PropTypes.func.isRequired,
 };
 
 class Content extends Component {
@@ -195,7 +169,7 @@ class Content extends Component {
   };
 
   render() {
-    const { loading, errorMsg, items, deleteDTable, exportDtable } = this.props;
+    const { loading, errorMsg, items, deleteDTable } = this.props;
     if (loading) {
       return <Loading/>;
     } else if (errorMsg) {
@@ -226,7 +200,6 @@ class Content extends Component {
                     key={index}
                     item={item}
                     deleteDTable={deleteDTable}
-                    exportDtable={exportDtable}
                   />);
                 })}
               </tbody>
@@ -265,7 +238,6 @@ class OrgSearchDTables extends Component {
       hasNextPage: false,
       dtables: [],
       isSubmitBtnActive: false,
-      isShowDTableIODialog: false,
     };
   }
 
@@ -339,10 +311,6 @@ class OrgSearchDTables extends Component {
     });
   };
 
-  onDTableIODialogToggle = () => {
-    this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
-  };
-
   deleteDTable = (table) => {
     orgAdminServiceApi.orgAdminDeleteDTable(orgID, table.id).then(res => {
       let newTableList = this.state.dtables.filter(item => {
@@ -357,67 +325,6 @@ class OrgSearchDTables extends Component {
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
-    });
-  };
-
-  cancelDTableIOTask = () => {
-    clearInterval(this.timer);
-    let dtable_uuid = this.state.currentExportingTable.uuid;
-    dtableWebAPI.cancelDTableIOTask(this.state.IOTaskId, dtable_uuid, 'export').then(res => {
-      this.setState({
-        isShowDTableIODialog: false,
-        IOTaskId: 0,
-      });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
-  exportDtable = (dtable_uuid) => {
-    let task_id = '';
-    orgAdminServiceApi.orgAdminAddExportDTableTask(orgID, dtable_uuid).then(res => {
-      task_id = res.data.task_id;
-      this.setState({
-        isShowDTableIODialog: true,
-        IOTaskId: task_id,
-        currentExportingTable: res.data.table,
-      });
-      return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
-    }).then(res => {
-      if (res.data.is_finished === true) {
-        this.setState({ isShowDTableIODialog: false });
-        location.href = siteRoot + 'dtable-export-content/?task_id=' + task_id + '&dtable_uuid=' + dtable_uuid;
-      } else {
-        this.timer = setInterval(() => {
-          dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
-            if (res.data.is_finished === true) {
-              this.setState({ isFinished: true });
-              clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
-              location.href = siteRoot + 'dtable-export-content/?task_id=' + task_id + '&dtable_uuid=' + dtable_uuid;
-            }
-          }).catch(error => {
-            if (this.state.isFinished === false) {
-              clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
-              toaster.danger(gettext('Failed to export. Please check whether the size of table attachments exceeds the limit.'));
-            }
-          });
-        }, 1000);
-      }
-      this.setState({ isFinished: false });
-    }).catch(error => {
-      const error_msg = error.response.data ? error.response.data['error_msg'] : null;
-      if (error.response && error.response.status === 500) {
-        if (error_msg && error_msg !== 'Internal Server Error') {
-          toaster.danger(error_msg);
-        } else {
-          toaster.danger(gettext('Internal Server Error.'));
-        }
-      } else {
-        toaster.danger(gettext(error_msg));
-      }
     });
   };
 
@@ -457,7 +364,6 @@ class OrgSearchDTables extends Component {
                   errorMsg={this.state.errorMsg}
                   items={this.state.dtables}
                   deleteDTable={this.deleteDTable}
-                  exportDtable={this.exportDtable}
                   currentPage={this.state.currentPage}
                   hasNextPage={this.state.hasNextPage}
                   curPerPage={this.state.perPage}
@@ -468,13 +374,6 @@ class OrgSearchDTables extends Component {
             </div>
           </div>
         </div>
-        {this.state.isShowDTableIODialog && (
-          <DTableIODialog
-            isExporting={true}
-            toggle={this.onDTableIODialogToggle}
-            cancelDTableIOTask={this.cancelDTableIOTask}
-          />
-        )}
       </Fragment>
     );
   }

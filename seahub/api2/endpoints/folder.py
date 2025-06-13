@@ -14,10 +14,10 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.dtable.constants import FOLDER_ITEM_DTABLE_GROUP_SHARE, FOLDER_ITEM_VIEW_GROUP_SHARE, FOLDER_ITEM_DTABLE
-from seahub.dtable.models import Workspaces, Folders, FolderItems, DTableGroupShare, DTables, DTableViewGroupShare, \
+from seahub.project.constants import FOLDER_ITEM_DTABLE_GROUP_SHARE, FOLDER_ITEM_VIEW_GROUP_SHARE, FOLDER_ITEM_DTABLE
+from seahub.project.models import Workspaces, Folders, FolderItems, DTableGroupShare, DTables, DTableViewGroupShare, \
     UserShareFolders, DTableShare, DTableViewUserShare, UserStarredDTables
-from seahub.dtable.utils import check_dtable_admin_permission
+from seahub.project.utils import check_dtable_admin_permission
 from seahub.group.utils import group_id_to_name
 from seahub.utils import uuid_str_to_32_chars
 

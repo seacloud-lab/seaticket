@@ -31,8 +31,8 @@ class ColumnTypes:
     def is_valid(cls, item):
         if not getattr(cls, 'column_types_set', None):
             cls.column_types_set = {
-                getattr(cls, attr) 
-                for attr in dir(cls) 
+                getattr(cls, attr)
+                for attr in dir(cls)
                 if not attr.startswith('__') and not callable(getattr(cls, attr))
             }
         return item in getattr(cls, 'column_types_set')
@@ -109,9 +109,8 @@ DTABLE_ASSET_READ_PERMISSION = 'ASSET_READ_PERM_'
 DTABLE_ASSET_DOWNLOAD_PERMISSION = 'ASSET_DOWNLOAD_PERM_'
 
 # folder-item-type
-FOLDER_ITEM_DTABLE_GROUP_SHARE = 'dtable_group_share'
-FOLDER_ITEM_VIEW_GROUP_SHARE = 'view_group_share'
-FOLDER_ITEM_DTABLE = 'dtable'
+FOLDER_ITEM_PROJECT_GROUP_SHARE = 'project_group_share'
+FOLDER_ITEM_PROJECT = 'project'
 
 # single/multiple select options
 VALID_OPTION_TAGS = [

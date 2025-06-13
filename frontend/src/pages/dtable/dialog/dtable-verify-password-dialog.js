@@ -8,7 +8,6 @@ import '../../../css/dtable-set-password-dialog.css';
 const propTypes = {
   dtable: PropTypes.object,
   toggle: PropTypes.func,
-  exportDTable: PropTypes.func,
   ignore_asset: PropTypes.string,
 };
 
@@ -30,7 +29,6 @@ class DTableVerifyPasswordDialog extends React.Component {
   };
 
   handleSubmit = () => {
-    this.props.exportDTable(this.props.ignore_asset, this.state.password.trim());
     this.toggle();
   };
 

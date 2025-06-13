@@ -7,6 +7,7 @@ import logging
 from django.db import models
 from django.db.models.manager import EmptyManager
 from django.utils.encoding import smart_str
+from django.contrib.auth.hashers import make_password
 
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
@@ -241,16 +242,9 @@ def _handle_auth_login(sender, request, user, **kwargs):
         except Exception as e:
             logger.error('save session log error: %s', e)
 
-from django.contrib.auth.hashers import make_password
-class EmailUserManager(models.Manager):
-    # emailuser.id, self.password, int(self.is_staff), int(self.is_active)
-    def update_emailuser(self, user_id, password, is_staff, is_active):
-        # self.model.password = make_password(password)
-        # try:
-        #     return self.get(username=username)
-        # except EmailUser.DoesNotExist:
-        #     return None
 
+class EmailUserManager(models.Manager):
+    def update_emailuser(self, user_id, password, is_staff, is_active):
         try:
             user = self.get(id=user_id)
             user.password = make_password(password)
@@ -289,6 +283,12 @@ class EmailUserManager(models.Manager):
 
     def get_superusers(self):
         return self.filter(is_staff=True)
+
+    def get_emailuser(self, username):
+        try:
+            return super(EmailUserManager, self).get(email=username)
+        except EmailUser.DoesNotExist:
+            return None
 
 
 

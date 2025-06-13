@@ -15,7 +15,7 @@ from seahub.profile.models import Profile
 from seahub.auth.models import SocialAuthUser
 from seahub.utils import render_error
 from seahub.utils.ip import get_remote_ip
-from seahub.dtable.models import IdInOrgTuple
+from seahub.project.models import IdInOrgTuple
 from seahub.registration.models import notify_admins_on_activate_request
 from .settings import TSH_AUTH_APP_ID, TSH_AUTH_APP_ID_MD5, TSH_AUTH_SEQ, \
      TSH_AUTH_REDIRECT_URI, TSH_AUTH_TICKET_CHECK_URI, TSH_AUTH_USERNAME_SUFFIX, \

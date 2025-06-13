@@ -51,7 +51,7 @@ from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.organizations.models import Organization
 from seahub.auth.models import EmailUser
-from seahub.dtable.models import IdInOrgTuple
+from seahub.project.models import IdInOrgTuple
 
 try:
     from seahub.settings import LDAP_PROVIDER

@@ -8,7 +8,7 @@ const { siteRoot } = window.app.config;
 
 const propTypes = {
   table: PropTypes.object.isRequired,
-  unstarDTable: PropTypes.func.isRequired,
+  unstarProject: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
 };
 
@@ -31,7 +31,7 @@ class DTableItemStarred extends React.Component {
 
   onUnstarDTableSubmit = (e) => {
     e.stopPropagation();
-    this.props.unstarDTable(this.props.table);
+    this.props.unstarProject(this.props.table);
   };
 
   onTableItemClick = (e, href) => {
@@ -40,7 +40,7 @@ class DTableItemStarred extends React.Component {
 
   renderName = (tableName, tableHref, isDesktop, isEncrypted) => {
     let { path } = this.props;
-    const pathName = path === 'personal' ? gettext('My bases') : path;
+    const pathName = path === 'personal' ? gettext('My projects') : path;
     return (
       <div className={`${isDesktop ? 'table-name' : 'table-mobile-name'}`}>
         <a href={tableHref} className="table-href">{tableName}</a>

@@ -4,7 +4,7 @@ import { DragSource } from 'react-dnd';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Utils } from '../../utils/utils';
 import UserInfoPopover from './dtable-popover/user-info-popover';
-import { canAddDTable } from '../../utils/constants';
+import { canAddProject } from '../../utils/constants';
 import DTableItem from './dtable-item';
 
 const dragSource = {
@@ -136,7 +136,7 @@ class DTableItemShared extends React.Component {
     let is_from_group = table.from_user.indexOf('@seafile_group') !== -1;
     let { active, isUserDetailPopoverShow } = this.state;
     let { name, from_user_name, from_user_avatar, workspace_id, color, icon, permission, is_encrypted } = table;
-    let canCopy = canAddDTable && (permission === 'r' || permission === 'rw');
+    let canCopy = canAddProject && (permission === 'r' || permission === 'rw');
     let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(name) + '/';
     const isDesktop = Utils.isDesktop();
     if (isDesktop) {
