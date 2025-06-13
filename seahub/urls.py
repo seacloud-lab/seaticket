@@ -18,7 +18,7 @@ from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswor
 from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.api2.endpoints.dtable import WorkspacesView
+from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
 from seahub.api2.endpoints.admin.sysinfo import SysInfo
@@ -44,7 +44,7 @@ urlpatterns = [
     re_path(r'^sso-auto-login/$', sso_auto_login, name='sso-auto-login'),
     re_path(r'^mobile-login/', mobile_login, name="mobile_login"),
 
-    re_path(r'^$', dtable_fake_view, name='dtable'),
+    re_path(r'^$', seaqa_fake_view, name='project'),
     re_path(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     ### PWA ###
@@ -56,6 +56,9 @@ urlpatterns = [
     re_path(r'^i18n/$', i18n, name='i18n'),
     re_path(r'^choose_register/$', choose_register, name="choose_register"),
     re_path(r'^server-info/$', ServerInfoView.as_view(), name="server_info"),
+
+    ### React ###
+    re_path(r'^project/$', seaqa_fake_view, name='project_bases'),
 
     ### Apps ###
     re_path(r'^api2/', include('seahub.api2.urls')),
@@ -94,8 +97,10 @@ urlpatterns = [
     re_path(r'^api/v2.1/organizations/(?P<org_id>\d+)/$', OrganizationView.as_view(), name='api-v2.1-organization'),
     re_path(r'^api/v2.1/organizations/(?P<org_id>\d+)/members/$', OrganizationMembersView.as_view(), name='api-v2.1-organization-members'),
 
-    # user: dtable
+    # user: project
     re_path(r'^api/v2.1/workspaces/$', WorkspacesView.as_view(), name='api-v2.1-workspaces'),
+    re_path(r'^api/v2.1/projects/$', ProjectsView.as_view(), name='api-v2.1-projects'),
+    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v2.1-workspace-project'),
 
     ## user::avatar
     re_path(r'^api/v2.1/user-avatar/$', UserAvatarView.as_view(), name='api-v2.1-user-avatar'),

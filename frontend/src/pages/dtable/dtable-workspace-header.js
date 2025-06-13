@@ -32,7 +32,7 @@ class WorkspaceHeader extends Component {
       return (
         <>
           <span className={`${preCls}creator`}></span>
-          <span>{gettext('My bases')}</span>
+          <span>{gettext('My projects')}</span>
         </>
       );
     } else {

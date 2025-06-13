@@ -10,7 +10,7 @@ from rest_framework import status
 
 from constance import config
 
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.organizations.views import is_org_staff
 from seahub.utils import is_valid_email
 from seahub.utils.licenseparse import user_number_over_limit

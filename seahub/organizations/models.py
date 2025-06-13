@@ -684,11 +684,16 @@ class OrgGroupManager(models.Manager):
         except OrgGroup.DoesNotExist:
             return None
 
-    def remove_org_group(self, org_id):
+    def remove_org_groups(self, org_id):
         org_groups = self.model.objects.filter(org_id=org_id)
         for group in org_groups:
             group_id = group.group_id
             Group.objects.remove_group(group_id)
+        org_groups.delete()
+
+    def remove_org_group(self, org_id, group_id):
+        self.filter(org_id=org_id, group_id=group_id).delete()
+        Group.objects.remove_group(group_id)
 
     def create_org_group(self, org_id, group_name, username, parent_group_id=0):
         ctime = int(time.time_ns() / 1000)
@@ -696,6 +701,15 @@ class OrgGroupManager(models.Manager):
         GroupUser.objects.create(group_id=group.group_id, user_name=username, is_staff=True)
         org_group = self.create(org_id=org_id, group_id=group.group_id)
         return org_group
+
+    def get_org_groups_by_user(self, org_id, username):
+        sql = """SELECT a.id, a.org_id, a.group_id, b.user_name, b.is_staff, c.group_name, c.parent_group_id, c.creator_name, c.timestamp 
+        FROM org_group a 
+        INNER JOIN group_user b ON a.group_id=b.group_id 
+        INNER JOIN `group` c ON c.group_id=b.group_id WHERE a.org_id=%s AND b.user_name=%s"""
+        org_groups = self.raw(sql, (org_id, username))
+        return org_groups
+
 
 class OrgGroup(models.Model):
     org_id = models.IntegerField()

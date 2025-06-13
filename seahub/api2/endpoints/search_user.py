@@ -23,7 +23,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 from seahub.profile.models import Profile
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
-from seahub.dtable.models import IdInOrgTuple
+from seahub.project.models import IdInOrgTuple
 from seahub.settings import CLOUD_MODE, ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER
 from seahub.organizations.models import OrgUser, Organization
 from seahub.auth.models import EmailUser

@@ -24,6 +24,7 @@ from seahub.role_permissions.utils import get_available_roles
 from seahub.profile.models import Profile
 from seahub.organizations.models import OrgSAMLConfig, Organization, OrgUser, OrgGroup
 from seahub.organizations.signals import org_role_updated
+from seahub.project.models import Workspaces
 
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
@@ -308,6 +309,16 @@ class AdminOrganizations(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        with_workspace = request.data.get('with_workspace', False)
+        if with_workspace:
+            try:
+                workspace = Workspaces.objects.create_workspace(new_user.username, org.org_id)
+                org_info['workspace_id'] = workspace.id
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         return Response(org_info)
 
 class AdminOrganization(APIView):
@@ -555,7 +566,7 @@ class AdminOrganization(APIView):
                 User.objects.get(email=u.email).delete()
 
             # remove org groups
-            OrgGroup.objects.remove_org_group(org_id)
+            OrgGroup.objects.remove_org_groups(org_id)
 
             # remove org
             Organization.objects.remove_org(org_id)

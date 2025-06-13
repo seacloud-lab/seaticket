@@ -18,7 +18,6 @@ import Paginator from '../../../components/paginator';
 import UnsetPasswordConfirmDialog from '../../dtable/dialog/unset-password-confirm-dialog';
 import DTableAllAPITokensDialog from '../../dtable/dialog/dtable-all-api-tokens-dialog';
 import DTableIODialog from '../../dtable/dialog/dtable-io-dialog';
-import SysAdminCopyDTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-copy-dtable-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 
 
@@ -42,10 +41,7 @@ class Item extends Component {
       isExternalLinkDialogOpen: false,
       isUnsetPasswordConfirmDialogOpen: false,
       isShowAPITokenDialog: false,
-      isShowDTableIODialog: false,
-      isShowCopyDTable: false,
       isShowShareDTableDialog: false,
-      taskId: '',
     };
   }
 
@@ -89,12 +85,6 @@ class Item extends Component {
       case 'API tokens':
         this.toggleAPITokenDialog();
         break;
-      case 'Export':
-        this.exportDTable();
-        break;
-      case 'Copy':
-        this.onCopyDTableToggle();
-        break;
       case 'Share':
         this.onShareDTableToggle();
         break;
@@ -105,71 +95,6 @@ class Item extends Component {
         break;
     }
   };
-
-  cancelDTableIOTask = () => {
-    clearInterval(this.timer);
-    let dtable_uuid = this.props.item.uuid;
-    dtableWebAPI.cancelDTableIOTask(this.state.taskId, dtable_uuid, 'export').then(res => {
-      this.setState({
-        isShowDTableIODialog: false,
-        taskId: '',
-      });
-    }).catch(error => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
-  exportDTable = () => {
-    let { item } = this.props;
-    const dtableUuid = item.uuid;
-    let task_id = '';
-    sysAdminServiceApi.sysAdminExportDtable(dtableUuid).then(res => {
-      task_id = res.data.task_id;
-      this.setState({
-        isShowDTableIODialog: true,
-        taskId: task_id
-      });
-      return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
-    }).then(res => {
-      if (res.data.is_finished === true) {
-        this.setState({ isShowDTableIODialog: false });
-        location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
-      } else {
-        this.timer = setInterval(() => {
-          dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
-            if (res.data.is_finished === true) {
-              this.setState({ isFinished: true });
-              clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
-              location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
-            }
-          }).catch(error => {
-            if (this.state.isFinished === false) {
-              clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
-              toaster.danger(gettext('Failed to export. Please check whether the size of table attachments exceeds the limit.'));
-            }
-          });
-        }, 1000);
-      }
-      this.setState({ isFinished: false });
-    }).catch(error => {
-      this.setState({ isShowDTableIODialog: false });
-      if (error.response && error.response.status === 500) {
-        const error_msg = error.response.data ? error.response.data['error_msg'] : null;
-        if (error_msg && error_msg !== 'Internal Server Error') {
-          toaster.danger(error_msg);
-        } else {
-          toaster.danger(gettext('Internal Server Error.'));
-        }
-      } else {
-        let errMessage = Utils.getErrorMsg(error);
-        toaster.danger(errMessage);
-      }
-    });
-  };
-
 
   onDeleteDTable = () => {
     const item = this.props.item;
@@ -218,17 +143,6 @@ class Item extends Component {
 
   toggleAPITokenDialog = () => {
     this.setState({ isShowAPITokenDialog: !this.state.isShowAPITokenDialog });
-  };
-
-  onDTableIODialogToggle = () => {
-    this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
-  };
-
-  onCopyDTableToggle = () => {
-    this.setState({
-      isShowCopyDTable: !this.state.isShowCopyDTable
-    });
-    this.onUnfreezedItem();
   };
 
   onShareDTableToggle = () => {
@@ -329,19 +243,6 @@ class Item extends Component {
               toggle={this.toggleAPITokenDialog}
             />
           </ModalPortal>
-        )}
-        {this.state.isShowDTableIODialog && (
-          <DTableIODialog
-            isExporting={true}
-            toggle={this.onDTableIODialogToggle}
-            cancelDTableIOTask={this.cancelDTableIOTask}
-          />
-        )}
-        {this.state.isShowCopyDTable && (
-          <SysAdminCopyDTableDialog
-            dtable={item}
-            onCopyDTableToggle={this.onCopyDTableToggle}
-          />
         )}
         {this.state.isShowShareDTableDialog && (
           <SysAdminShareTableDialog

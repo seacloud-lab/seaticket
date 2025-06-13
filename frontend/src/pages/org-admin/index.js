@@ -14,7 +14,7 @@ import OrgGroupInfo from './org-group-info';
 import OrgGroupDtables from './org-group-dtables';
 import OrgGroupMembers from './org-group-members';
 import OrgInfo from './org-info';
-import OrgDTables from './org-dtables';
+import OrgProjects from './org-projects';
 import OrgSearchDTables from './org-search-dtables';
 import OrgSettings from './org-admin-settings';
 import OrgSearchUsers from './org-search-users';
@@ -44,8 +44,8 @@ class Org extends React.Component {
     if (location.href.indexOf(`${siteRoot}org/groupadmin`) !== -1) {
       currentTab = 'groupadmin';
     }
-    if (location.href.indexOf(`${siteRoot}org/dtableadmin`) !== -1) {
-      currentTab = 'bases';
+    if (location.href.indexOf(`${siteRoot}org/projectadmin`) !== -1) {
+      currentTab = 'projects';
     }
     if (location.href.indexOf(`${siteRoot}org/settings`) !== -1) {
       currentTab = 'settings';
@@ -81,7 +81,7 @@ class Org extends React.Component {
             <OrgGroupInfo path={siteRoot + 'org/groupadmin/:groupID/'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroupDtables path={siteRoot + 'org/groupadmin/:groupID/dtables/'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroupMembers path={siteRoot + 'org/groupadmin/:groupID/members/'} onCloseSidePanel={this.onCloseSidePanel} />
-            <OrgDTables path={siteRoot + 'org/dtableadmin'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
+            <OrgProjects path={siteRoot + 'org/projectadmin'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
             <OrgSearchDTables path={siteRoot + 'org/search-dtables'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
             <OrgSettings path={siteRoot + 'org/settings'} onCloseSidePanel={this.onCloseSidePanel} />
           </Router>

@@ -15,7 +15,7 @@ from seahub.organizations.views import get_org_id_by_group
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import IsProVersion
 from seahub.api2.authentication import TokenAuthentication
-from seahub.dtable.models import Workspaces, DTables
+from seahub.project.models import Workspaces
 
 
 logger = logging.getLogger(__name__)

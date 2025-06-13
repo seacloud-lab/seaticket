@@ -3,9 +3,7 @@ import { TabBar } from 'antd-mobile';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
-import { toaster } from 'dtable-ui-component';
 import { MainPanelDTables, DTablesInWorkspace } from '../index.js';
-import { Utils } from '../../../utils/utils';
 import { dtableWebAPI } from '../../../api/dtable-web-api';
 import Workspace from '../model/workspace';
 import { gettext, siteRoot } from '../../../utils/constants';
@@ -95,29 +93,29 @@ class MobileMainPanel extends React.Component {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
       if (dtable.workspace_id === workspace.id) {
-        workspace.table_list.push(dtable);
+        workspace.project_list.push(dtable);
         break;
       }
     }
     this.setState({ workspaceList: newWorkspaceList });
   };
 
-  onAddDTable = (dtable) => {
+  onAddDTable = (project) => {
     let newWorkspaceList = this.state.workspaceList.slice();
     newWorkspaceList = newWorkspaceList.map(item => {
-      if (dtable.workspace_id === item.id) {
-        item.table_list.push(dtable);
+      if (project.workspace_id === item.id) {
+        item.project_list.push(project);
       }
       return item;
     });
     this.setState({ workspaceList: newWorkspaceList });
   };
 
-  onDeleteTable = (deletedWorkspaceID, newTableList) => {
+  onDeleteTable = (deletedWorkspaceID, newProjectList) => {
     let workspaceList = this.state.workspaceList.slice(0);
     for (let i = 0; i < workspaceList.length; i++) {
       if (workspaceList[i].id === deletedWorkspaceID) {
-        workspaceList[i].table_list = newTableList;
+        workspaceList[i].project_list = newProjectList;
         break;
       }
     }
@@ -146,29 +144,18 @@ class MobileMainPanel extends React.Component {
     this.setState({ workspaceList: workspaceList });
   };
 
-  onLeaveGroupSharedView = (groupID, sharedView) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].group_id === groupID) {
-        workspaceList[i].group_shared_views = workspaceList[i].group_shared_views.filter((item) => {return item.id !== sharedView.id;});
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
-  };
-
   onUnstarDTable = (table) => {
     let workspaceList = this.state.workspaceList.slice();
     workspaceList = workspaceList.map((item) => {
       // delete starred dtable item from starredWorkspace
       if (item.type === 'starred') {
-        item.table_list = item.table_list.filter(tableItem => {
+        item.project_list = item.project_list.filter(tableItem => {
           return tableItem.id !== table.id;
         });
         return item;
       }
       // update the dtable starred state
-      item.table_list = item.table_list.map(tableItem => {
+      item.project_list = item.project_list.map(tableItem => {
         if (tableItem.id === table.id) {
           tableItem.starred = false;
         }
@@ -188,54 +175,32 @@ class MobileMainPanel extends React.Component {
     this.setState({ workspaceList });
   };
 
-  onStarDTable = (table) => {
+  onStarDTable = (project) => {
     let workspaceList = this.state.workspaceList.slice();
     workspaceList = workspaceList.map((item) => {
       // add starred dtable into starredWorkspace
       if (item.type === 'starred') {
-        table.starred = true;
-        item.table_list.push(table);
+        project.starred = true;
+        item.project_list.push(project);
         return item;
       }
       // update the dtable starred state
-      item.table_list = item.table_list.map(tableItem => {
-        if (tableItem.id === table.id) {
-          tableItem.starred = true;
+      item.project_list = item.project_list.map(projectItem => {
+        if (projectItem.id === project.id) {
+          projectItem.starred = true;
         }
-        return tableItem;
+        return projectItem;
       });
       // update the dtable starred state in shared module
-      item.group_shared_dtables = item.group_shared_dtables.map(tableItem => {
-        if (tableItem.id === table.id) {
-          tableItem.starred = true;
+      item.group_shared_dtables = item.group_shared_dtables.map(projectItem => {
+        if (projectItem.id === project.id) {
+          projectItem.starred = true;
         }
-        return tableItem;
+        return projectItem;
       });
       return item;
     });
     this.setState({ workspaceList });
-  };
-
-
-  addDtableFromExternalLink = (externalLink) => {
-    const { workspaceList } = this.state;
-    const personalWorkspaceID = workspaceList.find(item => item.name === 'personal').id;
-    this.setState({ isCreatedTemplateLoading: true });
-    dtableWebAPI.copyExternalDtable(personalWorkspaceID, externalLink).then((res) => {
-      this.onCopyDTable(res.data.dtable);
-      this.setState({
-        isCreatedTemplateLoading: false,
-        selectedTab: 'bases'
-      });
-    }).catch((error) => {
-      let errMsg = Utils.getErrorMsg(error, true);
-      if (!error.response || error.response.status !== 403) {
-        toaster.danger(errMsg);
-      }
-      this.setState({
-        isCreatedTemplateLoading: false
-      });
-    });
   };
 
   onSelectCurrentTab = (selectedTab) => {
@@ -257,7 +222,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          onLeaveGroupSharedView={this.onLeaveGroupSharedView}
           starredDTableList={this.state.starredDTableList}
           onStarDTable={this.onStarDTable}
           onUnstarDTable={this.onUnstarDTable}
@@ -265,7 +229,7 @@ class MobileMainPanel extends React.Component {
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
         <MainPanelDTables
-          path={siteRoot + 'dtable/'}
+          path={siteRoot + 'project/'}
           loadWorkspaceList={this.loadWorkspaceList}
           isWorkspaceListLoading={this.state.isWorkspaceListLoading}
           workspaceList={this.state.workspaceList}
@@ -275,7 +239,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          onLeaveGroupSharedView={this.onLeaveGroupSharedView}
           starredDTableList={this.state.starredDTableList}
           onStarDTable={this.onStarDTable}
           onUnstarDTable={this.onUnstarDTable}
@@ -293,7 +256,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          onLeaveGroupSharedView={this.onLeaveGroupSharedView}
           starredDTableList={this.state.starredDTableList}
           onStarDTable={this.onStarDTable}
           onUnstarDTable={this.onUnstarDTable}

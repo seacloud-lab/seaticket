@@ -4,16 +4,14 @@ import classNames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, UncontrolledTooltip } from 'reactstrap';
 import { DragSource } from 'react-dnd';
 import { Utils } from '../../utils/utils';
-import { siteRoot, gettext, canAddDTable } from '../../utils/constants';
+import { siteRoot, gettext, canAddProject } from '../../utils/constants';
 import UserInfoPopover from './dtable-popover/user-info-popover';
 import DTableItem from './dtable-item';
-import CopyDTablePasswordDialog from './dialog/copy-dtable-password-dialog';
-import CopyToCurrentGroupDialog from './dialog/copy-to-current-group-dialog';
 
 const dragSource = {
   beginDrag: (props, monitor) => {
     return {
-      data: props.table,
+      data: props.project,
       folder: props.folder,
       mode: 'drag-base'
     };
@@ -76,15 +74,15 @@ class DTableItemGroupShared extends React.Component {
 
   onLeaveShare = (e) => {
     e.stopPropagation();
-    this.props.onLeaveShare(this.props.table);
+    this.props.onLeaveShare(this.props.project);
   };
 
   onAddStarDTable = () => {
-    this.props.onAddStarDTable(this.props.table);
+    this.props.onAddStarDTable(this.props.project);
   };
 
   onUnstarDTable = () => {
-    this.props.onUnstarDTable(this.props.table);
+    this.props.onUnstarDTable(this.props.project);
   };
 
   dropdownToggle = () => {
@@ -102,17 +100,17 @@ class DTableItemGroupShared extends React.Component {
   };
 
   onMoveFolderItemToggle = () => {
-    let { table, folder } = this.props;
+    let { project, folder } = this.props;
     this.props.onMoveFolderItemToggle({
-      table,
-      item_type: table.view_share_id ? 'view_group_share' : 'dtable_group_share',
-      item_id: table.view_share_id || table.dtable_share_id,
+      project,
+      item_type: project.view_share_id ? 'view_group_share' : 'dtable_group_share',
+      item_id: project.view_share_id || project.dtable_share_id,
       folder_id: folder ? folder.id : '/'
     });
   };
 
   onCopyDTableToggle = () => {
-    this.props.onCopyDTableToggle(this.props.table);
+    this.props.onCopyDTableToggle(this.props.project);
   };
 
   toggleCopyDTableToCurrentGroup = () => {
@@ -120,8 +118,8 @@ class DTableItemGroupShared extends React.Component {
   };
 
   onCopyDTableToCurrentGroup = () => {
-    const { table } = this.props;
-    const { is_encrypted } = table;
+    const { project } = this.props;
+    const { is_encrypted } = project;
     if (is_encrypted) {
       this.togglePwdDialog();
     } else {
@@ -141,16 +139,16 @@ class DTableItemGroupShared extends React.Component {
 
   render() {
     const { isUserDetailPopoverShow } = this.state;
-    let { table, isAdmin, sharedItemKey, connectDragSource, connectDragPreview,
+    let { project, isAdmin, sharedItemKey, connectDragSource, connectDragPreview,
       connectDropTarget, isOver, canDrop } = this.props;
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
-      starred, color, icon, view_share_id, shared_name, is_encrypted, permission } = table;
+      starred, color, icon, view_share_id, shared_name, is_encrypted, permission } = project;
     let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
     let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(name) + '/';
     if (view_share_id !== undefined) {
       tableHref = `${siteRoot}dtable-shared-view/group/${view_share_id}/`;
     }
-    let canCopy = !view_share_id && canAddDTable && (permission === 'r' || permission === 'rw');
+    let canCopy = !view_share_id && canAddProject && (permission === 'r' || permission === 'rw');
     const isDesktop = Utils.isDesktop();
     const active = this.state.active;
     const displayName = isFromGroup ? from_group_name : from_user_name;
@@ -237,22 +235,6 @@ class DTableItemGroupShared extends React.Component {
               </Dropdown>
             }
           </div>
-          {this.state.isPasswordDialogShow &&
-            <CopyDTablePasswordDialog
-              dtable={this.props.table}
-              toggle={this.togglePwdDialog}
-              onSubmit={this.onPasswordSubmit}
-            />
-          }
-          {this.state.isCopyToCurrentGroupShow &&
-            <CopyToCurrentGroupDialog
-              dtable={this.props.table}
-              onCopyDTableToggle={this.toggleCopyDTableToCurrentGroup}
-              onCopyDTable={this.props.onCopyDTable}
-              password={this.state.pwd}
-              currentWorkspace={this.props.currentWorkspace}
-            />
-          }
         </div>
       )));
 
@@ -330,7 +312,7 @@ DTableItemGroupShared.propTypes = {
   isDragging: PropTypes.bool,
   isItemFreezed: PropTypes.bool.isRequired,
   sharedItemKey: PropTypes.string,
-  table: PropTypes.object.isRequired,
+  project: PropTypes.object.isRequired,
   folder: PropTypes.object,
   onLeaveShare: PropTypes.func.isRequired,
   isAdmin: PropTypes.bool.isRequired,

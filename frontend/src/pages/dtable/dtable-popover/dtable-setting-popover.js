@@ -13,7 +13,7 @@ export default class DtableSettingPopover extends React.Component {
     popoverClassName: PropTypes.string,
     tableIconSettingsId: PropTypes.string.isRequired,
     onTableIconToggle: PropTypes.func.isRequired,
-    dtableName: PropTypes.string.isRequired,
+    ProjectName: PropTypes.string.isRequired,
     dtableColor: PropTypes.string,
     dtableIcon: PropTypes.string,
     onColorChange: PropTypes.func.isRequired,
@@ -52,7 +52,7 @@ export default class DtableSettingPopover extends React.Component {
         <input
           type="text"
           className="form-control dtable-icon-settings-name-input"
-          value={this.props.dtableName}
+          value={this.props.ProjectName}
           onChange={this.onChangeName}
           autoFocus={true}
           aria-label={gettext('Enter base name')}

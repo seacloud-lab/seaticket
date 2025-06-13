@@ -98,9 +98,9 @@ class DTableWebAPI {
     return this.req.delete(url);
   }
 
-  // ---- dTable api
-  createTable(name, owner, dtableIcon, dtableColor, textColor, folderID) {
-    const url = this.server + '/api/v2.1/dtables/';
+  // ---- project api
+  createProject(name, owner, dtableIcon, dtableColor, textColor, folderID) {
+    const url = this.server + '/api/v2.1/projects/';
     let form = new FormData();
     form.append('name', name);
     form.append('owner', owner);
@@ -120,17 +120,17 @@ class DTableWebAPI {
   }
 
   renameTable(workspaceID, old_name, new_name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let form = new FormData();
     form.append('name', old_name);
     form.append('new_name', new_name);
     return this.req.put(url, form);
   }
 
-  updateTable(workspaceID, table_name, updates) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/';
+  updateTable(workspaceID, project_name, updates) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let form = new FormData();
-    form.append('name', table_name);
+    form.append('name', project_name);
     if (updates.color) {
       form.append('color', updates.color);
     }
@@ -166,7 +166,7 @@ class DTableWebAPI {
   }
 
   deleteTable(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let params = { name: name };
     return this.req.delete(url, { data: params });
   }
@@ -434,7 +434,7 @@ class DTableWebAPI {
     return this.req.post(url, formData);
   }
 
-  unstarDTable(dtable_uuid) {
+  unstarProject(dtable_uuid) {
     let url = this.server + '/api/v2.1/starred-dtables/?dtable_uuid=' + dtable_uuid;
     return this.req.delete(url);
   }
@@ -1640,7 +1640,7 @@ class DTableWebAPI {
 }
 
 const dtableWebAPI = new DTableWebAPI();
-const xcsrfHeaders = cookie.load('dtable_csrftoken');
+const xcsrfHeaders = cookie.load('seaqa_csrftoken');
 dtableWebAPI.initForDTableUsage({ siteRoot, xcsrfHeaders });
 
 export { dtableWebAPI };

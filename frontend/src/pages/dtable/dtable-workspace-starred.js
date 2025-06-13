@@ -23,33 +23,33 @@ class DTableWorkspaceStarred extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableList: [],
+      projectList: [],
     };
   }
 
   componentDidMount() {
     const { starredWorkspace } = this.props;
-    const { tableList } = this.getSortedWorkspaceStarredContent(starredWorkspace);
-    this.setState({ tableList });
+    const { projectList } = this.getSortedWorkspaceStarredContent(starredWorkspace);
+    this.setState({ projectList });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (!ObjectUtils.isSameObject(nextProps.starredWorkspace, this.props.starredWorkspace)) {
-      const { tableList } = this.getSortedWorkspaceStarredContent(nextProps.starredWorkspace);
-      this.setState({ tableList });
+      const { projectList } = this.getSortedWorkspaceStarredContent(nextProps.starredWorkspace);
+      this.setState({ projectList });
     }
   }
 
   getSortedWorkspaceStarredContent = (starredWorkspace) => {
-    const { table_list = [] } = starredWorkspace;
+    const { project_list = [] } = starredWorkspace;
     return {
-      tableList: table_list.sort((a, b) => compareTwoString(a.name, b.name)),
+      projectList: project_list.sort((a, b) => compareTwoString(a.name, b.name)),
     };
   };
 
-  unstarDTable = (table) => {
-    dtableWebAPI.unstarDTable(table.uuid).then(() => {
-      this.props.onUnstarDTable(table);
+  unstarProject = (project) => {
+    dtableWebAPI.unstarProject(project.uuid).then(() => {
+      this.props.onUnstarDTable(project);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
       if (!error.response || error.response.status !== 403) {
@@ -60,8 +60,8 @@ class DTableWorkspaceStarred extends React.Component {
 
   render() {
     const { personalWorkspace, groupWorkspaceList, noBaseTip } = this.props;
-    const { tableList } = this.state;
-    if (!tableList.length) {
+    const { projectList } = this.state;
+    if (!projectList.length) {
       return noBaseTip || '';
     }
 
@@ -75,10 +75,10 @@ class DTableWorkspaceStarred extends React.Component {
           <span>{gettext('Favorites')}</span>
         </div>
         <div className={`${isDesktop ? 'table-item-container' : 'table-mobile-item-container'}`}>
-          {tableList.map((table, index) => {
-            const path = getWorkspaceName(table, workspaces);
+          {projectList.map((project, index) => {
+            const path = getWorkspaceName(project, workspaces);
             return (
-              <DTableItemStarred key={index} table={table} unstarDTable={this.unstarDTable} path={path}/>
+              <DTableItemStarred key={index} table={project} unstarProject={this.unstarProject} path={path}/>
             );
           })}
         </div>

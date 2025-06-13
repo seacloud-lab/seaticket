@@ -8,7 +8,6 @@ import re
 
 # The usage of following three settings should be removed
 FILE_SERVER_ROOT = ''
-FILE_SERVER_PORT = '8082'
 SERVICE_URL = 'http://127.0.0.1'
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -139,7 +138,7 @@ MIDDLEWARE = [
 SITE_ROOT_URLCONF = 'seahub.urls'
 ROOT_URLCONF = 'seahub.utils.rooturl'
 SITE_ROOT = '/'
-CSRF_COOKIE_NAME = 'dtable_csrftoken'
+CSRF_COOKIE_NAME = 'seaqa_csrftoken'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'seahub.wsgi.application'
@@ -219,7 +218,7 @@ INSTALLED_APPS = [
     'seahub.work_weixin',
     'seahub.weixin',
     'seahub.dingtalk',
-    'seahub.dtable',
+    'seahub.project',
     'seahub.organizations',
     'seahub.org_work_weixin',
     'seahub.org_dingtalk',
@@ -727,21 +726,8 @@ SEND_EMAIL_ON_ACTIVATING_ORG_USER = False # Whether to send email when org admin
 
 
 ##########################
-# Settings for frontend  #
+# Settings for seaqa    #
 ##########################
-
-DTABLE_SOCKET_URL = ''
-
-##########################
-# Settings for dtable    #
-##########################
-
-
-# dtable server url
-DTABLE_SERVER_URL = ''
-
-# dtable private key
-DTABLE_PRIVATE_KEY = ''
 
 DTABLE_WEB_SERVICE_URL = ''
 
@@ -838,28 +824,9 @@ PWA_APP_LANG = 'en-US'
 CONSTANCE_ENABLED = True
 
 d = os.path.dirname
-# DTABLE_EVENTS_CONFIG_FILE = os.environ.get(
-#     'DTABLE_EVENTS_CONFIG_FILE',
-#     os.path.join(
-#         d(d(d(d(os.path.abspath(__file__))))), 'conf', 'dtable-events.conf'
-#     )
-# )
-#
-# del d
-# if not os.path.exists(DTABLE_EVENTS_CONFIG_FILE):
-#     del DTABLE_EVENTS_CONFIG_FILE
-
 
 # custom navigation settings
 CUSTOM_NAV_ITEMS = []
-# example nav items
-# CUSTOM_NAV_ITEMS = [
-#     {
-#         'icon': 'dtable-icon-cancel-freeze',
-#         'desc': 'Demo',
-#         'link': 'http://example.com/'
-#     }
-# ]
 
 #####################
 # External settings #
@@ -1002,10 +969,6 @@ sys.path.pop(0)
 
 # Following settings are private, can not be overwrite.
 IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
-
-INNER_FILE_SERVER_ROOT = 'http://127.0.0.1:' + FILE_SERVER_PORT
-
-INNER_DTABLE_SERVER_URL = 'http://127.0.0.1:5000/'
 
 CONSTANCE_CONFIG = {
     'DTABLE_WEB_SERVICE_URL': (DTABLE_WEB_SERVICE_URL, ''),

@@ -45,7 +45,7 @@ export default class WorkspaceName extends React.Component {
     }
     // default folder
     const { type, name } = workspace;
-    const title = type === 'personal' ? gettext('My bases') : name;
+    const title = type === 'personal' ? gettext('My projects') : name;
     return connectDropTarget(
       <div
         className={`folder-tree-workspace-name mb-1 cursor-pointer ${isOver ? 'tr-highlight' : ''}`}

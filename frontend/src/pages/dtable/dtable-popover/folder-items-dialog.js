@@ -47,9 +47,8 @@ class FolderItems extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableList: [],
-      shareTableList: [],
-      shareViewList: [],
+      projectList: [],
+      shareProjectList: [],
       isItemFreezed: false,
       isShowVirtualDtable: false,
     };
@@ -67,27 +66,21 @@ class FolderItems extends React.Component {
   }
 
   initValue = (props) => {
-    let { folder, folders, tableList, groupSharedTables, groupSharedViews } = props;
-    let newTableList = [];
-    let newShareTableList = [];
-    let newShareViewList = [];
+    let { folder, folders, projectList, groupSharedTables } = props;
+    let newProjectList = [];
+    let newShareProjectList = [];
     // in folder
     if (folder) {
       if (folder.items) {
         const folderMap = this.getFolderItemsMap(folder.items);
-        tableList.forEach((table) => {
-          if (folderMap.get(table.uuid)) {
-            newTableList.push(table);
+        projectList.forEach((project) => {
+          if (folderMap.get(project.uuid)) {
+            newProjectList.push(project);
           }
         });
-        groupSharedTables.forEach((shareTable) => {
-          if (folderMap.get(shareTable.dtable_share_id.toString())) {
-            newShareTableList.push(shareTable);
-          }
-        });
-        groupSharedViews.forEach((shareView) => {
-          if (folderMap.get(shareView.view_share_id.toString())) {
-            newShareViewList.push(shareView);
+        groupSharedTables.forEach((shareProject) => {
+          if (folderMap.get(shareProject.dtable_share_id.toString())) {
+            newShareProjectList.push(shareProject);
           }
         });
       }
@@ -100,20 +93,16 @@ class FolderItems extends React.Component {
           baseInFolderMap[item.item_id] = true;
         });
       }
-      newTableList = tableList.filter(item => {
+      newProjectList = projectList.filter(item => {
         return !baseInFolderMap[item.uuid];
       });
-      newShareTableList = groupSharedTables.filter(item => {
+      newShareProjectList = groupSharedTables.filter(item => {
         return !baseInFolderMap[item.dtable_share_id.toString()];
-      });
-      newShareViewList = groupSharedViews.filter(item => {
-        return !baseInFolderMap[item.view_share_id.toString()];
       });
     }
     this.setState({
-      tableList: newTableList,
-      shareTableList: newShareTableList,
-      shareViewList: newShareViewList,
+      projectList: newProjectList,
+      shareProjectList: newShareProjectList,
     });
   };
 
@@ -146,23 +135,19 @@ class FolderItems extends React.Component {
     this.setState({ isShowVirtualDtable: false });
   };
 
-  uploadDTableFile = (workspaceID, file) => {
-    this.props.uploadDTableFile(workspaceID, file, this.props.folder.id);
-  };
-
   onFolderToggle = () => {
     this.eventBus.dispatch('folder-close');
     this.props.onFolderToggle(null);
   };
 
-  createTableInFolder = (tableName, owner, dtableIcon, dtableColor) => {
-    this.props.createTableInFolder(tableName, owner, dtableIcon, dtableColor, this.props.folder);
+  createProjectInFolder = (tableName, owner, dtableIcon, dtableColor) => {
+    this.props.createProjectInFolder(tableName, owner, dtableIcon, dtableColor, this.props.folder);
   };
 
   render() {
-    const { folder, folders, isOwner, isAdmin, workspace, canAddDTable } = this.props;
+    const { folder, folders, isOwner, isAdmin, workspace, canAddProject } = this.props;
     const { type, name } = workspace;
-    let { tableList, shareTableList, shareViewList, isItemFreezed, isShowVirtualDtable } = this.state;
+    let { projectList, shareProjectList, isItemFreezed, isShowVirtualDtable } = this.state;
     const DndDTableItemCommon = DropTarget('Base', dropTarget, dropCollect)(DTableItemCommon);
     const DndDTableItemGroupShared = DropTarget('Base', dropTarget, dropCollect)(DTableItemGroupShared);
     const DndDTableFolder = DropTarget('Base', folderDropTarget, dropCollect)(DTableFolder);
@@ -172,13 +157,11 @@ class FolderItems extends React.Component {
         <DTableModalHeader toggle={this.onFolderToggle}>
           <div className="modal-title-left">
             <img src={folderImageSrc} height="24px" alt="" />
-            <span className="ml-2">{folder ? folder.name : (type === 'personal' ? window.gettext('My bases') : name)}</span>
+            <span className="ml-2">{folder ? folder.name : (type === 'personal' ? window.gettext('My projects') : name)}</span>
           </div>
           <div className="modal-title-right">
-            {canAddDTable && isOwnerOrAdmin &&
+            {canAddProject && isOwnerOrAdmin &&
               <AddDropdownBtn
-                onShowTemplateListToggle={this.props.onShowTemplateListToggle}
-                uploadDTableFile={this.uploadDTableFile}
                 onCreateTableToggle={this.showVirtualDtable}
                 currentWorkspace={workspace}
                 folder={folder}
@@ -221,11 +204,11 @@ class FolderItems extends React.Component {
                   />
                 );
               })}
-              {tableList.map((table, index) => {
+              {projectList.map((project, index) => {
                 return (
                   <DndDTableItemCommon
                     key={index}
-                    table={table}
+                    project={project}
                     isItemFreezed={isItemFreezed}
                     renameTable={this.props.renameTable}
                     onShareTableToggle={this.props.onShareTableToggle}
@@ -255,7 +238,7 @@ class FolderItems extends React.Component {
                   />
                 );
               })}
-              {shareTableList.map((table, index) => {
+              {shareProjectList.map((table, index) => {
                 return (
                   <DndDTableItemGroupShared
                     key={index}
@@ -273,24 +256,6 @@ class FolderItems extends React.Component {
                     onCopyDTableToggle={this.props.onCopyDTableToggle}
                     onCopyDTable={this.props.onCopyDTable}
                     currentWorkspace={workspace}
-                  />
-                );
-              })}
-              {shareViewList.map((table, index) => {
-                return (
-                  <DndDTableItemGroupShared
-                    key={index}
-                    sharedItemKey={`table-${index}`}
-                    table={table}
-                    folder={folder}
-                    isItemFreezed={isItemFreezed}
-                    isAdmin={isAdmin}
-                    onLeaveShare={this.props.onLeaveGroupSharedView}
-                    onAddStarDTable={this.props.onAddStarDTable}
-                    onUnstarDTable={this.props.onUnstarDTable}
-                    setDropdownState={this.props.setDropdownState}
-                    getDropdownState={this.props.getDropdownState}
-                    onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}
                   />
                 );
               })}

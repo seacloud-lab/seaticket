@@ -29,7 +29,7 @@ from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.auth.models import SocialAuthUser
 from seahub.profile.models import Profile
-from seahub.dtable.models import IdInOrgTuple
+from seahub.project.models import IdInOrgTuple
 from seahub.utils.licenseparse import user_number_over_limit
 from seahub.organizations.utils import can_org_use_saml
 from seahub.settings import LOGIN_REDIRECT_URL

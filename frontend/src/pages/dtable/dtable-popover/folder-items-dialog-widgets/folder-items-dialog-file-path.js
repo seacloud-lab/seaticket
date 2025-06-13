@@ -22,7 +22,7 @@ export default class FolderItemsDialogFilePath extends Component {
       const { type, name } = workspace;
       return (
         <span className="path-link" onClick={this.onClick}>
-          {type === 'personal' ? window.gettext('My bases') : name}
+          {type === 'personal' ? window.gettext('My projects') : name}
         </span>
       );
     }

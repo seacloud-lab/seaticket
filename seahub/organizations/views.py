@@ -289,7 +289,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('dtable'),
+        'redirect_to': redirect_to or reverse('project'),
     })
 
 
@@ -309,8 +309,8 @@ def render_sms_org_registration_error(request, redirect_to, error_msg, send_butt
     return render(request, 'organizations/sms_org_register.html', {
         'ENABLE_SLIDE_CAPTCHA': ENABLE_SLIDE_CAPTCHA,
         'form': SmsOrgRegistrationForm(),
-        REDIRECT_FIELD_NAME: redirect_to or reverse('dtable'),
-        'redirect_to': redirect_to or reverse('dtable'),
+        REDIRECT_FIELD_NAME: redirect_to or reverse('project'),
+        'redirect_to': redirect_to or reverse('project'),
         'login_bg_image_path': get_login_bg_image_path(),
         'error_msg': error_msg,
         'send_button_disabled': send_button_disabled,
@@ -318,7 +318,7 @@ def render_sms_org_registration_error(request, redirect_to, error_msg, send_butt
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('dtable'),
+        'redirect_to': redirect_to or reverse('project'),
     })
 
 
@@ -503,8 +503,8 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('dtable'),
-        redirect_field_name: redirect_to or reverse('dtable'),
+        'redirect_to': redirect_to or reverse('project'),
+        redirect_field_name: redirect_to or reverse('project'),
         'error_msg': error_msg,
         'send_button_disabled': send_button_disabled,
         'phone': phone,

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Loading from '../../components/loading';
 import { gettext, canAddGroup, isOrgContext, orgName } from '../../utils/constants';
 import DTableWorkspaceCommon from './dtable-workspace-common';
-import DTableWorkspaceShared from './dtable-workspace-shared';
 import CreateDtableGroupDialog from './dialog/create-dtable-group-dialog';
 import { Utils } from '../../utils/utils';
 import SessionStorage from '../../utils/session-utils';
@@ -19,7 +18,6 @@ const propTypes = {
   onDeleteTable: PropTypes.func.isRequired,
   onLeaveGroupSharedTable: PropTypes.func.isRequired,
   onAddGroupSharedTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedView: PropTypes.func.isRequired,
   onStarDTable: PropTypes.func.isRequired,
   onUnstarDTable: PropTypes.func.isRequired,
   onAddDTable: PropTypes.func.isRequired,
@@ -79,7 +77,7 @@ class MainPanelDTables extends React.Component {
   render() {
     let { isWorkspaceListLoading, workspaceList, errorMsg, onCopyDTable,
       onDeleteTable, onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
-      onLeaveGroupSharedView, onStarDTable, onUnstarDTable, onAddDTable } = this.props;
+      onStarDTable, onUnstarDTable, onAddDTable } = this.props;
     if (isWorkspaceListLoading) {
       return (<div className="mt-6"><Loading /></div>);
     }
@@ -90,10 +88,6 @@ class MainPanelDTables extends React.Component {
 
     let starredWorkspace = workspaceList.find(workspace => {
       return workspace.type === 'starred';
-    });
-
-    let sharedWorkspace = workspaceList.find(workspace => {
-      return workspace.type === 'shared';
     });
 
     let groupWorkspaceList = workspaceList.filter(workspace => {
@@ -141,13 +135,6 @@ class MainPanelDTables extends React.Component {
                       groupWorkspaceList={groupWorkspaceList}
                     />
                   )}
-                  {sharedWorkspace &&
-                    <DTableWorkspaceShared
-                      sharedWorkspace={sharedWorkspace}
-                      onCopyDTable={onCopyDTable}
-                      loadWorkspaceList={this.props.loadWorkspaceList}
-                    />
-                  }
                   {groupWorkspaceList.length > 0 && groupWorkspaceList.map((workspace, index) => {
                     return (
                       <DTableWorkspaceCommon
@@ -159,7 +146,6 @@ class MainPanelDTables extends React.Component {
                         onCopyDTable={onCopyDTable}
                         onAddGroupSharedTable={onAddGroupSharedTable}
                         onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-                        onLeaveGroupSharedView={onLeaveGroupSharedView}
                         onStarDTable={onStarDTable}
                         onUnstarDTable={onUnstarDTable}
                         onAddDTable={onAddDTable}

@@ -20,7 +20,7 @@ class SearchResultItem extends React.Component {
   render() {
     const { item, getClassName } = this.props;
     const { color, icon, starred, name, shared_name, type, is_encrypted, group_name } = item;
-    const pathName = group_name === 'personal' ? gettext('My bases') : group_name;
+    const pathName = group_name === 'personal' ? gettext('My projects') : group_name;
     return (
       <div className={getClassName} onClick={this.onClickHandler}>
         <DTableItem dtableColor={color} dtableIcon={icon} />

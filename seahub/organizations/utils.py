@@ -7,7 +7,7 @@ from django.urls import reverse
 from seahub.api2.utils import api_error
 from seahub.utils import gen_token, get_site_scheme_and_netloc
 from seahub.weixin.utils import weixin_check
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.organizations.models import OrgSettings
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from django.utils.crypto import get_random_string

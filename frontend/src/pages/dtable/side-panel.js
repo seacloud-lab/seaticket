@@ -205,7 +205,7 @@ class SidePanel extends React.Component {
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'dtable/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
               <span className="table-workspace-icon dtable-font dtable-icon-creator" aria-hidden="true"></span>
-              <span className="nav-text">{gettext('My bases')}</span>
+              <span className="nav-text">{gettext('My projects')}</span>
             </Link>
           </div>
         )}
@@ -262,16 +262,16 @@ class SidePanel extends React.Component {
             <span className="dtable-nav-title">{gettext('Workspace')}</span>
             <div className="nav nav-pills flex-column dtable-nav-list">
               <div
-                className={`nav-item dtable-nav-item bases-nav ${this.getActiveClass('dtable')} ${this.getActiveClass('dtable') ? 'seatable-bg-orange' : ''}`}
-                onClick={this.onTabClick.bind(this, 'dtable')}
+                className={`nav-item dtable-nav-item bases-nav ${this.getActiveClass('project')} ${this.getActiveClass('project') ? 'seatable-bg-orange' : ''}`}
+                onClick={this.onTabClick.bind(this, 'project')}
               >
                 <Link
-                  to={siteRoot + 'dtable/'}
-                  aria-label={gettext('Bases')}
+                  to={siteRoot + 'project/'}
+                  aria-label={gettext('Projects')}
                   className="nav-link dtable-nav-link"
                 >
                   <span className="dtable-font dtable-icon-dtable-logo nav-icon" aria-hidden="true"></span>
-                  <span className="nav-text">{gettext('Bases')}</span>
+                  <span className="nav-text">{gettext('Projects')}</span>
                 </Link>
                 <div
                   className="nav-toggle-container h-100"

@@ -55,16 +55,15 @@ const propTypes = {
   onTransferGroupToggle: PropTypes.func,
   toggleGroupInviteDialog: PropTypes.func,
   folders: PropTypes.array,
-  tableList: PropTypes.array,
+  projectList: PropTypes.array,
   groupSharedTables: PropTypes.array,
-  groupSharedViews: PropTypes.array,
   connectDropTarget: PropTypes.func,
   canDrop: PropTypes.bool,
   isAdmin: PropTypes.bool,
   isShowVirtualDtable: PropTypes.bool,
   isItemFreezed: PropTypes.bool,
   isPersonal: PropTypes.bool,
-  canAddDTable: PropTypes.bool,
+  canAddProject: PropTypes.bool,
   onFolderToggle: PropTypes.func,
   deleteFolder: PropTypes.func,
   onUpdateFolderName: PropTypes.func,
@@ -93,7 +92,6 @@ const propTypes = {
   onTableSnapshotsToggle: PropTypes.func,
   onCopyDTableToggle: PropTypes.func,
   onAddDTable: PropTypes.func,
-  onUpdateTable: PropTypes.func,
   onMobileShareTableToggle: PropTypes.func,
   onMobileUpdateTableToggle: PropTypes.func,
   createBlankTable: PropTypes.func,
@@ -116,15 +114,6 @@ class WorkspaceContainer extends Component {
   isShareTableInFolder(folders, table) {
     for (let i = 0; i < folders.length; i++) {
       if (folders[i].items.find(item => item.item_id === table.dtable_share_id.toString())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  isShareViewInFolder(folders, view) {
-    for (let i = 0; i < folders.length; i++) {
-      if (folders[i].items.find(item => item.item_id === view.view_share_id.toString())) {
         return true;
       }
     }
@@ -160,14 +149,14 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.tableList.map((table, index) => {
-          if (this.isBaseInFolder(folders, table)) {
+        {this.props.projectList.map((project, index) => {
+          if (this.isBaseInFolder(folders, project)) {
             return null;
           }
           return (
             <DndDTableItemCommon
               key={index}
-              table={table}
+              project={project}
               isItemFreezed={isItemFreezed}
               isOwner={isOwner}
               isAdmin={isAdmin}
@@ -182,7 +171,6 @@ class WorkspaceContainer extends Component {
               onTableSnapshotsToggle={this.props.onTableSnapshotsToggle}
               onCopyDTableToggle={this.props.onCopyDTableToggle}
               onAddDTable={this.props.onAddDTable}
-              onUpdateTable={this.props.onUpdateTable}
               onMobileShareTableToggle={this.props.onMobileShareTableToggle}
               onMobileUpdateTableToggle={this.props.onMobileUpdateTableToggle}
               onFreezedItem={this.props.onFreezedItem}
@@ -204,15 +192,15 @@ class WorkspaceContainer extends Component {
             hideVirtualDtable={this.props.hideVirtualDtable}
           />
         )}
-        {this.props.groupSharedTables.map((table, index) => {
-          if (this.isShareTableInFolder(folders, table)) {
+        {this.props.groupSharedTables.map((project, index) => {
+          if (this.isShareTableInFolder(folders, project)) {
             return null;
           }
           return (
             <DndDTableItemGroupShared
               key={index}
               sharedItemKey={`table-${index}`}
-              table={table}
+              project={project}
               isItemFreezed={isItemFreezed}
               isAdmin={isAdmin}
               onLeaveShare={this.props.onLeaveGroupSharedTable}
@@ -227,26 +215,6 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.groupSharedViews.map((view, index) => {
-          if (this.isShareViewInFolder(folders, view)) {
-            return null;
-          }
-          return (
-            <DndDTableItemGroupShared
-              key={index}
-              sharedItemKey={`view-${index}`}
-              table={view}
-              isItemFreezed={isItemFreezed}
-              isAdmin={isAdmin}
-              onLeaveShare={this.props.onLeaveGroupSharedView}
-              onAddStarDTable={this.props.onAddStarDTable}
-              onUnstarDTable={this.props.onUnstarDTable}
-              setDropdownState={this.props.setDropdownState}
-              getDropdownState={this.props.getDropdownState}
-              onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}
-            />
-          );
-        })}
         {this.props.isShowVirtualFolder && (
           <VirtualFolder
             currentWorkspace={this.props.workspace}
@@ -254,7 +222,7 @@ class WorkspaceContainer extends Component {
             hideVirtualFolder={this.props.hideVirtualFolder}
           />
         )}
-        {this.props.canAddDTable && (this.props.isPersonal || isOwner || isAdmin) &&
+        {this.props.canAddProject && (this.props.isPersonal || isOwner || isAdmin) &&
           this.props.renderAddTableItem()
         }
       </div>

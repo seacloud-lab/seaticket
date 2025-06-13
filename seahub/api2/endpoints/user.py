@@ -19,7 +19,7 @@ from seahub.utils import is_valid_email
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.dtable.models import IdInOrgTuple
+from seahub.project.models import IdInOrgTuple
 from seahub.profile.models import Profile
 from seahub.settings import ENABLE_UPDATE_USER_INFO, ENABLE_USER_SET_CONTACT_EMAIL, SEND_SMS_ATTEMPT_LIMIT, \
     SEND_SMS_ATTEMPT_TIMEOUT, ENABLE_USER_SET_NAME

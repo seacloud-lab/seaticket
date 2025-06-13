@@ -13,8 +13,8 @@ from rest_framework import status
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.dtable.models import Workspaces
-from seahub.dtable.utils import create_repo_and_workspace, clean_related_users_cache_by_group
+from seahub.project.models import Workspaces
+from seahub.project.utils import create_repo_and_workspace, clean_related_users_cache_by_group
 from seahub.group.views import remove_group_common
 from seahub.utils import is_pro_version
 

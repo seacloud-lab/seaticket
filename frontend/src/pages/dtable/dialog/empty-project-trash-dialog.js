@@ -9,7 +9,7 @@ const propTypes = {
   emptyTrashConfirm: PropTypes.func.isRequired,
 };
 
-class EmptyDTableTrashDialog extends React.Component {
+class EmptyProjectTrashDialog extends React.Component {
 
   toggle = () => {
     this.props.emptyTrashCancel();
@@ -32,6 +32,6 @@ class EmptyDTableTrashDialog extends React.Component {
   }
 }
 
-EmptyDTableTrashDialog.propTypes = propTypes;
+EmptyProjectTrashDialog.propTypes = propTypes;
 
-export default EmptyDTableTrashDialog;
+export default EmptyProjectTrashDialog;

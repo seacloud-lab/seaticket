@@ -16,8 +16,8 @@ from exam.cases import Exam
 from seahub.group.utils import is_group_member
 from seahub.utils import mkstemp
 from seahub.base.accounts import User
-from seahub.dtable.models import Workspaces
-from seahub.dtable.utils import create_repo_and_workspace
+from seahub.project.models import Workspaces
+from seahub.project.utils import create_repo_and_workspace
 from seahub.utils.file_size import get_file_size_unit
 from seahub.base.templatetags.seahub_tags import email2nickname,\
         email2contact_email

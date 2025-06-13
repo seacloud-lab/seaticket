@@ -5,7 +5,6 @@ import { DTableEmptyTip } from 'dtable-ui-component';
 import Loading from '../../components/loading';
 import { isOrgContext, orgName, mediaUrl } from '../../utils/constants';
 import DTableWorkspaceCommon from './dtable-workspace-common';
-import DTableWorkspaceShared from './dtable-workspace-shared';
 import { Utils } from '../../utils/utils';
 import DTableWorkspaceStarred from './dtable-workspace-starred';
 
@@ -21,7 +20,6 @@ const propTypes = {
   onDeleteTable: PropTypes.func.isRequired,
   onLeaveGroupSharedTable: PropTypes.func.isRequired,
   onAddGroupSharedTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedView: PropTypes.func.isRequired,
   onStarDTable: PropTypes.func.isRequired,
   onUnstarDTable: PropTypes.func.isRequired,
   onAddDTable: PropTypes.func.isRequired,
@@ -42,7 +40,7 @@ class DTablesInWorkspace extends React.Component {
 
   renderWorkspace = () => {
     const { dtableID, workspaceList, onCopyDTable, onDeleteTable,
-      onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable, onLeaveGroupSharedView,
+      onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
       onStarDTable, onUnstarDTable, onAddDTable } = this.props;
 
     if (!isNumber(dtableID)) {
@@ -68,22 +66,6 @@ class DTablesInWorkspace extends React.Component {
           />
         );
       }
-
-      if (dtableID === 'shared') {
-        const sharedWorkspace = workspaceList.find(workspace => {
-          return workspace.type === 'shared';
-        });
-        return (
-          <DTableWorkspaceShared
-            sharedWorkspace={sharedWorkspace}
-            onCopyDTable={onCopyDTable}
-            noBaseTip={
-              <DTableEmptyTip text={gettext('No bases have been shared with you yet.')} src={`${mediaUrl}img/no-items-tip.png`} />
-            }
-            loadWorkspaceList={this.props.loadWorkspaceList}
-          />
-        );
-      }
     }
 
     let workspace = workspaceList.find(workspace => {
@@ -102,7 +84,6 @@ class DTablesInWorkspace extends React.Component {
         onCopyDTable={onCopyDTable}
         onAddGroupSharedTable={onAddGroupSharedTable}
         onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-        onLeaveGroupSharedView={onLeaveGroupSharedView}
         onStarDTable={onStarDTable}
         onUnstarDTable={onUnstarDTable}
         onAddDTable={onAddDTable}

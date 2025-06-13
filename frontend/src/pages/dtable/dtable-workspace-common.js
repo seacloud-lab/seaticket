@@ -4,23 +4,18 @@ import { DropTarget } from 'react-dnd';
 import { toaster } from 'dtable-ui-component';
 import { dtableWebAPI } from '../../api/dtable-web-api';
 import Loading from '../../components/loading';
-import ShareTableDialog from './dialog/share-table-dialog';
 import TableAPITokenDialog from './dialog/table-api-token-dialog';
 import ManageMembersDialog from './dialog/manage-members-dialog';
 import RenameGroupNameDialog from './dialog/rename-group-name-dialog';
 import TableSnapshotsDialog from './dialog/table-snapshots-dialog';
-import DTableIODialog from './dialog/dtable-io-dialog';
-import DTableExcelPreviewDialog from './dialog/dtable-excel-preview-dialog';
 import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
-import CopyDTableDialog from './dialog/copy-dtable-dialog';
 import GroupInviteMembersDialog from './dialog/group-invite-members-dialog';
 import { Utils, validateName } from '../../utils/utils';
 import { compareTwoString } from './utils/compare-two-string';
-import { canAddDTable, disableAddingPersonalBases } from '../../utils/constants';
+import { canAddProject, disableAddingPersonalBases } from '../../utils/constants';
 import DTableWorkspaceMemberDialog from './dialog/dtable-workspace-member-dialog';
 import TransferGroupDialog from './dialog/transfer-group-dialog';
 import AddBaseDropdownMenu from './dtable-dropdown-menu/add-base-dropdown';
-import TemplateListDialog from './dialog/template-list-dialog';
 import WebhookDialog from './dialog/webhook-dialog';
 import MobileAddBase from './mobile/mobile-add-base';
 import MobileShareTable from './mobile/mobile-share-table';
@@ -89,7 +84,7 @@ class DTableWorkspaceCommon extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tableList: [],
+      projectList: [],
       folders: [],
       isDataLoading: true,
       isItemFreezed: false,
@@ -105,17 +100,11 @@ class DTableWorkspaceCommon extends React.Component {
       isShowDepartmentDetailDialog: false,
       isShowTableSnapshotsDialog: false,
       isShowCopyDTable: false,
-      isShowDTableIODialog: false,
-      isShowExcelPreviewDialog: false,
       isOwner: false,
       isAdmin: false,
       currentTable: null,
       currentFolder: null,
       toBeMovedItem: null,
-      dtableImportPendingTable: null,
-      dtableImportPendingExcel: null,
-      IOTaskId: 0,
-      canCancelIOTask: false,
       isShowGroupMember: false,
       isShowTransferGroupDialog: false,
       isShowTemplateList: false,
@@ -128,7 +117,6 @@ class DTableWorkspaceCommon extends React.Component {
       isShowFolderOpen: false,
       isShowVirtualFolder: false,
       isShowMovingDialog: false,
-      fileType: 'xlsx',
       isParsing: false,
     };
     this.isDropdownOpen = false;
@@ -137,8 +125,8 @@ class DTableWorkspaceCommon extends React.Component {
 
   componentDidMount() {
     const { workspace } = this.props;
-    const { folders, tableList } = this.getSortedWorkspaceContent(workspace);
-    this.setState({ tableList, folders, isDataLoading: false });
+    const { folders, projectList } = this.getSortedWorkspaceContent(workspace);
+    this.setState({ projectList, folders, isDataLoading: false });
     this.setWorkspaceAdminState(workspace);
   }
 
@@ -160,17 +148,17 @@ class DTableWorkspaceCommon extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.workspace !== this.props.workspace) {
       const { workspace } = nextProps;
-      const { folders, tableList } = this.getSortedWorkspaceContent(workspace);
-      this.setState({ tableList, folders });
+      const { folders, projectList } = this.getSortedWorkspaceContent(workspace);
+      this.setState({ projectList, folders });
       this.setWorkspaceAdminState(nextProps.workspace);
     }
   }
 
   getSortedWorkspaceContent = (workspace) => {
-    let { folders = [], table_list = [] } = workspace || {};
+    let { folders = [], project_list = [] } = workspace || {};
     return {
       folders: folders.sort((a, b) => compareTwoString(a.name, b.name)),
-      tableList: table_list.sort((a, b) => compareTwoString(a.name, b.name)),
+      projectList: project_list.sort((a, b) => compareTwoString(a.name, b.name)),
     };
   };
 
@@ -264,29 +252,21 @@ class DTableWorkspaceCommon extends React.Component {
     });
   };
 
-  onDTableIODialogToggle = () => {
-    this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
-  };
-
-  onDTableExcelPreviewDialogToggle = () => {
-    this.setState({ isShowExcelPreviewDialog: !this.state.isShowExcelPreviewDialog });
-  };
-
-  onCreateTable = (tableName, owner, dtableIcon, dtableColor) => {
-    dtableWebAPI.createTable(tableName, owner, dtableIcon, dtableColor).then((res) => {
-      this.state.tableList.push(res.data.table);
+  onCreateProject = (tableName, owner, dtableIcon, dtableColor) => {
+    dtableWebAPI.createProject(tableName, owner, dtableIcon, dtableColor).then((res) => {
+      this.state.projectList.push(res.data.project);
       this.setState({
-        tableList: this.state.tableList
+        projectList: this.state.projectList
       });
     }).catch((error) => {
       this.handleError(error);
     });
   };
 
-  createTableInFolder = (dtableName, email, dtableIcon, dtableColor, folder) => {
-    dtableWebAPI.createTable(dtableName, email, dtableIcon, dtableColor, null, folder.id).then((res) => {
-      let newTable = new Base(res.data.table);
-      this.createBlankTable(newTable, folder);
+  createProjectInFolder = (projectName, email, dtableIcon, dtableColor, folder) => {
+    dtableWebAPI.createProject(projectName, email, dtableIcon, dtableColor, null, folder.id).then((res) => {
+      let newProject = new Base(res.data.project);
+      this.createBlankTable(newProject, folder);
     }).catch((error) => {
       this.handleError(error);
     });
@@ -306,259 +286,41 @@ class DTableWorkspaceCommon extends React.Component {
     }
   };
 
-  createBlankTable = (table, folder) => {
-    let { tableList, folders } = this.state;
-    let newTableList = tableList.slice(0);
-    newTableList.push(table);
+  createBlankTable = (project, folder) => {
+    let { projectList, folders } = this.state;
+    let newProjectList = projectList.slice(0);
+    newProjectList.push(project);
     if (!folder) {
-      this.setState({ isShowVirtualDtable: false, tableList: newTableList });
+      this.setState({ isShowVirtualDtable: false, projectList: newProjectList });
     } else {
       let newFolders = folders.slice(0);
       newFolders.forEach(item => {
         if (folder.id === item.id) {
           item.items.push({
             folder_id: folder.id,
-            item_type: 'dtable',
-            item_id: table.uuid
+            item_type: 'project',
+            item_id: project.uuid
           });
         }
       });
-      this.setState({ tableList: newTableList, folders: newFolders });
+      this.setState({ projectList: newProjectList, folders: newFolders });
     }
   };
 
-  addDtableFromExternalLink = (externalLink) => {
-    this.setState({ isCreatedTemplateLoading: true });
-    let { isShowFolderOpen, currentFolder } = this.state;
-    let folderID = isShowFolderOpen ? currentFolder.id : null;
-    dtableWebAPI.copyExternalDtable(this.props.workspace.id, externalLink, folderID).then((res) => {
-      this.state.tableList.push(res.data.dtable);
-      let folders = this.state.folders.slice(0);
-      folders.forEach(folder => {
-        if (folder.id === folderID) {
-          folder.items.push({
-            folder_id: folderID,
-            item_type: 'dtable',
-            item_id: res.data.dtable.uuid
-          });
-        }
-      });
-      this.setState({
-        tableList: this.state.tableList,
-        isCreatedTemplateLoading: false,
-        folders: folders
-      });
-      if (this.isDesktop) {
-        this.onShowTemplateListToggle();
-      } else {
-        this.addBaseRef.onShowTemplateListToggle();
-      }
-    }).catch((error) => {
-      this.handleError(error);
-      this.setState({ isCreatedTemplateLoading: false });
-    });
-  };
-
-  importExcelCSV = (workspaceId, dtable_name, includedTables) => {
-    let task_id = '';
-    let table = {};
-    this.setState({ isShowDTableIODialog: true, isParsing: false });
-    let { isShowFolderOpen, currentFolder } = this.state;
-    let folderID = isShowFolderOpen ? currentFolder.id : null;
-    dtableWebAPI.addImportExcelCSVTask(workspaceId, dtable_name, folderID, includedTables).then((res) => {
-      task_id = res.data.task_id;
-      table = res.data.table;
-      this.setState({
-        canCancelIOTask: true,
-        IOTaskId: task_id,
-        dtableImportPendingTable: table,
-        dtableImportPendingExcel: null,
-      });
-      return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
-    }).then(res => {
-      if (res.data && res.data.is_finished === true) {
-        this.state.tableList.push(table);
-        let folderID = isShowFolderOpen ? currentFolder.id : null;
-        let folders = this.state.folders.slice(0);
-        if (folderID) {
-          folders.forEach(folder => {
-            if (folder.id === folderID) {
-              folder.items.push({
-                folder_id: folderID,
-                item_type: 'dtable',
-                item_id: table.uuid
-              });
-            }
-          });
-        }
-        this.setState({
-          tableList: this.state.tableList,
-          isShowDTableIODialog: false,
-          folders: folders
-        });
-        return;
-      }
-      this.timer = setInterval(() => {
-        dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
-          if (res.data.is_finished === true) {
-            clearInterval(this.timer);
-            this.state.tableList.push(table);
-            let folderID = isShowFolderOpen ? currentFolder.id : null;
-            let folders = this.state.folders.slice(0);
-            if (folderID) {
-              folders.forEach(folder => {
-                if (folder.id === folderID) {
-                  folder.items.push({
-                    folder_id: folderID,
-                    item_type: 'dtable',
-                    item_id: table.uuid
-                  });
-                }
-              });
-            }
-            this.setState({
-              tableList: this.state.tableList,
-              isShowDTableIODialog: false,
-              folders: folders
-            });
-            toaster.success(gettext('Successfully imported file.'));
-          }
-        });
-      }, 1000);
-    }).catch((error) => {
-      this.setState({ isShowDTableIODialog: false });
-      this.handleError(error);
-    });
-  };
-
-  uploadDTableFile = (workspaceId, file, folderID) => {
-    let task_id = '';
-    let table = {};
-
-    if (file.name.endsWith('.xlsx') || file.name.endsWith('.csv')) {
-      let fileType = file.name.endsWith('.xlsx') ? 'xlsx' : 'csv';
-      this.setState({ isShowDTableIODialog: true, fileType: fileType, isParsing: true });
-      dtableWebAPI.addImportDTableTask(workspaceId, file).then((res) => {
-        task_id = res.data.task_id;
-        this.setState({
-          canCancelIOTask: true,
-          IOTaskId: task_id,
-          dtableImportPendingExcel: { workspace_id: workspaceId, dtable_name: res.data.dtable_name }
-        });
-        return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
-      }).then(res => {
-        if (res.data && res.data.is_finished === true) {
-          this.setState({
-            isShowDTableIODialog: false,
-            isShowExcelPreviewDialog: true,
-          });
-          return;
-        }
-        this.timer = setInterval(() => {
-          dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
-            if (res.data.is_finished === true) {
-              clearInterval(this.timer);
-              this.setState({
-                isShowDTableIODialog: false,
-                isShowExcelPreviewDialog: true,
-              });
-            }
-          });
-        }, 1000);
-      }).catch((error) => {
-        this.setState({ isShowDTableIODialog: false });
-        this.handleError(error);
-      });
-      return;
-    }
-
-    this.setState({ isShowDTableIODialog: true });
-    dtableWebAPI.addImportDTableTask(workspaceId, file, folderID).then((res) => {
-      task_id = res.data.task_id;
-      table = res.data.table;
-      this.setState({
-        canCancelIOTask: true,
-        IOTaskId: task_id,
-        dtableImportPendingTable: table,
-      });
-      return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
-    }).then(res => {
-      if (res.data && res.data.is_finished === true) {
-        this.state.tableList.push(table);
-        let folders = this.state.folders.slice(0);
-        folders.forEach(folder => {
-          if (folder.id === folderID) {
-            folder.items.push({
-              folder_id: folderID,
-              item_type: 'dtable',
-              item_id: table.uuid
-            });
-          }
-        });
-        this.setState({
-          tableList: this.state.tableList,
-          isShowDTableIODialog: false,
-          folders: folders
-        });
-        return;
-      }
-      this.timer = setInterval(() => {
-        dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
-          if (res.data.is_finished === true) {
-            clearInterval(this.timer);
-            this.state.tableList.push(table);
-            let folders = this.state.folders.slice(0);
-            folders.forEach(folder => {
-              if (folder.id === folderID) {
-                folder.items.push({
-                  folder_id: folderID,
-                  item_type: 'dtable',
-                  item_id: table.uuid
-                });
-              }
-            });
-            this.setState({
-              tableList: this.state.tableList,
-              isShowDTableIODialog: false,
-              folders: folders
-            });
-            toaster.success(gettext('Successfully imported file.'));
-          }
-        });
-      }, 1000);
-    }).catch((error) => {
-      this.setState({ isShowDTableIODialog: false });
-      this.handleError(error);
-    });
-  };
-
-  cancelDTableIOTask = () => {
-    clearInterval(this.timer);
-    let dtable_uuid = this.state.dtableImportPendingTable.uuid;
-    dtableWebAPI.cancelDTableIOTask(this.state.IOTaskId, dtable_uuid, 'import').then(res => {
-      this.setState({
-        isShowDTableIODialog: false,
-        IOTaskId: 0,
-      });
-    }).catch(error => {
-      this.handleError(error);
-    });
-  };
-
-  deleteTable = (tableName) => {
+  deleteTable = (projectName) => {
     let workspaceID = this.props.workspace.id;
-    dtableWebAPI.deleteTable(workspaceID, tableName).then(() => {
-      let tableList = this.state.tableList.filter(table => {
-        return table.name !== tableName;
+    dtableWebAPI.deleteTable(workspaceID, projectName).then(() => {
+      let projectList = this.state.projectList.filter(project => {
+        return project.name !== projectName;
       });
-      this.setState({ tableList: tableList });
-      this.props.onDeleteTable(workspaceID, tableList);
+      this.setState({ projectList: projectList });
+      this.props.onDeleteTable(workspaceID, projectList);
     }).catch((error) => {
       this.handleError(error);
     });
   };
 
-  renameTable = (oldTableName, newTableName) => {
+  renameTable = (oldProjectName, newTableName) => {
     let response = validateName(newTableName);
     if (!response.isValid) {
       toaster.danger(response.message);
@@ -566,14 +328,14 @@ class DTableWorkspaceCommon extends React.Component {
       return;
     }
     let workspaceID = this.props.workspace.id;
-    dtableWebAPI.renameTable(workspaceID, oldTableName, response.message).then((res) => {
-      let tableList = this.state.tableList.map((table) => {
-        if (table.name === oldTableName) {
-          table = res.data.table;
+    dtableWebAPI.renameTable(workspaceID, oldProjectName, response.message).then((res) => {
+      let projectList = this.state.projectList.map((project) => {
+        if (project.name === oldProjectName) {
+          project = res.data.project;
         }
-        return table;
+        return project;
       });
-      this.setState({ tableList: tableList });
+      this.setState({ projectList: projectList });
     }).catch((error) => {
       this.handleError(error);
       // 400 error: base name invalid, new base name invalid, new base name is too long
@@ -584,16 +346,16 @@ class DTableWorkspaceCommon extends React.Component {
     });
   };
 
-  onUpdateTable = (dtableName, updated) => {
-    dtableWebAPI.updateTable(this.props.workspace.id, dtableName, updated).then((res) => {
-      const updateTable = res.data.table;
-      let tableList = this.state.tableList.map((table) => {
-        if (table.name === dtableName) {
-          table = Object.assign({}, table, updateTable);
+  onUpdateTable = (projectName, updated) => {
+    dtableWebAPI.updateTable(this.props.workspace.id, projectName, updated).then((res) => {
+      const updateProject = res.data.project;
+      let projectList = this.state.projectList.map((project) => {
+        if (project.name === projectName) {
+          project = Object.assign({}, project, updateProject);
         }
-        return table;
+        return project;
       });
-      this.setState({ tableList: tableList });
+      this.setState({ projectList: projectList });
     }).catch((error) => {
       this.handleError(error);
     });
@@ -605,17 +367,17 @@ class DTableWorkspaceCommon extends React.Component {
     }
   };
 
-  onHandlePassword = (dtableName, operation, password, newPassword, code) => {
-    dtableWebAPI.updateDTablePassword(this.props.workspace.id, dtableName, operation, password, newPassword, code).then((res) => {
+  onHandlePassword = (projectName, operation, password, newPassword, code) => {
+    dtableWebAPI.updateDTablePassword(this.props.workspace.id, projectName, operation, password, newPassword, code).then((res) => {
       this.props.loadWorkspaceList();
-      const updateTable = res.data.table;
-      let tableList = this.state.tableList.map((table) => {
-        if (table.name === dtableName) {
-          table = Object.assign({}, table, updateTable);
+      const updateProject = res.data.project;
+      let projectList = this.state.projectList.map((project) => {
+        if (project.name === projectName) {
+          project = Object.assign({}, project, updateProject);
         }
-        return table;
+        return project;
       });
-      this.setState({ tableList: tableList });
+      this.setState({ projectList: projectList });
       let msg = this.formatMsgByOperation(operation);
       this.passwordRef.toggle();
       msg && toaster.success(msg);
@@ -694,7 +456,7 @@ class DTableWorkspaceCommon extends React.Component {
 
   onDeleteGroup = () => {
     let groupID = this.props.workspace.group_id;
-    if (groupID && this.state.tableList.length > 0) {
+    if (groupID && this.state.projectList.length > 0) {
       toaster.danger(gettext('Cannot delete group with bases'));
       return;
     }
@@ -817,8 +579,6 @@ class DTableWorkspaceCommon extends React.Component {
       return (
         <div className={`table-item ${isItemFreezed ? '' : 'add-table-range'}`}>
           <AddBaseDropdownMenu
-            onShowTemplateListToggle={this.onShowTemplateListToggle}
-            uploadDTableFile={this.uploadDTableFile}
             currentWorkspace={this.props.workspace}
             onCreateTableToggle={this.showVirtualDtable}
             onCreateFolderToggle={this.showVirtualFolder}
@@ -828,10 +588,8 @@ class DTableWorkspaceCommon extends React.Component {
     }
     return (
       <MobileAddBase
-        addDtableFromExternalLink={this.addDtableFromExternalLink}
         currentWorkspace={this.props.workspace}
-        createDTable={this.onCreateTable}
-        uploadDTableFile={this.uploadDTableFile}
+        createProject={this.onCreateProject}
         ref={ref => this.addBaseRef = ref}
         isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
         createBlankFolder={this.createBlankFolder}
@@ -995,7 +753,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   renderEmpty = () => {
-    if (this.state.tableList.length === 0 && this.state.folders.length === 0) {
+    if (this.state.projectList.length === 0 && this.state.folders.length === 0) {
       return this.props.noBaseTip || '';
     }
   };
@@ -1003,15 +761,13 @@ class DTableWorkspaceCommon extends React.Component {
   render() {
     const { workspace } = this.props;
     let groupSharedTables = [];
-    let groupSharedViews = [];
     const isPersonal = workspace.type === 'personal';
-    let { tableList, folders, isItemFreezed, isDataLoading, isOwner, isAdmin, isShowFolderOpen, currentFolder } = this.state;
+    let { projectList, folders, isItemFreezed, isDataLoading, isOwner, isAdmin, isShowFolderOpen, currentFolder } = this.state;
     if (isDataLoading) {
       return <Loading />;
     }
     if (workspace.type === 'group') {
       groupSharedTables = workspace.group_shared_dtables;
-      groupSharedViews = workspace.group_shared_views;
     }
 
     const isOwnerOrAdmin = !isPersonal && (isOwner || isAdmin);
@@ -1045,15 +801,13 @@ class DTableWorkspaceCommon extends React.Component {
             isAdmin={isAdmin}
             folders={folders}
             workspace={workspace}
-            tableList={tableList}
+            projectList={projectList}
             groupSharedTables={groupSharedTables}
-            groupSharedViews={groupSharedViews}
             folder={currentFolder}
-            canAddDTable={canAddDTable}
+            canAddProject={canAddProject}
             isItemFreezed={isItemFreezed}
             onFolderToggle={this.onFolderToggle}
             createBlankTable={this.createBlankTable}
-            uploadDTableFile={this.uploadDTableFile}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onMoveFolderItemToggle={this.onMoveFolderItemToggle}
             moveFolderItem={this.moveFolderItem}
@@ -1078,7 +832,7 @@ class DTableWorkspaceCommon extends React.Component {
             onMobileUpdateTableToggle={this.onMobileUpdateTableToggle}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
             onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            createTableInFolder={this.createTableInFolder}
+            createProjectInFolder={this.createProjectInFolder}
             renderAddTableItem={this.renderAddTableItem}
             moveTableToFolder={this.moveTableToFolder}
             isShowVirtualDtable={this.state.isShowVirtualDtable}
@@ -1101,13 +855,6 @@ class DTableWorkspaceCommon extends React.Component {
           />
         </div>
         {this.renderEmpty()}
-        {this.state.isShowTemplateList &&
-          <TemplateListDialog
-            onShowTemplateListToggle={this.onShowTemplateListToggle}
-            addDtableFromExternalLink={this.addDtableFromExternalLink}
-            isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
-          />
-        }
         {this.state.isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
             title={gettext('Delete base')}
@@ -1117,16 +864,6 @@ class DTableWorkspaceCommon extends React.Component {
             toggleDialog={this.onDeleteTableToggle}
           />
         )}
-        {this.state.isShowSharedDialog &&
-          <ShareTableDialog
-            currentTable={this.state.currentTable}
-            shareCancel={this.onShareTableToggle}
-            onAddGroupSharedTable={this.props.onAddGroupSharedTable}
-            onLeaveGroupSharedTable={this.props.onLeaveGroupSharedTable}
-            srcGroupID={workspace.group_id}
-            groupName={workspace.name}
-          />
-        }
         {this.state.isShowSetPasswordDialog &&
           <DTableSetPasswordDialog
             ref={ref => this.passwordRef = ref}
@@ -1224,30 +961,6 @@ class DTableWorkspaceCommon extends React.Component {
             workspace={this.props.workspace}
           />
         )}
-        {this.state.isShowCopyDTable && (
-          <CopyDTableDialog
-            dtable={this.state.currentTable}
-            onCopyDTableToggle={this.onCopyDTableToggle}
-            onCopyDTable={this.props.onCopyDTable}
-          />
-        )}
-        {this.state.isShowDTableIODialog && (
-          <DTableIODialog
-            isExporting={false}
-            toggle={this.onDTableIODialogToggle}
-            cancelDTableIOTask={this.cancelDTableIOTask}
-            canCancelIOTask={this.state.canCancelIOTask}
-            isParsing={this.state.isParsing}
-          />
-        )}
-        {this.state.isShowExcelPreviewDialog && (
-          <DTableExcelPreviewDialog
-            toggle={this.onDTableExcelPreviewDialogToggle}
-            excelInfo={this.state.dtableImportPendingExcel}
-            importExcelCSV={this.importExcelCSV}
-            fileType={this.state.fileType}
-          />
-        )}
         {this.state.isShowInviteDialog && (
           <GroupInviteMembersDialog
             workspace={workspace}
@@ -1287,9 +1000,8 @@ class DTableWorkspaceCommon extends React.Component {
           <FolderItemsDialog
             workspace={workspace}
             folders={folders}
-            tableList={tableList}
+            projectList={projectList}
             groupSharedTables={groupSharedTables}
-            groupSharedViews={groupSharedViews}
             folder={this.state.currentFolder}
             onFolderToggle={this.onFolderToggle}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
@@ -1297,7 +1009,6 @@ class DTableWorkspaceCommon extends React.Component {
             changeCurrentFolder={this.changeCurrentFolder}
             createBlankTable={this.createBlankTable}
             createBlankFolder={this.createBlankFolder}
-            uploadDTableFile={this.uploadDTableFile}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onMoveFolderItemToggle={this.onMoveFolderItemToggle}
             moveFolderItem={this.moveFolderItem}
@@ -1321,8 +1032,8 @@ class DTableWorkspaceCommon extends React.Component {
             onUpdateTable={this.onUpdateTable}
             onMobileShareTableToggle={this.onMobileShareTableToggle}
             onMobileUpdateTableToggle={this.onMobileUpdateTableToggle}
-            canAddDTable={canAddDTable}
-            createTableInFolder={this.createTableInFolder}
+            canAddProject={canAddProject}
+            createProjectInFolder={this.createProjectInFolder}
             setDropdownState={this.setDropdownState}
             getDropdownState={this.getDropdownState}
             deleteFolder={this.deleteFolder}
@@ -1334,15 +1045,13 @@ class DTableWorkspaceCommon extends React.Component {
         {!this.isDesktop && isShowFolderOpen &&
           <MobileFolderItems
             workspace={workspace}
-            tableList={tableList}
+            tableList={projectList}
             groupSharedTables={groupSharedTables}
-            groupSharedViews={groupSharedViews}
             folder={this.state.currentFolder}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
             onLeaveGroupSharedView={this.onLeaveGroupSharedView}
             onFolderToggle={this.onFolderToggle}
             createBlankTable={this.createBlankTable}
-            uploadDTableFile={this.uploadDTableFile}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onMoveFolderItemToggle={this.onMoveFolderItemToggle}
             moveFolderItem={this.moveFolderItem}
@@ -1366,8 +1075,8 @@ class DTableWorkspaceCommon extends React.Component {
             onUpdateTable={this.onUpdateTable}
             onMobileShareTableToggle={this.onMobileShareTableToggle}
             onMobileUpdateTableToggle={this.onMobileUpdateTableToggle}
-            canAddDTable={canAddDTable}
-            createTableInFolder={this.createTableInFolder}
+            canAddProject={canAddProject}
+            createProjectInFolder={this.createProjectInFolder}
             setDropdownState={this.setDropdownState}
             getDropdownState={this.getDropdownState}
           />

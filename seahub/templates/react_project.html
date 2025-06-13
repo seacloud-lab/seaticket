@@ -78,7 +78,7 @@
             isMobile: {% if request.is_mobile or request.is_tablet %} true {% else %} false {% endif %},
 
             canAddGroup: {% if user.permissions.can_add_group %} true {% else %} false {% endif %},
-            canAddDTable: {% if user.permissions.can_add_dtable %} true {% else %} false {% endif %},
+            canAddProject: {% if user.permissions.can_add_project %} true {% else %} false {% endif %},
             canGenerateExternalLink: {% if user.permissions.can_generate_external_link %} true {% else %} false {% endif %},
             canInvitePeople: {% if enable_guest_invitation and user.permissions.can_invite_guest %} true {% else %} false {% endif %},
             canUseAdvancedPerms: {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %},

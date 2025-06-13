@@ -141,18 +141,6 @@ def get_fileserver_root():
     """
     return config.FILE_SERVER_ROOT.rstrip('/') if config.FILE_SERVER_ROOT else ''
 
-def get_inner_fileserver_root():
-    """Construct inner seafile fileserver address and port.
-
-    Inner fileserver root allows Seahub access fileserver through local
-    address, thus avoiding the overhead of DNS queries, as well as other
-    related issues, for example, the server can not ping itself, etc.
-
-    Returns:
-    	http://127.0.0.1:<port>
-    """
-
-    return seahub.settings.INNER_FILE_SERVER_ROOT
 
 def gen_token(max_length=5):
     """
