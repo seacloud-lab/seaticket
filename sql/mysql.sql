@@ -404,7 +404,7 @@ CREATE TABLE `workspaces`  (
   `name` varchar(255)  DEFAULT NULL,
   `owner` varchar(255) NOT NULL,
   `created_at` datetime(6) NOT NULL,
-  `org_id` int(11) NOT NULL
+  `org_id` int(11) NOT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT 0,
   `delete_time` datetime(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),

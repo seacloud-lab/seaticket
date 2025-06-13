@@ -18,7 +18,7 @@ class OrgAdminServiceApi {
   }
 
   initForDTableUsage() {
-    const xcsrfHeaders = cookie.load('dtable_csrftoken');
+    const xcsrfHeaders = cookie.load('seaqa_csrftoken');
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
       this.server = server;
