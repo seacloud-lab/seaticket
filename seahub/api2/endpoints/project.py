@@ -275,7 +275,7 @@ class ProjectsView(APIView):
                 password = make_password(password)
             project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon, password=password)
             if folder:
-                FolderItems.objects.create(folder_id=folder.id, item_type=FOLDER_ITEM_PROJECT, item_id=dtable.uuid.hex)
+                FolderItems.objects.create(folder_id=folder.id, item_type=FOLDER_ITEM_PROJECT, item_id=project.uuid.hex)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
