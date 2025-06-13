@@ -398,3 +398,90 @@ CREATE TABLE `user_role` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `email` (`email`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE `workspaces`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255)  DEFAULT NULL,
+  `owner` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `org_id` int(11) NOT NULL
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `delete_time` datetime(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `owner`(`owner`),
+  INDEX `idx_org_id`(`org_id`),
+  INDEX `workspaces_deleted_idx`(`deleted`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `projects`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` char(32) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `creator` varchar(255) NOT NULL,
+  `modifier` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `workspace_id` int(11) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `delete_time` datetime(6) NULL DEFAULT NULL,
+  `color` varchar(50) DEFAULT NULL,
+  `text_color` varchar(50) DEFAULT NULL,
+  `icon` varchar(50) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `in_storage` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid`(`uuid`),
+  UNIQUE KEY `projects_workspace_id_name_0b89d91b_uniq`(`workspace_id`, `name`),
+  KEY `projects_deleted_n3b4o5b2_key`(`deleted`),
+  KEY `projects_created_at_e6716f4b`(`created_at`),
+  KEY `updated_at_h3g4o9u6_key`(`updated_at`),
+  CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `user_starred_projects`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(254) NOT NULL,
+  `project_uuid` varchar(36) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_starred_projects_email_project_uuid_n8s7b3s0_uniq`(`email`, `project_uuid`),
+  INDEX `user_starred_project_project_uuid_n3s8l4n8`(`project_uuid`),
+  INDEX `user_starred_projects_email_n9x0l3n8`(`email`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `folders`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `color` varchar(50) DEFAULT NULL,
+  `workspace_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_workspace_id_n3o0u7t3_uniq_key`(`name`, `workspace_id`),
+  KEY `workspace_id_j3b8g5q0p8_key`(`workspace_id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `folder_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `folder_id` int(11) NOT NULL,
+  `item_type` varchar(50) NOT NULL,
+  `item_id` varchar(36) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `folder_id_item_type_item_id_k8h5b6q1_uniq_key`(`folder_id`, `item_type`, `item_id`),
+  KEY `item_type_item_id_k3n8u0i0_union_key`(`item_type`, `item_id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `project_group_orders` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `detail` longtext NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_group_order_username_uwuyehjb`(`username`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `options_useroptions`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `option_key` varchar(50) NOT NULL,
+  `option_val` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `options_useroptions_email_77d5726a`(`email`),
+  KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
