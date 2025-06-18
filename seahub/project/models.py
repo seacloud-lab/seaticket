@@ -136,26 +136,7 @@ class IdInOrgTuple(models.Model):
         db_table = 'id_in_org_tuple'
 
 
-class DTablesManager(models.Manager):
-
-    def get_dtable_by_workspace(self, workspace):
-        try:
-            dtables = super(DTablesManager, self).filter(workspace=workspace)
-            dtable_list = list()
-            for dtable in dtables:
-                dtable_dict = dict()
-                dtable_dict['id'] = dtable.pk
-                dtable_dict['workspace_id'] = dtable.workspace_id
-                dtable_dict['uuid'] = str(dtable.uuid)
-                dtable_dict['name'] = dtable.name
-                dtable_dict['creator'] = email2nickname(dtable.creator)
-                dtable_dict['modifier'] = email2nickname(dtable.modifier)
-                dtable_dict['created_at'] = datetime_to_isoformat_timestr(dtable.created_at)
-                dtable_dict['updated_at'] = datetime_to_isoformat_timestr(dtable.updated_at)
-                dtable_list.append(dtable_dict)
-            return dtable_list
-        except self.model.DoesNotExist:
-            return None
+class ProjectsManager(models.Manager):
 
     def create_project(self, username, workspace, name, color=None, text_color=None, icon=None, password=None):
         name = utf8_normalize(name)
@@ -166,21 +147,21 @@ class DTablesManager(models.Manager):
 
     def get_project(self, workspace, name, deleted=False):
         try:
-            return super(DTablesManager, self).get(workspace=workspace, name=name, deleted=deleted)
+            return super(ProjectsManager, self).get(workspace=workspace, name=name, deleted=deleted)
         except self.model.DoesNotExist:
             return None
 
-    def get_dtable_by_uuid(self, dtable_uuid, include_deleted=True):
+    def get_project_by_uuid(self, dtable_uuid, include_deleted=True):
         try:
             if not include_deleted:
-                return super(DTablesManager, self).get(uuid=dtable_uuid, deleted=False)
-            return super(DTablesManager, self).get(uuid=dtable_uuid)
+                return super(ProjectsManager, self).get(uuid=dtable_uuid, deleted=False)
+            return super(ProjectsManager, self).get(uuid=dtable_uuid)
         except self.model.DoesNotExist:
             return None
         except ValidationError:  # uuid maybe invalid
             return None
 
-    def get_dtable_by_query_str(self, query_str, include_deleted=True):
+    def get_project_by_query_str(self, query_str, include_deleted=True):
 
         try:
             if is_valid_uuid(query_str):
@@ -194,44 +175,26 @@ class DTablesManager(models.Manager):
             query_result = query_result.filter(deleted=False)
         return query_result
 
-    def search_dtable_in_org(self, org_id, query_str, start, end):
+    def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):
-            return super(DTablesManager, self).filter(
+            return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, uuid=query_str).order_by('id')[start:end]
         else:
-            return super(DTablesManager, self).filter(
+            return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).order_by('id')[start:end]
 
-    # def delete_dtable(self, workspace, name):
-    #     try:
-    #         dtable = super(DTablesManager, self).get(workspace=workspace, name=name)
-    #         delete_dtable.send(sender=None, dtable_uuid=dtable.uuid.hex)
-    #         dtable.delete()
-    #         return True
-    #     except self.model.DoesNotExist:
-    #         return False
-
-    def get_trash_dtables_by_expire_seconds(self, expire_seconds=None):
-        if not expire_seconds:
-            return super(DTablesManager, self).filter(deleted=True).select_related('workspace')
-        else:
-            return super(DTablesManager, self).filter(deleted=True,
-                                                      delete_time__lt=(datetime.datetime.now() - datetime.timedelta(
-                                                          seconds=expire_seconds)),
-                                                      ).select_related('workspace')
-
     def get_non_duplicated_name(self, name, workspace_id):
-        dtables = super(DTablesManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)
+        dtables = super(ProjectsManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)
         existed_names = [d.name for d in dtables]
         if not existed_names or name not in existed_names:
             return name
         return get_no_duplicate_obj_name(name, existed_names)
 
-    def get_personal_dtables_by_username(self, username):
+    def get_personal_projects_by_username(self, username):
         user_workspace = Workspaces.objects.get_workspace_by_owner(username)
         try:
-            return super(DTablesManager, self).filter(workspace=user_workspace, deleted=False)
+            return super(ProjectsManager, self).filter(workspace=user_workspace, deleted=False)
         except self.model.DoesNotExist:
             return None
 
@@ -252,7 +215,7 @@ class Projects(models.Model):
     password = models.CharField(max_length=255, null=True)
     in_storage = models.BooleanField(default=False, null=False)
 
-    objects = DTablesManager()
+    objects = ProjectsManager()
 
     class Meta:
         unique_together = (('workspace', 'name'),)
@@ -437,3 +400,37 @@ class ProjectGroupOrders(models.Model):
 
         self.save_group_ids(group_ids)
         return group_ids, None
+
+
+class WebsitesManager(models.Manager):
+    def create_website(self, username, project, url, sitemap_url):
+        project = self.model(project=project, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
+        project.save()
+        return project
+
+
+class Websites(models.Model):
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
+    url = models.CharField(max_length=255)
+    sitemap_url = models.CharField(max_length=255)
+    modifier = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    last_crawled_at = models.DateTimeField(null=True)
+    status = models.CharField(max_length=20)
+
+    objects = WebsitesManager()
+
+    class Meta:
+        db_table = 'websites'
+        unique_together = [('url', 'project')]
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'url': self.url,
+            'sitemap_url': self.sitemap_url,
+            'modifier': self.modifier,
+            'created_at': datetime_to_isoformat_timestr(self.created_at),
+            'last_crawled_at': datetime_to_isoformat_timestr(self.last_crawled_at),
+            'status': self.status,
+        }

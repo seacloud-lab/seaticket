@@ -29,11 +29,6 @@ class MainPanel extends React.Component {
     this.searchTableRef = null;
   }
 
-  onSearchedClick = (item) => {
-    let url = siteRoot + 'workspace/' + item.workspace_id + '/dtable/' + item.name + '/';
-    location.href = url;
-  };
-
   loadWorkspaceList = () => {
     dtableWebAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => {

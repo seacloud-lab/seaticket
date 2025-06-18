@@ -7,7 +7,6 @@ import os
 import re
 
 # The usage of following three settings should be removed
-FILE_SERVER_ROOT = ''
 SERVICE_URL = 'http://127.0.0.1'
 
 PROJECT_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -297,10 +296,6 @@ LOGOUT_REDIRECT_URL = None
 
 ACCOUNT_ACTIVATION_DAYS = 7
 
-# enable resumable fileupload or not
-ENABLE_RESUMABLE_FILEUPLOAD = False
-RESUMABLE_UPLOAD_FILE_BLOCK_SIZE = 8
-
 # token length for the share link
 SHARE_LINK_TOKEN_LENGTH = 20
 
@@ -346,8 +341,6 @@ ENABLE_USER_CREATE_ORG_REPO = True
 ENABLE_ORG_DEPARTMENT = True
 
 ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL = False
-
-DISABLE_SYNC_WITH_ANY_FOLDER = False
 
 # Enable or disable sharing to all groups
 ENABLE_SHARE_TO_ALL_GROUPS = False
@@ -426,18 +419,8 @@ API_THROTTLE_RATES = {}
 
 REST_FRAMEWORK_THROTTING_WHITELIST = []
 
-# sync common dataset
-SYNC_COMMON_DATASET_INTERVAL = 5 * 60
-
-# sync data
-SYNC_DATA_INTERVAL = 5 * 60
-
 # trash cleanning interval by days
 TRASH_CLEAN_AFTER_DAYS = 30
-
-# file and path
-MAX_UPLOAD_FILE_NAME_LEN    = 255
-MAX_FILE_NAME 		    = MAX_UPLOAD_FILE_NAME_LEN
 
 # Whether or not activate user when registration complete.
 # If set to ``False``, new user will be activated by admin or via activate link.
@@ -463,10 +446,10 @@ def genpassword():
 INIT_PASSWD = genpassword
 
 # browser tab title
-SITE_TITLE = 'Private SeaTable'
+SITE_TITLE = 'Private SeaQA'
 
 # Base name used in email sending
-SITE_NAME = 'SeaTable'
+SITE_NAME = 'SeaQA'
 
 # Path to the license file(relative to the media path)
 LICENSE_PATH = os.path.join(PROJECT_ROOT, '../../seatable-license.txt')
@@ -510,28 +493,6 @@ USE_PHONE_REGISTRATION_BY_DEFAULT = False
 # show 'log out' icon in top-bar or not.
 SHOW_LOGOUT_ICON = False
 
-# introduction video link
-INTRODUCTION_VIDEO_LINK = 'https://cloud.seafile.com/f/b0caa92cbce74f7396bd/?raw=1'
-
-# enable show introduction video when first login
-ENABLE_INTRODUCTION_VIDEO = False
-
-# enable show user guide panel
-ENABLE_USER_GUIDE = False
-GETTING_START_LINK = ''
-USE_CASES_LINK = ''
-TRAINING_SERVICES_LINK = ''
-VIDEO_TUTORIALS_LINK = ''
-
-#enable create base from template
-SHOW_TEMPLATES_LINK = os.environ.get('SEATABLE_SHOW_TEMPLATES_LINK', False)
-TEMPLATE_BASE_API_TOKEN = os.environ.get('SEATABLE_TEMPLATE_BASE_API_TOKEN', '')
-TEMPLATE_TABLE_NAME = os.environ.get('SEATABLE_TEMPLATE_TABLE_NAME', '')
-ENABLE_CREATE_BASE_FROM_TEMPLATE = os.environ.get('SEATABLE_ENABLE_CREATE_BASE_FROM_TEMPLATE', True)
-
-# help link
-HELP_LINK = os.environ.get('SEATABLE_HELP_LINK', 'https://docs.seatable.io')
-
 # powered by link
 POWERED_BY_LINK = 'https://seatable.cn/'
 
@@ -565,12 +526,6 @@ ENABLE_TELL_A_FRIEND = False
 # friend notification link for cloud.seatable.io
 FRIEND_INVITATION_LINK = ''
 
-# workflow
-ENABLE_WORKFLOW = False
-
-# universal app cn help link
-UNIVERSAL_APP_CN_HELP_LINK = 'https://docs.seatable.cn/published/seatable-user-manual/universal-application.md'
-
 # slide captcha
 ENABLE_SLIDE_CAPTCHA = False
 SLIDE_CAPTCHA_IMAGE_URL = ''
@@ -595,8 +550,8 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ["https://*", "http://*", "chrome-extension://*"]
 
 # Logging
-LOG_LEVEL = os.environ.get('SEATABLE_LOG_LEVEL', '"INFO"')
-SEATABLE_LOGS_HANDLERS = ['console'] if os.environ.get('SEATABLE_LOG_TO_STDOUT', 'false') == 'true' else ['file']
+LOG_LEVEL = os.environ.get('SEAQA_LOG_LEVEL', '"INFO"')
+SEAQA_LOGS_HANDLERS = ['console'] if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true' else ['file']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -624,17 +579,17 @@ LOGGING = {
     'loggers': {
         '': {
             'level': "INFO",
-            'handlers': SEATABLE_LOGS_HANDLERS,
+            'handlers': SEAQA_LOGS_HANDLERS,
             'propagate': False
         },
         'django.request': {
             'level': "INFO",
-            'handlers': SEATABLE_LOGS_HANDLERS,
+            'handlers': SEAQA_LOGS_HANDLERS,
             'propagate': False
         },
         'py.warnings': {
             'level': "INFO",
-            'handlers': SEATABLE_LOGS_HANDLERS,
+            'handlers': SEAQA_LOGS_HANDLERS,
             'propagate': False
         }
     }
@@ -729,10 +684,9 @@ SEND_EMAIL_ON_ACTIVATING_ORG_USER = False # Whether to send email when org admin
 # Settings for seaqa    #
 ##########################
 
-DTABLE_WEB_SERVICE_URL = ''
+SEAQA_PRIVATE_KEY = ''
 
-AI_PRICES = {}
-BAIDU_OCR_TOKENS = {}
+SEAQA_WEB_SERVICE_URL = ''
 
 SSO_SECRET_KEY = ''
 
@@ -760,8 +714,6 @@ ENABLE_SMS_LOGIN = False
 
 SEND_SMS_ATTEMPT_LIMIT = 5
 SEND_SMS_ATTEMPT_TIMEOUT = 60 * 60  # 1h
-
-SEATABLE_MARKET_URL = ''
 
 # Opearation Log DB
 ENABLE_OPERATION_LOG_DB = False
@@ -875,7 +827,7 @@ else:
 
 # config in env
 # jwt private key
-DTABLE_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or DTABLE_PRIVATE_KEY
+SEAQA_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or SEAQA_PRIVATE_KEY
 
 # For database conf., now only support mysql
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
@@ -899,15 +851,15 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
             raise ValueError(f"Invalid database port: {DATABASES['default']['PORT']}")
 
 ## For operation logs DB (optional)
-ENABLE_OPERATION_LOG_DB = os.environ.get('SEATABLE_ENABLE_OPERATION_LOG_DB') or ENABLE_OPERATION_LOG_DB
+ENABLE_OPERATION_LOG_DB = os.environ.get('SEAQA_ENABLE_OPERATION_LOG_DB') or ENABLE_OPERATION_LOG_DB
 
 if ENABLE_OPERATION_LOG_DB:
     _rewrite_oplog_db_env_key_map = {
-        'HOST': 'SEATABLE_OPERATION_LOG_DB_HOST',
-        'PORT': 'SEATABLE_OPERATION_LOG_DB_PORT',
-        'USER': 'SEATABLE_OPERATION_LOG_DB_USER',
-        'PASSWORD': 'SEATABLE_OPERATION_LOG_DB_PASSWORD',
-        'NAME': 'SEATABLE_OPERATION_LOG_DB_NAME'
+        'HOST': 'SEAQA_OPERATION_LOG_DB_HOST',
+        'PORT': 'SEAQA_OPERATION_LOG_DB_PORT',
+        'USER': 'SEAQA_OPERATION_LOG_DB_USER',
+        'PASSWORD': 'SEAQA_OPERATION_LOG_DB_PASSWORD',
+        'NAME': 'SEAQA_OPERATION_LOG_DB_NAME'
     }
 
     if 'operation_log' not in DATABASES:
@@ -971,10 +923,8 @@ sys.path.pop(0)
 IS_PRO_VERSION = os.getenv('IS_PRO_VERSION') == 'True'
 
 CONSTANCE_CONFIG = {
-    'DTABLE_WEB_SERVICE_URL': (DTABLE_WEB_SERVICE_URL, ''),
+    'SEAQA_WEB_SERVICE_URL': (SEAQA_WEB_SERVICE_URL, ''),
     'SERVICE_URL': (SERVICE_URL, ''),
-    'FILE_SERVER_ROOT': (FILE_SERVER_ROOT, ''),
-    'DISABLE_SYNC_WITH_ANY_FOLDER': (DISABLE_SYNC_WITH_ANY_FOLDER, ''),
 
     'ENABLE_SIGNUP': (ENABLE_SIGNUP, ''),
     'ACTIVATE_AFTER_REGISTRATION': (ACTIVATE_AFTER_REGISTRATION, ''),

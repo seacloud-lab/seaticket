@@ -303,7 +303,7 @@ class DTableItemCommon extends React.Component {
     let { isOwner, isAdmin, project } = this.props;
     let { dtableName, dropdownOpen, dtableColor, dtableIcon, active } = this.state;
     let { workspace_id, uuid, id, name, is_encrypted, starred } = project;
-    let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(project.name) + '/';
+    let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
     if (!isDesktop) {
       return (

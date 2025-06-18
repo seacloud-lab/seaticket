@@ -143,11 +143,11 @@ class InvitationLinks(models.Model):
 
     @property
     def link(self):
-        return '%s%s' % (settings.DTABLE_WEB_SERVICE_URL.rstrip('/'), reverse('invitations:invitation_link_view', args=(self.token,)))
+        return '%s%s' % (settings.SEAQA_WEB_SERVICE_URL.rstrip('/'), reverse('invitations:invitation_link_view', args=(self.token,)))
 
     @property
     def poster_link(self):
-        return '%s%s' % (settings.DTABLE_WEB_SERVICE_URL.rstrip('/'), reverse('invitations:invitation_poster_link_view', args=(self.token,)))
+        return '%s%s' % (settings.SEAQA_WEB_SERVICE_URL.rstrip('/'), reverse('invitations:invitation_poster_link_view', args=(self.token,)))
 
 
 class RegistrationiLogsManager(models.Manager):

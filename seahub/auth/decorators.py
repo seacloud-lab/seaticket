@@ -86,7 +86,7 @@ def bind_cookie_user(function):
     def get_access_token_user(request, dtable_uuid):
         access_token = request.COOKIES.get('access-token')
         try:
-            payload = jwt.decode(access_token, settings.DTABLE_PRIVATE_KEY, algorithms=['HS256'])
+            payload = jwt.decode(access_token, settings.SEAQA_PRIVATE_KEY, algorithms=['HS256'])
         except:
             return None
         if not payload.get('is_internal'):

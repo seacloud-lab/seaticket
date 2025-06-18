@@ -78,6 +78,28 @@ class DTableWebAPI {
     return this.req.get(url);
   }
 
+  listWebsites(workspaceID, projectName, page, perPage) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/';
+    let params = {
+      page: page,
+      per_page: perPage
+    };
+    return this.req.get(url, { params: params });
+  }
+
+  createWebsite(workspaceID, projectName, webUrl, sitemapUrl) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/';
+    let form = new FormData();
+    form.append('url', webUrl);
+    form.append('sitemap_url', sitemapUrl);
+    return this._sendPostRequest(url, form);
+  }
+
+  deleteWebsite(workspaceID, projectName, websiteID) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/' + websiteID + '/';
+    return this.req.delete(url);
+  }
+
   listSharedViews() {
     let url = this.server + '/api/v2.1/dtables/view-shares-user-shared/';
     return this.req.get(url);

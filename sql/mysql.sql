@@ -485,3 +485,18 @@ CREATE TABLE `options_useroptions`  (
   KEY `options_useroptions_email_77d5726a`(`email`),
   KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+
+CREATE TABLE `websites`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` varchar(255) NOT NULL,
+  `sitemap_url` varchar(255) NULL,
+  `modifier` varchar(255) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `last_crawled_at` datetime(6) NULL,
+  `project_id` int(11) NOT NULL,
+  `status` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `websites_created_at_e5618f4b`(`created_at`),
+  CONSTRAINT `websites_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;

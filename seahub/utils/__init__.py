@@ -32,11 +32,8 @@ from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.api2.models import Token, TokenV2
 import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
-        MEDIA_ROOT, CUSTOM_LOGO_PATH, ENABLE_WORKFLOW
-try:
-    from seahub.settings import DTABLE_EVENTS_CONFIG_FILE
-except ImportError:
-    DTABLE_EVENTS_CONFIG_FILE = None
+        MEDIA_ROOT, CUSTOM_LOGO_PATH
+
 try:
     from seahub.settings import EMAIL_HOST
     IS_EMAIL_CONFIGURED = True
@@ -46,14 +43,6 @@ try:
     from seahub.settings import CLOUD_MODE
 except ImportError:
     CLOUD_MODE = False
-try:
-    from seahub.settings import ENABLE_INNER_FILESERVER
-except ImportError:
-    ENABLE_INNER_FILESERVER = True
-try:
-    from seahub.settings import CHECK_SHARE_LINK_TRAFFIC
-except ImportError:
-    CHECK_SHARE_LINK_TRAFFIC = False
 
 logger = logging.getLogger(__name__)
 
@@ -132,14 +121,6 @@ def list_to_string(l):
 
     """
     return ','.join(l)
-
-def get_fileserver_root():
-    """ Construct seafile fileserver address and port.
-
-    Returns:
-    	Constructed fileserver root.
-    """
-    return config.FILE_SERVER_ROOT.rstrip('/') if config.FILE_SERVER_ROOT else ''
 
 
 def gen_token(max_length=5):
@@ -264,37 +245,6 @@ def new_merge_with_no_conflict(commit):
         return False
 
 
-def gen_block_get_url(token, blkid):
-    """
-    Generate fileserver block url.
-    Format: http://<domain:port>/blks/<token>/<blkid>
-    """
-    if blkid:
-        return '%s/blks/%s/%s' % (get_fileserver_root(), token, blkid)
-    else:
-        return '%s/blks/%s/' % (get_fileserver_root(), token)
-
-def gen_file_get_url(token, filename):
-    """
-    Generate fileserver file url.
-    Format: http://<domain:port>/files/<token>/<filename>
-    """
-    return '%s/files/%s/%s' % (get_fileserver_root(), token, quote(filename))
-
-def gen_file_upload_url(token, op, replace=False):
-    url = '%s/%s/%s' % (get_fileserver_root(), op, token)
-    if replace is True:
-        url += '?replace=1'
-    return url
-
-def gen_dir_zip_download_url(token):
-    """
-    Generate fileserver file url.
-    Format: http://<domain:port>/files/<token>/<filename>
-    """
-    return '%s/zip/%s' % (get_fileserver_root(), token)
-
-
 def string2list(string):
     """
     Split string contacted with different separators to a list, and remove
@@ -331,7 +281,7 @@ def calc_file_path_hash(path, bits=12):
 def get_service_url():
     """Get service url from seaserv.
     """
-    return seahub.settings.DTABLE_WEB_SERVICE_URL
+    return seahub.settings.SEAQA_WEB_SERVICE_URL
 
 def get_site_scheme_and_netloc():
     """Return a string contains site scheme and network location part from
@@ -664,19 +614,6 @@ def utf8_normalize(raw_str):
         logger.error('%s, %s' % (raw_str, e))
         return raw_str
 
-def get_market_url_by_lang():
-    lang = translation.get_language()
-    if lang == 'zh-cn':
-        return "https://market.seatable.cn"
-    return "https://market.seatable.io"
-
-def get_workflow_help_link_by_lang():
-    if not ENABLE_WORKFLOW:
-        return ''
-    lang = translation.get_language()
-    if lang == 'zh-cn':
-        return 'https://docs.seatable.cn/published/seatable-user-manual/workflow/workflow-introduction.md'
-    return ''
 
 uuid_re = re.compile(r'[0-9a-f]{8}(-?[0-9a-f]{4}){3}-?[0-9a-f]{12}', re.IGNORECASE)
 

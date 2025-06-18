@@ -9,7 +9,7 @@ from seahub.group.models import Group
 logger = logging.getLogger(__name__)
 
 
-def check_base_limit(workspace, request):
+def check_project_limit(workspace, request):
     from seahub.settings import PERSONAL_BASE_LIMIT, GROUP_BASE_LIMIT, FREE_ORG_BASE_LIMIT
     org_id = workspace.org_id
     if org_id != -1 and not request.user.permissions.can_use_advanced_permissions():
@@ -18,20 +18,20 @@ def check_base_limit(workspace, request):
             return False
 
     try:
-        dtable_count = Projects.objects.filter(workspace=workspace, deleted=False).count()
+        project_count = Projects.objects.filter(workspace=workspace, deleted=False).count()
     except Exception as e:
-        logger.error('check workspace %d base count error, invalid error: %s', workspace.id, e)
+        logger.error('check workspace %d project count error, invalid error: %s', workspace.id, e)
         return False
 
     owner = workspace.owner
     if '@seafile_group' in owner:
-        return dtable_count < GROUP_BASE_LIMIT
+        return project_count < GROUP_BASE_LIMIT
 
-    return dtable_count < PERSONAL_BASE_LIMIT
+    return project_count < PERSONAL_BASE_LIMIT
 
 
-def check_dtable_admin_permission(username, owner):
-    """Check workspace/dtable access permission of an admin.
+def check_project_admin_permission(username, owner):
+    """Check workspace/project access permission of an admin.
     """
     if '@seafile_group' in owner:
         group_id = int(owner.split('@')[0])
@@ -48,7 +48,7 @@ def check_dtable_admin_permission(username, owner):
 
 
 def get_project_owner(project):
-    # return the owner name and the existence of such owner of dtable
+    # return the owner name and the existence of such owner of project
     # if the owner is deleted, return true, else false
     group_id = project.get_owner_group_id()
     if group_id == -1:
@@ -68,7 +68,7 @@ def convert_project_trash_names(project):
     convert project's name to trash name
     """
     assert project.deleted is False
-    new_dtable_name = '_(deleted_' + str(project.id) + ') ' + project.name
+    new_project_name = '_(deleted_' + str(project.id) + ') ' + project.name
 
-    return new_dtable_name
+    return new_project_name
 
