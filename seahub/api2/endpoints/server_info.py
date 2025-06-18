@@ -4,13 +4,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from seahub.utils import is_pro_version
 
-SEATABLE_VERSION = getattr(dj_settings, 'SEATABLE_VERSION', 'Dev')
+SEAQA_VERSION = getattr(dj_settings, 'SEAQA_VERSION', 'Dev')
 
 class ServerInfoView(APIView):
 
     def get(self, request, format=None):
         info = {
-            'version': SEATABLE_VERSION,
+            'version': SEAQA_VERSION,
         }
 
         edition = 'developer edition'

@@ -16,7 +16,7 @@ from seahub.avatar.settings import (AVATAR_GRAVATAR_BACKUP, AVATAR_GRAVATAR_DEFA
 from seahub.avatar.util import get_primary_avatar, get_default_avatar_url, \
     cache_result, get_default_avatar_non_registered_url, get_app_default_avatar_url
 from seahub.utils import get_service_url
-from seahub.settings import SITE_ROOT, AVATAR_FILE_STORAGE, DTABLE_WEB_SERVICE_URL
+from seahub.settings import SITE_ROOT, AVATAR_FILE_STORAGE, SEAQA_WEB_SERVICE_URL
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ def avatar_url(user, size=AVATAR_DEFAULT_SIZE):
 
 @cache_result
 def api_avatar_url(user, size=AVATAR_DEFAULT_SIZE):
-    service_url = DTABLE_WEB_SERVICE_URL
+    service_url = SEAQA_WEB_SERVICE_URL
     service_url = service_url.rstrip('/')
 
     # when store avatars in the media directory
@@ -84,7 +84,7 @@ def api_avatar_url(user, size=AVATAR_DEFAULT_SIZE):
 
 
 def api_app_avatar_url():
-    service_url = DTABLE_WEB_SERVICE_URL
+    service_url = SEAQA_WEB_SERVICE_URL
     service_url = service_url.rstrip('/')
 
     # when store avatars in the media directory

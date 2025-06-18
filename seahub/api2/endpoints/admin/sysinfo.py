@@ -20,7 +20,7 @@ try:
 except ImportError:
     MULTI_TENANCY = False
 
-SEATABLE_VERSION = getattr(settings, 'SEATABLE_VERSION', 'Dev')
+SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 class SysInfo(APIView):
@@ -110,7 +110,7 @@ class SysInfo(APIView):
             dtables_count = 0
 
         info = {
-            'version': SEATABLE_VERSION,
+            'version': SEAQA_VERSION,
             'users_count': active_users + inactive_users,
             'active_users_count': active_users,
             'groups_count': groups_count,

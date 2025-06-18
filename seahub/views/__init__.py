@@ -20,16 +20,10 @@ from seahub.base.accounts import User
 from seahub.profile.models import Profile
 from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
-from seahub.settings import AVATAR_FILE_STORAGE, SHARE_LINK_EXPIRE_DAYS_MIN, \
-    SHARE_LINK_EXPIRE_DAYS_MAX, USE_PHONE_REGISTRATION_BY_DEFAULT, \
-    SHOW_WECHAT_SUPPORT_GROUP, SEATABLE_MARKET_URL, SHOW_TEMPLATES_LINK, \
-    VIDEO_TUTORIALS_LINK, ENABLE_CREATE_BASE_FROM_TEMPLATE, ENABLE_INTRODUCTION_VIDEO, \
-    ENABLE_USER_GUIDE, GETTING_START_LINK, USE_CASES_LINK, TRAINING_SERVICES_LINK, \
-    INTRODUCTION_VIDEO_LINK, ENABLE_INVITE_A_FRIEND
+from seahub.settings import AVATAR_FILE_STORAGE, USE_PHONE_REGISTRATION_BY_DEFAULT
 
 
-LIBRARY_TEMPLATES = getattr(settings, 'LIBRARY_TEMPLATES', {})
-SEATABLE_VERSION = getattr(settings, 'SEATABLE_VERSION', 'Dev')
+SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 CUSTOM_NAV_ITEMS = getattr(settings, 'CUSTOM_NAV_ITEMS', [])
 
 from constance import config
@@ -49,32 +43,6 @@ def is_registered_user(email):
         user = None
 
     return True if user else False
-
-
-def gen_path_link(path, repo_name):
-    """
-    Generate navigate paths and links in repo page.
-
-    """
-    if path and path[-1] != '/':
-        path += '/'
-
-    paths = []
-    links = []
-    if path and path != '/':
-        paths = path[1:-1].split('/')
-        i = 1
-        for name in paths:
-            link = '/' + '/'.join(paths[:i])
-            i = i + 1
-            links.append(link)
-    if repo_name:
-        paths.insert(0, repo_name)
-        links.insert(0, '/')
-
-    zipped = list(zip(paths, links))
-
-    return zipped
 
 
 def demo(request):
@@ -205,21 +173,8 @@ def choose_register(request):
 @login_required
 def seaqa_fake_view(request, **kwargs):
     username = request.user.username
-
-    cache_key = username + '_need_show_video'
-    need_show_video = cache.get(cache_key)
     phone = ''
     profile = None
-    if need_show_video is None:
-        try:
-            profile = Profile.objects.filter(user=username).first()
-            need_show_video = profile.need_show_video
-            if need_show_video:
-                Profile.objects.add_or_update(username, need_show_video=False)
-        except Exception as e:
-            logger.error('check need show video failed. {}'.format(e))
-            need_show_video = False
-        cache.set(cache_key, False, timeout=None)
 
     if settings.ENABLE_BIND_PHONE and settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE:
         try:
@@ -230,33 +185,9 @@ def seaqa_fake_view(request, **kwargs):
             logger.error('get user phone failed. {}'.format(e))
 
     return render(request, 'react_project.html', {
-        'version': SEATABLE_VERSION,
-        'show_wechat_support_group': SHOW_WECHAT_SUPPORT_GROUP,
-        'show_templates_link': SHOW_TEMPLATES_LINK,
-        'seatable_market_url': SEATABLE_MARKET_URL,
-        'share_link_expire_days_default': settings.SHARE_LINK_EXPIRE_DAYS_DEFAULT,
-        'share_link_expire_days_min': SHARE_LINK_EXPIRE_DAYS_MIN,
-        'share_link_expire_days_max': SHARE_LINK_EXPIRE_DAYS_MAX,
-        'video_tutorials_link': VIDEO_TUTORIALS_LINK,
-        'enable_user_guide': ENABLE_USER_GUIDE,
-        'getting_start_link': GETTING_START_LINK,
-        'use_cases_link': USE_CASES_LINK,
-        'training_services_link': TRAINING_SERVICES_LINK,
-        'introduction_video_link': INTRODUCTION_VIDEO_LINK,
-        'enable_introduction_video': ENABLE_INTRODUCTION_VIDEO,
-        'enable_create_base_from_template': ENABLE_CREATE_BASE_FROM_TEMPLATE,
-        'enable_org_common_dataset': settings.ENABLE_ORG_COMMON_DATASET,
-        'need_show_video': need_show_video,
-        'enable_invite_a_friend': ENABLE_INVITE_A_FRIEND,
-        'enable_tell_a_friend': settings.ENABLE_TELL_A_FRIEND,
-        'friend_invitation_link': settings.FRIEND_INVITATION_LINK if settings.ENABLE_TELL_A_FRIEND else '',
-        'use_external_team_admin': settings.USE_EXTERNAL_TEAM_ADMIN,
+        'version': SEAQA_VERSION,
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
         'can_remove_base_password_via_phone': settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE if settings.ENABLE_BIND_PHONE else False,
         'has_bound_phone': True if phone else False,
         'disable_adding_personal_bases': True if settings.DISABLE_ADDING_PERSONAL_BASES else False,
-        'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,
-        'enable_address_book_v2': dj_settings.ENABLE_ADDRESSBOOK_V2,
-        'enable_department_admin_manage_member_bases': dj_settings.ENABLE_DEPARTMENT_ADMIN_MANAGE_MEMBER_BASES,
-        'enable_show_id_in_org_when_search_user': settings.ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER,
     })

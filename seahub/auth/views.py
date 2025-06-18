@@ -129,7 +129,7 @@ def login(request, template_name='registration/login.html',
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
-            return HttpResponseRedirect(reverse('dtable'))
+            return HttpResponseRedirect(reverse('project'))
 
     source = request.GET.get('source', None)
     invitation_token = request.GET.get('invitation_token', None)

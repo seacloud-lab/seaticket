@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
+from datetime import datetime
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -17,15 +18,13 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.organizations.models import OrgGroup
-from seahub.project.models import Workspaces, Projects, UserStarredProjects, FolderItems, Folders, ProjectGroupOrders
+from seahub.project.models import Workspaces, Projects, UserStarredProjects, FolderItems, Folders, ProjectGroupOrders, \
+    Websites
 from seahub.group.utils import group_id_to_name
-from seahub.project.utils import check_base_limit, check_dtable_admin_permission
+from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names
 from seahub.project.constants import FOLDER_ITEM_PROJECT
 
 logger = logging.getLogger(__name__)
-
-
-FILE_TYPE = '.dtable'
 
 
 class WorkspacesView(APIView):
@@ -47,9 +46,7 @@ class WorkspacesView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
-        org_id = -1
-        if is_org_context(request):
-            org_id = request.user.org.org_id
+        org_id = request.user.org.org_id
 
         groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
         group_id_list = []
@@ -261,12 +258,12 @@ class ProjectsView(APIView):
                 error_msg = 'Folder not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not check_base_limit(workspace, request):
+        if not check_project_limit(workspace, request):
             error_msg = 'base exceeded.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         # permission check
         username = request.user.username
-        if not check_dtable_admin_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -339,7 +336,7 @@ class ProjectView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_dtable_admin_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -365,15 +362,11 @@ class ProjectView(APIView):
         return Response({"project": project.to_dict()}, status=status.HTTP_200_OK)
 
     def delete(self, request, workspace_id):
-        """delete a table
-
-        Permission:
-        1. owner
-        2. group admin
+        """delete a project
         """
         # argument check
-        table_name = request.data.get('name')
-        if not table_name:
+        project_name = request.data.get('name')
+        if not project_name:
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -387,61 +380,160 @@ class ProjectView(APIView):
             error_msg = 'Workspace %s not found.' % workspace_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        repo_id = workspace.repo_id
-        repo = seafile_api.get_repo(repo_id)
-        if not repo:
-            error_msg = 'Library %s not found.' % repo_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        dtable = DTables.objects.get_dtable(workspace, table_name)
-        if not dtable:
-            error_msg = 'dtable %s not found.' % table_name
+        project = Projects.objects.get_project(workspace, project_name)
+        if not project:
+            error_msg = 'project_name %s not found.' % project_name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # permission check
         username = request.user.username
-        if not check_dtable_admin_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # repo status check
-        repo_status = repo.status
-        if repo_status != 0:
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # rename .dtable file
-        new_dtable_name, old_dtable_file_name, new_dtable_file_name = convert_dtable_trash_names(dtable)
-
-        # if has .dtable file, then rename, else skip
+        new_project_name = convert_project_trash_names(project)
         try:
-            storage_backend.rename_dtable(dtable, old_dtable_file_name, new_dtable_file_name, username)
+            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
         except Exception as e:
-            logger.error('delete dtable file: %s error: %s', dtable.id, e)
+            logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class WebsitesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request, workspace_id, name):
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        url = request.POST.get('url')
+        if not url:
+            error_msg = 'url invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        sitemap_url = request.POST.get('sitemap_url')
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = 'Project %s not found.' % name
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        existed_websites = Websites.objects.filter(project=project, url=url)
+        if len(existed_websites) > 0:
+            error_msg = _('Url %s already exists in this project.') % url
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
-            DTables.objects.filter(id=dtable.id).update(deleted=True,
-                                                        delete_time=datetime.now(),
-                                                        name=new_dtable_name)
-            move_dtable_to_trash.send(None, dtable_uuid=dtable.uuid.hex)
-            if GROUP_DOMAIN == workspace.owner[ - len(GROUP_DOMAIN) : ] :
-                group_id = int(workspace.owner[ : - len(GROUP_DOMAIN)])
-                group = ccnet_api.get_group(int(group_id))
-                audit_operation.send(None, username=username, operation=GROUP_BASE_DELETE, detail={
-                    'id': group_id,
-                    'name': group.group_name,
-                    'dtable_name': table_name,
-                    'dtable_uuid': str(dtable.uuid)
-                }, org_id=workspace.org_id)
-            else:
-                audit_operation.send(None, username=username, operation=BASE_DELETE, detail={
-                    'name': table_name,
-                    'dtable_uuid': str(dtable.uuid)
-                }, org_id=workspace.org_id)
+            website = Websites.objects.create_website(request.user.username, project, url, sitemap_url)
         except Exception as e:
-            logger.error('delete dtable: %s error: %s', dtable.id, e)
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'website': website.to_dict()}, status=status.HTTP_201_CREATED)
+
+    def get(self, request, workspace_id, name):
+        """get all websites
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            current_page = int(request.GET.get('page', '1'))
+            per_page = int(request.GET.get('per_page', '100'))
+        except ValueError:
+            current_page = 1
+            per_page = 100
+
+        start = (current_page - 1) * per_page
+        end = start + per_page
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = 'Project %s not found.' % name
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        websites = Websites.objects.filter(project=project)[start:end]
+        website_list = []
+        for website in websites:
+            website_list.append(website.to_dict())
+
+        has_next_page = True
+        if len(websites) < per_page:
+            has_next_page = False
+
+        page_info = {
+            'has_next_page': has_next_page,
+            'current_page': current_page
+        }
+
+        return Response({'page_info': page_info, 'website_list': website_list}, status=status.HTTP_200_OK)
+
+
+class WebsiteView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def delete(self, request, workspace_id, name, website_id):
+        """delete a website
+        """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = 'Project %s not found.' % name
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            Websites.objects.filter(project=project, id=website_id).delete()
+        except Exception as e:
+            logger.error('delete website: %s error: %s', website_id, e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

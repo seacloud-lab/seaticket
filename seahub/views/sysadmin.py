@@ -20,8 +20,7 @@ from seahub.utils.ip import get_remote_ip
 from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
 from seahub.settings import IS_SHOW_UNIT, SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, \
-    ENABLE_GUEST_INVITATION, SEATABLE_MARKET_URL, \
-    DISABLE_ADDRESSBOOK_V1
+    ENABLE_GUEST_INVITATION, DISABLE_ADDRESSBOOK_V1
 try:
     from seahub.settings import MULTI_TENANCY
     from seahub.organizations.models import OrgSettings
@@ -50,7 +49,6 @@ def sysadmin_react_fake_view(request, **kwargs):
 
     return render(request, 'sysadmin/sysadmin_react_app.html', {
         'constance_enabled': dj_settings.CONSTANCE_ENABLED,
-        'seatable_market_url': SEATABLE_MARKET_URL,
         'is_show_unit': IS_SHOW_UNIT,
         'multi_tenancy': MULTI_TENANCY,
         'multi_institution': getattr(dj_settings, 'MULTI_INSTITUTION', False),

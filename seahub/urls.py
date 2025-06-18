@@ -18,7 +18,8 @@ from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswor
 from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView
+from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, WebsitesView, WebsiteView
+from seahub.api2.endpoints.folder import FoldersView, FolderView
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
 from seahub.api2.endpoints.admin.sysinfo import SysInfo
@@ -149,6 +150,16 @@ urlpatterns = [
     re_path(r'^options/', include('seahub.options.urls')),
     re_path(r'^profile/', include('seahub.profile.urls')),
     re_path(r'^captcha/', include('captcha.urls')),
+
+    # website
+    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/(?P<name>.*)/websites/$', WebsitesView.as_view(), name='api-v2.1-websites'),
+    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/(?P<name>.*)/websites/(?P<website_id>\d+)/$', WebsiteView.as_view(), name='api-v2.1-website'),
+
+    # folder
+    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/folders/$', FoldersView.as_view(), name='api-v2.1-folders'),
+    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/folders/(?P<folder_id>\d+)/$', FolderView.as_view(), name='api-v2.1-folder'),
+
+    re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 
     ### system admin ###
     re_path(r'^sys/info/$', sysadmin_react_fake_view, name="sys_info"),
