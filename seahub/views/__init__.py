@@ -11,6 +11,7 @@ from django.http import HttpResponse, Http404, \
     HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import render
 from django.views.decorators.http import condition
+from django.urls import reverse
 
 from seahub.avatar.util import get_avatar_file_storage
 from seahub.auth.decorators import login_required
@@ -175,6 +176,9 @@ def seaqa_fake_view(request, **kwargs):
     username = request.user.username
     phone = ''
     profile = None
+
+    if request.user.is_staff:
+        return HttpResponseRedirect(reverse('sys_info'))
 
     if settings.ENABLE_BIND_PHONE and settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE:
         try:

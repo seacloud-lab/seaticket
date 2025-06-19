@@ -105,11 +105,6 @@ def _handle_login_form_valid(request, user, redirect_to, remember_me):
         redirect_to = reverse('auth_password_change')
         request.session['force_passwd_change'] = True
 
-    if user.permissions.role_quota():
-        user_role = get_user_role(user)
-        quota = get_quota_from_string(user.permissions.role_quota())
-        seafile_api.set_role_quota(user_role, quota)
-
     # password is valid, log user in
     request.session['remember_me'] = remember_me
     return log_user_in(request, user, redirect_to)
@@ -124,8 +119,6 @@ def login(request, template_name='registration/login.html',
 
     redirect_to = request.GET.get(redirect_field_name, '')
     if request.user.is_authenticated:
-        if request.user.is_staff:
-            return HttpResponseRedirect(reverse('sys_info'))
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
