@@ -208,7 +208,6 @@ class UserManager(object):
             raise User.DoesNotExist('User matching query does not exits.')
 
         if email:
-            # emailuser = ccnet_threaded_rpc.get_emailuser(email)
             emailuser = EmailUser.objects.get_user_by_email(email)
         if id:
             emailuser = EmailUser.objects.get_user_by_id(id)
@@ -304,12 +303,6 @@ class UserPermissions(object):
 
     def can_export_files_via_mobile_client(self):
         return self._get_perm_by_roles('can_export_files_via_mobile_client')
-
-    def role_quota(self):
-        return self._get_perm_by_roles('role_quota')
-
-    def role_asset_quota(self):
-        return self._get_perm_by_roles('role_asset_quota')
 
     def can_send_share_link_mail(self):
         if not IS_EMAIL_CONFIGURED:
@@ -463,16 +456,10 @@ class User(object):
         return True
 
     def save(self):
-        # emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
         emailuser = EmailUser.objects.get_user_by_email(email=self.username)
         if emailuser:
             if not hasattr(self, 'password'):
                 self.set_unusable_password()
-
-            # if emailuser.source == "DB":
-            #     source = "DB"
-            # else:
-            #     source = "LDAP"
 
             if not self.is_active:
                 # clear web api and repo sync token
@@ -483,21 +470,11 @@ class User(object):
                     logger.error(e)
 
             emailuser = EmailUser.objects.update_emailuser(emailuser.id, self.password, int(self.is_staff), int(self.is_active))
-            # result_code = ccnet_threaded_rpc.update_emailuser(source,
-            #                                                   emailuser.id,
-            #                                                   self.password,
-            #                                                   int(self.is_staff),
-            #                                                   int(self.is_active))
             if self.password_changed:
-                # emailuser = ccnet_threaded_rpc.get_emailuser(self.username)
                 emailuser = EmailUser.objects.get(email=self.username)
                 self.enc_password = emailuser.password
                 self.password_changed = False
         else:
-            # result_code = ccnet_threaded_rpc.add_emailuser(self.username,
-            #                                                self.password,
-            #                                                int(self.is_staff),
-            #                                                int(self.is_active))
             emailuser = EmailUser.objects.add_emailuser(self.username,
                                                            self.password,
                                                            int(self.is_staff),
@@ -510,44 +487,7 @@ class User(object):
         """
         When delete user, we should also delete group relationships.
         """
-        # if self.source == "DB":
-        #     source = "DB"
-        # else:
-        #     source = "LDAP"
-
         username = self.username
-
-        # orgs = []
-        # if is_pro_version():
-        #     orgs = ccnet_api.get_orgs_by_user(username)
-
-        # # remove owned repos
-        # owned_repos = []
-        # if orgs:
-        #     for org in orgs:
-        #         owned_repos += seafile_api.get_org_owned_repo_list(org.org_id,
-        #                                                            username)
-        # else:
-        #     owned_repos += seafile_api.get_owned_repo_list(username)
-        #
-        # for r in owned_repos:
-        #     seafile_api.remove_repo(r.id)
-        #
-        # # remove shared in repos
-        # shared_in_repos = []
-        # if orgs:
-        #     for org in orgs:
-        #         org_id = org.org_id
-        #         shared_in_repos = seafile_api.get_org_share_in_repo_list(org_id,
-        #                 username, -1, -1)
-        #
-        #         for r in shared_in_repos:
-        #             seafile_api.org_remove_share(org_id,
-        #                     r.repo_id, r.user, username)
-        # else:
-        #     shared_in_repos = seafile_api.get_share_in_repo_list(username, -1, -1)
-        #     for r in shared_in_repos:
-        #         seafile_api.remove_share(r.repo_id, r.user, username)
 
         # clear web api and repo sync token
         # when delete user
@@ -559,11 +499,8 @@ class User(object):
         # remove current user from joined groups
         from seahub.group.models import GroupUser
 
-        # team 被删除了，这个team下某个用户的所有用户数据就都删除了
         GroupUser.objects.remove_group_user(username)
-        # ccnet_api.remove_group_user(username)
         EmailUser.objects.remove_emailuser(username)
-        # ccnet_api.remove_emailuser(source, username)
 
         SocialAuthUser.objects.filter(username=username).delete()
         # UserQuota.objects.filter(username=username).delete()
@@ -661,19 +598,6 @@ class User(object):
 class AuthBackend(object):
 
     def get_user_with_import(self, username):
-        # emailuser = seaserv.get_emailuser_with_import(username)
-        # if not emailuser:
-        #     raise User.DoesNotExist('User matching query does not exits.')
-        #
-        # user = User(emailuser.email)
-        # user.id = emailuser.id
-        # user.enc_password = emailuser.password
-        # user.is_staff = emailuser.is_staff
-        # user.is_active = emailuser.is_active
-        # user.ctime = emailuser.ctime
-        # user.org = emailuser.org
-        # user.source = emailuser.source
-        # user.role = emailuser.role
 
         user = User.objects.get(username)
 
