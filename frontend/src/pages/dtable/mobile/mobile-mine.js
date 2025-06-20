@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { dtableWebAPI } from '../../../api/dtable-web-api';
 import { Utils } from '../../../utils/utils';
-import { isWorkWeixin } from '../../../components-form/utils/weixin-utils';
+import { isWorkWeChat } from '../../../utils/wechat-utils';
 import { siteRoot, gettext, appAvatarURL, isOrgContext, useExternalTeamAdmin } from '../../../utils/constants';
 
 import '../../../css/mobile/mobile-mine.css';
@@ -17,7 +17,7 @@ const propTypes = {
 
 class MobileMine extends React.Component {
 
-  isWorkWX = isWorkWeixin(window.navigator.userAgent.toLowerCase());
+  isWorkWX = isWorkWeChat(window.navigator.userAgent.toLowerCase());
 
   constructor(props) {
     super(props);

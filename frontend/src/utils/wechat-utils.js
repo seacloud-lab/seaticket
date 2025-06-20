@@ -1,4 +1,4 @@
-export const isWorkWeixin = (ua) => {
+export const isWorkWeChat = (ua) => {
   if (ua.includes('micromessenger') && ua.includes('wxwork')) {
     return true;
   }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { mediaUrl } from '../../../utils/constants';
-import { isWorkWeixin } from '../../../components-form/utils/weixin-utils';
+import { isWorkWeChat } from '../../../utils/wechat-utils';
 
 import '../../../css/wechat-dialog.css';
 
@@ -13,7 +13,7 @@ const propTypes = {
 
 class WechatDialog extends React.Component {
 
-  isWorkWeixin = isWorkWeixin(window.navigator.userAgent.toLowerCase());
+  isWorkWeixin = isWorkWeChat(window.navigator.userAgent.toLowerCase());
 
   toggle = () => {
     this.props.toggleWechatDialog();
