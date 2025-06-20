@@ -26,7 +26,6 @@ PERMISSION_READ_WRITE = 'rw'
 PERMISSION_CUSTOM = 'custom'
 PERMISSION_ADMIN = 'admin'
 PERMISSION_PREFIX = 'c-'  # custom permission prefix
-PERMISSION_COLLECTION_TABLE = 'collection-table' # collection table
 
 # datble notification/automation rule run connditions
 RUN_CONDITION_PER_DAY = 'per_day'
