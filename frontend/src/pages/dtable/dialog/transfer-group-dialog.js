@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import UserSelect from '../../../components/user-select';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -37,7 +37,7 @@ class TransferGroupDialog extends React.Component {
   transferGroup = () => {
     const email = this.state.selectedOption && this.state.selectedOption.email;
     if (email) {
-      dtableWebAPI.transferGroup(this.props.groupID, email).then((res) => {
+      seaQAAPI.transferGroup(this.props.groupID, email).then((res) => {
         this.props.toggleTransferGroupDialog();
         this.props.loadWorkspaceList();
       }).catch((error) => {

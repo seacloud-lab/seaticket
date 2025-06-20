@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
 import { gettext } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import ModalPortal from '../../../../components/modal-portal';
 import RestoreTableDialog from '../restore-table-dialog';
 import DTableItem from '../../dtable-item';
@@ -42,7 +42,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
     const { item, groupID } = this.props;
     const { name: dtableName, uuid } = item;
     this.setState({ isRestoring: true });
-    dtableWebAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
+    seaQAAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
       this.props.restoreDTable(item);
       const msg = gettext('Successfully restored {name}.').replace('{name}', dtableName);

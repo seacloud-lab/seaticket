@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '../../utils/constants';
 import { FormGroup, Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 
 const {
@@ -114,7 +114,7 @@ class BindPhone extends React.Component {
       let phoneState = (bindState === BIND_STATE.UNBINDING_PHONE) ? 'unbind_phone' : 'bind_phone';
 
       let newState = (bindState === BIND_STATE.UNBINDING_PHONE) ? BIND_STATE.UNBINDING_PHONE : BIND_STATE.BINDING_PHONE;
-      dtableWebAPI.sendVerifyCode(newPhoneNumber, phoneState).then((res) => {
+      seaQAAPI.sendVerifyCode(newPhoneNumber, phoneState).then((res) => {
         let phoneNumberMessage = gettext('Verify code has been sent.');
         this.setState({
           bindState: newState,
@@ -149,7 +149,7 @@ class BindPhone extends React.Component {
   bindPhoneNumber = () => {
     if (this.validPhone() && this.validCode()) {
       let { newPhoneNumber, inputVerifyCode } = this.state;
-      dtableWebAPI.bindPhoneNumber(newPhoneNumber, inputVerifyCode).then((res) => {
+      seaQAAPI.bindPhoneNumber(newPhoneNumber, inputVerifyCode).then((res) => {
         let message = gettext('Phone number has been bound successfully.');
         if (this.timer) {
           clearInterval(this.timer);
@@ -207,7 +207,7 @@ class BindPhone extends React.Component {
   unboundPhoneNumber = () => {
     if (this.validPhone() && this.validCode()) {
       let { oldPhoneNumber, inputVerifyCode } = this.state;
-      dtableWebAPI.unbindPhoneNumber(oldPhoneNumber, inputVerifyCode).then((res) => {
+      seaQAAPI.unbindPhoneNumber(oldPhoneNumber, inputVerifyCode).then((res) => {
         let message = gettext('Phone number has been unbound successfully.');
         let verifyCodeMessage = gettext('Send verify code');
         if (this.timer) {

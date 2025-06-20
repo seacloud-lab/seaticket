@@ -1,4 +1,4 @@
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from './utils';
 
@@ -11,7 +11,7 @@ export default class UserService {
   }
 
   getRelatedUsers(workspaceID, fileName, params, callback) {
-    dtableWebAPI.getTableRelatedUsers(workspaceID, fileName, params).then(res => {
+    seaQAAPI.getTableRelatedUsers(workspaceID, fileName, params).then(res => {
       res.data.user_list.forEach(user => {
         this.emailUserMap[user.email] = user;
       });
@@ -54,7 +54,7 @@ export default class UserService {
       return;
     }
     this.pendingTimer = setTimeout(() => {
-      dtableWebAPI.listUserInfo(this.waitingQueryEmails).then(res => {
+      seaQAAPI.listUserInfo(this.waitingQueryEmails).then(res => {
         const { user_list } = res.data;
         user_list.forEach(user => {
           this.emailUserMap[user.email] = user;

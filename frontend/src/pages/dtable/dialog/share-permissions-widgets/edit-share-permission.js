@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { gettext } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { PERMISSION_TYPES } from 'dtable-utils';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';
@@ -20,7 +20,7 @@ class EditSharePermission extends Component {
 
   componentDidMount() {
     const { workspaceID, name, permissionId } = this.props;
-    dtableWebAPI.getSharePermission(workspaceID, name, permissionId).then((res) => {
+    seaQAAPI.getSharePermission(workspaceID, name, permissionId).then((res) => {
       const basePermission = this.getFormattedBasePermission(res.data.permission);
       this.setState({ basePermission, isLoading: false });
     });

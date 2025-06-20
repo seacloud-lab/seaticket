@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import User from '../model/user';
 import { gettext } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
@@ -29,7 +29,7 @@ export default class DTableWorkspaceMemberDialog extends React.Component {
   componentDidMount() {
     let { workspace } = this.props;
     let { group_id } = workspace;
-    dtableWebAPI.listGroupMembers(group_id).then((res) => {
+    seaQAAPI.listGroupMembers(group_id).then((res) => {
       let groupMembers = res.data.map(item => {
         return new User(item);
       });

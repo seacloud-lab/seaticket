@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
 import Loading from '../../../../components/loading';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { gettext } from '../../../../utils/constants';
 
 const propTypes = {
@@ -44,7 +44,7 @@ class SelectUser extends React.Component {
     let value = this.state.searchVal;
     if (!value.trim()) return this.setState({ userList: [] });
     this.setState({ isLoading: true });
-    dtableWebAPI.searchUsers(value).then((res) => {
+    seaQAAPI.searchUsers(value).then((res) => {
       let userList = [];
       for (let i = 0 ; i < res.data.users.length; i++) {
         const item = res.data.users[i];

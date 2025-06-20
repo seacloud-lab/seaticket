@@ -7,7 +7,7 @@ import Loading from '../../../components/loading';
 import TemplateList from './template-widgets/template-list';
 import { seatableMarketUrl } from '../../../utils/constants';
 import seaTableMarketAPI from '../../../utils/seatable-market-api';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 
 import '../../../css/template-list-dialog.css';
 
@@ -46,7 +46,7 @@ class TemplateListDialog extends React.Component {
     });
 
     // load data;
-    let apiSource = seatableMarketUrl ? seaTableMarketAPI : dtableWebAPI;
+    let apiSource = seatableMarketUrl ? seaTableMarketAPI : seaQAAPI;
     apiSource.listTemplates().then(res => {
       let templateList = res.data.template_list.map(template => {
         return new Template(template);

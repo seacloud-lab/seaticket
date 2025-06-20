@@ -7,7 +7,7 @@ import UserSelect from '../../../components/user-select';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
 import DepartmentDetailDialog from './department-detail-dialog';
 import UserInfoPopover from '../dtable-popover/user-info-popover';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { gettext, cloudMode, isOrgContext } from '../../../utils/constants';
 
@@ -126,7 +126,7 @@ class ShareTableToUser extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.listTableShares(this.workspaceID, this.tableName).then((res) => {
+    seaQAAPI.listTableShares(this.workspaceID, this.tableName).then((res) => {
       this.setState({ userList: res.data.user_list });
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
@@ -151,7 +151,7 @@ class ShareTableToUser extends React.Component {
       let name = selectedOptions[i].value;
       let email = selectedOptions[i].email;
       let avatar_url = selectedOptions[i].avatar_url;
-      dtableWebAPI.addTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
+      seaQAAPI.addTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
         let userInfo = {
           name: name,
           email: email,
@@ -173,7 +173,7 @@ class ShareTableToUser extends React.Component {
 
   deleteTableShare = (email) => {
     const { userList } = this.state;
-    dtableWebAPI.deleteTableShare(this.workspaceID, this.tableName, email).then((res) => {
+    seaQAAPI.deleteTableShare(this.workspaceID, this.tableName, email).then((res) => {
       let newUserList = userList.filter(userInfo => {
         return userInfo.email !== email;
       });
@@ -198,7 +198,7 @@ class ShareTableToUser extends React.Component {
   };
 
   updateTableShare = (email, permission) => {
-    dtableWebAPI.updateTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
+    seaQAAPI.updateTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
       let userList = this.state.userList.filter(userInfo => {
         if (userInfo.email === email) {
           userInfo.permission = permission;
@@ -230,7 +230,7 @@ class ShareTableToUser extends React.Component {
     for (let i = 0; i < emails.length; i++) {
       let email = emails[i];
       let avatar_url = membersSelectedObj[email].avatar_url;
-      await dtableWebAPI.addTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
+      await seaQAAPI.addTableShare(this.workspaceID, this.tableName, email, permission).then((res) => {
         let userInfo = {
           name: membersSelectedObj[email].name,
           email: email,

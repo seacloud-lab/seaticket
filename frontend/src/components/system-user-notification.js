@@ -1,7 +1,7 @@
 import React from 'react';
 import '../css/system-notification.css';
 import SystemUserNotificationItem from './system-user-notification-item';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 
 class SystemUserNotification extends React.Component {
 
@@ -13,7 +13,7 @@ class SystemUserNotification extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.listSysUserUnseenNotifications().then((res) => {
+    seaQAAPI.listSysUserUnseenNotifications().then((res) => {
       this.setState({
         userNoteMsgs: res.data.notifications
       });

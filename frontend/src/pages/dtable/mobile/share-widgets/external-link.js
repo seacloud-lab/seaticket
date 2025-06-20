@@ -8,7 +8,7 @@ import { Utils } from '../../../../utils/utils';
 import AddExternalLink from './add-external-link';
 import ShareAddedBtn from './share-add-btn';
 import { gettext } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 
 const Item = List.Item;
 const Brief = Item.Brief;
@@ -29,7 +29,7 @@ class ExternalLink extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.getDTableExternalLink(workspace_id, name).then(res => {
+    seaQAAPI.getDTableExternalLink(workspace_id, name).then(res => {
       let externalLinks = res.data.links;
       this.setState({
         externalLinks: externalLinks,
@@ -67,7 +67,7 @@ class ExternalLink extends React.Component {
 
   deleteExternalLink = (externalLink) => {
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.deleteDTableExternalLink(workspace_id, name, externalLink.token).then(() => {
+    seaQAAPI.deleteDTableExternalLink(workspace_id, name, externalLink.token).then(() => {
       let { externalLinks } = this.state;
       externalLinks = externalLinks.filter((item) => {
         return item.token !== externalLink.token;

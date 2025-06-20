@@ -5,7 +5,7 @@ import { toaster } from 'dtable-ui-component';
 import Folder from '../model/folder';
 import MobileCommonHeader from './mobile-common-header';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils, validateName } from '../../../utils/utils';
 
 import '../../../css/mobile/add-blank-table.css';
@@ -43,7 +43,7 @@ class AddBlankFolder extends React.Component {
       toaster.danger(response.message);
       return;
     }
-    dtableWebAPI.createFolder(currentWorkspace.id, response.message).then((res) => {
+    seaQAAPI.createFolder(currentWorkspace.id, response.message).then((res) => {
       let newFolder = new Folder(res.data.folder);
       this.props.createBlankFolder(newFolder);
       this.props.onCreateFolderToggle();

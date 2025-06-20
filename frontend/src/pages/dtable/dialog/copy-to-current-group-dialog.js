@@ -4,7 +4,7 @@ import { Progress } from 'react-sweet-progress';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';
 
@@ -76,7 +76,7 @@ class CopyToCurrentGroupDialog extends React.Component {
     let total;
     let done;
     // Copy Dtable: 1. Copy table content 2. Copy assets(attachments)
-    dtableWebAPI.copyDTable(dtable.workspace_id, currentWorkspace.id, dtable.name, password.trim()).then((res) => {
+    seaQAAPI.copyDTable(dtable.workspace_id, currentWorkspace.id, dtable.name, password.trim()).then((res) => {
       taskId = res.data.task_id || '';
       newDtable = res.data.dtable;
       if (!taskId){
@@ -86,7 +86,7 @@ class CopyToCurrentGroupDialog extends React.Component {
         return;
       }
       // Copy assets may take much time, so query the copy progress per 1000ms and show a progress bar
-      return dtableWebAPI.queryCopyDTableStatus(taskId);
+      return seaQAAPI.queryCopyDTableStatus(taskId);
     }).then((res) => {
       if (!res) return null;
       total = res.data.total;
@@ -103,10 +103,10 @@ class CopyToCurrentGroupDialog extends React.Component {
         this.props.onCopyDTable(newDtable);
         this.closeCopyDTableProcess();
         // Do something after the assets have been copied, such as page design（update page design static image）
-        return dtableWebAPI.doTaskAfterCopyDTable(newDtable.uuid);
+        return seaQAAPI.doTaskAfterCopyDTable(newDtable.uuid);
       }
       this.timer = setInterval(() => {
-        dtableWebAPI.queryCopyDTableStatus(taskId).then(res => {
+        seaQAAPI.queryCopyDTableStatus(taskId).then(res => {
           total = res.data.total;
           done = res.data.done;
           this.setState({
@@ -119,7 +119,7 @@ class CopyToCurrentGroupDialog extends React.Component {
             this.props.onCopyDTable(newDtable);
             toaster.success(gettext('Successfully copy {name}').replace('{name}', newDtable.name));
             this.closeCopyDTableProcess();
-            return dtableWebAPI.doTaskAfterCopyDTable(newDtable.uuid);
+            return seaQAAPI.doTaskAfterCopyDTable(newDtable.uuid);
           }
         });
       }, 1000);

@@ -2,7 +2,7 @@ import React from 'react';
 import { List } from 'antd-mobile';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { isWorkWeChat } from '../../../utils/wechat-utils';
 import { siteRoot, gettext, appAvatarURL, isOrgContext, useExternalTeamAdmin } from '../../../utils/constants';
@@ -39,7 +39,7 @@ class MobileMine extends React.Component {
   }
 
   getAccountInfo = () => {
-    dtableWebAPI.getAccountInfo().then(resp => {
+    seaQAAPI.getAccountInfo().then(resp => {
       this.setState({
         userName: resp.data.name,
         contactEmail: resp.data.email,

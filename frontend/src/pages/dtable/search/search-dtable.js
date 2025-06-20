@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import MediaQuery from 'react-responsive';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../utils/constants';
 import SearchResultItem from './search-result-item';
 import { Utils } from '../../../utils/utils';
@@ -161,7 +161,7 @@ class SearchDtable extends Component {
 
   sendRequest = (queryData) => {
     let query_str = queryData.q.trim();
-    dtableWebAPI.searchItems(query_str, 'base').then(res => {
+    seaQAAPI.searchItems(query_str, 'base').then(res => {
       let dtables = res.data.results;
       this.setState({
         resultItems: dtables,

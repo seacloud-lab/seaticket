@@ -7,7 +7,7 @@ import { toaster } from 'dtable-ui-component';
 import { seatableMarketUrl, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink
 } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import html5DragDropContext from '../../utils/html5DragDropContext';
 import SidePanelGroupItem from './side-panel-group-item';
 
@@ -58,7 +58,7 @@ class SidePanel extends React.Component {
 
   async initTableData() {
     try {
-      let workspaceData = await dtableWebAPI.listWorkspaces(false);
+      let workspaceData = await seaQAAPI.listWorkspaces(false);
       let workspaceList = workspaceData.data.workspace_list;
       this.groupsHeight = workspaceList.length * GROUP_ITEM_HEIGHT + 1;
       let groupItems = workspaceList.filter(workspace => {
@@ -145,7 +145,7 @@ class SidePanel extends React.Component {
         targetGroupId = targetGroup.group_id;
       }
     }
-    dtableWebAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
+    seaQAAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
       groupItems.splice(optionSource.idx, 1);
       groupItems.splice(optionTarget.idx, 0, optionSource.data);
       this.setState({ groupItems });

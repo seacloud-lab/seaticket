@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster, DTableEmptyTip, DTableModalHeader } from 'dtable-ui-component';
 import { gettext, isOrgContext, orgID, mediaUrl } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { Utils } from '../../../utils/utils';
@@ -33,7 +33,7 @@ class AddUserToDepartmentsV2Dialog extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.listAddressBookV2Departments().then(res => {
+    seaQAAPI.listAddressBookV2Departments().then(res => {
       const departments = res.data.departments.map(item => {
         return new Department(item);
       });

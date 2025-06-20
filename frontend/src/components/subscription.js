@@ -4,7 +4,7 @@ import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, InputGroup, InputGroupText, Input, Button, Form, FormGroup, Alert, Col, Label } from 'reactstrap';
 import { gettext, isOrgContext, serviceURL, enableSlideCaptcha } from '../utils/constants';
 import { Utils, isMobile } from '../utils/utils';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 import Loading from './loading';
 import TakeCoins from './take-coins';
 import SlideCaptchaDialog from './dialog/slide-captcha-dialog';
@@ -470,7 +470,7 @@ class PlansDialog extends Component {
   }
 
   getPlans = () => {
-    dtableWebAPI.getSubscriptionPlans(this.props.paymentType).then((res) => {
+    seaQAAPI.getSubscriptionPlans(this.props.paymentType).then((res) => {
       this.setState({
         planList: res.data.plan_list,
         paymentSourceList: res.data.payment_source_list,
@@ -683,7 +683,7 @@ class Subscription extends Component {
   }
 
   getSubscription = () => {
-    dtableWebAPI.getSubscription().then((res) => {
+    seaQAAPI.getSubscription().then((res) => {
       const subscription = res.data.subscription;
       const paymentTypeList = res.data.payment_type_list;
       const userCoins = res.data.coins;
@@ -727,7 +727,7 @@ class Subscription extends Component {
       });
       return;
     }
-    dtableWebAPI.exchangeCoinByCode(code).then((res) => {
+    seaQAAPI.exchangeCoinByCode(code).then((res) => {
       let records = res.data.exchange_records;
       let total_coins = records.total_coins;
       let code_coins = records.coins;

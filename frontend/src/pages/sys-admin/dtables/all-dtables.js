@@ -5,7 +5,7 @@ import { Link, navigate } from '@gatsbyjs/reach-router';
 import { UncontrolledTooltip } from 'reactstrap';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import Search from '../search';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { loginUrl, gettext, siteRoot, multiTenancy, mediaUrl } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
@@ -109,7 +109,7 @@ class Item extends Component {
   cancelDTableIOTask = () => {
     clearInterval(this.timer);
     let dtable_uuid = this.props.item.uuid;
-    dtableWebAPI.cancelDTableIOTask(this.state.taskId, dtable_uuid, 'export').then(res => {
+    seaQAAPI.cancelDTableIOTask(this.state.taskId, dtable_uuid, 'export').then(res => {
       this.setState({
         isShowDTableIODialog: false,
         taskId: '',
@@ -130,14 +130,14 @@ class Item extends Component {
         isShowDTableIODialog: true,
         taskId: task_id
       });
-      return dtableWebAPI.queryDTableIOStatusByTaskId(task_id);
+      return seaQAAPI.queryDTableIOStatusByTaskId(task_id);
     }).then(res => {
       if (res.data.is_finished === true) {
         this.setState({ isShowDTableIODialog: false });
         location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
       } else {
         this.timer = setInterval(() => {
-          dtableWebAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
+          seaQAAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
             if (res.data.is_finished === true) {
               this.setState({ isFinished: true });
               clearInterval(this.timer);

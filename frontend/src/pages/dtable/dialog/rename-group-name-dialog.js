@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
 
@@ -40,7 +40,7 @@ class RenameGroupNameDialog extends React.Component {
   renameGroup = () => {
     let name = this.state.newGroupName.trim();
     if (name) {
-      dtableWebAPI.renameGroup(this.props.groupID, name).then((res) => {
+      seaQAAPI.renameGroup(this.props.groupID, name).then((res) => {
         this.props.renameGroupName();
       }).catch(error => {
         let errMsg = Utils.getErrorMsg(error, true);

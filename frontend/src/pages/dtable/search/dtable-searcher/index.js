@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import SearcherInput from './search-input';
 import SearchedList from './searched-list';
 import Loading from '../../../../components/loading';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { getValueLength } from '../search-utils';
 import { gettext } from '../../../../utils/constants';
 import { QUERY_TYPE, SEARCHED_STORE_KEY, QUERY_TYPE_DISPLAY } from './constant';
@@ -31,7 +31,7 @@ const DtableSearcher = (props) => {
   const sendRequest = (queryData, queryType) => {
     setIsLoading(true);
     const query_str = queryData.q; // trimmed string
-    dtableWebAPI.searchItems(query_str, queryType).then(res => {
+    seaQAAPI.searchItems(query_str, queryType).then(res => {
       const nextSearchedRes = {
         ...searchedRes,
         [SEARCHED_STORE_KEY[queryType]]: getNormalizeSearchedList(res.data.results, queryType),

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { gettext } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';
 
@@ -19,7 +19,7 @@ class AddSharePermission extends Component {
 
   componentDidMount() {
     const { workspaceID, name } = this.props;
-    dtableWebAPI.getBaseSharePermission(workspaceID, name).then((res) => {
+    seaQAAPI.getBaseSharePermission(workspaceID, name).then((res) => {
       const permission = res.data.base_permission;
       this.setState({ basePermission: { permission }, isLoading: false });
     });

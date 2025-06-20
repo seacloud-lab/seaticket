@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
 import { MainPanelDTables, DTablesInWorkspace } from '../index.js';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Workspace from '../model/workspace';
 import { gettext, siteRoot } from '../../../utils/constants';
 import MobileMine from './mobile-mine';
@@ -54,7 +54,7 @@ class MobileMainPanel extends React.Component {
   };
 
   loadWorkspaceList = () => {
-    dtableWebAPI.listWorkspaces().then(res => {
+    seaQAAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => {
         return new Workspace(item);
       });

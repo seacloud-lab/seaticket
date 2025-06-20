@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { DropTarget } from 'react-dnd';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import Loading from '../../components/loading';
 import TableAPITokenDialog from './dialog/table-api-token-dialog';
 import ManageMembersDialog from './dialog/manage-members-dialog';
@@ -253,7 +253,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onCreateProject = (tableName, owner, dtableIcon, dtableColor) => {
-    dtableWebAPI.createProject(tableName, owner, dtableIcon, dtableColor).then((res) => {
+    seaQAAPI.createProject(tableName, owner, dtableIcon, dtableColor).then((res) => {
       this.state.projectList.push(res.data.project);
       this.setState({
         projectList: this.state.projectList
@@ -264,7 +264,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   createProjectInFolder = (projectName, email, dtableIcon, dtableColor, folder) => {
-    dtableWebAPI.createProject(projectName, email, dtableIcon, dtableColor, null, folder.id).then((res) => {
+    seaQAAPI.createProject(projectName, email, dtableIcon, dtableColor, null, folder.id).then((res) => {
       let newProject = new Base(res.data.project);
       this.createBlankTable(newProject, folder);
     }).catch((error) => {
@@ -309,7 +309,7 @@ class DTableWorkspaceCommon extends React.Component {
 
   deleteTable = (projectName) => {
     let workspaceID = this.props.workspace.id;
-    dtableWebAPI.deleteTable(workspaceID, projectName).then(() => {
+    seaQAAPI.deleteTable(workspaceID, projectName).then(() => {
       let projectList = this.state.projectList.filter(project => {
         return project.name !== projectName;
       });
@@ -328,7 +328,7 @@ class DTableWorkspaceCommon extends React.Component {
       return;
     }
     let workspaceID = this.props.workspace.id;
-    dtableWebAPI.renameTable(workspaceID, oldProjectName, response.message).then((res) => {
+    seaQAAPI.renameTable(workspaceID, oldProjectName, response.message).then((res) => {
       let projectList = this.state.projectList.map((project) => {
         if (project.name === oldProjectName) {
           project = res.data.project;
@@ -347,7 +347,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onUpdateTable = (projectName, updated) => {
-    dtableWebAPI.updateTable(this.props.workspace.id, projectName, updated).then((res) => {
+    seaQAAPI.updateTable(this.props.workspace.id, projectName, updated).then((res) => {
       const updateProject = res.data.project;
       let projectList = this.state.projectList.map((project) => {
         if (project.name === projectName) {
@@ -368,7 +368,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onHandlePassword = (projectName, operation, password, newPassword, code) => {
-    dtableWebAPI.updateDTablePassword(this.props.workspace.id, projectName, operation, password, newPassword, code).then((res) => {
+    seaQAAPI.updateDTablePassword(this.props.workspace.id, projectName, operation, password, newPassword, code).then((res) => {
       this.props.loadWorkspaceList();
       const updateProject = res.data.project;
       let projectList = this.state.projectList.map((project) => {
@@ -408,7 +408,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onDtableManageMembers = () => {
-    dtableWebAPI.getGroup(this.props.workspace.group_id).catch(error => {
+    seaQAAPI.getGroup(this.props.workspace.group_id).catch(error => {
       this.handleError(error);
     });
   };
@@ -460,7 +460,7 @@ class DTableWorkspaceCommon extends React.Component {
       toaster.danger(gettext('Cannot delete group with bases'));
       return;
     }
-    dtableWebAPI.deleteGroup(groupID).then(() => {
+    seaQAAPI.deleteGroup(groupID).then(() => {
       toaster.success(gettext('Group deleted'));
       this.props.onDeleteGroup(groupID);
     }).catch((error) => {
@@ -470,7 +470,7 @@ class DTableWorkspaceCommon extends React.Component {
 
   onLeaveGroup = () => {
     let groupID = this.props.workspace.group_id;
-    dtableWebAPI.deleteGroupMember(groupID, username).then((res) => {
+    seaQAAPI.deleteGroupMember(groupID, username).then((res) => {
       toaster.success(gettext('Successfully left group'));
       this.props.onDeleteGroup(groupID);
     }).catch(error => {
@@ -480,7 +480,7 @@ class DTableWorkspaceCommon extends React.Component {
 
   onLeaveGroupSharedTable = (table) => {
     let { workspace } = this.props;
-    dtableWebAPI.deleteTableGroupShare(table.workspace_id, table.name, workspace.group_id).then(() => {
+    seaQAAPI.deleteTableGroupShare(table.workspace_id, table.name, workspace.group_id).then(() => {
       this.props.onLeaveGroupSharedTable(workspace.group_id, table);
     }).catch((error) => {
       if (error.response && error.response.status === 404) {
@@ -494,7 +494,7 @@ class DTableWorkspaceCommon extends React.Component {
 
   onLeaveGroupSharedView = (sharedView) => {
     let { workspace } = this.props;
-    dtableWebAPI.leaveGroupViewShare(sharedView.view_share_id).then(() => {
+    seaQAAPI.leaveGroupViewShare(sharedView.view_share_id).then(() => {
       this.props.onLeaveGroupSharedView(workspace.group_id, sharedView);
     }).catch((error) => {
       if (error.response && error.response.status === 404) {
@@ -507,7 +507,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onAddStarDTable = (dtable) => {
-    dtableWebAPI.addStarDTable(dtable.uuid).then(() => {
+    seaQAAPI.addStarDTable(dtable.uuid).then(() => {
       this.props.onStarDTable(dtable);
     }).catch(error => {
       this.handleError(error);
@@ -515,7 +515,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onUnstarDTable = (dtable) => {
-    dtableWebAPI.unstarDTable(dtable.uuid).then(() => {
+    seaQAAPI.unstarDTable(dtable.uuid).then(() => {
       this.props.onUnstarDTable(dtable);
     }).catch(error => {
       this.handleError(error);
@@ -552,7 +552,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   onUpdateFolderName = (folderID, folderName) => {
-    dtableWebAPI.updateFolder(this.props.workspace.id, folderID, folderName).then((res) => {
+    seaQAAPI.updateFolder(this.props.workspace.id, folderID, folderName).then((res) => {
       let folder = res.data.folder;
       let folders = this.state.folders.slice(0);
       let folderIndex = folders.findIndex(folder => folder.id === folderID);
@@ -686,7 +686,7 @@ class DTableWorkspaceCommon extends React.Component {
     if (from === to) {
       return;
     }
-    dtableWebAPI.moveFolderItem(workspace.id, toBeMovedItem.item_type, toBeMovedItem.item_id, from, to).then(res => {
+    seaQAAPI.moveFolderItem(workspace.id, toBeMovedItem.item_type, toBeMovedItem.item_id, from, to).then(res => {
       let folders = this.state.folders.slice(0);
       if (from === '/') {
         folders.forEach(folder => {
@@ -728,7 +728,7 @@ class DTableWorkspaceCommon extends React.Component {
   };
 
   deleteFolder = (folderID) => {
-    dtableWebAPI.deleteFolder(this.props.workspace.id, folderID).then(() => {
+    seaQAAPI.deleteFolder(this.props.workspace.id, folderID).then(() => {
       let folders = this.state.folders.filter(folder => folder.id !== folderID);
       const { currentFolder } = this.state;
       if (currentFolder && currentFolder.id === folderID) {

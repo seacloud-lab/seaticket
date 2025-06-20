@@ -5,7 +5,7 @@ import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import GroupTrashDtableList from './group-trash/group-trash-dtable-list';
 import GroupTrashView from '../mobile/group-trash-view/index';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 
 import '../../../css/group-trash-dialog.css';
@@ -17,7 +17,7 @@ function GroupTrashDialog(props) {
   const [trashDTableList, setTrashDTableList] = useState([]);
 
   useEffect(() => {
-    dtableWebAPI.listGroupTrashDTables(groupID).then(res => {
+    seaQAAPI.listGroupTrashDTables(groupID).then(res => {
       setLoading(false);
       setTrashDTableList(res.data.trash_dtable_list);
     }).catch(error => {

@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input, InputGroup, Alert, Label } from 'reactstrap';
 import { gettext } from '../../../utils/constants';
 import Loading from '../../../components/loading';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { toaster, DTableSelect } from 'dtable-ui-component';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -38,7 +38,7 @@ class SnapshotRestoreDialog extends React.Component {
 
   getBigDataState = () => {
     let { workspace, dtable } = this.props;
-    dtableWebAPI.getBigDataState(workspace.id, dtable.name).then(res => {
+    seaQAAPI.getBigDataState(workspace.id, dtable.name).then(res => {
       let bigDataEnabled = res.data.big_data_enabled;
       this.setState({ bigDataEnabled });
       if (bigDataEnabled) {
@@ -52,7 +52,7 @@ class SnapshotRestoreDialog extends React.Component {
 
   listArchiveBackups = () => {
     let { workspace, dtable } = this.props;
-    dtableWebAPI.listArchiveBackups(workspace.id, dtable.name).then(res => {
+    seaQAAPI.listArchiveBackups(workspace.id, dtable.name).then(res => {
       let backups = res.data.backup_list.map(item => {
         return { value: item.version, label: dayjs(item.ctime).format('YYYY-MM-DD HH:mm') };
       });

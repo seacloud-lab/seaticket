@@ -2,7 +2,7 @@ import React, { Fragment, } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster, DTableEmptyTip, DTableModalHeader } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import Loading from '../../../components/loading';
 import Department from '../../../models/department';
@@ -62,7 +62,7 @@ class DepartmentDetailDialog extends React.Component {
       this.setState({ selectedMemberMap });
     }
     else if (usedFor === 'add_group_member') {
-      dtableWebAPI.listGroupMembers(groupID).then((res) => {
+      seaQAAPI.listGroupMembers(groupID).then((res) => {
         const groupMembers = res.data;
         let selectedMemberMap = {};
         selectedMemberMap[username] = true;
@@ -103,7 +103,7 @@ class DepartmentDetailDialog extends React.Component {
     } else {
       listDepartmentsAPIName = 'listAddressBookDepartments';
     }
-    dtableWebAPI[listDepartmentsAPIName]().then((res) => {
+    seaQAAPI[listDepartmentsAPIName]().then((res) => {
       let departments = res.data.departments.map(item => {
         return new Department(item);
       });
@@ -128,7 +128,7 @@ class DepartmentDetailDialog extends React.Component {
   getMembers = (department_id) => {
     this.setState({ membersLoading: true });
     if (enableAddressBookV2) {
-      dtableWebAPI.listAddressBookV2DepartmentMembers(department_id).then(res => {
+      seaQAAPI.listAddressBookV2DepartmentMembers(department_id).then(res => {
         this.setState({
           departmentMembers: res.data.member_list,
           membersLoading: false
@@ -137,7 +137,7 @@ class DepartmentDetailDialog extends React.Component {
         this.onError(error);
       });
     } else {
-      dtableWebAPI.listAddressBookDepartmentMembers(department_id).then((res) => {
+      seaQAAPI.listAddressBookDepartmentMembers(department_id).then((res) => {
         this.setState({
           departmentMembers: res.data.members,
           membersLoading: false,
@@ -152,7 +152,7 @@ class DepartmentDetailDialog extends React.Component {
     this.setState({ searchVal, searchResults: [] }, () => {
       if (searchVal.length > 0) {
         this.setState({ membersLoading: true });
-        dtableWebAPI.searchUsers(searchVal).then((res) => {
+        seaQAAPI.searchUsers(searchVal).then((res) => {
           const users = res.data.users;
           this.setState({ membersLoading: false, searchResults: users });
         }).catch(error => {
@@ -175,7 +175,7 @@ class DepartmentDetailDialog extends React.Component {
     await this.resetCurrentPage();
     this.setState({ membersLoading: true });
     let currentMemberPage = this.state.currentMemberPage;
-    dtableWebAPI.getOrganizationMembers(orgID, currentMemberPage).then((res) => {
+    seaQAAPI.getOrganizationMembers(orgID, currentMemberPage).then((res) => {
       this.setState({
         departmentMembers: res.data.members,
         membersLoading: false,
@@ -196,7 +196,7 @@ class DepartmentDetailDialog extends React.Component {
   getMoreOrgMembers = async () => {
     const orgID = window.app.pageOptions.orgID;
     let currentMemberPage = this.state.currentMemberPage;
-    dtableWebAPI.getOrganizationMembers(orgID, currentMemberPage).then((res) => {
+    seaQAAPI.getOrganizationMembers(orgID, currentMemberPage).then((res) => {
       let members = res.data.members;
       this.setState({
         departmentMembers: [...this.state.departmentMembers, ...members],
@@ -229,7 +229,7 @@ class DepartmentDetailDialog extends React.Component {
 
   addGroupMember = () => {
     let emails = Object.keys(this.state.newMembersTempObj);
-    dtableWebAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
+    seaQAAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
       this.props.loadWorkspaceList();
       this.toggle();
       this.props.toggleManageMembersDialog();

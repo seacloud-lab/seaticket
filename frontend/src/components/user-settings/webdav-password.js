@@ -2,7 +2,7 @@ import React from 'react';
 import { toaster } from 'dtable-ui-component';
 import ModalPortal from '../modal-portal';
 import { gettext } from '../../utils/constants';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import UpdateWebdavPassword from '../dialog/update-webdav-password';
 
@@ -26,7 +26,7 @@ class WebdavPassword extends React.Component {
   };
 
   updatePassword = (password) => {
-    dtableWebAPI.updateWebdavSecret(password).then((res) => {
+    seaQAAPI.updateWebdavSecret(password).then((res) => {
       this.toggleDialog();
       this.setState({
         password: password

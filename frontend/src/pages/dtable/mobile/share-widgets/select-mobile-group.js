@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
 import Loading from '../../../../components/loading';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { gettext } from '../../../../utils/constants';
 
 const propTypes = {
@@ -25,7 +25,7 @@ class SelectGroup extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.listWorkspaces(true).then((res) => {
+    seaQAAPI.listWorkspaces(true).then((res) => {
       let groups = [];
       res.data.workspace_list.forEach(item => {
         if (item.type === 'group') {

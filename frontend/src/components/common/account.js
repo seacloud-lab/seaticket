@@ -4,7 +4,7 @@ import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../utils/utils';
 import { isEnter, isEsc } from '../../utils/hotkey';
 import { isWorkWeChat } from '../../utils/wechat-utils';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { siteRoot, gettext, appAvatarURL, isOrgContext, canRunPython, useExternalTeamAdmin, enableSeatableAI } from '../../utils/constants';
 
 import '../../css/account-setting-more-popover.css';
@@ -99,7 +99,7 @@ class Account extends Component {
 
   onClickAccount = () => {
     if (this.isFirstMounted) {
-      dtableWebAPI.getAccountInfo().then(resp => {
+      seaQAAPI.getAccountInfo().then(resp => {
         this.setState({
           userName: resp.data.name,
           contactEmail: resp.data.email,

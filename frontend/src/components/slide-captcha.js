@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 import { Utils } from '../utils/utils';
 import { mediaUrl } from '../utils/constants';
 
@@ -78,7 +78,7 @@ class SlideCaptcha extends React.Component {
 
   getRandomImgSrc = () => {
     this.resetImg();
-    dtableWebAPI.getSlideCaptcha().then((res) => {
+    seaQAAPI.getSlideCaptcha().then((res) => {
       this.setState({
         imgSrc: 'data:image/jpeg;base64,' + res.data,
         isLoading: false,
@@ -206,7 +206,7 @@ class SlideCaptcha extends React.Component {
 
   verify = () => {
     const { moveX, srcY } = this.state;
-    dtableWebAPI.verifySlideCaptcha(moveX, srcY).then((res) => {
+    seaQAAPI.verifySlideCaptcha(moveX, srcY).then((res) => {
       toaster.success('验证通过');
       this.setState({
         sliderContainerClassname: 'sliderContainer sliderContainer_success',
