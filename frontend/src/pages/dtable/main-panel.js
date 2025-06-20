@@ -204,7 +204,7 @@ class MainPanel extends React.Component {
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
           <MainPanelDTables
-            path={siteRoot + 'project/'}
+            path={siteRoot + 'projects/'}
             loadWorkspaceList={this.loadWorkspaceList}
             isWorkspaceListLoading={this.state.isWorkspaceListLoading}
             workspaceList={this.state.workspaceList}
