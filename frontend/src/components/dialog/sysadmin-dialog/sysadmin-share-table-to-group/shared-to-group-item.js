@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import DtableSharePermissionEditor from '../../../../components/select-editor/dtable-share-permission-editor';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 
 class SharedToGroupItem extends React.Component {
 

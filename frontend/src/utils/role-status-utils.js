@@ -1,5 +1,5 @@
 import React from 'react';
-import { gettext } from './constants';
+import { gettext } from '../constants/config';
 
 const getRoleOptions = (roles) => {
   return Array.isArray(roles) && roles.map(role => ({

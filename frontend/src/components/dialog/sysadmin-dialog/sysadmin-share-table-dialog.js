@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { DIALOG_MAX_HEIGHT } from '../../../utils/utils';
 import SysAdminShareTableToUser from './sysadmin-share-table-to-user';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
 

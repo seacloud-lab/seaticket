@@ -10,7 +10,7 @@ import Members from './members';
 import Bases from './bases';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api.js';
 import { Utils } from '../../../utils/utils.js';
-import { siteRoot, gettext, orgID } from '../../../utils/constants';
+import { siteRoot, gettext, orgID } from '../../../constants';
 
 
 const propTypes = {

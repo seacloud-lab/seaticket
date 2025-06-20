@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
 import dayjs from '../../../../utils/dayjs';
 import { Utils } from '../../../../utils/utils';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 
 const propTypes = {
   item: PropTypes.object.isRequired,

@@ -5,7 +5,7 @@ import MobileCommonHeader from '../mobile-common-header';
 import RightAngle from './right-angle';
 import SelectMobileGroup from './select-mobile-group';
 import SelectMobilePermission from './select-mobile-permission';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,

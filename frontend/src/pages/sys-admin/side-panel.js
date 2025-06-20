@@ -5,7 +5,7 @@ import Logo from '../../components/logo';
 import Icon from '../../components/icon';
 import { gettext, siteRoot, isDefaultAdmin, canViewSystemInfo, canManageUser, canManageGroup, multiTenancy,
   canManageOrganization,
-} from '../../utils/constants';
+} from '../../constants';
 
 const propTypes = {
   isSidePanelClosed: PropTypes.bool.isRequired,

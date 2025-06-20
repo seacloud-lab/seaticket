@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { mediaUrl } from '../utils/constants';
+import { mediaUrl } from '../constants';
 import '../pages/dtable-share-form/css/end-remark.css';
 
 const gettext = window.gettext;

@@ -4,7 +4,7 @@ import { Modal, ModalHeader, ModalBody, Dropdown, DropdownToggle, DropdownMenu, 
 import NotificationDialogItem from './notification-widgets/notification-dialog-item';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import { NOTIFICATION_TAB_TYPES_MAP } from '../../constants/notification-constants';
-import { mediaUrl } from '../../utils/constants';
+import { mediaUrl } from '../../constants';
 
 import '../../css/notification-dialog.css';
 

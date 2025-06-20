@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { loginUrl, gettext, siteRoot, trashCleanExpireDays, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, siteRoot, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import MainPanelTopBar from '../main-panel-topbar';
 import DTableNav from './dtables-nav';
 import Loading from '../../../components/loading';

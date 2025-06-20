@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { gettext, loginUrl, siteRoot, multiTenancy, mediaUrl } from '../../../utils/constants';
+import { gettext, loginUrl, siteRoot, multiTenancy, mediaUrl } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import MainPanelTopbar from '../main-panel-topbar';

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Label, InputGroup, Input, Alert, Col } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
-import { gettext, canRemoveBasePasswordViaPhone, hasBoundPhone } from '../../../../utils/constants';
+import { gettext, canRemoveBasePasswordViaPhone, hasBoundPhone } from '../../../../constants/config';
 import { seaQAAPI } from '../../../../api/web-api';
 import { Utils } from '../../../../utils/utils';
 

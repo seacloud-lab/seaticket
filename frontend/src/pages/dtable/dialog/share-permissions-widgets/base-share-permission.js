@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../../utils/constants';
 import { FormGroup, Label, Input, Alert } from 'reactstrap';
-import { PERMISSION_TYPES } from 'dtable-utils';
+import { gettext } from '../../../../constants/config';
+import { PERMISSION_TYPES } from '../../../../constants';
 import TableSharePermission from './table-share-permission';
 
 class BaseSharePermission extends PureComponent {

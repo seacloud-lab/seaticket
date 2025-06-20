@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import AddDepartmentDialog from '../../../../components/dialog/sysadmin-dialog/sysadmin-add-department-dialog';
 
 const propTypes = {

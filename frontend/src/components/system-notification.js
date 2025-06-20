@@ -1,5 +1,5 @@
 import React from 'react';
-import { gettext, curNoteList } from '../utils/constants';
+import { gettext, curNoteList } from '../constants';
 import '../css/system-notification.css';
 
 class SystemNotification extends React.Component {

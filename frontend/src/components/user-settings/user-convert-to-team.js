@@ -1,5 +1,5 @@
 import React from 'react';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import ModalPortal from '../modal-portal';
 import ConfirmUserConvertToTeam from '../dialog/confirm-user-convert-to-team';
 

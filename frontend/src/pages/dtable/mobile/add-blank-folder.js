@@ -4,7 +4,7 @@ import { Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import Folder from '../model/folder';
 import MobileCommonHeader from './mobile-common-header';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils, validateName } from '../../../utils/utils';
 

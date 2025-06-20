@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, InputGroup, InputGroupText, Input, Button, Form, FormGroup, Alert, Col, Label } from 'reactstrap';
-import { gettext, isOrgContext, serviceURL, enableSlideCaptcha } from '../utils/constants';
+import { gettext, isOrgContext, serviceURL, enableSlideCaptcha } from '../constants';
 import { Utils, isMobile } from '../utils/utils';
 import { seaQAAPI } from '../api/web-api';
 import Loading from './loading';

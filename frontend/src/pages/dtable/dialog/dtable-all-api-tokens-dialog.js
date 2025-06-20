@@ -6,7 +6,7 @@ import { Utils } from '../../../utils/utils';
 import ModalPortal from '../../../components/modal-portal';
 import Loading from '../../../components/loading';
 import DtableApiTokens from './dtable-api-tokens-widgets/dtable-api-tokens';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 import '../../../css/dtable-all-external-links.css';

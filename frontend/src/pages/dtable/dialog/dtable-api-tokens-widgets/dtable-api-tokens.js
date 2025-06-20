@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, mediaUrl } from '../../../../utils/constants';
+import { gettext, mediaUrl } from '../../../../constants';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import DTableApiTokenItem from './dtable-api-token-item';
 

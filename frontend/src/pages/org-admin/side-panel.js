@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import Logo from '../../components/logo';
-import { gettext, siteRoot } from '../../utils/constants';
+import { gettext, siteRoot } from '../../constants';
 
 
 const propTypes = {

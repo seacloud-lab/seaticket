@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import { seaQAAPI } from '../../../../api/web-api';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';

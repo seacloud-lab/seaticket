@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Progress } from 'antd-mobile';
-import { gettext, orgMemberQuotaEnabled, mediaUrl, enableSeatableAI } from '../../utils/constants';
+import { gettext, orgMemberQuotaEnabled, mediaUrl, enableSeatableAI } from '../../constants';
 import { Utils } from '../../utils/utils';
 import MainPanelTopbar from './main-panel-topbar';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';

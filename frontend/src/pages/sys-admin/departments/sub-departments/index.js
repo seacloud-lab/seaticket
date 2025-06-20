@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import Loading from '../../../../components/loading';
 import DeleteDepartDialog from '../../../../components/dialog/sysadmin-dialog/sysadmin-delete-department-dialog';
 import RenameDepartmentDialog from '../../../../components/dialog/sysadmin-dialog/sysadmin-rename-departmet-dialog';

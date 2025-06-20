@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { gettext, mediaUrl, logoPath, loginBGPath } from '../../../utils/constants';
+import { gettext, mediaUrl, logoPath, loginBGPath } from '../../../constants';
 import Loading from '../../../components/loading';
 import MainPanelTopbar from '../main-panel-topbar';
 import Section from './section';

@@ -3,7 +3,7 @@ import { Row, Col } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Utils, validateName } from '../../../utils/utils';
-import { loginUrl, gettext, serviceURL } from '../../../utils/constants';
+import { loginUrl, gettext, serviceURL } from '../../../constants';
 import Loading from '../../../components/loading';
 import SysAdminSetOrgNameDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-set-org-name-dialog';
 import SysAdminSetOrgMaxUserNumberDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-set-org-max-user-number-dialog';

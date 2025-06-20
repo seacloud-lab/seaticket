@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../api/web-api';
 import { Utils } from '../utils/utils';
-import { mediaUrl } from '../utils/constants';
+import { mediaUrl } from '../constants';
 
 import '../css/slide-captcha.css';
 

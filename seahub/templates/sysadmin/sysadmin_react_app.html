@@ -52,8 +52,7 @@
         "can_update_organization": {% if user.admin_permissions.can_update_organization %} true {% else %} false {% endif %},
         "can_manage_app": {% if user.admin_permissions.can_manage_app %} true {% else %} false {% endif %},
         "other_permission": {% if user.admin_permissions.other_permission %} true {% else %} false {% endif %},
-      },
-      seatableMarketUrl: '{{ seatable_market_url }}'
+      }
 		}
 	};
   window.app.pageOptions.enableAbuseReport = {% if enable_abuse_report %} true {% else %} false {% endif %};

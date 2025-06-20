@@ -6,7 +6,7 @@ import SearchedList from './searched-list';
 import Loading from '../../../../components/loading';
 import { seaQAAPI } from '../../../../api/web-api';
 import { getValueLength } from '../search-utils';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import { QUERY_TYPE, SEARCHED_STORE_KEY, QUERY_TYPE_DISPLAY } from './constant';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 

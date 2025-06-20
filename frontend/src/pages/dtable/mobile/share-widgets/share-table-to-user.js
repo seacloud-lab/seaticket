@@ -8,7 +8,7 @@ import Loading from '../../../../components/loading';
 import DTableShareUtils from './dtable-share-utils';
 import { seaQAAPI } from '../../../../api/web-api';
 import AddShareUser from './add-share-user';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const propTypes = {
   customSharePermissions: PropTypes.array,

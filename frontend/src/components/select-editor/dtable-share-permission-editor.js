@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { DTableSelect } from 'dtable-ui-component';
 import { Utils } from '../../utils/utils';
-import { gettext, canUseAdvancedPerms } from '../../utils/constants';
+import { gettext, canUseAdvancedPerms } from '../../constants/config';
 
 import '../../css/select-editor.css';
 

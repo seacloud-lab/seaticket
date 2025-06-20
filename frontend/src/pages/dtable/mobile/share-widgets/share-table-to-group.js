@@ -8,7 +8,7 @@ import Loading from '../../../../components/loading';
 import DTableShareUtils from './dtable-share-utils';
 import { seaQAAPI } from '../../../../api/web-api';
 import AddShareGroup from './add-share-group';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const propTypes = {
   currentTable: PropTypes.object.isRequired,

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import className from 'classnames';
 import { DropdownMenu, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import { navigate } from '@gatsbyjs/reach-router';
-import { gettext } from '../utils/constants';
+import { gettext } from '../constants';
 
 import '../css/pagination.css';
 

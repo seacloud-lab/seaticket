@@ -78,7 +78,6 @@
             isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
             orgName: {% if org is not None %} '{{ org.org_name }}' {% else %} '' {% endif %},
             orgID: {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %},
-            seatableMarketUrl: '{{ seatable_market_url }}',
             canGenerateExternalLink: {% if user.permissions.can_generate_external_link %} true {% else %} false {% endif %},
             canRunPythonScript: {% if can_run_python_script %} true {% else %} false {% endif %},
             isScriptRunningConfigured: {% if is_script_running_configured %} true {% else %} false {% endif %},

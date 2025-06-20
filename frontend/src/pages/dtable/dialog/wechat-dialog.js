@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
-import { mediaUrl } from '../../../utils/constants';
+import { mediaUrl } from '../../../constants';
 import { isWorkWeChat } from '../../../utils/wechat-utils';
 
 import '../../../css/wechat-dialog.css';

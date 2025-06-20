@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import Loading from '../../../../components/loading';
 import BaseItem from './base-item';
 import { Utils } from '../../../../utils/utils';

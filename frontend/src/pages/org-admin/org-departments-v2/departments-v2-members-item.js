@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { RoleStatusEditor } from 'dtable-ui-component';
-import { gettext, siteRoot } from '../../../utils/constants';
+import { gettext, siteRoot } from '../../../constants';
 import { getRoleOptions } from '../../../utils/role-status-utils';
 
 const propTypes = {

@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { Button } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { gettext, orgID } from '../../../utils/constants';
+import { gettext, orgID } from '../../../constants';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 import { Utils } from '../../../utils/utils';
 import Account from '../../../components/common/account';

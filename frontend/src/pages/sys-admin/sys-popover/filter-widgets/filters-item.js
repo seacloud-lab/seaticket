@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import { SHOW_STATUS_TYPES } from '../../sys-constants/sys-filter-constants';
 
 const propTypes = {

@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster, DTableEmptyTip, DTableModalHeader } from 'dtable-ui-component';
-import { gettext, isOrgContext, orgID, mediaUrl } from '../../../utils/constants';
+import { gettext, isOrgContext, orgID, mediaUrl } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';

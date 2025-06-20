@@ -1,7 +1,6 @@
 import React from 'react';
-import { formatDurationToNumber, formatStringToNumber, CellType } from 'dtable-utils';
 import { toaster } from 'dtable-ui-component';
-import { mediaUrl, gettext, serviceURL, lang, appAvatarURL } from './constants';
+import { mediaUrl, gettext, serviceURL, lang, appAvatarURL } from '../constants/config';
 import { strChineseFirstPY } from './pinyin-by-unicode';
 import { NOTIFICATION_TYPE } from '../constants/notification-constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
@@ -826,60 +825,6 @@ export const getEventClassName = (e) => {
   // svg mouseEvent event.target.className is an object
   if (!e || !e.target) return '';
   return e.target.getAttribute('class') || '';
-};
-
-export const convertRowDataBack = (columns, rowData = {}) => {
-  let result = {};
-  if (Object.keys(rowData).length > 0) {
-    Object.keys(rowData).forEach((key) => {
-      const column = columns.find(column => column.key === key);
-      if (!column) return;
-      const { type, data } = column;
-      const value = rowData[key];
-      result[key] = value;
-      if (type === CellType.NUMBER && typeof value === 'string') {
-        result[key] = value ? formatStringToNumber(value, data) : '';
-      } else if (type === CellType.DURATION) {
-        result[key] = value ? formatDurationToNumber(value, data) : '';
-      }
-    });
-  }
-  return result;
-};
-
-export const evaluatePasswordStrength = (password) => {
-  let strength = 0;
-  const length = password.length;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const hasSpecialChars = /[`~!@#$%^&*()_\-+=<>?:"{}|,./;'\\]/.test(password);
-
-  // Increased strength based on length
-  if (length === 0) return 'empty';
-  if (length >= 16) strength += 4;
-  else if (length >= 12) strength += 3;
-  else if (length >= 8) strength += 2;
-  else if (length >= 6) strength += 1;
-
-  // Increased strength based on character type
-  if (hasUppercase) strength += 1;
-  if (hasLowercase) strength += 1;
-  if (hasNumbers) strength += 1;
-  if (hasSpecialChars) strength += 1;
-
-  // Determine password strength
-  if (strength >= 8) return 'very_strong';
-  if (strength >= 6) return 'strong';
-  if (strength >= 4) return 'medium';
-  return 'weak';
-};
-
-export const validatePassword = (password) => {
-  const { userStrongPasswordRequired } = window.app.pageOptions;
-  const passwordStrength = evaluatePasswordStrength(password);
-  const requiredStrengths = userStrongPasswordRequired ? ['strong', 'very_strong'] : ['medium', 'strong', 'very_strong'];
-  return requiredStrengths.includes(passwordStrength);
 };
 
 export const getFirstDayOfWeek = () => {

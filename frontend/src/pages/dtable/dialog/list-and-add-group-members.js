@@ -4,7 +4,7 @@ import { Button } from 'reactstrap';
 import classnames from 'classnames';
 import { DTableSearchInput, toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { cloudMode, gettext, isOrgContext } from '../../../utils/constants';
+import { cloudMode, gettext, isOrgContext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import UserSelect from '../../../components/user-select';
 import GroupMembers from './group-members';

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AddMemberDialog from '../../../../components/dialog/org-add-member-dialog';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 
 const propTypes = {
   groupID: PropTypes.string,

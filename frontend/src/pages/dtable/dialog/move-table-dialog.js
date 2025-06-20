@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DTableSelect } from 'dtable-ui-component';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { Modal, ModalBody, ModalFooter, Button, Label } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
 

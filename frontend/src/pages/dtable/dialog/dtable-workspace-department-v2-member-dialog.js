@@ -6,7 +6,7 @@ import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
 import { seaQAAPI } from '../../../api/web-api';
 import User from '../model/user';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { Utils } from '../../../utils/utils';
 
 import '../../../css/dtable-workspace-member-tree-dialog.css';

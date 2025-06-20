@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { gettext, orgID } from '../../../../utils/constants';
+import { gettext, orgID } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { orgAdminServiceApi } from '../../../../api/org-admin-service-api';
 import { DTableModalHeader } from 'dtable-ui-component';

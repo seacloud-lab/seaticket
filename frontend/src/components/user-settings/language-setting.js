@@ -1,6 +1,6 @@
 import React from 'react';
 import { DTableSelect } from 'dtable-ui-component';
-import { gettext, siteRoot } from '../../utils/constants';
+import { gettext, siteRoot } from '../../constants';
 
 const {
   currentLang, langList

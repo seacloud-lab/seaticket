@@ -2,7 +2,7 @@ import React from 'react';
 import { toaster } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
-import { gettext, mediaUrl, logoPath } from '../../utils/constants';
+import { gettext, mediaUrl, logoPath } from '../../constants';
 
 import '../../css/org-logo-form.css';
 

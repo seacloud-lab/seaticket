@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
 import OrgNormalProjects from './org-normal-projects';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import MainPanelTopbar from './main-panel-topbar';
 import OrgTrashProjects from './org-trash-projects';
 import Search from '../sys-admin/search';

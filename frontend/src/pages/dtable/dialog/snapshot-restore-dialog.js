@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input, InputGroup, Alert, Label } from 'reactstrap';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import Loading from '../../../components/loading';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';

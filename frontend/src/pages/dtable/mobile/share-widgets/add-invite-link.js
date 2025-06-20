@@ -13,7 +13,7 @@ import {
   shareLinkExpireDaysMax,
   shareLinkExpireDaysMin,
   shareLinkExpireDaysDefault
-} from '../../../../utils/constants';
+} from '../../../../constants/config';
 import SelectPermission from './select-permission';
 
 const Item = List.Item;

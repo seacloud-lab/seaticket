@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants/config';
 import { isEnter } from '../../utils/hotkey';
 import Rename from '../../components/rename';
 import { Utils } from '../../utils/utils';

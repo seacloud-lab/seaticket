@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
-import { gettext, siteRoot } from '../../../../utils/constants';
+import { gettext, siteRoot } from '../../../../constants';
 
 class SharePermissionsManage extends Component {
   constructor(props) {

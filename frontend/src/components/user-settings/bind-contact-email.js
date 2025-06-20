@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { enableUserSetContactEmail, gettext } from '../../utils/constants';
+import { enableUserSetContactEmail, gettext } from '../../constants';
 import ModalPortal from '../modal-portal';
 import SetContactEmailDialog from '../dialog/set-contact-email-dialog';
 import { seaQAAPI } from '../../api/web-api';

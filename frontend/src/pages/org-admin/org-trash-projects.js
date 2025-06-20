@@ -4,7 +4,7 @@ import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap
 import dayjs from 'dayjs';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../utils/constants';
+import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../../components/modal-portal';
 import RestoreTableDialog from '../dtable/dialog/restore-table-dialog';

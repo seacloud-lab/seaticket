@@ -4,8 +4,9 @@ import { Modal, ModalBody, ModalFooter, Input, Label, Button, Form, FormGroup, A
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import PasswordInput from './password-input';
 import { seaQAAPI } from '../../../api/web-api';
-import { gettext, loginUrl } from '../../../utils/constants';
-import { Utils, validatePassword } from '../../../utils/utils';
+import { gettext, loginUrl } from '../../../constants';
+import { Utils } from '../../../utils/utils';
+import { isValidPassword } from '../../../utils/validate';
 
 import '../../../css/user-reset-password-dialog.css';
 
@@ -102,7 +103,7 @@ class UserResetPassword extends React.Component {
       this.setState({ errorMessage: gettext('Passwords don\'t match') });
       return;
     }
-    if (!validatePassword(newPassword)) {
+    if (!isValidPassword(newPassword)) {
       this.setState({ errorMessage: gettext('Password strength should be strong or very strong') });
       return;
     }

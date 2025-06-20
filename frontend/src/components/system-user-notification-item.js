@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../utils/constants';
+import { gettext } from '../constants';
 import { seaQAAPI } from '../api/web-api';
 import '../css/system-notification.css';
 

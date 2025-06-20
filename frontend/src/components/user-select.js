@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/async';
 import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../api/web-api.js';
-import { gettext, enableShowIDInOrgWhenSearchUser } from '../utils/constants';
+import { gettext, enableShowIDInOrgWhenSearchUser } from '../constants/config.js';
 import { Utils } from '../utils/utils.js';
 import { UserSelectStyle } from 'dtable-ui-component/lib/DTableSelect/utils';
 import 'dtable-ui-component/lib/DTableSelect/user-select.css';

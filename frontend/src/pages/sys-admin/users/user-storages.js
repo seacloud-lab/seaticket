@@ -4,7 +4,7 @@ import MainPanelTopbar from '../main-panel-topbar';
 import Nav from './user-nav';
 import { Utils } from '../../../utils/utils';
 import Dirent from '../../../models/system-admin/dirent';
-import { siteRoot } from '../../../utils/constants';
+import { siteRoot } from '../../../constants';
 import DirPathBar from '../../../components/storage/storage-dir-path-bar';
 import DirContent from '../../../components/storage/storage-dir-content';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';

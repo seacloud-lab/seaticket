@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'reactstrap';
 import { DTableEmptyTip } from 'dtable-ui-component';
-import { gettext, mediaUrl } from '../../../../utils/constants';
+import { gettext, mediaUrl } from '../../../../constants/config';
 import Loading from '../../../../components/loading';
 
 const ItemPropTypes = {

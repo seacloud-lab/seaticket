@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Label } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../api/web-api';
-import { gettext } from '../utils/constants';
+import { gettext } from '../constants';
 import { Utils } from '../utils/utils';
 
 const propTypes = {

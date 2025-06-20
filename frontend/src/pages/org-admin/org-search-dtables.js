@@ -5,7 +5,7 @@ import { Link } from '@gatsbyjs/reach-router';
 import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../utils/utils';
-import { gettext, siteRoot, loginUrl, mediaUrl } from '../../utils/constants';
+import { gettext, siteRoot, loginUrl, mediaUrl } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import Loading from '../../components/loading';
 import Paginator from '../../components/paginator';

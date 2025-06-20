@@ -7,7 +7,7 @@ import {
   gettext,
   shareLinkExpireDaysMax,
   shareLinkExpireDaysMin,
-} from '../../../../utils/constants';
+} from '../../../../constants/config';
 
 const propTypes = {
   isExpireDaysNoLimit: PropTypes.bool,

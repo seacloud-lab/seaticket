@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { seaQAAPI } from './api/web-api';
-import { gettext, mediaUrl } from './utils/constants';
+import { gettext, mediaUrl } from './constants';
 import { Utils } from './utils/utils';
 import { DTableEmptyTip, toaster } from 'dtable-ui-component';
 import CreateWebsiteDialog from './pages/dtable/dialog/create-website-dialog';

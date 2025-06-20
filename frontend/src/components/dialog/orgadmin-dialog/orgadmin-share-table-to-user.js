@@ -8,7 +8,7 @@ import DtableSharePermissionEditor from '../../../components/select-editor/dtabl
 import UserInfoPopover from '../../../pages/dtable/dtable-popover/user-info-popover';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 import { Utils } from '../../../utils/utils';
-import { orgID, gettext, cloudMode, isOrgContext } from '../../../utils/constants';
+import { orgID, gettext, cloudMode, isOrgContext } from '../../../constants';
 
 import '../../../css/invitations.css';
 

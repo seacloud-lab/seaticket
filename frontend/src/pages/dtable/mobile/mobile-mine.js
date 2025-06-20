@@ -5,7 +5,7 @@ import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { isWorkWeChat } from '../../../utils/wechat-utils';
-import { siteRoot, gettext, appAvatarURL, isOrgContext, useExternalTeamAdmin } from '../../../utils/constants';
+import { siteRoot, gettext, appAvatarURL, isOrgContext, useExternalTeamAdmin } from '../../../constants';
 
 import '../../../css/mobile/mobile-mine.css';
 

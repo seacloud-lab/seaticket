@@ -9,7 +9,7 @@ import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-
 import OrgUserInfo from '../../models/org-user';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
-import { gettext, siteRoot, loginUrl, username, orgID, mediaUrl } from '../../utils/constants';
+import { gettext, siteRoot, loginUrl, username, orgID, mediaUrl } from '../../constants';
 import { getStatusOptions } from '../../utils/role-status-utils';
 
 

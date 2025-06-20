@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { seaQAAPI } from '../../../../api/web-api';
-import { PERMISSION_TYPES } from 'dtable-utils';
+import { PERMISSION_TYPES } from '../../../../constants';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';
 

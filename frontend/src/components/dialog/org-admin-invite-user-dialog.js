@@ -4,7 +4,7 @@ import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { QRCodeCanvas } from 'qrcode.react';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 
 import '../../css/org-admin-invite-user.css';
 

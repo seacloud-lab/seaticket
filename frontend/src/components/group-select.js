@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/async';
-import { gettext } from '../utils/constants';
+import { gettext } from '../constants';
 
 const propTypes = {
   placeholder: PropTypes.string.isRequired,

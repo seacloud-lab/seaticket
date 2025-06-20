@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Loading from '../../components/loading';
-import { gettext, canAddGroup, isOrgContext, orgName } from '../../utils/constants';
+import { gettext, canAddGroup, isOrgContext, orgName } from '../../constants';
 import DTableWorkspaceCommon from './dtable-workspace-common';
 import CreateDtableGroupDialog from './dialog/create-dtable-group-dialog';
 import { Utils } from '../../utils/utils';

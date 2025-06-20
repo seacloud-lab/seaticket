@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { enableAddressBookV2, gettext } from '../../../utils/constants';
+import { enableAddressBookV2, gettext } from '../../../constants';
 import Loading from '../../../components/loading';
 import RenameDepartmentDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-rename-departmet-dialog.js';
 import DeleteDepartDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-delete-department-dialog';

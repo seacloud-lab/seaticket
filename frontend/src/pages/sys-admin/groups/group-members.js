@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { RoleStatusEditor, toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import SysAdminGroupAddMemberDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-group-add-member-dialog';

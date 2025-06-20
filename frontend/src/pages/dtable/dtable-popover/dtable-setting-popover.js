@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
 import DtablePopover from '../../../components/dtable-popover';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 
 export default class DtableSettingPopover extends React.Component {
 

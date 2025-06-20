@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import dayjs from '../../../../utils/dayjs';
-import { gettext, siteRoot } from '../../../../utils/constants';
+import { gettext, siteRoot } from '../../../../constants';
 
 const propTypes = {
   group: PropTypes.object.isRequired,

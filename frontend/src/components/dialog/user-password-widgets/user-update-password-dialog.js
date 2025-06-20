@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import PasswordInput from './password-input';
 import { seaQAAPI } from '../../../api/web-api';
-import { gettext } from '../../../utils/constants';
-import { Utils, validatePassword } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { gettext } from '../../../constants';
+import { Utils } from '../../../utils/utils';
+import { isValidPassword } from '../../../utils/validate';
 
 const propTypes = {
   toggle: PropTypes.func,
@@ -39,7 +39,7 @@ const UserUpdatePassword = ({ toggle }) => {
     if (currentPassword === newPassword) {
       setErrorMessage(gettext('New password cannot be the same as old password'));
     }
-    if (!validatePassword(newPassword)) {
+    if (!isValidPassword(newPassword)) {
       setErrorMessage(gettext('Password strength should be strong or very strong'));
       return;
     }

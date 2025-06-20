@@ -4,7 +4,7 @@ import { Modal, ModalBody } from 'reactstrap';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import GroupTrashDtableList from './group-trash/group-trash-dtable-list';
 import GroupTrashView from '../mobile/group-trash-view/index';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 

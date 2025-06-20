@@ -9,7 +9,7 @@ import Loading from '../../../components/loading';
 import ExternalLink from './share-widgets/external-link';
 import InviteLink from './share-widgets/invite-link';
 import { seaQAAPI } from '../../../api/web-api';
-import { gettext, cloudMode, isOrgContext } from '../../../utils/constants';
+import { gettext, cloudMode, isOrgContext } from '../../../constants/config';
 
 import '../../../css/mobile/mobile-share-table.css';
 

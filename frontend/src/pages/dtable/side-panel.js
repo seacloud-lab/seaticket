@@ -4,8 +4,7 @@ import { DropTarget } from 'react-dnd';
 import isHotkey from 'is-hotkey';
 import { Link } from '@gatsbyjs/reach-router';
 import { toaster } from 'dtable-ui-component';
-import { seatableMarketUrl, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink
-} from '../../utils/constants';
+import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink } from '../../constants';
 import { Utils } from '../../utils/utils';
 import { seaQAAPI } from '../../api/web-api';
 import html5DragDropContext from '../../utils/html5DragDropContext';
@@ -103,14 +102,6 @@ class SidePanel extends React.Component {
 
   getActiveClass = (tab) => {
     return this.props.currentTab === tab ? 'active' : '';
-  };
-
-  onOpenSeaTableMarket = () => {
-    if (seatableMarketUrl) {
-      window.open(seatableMarketUrl);
-    } else {
-      window.open('/templates');
-    }
   };
 
   onOpenSeaTableFriendInvitation = () => {

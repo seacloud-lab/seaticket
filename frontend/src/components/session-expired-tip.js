@@ -1,5 +1,5 @@
 import React from 'react';
-import { gettext, loginUrl } from '../utils/constants';
+import { gettext, loginUrl } from '../constants';
 
 function SessionExpiredTip() {
   return(

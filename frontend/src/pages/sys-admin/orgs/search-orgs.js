@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Form, FormGroup, Input, Label, Col } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext } from '../../../utils/constants';
+import { loginUrl, gettext } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';
 import Content from './orgs-content';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';

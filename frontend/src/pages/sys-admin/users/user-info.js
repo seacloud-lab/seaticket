@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FormGroup, Label, Input, Button } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled, multiTenancy } from '../../../utils/constants';
+import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled, multiTenancy } from '../../../constants';
 import Loading from '../../../components/loading';
 import SysAdminSetQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-quota';
 import SysAdminUpdateUserDialog from '../../../components/dialog/sysadmin-dialog/update-user';

@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Popover } from 'reactstrap';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import PropTypes from 'prop-types';
 import Loading from '../../../components/loading';
 import { seaQAAPI } from '../../../api/web-api';

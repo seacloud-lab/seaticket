@@ -4,7 +4,7 @@ import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
 import Loading from '../../../../components/loading';
 import { seaQAAPI } from '../../../../api/web-api';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const propTypes = {
   selectedOptions: PropTypes.array,

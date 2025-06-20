@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, UncontrolledTooltip } from 'reactstrap';
 import { DragSource } from 'react-dnd';
 import { Utils } from '../../utils/utils';
-import { siteRoot, gettext, canAddProject } from '../../utils/constants';
+import { siteRoot, gettext, canAddProject } from '../../constants/config';
 import UserInfoPopover from './dtable-popover/user-info-popover';
 import DTableItem from './dtable-item';
 

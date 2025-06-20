@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
 import MainPanelTopbar from '../main-panel-topbar';

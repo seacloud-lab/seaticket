@@ -1,4 +1,4 @@
-import { gettext } from './utils/constants';
+import { gettext } from './constants';
 
 gettext('No groups');
 gettext('No users');

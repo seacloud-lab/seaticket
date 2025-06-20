@@ -66,20 +66,6 @@ export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShow
 export const workspaceID = window.app.pageOptions.workspaceID;
 export const showWechatSupportGroup = window.app.pageOptions.showWechatSupportGroup;
 
-export const showTemplatesLink = window.app.pageOptions.showTemplatesLink;
-
-export const enableCreateBaseFromTemplate = window.app.pageOptions.enableCreateBaseFromTemplate;
-export const enableOrgCommonDataset = window.app.pageOptions.enableOrgCommonDataset;
-export const enableUniversalApp = window.app.pageOptions.enableUniversalApp;
-
-let seatablemarketurl = '';
-if (window.app.pageOptions.seatableMarketUrl) {
-  seatablemarketurl = window.app.pageOptions.seatableMarketUrl;
-} else if (window.sysadmin) {
-  seatablemarketurl = window.sysadmin.pageOptions.seatableMarketUrl;
-}
-export const seatableMarketUrl = seatablemarketurl;
-
 export const helpLink = window.app.pageOptions.helpLink;
 export const cloudMode = window.app.pageOptions.cloudMode;
 export const isOrgContext = window.app.pageOptions.isOrgContext;
@@ -139,4 +125,3 @@ export const canManageOrganization = window.sysadmin ? window.sysadmin.pageOptio
 export const canUpdateOrganization = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.can_update_organization : '';
 export const canManageApp = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.can_manage_app : '';
 export const otherPermission = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.other_permission : '';
-

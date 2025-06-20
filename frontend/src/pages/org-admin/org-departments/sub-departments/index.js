@@ -4,7 +4,7 @@ import Loading from '../../../../components/loading';
 import DeleteDepartDialog from '../../../../components/dialog/org-delete-department-dialog';
 import RenameDepartmentDialog from '../../../../components/dialog/org-rename-department-dialog';
 import GroupItem from './group-item';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 
 const propTypes = {
   groupID: PropTypes.string,

@@ -13,7 +13,7 @@ import OrgNav from './orgs-nav';
 import Paginator from '../../../components/paginator';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import { getRoleOptions } from '../../../utils/role-status-utils';
 
 import '../../../css/system-org.css';

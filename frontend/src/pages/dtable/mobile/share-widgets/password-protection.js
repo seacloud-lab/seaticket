@@ -4,7 +4,7 @@ import { Alert } from 'reactstrap';
 import { List, InputItem } from 'antd-mobile';
 import MobileCommonHeader from '../mobile-common-header';
 import { Utils } from '../../../../utils/utils';
-import { gettext, shareLinkPasswordMinLength } from '../../../../utils/constants';
+import { gettext, shareLinkPasswordMinLength } from '../../../../constants/config';
 
 const propTypes = {
   password: PropTypes.string,

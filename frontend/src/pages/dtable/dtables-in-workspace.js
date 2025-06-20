@@ -1,12 +1,12 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { isNumber } from 'dtable-utils';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import Loading from '../../components/loading';
-import { isOrgContext, orgName, mediaUrl } from '../../utils/constants';
+import { isOrgContext, orgName, mediaUrl } from '../../constants';
 import DTableWorkspaceCommon from './dtable-workspace-common';
 import { Utils } from '../../utils/utils';
 import DTableWorkspaceStarred from './dtable-workspace-starred';
+import { isNumber } from '../../utils/type-detection';
 
 const gettext = window.gettext;
 

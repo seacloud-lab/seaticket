@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, InputGroup } from 'reactstrap';
 import SelectEditor from '../../select-editor/select-editor';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 
 import '../../../css/admin-common.css';

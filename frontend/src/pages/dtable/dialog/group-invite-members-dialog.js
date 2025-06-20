@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 

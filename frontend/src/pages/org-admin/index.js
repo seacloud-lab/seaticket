@@ -5,7 +5,7 @@ import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router'
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
 import dayjs from 'dayjs';
-import { siteRoot, lang } from '../../utils/constants';
+import { siteRoot, lang } from '../../constants';
 import SidePanel from './side-panel';
 import OrgUsers from './org-users';
 import OrgUserProfile from './org-user-profile';
