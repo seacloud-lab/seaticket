@@ -41,7 +41,6 @@ class SidePanel extends React.Component {
     };
     this.groupsHeight = 0;
     this.moreHeight = 1 * GROUP_ITEM_HEIGHT; // 1 is data sync
-    this.workflowsHeight = 4 * GROUP_ITEM_HEIGHT;
     this.isDesktop = Utils.isDesktop();
   }
 

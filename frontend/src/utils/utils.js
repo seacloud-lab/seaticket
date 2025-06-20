@@ -774,12 +774,6 @@ export const getNoticeItemAvatarUrl = (noticeItem) => {
     case NOTIFICATION_TYPE.ADD_USER_TO_GROUP: {
       return detail.group_staff_avatar_url;
     }
-    case NOTIFICATION_TYPE.NEW_PENDING_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.FINISH_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.DISMISS_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.WORKFLOW_PROCESSING_EXPIRED: {
-      return detail.initiator.initiator_user_avatar_url;
-    }
     case NOTIFICATION_TYPE.LICENSE_EXPIRING: {
       return appAvatarURL;
     }
@@ -801,13 +795,6 @@ export const getNoticeItemUserName = (noticeItem) => {
     }
     case NOTIFICATION_TYPE.ADD_USER_TO_GROUP: {
       return detail.group_staff_name;
-    }
-    case NOTIFICATION_TYPE.NEW_PENDING_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.FINISH_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.DISMISS_WORKFLOW_TASK:
-    case NOTIFICATION_TYPE.WORKFLOW_PROCESSING_EXPIRED: {
-      if (!detail.initiator) return null;
-      return detail.initiator.initiator_user_name;
     }
     default: {
       return null;

@@ -115,10 +115,6 @@
   width: 90% !important;
 }
 
-.dtable-nav-list .dtable-nav-link .workflow {
-  flex: unset !important;
-}
-
 .dtable-nav-list .dtable-nav-link .multicolor-icon {
   font-size: 20px;
 }

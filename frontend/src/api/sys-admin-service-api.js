@@ -1318,15 +1318,6 @@ class SysAdminServiceApi {
     return this.req.post(url, data);
   }
 
-  sysAdminListWorkflows(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/workflows/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
   sysAdminListFileAccessLogs(page, perPage) {
     let url = this.server + '/api/v2.1/admin/file-access-logs/';
     let params = {

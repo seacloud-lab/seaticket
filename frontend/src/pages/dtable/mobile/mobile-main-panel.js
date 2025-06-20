@@ -41,8 +41,6 @@ class MobileMainPanel extends React.Component {
       selectedTab: 'bases',
       errorMsg: null,
       workspaceList: [],
-      workflowTag: '',
-      workflowTask: null,
       isWorkspaceListLoading: true,
       starredDTableList: [],
     };
@@ -77,10 +75,6 @@ class MobileMainPanel extends React.Component {
         errorMsg: gettext('Please check the network.')
       });
     }
-  };
-
-  clearWorkflowState = () => {
-    this.setState({ workflowTag: '', workflowTask: null });
   };
 
   onDeleteGroup = (groupID) => {
@@ -204,7 +198,7 @@ class MobileMainPanel extends React.Component {
   };
 
   onSelectCurrentTab = (selectedTab) => {
-    this.setState({ selectedTab, workflowTag: '', workflowTask: null });
+    this.setState({ selectedTab });
   };
 
   renderMainContent = () => {

@@ -42,7 +42,6 @@ gettext('No invalid automation rules');
 gettext('No invalid notification rules');
 gettext('Dataset name');
 gettext('No periodical common dataset syncs');
-gettext('No workflows');
 gettext('Phone');
 gettext('modified');
 gettext('Insert row');
