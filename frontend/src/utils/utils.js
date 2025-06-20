@@ -5,7 +5,6 @@ import { mediaUrl, gettext, serviceURL, lang, appAvatarURL } from './constants';
 import { strChineseFirstPY } from './pinyin-by-unicode';
 import { NOTIFICATION_TYPE } from '../constants/notification-constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
-import { INPUT_MODE_MAP } from '../constants/form-constants';
 
 export const Utils = {
 
@@ -881,16 +880,6 @@ export const validatePassword = (password) => {
   const passwordStrength = evaluatePasswordStrength(password);
   const requiredStrengths = userStrongPasswordRequired ? ['strong', 'very_strong'] : ['medium', 'strong', 'very_strong'];
   return requiredStrengths.includes(passwordStrength);
-};
-
-export const isGeolocationCellEditable = (column) => {
-  let editable = true;
-  const { data } = column;
-  const { input_mode, geo_format } = data || {};
-  if (input_mode === INPUT_MODE_MAP.ONLY_MOBILE_POSITIONING && geo_format === 'map_selection' && !isMobile) {
-    editable = false;
-  }
-  return editable;
 };
 
 export const getFirstDayOfWeek = () => {
