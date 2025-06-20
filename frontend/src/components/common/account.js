@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../utils/utils';
 import { isEnter, isEsc } from '../../utils/hotkey';
-import { isWorkWeixin } from '../../components-form/utils/weixin-utils';
+import { isWorkWeChat } from '../../utils/wechat-utils';
 import { dtableWebAPI } from '../../api/dtable-web-api';
 import { siteRoot, gettext, appAvatarURL, isOrgContext, canRunPython, useExternalTeamAdmin, enableSeatableAI } from '../../utils/constants';
 
@@ -15,7 +15,7 @@ const propTypes = {
 
 class Account extends Component {
 
-  isWorkWX = isWorkWeixin(window.navigator.userAgent.toLowerCase());
+  isWorkWX = isWorkWeChat(window.navigator.userAgent.toLowerCase());
 
   constructor(props) {
     super(props);

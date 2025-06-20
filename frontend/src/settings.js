@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { toaster } from 'dtable-ui-component';
 import { Utils, isMobile } from './utils/utils';
-import { isWorkWeixin } from './components-form/utils/weixin-utils';
+import { isWorkWeChat } from './utils/wechat-utils';
 import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from './utils/constants';
 import { dtableWebAPI } from './api/dtable-web-api';
 import SideNav from './components/user-settings/side-nav';
@@ -53,7 +53,7 @@ const {
 
 class Settings extends React.Component {
 
-  isWorkWX = isWorkWeixin(window.navigator.userAgent.toLowerCase());
+  isWorkWX = isWorkWeChat(window.navigator.userAgent.toLowerCase());
 
   constructor(props) {
     super(props);
