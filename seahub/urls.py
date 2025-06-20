@@ -45,7 +45,7 @@ urlpatterns = [
     re_path(r'^sso-auto-login/$', sso_auto_login, name='sso-auto-login'),
     re_path(r'^mobile-login/', mobile_login, name="mobile_login"),
 
-    re_path(r'^$', seaqa_fake_view, name='project'),
+    re_path(r'^$', seaqa_fake_view, name='projects'),
     re_path(r'^robots\.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     ### PWA ###
@@ -59,7 +59,7 @@ urlpatterns = [
     re_path(r'^server-info/$', ServerInfoView.as_view(), name="server_info"),
 
     ### React ###
-    re_path(r'^project/$', seaqa_fake_view, name='project_bases'),
+    re_path(r'^projects/$', seaqa_fake_view, name='projects_list'),
 
     ### Apps ###
     re_path(r'^api2/', include('seahub.api2.urls')),

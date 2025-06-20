@@ -266,7 +266,7 @@ class SidePanel extends React.Component {
                 onClick={this.onTabClick.bind(this, 'project')}
               >
                 <Link
-                  to={siteRoot + 'project/'}
+                  to={siteRoot + 'projects/'}
                   aria-label={gettext('Projects')}
                   className="nav-link dtable-nav-link"
                 >
