@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Form, FormGroup, Alert } from 'reactstrap';
-import { isValidEmail } from 'dtable-utils';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
-import { gettext, orgID } from '../../utils/constants';
+import { gettext, orgID } from '../../constants';
+import { isValidEmail } from '../../utils/validate';
 import { Utils } from '../../utils/utils';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 
@@ -29,7 +29,7 @@ class InviteUserViaEmailDialog extends React.Component {
     if (!isValid) return;
     let { emails } = this.state;
     let newEmails = Array.from(new Set(emails)).filter(email => email !== '');
-    this.setState({isAddingUser: true});
+    this.setState({ isAddingUser: true });
     orgAdminServiceApi.orgAdminInviteOrgUser(orgID, newEmails).then(res => {
       let successCount = res.data.success_list.length;
       let failedCount = res.data.failed_list.length;
@@ -80,13 +80,13 @@ class InviteUserViaEmailDialog extends React.Component {
       toaster.danger(errMessage);
       this.props.toggle();
     });
-  } 
+  };
 
   inputEmail = (e, idx) => {
     let email = e.target.value.trim();
     let oldEmails = this.state.emails;
     oldEmails[idx] = email;
-    this.setState({emails: oldEmails, errMessage: ''});
+    this.setState({ emails: oldEmails, errMessage: '' });
   };
 
   toggle = () => {
@@ -95,16 +95,16 @@ class InviteUserViaEmailDialog extends React.Component {
 
   onFocus = (idx) => {
     let { emails } = this.state;
-    if (idx === emails.length -1) {
+    if (idx === emails.length - 1) {
       emails.push('');
-      this.setState({emails});
+      this.setState({ emails });
     }
   };
 
   onDeleteInviteInput = (idx) => {
     let { emails } = this.state;
     emails.splice(idx, 1);
-    this.setState({emails});
+    this.setState({ emails });
   };
 
   validateInputParams() {
@@ -113,13 +113,13 @@ class InviteUserViaEmailDialog extends React.Component {
     emails = emails.filter(email => email !== '');
     if (!emails.length) {
       errMessage = gettext('email required');
-      this.setState({errMessage: errMessage});
+      this.setState({ errMessage: errMessage });
       return false;
     }
     for (let email of emails) {
       if (!isValidEmail(email)) {
         errMessage = gettext('email invalid');
-        this.setState({errMessage: errMessage});
+        this.setState({ errMessage: errMessage });
         return false;
       }
     }
@@ -131,7 +131,7 @@ class InviteUserViaEmailDialog extends React.Component {
       <FormGroup>
         <div className="org-invitation-container">
           <span>{gettext('Email')}</span>
-          {idx > 1 && 
+          {idx > 1 &&
             <span className="delete-invitation-input" onClick={this.onDeleteInviteInput.bind(this, idx)}>{gettext('Delete')}</span>
           }
         </div>

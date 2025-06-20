@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import DTablePopover from '../../../components/dtable-popover';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import SysFiltersItem from './filter-widgets/filters-item';
 import '../../../css/system-filter.css';
 

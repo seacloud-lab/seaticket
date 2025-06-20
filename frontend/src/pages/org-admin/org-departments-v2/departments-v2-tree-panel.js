@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import DepartmentsV2TreeNode from './departments-v2-tree-node';
 import DepartmentNode from '../../dtable/model/department-node';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 
 const DepartmentV2TreePanelPropTypes = {
   rootNode: PropTypes.object,

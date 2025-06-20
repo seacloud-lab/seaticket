@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, trashCleanExpireDays, mediaUrl } from '../../../../utils/constants';
+import { gettext, trashCleanExpireDays, mediaUrl } from '../../../../constants/config';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import GroupTrashDTablesItem from './group-trash-dtables-item';
 

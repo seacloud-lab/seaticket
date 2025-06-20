@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { PERMISSION_TYPES } from 'dtable-utils';
+import { PERMISSION_TYPES } from '../../../../constants';
 import ViewSharePermission from './view-share-permission';
 
 class TableSharePermission extends Component {

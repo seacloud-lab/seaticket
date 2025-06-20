@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { RoleStatusEditor, toaster } from 'dtable-ui-component';
-import { gettext, serviceURL } from '../../../../utils/constants';
+import { gettext, serviceURL } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { getRoleOptions } from '../../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';

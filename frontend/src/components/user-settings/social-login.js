@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { gettext, siteRoot, isOrgContext } from '../../utils/constants';
+import { gettext, siteRoot, isOrgContext } from '../../constants';
 import ModalPortal from '../modal-portal';
 import ConfirmDisconnectWechat from '../dialog/confirm-disconnect-wechat';
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import DeleteMemberDialog from '../../../../components/dialog/org-delete-member-dialog';
 import Loading from '../../../../components/loading';
 import MemberItem from './member-item';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 
 
 const propTypes = {

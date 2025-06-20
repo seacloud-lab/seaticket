@@ -11,7 +11,7 @@ import AddOrgUserDialog from '../../components/dialog/org-add-user-dialog';
 import InviteUserDialog from '../../components/dialog/org-admin-invite-user-dialog';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import OrgUserInfo from '../../models/org-user';
-import { gettext, invitationLink, orgID, siteRoot } from '../../utils/constants';
+import { gettext, invitationLink, orgID, siteRoot } from '../../constants';
 import { Utils } from '../../utils/utils';
 import Search from '../sys-admin/search';
 

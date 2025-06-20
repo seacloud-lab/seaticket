@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Progress } from 'react-sweet-progress';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody } from 'reactstrap';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';

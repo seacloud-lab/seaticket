@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Loading from './loading';
-import { gettext } from '../utils/constants';
+import { gettext } from '../constants/config';
 
 const propTypes = {
   marginTop: PropTypes.string,

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import { RoleStatusEditor, toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { gettext, username } from '../../../utils/constants';
+import { gettext, username } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { getRoleOptions } from '../../../utils/role-status-utils';
 

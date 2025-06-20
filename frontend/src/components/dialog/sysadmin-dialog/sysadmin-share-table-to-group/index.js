@@ -5,7 +5,7 @@ import { toaster } from 'dtable-ui-component';
 import DtableSharePermissionEditor from '../../../../components/select-editor/dtable-share-permission-editor';
 import GroupSelect from '../../../../components/group-select';
 import SharedToGroupItem from './shared-to-group-item';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';
 

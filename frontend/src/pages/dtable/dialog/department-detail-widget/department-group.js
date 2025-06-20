@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { DTableSearchInput } from 'dtable-ui-component';
 import Loading from '../../../../components/loading';
-import { gettext, isOrgContext } from '../../../../utils/constants';
+import { gettext, isOrgContext } from '../../../../constants/config';
 
 const ItemPropTypes = {
   department: PropTypes.object,

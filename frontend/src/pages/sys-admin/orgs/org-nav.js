@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import { DTableSearchInput } from 'dtable-ui-component';
-import { siteRoot, gettext } from '../../../utils/constants';
+import { siteRoot, gettext } from '../../../constants';
 
 const propTypes = {
   currentItem: PropTypes.string.isRequired,

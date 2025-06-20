@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Utils } from '../../utils/utils';
-import { gettext, siteRoot } from '../../utils/constants';
+import { gettext, siteRoot } from '../../constants';
 
 import '../../css/image-file-view.css';
 

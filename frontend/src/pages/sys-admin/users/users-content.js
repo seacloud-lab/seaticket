@@ -4,7 +4,7 @@ import { Link } from '@gatsbyjs/reach-router';
 import dayjs from '../../../utils/dayjs';
 import { DTableEmptyTip, RoleStatusEditor, toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { isPro, username, gettext, multiInstitution, siteRoot, mediaUrl } from '../../../utils/constants';
+import { isPro, username, gettext, multiInstitution, siteRoot, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import SelectEditor from '../../../components/select-editor/select-editor';

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import SysAdminUserSelect from '../../select-editor/sysadmin-user-select';
 import { DTableModalHeader } from 'dtable-ui-component';
 

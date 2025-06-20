@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { InputGroup, InputGroupText, Input } from 'reactstrap';
-import { mediaUrl } from '../utils/constants';
+import { mediaUrl } from '../constants';
 
 
 let setCoinsPropTypes = {

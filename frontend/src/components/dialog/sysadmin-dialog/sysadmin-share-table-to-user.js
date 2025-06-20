@@ -8,7 +8,7 @@ import DtableSharePermissionEditor from '../../../components/select-editor/dtabl
 import UserInfoPopover from '../../../pages/dtable/dtable-popover/user-info-popover';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { gettext, cloudMode, isOrgContext } from '../../../utils/constants';
+import { gettext, cloudMode, isOrgContext } from '../../../constants';
 
 import '../../../css/invitations.css';
 

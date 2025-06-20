@@ -8,7 +8,7 @@ import OrgNav from './org-nav';
 import OpMenu from './user-op-menu';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
-import { gettext, loginUrl, siteRoot, username, mediaUrl } from '../../../utils/constants';
+import { gettext, loginUrl, siteRoot, username, mediaUrl } from '../../../constants';
 import { getStatusOptions } from '../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 

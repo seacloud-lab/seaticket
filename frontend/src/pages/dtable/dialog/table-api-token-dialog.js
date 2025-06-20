@@ -7,7 +7,7 @@ import DtableSharePermissionEditor from '../../../components/select-editor/dtabl
 import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import DeleteTokenDialog from './delete-token-dialog';
 
 import '../../../css/share-link-dialog.css';

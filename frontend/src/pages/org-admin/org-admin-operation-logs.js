@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { gettext, loginUrl, siteRoot, orgID, mediaUrl } from '../../utils/constants';
+import { gettext, loginUrl, siteRoot, orgID, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import dayjs from '../../utils/dayjs';
 import Loading from '../../components/loading';

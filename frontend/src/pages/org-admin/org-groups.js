@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { siteRoot, gettext, orgID } from '../../utils/constants';
+import { siteRoot, gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
 import OrgGroupInfo from '../../models/org-group';

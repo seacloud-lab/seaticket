@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {

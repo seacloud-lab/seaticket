@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, FormFeedback, FormText } from 'reactstrap';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { seaQAAPI } from '../../../api/web-api';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Input, Col } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { gettext, loginUrl } from '../../../utils/constants';
+import { gettext, loginUrl } from '../../../constants';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
 import Content from './users-content';

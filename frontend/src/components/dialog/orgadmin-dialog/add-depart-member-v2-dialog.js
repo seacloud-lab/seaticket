@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { gettext, orgID } from '../../../utils/constants';
+import { gettext, orgID } from '../../../constants';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 import { Utils } from '../../../utils/utils';
 import UserSelect from '../../user-select';

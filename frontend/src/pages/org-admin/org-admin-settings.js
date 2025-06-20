@@ -7,7 +7,7 @@ import MainPanelTopbar from './main-panel-topbar';
 import Section from '../sys-admin/web-settings/section';
 import CheckboxItem from '../sys-admin/web-settings/checkbox-item';
 import InputItem from '../sys-admin/web-settings/input-item';
-import { gettext, displayTwoFactorAuth, enableOrgLogo } from '../../utils/constants';
+import { gettext, displayTwoFactorAuth, enableOrgLogo } from '../../constants';
 import Loading from '../../components/loading';
 import '../../css/system-admin-web-settings.css';
 import OrgLogoForm from './org-logo-form';

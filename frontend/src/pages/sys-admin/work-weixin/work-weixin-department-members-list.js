@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
-import { siteRoot } from '../../../utils/constants';
+import { siteRoot } from '../../../constants';
 import Loading from '../../../components/loading';
 
 const WorkWeixinDepartmentMembersListPropTypes = {

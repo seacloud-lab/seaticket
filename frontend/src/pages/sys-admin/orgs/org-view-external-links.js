@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard';
 import { Link } from '@gatsbyjs/reach-router';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, mediaUrl, siteRoot } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl, siteRoot } from '../../../constants';
 import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import MainPanelTopbar from '../main-panel-topbar';

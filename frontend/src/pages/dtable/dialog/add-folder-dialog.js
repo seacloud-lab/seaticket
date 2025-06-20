@@ -6,7 +6,7 @@ import {
 } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import isHotkey from 'is-hotkey';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { validateName } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
 

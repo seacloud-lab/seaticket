@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { validateName } from '../../../utils/utils';
 
 import '../../../css/mobile/add-blank-table.css';

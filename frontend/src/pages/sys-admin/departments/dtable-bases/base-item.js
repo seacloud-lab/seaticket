@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Utils } from '../../../../utils/utils';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants';
 import dayjs from '../../../../utils/dayjs';
 import DTableOpMenu from '../../dtables/dtable-op-menu';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';

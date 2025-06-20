@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { RoleStatusEditor, toaster } from 'dtable-ui-component';
-import { gettext, siteRoot, orgID, username } from '../../utils/constants';
+import { gettext, siteRoot, orgID, username } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
 import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext, trashCleanExpireDays, mediaUrl } from '../../../../utils/constants';
+import { gettext, trashCleanExpireDays, mediaUrl } from '../../../../constants/config';
 import MobileCommonHeader from '../mobile-common-header';
 import DeletedGroupBaseItem from './deleted-group-base-item';
 import { DTableEmptyTip } from 'dtable-ui-component';

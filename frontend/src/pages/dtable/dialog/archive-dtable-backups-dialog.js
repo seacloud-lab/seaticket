@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster, DTableEmptyTip, DTableModalHeader } from 'dtable-ui-component';
-import { gettext, mediaUrl } from '../../../utils/constants';
+import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import ModalPortal from '../../../components/modal-portal';

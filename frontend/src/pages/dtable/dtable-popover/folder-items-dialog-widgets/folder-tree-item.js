@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { folderImageSrc } from '../../../../constants/image-source-constants';
 import Rename from '../../../../components/rename';
 import { isEnter } from '../../../../utils/hotkey';

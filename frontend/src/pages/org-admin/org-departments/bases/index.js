@@ -5,7 +5,7 @@ import Loading from '../../../../components/loading';
 import BaseItem from './base-item';
 import { orgAdminServiceApi } from '../../../../api/org-admin-service-api';
 import { Utils } from '../../../../utils/utils';
-import { gettext, orgID } from '../../../../utils/constants';
+import { gettext, orgID } from '../../../../constants';
 
 const propTypes = {
   groupID: PropTypes.string,

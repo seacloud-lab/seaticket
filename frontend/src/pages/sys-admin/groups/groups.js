@@ -5,7 +5,7 @@ import { Button } from 'reactstrap';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
-import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';

@@ -9,7 +9,7 @@ import Department from '../../../models/department';
 import DepartmentGroup from './department-detail-widget/department-group';
 import DepartmentGroupMembers from './department-detail-widget/department-group-members';
 import DepartmentGroupMemberSelected from './department-detail-widget/department-group-member-selected';
-import { enableAddressBookV2, gettext, isOrgContext, username, mediaUrl } from '../../../utils/constants';
+import { enableAddressBookV2, gettext, isOrgContext, username, mediaUrl } from '../../../constants/config';
 import '../../../css/manage-members-dialog.css';
 import '../../../css/group-departments.css';
 

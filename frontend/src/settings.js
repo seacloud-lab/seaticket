@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { toaster } from 'dtable-ui-component';
 import { Utils, isMobile } from './utils/utils';
 import { isWorkWeChat } from './utils/wechat-utils';
-import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from './utils/constants';
+import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from './constants';
 import { seaQAAPI } from './api/web-api';
 import SideNav from './components/user-settings/side-nav';
 import UserAvatarForm from './components/user-settings/user-avatar-form';

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import { Modal, ModalBody, ModalFooter, Input, Button } from 'reactstrap';
 import { Utils } from '../../../utils/utils';

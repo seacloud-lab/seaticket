@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import MediaQuery from 'react-responsive';
 import { seaQAAPI } from '../../../api/web-api';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import SearchResultItem from './search-result-item';
 import { Utils } from '../../../utils/utils';
 import getWorkspaceName from '../utils/get-workspace-name';

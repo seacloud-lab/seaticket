@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';

@@ -20,7 +20,7 @@ import OpMenu from './user-op-menu';
 import Search from '../search';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
-import { isPro, username, gettext, multiInstitution, siteRoot, loginUrl, isShowUint, mediaUrl } from '../../../utils/constants';
+import { isPro, username, gettext, multiInstitution, siteRoot, loginUrl, isShowUint, mediaUrl } from '../../../constants';
 import { getRoleOptions, getStatusOptions, translateStatus } from '../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 

@@ -4,8 +4,9 @@ import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import PasswordInput from './password-input';
 import { seaQAAPI } from '../../../api/web-api';
-import { gettext } from '../../../utils/constants';
-import { Utils, validatePassword } from '../../../utils/utils';
+import { gettext } from '../../../constants';
+import { Utils } from '../../../utils/utils';
+import { isValidPassword } from '../../../utils/validate';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {
@@ -31,7 +32,7 @@ const UserSetPassword = ({ toggle }) => {
       setErrorMessage(gettext('Passwords don\'t match'));
       return;
     }
-    if (!validatePassword(password)) {
+    if (!isValidPassword(password)) {
       setErrorMessage(gettext('Password strength should be strong or very strong'));
       return;
     }

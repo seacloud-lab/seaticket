@@ -12,7 +12,7 @@ import CommonOperationConfirmationDialog from '../../components/dialog/common-op
 import GroupInviteMembersDialog from './dialog/group-invite-members-dialog';
 import { Utils, validateName } from '../../utils/utils';
 import { compareTwoString } from './utils/compare-two-string';
-import { canAddProject, disableAddingPersonalBases } from '../../utils/constants';
+import { canAddProject, disableAddingPersonalBases } from '../../constants/config';
 import DTableWorkspaceMemberDialog from './dialog/dtable-workspace-member-dialog';
 import TransferGroupDialog from './dialog/transfer-group-dialog';
 import AddBaseDropdownMenu from './dtable-dropdown-menu/add-base-dropdown';

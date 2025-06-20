@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {

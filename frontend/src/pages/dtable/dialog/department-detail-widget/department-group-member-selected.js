@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, ModalFooter } from 'reactstrap';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const ItemPropTypes = {
   member: PropTypes.object,

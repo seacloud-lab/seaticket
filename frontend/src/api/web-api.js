@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import cookie from 'react-cookies';
-import { siteRoot } from '../utils/constants';
+import { siteRoot } from '../constants/config';
 
 class SeaQAAPI {
 
@@ -812,21 +812,6 @@ class SeaQAAPI {
     return this.req.post(url, { code: code });
   }
 
-  listSmsMessageTemplates() {
-    let url = this.server + '/api/v2.1/dtable-sms-message/templates/';
-    return this.req.get(url);
-  }
-
-  sendSmsMessage(template_name, phone, msg_dict) {
-    let url = this.server + '/api/v2.1/dtable-sms-message/send/';
-    let data = {
-      'template_name': template_name,
-      'phone': phone,
-      'msg_dict': msg_dict,
-    };
-    return this.req.post(url, data);
-  }
-
   getGroup(groupID) {
     const url = this.server + '/api/v2.1/groups/' + groupID + '/';
     return this.req.get(url);
@@ -1263,11 +1248,6 @@ class SeaQAAPI {
     let form = new FormData();
     form.append('new_contact_email', newContactEmail);
     return this.req.put(url, form);
-  }
-
-  listTemplates() {
-    const url = '/api/v2.1/templates/';
-    return this.req.get(url);
   }
 
   getBaseSharePermission(workspaceId, dtableName) {

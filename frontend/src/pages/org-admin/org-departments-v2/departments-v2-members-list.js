@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Table, Button } from 'reactstrap';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
-import { gettext, siteRoot, mediaUrl } from '../../../utils/constants';
+import { gettext, siteRoot, mediaUrl } from '../../../constants';
 import DepartmentsV2MembersItem from './departments-v2-members-item';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 

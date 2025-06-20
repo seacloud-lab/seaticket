@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 
 const departmentsV2TreeNodePropTypes = {
   node: PropTypes.object,

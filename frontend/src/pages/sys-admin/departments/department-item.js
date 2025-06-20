@@ -4,7 +4,7 @@ import { Link, Router } from '@gatsbyjs/reach-router';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils.js';
 import MainPanelTopbar from '../main-panel-topbar';
-import { siteRoot, gettext } from '../../../utils/constants';
+import { siteRoot, gettext } from '../../../constants';
 import { AddDepartmentOperation, AddMemberOperation } from './common-operations';
 import Bases from './dtable-bases';
 import SubDepartments from './sub-departments';

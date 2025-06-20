@@ -7,7 +7,7 @@ import RenameDepartmentDialog from '../../../components/dialog/org-rename-depart
 import AddNewOrgDepartment from './common-operations/add-new-org-department';
 import GroupItem from './sub-departments/group-item';
 import Loading from '../../../components/loading';
-import { enableAddressBookV2, gettext, orgID } from '../../../utils/constants';
+import { enableAddressBookV2, gettext, orgID } from '../../../constants';
 import MigrateToNewVersionOperation from './common-operations/migrate-to-new-version-operation';
 import { orgAdminServiceApi } from '../../../api/org-admin-service-api';
 

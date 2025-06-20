@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import MainPanelTopbar from '../main-panel-topbar';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
-import { siteRoot, gettext, mediaUrl } from '../../../utils/constants';
+import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import Paginator from '../../../components/paginator';

@@ -4,7 +4,7 @@ import { DragSource } from 'react-dnd';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Utils } from '../../utils/utils';
 import UserInfoPopover from './dtable-popover/user-info-popover';
-import { canAddProject } from '../../utils/constants';
+import { canAddProject } from '../../constants';
 import DTableItem from './dtable-item';
 
 const dragSource = {

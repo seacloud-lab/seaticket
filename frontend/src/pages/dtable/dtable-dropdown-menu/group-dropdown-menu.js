@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { enableAddressBookV2 } from '../../../utils/constants';
+import { enableAddressBookV2 } from '../../../constants/config';
 
 const gettext = window.gettext;
 const { isOrgContext } = window.app.pageOptions;

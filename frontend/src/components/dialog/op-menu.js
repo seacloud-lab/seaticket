@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 
 const propTypes = {

@@ -7,7 +7,7 @@ import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
 import AddInviteLink from './add-invite-link';
 import ShareAddedBtn from './share-add-btn';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { seaQAAPI } from '../../../../api/web-api';
 import DTableShareUtils from './dtable-share-utils';
 

@@ -4,7 +4,7 @@ import { Link } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
 import { RoleStatusEditor, DTableEmptyTip } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { siteRoot, gettext, mediaUrl } from '../../../utils/constants';
+import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';

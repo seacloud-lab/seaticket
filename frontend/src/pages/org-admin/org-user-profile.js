@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { enableUserSetContactEmail, gettext, loginUrl } from '../../utils/constants';
+import { enableUserSetContactEmail, gettext, loginUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import Loading from '../../components/loading';
 import OrgAdminUserNav from '../../components/org-admin-user-nav';

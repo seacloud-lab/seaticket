@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import MobileCommonHeader from '../mobile-common-header';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 
 const propTypes = {
   isShowDeleteBtn: PropTypes.bool,

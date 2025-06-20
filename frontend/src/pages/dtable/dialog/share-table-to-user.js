@@ -9,7 +9,7 @@ import DepartmentDetailDialog from './department-detail-dialog';
 import UserInfoPopover from '../dtable-popover/user-info-popover';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
-import { gettext, cloudMode, isOrgContext } from '../../../utils/constants';
+import { gettext, cloudMode, isOrgContext } from '../../../constants';
 
 import '../../../css/invitations.css';
 

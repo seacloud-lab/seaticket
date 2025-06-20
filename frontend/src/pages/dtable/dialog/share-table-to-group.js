@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { toaster, DTableGroupSelect } from 'dtable-ui-component';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 

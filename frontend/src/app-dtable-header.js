@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from './utils/constants';
+import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from './constants';
 import { isMac } from './utils/utils';
 import { isEnter, isModF } from './utils/hotkey';
 import Account from './components/common/account';

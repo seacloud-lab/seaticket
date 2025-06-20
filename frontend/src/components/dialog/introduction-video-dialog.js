@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import MediaQuery from 'react-responsive';
 import { Modal, ModalBody, Button } from 'reactstrap';
-import { gettext } from '../../utils/constants';
+import { gettext } from '../../constants';
 import VideoPlayer from '../video-player';
 import '../../css/introduction-video-dialog.css';
 

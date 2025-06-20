@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Utils } from '../../../utils/utils';
-import { siteRoot } from '../../../utils/constants';
+import { siteRoot } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';
 import Dirent from '../../../models/system-admin/dirent';
 import GroupNav from './group-nav';

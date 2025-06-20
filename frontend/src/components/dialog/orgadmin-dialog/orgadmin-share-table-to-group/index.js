@@ -6,7 +6,7 @@ import DtableSharePermissionEditor from '../../../select-editor/dtable-share-per
 import GroupSelect from '../../../group-select';
 import SharedToGroupItem from './shared-to-group-item';
 import { orgAdminServiceApi } from '../../../../api/org-admin-service-api';
-import { orgID, gettext } from '../../../../utils/constants';
+import { orgID, gettext } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 
 import '../../../../css/invitations.css';

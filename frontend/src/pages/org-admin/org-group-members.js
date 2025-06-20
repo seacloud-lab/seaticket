@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { gettext, loginUrl, siteRoot } from '../../utils/constants';
+import { gettext, loginUrl, siteRoot } from '../../constants';
 import Loading from '../../components/loading';
 import OrgAdminGroupNav from '../../components/org-admin-group-nav';
 import MainPanelTopbar from './main-panel-topbar';

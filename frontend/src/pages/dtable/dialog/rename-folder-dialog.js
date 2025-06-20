@@ -5,7 +5,7 @@ import {
   Label, Input, Button, Alert,
 } from 'reactstrap';
 import isHotkey from 'is-hotkey';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 function RenameFolderDialog({ folder, closeDialog, onRenameFolder }) {

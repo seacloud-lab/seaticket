@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../../utils/utils';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { seaQAAPI } from '../../../../api/web-api';
 import ModalPortal from '../../../../components/modal-portal';
 import RestoreTableDialog from '../restore-table-dialog';

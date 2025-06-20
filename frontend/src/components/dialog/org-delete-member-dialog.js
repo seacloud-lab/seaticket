@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { gettext, orgID } from '../../utils/constants';
+import { gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';

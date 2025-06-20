@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
-import { appAvatarURL, gettext, siteRoot } from '../../../utils/constants';
+import { appAvatarURL, gettext, siteRoot } from '../../../constants';
 import dayjs from '../../../utils/dayjs';
 import { NOTIFICATION_TYPE } from '../../../constants/notification-constants';
 

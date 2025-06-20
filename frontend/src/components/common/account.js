@@ -5,7 +5,7 @@ import { Utils } from '../../utils/utils';
 import { isEnter, isEsc } from '../../utils/hotkey';
 import { isWorkWeChat } from '../../utils/wechat-utils';
 import { seaQAAPI } from '../../api/web-api';
-import { siteRoot, gettext, appAvatarURL, isOrgContext, canRunPython, useExternalTeamAdmin, enableSeatableAI } from '../../utils/constants';
+import { siteRoot, gettext, appAvatarURL, isOrgContext, canRunPython, useExternalTeamAdmin, enableSeatableAI } from '../../constants';
 
 import '../../css/account-setting-more-popover.css';
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import MainPanelTopBar from '../main-panel-topbar';
 import DTableNav from './dtables-nav';
 import Loading from '../../../components/loading';

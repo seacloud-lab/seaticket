@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import LoadMore from '../../../components/load-more';

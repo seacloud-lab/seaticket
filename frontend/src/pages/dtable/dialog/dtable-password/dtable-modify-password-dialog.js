@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, Button, Label, FormGroup, InputGroup, Input, Alert } from 'reactstrap';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { Utils } from '../../../../utils/utils';
 
 import '../../../../css/dtable-set-password-dialog.css';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../../api/web-api';
-import { loginUrl, gettext, mediaUrl } from '../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../modal-portal';
 import Loading from '../loading';

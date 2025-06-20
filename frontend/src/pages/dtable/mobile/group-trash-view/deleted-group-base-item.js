@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
 import DTableItem from '../../dtable-item';
 import { seaQAAPI } from '../../../../api/web-api';
-import { gettext } from '../../../../utils/constants';
+import { gettext } from '../../../../constants/config';
 import { Utils } from '../../../../utils/utils';
 
 

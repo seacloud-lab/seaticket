@@ -7,7 +7,7 @@ import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import Search from '../search';
 import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { loginUrl, gettext, siteRoot, multiTenancy, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, siteRoot, multiTenancy, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import ModalPortal from '../../../components/modal-portal';
 import Loading from '../../../components/loading';

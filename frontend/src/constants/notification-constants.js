@@ -15,5 +15,4 @@ export const NOTIFICATION_TYPE_ARRAY = [
 export const NOTIFICATION_TAB_TYPES_MAP = {
   USER: 'user',
   BASE: 'base',
-  APP: 'app',
 };

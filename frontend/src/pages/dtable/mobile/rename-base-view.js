@@ -5,7 +5,7 @@ import { List, InputItem } from 'antd-mobile';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
 import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { validateName } from '../../../utils/utils';
 
 const propTypes = {

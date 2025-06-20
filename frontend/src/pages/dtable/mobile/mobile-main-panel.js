@@ -6,7 +6,7 @@ import { Router } from '@gatsbyjs/reach-router';
 import { MainPanelDTables, DTablesInWorkspace } from '../index.js';
 import { seaQAAPI } from '../../../api/web-api';
 import Workspace from '../model/workspace';
-import { gettext, siteRoot } from '../../../utils/constants';
+import { gettext, siteRoot } from '../../../constants';
 import MobileMine from './mobile-mine';
 import MobileHeader from './mobile-header';
 

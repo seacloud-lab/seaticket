@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import isHotkey from 'is-hotkey';
-import { gettext } from '../../../utils/constants';
+import { gettext } from '../../../constants/config';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {

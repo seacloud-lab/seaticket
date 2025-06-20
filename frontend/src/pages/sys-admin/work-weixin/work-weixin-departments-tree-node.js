@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
-import { gettext, isPro } from '../../../utils/constants';
+import { gettext, isPro } from '../../../constants';
 
 const WorkWeixinDepartmentsTreeNodePropTypes = {
   index: PropTypes.number,

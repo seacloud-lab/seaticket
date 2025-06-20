@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, Button, Label, FormGroup, InputGroup, Input, Alert } from 'reactstrap';
-import { gettext, siteRoot, canRemoveBasePasswordViaPhone, hasBoundPhone } from '../../../../utils/constants';
+import { gettext, siteRoot, canRemoveBasePasswordViaPhone, hasBoundPhone } from '../../../../constants/config';
 import { Utils } from '../../../../utils/utils';
 
 import '../../../../css/dtable-set-password-dialog.css';

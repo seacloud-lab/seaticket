@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, loginUrl, mediaUrl } from '../../../utils/constants';
+import { gettext, loginUrl, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { DTableEmptyTip } from 'dtable-ui-component';
 import dayjs from '../../../utils/dayjs';

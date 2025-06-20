@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster, DTableEmptyTip } from 'dtable-ui-component';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
-import { loginUrl, gettext, mediaUrl } from '../../../utils/constants';
+import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import MainPanelTopbar from '../main-panel-topbar';
