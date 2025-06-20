@@ -7,7 +7,7 @@ import MobileCommonHeader from '../mobile-common-header';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../../utils/utils';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import {
   gettext,
   shareLinkExpireDaysMax,
@@ -95,7 +95,7 @@ class AddInviteLink extends React.Component {
       return;
     }
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.createDTableInviteLink(workspace_id, name, invitePermission, password, expireDays).then(res => {
+    seaQAAPI.createDTableInviteLink(workspace_id, name, invitePermission, password, expireDays).then(res => {
       let inviteLink = res.data;
       this.props.addInviteLink(inviteLink);
       this.toggle();

@@ -6,7 +6,7 @@ import { Utils } from '../../../../utils/utils';
 import ShareAddedBtn from './share-add-btn';
 import Loading from '../../../../components/loading';
 import DTableShareUtils from './dtable-share-utils';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import AddShareUser from './add-share-user';
 import { gettext } from '../../../../utils/constants';
 
@@ -29,7 +29,7 @@ class ShareTableToUser extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.listTableShares(workspace_id, name).then((res) => {
+    seaQAAPI.listTableShares(workspace_id, name).then((res) => {
       this.setState({ userList: res.data.user_list, isLoading: false });
     }).catch(error => {
       this.setState({ isLoading: false });
@@ -49,7 +49,7 @@ class ShareTableToUser extends React.Component {
       const name = selectedOptions[i].name;
       const email = selectedOptions[i].email;
       const avatar_url = selectedOptions[i].avatar_url;
-      dtableWebAPI.addTableShare(workspace_id, tableName, email, permission).then((res) => {
+      seaQAAPI.addTableShare(workspace_id, tableName, email, permission).then((res) => {
         let userInfo = {
           name,
           email,
@@ -67,7 +67,7 @@ class ShareTableToUser extends React.Component {
   updateTableShare = (userItem, permission) => {
     const { workspace_id, name } = this.props.currentTable;
     const email = userItem.email;
-    dtableWebAPI.updateTableShare(workspace_id, name, email, permission).then((res) => {
+    seaQAAPI.updateTableShare(workspace_id, name, email, permission).then((res) => {
       let userList = this.state.userList.map(userInfo => {
         if (userInfo.email === email) {
           userInfo.permission = permission;
@@ -83,7 +83,7 @@ class ShareTableToUser extends React.Component {
   deleteTableShare = (userItem) => {
     const { workspace_id, name } = this.props.currentTable;
     const email = userItem.email;
-    dtableWebAPI.deleteTableShare(workspace_id, name, email).then((res) => {
+    seaQAAPI.deleteTableShare(workspace_id, name, email).then((res) => {
       let userList = this.state.userList.filter(userInfo => {
         return userInfo.email !== email;
       });

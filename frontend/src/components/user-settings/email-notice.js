@@ -1,7 +1,7 @@
 import React from 'react';
 import { toaster, DTableRadio } from 'dtable-ui-component';
 import { gettext } from '../../utils/constants';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 
 const {
@@ -49,7 +49,7 @@ class EmailNotice extends React.Component {
   formSubmit = (e) => {
     e.preventDefault();
     const { dtableUpdatesEmailInterval, dtableCollaborateEmailInterval } = this.state;
-    dtableWebAPI.updateEmailNotificationInterval(dtableUpdatesEmailInterval, dtableCollaborateEmailInterval).then((res) => {
+    seaQAAPI.updateEmailNotificationInterval(dtableUpdatesEmailInterval, dtableCollaborateEmailInterval).then((res) => {
       toaster.success(gettext('Email notification updated'));
     }).catch((error) => {
       let errorMsg = Utils.getErrorMsg(error);

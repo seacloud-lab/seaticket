@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
 import DTableItem from '../../dtable-item';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { gettext } from '../../../../utils/constants';
 import { Utils } from '../../../../utils/utils';
 
@@ -17,7 +17,7 @@ function DeletedGroupBaseItem(props) {
     const { name, uuid } = baseItem;
     setLoading(true);
     try {
-      await dtableWebAPI.restoreGroupTrashDTable(uuid, groupID);
+      await seaQAAPI.restoreGroupTrashDTable(uuid, groupID);
       setLoading(false);
       props.restoreDTable(baseItem);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);

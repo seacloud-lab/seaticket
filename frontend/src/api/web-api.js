@@ -3,7 +3,7 @@ import FormData from 'form-data';
 import cookie from 'react-cookies';
 import { siteRoot } from '../utils/constants';
 
-class DTableWebAPI {
+class SeaQAAPI {
 
   init({ server, username, password, token }) {
     this.server = server;
@@ -1661,8 +1661,8 @@ class DTableWebAPI {
 
 }
 
-const dtableWebAPI = new DTableWebAPI();
+const seaQAAPI = new SeaQAAPI();
 const xcsrfHeaders = cookie.load('seaqa_csrftoken');
-dtableWebAPI.initForDTableUsage({ siteRoot, xcsrfHeaders });
+seaQAAPI.initForDTableUsage({ siteRoot, xcsrfHeaders });
 
-export { dtableWebAPI };
+export { seaQAAPI };

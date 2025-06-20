@@ -1,7 +1,7 @@
 import React from 'react';
 import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../utils/constants';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 
 const { avatarURL, csrfToken } = window.app.pageOptions;
@@ -53,7 +53,7 @@ class UserAvatarForm extends React.Component {
     }
 
     // this.form.current.submit();
-    dtableWebAPI.updateUserAvatar(file).then((res) => {
+    seaQAAPI.updateUserAvatar(file).then((res) => {
       this.setState({
         avatarSrc: res.data.avatar_url
       });

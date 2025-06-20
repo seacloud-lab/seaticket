@@ -3,7 +3,7 @@ import { Popover } from 'reactstrap';
 import { gettext } from '../../../utils/constants';
 import PropTypes from 'prop-types';
 import Loading from '../../../components/loading';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import User from '../model/user';
 import '../../../css/user-info-popover.css';
 
@@ -28,7 +28,7 @@ class UserInfoPopOver extends React.Component {
       if (!this.state.userInfo) {
         this.setState({ isLoading: true });
         let userEmail = nextProps.userEmail;
-        dtableWebAPI.getUserCommonInfo(userEmail).then(res => {
+        seaQAAPI.getUserCommonInfo(userEmail).then(res => {
           const userInfo = new User(res.data);
           this.setState({ userInfo: userInfo, isLoading: false });
         }).catch(error => {

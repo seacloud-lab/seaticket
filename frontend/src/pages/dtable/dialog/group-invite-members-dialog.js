@@ -4,7 +4,7 @@ import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 
 import '../../../css/group-invite-members-dialog.css';
@@ -28,7 +28,7 @@ class GroupInviteMembersDialog extends React.Component {
   }
 
   listInviteLinks = () => {
-    dtableWebAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
+    seaQAAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
       this.setState({ inviteList: res.data.group_invite_link_list });
     }).catch(error => {
       this.onError(error);
@@ -36,7 +36,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   addInviteLink = () => {
-    dtableWebAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
+    seaQAAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);
@@ -44,7 +44,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   deleteLink = (token) => {
-    dtableWebAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
+    seaQAAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);

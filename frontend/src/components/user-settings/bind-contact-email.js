@@ -4,7 +4,7 @@ import { toaster } from 'dtable-ui-component';
 import { enableUserSetContactEmail, gettext } from '../../utils/constants';
 import ModalPortal from '../modal-portal';
 import SetContactEmailDialog from '../dialog/set-contact-email-dialog';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 
 
@@ -26,7 +26,7 @@ class BindContactEmail extends React.Component {
   };
 
   onBind = (newContactEmail, cb) => {
-    dtableWebAPI.bindContactEmail(newContactEmail).then(res => {
+    seaQAAPI.bindContactEmail(newContactEmail).then(res => {
       toaster.success(gettext('An email has been sent to the new email address. Please click the confirmation link in the email.'));
       this.onToggleContactDialog();
     }).catch(error => {

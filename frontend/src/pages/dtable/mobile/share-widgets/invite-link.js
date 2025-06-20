@@ -8,7 +8,7 @@ import { Utils } from '../../../../utils/utils';
 import AddInviteLink from './add-invite-link';
 import ShareAddedBtn from './share-add-btn';
 import { gettext } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import DTableShareUtils from './dtable-share-utils';
 
 const Item = List.Item;
@@ -31,7 +31,7 @@ class InviteLink extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.getDTableInviteLink(workspace_id, name).then(res => {
+    seaQAAPI.getDTableInviteLink(workspace_id, name).then(res => {
       let inviteLinks = res.data.dtable_share_links;
       this.setState({
         inviteLinks: inviteLinks,
@@ -68,7 +68,7 @@ class InviteLink extends React.Component {
   };
 
   deleteInviteLink = (inviteLink) => {
-    dtableWebAPI.deleteDTableInviteLink(inviteLink.token).then(() => {
+    seaQAAPI.deleteDTableInviteLink(inviteLink.token).then(() => {
       let { inviteLinks } = this.state;
       inviteLinks = inviteLinks.filter((item) => {
         return item.token !== inviteLink.token;

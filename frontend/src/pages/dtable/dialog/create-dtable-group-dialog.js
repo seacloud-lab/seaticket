@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Modal, ModalBody, ModalFooter, Input, Button } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -48,7 +48,7 @@ class CreateDtableGroupDialog extends React.Component {
   handleSubmit = () => {
     let name = this.state.groupName.trim();
     if (name) {
-      dtableWebAPI.createGroup(name).then((res) => {
+      seaQAAPI.createGroup(name).then((res) => {
         this.props.onCreateGroup();
       }).catch((error) => {
         let errMsg = Utils.getErrorMsg(error, true);

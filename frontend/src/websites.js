@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { dtableWebAPI } from './api/dtable-web-api';
+import { seaQAAPI } from './api/web-api';
 import { gettext, mediaUrl } from './utils/constants';
 import { Utils } from './utils/utils';
 import { DTableEmptyTip, toaster } from 'dtable-ui-component';
@@ -210,7 +210,7 @@ class WebsitesView extends React.Component {
   }
 
   getWebsiteListByPage = (page) => {
-    dtableWebAPI.listWebsites(workspaceID, projectName, page, this.state.perPage).then((res) => {
+    seaQAAPI.listWebsites(workspaceID, projectName, page, this.state.perPage).then((res) => {
       this.setState({
         loading: false,
         websiteList: res.data.website_list,
@@ -239,7 +239,7 @@ class WebsitesView extends React.Component {
   };
 
   deleteWebsite = (wesiteID) => {
-    dtableWebAPI.deleteWebsite(workspaceID, projectName, wesiteID).then(res => {
+    seaQAAPI.deleteWebsite(workspaceID, projectName, wesiteID).then(res => {
       let newWebsiteList = this.state.websiteList.filter(item => {
         return item.id !== wesiteID;
       });
@@ -254,7 +254,7 @@ class WebsitesView extends React.Component {
   };
 
   createWebsite = (websiteUrl, websiteSiteMapUrl) => {
-    dtableWebAPI.createWebsite(workspaceID, projectName, websiteUrl, websiteSiteMapUrl).then(res => {
+    seaQAAPI.createWebsite(workspaceID, projectName, websiteUrl, websiteSiteMapUrl).then(res => {
       let newWebsiteList = this.state.websiteList;
       newWebsiteList.unshift(res.data.website);
       this.setState({

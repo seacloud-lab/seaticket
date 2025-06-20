@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Label } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 import { gettext } from '../utils/constants';
 import { Utils } from '../utils/utils';
 
@@ -54,8 +54,8 @@ class SendLink extends React.Component {
 
     const { token, linkType } = this.props;
     const request = linkType == 'uploadLink' ?
-      dtableWebAPI.sendUploadLink(token, emails.trim(), msg.trim()) :
-      dtableWebAPI.sendShareLink(token, emails.trim(), msg.trim());
+      seaQAAPI.sendUploadLink(token, emails.trim(), msg.trim()) :
+      seaQAAPI.sendShareLink(token, emails.trim(), msg.trim());
     request.then((res) => {
       this.props.closeShareDialog();
       const { success, failed } = res.data;

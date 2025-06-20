@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/async';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api.js';
 import { gettext, enableShowIDInOrgWhenSearchUser } from '../utils/constants';
 import { Utils } from '../utils/utils.js';
 import { UserSelectStyle } from 'dtable-ui-component/lib/DTableSelect/utils';
@@ -50,7 +50,7 @@ class UserSelect extends React.Component {
   loadOptions = (input, callback) => {
     const value = input.trim();
     if (value.length > 0) {
-      dtableWebAPI.searchUsers(value).then((res) => {
+      seaQAAPI.searchUsers(value).then((res) => {
         this.options = [];
         for (let i = 0 ; i < res.data.users.length; i++) {
           const item = res.data.users[i];

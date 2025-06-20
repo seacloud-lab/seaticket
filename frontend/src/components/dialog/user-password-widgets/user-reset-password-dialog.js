@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Input, Label, Button, Form, FormGroup, Alert } from 'reactstrap';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import PasswordInput from './password-input';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { gettext, loginUrl } from '../../../utils/constants';
 import { Utils, validatePassword } from '../../../utils/utils';
 
@@ -69,7 +69,7 @@ class UserResetPassword extends React.Component {
   onSendCode = (e) => {
     e.preventDefault();
     let { bindPhone } = this.props;
-    dtableWebAPI.sendVerifyCode(bindPhone, 'reset_password').then((res) => {
+    seaQAAPI.sendVerifyCode(bindPhone, 'reset_password').then((res) => {
       this.setState({
         isVerifyCodeRequired: true,
         isSendCodeAvailable: false,
@@ -107,7 +107,7 @@ class UserResetPassword extends React.Component {
       return;
     }
 
-    dtableWebAPI.resetPasswordByPhone(bindPhone, inputVerifyCode, newPassword, confirmPassword).then((res) => {
+    seaQAAPI.resetPasswordByPhone(bindPhone, inputVerifyCode, newPassword, confirmPassword).then((res) => {
       if (this.timer) {
         clearInterval(this.timer);
       }

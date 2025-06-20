@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import User from '../model/user';
 import { gettext } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
@@ -125,7 +125,7 @@ export default class DTableWorkspaceDepartmentV2MemberDialog extends React.Compo
 
   async componentDidMount() {
     try {
-      const res = await dtableWebAPI.getAddressBookV2DepartmentGroupMembersCount(this.props.workspace.group_id);
+      const res = await seaQAAPI.getAddressBookV2DepartmentGroupMembersCount(this.props.workspace.group_id);
       this.setState({ count: res.data.count });
       await this.getMembersAndSubDepartments(this.props.workspace.department_id);
       this.setState({ isLoading: false });
@@ -154,9 +154,9 @@ export default class DTableWorkspaceDepartmentV2MemberDialog extends React.Compo
       if (targetDep && targetDep.members && targetDep.sub_departments) {
         return;
       }
-      let res = await dtableWebAPI.listAddressBookV2DepartmentMembers(department_id);
+      let res = await seaQAAPI.listAddressBookV2DepartmentMembers(department_id);
       const members = res.data.member_list;
-      res = await dtableWebAPI.listAddressBookV2SubDepartments(department_id);
+      res = await seaQAAPI.listAddressBookV2SubDepartments(department_id);
       const subDepartments = res.data.department_list;
       targetDep.members = members;
       targetDep.sub_departments = subDepartments.map(item => {

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { loginUrl, gettext, mediaUrl } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../modal-portal';
@@ -78,7 +78,7 @@ class Item extends Component {
   onLogOutSession = () => {
     const item = this.props.item;
     const { session_id, user_name } = item;
-    dtableWebAPI.logOutSession(session_id).then(() => {
+    seaQAAPI.logOutSession(session_id).then(() => {
       this.props.logOutSession(item);
       const msg = gettext('Successfully log out {name}.').replace('{name}', user_name);
       toaster.success(msg);
@@ -92,7 +92,7 @@ class Item extends Component {
   onDeleteSession = () => {
     const item = this.props.item;
     const { session_id } = item;
-    dtableWebAPI.deleteSession(session_id).then(() => {
+    seaQAAPI.deleteSession(session_id).then(() => {
       this.props.deleteSession(item);
       const msg = gettext('Deleted 1 item.');
       toaster.success(msg);
@@ -272,7 +272,7 @@ class LoggedInSessions extends Component {
   }
 
   listSessions = () => {
-    dtableWebAPI.listSessions().then((res) => {
+    seaQAAPI.listSessions().then((res) => {
       this.setState({
         loading: false,
         sessions: res.data.sessions,

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DTableGroupSelect, toaster } from 'dtable-ui-component';
 import { Button, Modal, ModalBody, Alert } from 'reactstrap';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -20,7 +20,7 @@ class DatasetAccessGroupDialog extends React.Component {
 
   componentDidMount() {
     let { publishGroupId } = this.props;
-    dtableWebAPI.listDatasetAccessibleGroups(this.props.datasetId).then(res => {
+    seaQAAPI.listDatasetAccessibleGroups(this.props.datasetId).then(res => {
       this.setState({
         accessGroupList: res.data.accessible_group_list
       });
@@ -28,7 +28,7 @@ class DatasetAccessGroupDialog extends React.Component {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-    dtableWebAPI.listShareableGroups().then((res) => {
+    seaQAAPI.listShareableGroups().then((res) => {
       for (let i = 0 ; i < res.data.length; i++) {
         let obj = {};
         obj.value = res.data[i].name;
@@ -69,7 +69,7 @@ class DatasetAccessGroupDialog extends React.Component {
 
   addGroup = () => {
     let groupIdList = this.state.selectedGroups.map(selectedGroup => selectedGroup.id);
-    dtableWebAPI.addDatasetAccessibleGroup(this.props.datasetId, groupIdList).then(res => {
+    seaQAAPI.addDatasetAccessibleGroup(this.props.datasetId, groupIdList).then(res => {
       const { success_list, failed_list } = res.data;
       let failedGroups = [];
       if (failed_list.length > 0) {
@@ -105,7 +105,7 @@ class DatasetAccessGroupDialog extends React.Component {
   };
 
   deleteGroup = (groupID) => {
-    dtableWebAPI.deleteDatasetAccessibleGroup(this.props.datasetId, groupID).then(res => {
+    seaQAAPI.deleteDatasetAccessibleGroup(this.props.datasetId, groupID).then(res => {
       this.setState({
         accessGroupList: this.state.accessGroupList.filter(group => group.group_id !== groupID)
       });

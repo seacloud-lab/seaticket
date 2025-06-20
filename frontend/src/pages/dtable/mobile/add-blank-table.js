@@ -6,7 +6,7 @@ import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
 import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { validateName } from '../../../utils/utils';
 
 import '../../../css/mobile/add-blank-table.css';
@@ -31,13 +31,13 @@ class AddBlankTable extends React.Component {
 
   componentDidMount() {
     let options = [];
-    dtableWebAPI.getAccountInfo().then((res) => {
+    seaQAAPI.getAccountInfo().then((res) => {
       let obj = {};
       obj.value = 'personal';
       obj.email = res.data.email;
       obj.label = 'personal';
       options.push(obj);
-      dtableWebAPI.listGroups().then((res) => {
+      seaQAAPI.listGroups().then((res) => {
         for (let i = 0 ; i < res.data.length; i++) {
           let obj = {};
           obj.value = res.data[i].name;

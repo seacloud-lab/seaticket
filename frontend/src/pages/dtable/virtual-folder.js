@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import { folderImageSrc } from '../../constants/image-source-constants';
 import Rename from '../../components/rename';
@@ -25,7 +25,7 @@ class VirtualFolder extends React.Component {
     const { currentWorkspace } = this.props;
     if (currentWorkspace) {
       // default folder
-      dtableWebAPI.createFolder(currentWorkspace.id, folderName).then((res) => {
+      seaQAAPI.createFolder(currentWorkspace.id, folderName).then((res) => {
         let newFolder = new Folder(res.data.folder);
         this.props.createBlankFolder(newFolder);
       }).catch((error) => {
@@ -35,7 +35,7 @@ class VirtualFolder extends React.Component {
     }
     // folder in share with me, no currentWorkspace
     else {
-      dtableWebAPI.createShareFolder(folderName).then((res) => {
+      seaQAAPI.createShareFolder(folderName).then((res) => {
         let newFolder = new ShareFolder(res.data.folder);
         this.props.createBlankFolder(newFolder);
       }).catch((error) => {

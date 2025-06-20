@@ -4,7 +4,7 @@ import { Button } from 'reactstrap';
 import { toaster, DTableGroupSelect } from 'dtable-ui-component';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 
 import '../../../css/invitations.css';
@@ -104,7 +104,7 @@ class ShareTableToGroup extends React.Component {
   componentDidMount() {
     let { srcGroupID } = this.props;
     let { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.listGroups(true).then((res) => {
+    seaQAAPI.listGroups(true).then((res) => {
       let groups = res.data.filter(item => {
         return item.id !== srcGroupID;
       }).map(item => {
@@ -115,7 +115,7 @@ class ShareTableToGroup extends React.Component {
         };
       });
       this.setState({ groups: groups });
-      return dtableWebAPI.listTableGroupShares(workspace_id, name);
+      return seaQAAPI.listTableGroupShares(workspace_id, name);
     }).then((res) => {
       this.setState({ groupShares: res.data.dtable_group_share_list });
     }).catch(error => {
@@ -133,7 +133,7 @@ class ShareTableToGroup extends React.Component {
     const { currentTable, srcGroupID, groupName } = this.props;
     let { workspace_id, name: tableName } = currentTable;
     const groupIDs = selectedOptions.map(item => item.id);
-    dtableWebAPI.addTableGroupShare(workspace_id, tableName, groupIDs, permission).then((res) => {
+    seaQAAPI.addTableGroupShare(workspace_id, tableName, groupIDs, permission).then((res) => {
       let groupShares = this.state.groupShares.slice();
       const { success: successGroupShares, failed: failedGroupShares } = res.data;
       if (failedGroupShares.length > 0) {
@@ -174,7 +174,7 @@ class ShareTableToGroup extends React.Component {
 
   updateTableShare = (groupID, permission) => {
     let { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
+    seaQAAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.map((item) => {
         if (item.group_id === groupID) {
@@ -190,7 +190,7 @@ class ShareTableToGroup extends React.Component {
 
   deleteTableShare = (groupID) => {
     let { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.deleteTableGroupShare(workspace_id, name, groupID).then(() => {
+    seaQAAPI.deleteTableGroupShare(workspace_id, name, groupID).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.filter((item) => {return item.group_id !== groupID;});
       this.setState({ groupShares: groupShares });

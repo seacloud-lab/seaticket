@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import Base from './model/base';
 import { Utils, validateName } from '../../utils/utils';
 import DTableItem from './dtable-item';
@@ -32,13 +32,13 @@ class VirtualDtable extends React.Component {
 
   componentDidMount() {
     let baseCreated = [];
-    dtableWebAPI.getAccountInfo().then((res) => {
+    seaQAAPI.getAccountInfo().then((res) => {
       let obj = {};
       obj.value = 'personal';
       obj.email = res.data.email;
       obj.label = 'Personal';
       baseCreated.push(obj);
-      dtableWebAPI.listGroups().then((res) => {
+      seaQAAPI.listGroups().then((res) => {
         for (let i = 0 ; i < res.data.length; i++) {
           let obj = {};
           obj.value = res.data[i].id;
@@ -80,7 +80,7 @@ class VirtualDtable extends React.Component {
         }
       }
     }
-    dtableWebAPI.createProject(response.message, email, dtableIcon, dtableColor, null, folderID).then((res) => {
+    seaQAAPI.createProject(response.message, email, dtableIcon, dtableColor, null, folderID).then((res) => {
       let newProject = new Base(res.data.project);
       this.props.createBlankTable(newProject);
     }).catch((error) => {

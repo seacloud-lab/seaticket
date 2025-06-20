@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import PasswordInput from './password-input';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../utils/constants';
 import { Utils, validatePassword } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -45,7 +45,7 @@ const UserUpdatePassword = ({ toggle }) => {
     }
     setErrorMessage('');
     setCanSubmit(false);
-    dtableWebAPI.resetPassword(currentPassword, newPassword).then(() => {
+    seaQAAPI.resetPassword(currentPassword, newPassword).then(() => {
       toaster.success(gettext('Password updated'));
       toggle();
     }).catch(error => {

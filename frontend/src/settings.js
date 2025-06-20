@@ -4,7 +4,7 @@ import { toaster } from 'dtable-ui-component';
 import { Utils, isMobile } from './utils/utils';
 import { isWorkWeChat } from './utils/wechat-utils';
 import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from './utils/constants';
-import { dtableWebAPI } from './api/dtable-web-api';
+import { seaQAAPI } from './api/web-api';
 import SideNav from './components/user-settings/side-nav';
 import UserAvatarForm from './components/user-settings/user-avatar-form';
 import UserBasicInfoForm from './components/user-settings/user-basic-info-form';
@@ -85,7 +85,7 @@ class Settings extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.getUserInfo().then((res) => {
+    seaQAAPI.getUserInfo().then((res) => {
       this.setState({
         userInfo: res.data,
         contactEmail: res.data.contact_email
@@ -97,7 +97,7 @@ class Settings extends React.Component {
   }
 
   updateUserInfo = (data) => {
-    dtableWebAPI.updateUserInfo(data).then((res) => {
+    seaQAAPI.updateUserInfo(data).then((res) => {
       this.setState({ userInfo: res.data });
       toaster.success(gettext('User info updated'));
     }).catch((error) => {

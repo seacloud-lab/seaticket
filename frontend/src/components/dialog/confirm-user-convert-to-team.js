@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext, siteRoot } from '../../utils/constants';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
 
@@ -18,7 +18,7 @@ class ConfirmUserConvertToTeam extends Component {
   }
 
   confirm = () => {
-    dtableWebAPI.userConvertToTeam().then((res) => {
+    seaQAAPI.userConvertToTeam().then((res) => {
       toaster.success(gettext('Converted to team account'));
       window.location.href = siteRoot + 'org/orgmanage/';
     }).catch(error => {

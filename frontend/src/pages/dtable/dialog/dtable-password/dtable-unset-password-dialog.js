@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Label, InputGroup, Input, Alert, Col } from 'reactstrap';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { gettext, canRemoveBasePasswordViaPhone, hasBoundPhone } from '../../../../utils/constants';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import { Utils } from '../../../../utils/utils';
 
 import '../../../../css/dtable-set-password-dialog.css';
@@ -66,7 +66,7 @@ class DTableUnsetPasswordDialog extends React.Component {
   onSendCode = () => {
     this.setState({ errorInfo: '' });
     const smsType = 'dtable_unset_password';
-    dtableWebAPI.sendVerifyCode(null, smsType).then((res) => {
+    seaQAAPI.sendVerifyCode(null, smsType).then((res) => {
       this.setState({
         isVerifyCodeRequired: true,
         isSendCodeAvailable: false,

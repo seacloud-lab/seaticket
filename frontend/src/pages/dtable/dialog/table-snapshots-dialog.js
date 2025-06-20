@@ -5,7 +5,7 @@ import { Modal, ModalBody } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import LoadMore from '../../../components/load-more';
 import SnapshotRestoreDialog from './snapshot-restore-dialog';
@@ -42,7 +42,7 @@ class TableSnapshotsDialog extends React.Component {
 
   loadSnapshots = (page, perPage) => {
     let { workspace, dtable } = this.props;
-    dtableWebAPI.listDTableSnapshots(workspace.id, dtable.name, page, perPage).then((res) => {
+    seaQAAPI.listDTableSnapshots(workspace.id, dtable.name, page, perPage).then((res) => {
       let snapshots = this.state.snapshots.slice(0);
       snapshots = snapshots.concat(res.data.snapshot_list);
       this.setState({
@@ -86,7 +86,7 @@ class TableSnapshotsDialog extends React.Component {
   restoreSnapshot = (snapshotName, password, backupVersion) => {
     let { workspace, dtable } = this.props;
     let { currentSnapshot } = this.state;
-    dtableWebAPI.restoreDTableSnapshot(workspace.id, dtable.name, currentSnapshot.commit_id, snapshotName, password.trim(), backupVersion).then(res => {
+    seaQAAPI.restoreDTableSnapshot(workspace.id, dtable.name, currentSnapshot.commit_id, snapshotName, password.trim(), backupVersion).then(res => {
       this.props.onAddDTable(res.data.dtable);
       toaster.success(gettext('Snapshot restored'));
       this.toggleSnapshotRestore();

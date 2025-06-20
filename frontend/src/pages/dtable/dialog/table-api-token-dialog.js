@@ -4,7 +4,7 @@ import copy from 'copy-to-clipboard';
 import { Modal, ModalBody, Button, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../utils/constants';
@@ -157,7 +157,7 @@ class APITokenListContent extends React.Component {
   };
 
   listAPITokens = () => {
-    dtableWebAPI.listTableAPITokens(this.workspaceID, this.tableName).then((res) => {
+    seaQAAPI.listTableAPITokens(this.workspaceID, this.tableName).then((res) => {
       this.setState({
         apiTokenList: res.data.api_tokens,
         loading: false,
@@ -198,7 +198,7 @@ class APITokenListContent extends React.Component {
     });
     const { appName, permission, apiTokenList } = this.state;
 
-    dtableWebAPI.addTableAPIToken(this.workspaceID, this.tableName, appName, permission).then((res) => {
+    seaQAAPI.addTableAPIToken(this.workspaceID, this.tableName, appName, permission).then((res) => {
       apiTokenList.push(res.data);
       this.setState({
         apiTokenList: apiTokenList,
@@ -218,7 +218,7 @@ class APITokenListContent extends React.Component {
   };
 
   deleteAPIToken = (appName) => {
-    dtableWebAPI.deleteTableAPIToken(this.workspaceID, this.tableName, appName).then((res) => {
+    seaQAAPI.deleteTableAPIToken(this.workspaceID, this.tableName, appName).then((res) => {
       const apiTokenList = this.state.apiTokenList.filter(item => {
         return item.app_name !== appName;
       });
@@ -235,7 +235,7 @@ class APITokenListContent extends React.Component {
   };
 
   updateAPIToken = (appName, permission) => {
-    dtableWebAPI.updateTableAPIToken(this.workspaceID, this.tableName, appName, permission).then((res) => {
+    seaQAAPI.updateTableAPIToken(this.workspaceID, this.tableName, appName, permission).then((res) => {
       let userList = this.state.apiTokenList.filter(item => {
         if (item.app_name === appName) {
           item.permission = permission;

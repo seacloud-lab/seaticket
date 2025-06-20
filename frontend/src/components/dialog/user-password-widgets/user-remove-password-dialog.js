@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
 
@@ -14,7 +14,7 @@ const propTypes = {
 const UserRemovePassword = ({ toggle }) => {
 
   const removePassword = () => {
-    dtableWebAPI.removePassword().then(() => {
+    seaQAAPI.removePassword().then(() => {
       toaster.success(gettext('Password removed'));
       location.reload();
       this.props.toggle();

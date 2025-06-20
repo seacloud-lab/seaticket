@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '../../../utils/constants';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, FormFeedback, FormText } from 'reactstrap';
 import { toaster, DTableModalHeader } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';
 import DeleteConfirmDialog from '../../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';
@@ -149,7 +149,7 @@ class WebhookDialog extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.getDTableWebhooks(this.workspaceID, this.name).then(res => {
+    seaQAAPI.getDTableWebhooks(this.workspaceID, this.name).then(res => {
       this.setState({
         webhookList: res.data.webhook_list,
         loading: false
@@ -224,7 +224,7 @@ class WebhookDialog extends React.Component {
       return;
     }
     let { nestedUrl, nestedSecret } = this.state;
-    dtableWebAPI.createDTableWebhook(this.workspaceID, this.name, nestedUrl, nestedSecret).then(res => {
+    seaQAAPI.createDTableWebhook(this.workspaceID, this.name, nestedUrl, nestedSecret).then(res => {
       let webhook = res.data.webhook;
       let webhookList = this.state.webhookList.slice();
       webhookList.push(webhook);
@@ -245,7 +245,7 @@ class WebhookDialog extends React.Component {
   };
 
   deleteWebhook = (webhook, cb) => {
-    dtableWebAPI.deleteDTableWebhook(this.workspaceID, this.name, webhook.id).then(() => {
+    seaQAAPI.deleteDTableWebhook(this.workspaceID, this.name, webhook.id).then(() => {
       let webhookList = this.state.webhookList.slice();
       webhookList = webhookList.filter((item) => {
         return item.id !== webhook.id;
@@ -279,7 +279,7 @@ class WebhookDialog extends React.Component {
       url: nestedUrl,
       secret: nestedSecret
     };
-    dtableWebAPI.updateDTableWebhook(this.workspaceID, this.name, updateWebhook.id, updates).then(res => {
+    seaQAAPI.updateDTableWebhook(this.workspaceID, this.name, updateWebhook.id, updates).then(res => {
       let webhookList = this.state.webhookList.slice();
       webhookList = webhookList.map(item => {
         if (item.id !== updateWebhook.id) {

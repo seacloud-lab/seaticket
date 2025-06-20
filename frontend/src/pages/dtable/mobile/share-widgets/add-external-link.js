@@ -7,7 +7,7 @@ import MobileCommonHeader from '../mobile-common-header';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../../utils/utils';
-import { dtableWebAPI } from '../../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../../api/web-api';
 import {
   gettext,
   shareLinkExpireDaysMax,
@@ -95,7 +95,7 @@ class AddExternalLink extends React.Component {
     }
     const { workspace_id, name } = this.props.currentTable;
     customToken = radioCheckName === 'customize' ? customToken : '';
-    dtableWebAPI.createDTableExternalLink(workspace_id, name, customToken, password, expireDays).then(res => {
+    seaQAAPI.createDTableExternalLink(workspace_id, name, customToken, password, expireDays).then(res => {
       let externalLink = res.data;
       this.props.addExternalLink(externalLink);
       this.toggle();

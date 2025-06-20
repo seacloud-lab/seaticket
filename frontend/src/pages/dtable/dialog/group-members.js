@@ -4,7 +4,7 @@ import { Table } from 'reactstrap';
 import { RoleStatusEditor, toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
 import { gettext, username } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { getRoleOptions } from '../../../utils/role-status-utils';
 
 const propTypes = {
@@ -80,7 +80,7 @@ class Member extends React.PureComponent {
 
   onChangeUserRole = (role) => {
     let isAdmin = role === 'Admin' ? 'True' : 'False';
-    dtableWebAPI.setGroupAdmin(this.props.groupID, this.props.memberItem.email, isAdmin).then((res) => {
+    seaQAAPI.setGroupAdmin(this.props.groupID, this.props.memberItem.email, isAdmin).then((res) => {
       this.props.changeMember(res.data);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
@@ -95,7 +95,7 @@ class Member extends React.PureComponent {
 
   deleteMember = (name) => {
     const { memberItem } = this.props;
-    dtableWebAPI.deleteGroupMember(this.props.groupID, name).then((res) => {
+    seaQAAPI.deleteGroupMember(this.props.groupID, name).then((res) => {
       this.props.deleteMember(memberItem);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);

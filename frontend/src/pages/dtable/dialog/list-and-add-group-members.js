@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { DTableSearchInput, toaster } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
 import { cloudMode, gettext, isOrgContext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import UserSelect from '../../../components/user-select';
 import GroupMembers from './group-members';
 
@@ -49,7 +49,7 @@ class ListAndAddGroupMembers extends React.Component {
     for (let i = 0; i < this.state.selectedOption.length; i++) {
       emails.push(this.state.selectedOption[i].email);
     }
-    dtableWebAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
+    seaQAAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
       this.props.loadWorkspaceList();
       const newMembers = res.data.success;
       this.setState({
@@ -71,7 +71,7 @@ class ListAndAddGroupMembers extends React.Component {
   };
 
   listGroupMembers = () => {
-    dtableWebAPI.listGroupMembers(this.props.groupID).then((res) => {
+    seaQAAPI.listGroupMembers(this.props.groupID).then((res) => {
       this.setState({
         groupMembers: res.data
       });

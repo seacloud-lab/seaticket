@@ -8,7 +8,7 @@ import { Utils } from '../../../utils/utils';
 import Loading from '../../../components/loading';
 import ExternalLink from './share-widgets/external-link';
 import InviteLink from './share-widgets/invite-link';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import { gettext, cloudMode, isOrgContext } from '../../../utils/constants';
 
 import '../../../css/mobile/mobile-share-table.css';
@@ -31,7 +31,7 @@ class MobileShareTable extends Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentTable;
-    dtableWebAPI.getSharePermissions(workspace_id, name).then((res) => {
+    seaQAAPI.getSharePermissions(workspace_id, name).then((res) => {
       const customSharePermissions = res.data.permission_list;
       this.setState({ customSharePermissions, isLoading: false });
     }).catch(error => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../utils/constants';
-import { dtableWebAPI } from '../api/dtable-web-api';
+import { seaQAAPI } from '../api/web-api';
 import '../css/system-notification.css';
 
 const propTypes = {
@@ -20,7 +20,7 @@ class SystemUserNotificationItem extends React.Component {
 
   close = () => {
     this.setState({ isClosed: true });
-    dtableWebAPI.setSysUserNotificationToSeen(this.props.notificationID);
+    seaQAAPI.setSysUserNotificationToSeen(this.props.notificationID);
   };
 
   render() {

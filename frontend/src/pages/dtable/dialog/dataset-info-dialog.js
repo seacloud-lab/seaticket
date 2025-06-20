@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../../utils/constants';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Loading from '../../../components/loading';
 import { Utils } from '../../../utils/utils';
 import { DTableModalHeader } from 'dtable-ui-component';
@@ -25,7 +25,7 @@ class DatasetInfoDialog extends React.Component {
   }
 
   componentDidMount() {
-    dtableWebAPI.getCommonDatasetInfo(this.props.dataset.id).then(res => {
+    seaQAAPI.getCommonDatasetInfo(this.props.dataset.id).then(res => {
       const { data: { dataset_info: datasetInfo } } = res;
       const { import_groups: importGroups } = datasetInfo;
       const importDtables = this.getImportTables(importGroups);

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import ObjectUtils from '../../utils/object-utils';
 import DTableItemStarred from './dtable-item-starred';
@@ -48,7 +48,7 @@ class DTableWorkspaceStarred extends React.Component {
   };
 
   unstarProject = (project) => {
-    dtableWebAPI.unstarProject(project.uuid).then(() => {
+    seaQAAPI.unstarProject(project.uuid).then(() => {
       this.props.onUnstarDTable(project);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);

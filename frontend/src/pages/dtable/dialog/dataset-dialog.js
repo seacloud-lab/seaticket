@@ -4,7 +4,7 @@ import { Modal, ModalBody } from 'reactstrap';
 import Loading from '../../../components/loading';
 import { DTableModalHeader } from 'dtable-ui-component';
 import { Utils } from '../../../utils/utils';
-import { dtableWebAPI } from '../../../api/dtable-web-api';
+import { seaQAAPI } from '../../../api/web-api';
 import Records from './dataset-widgets/records';
 import UserService from '../../../utils/user-service';
 
@@ -53,7 +53,7 @@ class DatasetDialog extends React.Component {
     if (!dataset || !dataset.id) return;
     const { page, limit } = this;
     const start = (page - 1) * limit;
-    dtableWebAPI.getCommonDataset(dataset.id, start, limit).then(res => {
+    seaQAAPI.getCommonDataset(dataset.id, start, limit).then(res => {
       const { columns, rows, related_user_list } = res.data;
       rows.forEach(row => {
         this.rowsMap[row._id] = row;

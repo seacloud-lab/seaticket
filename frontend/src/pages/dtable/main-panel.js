@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Router } from '@gatsbyjs/reach-router';
 import { MainPanelDTables, DTablesInWorkspace } from './index';
-import { dtableWebAPI } from '../../api/dtable-web-api';
+import { seaQAAPI } from '../../api/web-api';
 import Workspace from './model/workspace';
 
 import '../../css/dtable-search.css';
@@ -30,7 +30,7 @@ class MainPanel extends React.Component {
   }
 
   loadWorkspaceList = () => {
-    dtableWebAPI.listWorkspaces().then(res => {
+    seaQAAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => {
         return new Workspace(item);
       });
