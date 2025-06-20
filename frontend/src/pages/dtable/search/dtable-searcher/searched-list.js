@@ -26,8 +26,6 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
 
   const mounted = useRef(false);
   const searchedListRef = useRef(null);
-  const searchedWorkflowsRef = useRef([]);
-  const searchedAppsRef = useRef([]);
 
   const clickSearchedBase = (searchedBase) => {
     props.handleClickSearchedItem(searchedBase);
@@ -52,29 +50,6 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
       case QUERY_TYPE.BASE: {
         const searchedBase = searchedList[highlightIndex];
         clickSearchedBase(searchedBase);
-        break;
-      }
-      case QUERY_TYPE.WORKFLOW: {
-        const searchedWorkflowRef = searchedWorkflowsRef.current[highlightIndex];
-        const workflowItemRef = searchedWorkflowRef && searchedWorkflowRef.current && searchedWorkflowRef.current.workflowItemRef;
-        if (!workflowItemRef || !workflowItemRef.current) {
-          break;
-        }
-        if (workflowItemRef.current.toggleWorkflowTasks) {
-          if (workflowItemRef.current.state.isTasksContainerShow) return;
-          workflowItemRef.current.toggleWorkflowTasks();
-        }
-        break;
-      }
-      case QUERY_TYPE.APP: {
-        const searchedAppRef = searchedAppsRef.current[highlightIndex];
-        const appItemRef = searchedAppRef && searchedAppRef.current && searchedAppRef.current.appItemRef;
-        if (!appItemRef || !appItemRef.current) {
-          break;
-        }
-        if (appItemRef.current.openApp) {
-          appItemRef.current.openApp();
-        }
         break;
       }
       default: {

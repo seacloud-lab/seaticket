@@ -8,15 +8,9 @@ import { NOTIFICATION_TYPE } from '../../../constants/notification-constants';
 const propTypes = {
   notificationItem: PropTypes.object,
   onNoticeItemClick: PropTypes.func,
-  onOpenWorkflowTaskByNotification: PropTypes.func,
 };
 
 class NotificationDialogItem extends React.Component {
-
-  onOpenWorkflowTaskByNotification = () => {
-    const { notificationItem } = this.props;
-    this.props.onOpenWorkflowTaskByNotification(notificationItem);
-  };
 
   onNoticeItemClick = () => {
     const { notificationItem } = this.props;
@@ -77,71 +71,6 @@ class NotificationDialogItem extends React.Component {
         notice = notice.replace('{user_link}', userLink);
         notice = notice.replace('{group}', detail.group_name);
         return this.renderInto(detail.group_staff_avatar_url, notice, true);
-      }
-      case NOTIFICATION_TYPE.NEW_PENDING_WORKFLOW_TASK: {
-        if (!detail || !detail.workflow_task || !detail.initiator) return null;
-        const workflowName = detail.workflow_name;
-        const notice = (
-          <>
-            {gettext('You have a new')}{' '}
-            <Link to={siteRoot + 'workflows/'} onClick={this.onOpenWorkflowTaskByNotification}>
-              {workflowName}
-            </Link>
-            {' '}{gettext('task to handle.')}
-          </>
-        );
-        const avatar_url = detail.initiator.initiator_user_avatar_url;
-        return this.renderInto(avatar_url, notice, false);
-      }
-      case NOTIFICATION_TYPE.FINISH_WORKFLOW_TASK: {
-        if (!detail || !detail.workflow_task || !detail.initiator) return null;
-        const workflowName = detail.workflow_name;
-        let notice = gettext('{workflowName} task submitted by you is finished.');
-        const finishTaskMessage = detail.finish_task_message || '';
-        const taskLink = `<a href="${detail.workflow_task.submitted_url}">${workflowName}</a>`;
-        notice = notice.replace('{workflowName}', taskLink);
-        if (finishTaskMessage) {
-          notice = `${notice} "${finishTaskMessage}"`;
-        }
-        const avatar_url = detail.initiator.initiator_user_avatar_url;
-        return this.renderInto(avatar_url, notice, true);
-      }
-      case NOTIFICATION_TYPE.DISMISS_WORKFLOW_TASK: {
-        if (!detail || !detail.workflow_task || !detail.initiator) return null;
-        const workflowName = detail.workflow_name;
-        const notice = (
-          <>
-            {gettext('You have a')}{' '}
-            <Link to={siteRoot + 'workflows/'} onClick={this.onOpenWorkflowTaskByNotification}>
-              {workflowName}
-            </Link>
-            {' '}{gettext('task that was dismissed. Resubmission is required.')}
-          </>
-        );
-        const avatar_url = detail.initiator.initiator_user_avatar_url;
-        return this.renderInto(avatar_url, notice, false);
-      }
-      case NOTIFICATION_TYPE.WORKFLOW_PROCESSING_EXPIRED: {
-        if (!detail || !detail.workflow_task || !detail.initiator) return null;
-        const { workflow_name: workflowName, offset } = detail;
-        const offsetNumber = parseInt(offset);
-        let expireString;
-        if (offsetNumber === 1) {
-          expireString = '1 ' + (offset.slice(-1) === 'd' ? gettext('day') : gettext('hour'));
-        } else {
-          expireString = offsetNumber + ' ' + (offset.slice(-1) === 'd' ? gettext('days') : gettext('hours'));
-        }
-        const notice = (
-          <>
-            {gettext('You have a')}{' '}
-            <Link to={siteRoot + 'workflows/'} onClick={this.onOpenWorkflowTaskByNotification}>
-              {workflowName}
-            </Link>
-            {' '}{gettext('task unprocessed for more than {expireString}.').replace('{expireString}', expireString)}
-          </>
-        );
-        const avatar_url = detail.initiator.initiator_user_avatar_url;
-        return this.renderInto(avatar_url, notice, false);
       }
       case NOTIFICATION_TYPE.LICENSE_EXPIRING: {
         if (!detail || !detail.days) return null;

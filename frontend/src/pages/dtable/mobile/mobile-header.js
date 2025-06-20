@@ -8,7 +8,6 @@ import MobileCommonHeader from './mobile-common-header';
 
 const MOBILE_HEADER_TITLE = {
   templates: 'Templates',
-  workflow: 'Workflow',
   apps: 'Apps',
   mine: 'Mine'
 };

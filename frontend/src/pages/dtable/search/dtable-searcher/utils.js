@@ -12,13 +12,8 @@ export const getNormalizeSearchedList = (searchedList, queryType) => {
       query_type: queryType,
     };
     switch (queryType) {
-      case QUERY_TYPE.BASE:
-      case QUERY_TYPE.WORKFLOW: {
+      case QUERY_TYPE.BASE: {
         normalizedSearchedItem.searched_id = searchedItem.id;
-        break;
-      }
-      case QUERY_TYPE.APP: {
-        normalizedSearchedItem.searched_id = searchedItem.app_id;
         break;
       }
       default: {

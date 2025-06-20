@@ -17,7 +17,6 @@ const propTypes = {
   onNoticeItemClick: PropTypes.func,
   onDeleteAllNotifications: PropTypes.func,
   onMarkAllNotifications: PropTypes.func,
-  onOpenWorkflowTaskByNotification: PropTypes.func,
 };
 
 class NotificationDialog extends React.Component {
@@ -100,7 +99,6 @@ class NotificationDialog extends React.Component {
                         key={item.id}
                         notificationItem={item}
                         onNoticeItemClick={this.props.onNoticeItemClick}
-                        onOpenWorkflowTaskByNotification={this.props.onOpenWorkflowTaskByNotification}
                       />
                     );
                   })}

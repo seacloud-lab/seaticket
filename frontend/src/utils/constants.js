@@ -95,9 +95,6 @@ export const useCaseLink = window.app.pageOptions.useCaseLink;
 export const enableTellAFriend = window.app.pageOptions.enableTellAFriend;
 export const enableInviteAFriend = window.app.pageOptions.enableInviteAFriend;
 export const friendInvitationLink = window.app.pageOptions.friendInvitationLink;
-export const enableWorkflow = window.app.pageOptions.enableWorkflow;
-export const workflowHelpLink = window.app.pageOptions.workflowHelpLink;
-export const universalAppCNHelpLink = window.app.pageOptions.universalAppCNHelpLink;
 export const useExternalTeamAdmin = window.app.pageOptions.useExternalTeamAdmin;
 export const orgSamlConnected = window.app.pageOptions.orgSamlConnected;
 

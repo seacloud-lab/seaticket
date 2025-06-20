@@ -9,7 +9,6 @@ import { gettext } from '../../../utils/constants';
 import { validateName } from '../../../utils/utils';
 
 const propTypes = {
-  isWorkflow: PropTypes.bool,
   currentItem: PropTypes.object.isRequired,
   onMobileUpdateItemToggle: PropTypes.func.isRequired,
   onUpdateItem: PropTypes.func.isRequired,
