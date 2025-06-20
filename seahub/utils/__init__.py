@@ -102,18 +102,6 @@ def render_error(request, msg=None, extra_ctx=None):
 
     return render(request, 'error.html', ctx)
 
-def render_error_form(request):
-    """
-    Return form passed the submission deadline page.
-
-    """
-    return render(request, 'error_form.html')
-
-def redner_error_collection(request):
-    '''
-    Return collection_table passed the submission deadline page
-    '''
-    return render(request, 'error_collection_table.html')
 
 def list_to_string(l):
     """
