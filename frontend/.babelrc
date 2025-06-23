@@ -8,7 +8,6 @@
       "camel2UnderlineComponentName": false
     },
       "dtable-ui-component"
-    ],
-    ["import", { "libraryName": "antd-mobile", "libraryDirectory": "lib"}, "antd-mobile"]
+    ]
   ]
 }
