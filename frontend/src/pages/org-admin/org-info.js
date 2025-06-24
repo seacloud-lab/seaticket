@@ -12,9 +12,6 @@ const propTypes = {
 
 const percentType = {
   SPACE: 'space',
-  SPACE_ROW_USED: 'space_row_used',
-  BIG_DATA_ROW_USED: 'big_data_row_used',
-  BIG_DATA_STORAGE_USED: 'big_data_storage_used',
   API_GATEWAY_CALLS_COUNT_USED: 'api_calls_count_used',
   AI_CREDIT_USED: 'ai_credit_used'
 };
@@ -31,11 +28,8 @@ class OrgInfo extends Component {
       member_quota: 0,
       member_usage: 0,
       active_members: 0,
-      big_data_total_rows: 0,
-      big_data_total_storage: 0,
       org_name: '',
       org_id: null,
-      big_data_storage_quota: 0,
       api_calls_count: 0,
       api_calls_limit: 0
     };
@@ -51,12 +45,6 @@ class OrgInfo extends Component {
         active_members: res.data.active_members,
         org_name: res.data.org_name,
         org_id: res.data.org_id,
-        row_usage: res.data.row_usage,
-        row_total: res.data.row_total,
-        big_data_row_limit: res.data.big_data_row_limit,
-        big_data_total_rows: res.data.big_data_total_rows,
-        big_data_total_storage: res.data.big_data_total_storage,
-        big_data_storage_quota: res.data.big_data_storage_quota,
         api_calls_count: res.data.api_calls_count,
         api_calls_limit: res.data.api_calls_limit,
         ai_cost: res.data.ai_cost,
@@ -77,22 +65,12 @@ class OrgInfo extends Component {
   };
 
   getPercent = (type) => {
-    const { row_usage, row_total, big_data_total_rows, big_data_row_limit, storage_usage, storage_quota,
-      big_data_total_storage, big_data_storage_quota, api_calls_count, api_calls_limit,
+    const { storage_usage, storage_quota, api_calls_count, api_calls_limit,
       ai_cost, ai_credit } = this.state;
     let used; let limit;
     if (type === percentType.SPACE) {
       used = parseFloat(storage_usage);
       limit = parseFloat(storage_quota);
-    } else if (type === percentType.SPACE_ROW_USED) {
-      used = parseFloat(row_usage);
-      limit = parseFloat(row_total);
-    } else if (type === percentType.BIG_DATA_ROW_USED) {
-      used = parseFloat(big_data_total_rows);
-      limit = parseFloat(big_data_row_limit);
-    } else if (type === percentType.BIG_DATA_STORAGE_USED) {
-      used = parseFloat(big_data_total_storage);
-      limit = parseFloat(big_data_storage_quota);
     } else if (type === percentType.API_GATEWAY_CALLS_COUNT_USED) {
       used = parseFloat(api_calls_count);
       limit = parseFloat(api_calls_limit);
@@ -106,7 +84,7 @@ class OrgInfo extends Component {
   };
 
   render() {
-    let { org_name, active_members, member_usage, member_quota, big_data_total_rows, big_data_total_storage, big_data_storage_quota,
+    let { org_name, active_members, member_usage, member_quota,
       api_calls_count, api_calls_limit, ai_cost, ai_credit } = this.state;
     const infoStyle = { backgroundColor: '#fff' };
     return (
@@ -155,38 +133,6 @@ class OrgInfo extends Component {
                   />
                   <span className="mt-1">
                     {Utils.bytesToSize(this.state.storage_usage)} / {this.state.storage_quota ? Utils.bytesToSize(this.state.storage_quota) : '--'}
-                  </span>
-                </div>
-                <div className={`used-space h-100 d-flex ${isDesktop ? '' : 'mt-3'}`}>
-                  <p>{gettext('Rows used')}</p>
-                  <p>{`${this.getPercent(percentType.SPACE_ROW_USED)}%`}</p>
-                  <Progress
-                    percent={this.getPercent(percentType.SPACE_ROW_USED)}
-                  />
-                  <span className="mt-1">
-                    {this.state.row_usage} / {this.state.row_total !== -1 ? this.state.row_total : '--'}
-                  </span>
-                </div>
-              </div>
-              <div className="used-storage-content w-100 d-flex justify-content-between mt-3">
-                <div className="used-space h-100 d-flex">
-                  <p>{gettext('Number of rows in big data storage')}</p>
-                  <p>{`${this.getPercent(percentType.BIG_DATA_ROW_USED)}%`}</p>
-                  <Progress
-                    percent={this.getPercent(percentType.BIG_DATA_ROW_USED)}
-                  />
-                  <span className="mt-1">
-                    {big_data_total_rows} / {this.state.big_data_row_limit !== -1 ? this.state.big_data_row_limit : '--'}
-                  </span>
-                </div>
-                <div className={`used-space h-100 d-flex ${isDesktop ? '' : 'mt-3'}`}>
-                  <p>{gettext('Space used by big data storage')}</p>
-                  <p>{`${this.getPercent(percentType.BIG_DATA_STORAGE_USED)}%`}</p>
-                  <Progress
-                    percent={this.getPercent(percentType.BIG_DATA_STORAGE_USED)}
-                  />
-                  <span className="mt-1">
-                    {Utils.bytesToSize(big_data_total_storage)} / {Utils.bytesToSize(big_data_storage_quota)}
                   </span>
                 </div>
               </div>

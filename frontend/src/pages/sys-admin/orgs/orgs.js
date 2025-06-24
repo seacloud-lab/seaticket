@@ -20,228 +20,6 @@ import '../../../css/system-org.css';
 
 const { availableRoles } = window.sysadmin.pageOptions;
 
-const universalAppsPropTypes = {
-  loading: PropTypes.bool.isRequired,
-  errorMsg: PropTypes.string,
-  items: PropTypes.array,
-  count: PropTypes.number.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  curPerPage: PropTypes.number.isRequired,
-  resetPerPage: PropTypes.func.isRequired,
-  listOrgUniversalAppStats: PropTypes.func.isRequired,
-};
-
-class UniversalApps extends Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  getPreviousPageList = () => {
-    this.props.listOrgUniversalAppStats(this.props.currentPage - 1);
-  };
-
-  getNextPageList = () => {
-    this.props.listOrgUniversalAppStats(this.props.currentPage + 1);
-  };
-
-  render() {
-    const { loading, errorMsg, items, currentPage, curPerPage, count } = this.props;
-    if (loading) {
-      return <Loading />;
-    } else if (errorMsg) {
-      return <p className="error text-center mt-4">{errorMsg}</p>;
-    } else {
-      const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No universal app statistics')} />
-      );
-      const table = (
-        <Fragment>
-          <table className="table-hover">
-            <thead>
-              <tr>
-                <th width="40%">{gettext('Name')}</th>
-                <th width="30%">{gettext('Number of universal apps')}</th>
-                <th width="30%">{gettext('Number of app users')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => {
-                return (<AppStats
-                  key={index}
-                  item={item}
-                />);
-              })}
-            </tbody>
-          </table>
-          <Paginator
-            gotoPreviousPage={this.getPreviousPageList}
-            gotoNextPage={this.getNextPageList}
-            currentPage={currentPage}
-            hasNextPage={Utils.hasNextPage(currentPage, curPerPage, count)}
-            curPerPage={curPerPage}
-            resetPerPage={this.props.resetPerPage}
-            canResetPerPage={true}
-          />
-        </Fragment>
-      );
-      return items.length ? table : emptyTip;
-    }
-  }
-}
-
-UniversalApps.propTypes = universalAppsPropTypes;
-
-const appStatsPropTypes = {
-  item: PropTypes.object.isRequired,
-};
-
-class AppStats extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      isOpIconShown: false,
-    };
-  }
-
-  handleMouseEnter = () => {
-    this.setState({ isOpIconShown: true });
-  };
-
-  handleMouseLeave = () => {
-    this.setState({ isOpIconShown: false });
-  };
-
-  render() {
-    const { item } = this.props;
-
-    return (
-      <Fragment>
-        <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td><a href={`${siteRoot}sys/organizations/${item.org_id}/info/`}>{item.org_name}</a></td>
-          <td>{item.app_count}</td>
-          <td>{item.user_count}</td>
-        </tr>
-      </Fragment>
-    );
-  }
-}
-
-AppStats.propTypes = appStatsPropTypes;
-
-
-const bigDataStoragePropTypes = {
-  loading: PropTypes.bool.isRequired,
-  errorMsg: PropTypes.string,
-  items: PropTypes.array,
-  count: PropTypes.number.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  curPerPage: PropTypes.number.isRequired,
-  resetPerPage: PropTypes.func.isRequired,
-  listOrgBigDataStorageStats: PropTypes.func.isRequired,
-};
-
-class BigDataStorage extends Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  getPreviousPageList = () => {
-    this.props.listOrgBigDataStorageStats(this.props.currentPage - 1);
-  };
-
-  getNextPageList = () => {
-    this.props.listOrgBigDataStorageStats(this.props.currentPage + 1);
-  };
-
-  render() {
-    const { loading, errorMsg, items, currentPage, curPerPage, count } = this.props;
-    if (loading) {
-      return <Loading />;
-    } else if (errorMsg) {
-      return <p className="error text-center mt-4">{errorMsg}</p>;
-    } else {
-      const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No big data storage stats')} />
-      );
-      const table = (
-        <Fragment>
-          <table className="table-hover">
-            <thead>
-              <tr>
-                <th width="40%">{gettext('Name')}</th>
-                <th width="30%">{gettext('Number of rows in big data storage')}</th>
-                <th width="30%">{gettext('Storage used by big data storage')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => {
-                return (<Stats
-                  key={index}
-                  item={item}
-                />);
-              })}
-            </tbody>
-          </table>
-          <Paginator
-            gotoPreviousPage={this.getPreviousPageList}
-            gotoNextPage={this.getNextPageList}
-            currentPage={currentPage}
-            hasNextPage={Utils.hasNextPage(currentPage, curPerPage, count)}
-            curPerPage={curPerPage}
-            resetPerPage={this.props.resetPerPage}
-            canResetPerPage={true}
-          />
-        </Fragment>
-      );
-      return items.length ? table : emptyTip;
-    }
-  }
-}
-
-BigDataStorage.propTypes = bigDataStoragePropTypes;
-
-const statsPropTypes = {
-  item: PropTypes.object.isRequired,
-};
-
-class Stats extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      isOpIconShown: false,
-      isDeleteDialogOpen: false
-    };
-  }
-
-  handleMouseEnter = () => {
-    this.setState({ isOpIconShown: true });
-  };
-
-  handleMouseLeave = () => {
-    this.setState({ isOpIconShown: false });
-  };
-
-  render() {
-    const { item } = this.props;
-
-    return (
-      <Fragment>
-        <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td><a href={`${siteRoot}sys/organizations/${item.org_id}/info/`}>{item.org_name}</a></td>
-          <td>{item.total_rows}{' / '}{item.big_data_row_limit > 0 ? item.big_data_row_limit : '--'}</td>
-          <td>{Utils.bytesToSize(item.total_storage)}{' / '}{Utils.bytesToSize(item.big_data_storage_quota)}</td>
-        </tr>
-      </Fragment>
-    );
-  }
-}
-
-Stats.propTypes = statsPropTypes;
-
 const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
   errorMsg: PropTypes.string,
@@ -288,7 +66,7 @@ class Content extends Component {
                 <th width="18%">{`${gettext('Name')} / ID`}</th>
                 <th width="28%">{gettext('Creator')}</th>
                 <th width="18%">{gettext('Role')}</th>
-                <th width="10%">{`${gettext('Row')} / ${gettext('Storage used')}`}</th>
+                <th width="10%">{gettext('Storage used')}</th>
                 <th width="18%">{gettext('Created at')}</th>
                 <th width="8%">{/* Operations */}</th>
               </tr>
@@ -389,8 +167,6 @@ class Item extends Component {
             />
           </td>
           <td>
-            {item.rows_count}
-            {' / '}
             {item.storage_usage > 0 ? Utils.bytesToSize(item.storage_usage) : '--'}
           </td>
           <td>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
@@ -416,8 +192,6 @@ Item.propTypes = itemPropTypes;
 
 const orgsPropTypes = {
   onCloseSidePanel: PropTypes.func,
-  isBigDataStorage: PropTypes.bool,
-  isUniversalApps: PropTypes.bool,
 };
 
 class Orgs extends Component {
@@ -447,13 +221,7 @@ class Orgs extends Component {
       curPerPage: parseInt(urlParams.get('per_page') || curPerPage),
       currentPage: parseInt(urlParams.get('page') || currentPage)
     }, () => {
-      if (this.props.isBigDataStorage) {
-        this.listOrgBigDataStorageStats(this.state.currentPage);
-      } else if (this.props.isUniversalApps) {
-        this.listOrgUniversalAppStats(this.state.currentPage);
-      } else {
-        this.listOrgsByPage(this.state.currentPage);
-      }
+      this.listOrgsByPage(this.state.currentPage);
     });
   }
 
@@ -518,77 +286,7 @@ class Orgs extends Component {
     this.setState({
       curPerPage: curPerPage
     }, () => {
-      if (this.props.isBigDataStorage) {
-        this.listOrgBigDataStorageStats(1);
-      } else if (this.props.isUniversalApps) {
-        this.listOrgUniversalAppStats(1);
-      } else {
-        this.listOrgsByPage(1, this.state.orgRole);
-      }
-    });
-  };
-
-  listOrgUniversalAppStats = (page) => {
-    let { curPerPage } = this.state;
-    sysAdminServiceApi.sysAdminListOrgUniversalAppsStats(page, curPerPage).then((res) => {
-      this.setState({
-        loading: false,
-        appsList: res.data.org_app_infos,
-        count: res.data.total_count,
-        currentPage: page
-      });
-    }).catch((error) => {
-      if (error.response) {
-        if (error.response.status === 403) {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Permission denied')
-          });
-          location.href = `${loginUrl}?next=${encodeURIComponent(location.href)}`;
-        } else {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Error')
-          });
-        }
-      } else {
-        this.setState({
-          loading: false,
-          errorMsg: gettext('Please check the network.')
-        });
-      }
-    });
-  };
-
-  listOrgBigDataStorageStats = (page) => {
-    let { curPerPage } = this.state;
-    sysAdminServiceApi.sysAdminListOrgBigDataStorageStats(page, curPerPage).then((res) => {
-      this.setState({
-        loading: false,
-        statsList: res.data.big_data_storage_stats,
-        count: res.data.total_count,
-        currentPage: page
-      });
-    }).catch((error) => {
-      if (error.response) {
-        if (error.response.status === 403) {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Permission denied')
-          });
-          location.href = `${loginUrl}?next=${encodeURIComponent(location.href)}`;
-        } else {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Error')
-          });
-        }
-      } else {
-        this.setState({
-          loading: false,
-          errorMsg: gettext('Please check the network.')
-        });
-      }
+      this.listOrgsByPage(1, this.state.orgRole);
     });
   };
 
@@ -635,68 +333,34 @@ class Orgs extends Component {
   };
 
   getCurrentNavItem = () => {
-    const { isBigDataStorage, isUniversalApps } = this.props;
     let item = 'organizations';
-    if (isBigDataStorage) {
-      item = 'big-data-storage';
-    } else if (isUniversalApps) {
-      item = 'universal-apps';
-    }
     return item;
   };
 
   renderContent = () => {
     const { curPerPage, count, currentPage, orgRole } = this.state;
-    if (this.props.isBigDataStorage) {
-      return (
-        <BigDataStorage
-          loading={this.state.loading}
-          errorMsg={this.state.errorMsg}
-          items={this.state.statsList}
-          count={count}
-          currentPage={currentPage}
-          curPerPage={curPerPage}
-          resetPerPage={this.resetPerPage}
-          listOrgBigDataStorageStats={this.listOrgBigDataStorageStats}
-        />
-      );
-    } else if (this.props.isUniversalApps) {
-      return (
-        <UniversalApps
-          loading={this.state.loading}
-          errorMsg={this.state.errorMsg}
-          items={this.state.appsList}
-          count={count}
-          currentPage={currentPage}
-          curPerPage={curPerPage}
-          resetPerPage={this.resetPerPage}
-          listOrgUniversalAppStats={this.listOrgUniversalAppStats}
-        />
-      );
-    } else {
-      return (
-        <Content
-          loading={this.state.loading}
-          errorMsg={this.state.errorMsg}
-          items={this.state.orgList}
-          updateRole={this.updateRole}
-          deleteOrg={this.deleteOrg}
-          curPerPage={curPerPage}
-          count={count}
-          currentPage={currentPage}
-          resetPerPage={this.resetPerPage}
-          listOrgsByPage={this.listOrgsByPage}
-          role={orgRole}
-        />
-      );
-    }
+    return (
+      <Content
+        loading={this.state.loading}
+        errorMsg={this.state.errorMsg}
+        items={this.state.orgList}
+        updateRole={this.updateRole}
+        deleteOrg={this.deleteOrg}
+        curPerPage={curPerPage}
+        count={count}
+        currentPage={currentPage}
+        resetPerPage={this.resetPerPage}
+        listOrgsByPage={this.listOrgsByPage}
+        role={orgRole}
+      />
+    );
   };
 
   render() {
     const { isAddOrgDialogOpen, filters } = this.state;
     const isDesktop = Utils.isDesktop();
     let MainPanelTopbarContainer;
-    let isShowOrgOpItem = (!this.props.isBigDataStorage) && (!this.props.isUniversalApps);
+    let isShowOrgOpItem = true;
 
     if (isDesktop) {
       MainPanelTopbarContainer = isShowOrgOpItem ?

@@ -9,9 +9,7 @@ import SysAdminSetOrgNameDialog from '../../../components/dialog/sysadmin-dialog
 import SysAdminSetOrgMaxUserNumberDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-set-org-max-user-number-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
-import SetRowLimitDialog from '../../../components/dialog/sysadmin-dialog/set-row-limit';
 import SetQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-quota';
-import SetBigDataStorageQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-big-data-storage-quota';
 import SetAPICallsLimitPerUser from '../../../components/dialog/sysadmin-dialog/set-api-calls-limit-per-user';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
@@ -21,11 +19,8 @@ const contentPropTypes = {
   errorMsg: PropTypes.string,
   orgInfo: PropTypes.object.isRequired,
   updateQuota: PropTypes.func.isRequired,
-  updateBigDataRowLimit: PropTypes.func.isRequired,
   updateName: PropTypes.func.isRequired,
   updateMaxUserNumber: PropTypes.func.isRequired,
-  updateRowLimit: PropTypes.func.isRequired,
-  updateBigDataStorageQuota: PropTypes.func,
   updateAPICallsLimitPerUser: PropTypes.func,
 };
 
@@ -38,10 +33,7 @@ class Content extends Component {
     this.state = {
       isSetNameDialogOpen: false,
       isSetMaxUserNumberDialogOpen: false,
-      isSetRowLimitDialogOpen: false,
       isSetQuotaDialogOpen: false,
-      isSetBigDataRowLimitDialogOpen: false,
-      isSetBigDataStorageQuotaDialogOpen: false,
       isSetAPICallsLimitPerUserDialogOpen: false
     };
   }
@@ -54,20 +46,8 @@ class Content extends Component {
     this.setState({ isSetMaxUserNumberDialogOpen: !this.state.isSetMaxUserNumberDialogOpen });
   };
 
-  toggleSetRowLimitDialog = () => {
-    this.setState({ isSetRowLimitDialogOpen: !this.state.isSetRowLimitDialogOpen });
-  };
-
   toggleSetQuotaDialog = () => {
     this.setState({ isSetQuotaDialogOpen: !this.state.isSetQuotaDialogOpen });
-  };
-
-  toggleSetBigDataRowLimitDialog = () => {
-    this.setState({ isSetBigDataRowLimitDialogOpen: !this.state.isSetBigDataRowLimitDialogOpen });
-  };
-
-  toggleSetBigDataStorageQuotaDialog = () => {
-    this.setState({ isSetBigDataStorageQuotaDialogOpen: !this.state.isSetBigDataStorageQuotaDialogOpen });
   };
 
   toggleAPICallsLimitPerUserDialog = () => {
@@ -85,20 +65,8 @@ class Content extends Component {
     );
   };
 
-  updateRowLimit = (value) => {
-    this.props.updateRowLimit(value);
-  };
-
   updateQuota = (value) => {
     this.props.updateQuota(value);
-  };
-
-  updateBigDataStorageQuota = (value) => {
-    this.props.updateBigDataStorageQuota(value);
-  };
-
-  updateBigDataRowLimit = (value) => {
-    this.props.updateBigDataRowLimit(value);
   };
 
   updateAPICallsLimitPerUser = (value) => {
@@ -112,11 +80,11 @@ class Content extends Component {
     } else if (errorMsg) {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
-      const { org_name, users_count, max_user_number, groups_count, storage_usage, storage_quota, rows_count, row_limit,
-        big_data_total_rows, big_data_row_limit, big_data_total_storage, bound_workweixin, bound_dingtalk, enable_multi_saml,
-        metadata_url, domain, big_data_storage_quota, api_calls_count, monthly_api_call_limit_per_user } = orgInfo;
-      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetRowLimitDialogOpen, isSetQuotaDialogOpen,
-        isSetBigDataRowLimitDialogOpen, isSetBigDataStorageQuotaDialogOpen, isSetAPICallsLimitPerUserDialogOpen } = this.state;
+      const { org_name, users_count, max_user_number, groups_count, storage_usage, storage_quota,
+        bound_workweixin, bound_dingtalk, enable_multi_saml,
+        metadata_url, domain, api_calls_count, monthly_api_call_limit_per_user } = orgInfo;
+      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetQuotaDialogOpen,
+        isSetAPICallsLimitPerUserDialogOpen } = this.state;
       let boundText = '未绑定';
       if (bound_dingtalk) {
         boundText = '已绑定钉钉';
@@ -154,30 +122,6 @@ class Content extends Component {
               {' / '}
               {Utils.bytesToSize(storage_quota)}
               {this.showEditIcon(this.toggleSetQuotaDialog)}
-            </dd>
-
-            <dt className="info-item-heading">{gettext('Row usage')}</dt>
-            <dd className="info-item-content">
-              {rows_count}
-              {' / '}
-              {row_limit > 0 ? row_limit : '--'}
-              {this.showEditIcon(this.toggleSetRowLimitDialog)}
-            </dd>
-
-            <dt className="info-item-heading">{gettext('Number of rows in big data storage')}</dt>
-            <dd className="info-item-content">
-              {big_data_total_rows}
-              {' / '}
-              {big_data_row_limit > 0 ? big_data_row_limit : '--'}
-              {this.showEditIcon(this.toggleSetBigDataRowLimitDialog)}
-            </dd>
-
-            <dt className="info-item-heading">{gettext('Storage used by big data storage')}</dt>
-            <dd className="info-item-content">
-              {Utils.bytesToSize(big_data_total_storage)}
-              {' / '}
-              {Utils.bytesToSize(big_data_storage_quota)}
-              {this.showEditIcon(this.toggleSetBigDataStorageQuotaDialog)}
             </dd>
 
             <dt className="info-item-heading">{gettext('API calls count')}</dt>
@@ -243,28 +187,10 @@ class Content extends Component {
               toggle={this.toggleSetMaxUserNumberDialog}
             />
           }
-          {isSetRowLimitDialogOpen && (
-            <SetRowLimitDialog
-              toggle={this.toggleSetRowLimitDialog}
-              updateRowLimit={this.updateRowLimit}
-            />
-          )}
           {isSetQuotaDialogOpen && (
             <SetQuotaDialog
               toggle={this.toggleSetQuotaDialog}
               updateQuota={this.updateQuota}
-            />
-          )}
-          {isSetBigDataRowLimitDialogOpen && (
-            <SetRowLimitDialog
-              toggle={this.toggleSetBigDataRowLimitDialog}
-              updateRowLimit={this.updateBigDataRowLimit}
-            />
-          )}
-          {isSetBigDataStorageQuotaDialogOpen && (
-            <SetBigDataStorageQuotaDialog
-              toggle={this.toggleSetBigDataStorageQuotaDialog}
-              updateQuota={this.updateBigDataStorageQuota}
             />
           )}
           {isSetAPICallsLimitPerUserDialogOpen && (
@@ -327,20 +253,6 @@ class OrgInfo extends Component {
     });
   }
 
-  updateBigDataRowLimit = (rowLimit) => {
-    const data = { bigDataRowLimit: rowLimit };
-    sysAdminServiceApi.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
-      const newOrgInfo = Object.assign(this.state.orgInfo, {
-        big_data_row_limit: res.data.big_data_row_limit
-      });
-      this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set big data row limit.'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
   updateQuota = (quota) => {
     const data = { assetQuotaMb: quota };
     sysAdminServiceApi.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
@@ -350,36 +262,6 @@ class OrgInfo extends Component {
       this.setState({ orgInfo: newOrgInfo });
       toaster.success(gettext('Successfully set quota.'));
     }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
-  updateBigDataStorageQuota = (quota) => {
-    const data = { bigDataStorageQuotaMb: quota };
-    sysAdminServiceApi.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
-      const newOrgInfo = Object.assign(this.state.orgInfo, {
-        big_data_storage_quota: res.data.big_data_storage_quota
-      });
-      this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set quota.'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
-  updateRowLimit = (rowLimit) => {
-    const data = { rowLimit: rowLimit };
-    sysAdminServiceApi.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
-      let orgInfo = Object.assign({}, this.state.orgInfo, {
-        row_limit: res.data.row_limit
-      });
-      this.setState({
-        orgInfo: orgInfo
-      });
-      toaster.success(gettext('Successfully set row limit.'));
-    }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
@@ -447,11 +329,8 @@ class OrgInfo extends Component {
                 errorMsg={this.state.errorMsg}
                 orgInfo={this.state.orgInfo}
                 updateQuota={this.updateQuota}
-                updateBigDataRowLimit={this.updateBigDataRowLimit}
                 updateName={this.updateName}
                 updateMaxUserNumber={this.updateMaxUserNumber}
-                updateRowLimit={this.updateRowLimit}
-                updateBigDataStorageQuota={this.updateBigDataStorageQuota}
                 updateAPICallsLimitPerUser={this.updateAPICallsLimitPerUser}
               />
             </div>
