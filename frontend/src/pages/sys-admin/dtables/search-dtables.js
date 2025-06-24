@@ -17,7 +17,6 @@ import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-externa
 import Paginator from '../../../components/paginator';
 import UnsetPasswordConfirmDialog from '../../dtable/dialog/unset-password-confirm-dialog';
 import DTableAllAPITokensDialog from '../../dtable/dialog/dtable-all-api-tokens-dialog';
-import DTableIODialog from '../../dtable/dialog/dtable-io-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 
 
