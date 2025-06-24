@@ -28,7 +28,7 @@ class ResizeBar extends Component {
     if (!this.state.isShowResizeHandler) {
       this.setState({ isShowResizeHandler: true });
       this.handleResizeHandlePosition(evt);
-      this.viewSidebarResize.addEventListener('mouseleave', this.onMouseLeave);
+      this.sidebarResize.addEventListener('mouseleave', this.onMouseLeave);
     }
   };
 
@@ -50,7 +50,7 @@ class ResizeBar extends Component {
 
     window.addEventListener('mouseup', this.onMouseUp);
     window.addEventListener('mousemove', this.onMouseMove);
-    this.viewSidebarResize.removeEventListener('mouseleave', this.onMouseLeave);
+    this.sidebarResize.removeEventListener('mouseleave', this.onMouseLeave);
 
     this.setState({ drag });
   };
@@ -98,7 +98,7 @@ class ResizeBar extends Component {
   };
 
   handleResizeHandlePosition = (evt) => {
-    const { top } = this.viewSidebarResize.getBoundingClientRect();
+    const { top } = this.sidebarResize.getBoundingClientRect();
     const resizeHandlerTop = evt.pageY - top - RESIZE_HANDLER_HEIGHT / 2;
     this.updateResizeHandleTop(resizeHandlerTop);
   };
@@ -123,7 +123,7 @@ class ResizeBar extends Component {
     return (
       <div
         className="resize-bar"
-        ref={ref => this.viewSidebarResize = ref}
+        ref={ref => this.sidebarResize = ref}
         onMouseDown={this.onMouseDown}
         onMouseOver={this.onMouseOver}
         onMouseEnter={this.onMouseEnter}

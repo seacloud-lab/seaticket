@@ -4,20 +4,22 @@
   width: 6px;
 }
 
-.resize-bar-content {
-  position: relative;
-  margin-left: 4px;
-  width: 2px;
-  height: 100%;
-  background-color: #ddd;
-}
-
 .resize-bar:hover {
   cursor: col-resize;
 }
 
+.resize-bar-content {
+  position: relative;
+  margin-left: 5px;
+  width: 1px;
+  height: 100%;
+  background-color: #ddd;
+}
+
 .resize-bar:hover .resize-bar-content {
   background-color: #ccc;
+  margin-left: 4px;
+  width: 2px;
 }
 
 .resize-bar-handler {
