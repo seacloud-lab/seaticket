@@ -44,7 +44,6 @@ class OrgAdminList extends React.Component {
             <tr>
               <th width="30%">{gettext('Name')}</th>
               <th width="15%">{gettext('Status')}</th>
-              <th width="15%">{gettext('Space used / Quota')}</th>
               <th width="20%">{gettext('Create at / Last login')}</th>
               <th width="20%" className="text-center">{gettext('Operations')}</th>
             </tr>

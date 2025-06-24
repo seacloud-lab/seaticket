@@ -160,11 +160,6 @@ class UserItem extends React.Component {
           <td>
             <a href={href} className="font-weight-normal">{user.name}</a>
           </td>
-          {currentTab === 'users' &&
-          <td>
-            {user.id_in_org}
-          </td>
-          }
           <td>
             {user.email === username ? translateStatus(currentStatus) : (
               <RoleStatusEditor
@@ -176,7 +171,6 @@ class UserItem extends React.Component {
               />
             )}
           </td>
-          <td>{user.quota ? user.self_usage + ' / ' + user.quota : user.self_usage}</td>
           <td>{user.ctime} / {user.last_login ? user.last_login : '--'}</td>
           <td className="text-center cursor-pointer">
             {isOperationMenuShow && (

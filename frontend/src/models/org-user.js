@@ -12,7 +12,6 @@ class OrgUserInfo {
     this.self_usage = Utils.bytesToSize(object.self_usage);
     this.last_login = object.last_login ? dayjs(object.last_login).fromNow() : '--';
     this.ctime = dayjs(object.ctime).format('YYYY-MM-DD HH:mm:ss');
-    this.id_in_org = object.id_in_org ? object.id_in_org : '--';
   }
 }
 
