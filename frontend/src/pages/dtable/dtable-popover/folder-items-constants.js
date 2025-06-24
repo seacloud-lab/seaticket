@@ -21,8 +21,6 @@ export const FolderItemsPropTypes = {
   onCopyDTableToggle: PropTypes.func,
   isOwner: PropTypes.bool,
   isAdmin: PropTypes.bool,
-  onAddStarDTable: PropTypes.func,
-  onUnstarDTable: PropTypes.func,
   onAddDTable: PropTypes.func,
   onUpdateTable: PropTypes.func,
   onMobileShareTableToggle: PropTypes.func,

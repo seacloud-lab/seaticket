@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, UncontrolledTooltip } from 'reactstrap';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { DragSource } from 'react-dnd';
 import { Utils } from '../../utils/utils';
 import { siteRoot, gettext, canAddProject } from '../../constants/config';
@@ -77,10 +76,6 @@ class DTableItemGroupShared extends React.Component {
     this.props.onLeaveShare(this.props.project);
   };
 
-  onAddStarDTable = () => {
-    this.props.onAddStarDTable(this.props.project);
-  };
-
   onUnstarDTable = () => {
     this.props.onUnstarDTable(this.props.project);
   };
@@ -142,7 +137,7 @@ class DTableItemGroupShared extends React.Component {
     let { project, isAdmin, sharedItemKey, connectDragSource, connectDragPreview,
       connectDropTarget, isOver, canDrop } = this.props;
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
-      starred, color, icon, view_share_id, shared_name, is_encrypted, permission } = project;
+      color, icon, view_share_id, shared_name, is_encrypted, permission } = project;
     let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
     let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(name) + '/';
     if (view_share_id !== undefined) {
@@ -182,7 +177,6 @@ class DTableItemGroupShared extends React.Component {
                   >
                   </UserInfoPopover>
                 </div>
-                {starred && <i className='dtable-font dtable-icon-star star'></i>}
                 {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
               </div>
             </div>
@@ -208,26 +202,6 @@ class DTableItemGroupShared extends React.Component {
                 />
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
-                  {!starred &&
-                    <DropdownItem
-                      onClick={view_share_id ? () => {} : this.onAddStarDTable}
-                      className={classNames({ 'disabled': view_share_id })}
-                      id='dtable-item-group-shared-star'
-                    >
-                      <span>{gettext('Star')}</span>
-                      {view_share_id &&
-                        <UncontrolledTooltip
-                          placement='left'
-                          target='dtable-item-group-shared-star'
-                          fade={false}
-                          delay={{ show: 0, hide: 0 }}
-                        >
-                          {gettext('Shared view can not be starred')}
-                        </UncontrolledTooltip>
-                      }
-                    </DropdownItem>
-                  }
-                  {starred && <DropdownItem onClick={this.onUnstarDTable}>{gettext('Unstar')}</DropdownItem>}
                   {canCopy && <DropdownItem onClick={this.onCopyDTableToggle}>{gettext('Copy')}</DropdownItem>}
                   {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}
                   {isAdmin && <DropdownItem onClick={this.onMoveFolderItemToggle}>{gettext('Move to folder')}</DropdownItem>}
@@ -252,7 +226,6 @@ class DTableItemGroupShared extends React.Component {
             <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
             <span className="dtable-sharer-name">{displayName}</span>
           </div>
-          {starred && <i className='dtable-font dtable-icon-star star'></i>}
           {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
         </div>
         <div className="table-mobile-dropdown-menu">
@@ -282,18 +255,6 @@ class DTableItemGroupShared extends React.Component {
                     <span className="mobile-dropdown-span">{gettext('Leave share')}</span>
                   </DropdownItem>
                 }
-                {!starred &&
-                  <DropdownItem onClick={this.onAddStarDTable} className="mobile-dropdown-item" disabled={!!view_share_id}>
-                    <span className="dtable-font dtable-icon-star"></span>
-                    <span className="mobile-dropdown-span">{gettext('Star')}</span>
-                  </DropdownItem>
-                }
-                {starred &&
-                  <DropdownItem onClick={this.onUnstarDTable} className="mobile-dropdown-item">
-                    <span className="dtable-font dtable-icon-star"></span>
-                    <span className="mobile-dropdown-span">{gettext('Unstar')}</span>
-                  </DropdownItem>
-                }
               </div>
             </div>
           </Dropdown>
@@ -316,7 +277,6 @@ DTableItemGroupShared.propTypes = {
   folder: PropTypes.object,
   onLeaveShare: PropTypes.func.isRequired,
   isAdmin: PropTypes.bool.isRequired,
-  onAddStarDTable: PropTypes.func.isRequired,
   onUnstarDTable: PropTypes.func.isRequired,
   setDropdownState: PropTypes.func,
   getDropdownState: PropTypes.func,

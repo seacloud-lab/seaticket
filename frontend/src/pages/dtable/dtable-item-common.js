@@ -54,8 +54,6 @@ const propTypes = {
   onUnfreezedItem: PropTypes.func.isRequired,
   isOwner: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
-  onAddStarDTable: PropTypes.func.isRequired,
-  onUnstarDTable: PropTypes.func.isRequired,
   onMobileShareTableToggle: PropTypes.func,
   onMobileUpdateTableToggle: PropTypes.func,
   folder: PropTypes.object,
@@ -166,16 +164,6 @@ class DTableItemCommon extends React.Component {
       this.props.setDropdownState(!this.state.dropdownOpen);
     }
     this.setState({ dropdownOpen: !this.state.dropdownOpen });
-  };
-
-  onAddStarDTable = () => {
-    let { project } = this.props;
-    this.props.onAddStarDTable(project);
-  };
-
-  onUnstarDTable = () => {
-    let { project } = this.props;
-    this.props.onUnstarDTable(project);
   };
 
   onTableIconToggle = (e) => {
@@ -302,7 +290,7 @@ class DTableItemCommon extends React.Component {
   render() {
     let { isOwner, isAdmin, project } = this.props;
     let { dtableName, dropdownOpen, dtableColor, dtableIcon, active } = this.state;
-    let { workspace_id, uuid, id, name, is_encrypted, starred } = project;
+    let { workspace_id, uuid, id, name, is_encrypted } = project;
     let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
     if (!isDesktop) {
@@ -314,7 +302,6 @@ class DTableItemCommon extends React.Component {
           <DTableItem dtableColor={project.color} dtableIcon={project.icon} className="table-mobile-icon"/>
           <div className="table-mobile-name d-flex align-items-center">
             <a href={tableHref}>{name}</a>
-            {starred && <i className='dtable-font dtable-icon-star star'></i>}
             {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
           </div>
           <div className="table-mobile-dropdown-menu">
@@ -353,17 +340,6 @@ class DTableItemCommon extends React.Component {
                         <span className="dtable-font dtable-icon-delete"></span>
                         <span className="mobile-dropdown-span">{gettext('Delete')}</span>
                       </DropdownItem>
-                      {starred ?
-                        <DropdownItem onClick={this.onUnstarDTable} className="mobile-dropdown-item">
-                          <span className="dtable-font dtable-icon-star"></span>
-                          <span className="mobile-dropdown-span">{gettext('Unstar')}</span>
-                        </DropdownItem>
-                        :
-                        <DropdownItem onClick={this.onAddStarDTable} className="mobile-dropdown-item">
-                          <span className="dtable-font dtable-icon-star"></span>
-                          <span className="mobile-dropdown-span">{gettext('Star')}</span>
-                        </DropdownItem>
-                      }
                       <DropdownItem divider />
                     </Fragment>
                   }
@@ -390,7 +366,6 @@ class DTableItemCommon extends React.Component {
             <DTableItem dtableColor={project.color} dtableIcon={project.icon} />
             <div className="table-name">
               <a href={tableHref}>{project.name}</a>
-              {starred && <i className='dtable-font dtable-icon-star star'></i>}
               {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
             </div>
           </div>
@@ -428,11 +403,6 @@ class DTableItemCommon extends React.Component {
                 </DropdownToggle>
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu drop-list" right={true} onMouseMove={this.onDropDownMouseMove}>
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onShareTableToggle}>{gettext('Share')}</DropdownItem>}
-                  {starred ?
-                    <DropdownItem onClick={this.onUnstarDTable}>{gettext('Unstar')}</DropdownItem>
-                    :
-                    <DropdownItem onClick={this.onAddStarDTable}>{gettext('Star')}</DropdownItem>
-                  }
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onDeleteTableToggle}>{gettext('Delete')}</DropdownItem>}
                   <DropdownItem divider />
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onMoveFolderItemToggle}>{gettext('Move to folder')}</DropdownItem>}

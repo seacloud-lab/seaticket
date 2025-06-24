@@ -125,8 +125,6 @@ class FolderItems extends React.Component {
                   onTableSnapshotsToggle={this.props.onTableSnapshotsToggle}
                   isOwner={isOwner}
                   isAdmin={isAdmin}
-                  onAddStarDTable={this.props.onAddStarDTable}
-                  onUnstarDTable={this.props.onUnstarDTable}
                   onAddDTable={this.props.onAddDTable}
                   onUpdateTable={this.props.onUpdateTable}
                   onMobileShareTableToggle={this.props.onMobileShareTableToggle}
@@ -155,8 +153,6 @@ class FolderItems extends React.Component {
                   isItemFreezed={isItemFreezed}
                   isAdmin={isAdmin}
                   onLeaveShare={this.props.onLeaveGroupSharedTable}
-                  onAddStarDTable={this.props.onAddStarDTable}
-                  onUnstarDTable={this.props.onUnstarDTable}
                   setDropdownState={this.props.setDropdownState}
                   getDropdownState={this.props.getDropdownState}
                   onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}

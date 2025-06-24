@@ -506,22 +506,6 @@ class DTableWorkspaceCommon extends React.Component {
     });
   };
 
-  onAddStarDTable = (dtable) => {
-    seaQAAPI.addStarDTable(dtable.uuid).then(() => {
-      this.props.onStarDTable(dtable);
-    }).catch(error => {
-      this.handleError(error);
-    });
-  };
-
-  onUnstarDTable = (dtable) => {
-    seaQAAPI.unstarDTable(dtable.uuid).then(() => {
-      this.props.onUnstarDTable(dtable);
-    }).catch(error => {
-      this.handleError(error);
-    });
-  };
-
   onShowTemplateListToggle = () => {
     this.setState({ isShowTemplateList: !this.state.isShowTemplateList });
   };
@@ -824,8 +808,6 @@ class DTableWorkspaceCommon extends React.Component {
             onUnfreezedItem={this.onUnfreezedItem}
             onTableSnapshotsToggle={this.onTableSnapshotsToggle}
             onCopyDTableToggle={this.onCopyDTableToggle}
-            onAddStarDTable={this.onAddStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.props.onAddDTable}
             onUpdateTable={this.onUpdateTable}
             onMobileShareTableToggle={this.onMobileShareTableToggle}
@@ -1026,8 +1008,6 @@ class DTableWorkspaceCommon extends React.Component {
             onCopyDTableToggle={this.onCopyDTableToggle}
             isOwner={isOwner}
             isAdmin={isAdmin}
-            onAddStarDTable={this.onAddStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.props.onAddDTable}
             onUpdateTable={this.onUpdateTable}
             onMobileShareTableToggle={this.onMobileShareTableToggle}
@@ -1069,8 +1049,6 @@ class DTableWorkspaceCommon extends React.Component {
             onCopyDTableToggle={this.onCopyDTableToggle}
             isOwner={isOwner}
             isAdmin={isAdmin}
-            onAddStarDTable={this.onAddStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.props.onAddDTable}
             onUpdateTable={this.onUpdateTable}
             onMobileShareTableToggle={this.onMobileShareTableToggle}

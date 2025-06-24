@@ -459,18 +459,6 @@ class SeaQAAPI {
     return this.req.get(url, { params: params });
   }
 
-  addStarDTable(dtable_uuid) {
-    let url = this.server + '/api/v2.1/starred-dtables/';
-    let formData = new FormData();
-    formData.append('dtable_uuid', dtable_uuid);
-    return this.req.post(url, formData);
-  }
-
-  unstarProject(dtable_uuid) {
-    let url = this.server + '/api/v2.1/starred-dtables/?dtable_uuid=' + dtable_uuid;
-    return this.req.delete(url);
-  }
-
   searchItems(query_str, query_type) {
     let url = this.server + '/api/v2.1/dtable/items-search/';
     let params = {};
