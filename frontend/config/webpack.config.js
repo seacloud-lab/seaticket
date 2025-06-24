@@ -416,15 +416,18 @@ module.exports = function (webpackEnv) {
                   },
                 },
                 {
-                  loader: require.resolve('file-loader'),
+                  loader: 'svgo-loader',
                   options: {
-                    name: 'static/media/[name].[hash].[ext]',
-                  },
-                },
+                    plugins: [
+                      'removeTitle',
+                      'removeStyleElement',
+                      'cleanupIDs',
+                      'inlineStyles',
+                      'removeXMLProcInst',
+                    ]
+                  }
+                }
               ],
-              issuer: {
-                and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
-              },
             },
             {
               test: /\.worker\.js$/,
@@ -574,24 +577,6 @@ module.exports = function (webpackEnv) {
                 },
                 'sass-loader'
               ),
-            },
-            {
-              test: /\.svg$/,
-              use: [
-                {
-                  loader: 'svg-sprite-loader', options: {}
-                },
-                { loader: 'svgo-loader', options: {
-                  plugins: [
-                    'removeTitle',
-                    'removeStyleElement',
-                    'cleanupIDs',
-                    'inlineStyles',
-                    'removeXMLProcInst',
-                  ]
-                }
-                }
-              ]
             },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
