@@ -180,28 +180,6 @@ class SysAdminServiceApi {
     });
   }
 
-  sysAdminListOrgBigDataStorageStats(page, per_page) {
-    const url = this.server + '/api/v2.1/admin/organizations/big-data-storage-stats/';
-    let params = {
-      page,
-      per_page
-    };
-    return this.req.get(url, {
-      params
-    });
-  }
-
-  sysAdminListOrgUniversalAppsStats(page, per_page) {
-    const url = this.server + '/api/v2.1/admin/organizations/universal-app-stats/';
-    let params = {
-      page,
-      per_page
-    };
-    return this.req.get(url, {
-      params
-    });
-  }
-
   sysAdminGetOrg(orgID) {
     const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/';
     return this.req.get(url);
@@ -222,20 +200,11 @@ class SysAdminServiceApi {
     if (orgInfo.role) {
       formData.append('role', orgInfo.role);
     }
-    if (orgInfo.rowLimit) {
-      formData.append('row_limit', orgInfo.rowLimit);
-    }
     if (orgInfo.assetQuotaMb) {
       formData.append('asset_quota_mb', orgInfo.assetQuotaMb);
     }
-    if (orgInfo.bigDataRowLimit) {
-      formData.append('big_data_row_limit', orgInfo.bigDataRowLimit);
-    }
     if (orgInfo.smsMessageLimitPerMonth) {
       formData.append('sms_message_limit_per_month', orgInfo.smsMessageLimitPerMonth);
-    }
-    if (orgInfo.bigDataStorageQuotaMb) {
-      formData.append('big_data_storage_quota_mb', orgInfo.bigDataStorageQuotaMb);
     }
     if (orgInfo.monthlyAPICallLimitPerUser) {
       formData.append('monthly_api_call_limit_per_user', orgInfo.monthlyAPICallLimitPerUser);
