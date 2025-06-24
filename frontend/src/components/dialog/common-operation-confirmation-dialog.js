@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '../../constants/config';
-import { DTableModalHeader } from 'dtable-ui-component';
+import CustomModalHeader from '../modal-header';
 
 const propTypes = {
   title: PropTypes.string.isRequired,
@@ -27,7 +27,7 @@ class CommonOperationConfirmationDialog extends Component {
     let { title, message, confirmBtnText } = this.props;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{title}</DTableModalHeader>
+        <CustomModalHeader toggle={this.toggle}>{title}</CustomModalHeader>
         <ModalBody>
           <p dangerouslySetInnerHTML={{ __html: message }}></p>
         </ModalBody>

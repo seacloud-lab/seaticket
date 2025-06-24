@@ -459,10 +459,10 @@ LOGIN_BG_IMAGE_PATH = 'img/login-bg.jpg'
 
 # Path to the favicon file (relative to the media path)
 # tip: use a different name when modify it.
-FAVICON_PATH = 'favicons/seatable-favicon.png'
-FAVICON_NOTIFICATION_PATH = 'favicons/seatable-notification.png'
+FAVICON_PATH = 'favicons/favicon.png'
+FAVICON_NOTIFICATION_PATH = 'favicons/notification-favicon.png'
 
-APPLE_TOUCH_ICON_PATH = 'favicons/seatable-favicon.png'
+APPLE_TOUCH_ICON_PATH = 'favicons/favicon.png'
 
 # Path to the Logo Imagefile (relative to the media path)
 LOGO_PATH = 'img/seatable-logo.png'
@@ -471,8 +471,8 @@ LOGO_WIDTH = ''
 LOGO_HEIGHT = 32
 
 CUSTOM_LOGO_PATH = 'custom/mylogo.png'
-CUSTOM_FAVICON_PATH = 'custom/seatable-favicon.ico'
-CUSTOM_FAVICON_NOTIFICATION_PATH = 'custom/seatable-notification.ico'
+CUSTOM_FAVICON_PATH = 'custom/favicon.ico'
+CUSTOM_FAVICON_NOTIFICATION_PATH = 'custom/notification-favicon.ico'
 CUSTOM_LOGIN_BG_PATH = 'custom/login-bg.jpg'
 
 # used before version 6.3: the relative path of css file under seahub-data (e.g. custom/custom.css)
@@ -748,7 +748,7 @@ INIT_BASE_CONF = {
 
 # PWA
 PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
-PWA_APP_NAME = 'SeaTable'
+PWA_APP_NAME = 'SeaQA'
 PWA_APP_DESCRIPTION = "Online rich form application"
 PWA_APP_THEME_COLOR = '#0A0302'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
@@ -759,13 +759,13 @@ PWA_APP_START_URL = '/'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 PWA_APP_ICONS = [
     {
-        'src': '/media/favicons/seatable-favicon.png',
+        'src': '/media/favicons/favicon.png',
         'sizes': '512x512',
     }
 ]
 PWA_APP_ICONS_APPLE = [
     {
-        'src': '/media/favicons/seatable-favicon.png',
+        'src': '/media/favicons/favicon.png',
         'sizes': '512x512',
     }
 ]

@@ -1,0 +1,15 @@
+.sea-qa-project-side-panel {
+  height: 100%;
+  user-select: none;
+  display: flex;
+}
+
+.sea-qa-project-side-panel .sea-qa-project-navigation {
+  width: calc(100% - 2px);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex: auto;
+  flex-direction: column;
+  overflow: auto;
+  font-size: 15px;
+}

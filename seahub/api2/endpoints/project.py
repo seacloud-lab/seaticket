@@ -19,7 +19,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, UserStarredProjects, FolderItems, Folders, ProjectGroupOrders, \
-    Websites
+    Sites
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names
 from seahub.project.constants import FOLDER_ITEM_PROJECT
@@ -402,7 +402,7 @@ class ProjectView(APIView):
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
-class WebsitesView(APIView):
+class SitesView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -414,6 +414,11 @@ class WebsitesView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
+        site_name = request.POST.get('name')
+        if not site_name:
+            error_msg = 'name invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         url = request.POST.get('url')
         if not url:
             error_msg = 'url invalid.'
@@ -440,22 +445,22 @@ class WebsitesView(APIView):
             error_msg = 'Project %s not found.' % name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        existed_websites = Websites.objects.filter(project=project, url=url)
+        existed_websites = Sites.objects.filter(project=project, url=url)
         if len(existed_websites) > 0:
             error_msg = _('Url %s already exists in this project.') % url
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            website = Websites.objects.create_website(request.user.username, project, url, sitemap_url)
+            site = Sites.objects.create(request.user.username, project, site_name, url, sitemap_url)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'website': website.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'site': site.to_dict()}, status=status.HTTP_201_CREATED)
 
     def get(self, request, workspace_id, name):
-        """get all websites
+        """get all sites
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -481,30 +486,69 @@ class WebsitesView(APIView):
             error_msg = 'Project %s not found.' % name
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        websites = Websites.objects.filter(project=project)[start:end]
-        website_list = []
-        for website in websites:
-            website_list.append(website.to_dict())
+        sites = Sites.objects.filter(project=project)[start:end]
+        sites = [site.to_dict() for site in sites]
 
-        has_next_page = True
-        if len(websites) < per_page:
-            has_next_page = False
-
-        page_info = {
-            'has_next_page': has_next_page,
-            'current_page': current_page
-        }
-
-        return Response({'page_info': page_info, 'website_list': website_list}, status=status.HTTP_200_OK)
+        return Response({'sites': sites}, status=status.HTTP_200_OK)
 
 
-class WebsiteView(APIView):
+class SiteView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def delete(self, request, workspace_id, name, website_id):
-        """delete a website
+    def put(self, request, workspace_id, name, site_id):
+        """ modify site
+        """
+        # argument check
+        site_name = request.data.get('name')
+        if not site_name:
+            error_msg = 'name invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        url = request.data.get('url')
+        if not url:
+            error_msg = 'url invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        sitemap_url = request.data.get('sitemap_url')
+
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = f'Project {name} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            site = Sites.objects.modify(username, project, site_id, site_name, url, sitemap_url);
+        except Exception as e:
+            logger.error('delete website: %s error: %s', site_id, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'site': site.to_dict()}, status=status.HTTP_200_OK)
+
+
+    def delete(self, request, workspace_id, name, site_id):
+        """delete site
         """
         # role permission check
         if not request.user.permissions.can_add_project():
@@ -517,7 +561,7 @@ class WebsiteView(APIView):
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
-            error_msg = 'Workspace %s not found.' % workspace_id
+            error_msg = f'Workspace {workspace_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username
@@ -527,13 +571,13 @@ class WebsiteView(APIView):
 
         project = Projects.objects.get_project(workspace, name)
         if not project:
-            error_msg = 'Project %s not found.' % name
+            error_msg = f'Project {name} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            Websites.objects.filter(project=project, id=website_id).delete()
+            Sites.objects.filter(project=project, id=site_id).delete()
         except Exception as e:
-            logger.error('delete website: %s error: %s', website_id, e)
+            logger.error('delete website: %s error: %s', site_id, e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

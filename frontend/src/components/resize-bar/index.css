@@ -1,0 +1,31 @@
+.resize-bar {
+  margin-left: -4px;
+  position: relative;
+  width: 6px;
+}
+
+.resize-bar-content {
+  position: relative;
+  margin-left: 4px;
+  width: 2px;
+  height: 100%;
+  background-color: #ddd;
+}
+
+.resize-bar:hover {
+  cursor: col-resize;
+}
+
+.resize-bar:hover .resize-bar-content {
+  background-color: #ccc;
+}
+
+.resize-bar-handler {
+  content: '';
+  width: 6px;
+  position: absolute;
+  left: 50%;
+  margin-left: -3px;
+  border-radius: 3px;
+  background-color: #2d7ff9;
+}

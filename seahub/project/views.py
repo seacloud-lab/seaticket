@@ -46,4 +46,4 @@ def project_view(request, workspace_id, name):
         'media_url': MEDIA_URL,
     }
 
-    return render(request, 'website_view_react.html', return_dict)
+    return render(request, 'project_view_react.html', return_dict)

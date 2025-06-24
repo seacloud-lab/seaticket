@@ -1,0 +1,24 @@
+.sea-qa-project-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  padding-top: 2px;
+}
+
+.sea-qa-project-table-header .sea-qa-project-table-header-right {
+  align-items: center;
+  color: #ed7109;
+  cursor: pointer;
+  display: flex;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.sea-qa-project-table-header .sea-qa-project-table-btn {
+  font-size: 12px;
+  font-weight: 400;
+  height: 26px;
+  padding-bottom: 0;
+  padding-top: 0;
+}

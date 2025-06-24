@@ -1,7 +1,6 @@
 .multicolor-icon {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
+  width: 1rem;
+  height: 1rem;
   fill: currentColor;
   overflow: hidden;
 }

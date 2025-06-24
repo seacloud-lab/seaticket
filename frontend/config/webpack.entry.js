@@ -5,7 +5,7 @@ const entryFiles = {
   orgAdmin: '/pages/org-admin',
   sysAdmin: '/pages/sys-admin',
   appDTable: '/app-dtable',
-  websites: '/websites.js',
+  project: '/project',
 };
 
 const getEntries = (isEnvDevelopment) => {

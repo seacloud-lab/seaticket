@@ -402,15 +402,27 @@ class ProjectGroupOrders(models.Model):
         return group_ids, None
 
 
-class WebsitesManager(models.Manager):
-    def create_website(self, username, project, url, sitemap_url):
-        project = self.model(project=project, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
+class SitesManager(models.Manager):
+    def create(self, username, project, name, url, sitemap_url):
+        project = self.model(project=project, name=name, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
         project.save()
         return project
+    
+    def modify(self, username, project, site_id, name, url, sitemap_url):
+        site = self.filter(project=project, id=site_id).first()
+        if not site:
+            site = self.model(project=project, name=name, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
+        else:
+            site.name = name
+            site.url = url
+            site.sitemap_url = sitemap_url
+        site.save()
+        return site
 
 
-class Websites(models.Model):
+class Sites(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
+    name = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
     sitemap_url = models.CharField(max_length=255)
     modifier = models.CharField(max_length=255)
@@ -418,15 +430,16 @@ class Websites(models.Model):
     last_crawled_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
 
-    objects = WebsitesManager()
+    objects = SitesManager()
 
     class Meta:
-        db_table = 'websites'
+        db_table = 'sites'
         unique_together = [('url', 'project')]
 
     def to_dict(self):
         return {
             'id': self.id,
+            'name': self.name,
             'url': self.url,
             'sitemap_url': self.sitemap_url,
             'modifier': self.modifier,

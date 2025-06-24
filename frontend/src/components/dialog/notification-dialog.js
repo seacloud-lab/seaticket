@@ -52,8 +52,8 @@ class NotificationDialog extends React.Component {
           className="notification-dropdown"
         >
           <DropdownToggle tag="span" role="button" data-toggle="dropdown" aria-expanded={this.state.isItemMenuShow} className="notification-dropdown-toggle">
-            <div className="seatable-icon-btn dtable-modal-close-inner" title={gettext('More operations')} aria-label={gettext('More operations')}>
-              <i className="seatable-icon dtable-font dtable-icon-more-level" aria-hidden="true"></i>
+            <div className="sea-qa-icon-btn dtable-modal-close-inner" title={gettext('More operations')} aria-label={gettext('More operations')}>
+              <i className="sea-qa-icon dtable-font dtable-icon-more-level" aria-hidden="true"></i>
             </div>
           </DropdownToggle>
           <DropdownMenu className="dtable-dropdown-menu dropdown-menu" right={true}>
@@ -62,8 +62,8 @@ class NotificationDialog extends React.Component {
           </DropdownMenu>
         </Dropdown>
         <button className="close dtable-modal-close pl-2" data-dismiss="modal" aria-label={gettext('Close')} onClick={this.toggle}>
-          <div className="seatable-icon-btn dtable-modal-close-inner">
-            <i className="seatable-icon dtable-font dtable-icon-x" aria-hidden="true"></i>
+          <div className="sea-qa-icon-btn dtable-modal-close-inner">
+            <i className="sea-qa-icon dtable-font dtable-icon-x" aria-hidden="true"></i>
           </div>
         </button>
       </div>
