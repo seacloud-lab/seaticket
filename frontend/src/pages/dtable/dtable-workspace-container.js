@@ -72,8 +72,6 @@ const propTypes = {
   onLeaveGroupSharedTable: PropTypes.func,
   onFreezedItem: PropTypes.func,
   onUnfreezedItem: PropTypes.func,
-  onAddStarDTable: PropTypes.func,
-  onUnstarDTable: PropTypes.func,
   onMoveFolderItemToggle: PropTypes.func,
   onLeaveGroupSharedView: PropTypes.func,
   renderAddTableItem: PropTypes.func,
@@ -175,8 +173,6 @@ class WorkspaceContainer extends Component {
               onMobileUpdateTableToggle={this.props.onMobileUpdateTableToggle}
               onFreezedItem={this.props.onFreezedItem}
               onUnfreezedItem={this.props.onUnfreezedItem}
-              onAddStarDTable={this.props.onAddStarDTable}
-              onUnstarDTable={this.props.onUnstarDTable}
               onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}
               moveFolderItem={this.props.moveFolderItem}
               moveTableToFolder={this.props.moveTableToFolder}
@@ -204,8 +200,6 @@ class WorkspaceContainer extends Component {
               isItemFreezed={isItemFreezed}
               isAdmin={isAdmin}
               onLeaveShare={this.props.onLeaveGroupSharedTable}
-              onAddStarDTable={this.props.onAddStarDTable}
-              onUnstarDTable={this.props.onUnstarDTable}
               setDropdownState={this.props.setDropdownState}
               getDropdownState={this.props.getDropdownState}
               onMoveFolderItemToggle={this.props.onMoveFolderItemToggle}
