@@ -487,8 +487,9 @@ CREATE TABLE `options_useroptions`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 
-CREATE TABLE `websites`  (
+CREATE TABLE `sites`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
   `url` varchar(255) NOT NULL,
   `sitemap_url` varchar(255) NULL,
   `modifier` varchar(255) NOT NULL,

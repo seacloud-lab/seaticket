@@ -1,0 +1,14 @@
+.sea-qa-project-table {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.sea-qa-project-table-divider {
+  background-color: #eaeaea;
+  height: 1px;
+  width: 100%;
+}
+

@@ -12,7 +12,7 @@ requireContext.keys().forEach(path => {
 });
 
 function Icon({ className, symbol }) {
-  const iconClass = `multicolor-icon multicolor-icon-${symbol} ${className || ''}`;
+  const iconClass = `sea-qa-icon-svg multicolor-icon multicolor-icon-${symbol} ${className || ''}`;
   const props = { className: iconClass };
   const Component = components[symbol];
   if (!Component) return null;

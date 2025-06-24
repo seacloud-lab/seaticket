@@ -78,8 +78,8 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  listWebsites(workspaceID, projectName, page, perPage) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/';
+  listSites(workspaceID, projectName, page, perPage) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/';
     let params = {
       page: page,
       per_page: perPage
@@ -87,16 +87,26 @@ class SeaQAAPI {
     return this.req.get(url, { params: params });
   }
 
-  createWebsite(workspaceID, projectName, webUrl, sitemapUrl) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/';
+  createSite(workspaceID, projectName, { name, url: siteUrl, sitemapUrl }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/';
     let form = new FormData();
-    form.append('url', webUrl);
+    form.append('name', name);
+    form.append('url', siteUrl);
     form.append('sitemap_url', sitemapUrl);
     return this._sendPostRequest(url, form);
   }
 
-  deleteWebsite(workspaceID, projectName, websiteID) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/websites/' + websiteID + '/';
+  modifySite(workspaceID, projectName, siteID, { name, url: siteUrl, sitemapUrl }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/' + siteID + '/';
+    let form = new FormData();
+    form.append('name', name);
+    form.append('url', siteUrl);
+    form.append('sitemap_url', sitemapUrl);
+    return this.req.put(url, form);
+  }
+
+  deleteSite(workspaceID, projectName, siteID) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/' + siteID + '/';
     return this.req.delete(url);
   }
 

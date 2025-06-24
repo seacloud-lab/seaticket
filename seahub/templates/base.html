@@ -4,11 +4,11 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
 <title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
-<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaTable" {% endif %} />
+<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaQA" {% endif %} />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:image" content={% if og_image %} "{{ og_image }}" {% else %} "{{ MEDIA_URL }}img/og-seatable-logo.png" {% endif %} />
-<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaTable - As simple as Excel, with the power of a database" %}" {% endif %} />
+<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaQA - As simple as Excel, with the power of a database" %}" {% endif %} />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
 {% block viewport %}
@@ -23,7 +23,7 @@
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seatable-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250409" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
 {% block extra_style %}{% endblock %}
 {% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
