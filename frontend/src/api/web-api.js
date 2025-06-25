@@ -175,25 +175,6 @@ class SeaQAAPI {
     if (updates.icon) {
       form.append('icon', updates.icon);
     }
-    if (Object.prototype.hasOwnProperty.call(updates, 'password')) {
-      form.append('password', updates.password);
-    }
-    return this.req.put(url, form);
-  }
-
-  updateDTablePassword(workspaceID, dtableName, operation, password, new_password, code) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/password/';
-    let form = new FormData();
-    form.append('operation', operation);
-    if (new_password) {
-      form.append('new_password', new_password);
-    }
-    if (password) {
-      form.append('password', password);
-    }
-    if (code) {
-      form.append('code', code);
-    }
     return this.req.put(url, form);
   }
 
@@ -347,75 +328,6 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  copyDTable(srcWorkspaceID, dstWorkspaceID, name, password, isCopyDatasetSyncs) {
-    let url = this.server + '/api/v2.1/dtable-copy/';
-    let formData = new FormData();
-    formData.append('src_workspace_id', srcWorkspaceID);
-    formData.append('dst_workspace_id', dstWorkspaceID);
-    formData.append('name', name);
-    if (password) {
-      formData.append('password', password);
-    }
-    if (isCopyDatasetSyncs !== null && typeof isCopyDatasetSyncs !== 'undefined') {
-      formData.append('is_copy_dataset_syncs', isCopyDatasetSyncs);
-    }
-    return this._sendPostRequest(url, formData);
-  }
-
-  queryCopyDTableStatus(taskId) {
-    let url = this.server + '/api/v2.1/dtable-copy/status/?task_id=' + taskId;
-    return this.req.get(url);
-  }
-
-  doTaskAfterCopyDTable(dst_dtable_uuid) {
-    let url = this.server + '/api/v2.1/dtable-copy/do-task-after-copy/';
-    let formData = new FormData();
-    formData.append('dst_dtable_uuid', dst_dtable_uuid);
-    return this._sendPostRequest(url, formData);
-  }
-
-  copyDTablePerCDSsCheck(srcWorkspaceID, name, dstWorkspaceID) {
-    let url = this.server + '/api/v2.1/dtable-copy/pre-common-dataset-syncs-check/';
-    let form = new FormData();
-    form.append('src_workspace_id', srcWorkspaceID);
-    form.append('name', name);
-    form.append('dst_workspace_id', dstWorkspaceID);
-    return this._sendPostRequest(url, form);
-  }
-
-  copyExternalDtable(dstWorkspaceID, link, folderID) {
-    let url = this.server + '/api/v2.1/dtable-external-link/dtable-copy/';
-    let formData = new FormData();
-    formData.append('link', link);
-    formData.append('dst_workspace_id', dstWorkspaceID);
-    if (folderID) {
-      formData.append('folder_id', folderID);
-    }
-    return this._sendPostRequest(url, formData);
-  }
-
-  addExportDTableTask(workspaceId, dtable_name, password, ignore_asset) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtable_name) + '/export-dtable/';
-    let formData = new FormData();
-    if (password) {
-      formData.append('password', password);
-    }
-    if (ignore_asset) {
-      formData.append('ignore_asset', ignore_asset);
-    }
-
-    return this._sendPostRequest(url, formData);
-  }
-
-  addImportDTableTask(workspaceId, file, folderID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/import-dtable/';
-    let formData = new FormData();
-    formData.append('dtable', file);
-    if (folderID) {
-      formData.append('folder_id', folderID);
-    }
-    return this._sendPostRequest(url, formData);
-  }
 
   queryDTableIOStatusByTaskId(taskId) {
     let url = this.server + '/api/v2.1/dtable-io-status/?task_id=' + taskId;
@@ -432,32 +344,6 @@ class SeaQAAPI {
     return this.req.delete(url, { params: params });
   }
 
-  importExcelCSVPreview(workspaceId, dtableName) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/import-excel-csv/?dtable_name=' + encodeURIComponent(dtableName);
-    return this.req.get(url);
-  }
-
-  importExcelCSVCancel(workspaceId, dtableName, fileType) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/import-excel-csv/?dtable_name=' + encodeURIComponent(dtableName) + '&file_type=' + fileType;
-    return this.req.delete(url);
-  }
-
-  addImportExcelCSVTask(workspaceId, dtableName, folderID, includedTables) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/import-excel-csv/';
-    let params = {
-      dtable_name: dtableName,
-      included_tables: includedTables
-    };
-    if (folderID) {
-      params['folder_id'] = folderID;
-    }
-    return this.req.post(url, params);
-  }
-
-  addConvertPageTask(workspaceId, dtableName, params) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/convert-page/';
-    return this.req.get(url, { params: params });
-  }
 
   searchItems(query_str, query_type) {
     let url = this.server + '/api/v2.1/dtable/items-search/';

@@ -16,8 +16,6 @@ const percentType = {
   AI_CREDIT_USED: 'ai_credit_used'
 };
 
-const isDesktop = Utils.isDesktop();
-
 class OrgInfo extends Component {
 
   constructor(props) {

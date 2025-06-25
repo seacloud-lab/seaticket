@@ -18,7 +18,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.organizations.models import OrgGroup
-from seahub.project.models import Workspaces, Projects, UserStarredProjects, FolderItems, Folders, ProjectGroupOrders, \
+from seahub.project.models import Workspaces, Projects, FolderItems, Folders, ProjectGroupOrders, \
     Sites
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names
@@ -111,7 +111,6 @@ class WorkspacesView(APIView):
 
         try:
             project_list = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
-            starred_project_uuid_set = set(UserStarredProjects.objects.get_project_uuids_by_email(username))
 
             # folders and folder-items
             folders = list(Folders.objects.filter(workspace_id__in=[w.id for w in workspaces]))
@@ -121,8 +120,6 @@ class WorkspacesView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        starred_project_uuid_list = set()
-        starred_project_list = list()
 
         # group and personal tables
         workspace_id2project_list = {}
@@ -132,17 +129,7 @@ class WorkspacesView(APIView):
                 workspace_id2project_list[project.workspace.id].append(project_info)
             else:
                 workspace_id2project_list[project.workspace.id] = [project_info]
-            if project.uuid.hex in starred_project_uuid_set:
-                project_info['starred'] = True
-                if project.uuid.hex not in starred_project_uuid_list:
-                    starred_project_uuid_list.add(project.uuid.hex)
-                    starred_project_list.append(project_info)
-            else:
-                project_info['starred'] = False
-
-        starred_tables = dict(id='', name='starred', type='starred')
-        starred_tables['project_list'] = starred_project_list
-        workspace_list.append(starred_tables)
+            project_info['starred'] = False
 
         # handle folders and folder-items
         folder_items_dict = {}

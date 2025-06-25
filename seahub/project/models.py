@@ -212,8 +212,6 @@ class Projects(models.Model):
     color = models.CharField(max_length=50, null=True)
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
-    password = models.CharField(max_length=255, null=True)
-    in_storage = models.BooleanField(default=False, null=False)
 
     objects = ProjectsManager()
 
@@ -233,7 +231,6 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
-            'in_storage': self.in_storage,
         }
         if include_deleted:
             result.update({
@@ -264,26 +261,7 @@ class Projects(models.Model):
         return -1
 
     def is_encrypted(self):
-        return self.password is not None
-
-
-class UserStarredProjectsManager(models.Manager):
-
-    def get_project_uuids_by_email(self, email):
-        usds = super(UserStarredProjectsManager, self).filter(email=email)
-        return [usd.project_uuid for usd in usds]
-
-
-class UserStarredProjects(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    email = models.EmailField(db_index=True)
-    project_uuid = models.CharField(max_length=36, db_index=True)
-
-    objects = UserStarredProjectsManager()
-
-    class Meta:
-        db_table = 'user_starred_projects'
-        unique_together = (('email', 'project_uuid'),)
+        return False
 
 
 class FoldersManager(models.Manager):
