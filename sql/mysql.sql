@@ -427,8 +427,6 @@ CREATE TABLE `projects`  (
   `color` varchar(50) DEFAULT NULL,
   `text_color` varchar(50) DEFAULT NULL,
   `icon` varchar(50) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `in_storage` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid`(`uuid`),
   UNIQUE KEY `projects_workspace_id_name_0b89d91b_uniq`(`workspace_id`, `name`),
@@ -436,16 +434,6 @@ CREATE TABLE `projects`  (
   KEY `projects_created_at_e6716f4b`(`created_at`),
   KEY `updated_at_h3g4o9u6_key`(`updated_at`),
   CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `user_starred_projects`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(254) NOT NULL,
-  `project_uuid` varchar(36) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_starred_projects_email_project_uuid_n8s7b3s0_uniq`(`email`, `project_uuid`),
-  INDEX `user_starred_project_project_uuid_n3s8l4n8`(`project_uuid`),
-  INDEX `user_starred_projects_email_n9x0l3n8`(`email`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `folders`  (

@@ -6,7 +6,6 @@ import { Utils, validateName } from '../../utils/utils';
 import DtableSettingPopover from './dtable-popover/dtable-setting-popover';
 import DTableItem from './dtable-item';
 import { DragSource } from 'react-dnd';
-import DTableVerifyPasswordDialog from './dialog/dtable-verify-password-dialog';
 
 const dragSource = {
   beginDrag: (props, monitor) => {
@@ -46,9 +45,6 @@ const propTypes = {
   renameTable: PropTypes.func.isRequired,
   onDeleteTableToggle: PropTypes.func.isRequired,
   onShareTableToggle: PropTypes.func.isRequired,
-  onSetPasswordToggle: PropTypes.func,
-  onUnsetPasswordToggle: PropTypes.func,
-  onModifyPasswordToggle: PropTypes.func,
   onTableSnapshotsToggle: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
@@ -79,7 +75,6 @@ class DTableItemCommon extends React.Component {
       dtableIcon: icon,
       advancedDropdownOpen: false,
       isFinished: false,
-      isShowVerifyPasswordDialog: false,
       isShowConfirmExportDialog: false,
       ignore_asset: 'false',
       size_limit: 0,
@@ -142,10 +137,6 @@ class DTableItemCommon extends React.Component {
 
   onMobileShareTableToggle = () => {
     this.props.onMobileShareTableToggle(this.props.project);
-  };
-
-  onVerifyPasswordDialogToggle = () => {
-    this.setState({ isShowVerifyPasswordDialog: !this.state.isShowVerifyPasswordDialog });
   };
 
   onConfirmExportDialogToggle = () => {
@@ -407,18 +398,6 @@ class DTableItemCommon extends React.Component {
                   <DropdownItem divider />
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onMoveFolderItemToggle}>{gettext('Move to folder')}</DropdownItem>}
                   <DropdownItem divider />
-                  {(isOwner || isAdmin) &&
-                    <>
-                      {project.is_encrypted ?
-                        <Fragment>
-                          <DropdownItem onClick={this.onUnsetPasswordToggle}>{gettext('Unset password')}</DropdownItem>
-                          <DropdownItem onClick={this.onModifyPasswordToggle}>{gettext('Modify password')}</DropdownItem>
-                        </Fragment>
-                        :
-                        <DropdownItem onClick={this.onSetPasswordToggle}>{gettext('Set password')}</DropdownItem>
-                      }
-                    </>
-                  }
                   {(isOwner || isAdmin) && this.renderAdvancedMenu()}
                 </DropdownMenu>
               </Dropdown>
@@ -437,13 +416,6 @@ class DTableItemCommon extends React.Component {
             onNameChange={this.onNameChange}
           />
         )}
-        {this.state.isShowVerifyPasswordDialog &&
-          <DTableVerifyPasswordDialog
-            dtable={this.props.project}
-            toggle={this.onVerifyPasswordDialogToggle}
-            ignore_asset={this.state.ignore_asset}
-          />
-        }
       </div>
     )));
   }

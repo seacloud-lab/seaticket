@@ -181,22 +181,6 @@ class SeaQAAPI {
     return this.req.put(url, form);
   }
 
-  updateDTablePassword(workspaceID, dtableName, operation, password, new_password, code) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/password/';
-    let form = new FormData();
-    form.append('operation', operation);
-    if (new_password) {
-      form.append('new_password', new_password);
-    }
-    if (password) {
-      form.append('password', password);
-    }
-    if (code) {
-      form.append('code', code);
-    }
-    return this.req.put(url, form);
-  }
-
   deleteTable(workspaceID, name) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let params = { name: name };

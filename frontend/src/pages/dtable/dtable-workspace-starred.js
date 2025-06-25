@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
-import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import ObjectUtils from '../../utils/object-utils';
 import DTableItemStarred from './dtable-item-starred';
@@ -12,7 +10,6 @@ const gettext = window.gettext;
 
 const propTypes = {
   starredWorkspace: PropTypes.object.isRequired,
-  onUnstarDTable: PropTypes.func.isRequired,
   personalWorkspace: PropTypes.object,
   groupWorkspaceList: PropTypes.array.isRequired,
   noBaseTip: PropTypes.object,

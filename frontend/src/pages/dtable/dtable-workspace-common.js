@@ -28,9 +28,6 @@ import WorkspaceHeader from './dtable-workspace-header';
 import WorkspaceContainer from './dtable-workspace-container';
 import LeaveGroupDialog from './dialog/leave-group-dialog';
 import DepartmentDetailDialog from './dialog/department-detail-dialog';
-import DTableSetPasswordDialog from './dialog/dtable-password/dtable-set-password-dialog';
-import DTableModifyPasswordDialog from './dialog/dtable-password/dtable-modify-password-dialog';
-import DTableUnsetPasswordDialog from './dialog/dtable-password/dtable-unset-password-dialog';
 import GroupTrashDialog from './dialog/group-trash-dialog';
 import FolderItemsDialog from './dtable-popover/folder-items-dialog';
 import MobileFolderItems from './dtable-popover/folder-items-mobile';
@@ -88,9 +85,6 @@ class DTableWorkspaceCommon extends React.Component {
       isItemFreezed: false,
       isShowDeleteDialog: false,
       isShowSharedDialog: false,
-      isShowSetPasswordDialog: false,
-      isShowUnsetPasswordDialog: false,
-      isShowModifyPasswordDialog: false,
       isShowAPITokenDialog: false,
       isShowWebhookDialog: false,
       isShowRenameTableDialog: false,
@@ -185,30 +179,6 @@ class DTableWorkspaceCommon extends React.Component {
   onShareTableToggle = (table) => {
     this.setState({
       isShowSharedDialog: !this.state.isShowSharedDialog,
-      currentTable: table
-    });
-    this.onUnfreezedItem();
-  };
-
-  onSetPasswordToggle = (table) => {
-    this.setState({
-      isShowSetPasswordDialog: !this.state.isShowSetPasswordDialog,
-      currentTable: table
-    });
-    this.onUnfreezedItem();
-  };
-
-  onUnsetPasswordToggle = (table) => {
-    this.setState({
-      isShowUnsetPasswordDialog: !this.state.isShowUnsetPasswordDialog,
-      currentTable: table
-    });
-    this.onUnfreezedItem();
-  };
-
-  onModifyPasswordToggle = (table) => {
-    this.setState({
-      isShowModifyPasswordDialog: !this.state.isShowModifyPasswordDialog,
       currentTable: table
     });
     this.onUnfreezedItem();
@@ -363,26 +333,6 @@ class DTableWorkspaceCommon extends React.Component {
     if (operation === 'password_modify') {
       return gettext('Successfully modified password');
     }
-  };
-
-  onHandlePassword = (projectName, operation, password, newPassword, code) => {
-    seaQAAPI.updateDTablePassword(this.props.workspace.id, projectName, operation, password, newPassword, code).then((res) => {
-      this.props.loadWorkspaceList();
-      const updateProject = res.data.project;
-      let projectList = this.state.projectList.map((project) => {
-        if (project.name === projectName) {
-          project = Object.assign({}, project, updateProject);
-        }
-        return project;
-      });
-      this.setState({ projectList: projectList });
-      let msg = this.formatMsgByOperation(operation);
-      this.passwordRef.toggle();
-      msg && toaster.success(msg);
-    }).catch((error) => {
-      let errMsg = Utils.getErrorMsg(error);
-      this.passwordRef.setState({ errorInfo: errMsg });
-    });
   };
 
   onCopyDTableToggle = (table) => {
@@ -795,9 +745,6 @@ class DTableWorkspaceCommon extends React.Component {
             moveFolderItem={this.moveFolderItem}
             renameTable={this.renameTable}
             onShareTableToggle={this.onShareTableToggle}
-            onSetPasswordToggle={this.onSetPasswordToggle}
-            onUnsetPasswordToggle={this.onUnsetPasswordToggle}
-            onModifyPasswordToggle={this.onModifyPasswordToggle}
             onDeleteTableToggle={this.onDeleteTableToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onTableAPITokenToggle={this.onTableAPITokenToggle}
@@ -844,30 +791,6 @@ class DTableWorkspaceCommon extends React.Component {
             toggleDialog={this.onDeleteTableToggle}
           />
         )}
-        {this.state.isShowSetPasswordDialog &&
-          <DTableSetPasswordDialog
-            ref={ref => this.passwordRef = ref}
-            dtable={this.state.currentTable}
-            toggle={this.onSetPasswordToggle}
-            onHandlePassword={this.onHandlePassword}
-          />
-        }
-        {this.state.isShowModifyPasswordDialog &&
-          <DTableModifyPasswordDialog
-            ref={ref => this.passwordRef = ref}
-            dtable={this.state.currentTable}
-            toggle={this.onModifyPasswordToggle}
-            onHandlePassword={this.onHandlePassword}
-          />
-        }
-        {this.state.isShowUnsetPasswordDialog &&
-          <DTableUnsetPasswordDialog
-            ref={ref => this.passwordRef = ref}
-            dtable={this.state.currentTable}
-            toggle={this.onUnsetPasswordToggle}
-            onHandlePassword={this.onHandlePassword}
-          />
-        }
         {this.state.isShowAPITokenDialog &&
           <TableAPITokenDialog
             currentTable={this.state.currentTable}
@@ -994,9 +917,6 @@ class DTableWorkspaceCommon extends React.Component {
             moveFolderItem={this.moveFolderItem}
             renameTable={this.renameTable}
             onShareTableToggle={this.onShareTableToggle}
-            onSetPasswordToggle={this.onSetPasswordToggle}
-            onUnsetPasswordToggle={this.onUnsetPasswordToggle}
-            onModifyPasswordToggle={this.onModifyPasswordToggle}
             onDeleteTableToggle={this.onDeleteTableToggle}
             onTableAPITokenToggle={this.onTableAPITokenToggle}
             onWebhookToggle={this.onWebhookToggle}
@@ -1035,9 +955,6 @@ class DTableWorkspaceCommon extends React.Component {
             moveFolderItem={this.moveFolderItem}
             renameTable={this.renameTable}
             onShareTableToggle={this.onShareTableToggle}
-            onSetPasswordToggle={this.onSetPasswordToggle}
-            onUnsetPasswordToggle={this.onUnsetPasswordToggle}
-            onModifyPasswordToggle={this.onModifyPasswordToggle}
             onDeleteTableToggle={this.onDeleteTableToggle}
             onTableAPITokenToggle={this.onTableAPITokenToggle}
             onWebhookToggle={this.onWebhookToggle}
