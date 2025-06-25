@@ -47,17 +47,6 @@ class DTableWorkspaceStarred extends React.Component {
     };
   };
 
-  unstarProject = (project) => {
-    seaQAAPI.unstarProject(project.uuid).then(() => {
-      this.props.onUnstarDTable(project);
-    }).catch(error => {
-      let errMsg = Utils.getErrorMsg(error, true);
-      if (!error.response || error.response.status !== 403) {
-        toaster.danger(errMsg);
-      }
-    });
-  };
-
   render() {
     const { personalWorkspace, groupWorkspaceList, noBaseTip } = this.props;
     const { projectList } = this.state;
@@ -78,7 +67,7 @@ class DTableWorkspaceStarred extends React.Component {
           {projectList.map((project, index) => {
             const path = getWorkspaceName(project, workspaces);
             return (
-              <DTableItemStarred key={index} table={project} unstarProject={this.unstarProject} path={path}/>
+              <DTableItemStarred key={index} table={project} path={path}/>
             );
           })}
         </div>

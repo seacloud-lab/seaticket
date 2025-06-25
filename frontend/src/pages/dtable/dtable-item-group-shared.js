@@ -76,10 +76,6 @@ class DTableItemGroupShared extends React.Component {
     this.props.onLeaveShare(this.props.project);
   };
 
-  onUnstarDTable = () => {
-    this.props.onUnstarDTable(this.props.project);
-  };
-
   dropdownToggle = () => {
     if (this.state.dropdownOpen) {
       this.setState({ active: false });
@@ -277,7 +273,6 @@ DTableItemGroupShared.propTypes = {
   folder: PropTypes.object,
   onLeaveShare: PropTypes.func.isRequired,
   isAdmin: PropTypes.bool.isRequired,
-  onUnstarDTable: PropTypes.func.isRequired,
   setDropdownState: PropTypes.func,
   getDropdownState: PropTypes.func,
   onMoveFolderItemToggle: PropTypes.func,

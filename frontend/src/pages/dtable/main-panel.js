@@ -24,7 +24,6 @@ class MainPanel extends React.Component {
       errorMsg: null,
       workspaceList: [],
       isWorkspaceListLoading: true,
-      starredDTableList: [],
     };
     this.searchTableRef = null;
   }
@@ -127,60 +126,6 @@ class MainPanel extends React.Component {
     this.setState({ workspaceList: workspaceList });
   };
 
-  onUnstarDTable = (project) => {
-    let workspaceList = this.state.workspaceList.slice();
-    workspaceList = workspaceList.map((item) => {
-      // delete starred project item from starredWorkspace
-      if (item.type === 'starred') {
-        item.project_list = item.project_list.filter(projectItem => {
-          return projectItem.id !== project.id;
-        });
-        return item;
-      }
-      // update the dtable starred state
-      item.project_list = item.project_list.map(projectItem => {
-        if (projectItem.id === project.id) {
-          projectItem.starred = false;
-        }
-        return projectItem;
-      });
-      // update the dtable starred in shared module
-      item.group_shared_dtables = item.group_shared_dtables.map(projectItem => {
-        if (projectItem.id === project.id) {
-          projectItem.starred = false;
-        }
-        return projectItem;
-      });
-
-      return item;
-    });
-
-    this.setState({ workspaceList });
-  };
-
-  onStarDTable = (project) => {
-    let workspaceList = this.state.workspaceList.slice();
-    workspaceList = workspaceList.map((item) => {
-      // add starred dtable into starredWorkspace
-      if (item.type === 'starred') {
-        project.starred = true;
-        item.project_list.push(project);
-        return item;
-      }
-      // update the dtable starred state
-      item.project_list = item.project_list.map(projectItem => {
-        if (projectItem.id === project.id) {
-          projectItem.starred = true;
-        }
-        return projectItem;
-      });
-
-      return item;
-    });
-
-    this.setState({ workspaceList });
-  };
-
   render() {
     return (
       <div className="main-panel" aria-label={gettext('Main panel')}>
@@ -197,9 +142,6 @@ class MainPanel extends React.Component {
             onAddGroupSharedTable={this.onAddGroupSharedTable}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
             onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            starredDTableList={this.state.starredDTableList}
-            onStarDTable={this.onStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.onAddDTable}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
@@ -215,9 +157,6 @@ class MainPanel extends React.Component {
             onAddGroupSharedTable={this.onAddGroupSharedTable}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
             onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            starredDTableList={this.state.starredDTableList}
-            onStarDTable={this.onStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.onAddDTable}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
@@ -233,9 +172,6 @@ class MainPanel extends React.Component {
             onAddGroupSharedTable={this.onAddGroupSharedTable}
             onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
             onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            starredDTableList={this.state.starredDTableList}
-            onStarDTable={this.onStarDTable}
-            onUnstarDTable={this.onUnstarDTable}
             onAddDTable={this.onAddDTable}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />

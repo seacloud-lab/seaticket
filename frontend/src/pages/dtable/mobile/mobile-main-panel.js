@@ -42,7 +42,6 @@ class MobileMainPanel extends React.Component {
       errorMsg: null,
       workspaceList: [],
       isWorkspaceListLoading: true,
-      starredDTableList: [],
     };
   }
 
@@ -138,65 +137,6 @@ class MobileMainPanel extends React.Component {
     this.setState({ workspaceList: workspaceList });
   };
 
-  onUnstarDTable = (table) => {
-    let workspaceList = this.state.workspaceList.slice();
-    workspaceList = workspaceList.map((item) => {
-      // delete starred dtable item from starredWorkspace
-      if (item.type === 'starred') {
-        item.project_list = item.project_list.filter(tableItem => {
-          return tableItem.id !== table.id;
-        });
-        return item;
-      }
-      // update the dtable starred state
-      item.project_list = item.project_list.map(tableItem => {
-        if (tableItem.id === table.id) {
-          tableItem.starred = false;
-        }
-        return tableItem;
-      });
-      // update the dtable starred in shared module
-      item.group_shared_dtables = item.group_shared_dtables.map(tableItem => {
-        if (tableItem.id === table.id) {
-          tableItem.starred = false;
-        }
-        return tableItem;
-      });
-
-      return item;
-    });
-
-    this.setState({ workspaceList });
-  };
-
-  onStarDTable = (project) => {
-    let workspaceList = this.state.workspaceList.slice();
-    workspaceList = workspaceList.map((item) => {
-      // add starred dtable into starredWorkspace
-      if (item.type === 'starred') {
-        project.starred = true;
-        item.project_list.push(project);
-        return item;
-      }
-      // update the dtable starred state
-      item.project_list = item.project_list.map(projectItem => {
-        if (projectItem.id === project.id) {
-          projectItem.starred = true;
-        }
-        return projectItem;
-      });
-      // update the dtable starred state in shared module
-      item.group_shared_dtables = item.group_shared_dtables.map(projectItem => {
-        if (projectItem.id === project.id) {
-          projectItem.starred = true;
-        }
-        return projectItem;
-      });
-      return item;
-    });
-    this.setState({ workspaceList });
-  };
-
   onSelectCurrentTab = (selectedTab) => {
     this.setState({ selectedTab });
   };
@@ -216,9 +156,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          starredDTableList={this.state.starredDTableList}
-          onStarDTable={this.onStarDTable}
-          onUnstarDTable={this.onUnstarDTable}
           onAddDTable={this.onAddDTable}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
@@ -233,9 +170,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          starredDTableList={this.state.starredDTableList}
-          onStarDTable={this.onStarDTable}
-          onUnstarDTable={this.onUnstarDTable}
           onAddDTable={this.onAddDTable}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
@@ -250,9 +184,6 @@ class MobileMainPanel extends React.Component {
           onCopyDTable={this.onCopyDTable}
           onAddGroupSharedTable={this.onAddGroupSharedTable}
           onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-          starredDTableList={this.state.starredDTableList}
-          onStarDTable={this.onStarDTable}
-          onUnstarDTable={this.onUnstarDTable}
           onAddDTable={this.onAddDTable}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />

@@ -8,7 +8,6 @@ const { siteRoot } = window.app.config;
 
 const propTypes = {
   table: PropTypes.object.isRequired,
-  unstarProject: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
 };
 
@@ -27,11 +26,6 @@ class DTableItemStarred extends React.Component {
 
   onMouseLeave = () => {
     this.setState({ active: false });
-  };
-
-  onUnstarDTableSubmit = (e) => {
-    e.stopPropagation();
-    this.props.unstarProject(this.props.table);
   };
 
   onTableItemClick = (e, href) => {
@@ -68,14 +62,6 @@ class DTableItemStarred extends React.Component {
         >
           <DTableItem dtableColor={color} dtableIcon={icon} />
           {this.renderName(name, tableHref, isDesktop, is_encrypted)}
-          <div className="table-dropdown-menu">
-            <i
-              className="dtable-font dtable-icon-x action-icon"
-              title={gettext('Unstar')}
-              style={!active ? { opacity: 0 } : {}}
-              onClick={this.onUnstarDTableSubmit}>
-            </i>
-          </div>
         </div>
       );
     }
@@ -86,13 +72,6 @@ class DTableItemStarred extends React.Component {
       >
         <DTableItem dtableColor={color} dtableIcon={icon} className="table-mobile-icon"/>
         {this.renderName(name, tableHref, isDesktop, is_encrypted)}
-        <div className="table-mobile-dropdown-menu">
-          <i
-            className="dtable-font dtable-icon-x table-dropdown-menu-icon"
-            title={gettext('Unstar')}
-            onClick={this.onUnstarDTableSubmit}>
-          </i>
-        </div>
       </div>
     );
   }
