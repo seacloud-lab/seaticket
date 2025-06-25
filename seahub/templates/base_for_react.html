@@ -28,7 +28,7 @@
 {% if request.is_mobile or request.is_tablet %}
 {% block mobile_style %}{% endblock %}
 {% endif %}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/base-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?v={{ version }}" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250409" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_react.css?t=1398068110" />
 {% block extra_style %}{% endblock %}
@@ -63,7 +63,6 @@
             fileServerRoot: '{{ FILE_SERVER_ROOT }}',
             serviceURL: '{{ service_url }}',
             seafileVersion: '{{ seafile_version }}',
-            avatarURL: '{{ avatar_url }}'
         },
         pageOptions: {
             server: '{{ service_url }}',
@@ -72,6 +71,7 @@
             name: "{{request.user.username|email2nickname|escapejs}}",
             contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
             username: "{{request.user.username|escapejs}}",
+            avatarURL: '{{ avatar_url }}',
             canAddRepo: {% if user.permissions.can_add_repo %} true {% else %} false {% endif %},
             canAddGroup: {% if user.permissions.can_add_group %} true {% else %} false {% endif %},
             canGenerateUploadLink: {% if user.permissions.can_generate_upload_link %} true {% else %} false {% endif %},

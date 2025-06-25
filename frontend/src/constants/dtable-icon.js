@@ -1,4 +1,4 @@
-export const DTABLE_ICON_LIST = [
+export const PROJECT_ICON_LIST = [
   'icon-worksheet',
   'icon-task-management',
   'icon-software-test-management',
@@ -30,7 +30,7 @@ export const DTABLE_ICON_LIST = [
   'icon-club-members',
 ];
 
-export const DTABLE_ICON_COLORS = [
+export const PROJECT_ICON_COLORS = [
   '#FF8000',
   '#FFB600',
   '#E91E63',

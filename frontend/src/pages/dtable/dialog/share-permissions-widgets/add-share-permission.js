@@ -52,7 +52,7 @@ class AddSharePermission extends Component {
         <div className="add-share-permission-header d-flex align-items-center justify-content-between">
           <span>
             <span className="back-btn d-inline-flex align-items-center justify-content-center" onClick={this.props.onChangeStatus}>
-              <i className="dtable-font dtable-icon-return dtable-icon-style"></i>
+              <i className="dtable-font dtable-icon-return project-icon-style"></i>
             </span>
             <span className="add-share-permission-header-text">{gettext('Add permission')}</span>
           </span>

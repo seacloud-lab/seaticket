@@ -26,7 +26,7 @@ const Sites = () => {
   const columns = useMemo(() => {
     return [
       { key: 'name', name: gettext('Name'), width: '25%' },
-      { key: 'url', name: gettext('Url'), width: '25%' },
+      { key: 'url', name: gettext('URL'), width: '25%' },
       { key: 'ctime', name: gettext('Create time'), width: '15%' },
       { key: 'last_crawled', name: gettext('Last crawled'), width: '15%' },
       { key: 'status', name: gettext('Status'), width: '10%' },

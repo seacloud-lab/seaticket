@@ -1,0 +1,65 @@
+.account-container .account-avatar {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.account-container .account-avatar img {
+  border-radius: 50%;
+  height: 28px;
+  width: 28px;
+}
+
+.account-details-popover {
+  background: #fff;
+  border: 1px solid #c9c9c9;
+  border-radius: 3px;
+  box-shadow: 0 0 4px #ccc;
+  font-size: 13px;
+  position: absolute;
+  right: 10px;
+  top: 49px;
+  width: 240px;
+  z-index: 20;
+}
+
+.account-details-popover:before {
+  border-bottom: 8px solid #e4e4e4;
+  border-left: 8px solid #0000;
+  border-right: 8px solid #0000;
+  content: "";
+  filter: drop-shadow(0 -1px 2px #ccc);
+  position: absolute;
+  right: 12px;
+  top: -8px;
+}
+
+.account-details-popover:after {
+  border-bottom: 10px solid #fff;
+  border-left: 10px solid #0000;
+  border-right: 10px solid #0000;
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: -7px;
+}
+
+.account-details-popover .account-details-content {
+  border-bottom: 1px solid #ddd;
+  color: #212529;
+  cursor: default;
+  padding: 8px 18px;
+}
+
+.account-details-popover .account-settings-item {
+  border-bottom: 1px solid #ddd;
+  color: #212529;
+  display: block;
+  padding: 8px 18px;
+  text-align: left;
+}

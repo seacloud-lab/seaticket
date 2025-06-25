@@ -2,7 +2,7 @@ import React from 'react';
 import { PopoverBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
+import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../../constants/dtable-icon';
 import DtablePopover from '../../../components/dtable-popover';
 import { gettext } from '../../../constants/config';
 
@@ -64,10 +64,10 @@ export default class DtableSettingPopover extends React.Component {
 
   renderColorSettings = () => {
     let { dtableColor } = this.props;
-    dtableColor = dtableColor || DTABLE_ICON_COLORS[0];
+    dtableColor = dtableColor || PROJECT_ICON_COLORS[0];
     return (
       <div className="row dtable-color-content">
-        {DTABLE_ICON_COLORS.map((color, index) => {
+        {PROJECT_ICON_COLORS.map((color, index) => {
           return (
             <div
               key={index}
@@ -97,11 +97,11 @@ export default class DtableSettingPopover extends React.Component {
 
   renderIconSettings = () => {
     let { dtableIcon, dtableColor } = this.props;
-    dtableColor = dtableColor || DTABLE_ICON_COLORS[0];
-    dtableIcon = dtableIcon || DTABLE_ICON_LIST[0];
+    dtableColor = dtableColor || PROJECT_ICON_COLORS[0];
+    dtableIcon = dtableIcon || PROJECT_ICON_LIST[0];
     return (
       <div className="row dtable-icon-content">
-        {DTABLE_ICON_LIST.map((icon, index) => {
+        {PROJECT_ICON_LIST.map((icon, index) => {
           let isSelected = icon === dtableIcon;
           return (
             <div
@@ -114,7 +114,7 @@ export default class DtableSettingPopover extends React.Component {
               aria-label={`${gettext('Icon')} ${icon}`}
             >
               <span className="colorinput dtable-icon-input" aria-selected={isSelected}>
-                <i aria-hidden="true" className={classnames('base-font dtable-icon-style', { [icon]: icon, 'dtable-icon-color-white': isSelected })}></i>
+                <i aria-hidden="true" className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
               </span>
             </div>
           );

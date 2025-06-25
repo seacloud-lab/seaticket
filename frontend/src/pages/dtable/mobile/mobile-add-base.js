@@ -81,7 +81,7 @@ class MobileAddBase extends React.Component {
             >
               <div className="table-mobile-icon" aria-hidden="true">
                 <span className="table-icon-content">
-                  <i className="base-font icon-add dtable-icon-style"></i>
+                  <i className="project-icon icon-add project-icon-style"></i>
                 </span>
               </div>
               <div className="table-mobile-name">
