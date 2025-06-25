@@ -18,8 +18,6 @@ const propTypes = {
   onDeleteTable: PropTypes.func.isRequired,
   onLeaveGroupSharedTable: PropTypes.func.isRequired,
   onAddGroupSharedTable: PropTypes.func.isRequired,
-  onStarDTable: PropTypes.func.isRequired,
-  onUnstarDTable: PropTypes.func.isRequired,
   onAddDTable: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
 };
@@ -77,7 +75,7 @@ class MainPanelDTables extends React.Component {
   render() {
     let { isWorkspaceListLoading, workspaceList, errorMsg, onCopyDTable,
       onDeleteTable, onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
-      onStarDTable, onUnstarDTable, onAddDTable } = this.props;
+      onAddDTable } = this.props;
     if (isWorkspaceListLoading) {
       return (<div className="mt-6"><Loading /></div>);
     }
@@ -121,8 +119,6 @@ class MainPanelDTables extends React.Component {
                       onDeleteTable={onDeleteTable}
                       onAddGroupSharedTable={onAddGroupSharedTable}
                       onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-                      onStarDTable={onStarDTable}
-                      onUnstarDTable={onUnstarDTable}
                       onAddDTable={onAddDTable}
                       loadWorkspaceList={this.props.loadWorkspaceList}
                     />
@@ -130,7 +126,6 @@ class MainPanelDTables extends React.Component {
                   {starredWorkspace && (
                     <DTableWorkspaceStarred
                       starredWorkspace={starredWorkspace}
-                      onUnstarDTable={onUnstarDTable}
                       personalWorkspace={personalWorkspace}
                       groupWorkspaceList={groupWorkspaceList}
                     />
@@ -146,8 +141,6 @@ class MainPanelDTables extends React.Component {
                         onCopyDTable={onCopyDTable}
                         onAddGroupSharedTable={onAddGroupSharedTable}
                         onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-                        onStarDTable={onStarDTable}
-                        onUnstarDTable={onUnstarDTable}
                         onAddDTable={onAddDTable}
                         loadWorkspaceList={this.props.loadWorkspaceList}
                       />

@@ -72,8 +72,6 @@ const propTypes = {
   onLeaveGroupSharedTable: PropTypes.func,
   onAddGroupSharedTable: PropTypes.func,
   onLeaveGroupSharedView: PropTypes.func,
-  onStarDTable: PropTypes.func,
-  onUnstarDTable: PropTypes.func,
   onAddDTable: PropTypes.func,
   loadWorkspaceList: PropTypes.func,
   noBaseTip: PropTypes.object

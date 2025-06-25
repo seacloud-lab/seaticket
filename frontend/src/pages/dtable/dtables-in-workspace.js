@@ -20,8 +20,6 @@ const propTypes = {
   onDeleteTable: PropTypes.func.isRequired,
   onLeaveGroupSharedTable: PropTypes.func.isRequired,
   onAddGroupSharedTable: PropTypes.func.isRequired,
-  onStarDTable: PropTypes.func.isRequired,
-  onUnstarDTable: PropTypes.func.isRequired,
   onAddDTable: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
   dtableID: PropTypes.string,
@@ -41,7 +39,7 @@ class DTablesInWorkspace extends React.Component {
   renderWorkspace = () => {
     const { dtableID, workspaceList, onCopyDTable, onDeleteTable,
       onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
-      onStarDTable, onUnstarDTable, onAddDTable } = this.props;
+      onAddDTable } = this.props;
 
     if (!isNumber(dtableID)) {
       if (dtableID === 'starred') {
@@ -57,7 +55,6 @@ class DTablesInWorkspace extends React.Component {
         return (
           <DTableWorkspaceStarred
             starredWorkspace={starredWorkspace}
-            onUnstarDTable={onUnstarDTable}
             personalWorkspace={personalWorkspace}
             groupWorkspaceList={groupWorkspaceList}
             noBaseTip={
@@ -84,8 +81,6 @@ class DTablesInWorkspace extends React.Component {
         onCopyDTable={onCopyDTable}
         onAddGroupSharedTable={onAddGroupSharedTable}
         onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-        onStarDTable={onStarDTable}
-        onUnstarDTable={onUnstarDTable}
         onAddDTable={onAddDTable}
         loadWorkspaceList={this.props.loadWorkspaceList}
         noBaseTip={
