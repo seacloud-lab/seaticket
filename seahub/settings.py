@@ -780,6 +780,8 @@ d = os.path.dirname
 # custom navigation settings
 CUSTOM_NAV_ITEMS = []
 
+WEB_CRAWL_INDEX_SERVER_URL = 'http://127.0.0.1:8888'
+
 #####################
 # External settings #
 #####################

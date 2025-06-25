@@ -1,10 +1,18 @@
 import logging
+import jwt
+import time
+import requests
+import json
+from urllib.parse import urljoin
 
 from seahub.project.models import Projects
 from seahub.group.utils import is_group_admin_or_owner
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group
+
+from seahub.settings import WEB_CRAWL_INDEX_SERVER_URL, SEAQA_PRIVATE_KEY
+
 
 logger = logging.getLogger(__name__)
 
@@ -71,4 +79,14 @@ def convert_project_trash_names(project):
     new_project_name = '_(deleted_' + str(project.id) + ') ' + project.name
 
     return new_project_name
+
+
+def add_init_crawl_site_task(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, SEAQA_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(WEB_CRAWL_INDEX_SERVER_URL, '/add-init-crawl-site-task')
+    resp = requests.get(url, params=params, headers=headers)
+
+    return json.loads(resp.content)
 
