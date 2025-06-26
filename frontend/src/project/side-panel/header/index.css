@@ -1,37 +1,39 @@
-.sea-qa-project .sea-qa-project-info {
+.sea-qa-project .sea-qa-project-icon {
   display: flex;
-  align-items: center;
-  flex: 1;
-  overflow: hidden;
-}
-
-.sea-qa-project .sea-qa-project-info .sea-qa-project-icon-container {
-  display: flex;
-  height: 24px;
-  width: 24px;
+  height: 30px;
+  width: 30px;
   border-radius: 4px;
   margin-right: 8px;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
-
-.sea-qa-project .sea-qa-project-info .sea-qa-project-name {
-  flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;  
 }
 
-.sea-qa-project .sea-qa-project-info .sea-qa-project-icon-container .sea-qa-project-return-home-icon {
+.sea-qa-project .sea-qa-project-icon .project-icon {
+  font-size: 20px;
+}
+
+.sea-qa-project .sea-qa-project-icon .sea-qa-project-return-home-icon {
   color: #fff;
+  height: 20px;
+  width: 20px;
 }
 
-.sea-qa-project .sea-qa-project-info .sea-qa-project-icon-container .sea-qa-project-return-home-icon,
-.sea-qa-project .sea-qa-project-info .sea-qa-project-icon-container:hover .project-icon {
+.sea-qa-project .sea-qa-project-icon .sea-qa-project-return-home-icon,
+.sea-qa-project .sea-qa-project-icon:hover .project-icon {
   display: none;
 }
 
-.sea-qa-project .sea-qa-project-info .sea-qa-project-icon-container:hover .sea-qa-project-return-home-icon {
+.sea-qa-project .sea-qa-project-icon:hover .sea-qa-project-return-home-icon {
   display: unset;
+}
+
+.sea-qa-project .sea-qa-project-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 700;
 }
