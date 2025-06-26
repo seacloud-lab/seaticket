@@ -1,6 +1,6 @@
 import React from 'react';
 import { toaster } from 'dtable-ui-component';
-import { mediaUrl, gettext, serviceURL, lang, appAvatarURL } from '../constants/config';
+import { mediaUrl, gettext, serviceURL, lang, avatarURL } from '../constants/config';
 import { strChineseFirstPY } from './pinyin-by-unicode';
 import { NOTIFICATION_TYPE } from '../constants/notification-constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
@@ -193,7 +193,7 @@ export const Utils = {
   },
 
   getDTableIconClass: function () {
-    return `dtable-font dtable-icon-table system-dtable-font ${Utils.isDesktop() ? 'dtable-icon-style' : ''}`;
+    return `dtable-font dtable-icon-table system-dtable-font ${Utils.isDesktop() ? 'project-icon-style' : ''}`;
   },
 
   getDirentIcon: function (dirent, isBig) {
@@ -773,7 +773,7 @@ export const getNoticeItemAvatarUrl = (noticeItem) => {
       return detail.group_staff_avatar_url;
     }
     case NOTIFICATION_TYPE.LICENSE_EXPIRING: {
-      return appAvatarURL;
+      return avatarURL;
     }
     default: {
       return null;

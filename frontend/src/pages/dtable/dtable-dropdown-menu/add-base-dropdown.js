@@ -67,7 +67,7 @@ class AddBaseDropdownMenu extends React.Component {
         >
           <div className="table-icon" aria-hidden="true">
             <span className="table-icon-content">
-              <i className="base-font icon-add dtable-icon-style"></i>
+              <i className="project-icon icon-add project-icon-style"></i>
             </span>
           </div>
           <div className="table-name">

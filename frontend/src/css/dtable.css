@@ -253,17 +253,13 @@
   border-bottom: 1px solid #e6e6e6;
 }
 
-.workspace .dtable-icon-style {
+.workspace .project-icon-style {
   font-size: 18px;
 }
 
-.dtable-icon-settings-popover .dtable-icon-style {
+.dtable-icon-settings-popover .project-icon-style {
   color: #999;
   font-size: 20px;
-}
-
-.dtable-icon-color-white {
-  color: #ffffff !important;
 }
 
 .workspace .add-table-range:hover {
@@ -865,7 +861,7 @@
   border-bottom: 1px solid #e6e6e6;
 }
 
-.folder .dtable-icon-style {
+.folder .project-icon-style {
   font-size: 18px;
 }
 

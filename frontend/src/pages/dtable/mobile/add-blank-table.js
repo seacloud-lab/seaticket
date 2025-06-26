@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
-import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
+import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../../constants/dtable-icon';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { validateName } from '../../../utils/utils';
@@ -22,8 +22,8 @@ class AddBlankTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dtableIcon: DTABLE_ICON_LIST[0],
-      dtableColor: DTABLE_ICON_COLORS[0],
+      dtableIcon: PROJECT_ICON_LIST[0],
+      dtableColor: PROJECT_ICON_COLORS[0],
       tableName: '',
       options: [],
     };
@@ -103,7 +103,7 @@ class AddBlankTable extends React.Component {
     let { dtableColor } = this.state;
     return (
       <div className="row dtable-color-content">
-        {DTABLE_ICON_COLORS.map((color, index) => {
+        {PROJECT_ICON_COLORS.map((color, index) => {
           return (
             <div key={index} className="dtable-color-item" onClick={() => this.onColorChange(color)}>
               <label className="colorinput">
@@ -123,12 +123,12 @@ class AddBlankTable extends React.Component {
 
     return (
       <div className="row dtable-icon-content mt-4">
-        {DTABLE_ICON_LIST.map((icon, index) => {
+        {PROJECT_ICON_LIST.map((icon, index) => {
           let isSelected = icon === dtableIcon;
           return (
             <div key={index} className="dtable-icon-item" onClick={() => this.onIconChange(icon)} style={{ backgroundColor: isSelected ? dtableColor : '' }}>
               <label className="colorinput dtable-icon-input">
-                <i className={classnames('base-font dtable-icon-style', { [icon]: icon, 'dtable-icon-color-white': isSelected })}></i>
+                <i className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
               </label>
             </div>
           );

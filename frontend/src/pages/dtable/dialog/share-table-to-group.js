@@ -17,8 +17,8 @@ const groupItemPropTypes = {
   onAddCustomSharePermission: PropTypes.func,
 };
 
-const { mediaUrl, avatarURL } = window.app.config;
-const { name, username } = window.app.pageOptions;
+const { mediaUrl } = window.app.config;
+const { name, username, avatarURL } = window.app.pageOptions;
 
 
 class GroupItem extends React.Component {

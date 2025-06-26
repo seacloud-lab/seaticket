@@ -1,15 +1,15 @@
 @font-face {
-  font-family: "base-font"; /* Project id 1949442 */
-  src: url('./base-font/base-font.eot?t=1648620441182'); /* IE9 */
-  src: url('./base-font/base-font.eot?t=1648620441182#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('./base-font/base-font.woff2?t=1648620441182') format('woff2'),
-       url('./base-font/base-font.woff?t=1648620441182') format('woff'),
-       url('./base-font/base-font.ttf?t=1648620441182') format('truetype'),
-       url('./base-font/base-font.svg?t=1648620441182#base-font') format('svg');
+  font-family: "project-icon"; /* Project id 1949442 */
+  src: url('./project-icon/project-icon.eot?t=1648620441182'); /* IE9 */
+  src: url('./project-icon/project-icon.eot?t=1648620441182#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('./project-icon/project-icon.woff2?t=1648620441182') format('woff2'),
+       url('./project-icon/project-icon.woff?t=1648620441182') format('woff'),
+       url('./project-icon/project-icon.ttf?t=1648620441182') format('truetype'),
+       url('./project-icon/project-icon.svg?t=1648620441182#project-icon') format('svg');
 }
 
-.base-font {
-  font-family: "base-font" !important;
+.project-icon {
+  font-family: "project-icon" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;

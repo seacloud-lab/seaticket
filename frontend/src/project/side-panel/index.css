@@ -4,9 +4,22 @@
   display: flex;
 }
 
+.sea-qa-project .sea-qa-project-side-panel .sea-qa-project-side-panel-header {
+  border-color: transparent;
+}
+
+.sea-qa-project-side-panel .sea-qa-project-side-panel-container {
+  width: 100%;
+  flex: 1;
+  user-select: none;
+  display: flex;
+  overflow-y: auto;
+  flex-direction: column;
+}
+
 .sea-qa-project-side-panel .sea-qa-project-navigation {
   width: calc(100% - 2px);
-  padding: 0.75rem 1rem;
+  padding: 10px 16px;
   display: flex;
   flex: auto;
   flex-direction: column;

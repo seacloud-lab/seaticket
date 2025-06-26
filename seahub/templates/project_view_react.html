@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
-<title>{{ filename }}</title>
+<title>{{ project_name|escapejs }}</title>
 {% progressive_web_app_meta %}
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 {% if request.is_mobile or request.is_tablet %}
@@ -18,6 +18,7 @@
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250409" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?v={{ version }}" />
 {% render_bundle 'project' 'css' %}
 {% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
 {% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
@@ -46,10 +47,13 @@
             name: "{{request.user.username|email2nickname|escapejs}}",
             username: "{{request.user.username|escapejs}}",
             contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+            avatarURL: '{{ avatar_url }}',
+            isOrgStaff: {% if is_org_staff %} true {% else %} false {% endif %},
 
             projectName: '{{ project_name|escapejs }}',
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',
+            icon: '{{ icon|escapejs }}',
         }
      };
 </script>

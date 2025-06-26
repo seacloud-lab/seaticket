@@ -5,7 +5,7 @@ import { toaster } from 'dtable-ui-component';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { isWorkWeChat } from '../../../utils/wechat-utils';
-import { siteRoot, gettext, appAvatarURL, isOrgContext, useExternalTeamAdmin } from '../../../constants';
+import { siteRoot, gettext, avatarURL, isOrgContext, useExternalTeamAdmin } from '../../../constants';
 
 import '../../../css/mobile/mobile-mine.css';
 
@@ -67,7 +67,7 @@ class MobileMine extends React.Component {
   };
 
   renderAvatar = () => {
-    return (<img src={appAvatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />);
+    return (<img src={avatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />);
   };
 
   renderMenu = () => {

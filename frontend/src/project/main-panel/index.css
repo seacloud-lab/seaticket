@@ -3,3 +3,7 @@
   overflow: hidden;
   height: 100%;
 }
+
+.sea-qa-project-main-panel .sea-qa-project-main-panel-header {
+  justify-content: flex-end;
+}

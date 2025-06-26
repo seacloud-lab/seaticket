@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+import json
+
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
@@ -29,12 +31,18 @@ def project_view(request, workspace_id, name):
         group_id = workspace.owner.split('@')[0]
         group = Group.objects.get_group(group_id)
         if not group:
-            error_msg = 'Group %s not found.' % group_id
+            error_msg = f'Group {group_id} not found.'
             return render_error(request, error_msg)
 
     project = Projects.objects.get_project(workspace, name)
     if not project:
         return render_error(request, _('This project does not exist'))
+
+    icon = {
+        'bg_color': project.color,
+        'text_color': project.text_color,
+        'name': project.icon
+    }
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -44,6 +52,7 @@ def project_view(request, workspace_id, name):
         'current_group_id': int(group_id) if project.is_owned_by_group else None,
         'is_owned_by_group': project.is_owned_by_group,
         'media_url': MEDIA_URL,
+        'icon': json.dumps(icon)
     }
 
     return render(request, 'project_view_react.html', return_dict)

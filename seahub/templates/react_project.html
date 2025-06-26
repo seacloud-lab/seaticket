@@ -39,7 +39,7 @@
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/base-font.css?v={{ version }}" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?v={{ version }}" />
 {% if request.is_mobile or request.is_tablet %}
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/antd-mobile-v2.3.1.min.css" />
 {% endif %}
@@ -59,7 +59,6 @@
         config: {
             version: '{{ version }}',
             siteRoot: '{{ SITE_ROOT }}',
-            avatarURL: '{{ avatar_url }}',
             loginUrl: '{{ LOGIN_URL }}',
             mediaUrl: '{{ MEDIA_URL }}',
             lang: '{{ LANGUAGE_CODE }}',
@@ -75,6 +74,7 @@
             userId: "{{request.user.id|escapejs}}",
             username: "{{request.user.username|escapejs}}",
             contactEmail: "{{request.user.username|email2contact_email|escapejs}}",
+            avatarURL: '{{ avatar_url }}',
 
             canAddGroup: {% if user.permissions.can_add_group %} true {% else %} false {% endif %},
             canAddProject: {% if user.permissions.can_add_project %} true {% else %} false {% endif %},

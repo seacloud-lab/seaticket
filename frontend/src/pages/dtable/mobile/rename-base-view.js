@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { List, InputItem } from 'antd-mobile';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from './mobile-common-header';
-import { DTABLE_ICON_LIST, DTABLE_ICON_COLORS } from '../../../constants/dtable-icon';
+import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../../constants/dtable-icon';
 import { gettext } from '../../../constants/config';
 import { validateName } from '../../../utils/utils';
 
@@ -20,8 +20,8 @@ class RenameBaseView extends React.Component {
     super(props);
     const { currentItem } = props;
     this.state = {
-      itemIcon: currentItem.icon || DTABLE_ICON_LIST[0],
-      itemColor: currentItem.color || DTABLE_ICON_COLORS[0],
+      itemIcon: currentItem.icon || PROJECT_ICON_LIST[0],
+      itemColor: currentItem.color || PROJECT_ICON_COLORS[0],
       itemName: currentItem.name || '',
     };
   }
@@ -71,7 +71,7 @@ class RenameBaseView extends React.Component {
 
   renderColorSettings = () => {
     let { itemColor } = this.state;
-    const iconColorList = DTABLE_ICON_COLORS;
+    const iconColorList = PROJECT_ICON_COLORS;
     return (
       <div className="row dtable-color-content">
         {iconColorList.map((color, index) => {
@@ -91,7 +91,7 @@ class RenameBaseView extends React.Component {
 
   renderIconSettings = () => {
     let { itemColor, itemIcon } = this.state;
-    const iconList = DTABLE_ICON_LIST;
+    const iconList = PROJECT_ICON_LIST;
 
     return (
       <div className="row dtable-icon-content mt-4">
@@ -100,7 +100,7 @@ class RenameBaseView extends React.Component {
           return (
             <div key={index} className="dtable-icon-item" onClick={() => this.onIconChange(icon)} style={{ backgroundColor: isSelected ? itemColor : '' }}>
               <label className="colorinput dtable-icon-input">
-                <i className={classnames('base-font dtable-icon-style', { [icon]: icon, 'dtable-icon-color-white': isSelected })}></i>
+                <i className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
               </label>
             </div>
           );
