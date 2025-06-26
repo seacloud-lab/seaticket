@@ -4,7 +4,6 @@ import { gettext } from '../constants';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { TAB } from './constants';
-import Header from './header';
 
 import './index.css';
 
@@ -40,11 +39,8 @@ const Project = () => {
 
   return (
     <div className="sea-qa-project">
-      <Header />
-      <div className="sea-qa-project-body">
-        <SidePanel tabs={tabs} activeTab={activeTab} toggleTab={toggleTab} />
-        <MainPanel activeTab={activeTab} />
-      </div>
+      <SidePanel tabs={tabs} activeTab={activeTab} toggleTab={toggleTab} />
+      <MainPanel activeTab={activeTab} />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import Tab from './tab';
 import ResizeBar from '../../components/resize-bar';
+import Header from './header';
 
 import './index.css';
 
@@ -21,8 +22,11 @@ const SidePanel = ({ tabs, activeTab, toggleTab }) => {
 
   return (
     <div className="sea-qa-project-side-panel" ref={ref}>
-      <div className="sea-qa-project-navigation">
-        {tabs.map(tabGroup => (<Tab key={tabGroup.key} tab={tabGroup} activeTab={activeTab} toggleTab={toggleTab} />))}
+      <div className="sea-qa-project-side-panel-container">
+        <Header />
+        <div className="sea-qa-project-navigation">
+          {tabs.map(tabGroup => (<Tab key={tabGroup.key} tab={tabGroup} activeTab={activeTab} toggleTab={toggleTab} />))}
+        </div>
       </div>
       <ResizeBar min={200} max={600} onResize={onResize} />
     </div>

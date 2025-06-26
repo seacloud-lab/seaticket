@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TAB } from '../constants';
 import Sites from './sites';
+import { name, avatarURL, username } from '../../constants';
+import Account from '../components/account';
 
 import './index.css';
 
@@ -14,9 +16,25 @@ const MainPanelContainer = ({ activeTab }) => {
   if (activeTab === TAB.SITES) return (<Sites />);
 };
 
+const MainPanelTopBar = () => {
+  const user = useMemo(() => {
+    return {
+      name,
+      username,
+      avatar_url: avatarURL
+    };
+  }, []);
+  return (
+    <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
+      <Account user={user} />
+    </div>
+  );
+};
+
 const MainPanel = ({ activeTab }) => {
   return (
     <div className="sea-qa-project-main-panel">
+      <MainPanelTopBar />
       <MainPanelContainer activeTab={activeTab} />
     </div>
   );
