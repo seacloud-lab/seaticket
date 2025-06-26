@@ -9,7 +9,6 @@ import OrgAdminUserNav from '../../components/org-admin-user-nav';
 import SetOrgUserName from '../../components/dialog/set-org-user-name';
 import SetOrgUserContactEmail from '../../components/dialog/set-org-user-contact-email';
 import SetOrgUserQuota from '../../components/dialog/set-org-user-quota';
-import SetOrgUserIdInOrg from '../../components/dialog/set-org-user-id-in-org';
 import MainPanelTopbar from './main-panel-topbar';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 
@@ -73,12 +72,6 @@ class OrgUserProfile extends Component {
     });
   };
 
-  updateIdInOrg = (id_in_org) => {
-    this.setState({
-      id_in_org: id_in_org
-    });
-  };
-
   updateContactEmail = (contactEmail) => {
     this.setState({
       contact_email: contactEmail
@@ -127,7 +120,6 @@ class OrgUserProfile extends Component {
               <Content
                 data={this.state}
                 updateName={this.updateName}
-                updateIdInOrg={this.updateIdInOrg}
                 updateContactEmail={this.updateContactEmail}
                 updateQuota={this.updateQuota}
                 disable2FA={this.disable2FA}
@@ -148,7 +140,6 @@ const contentPropTypes = {
   updateName: PropTypes.func.isRequired,
   updateContactEmail: PropTypes.func.isRequired,
   updateQuota: PropTypes.func.isRequired,
-  updateIdInOrg: PropTypes.func.isRequired,
   disable2FA: PropTypes.func.isRequired,
   toggleForce2fa: PropTypes.func.isRequired,
 };
@@ -161,15 +152,8 @@ class Content extends Component {
       isSetNameDialogOpen: false,
       isSetContactEmailDialogOpen: false,
       isSetQuotaDialogOpen: false,
-      isSetIdInOrgDialogOpen: false,
     };
   }
-
-  toggleSetIdInOrgDialog = () => {
-    this.setState({
-      isSetIdInOrgDialogOpen: !this.state.isSetIdInOrgDialogOpen
-    });
-  };
 
   toggleSetNameDialog = () => {
     this.setState({
@@ -193,11 +177,11 @@ class Content extends Component {
     const {
       loading, errorMsg,
       avatar_url, email, contact_email,
-      name, quota_total, quota_usage, id_in_org, has_default_device, is_force_2fa,
+      name, quota_total, has_default_device, is_force_2fa,
       weixin_connected, weixin_official_accounts_followed,
       corp_bound_work_weixin, org_work_weixin_connected, corp_bound_dingtalk, org_dingtalk_connected,
     } = this.props.data;
-    const { isSetNameDialogOpen, isSetContactEmailDialogOpen, isSetQuotaDialogOpen, isSetIdInOrgDialogOpen } = this.state;
+    const { isSetNameDialogOpen, isSetContactEmailDialogOpen, isSetQuotaDialogOpen } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -213,12 +197,6 @@ class Content extends Component {
             <img src={avatar_url} width="80" height="80" className="rounded" alt="" />
           </dd>
 
-          <dt className="info-item-heading">ID</dt>
-          <dd>
-            {id_in_org || '--'}
-            <span title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon dtable-font dtable-icon-rename" onClick={this.toggleSetIdInOrgDialog}></span>
-          </dd>
-
           <dt className="info-item-heading">{gettext('Name')}</dt>
           <dd>
             {name || '--'}
@@ -231,12 +209,6 @@ class Content extends Component {
             {enableUserSetContactEmail &&
               <span title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon dtable-font dtable-icon-rename" onClick={this.toggleSetContactEmailDialog}></span>
             }
-          </dd>
-
-          <dt className="info-item-heading">{gettext('Space used / Quota')}</dt>
-          <dd>
-            {`${Utils.bytesToSize(quota_usage)}${quota_total > 0 ? ' / ' + Utils.bytesToSize(quota_total) : ''}`}
-            <span title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon dtable-font dtable-icon-rename" onClick={this.toggleSetQuotaDialog}></span>
           </dd>
 
           {twoFactorAuthEnabled &&
@@ -309,15 +281,6 @@ class Content extends Component {
           quotaTotal={quota_total}
           updateQuota={this.props.updateQuota}
           toggleDialog={this.toggleSetQuotaDialog}
-        />
-        }
-        {isSetIdInOrgDialogOpen &&
-        <SetOrgUserIdInOrg
-          orgID={orgID}
-          email={email}
-          idInOrg={id_in_org}
-          updateIdInOrg={this.props.updateIdInOrg}
-          toggleDialog={this.toggleSetIdInOrgDialog}
         />
         }
       </Fragment>

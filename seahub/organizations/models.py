@@ -179,9 +179,6 @@ class OrgAdminSettingsManager(models.Manager):
     def is_enable_force_2fa_by_org_id(self, org_id):
         return self._get_setting_with_key(org_id, 'enable_force_2fa')
 
-    def can_external_user_access_invite_link_by_org_id(self, org_id):
-        return self._get_setting_with_key(org_id, 'enable_external_user_access_invite_link')
-
     def is_enable_memeber_modify_name_by_org_id(self, org_id):
         return self._get_setting_with_key(org_id, 'enable_member_modify_name')
 
@@ -215,7 +212,6 @@ class OrgAdminSettings(models.Model):
     BOOLEAN_SETTINGS = {
         'enable_force_2fa': False,
         'enable_new_user_email': True,
-        'enable_external_user_access_invite_link': True,
         'enable_member_modify_name': True
     }
 

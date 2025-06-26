@@ -362,14 +362,6 @@ class OrgAdminServiceApi {
     return this.req.put(url, data);
   }
 
-  orgAdminSetOrgUserIdInOrg(orgID, email, IdInOrg) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/users/' + encodeURIComponent(email) + '/';
-    const data = {
-      id_in_org: IdInOrg
-    };
-    return this.req.put(url, data);
-  }
-
   orgAdminListProjects(orgID, page, perPage) {
     const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/';
     let params = {

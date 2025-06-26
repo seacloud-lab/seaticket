@@ -2,15 +2,13 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { Utils, validateName } from '../../utils/utils';
+import { Utils } from '../../utils/utils';
 import MainPanelTopbar from './main-panel-topbar';
 import Section from '../sys-admin/web-settings/section';
 import CheckboxItem from '../sys-admin/web-settings/checkbox-item';
-import InputItem from '../sys-admin/web-settings/input-item';
-import { gettext, displayTwoFactorAuth, enableOrgLogo } from '../../constants';
+import { gettext, displayTwoFactorAuth } from '../../constants';
 import Loading from '../../components/loading';
 import '../../css/system-admin-web-settings.css';
-import OrgLogoForm from './org-logo-form';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -51,26 +49,11 @@ class OrgSettings extends React.Component {
   };
 
   saveSetting = (key, value) => {
-    if (key === 'orgName') {
-      let response = validateName(value);
-      if (!response.isValid) {
-        toaster.danger(response.message);
-        return;
-      }
-      const newOrgName = response.message;
-      orgAdminServiceApi.orgAdminUpdateOrgInfo(newOrgName).then((res) => {
-        this.setState({ orgName: newOrgName });
-        toaster.success(gettext('Successfully set name.'));
-      }).catch((error) => {
-        this.handleError(error);
-      });
-    } else {
-      orgAdminServiceApi.orgAdminUpdateSettings(key, value).then(res => {
-        this.setState({ settings: res.data });
-      }).catch(error => {
-        this.handleError(error);
-      });
-    }
+    orgAdminServiceApi.orgAdminUpdateSettings(key, value).then(res => {
+      this.setState({ settings: res.data });
+    }).catch(error => {
+      this.handleError(error);
+    });
   };
 
   handleError = (error) => {
@@ -90,16 +73,6 @@ class OrgSettings extends React.Component {
               {loading && <Loading />}
               {(!loading && settings && orgName) &&
               <Fragment>
-                <Section headingText={gettext('Info')}>
-                  <InputItem
-                    saveSetting={this.saveSetting}
-                    displayName={gettext('Team name')}
-                    keyText='orgName'
-                    value={orgName}
-                    helpTip={''}
-                  />
-                  {enableOrgLogo && <OrgLogoForm />}
-                </Section>
                 {displayTwoFactorAuth &&
                 <Section headingText={gettext('Two factor authentication')}>
                   <CheckboxItem
@@ -125,15 +98,6 @@ class OrgSettings extends React.Component {
                     keyText='enable_member_modify_name'
                     value={settings['enable_member_modify_name']}
                     helpTip={gettext('Enable members modify their own name')}
-                  />
-                </Section>
-                <Section headingText={gettext('Base management')}>
-                  <CheckboxItem
-                    saveSetting={this.saveSetting}
-                    displayName={gettext('Enable sharing bases to external users via invite links')}
-                    keyText='enable_external_user_access_invite_link'
-                    value={settings['enable_external_user_access_invite_link']}
-                    helpTip={gettext('Enable sharing bases to external users via invite links')}
                   />
                 </Section>
               </Fragment>
