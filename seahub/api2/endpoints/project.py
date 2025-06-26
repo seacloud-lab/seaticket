@@ -21,8 +21,10 @@ from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, FolderItems, Folders, ProjectGroupOrders, \
     Sites
 from seahub.group.utils import group_id_to_name
-from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names
+from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names, \
+    add_init_crawl_site_task
 from seahub.project.constants import FOLDER_ITEM_PROJECT
+
 
 logger = logging.getLogger(__name__)
 
@@ -444,6 +446,11 @@ class SitesView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        params = {
+            'site_id': site.id
+        }
+        add_init_crawl_site_task(params)
+
         return Response({'site': site.to_dict()}, status=status.HTTP_201_CREATED)
 
     def get(self, request, workspace_id, name):
@@ -504,7 +511,7 @@ class SiteView(APIView):
         if not request.user.permissions.can_add_project():
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -532,7 +539,6 @@ class SiteView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'site': site.to_dict()}, status=status.HTTP_200_OK)
-
 
     def delete(self, request, workspace_id, name, site_id):
         """delete site
