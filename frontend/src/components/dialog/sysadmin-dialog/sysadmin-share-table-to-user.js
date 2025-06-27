@@ -5,7 +5,7 @@ import { Button } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import UserSelect from '../../../components/user-select';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
-import UserInfoPopover from '../../../pages/dtable/dtable-popover/user-info-popover';
+import { UserInfoPopover } from '../../../components/popover';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { gettext, cloudMode, isOrgContext } from '../../../constants';

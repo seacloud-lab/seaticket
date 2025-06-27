@@ -1,0 +1,136 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { toaster } from 'dtable-ui-component';
+import { seaQAAPI } from '../../../api/web-api';
+import Base from '../../models/base';
+import { Utils, validateName } from '../../../utils/utils';
+import ProjectIcon from './project-icon';
+import { ProjectSettingPopover } from '../../popover';
+
+const gettext = window.gettext;
+
+const propTypes = {
+  currentWorkspace: PropTypes.object,
+  createBlankTable: PropTypes.func,
+  hideVirtualDtable: PropTypes.func,
+};
+
+class VirtualDtable extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      ProjectName: gettext('Untitled project'),
+      dtableIcon: '',
+      dtableColor: '',
+      isChange: true,
+      isDataLoaded: false,
+      baseCreated: [],
+    };
+  }
+
+  componentDidMount() {
+    let baseCreated = [];
+    seaQAAPI.getAccountInfo().then((res) => {
+      let obj = {};
+      obj.value = 'personal';
+      obj.email = res.data.email;
+      obj.label = 'Personal';
+      baseCreated.push(obj);
+      seaQAAPI.listGroups().then((res) => {
+        for (let i = 0 ; i < res.data.length; i++) {
+          let obj = {};
+          obj.value = res.data[i].id;
+          obj.email = res.data[i].id + '@seafile_group';
+          obj.label = res.data[i].name;
+          baseCreated.push(obj);
+        }
+        this.setState({ baseCreated, isDataLoaded: true });
+      }).catch((err) => {
+        this.handleError(err);
+        this.props.hideVirtualDtable();
+      });
+    }).catch((error) => {
+      this.handleError(error);
+      this.props.hideVirtualDtable();
+    });
+  }
+
+  onCreateTable = () => {
+    const { ProjectName, dtableIcon, dtableColor, baseCreated, isChange } = this.state;
+    if (!isChange) return;
+    const { currentWorkspace } = this.props;
+    let response = validateName(ProjectName);
+    if (!response.isValid) {
+      toaster.danger(response.message);
+      return;
+    }
+    let email;
+    if (currentWorkspace) {
+      for (let i = 0; i < baseCreated.length; i++) {
+        if ((currentWorkspace.type === 'personal' && baseCreated[i].value === 'personal') ||
+          (currentWorkspace.type === 'group' && baseCreated[i].value === currentWorkspace.group_id)) {
+          email = baseCreated[i].email;
+          break;
+        }
+      }
+    }
+    seaQAAPI.createProject(response.message, email, dtableIcon, dtableColor, null).then((res) => {
+      let newProject = new Base(res.data.project);
+      this.props.createBlankTable(newProject);
+    }).catch((error) => {
+      this.setState({ isChange: false });
+      this.handleError(error);
+    });
+  };
+
+  handleError = (err) => {
+    let errMsg = Utils.getErrorMsg(err, true);
+    if (!err.response || err.response.status !== 403) {
+      toaster.danger(errMsg);
+    }
+  };
+
+  onColorChange = (dtableColor) => {
+    this.setState({ dtableColor, isChange: true });
+  };
+
+  onIconChange = (dtableIcon) => {
+    this.setState({ dtableIcon, isChange: true });
+  };
+
+  onNameChange = (ProjectName) => {
+    this.setState({ ProjectName, isChange: true });
+  };
+
+  render() {
+    const { ProjectName, dtableIcon, dtableColor } = this.state;
+    return (
+      <div
+        className={'virtual-table table-item tr-highlight'}
+        id="create-base"
+      >
+        <ProjectIcon dtableColor={''} dtableIcon={''} />
+        <div className="table-name">{gettext('Untitled project')}</div>
+        {this.state.isDataLoaded && (
+          <ProjectSettingPopover
+            placement='bottom-start'
+            popoverClassName='virtual-table-icon-settings'
+            tableIconSettingsId={'create-base'}
+            onTableIconToggle={this.onCreateTable}
+            ProjectName={ProjectName}
+            dtableColor={dtableColor}
+            dtableIcon={dtableIcon}
+            onColorChange={this.onColorChange}
+            onIconChange={this.onIconChange}
+            onNameChange={this.onNameChange}
+          />
+        )}
+      </div>
+    );
+  }
+}
+
+VirtualDtable.propTypes = propTypes;
+
+export default VirtualDtable;

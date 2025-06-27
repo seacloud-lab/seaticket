@@ -131,7 +131,7 @@ class SeaQAAPI {
   }
 
   // ---- project api
-  createProject(name, owner, dtableIcon, dtableColor, textColor, folderID) {
+  createProject(name, owner, dtableIcon, dtableColor, textColor) {
     const url = this.server + '/api/v2.1/projects/';
     let form = new FormData();
     form.append('name', name);
@@ -144,9 +144,6 @@ class SeaQAAPI {
     }
     if (textColor) {
       form.append('text_color', textColor);
-    }
-    if (folderID) {
-      form.append('folder_id', folderID);
     }
     return this._sendPostRequest(url, form);
   }

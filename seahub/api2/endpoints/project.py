@@ -196,7 +196,6 @@ class ProjectsView(APIView):
         # argument check
         project_owner = request.POST.get('owner')
         workspace_id = request.POST.get('workspace_id')
-        folder_id = request.POST.get('folder_id')
 
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -211,7 +210,6 @@ class ProjectsView(APIView):
         color = request.data.get('color')
         text_color = request.data.get('text_color')
         icon = request.data.get('icon')
-        password = request.data.get('password', None)
 
         # resource check
         if project_owner:
@@ -240,13 +238,6 @@ class ProjectsView(APIView):
             error_msg = _('Project %s already exists in this workspace.') % project_name
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        folder = None
-        if folder_id:
-            folder = Folders.objects.filter(id=folder_id).first()
-            if not folder or folder.workspace_id != workspace.id:
-                error_msg = 'Folder not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         if not check_project_limit(workspace, request):
             error_msg = 'base exceeded.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -257,11 +248,7 @@ class ProjectsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            if password:
-                password = make_password(password)
-            project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon, password=password)
-            if folder:
-                FolderItems.objects.create(folder_id=folder.id, item_type=FOLDER_ITEM_PROJECT, item_id=project.uuid.hex)
+            project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

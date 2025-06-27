@@ -64,33 +64,6 @@ class SysAdminServiceApi {
     });
   }
 
-  sysAdminListDTableArchives(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/dtable-archives/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  sysAdminDeleteDTableArchives(dtable_uuids) {
-    let url = this.server + '/api/v2.1/admin/dtable-archives/';
-    let params = {
-      dtable_uuids: dtable_uuids,
-    };
-
-    return this.req.delete(url, {
-      data: params
-    });
-  }
-
-  sysAdminListArchiveBackups(dtable_uuid) {
-    let url = this.server + '/api/v2.1/admin/dtable-archives/' + dtable_uuid + '/backups/';
-    return this.req.get(url);
-  }
-
   sysAdminRestoreTrashDTable(dtableID, restoreToAdminAccount) {
     const url = this.server + '/api/v2.1/admin/trash-dtables/' + dtableID + '/';
     const data = {

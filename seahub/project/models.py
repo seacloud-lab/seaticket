@@ -138,10 +138,10 @@ class IdInOrgTuple(models.Model):
 
 class ProjectsManager(models.Manager):
 
-    def create_project(self, username, workspace, name, color=None, text_color=None, icon=None, password=None):
+    def create_project(self, username, workspace, name, color=None, text_color=None, icon=None):
         name = utf8_normalize(name)
         project = self.model(workspace=workspace, name=name, creator=username, modifier=username,
-                             color=color, text_color=text_color, icon=icon, password=password)
+                             color=color, text_color=text_color, icon=icon)
         project.save()
         return project
 

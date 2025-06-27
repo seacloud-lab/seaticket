@@ -1140,7 +1140,7 @@ a.table-sort-op:focus {
 }
 
 .icon-color-white {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .visually-hidden {

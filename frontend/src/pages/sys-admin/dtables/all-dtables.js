@@ -14,12 +14,11 @@ import Loading from '../../../components/loading';
 import Paginator from '../../../components/paginator';
 import MainPanelTopbar from '../main-panel-topbar';
 import DTableOpMenu from './dtable-op-menu';
-import DeleteTableDialog from '../../dtable/dialog/delete-table-dialog';
+import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import DTableNav from './dtables-nav';
-import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-external-links-dialog';
-import UnsetPasswordConfirmDialog from '../../dtable/dialog/unset-password-confirm-dialog';
-import DTableAllAPITokensDialog from '../../dtable/dialog/dtable-all-api-tokens-dialog';
+import DTableAllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
+
 import '../../../css/system-dtable.css';
 
 const itemPropTypes = {
@@ -40,8 +39,6 @@ class Item extends Component {
       highlight: false,
       isDeleteDialogOpen: false,
       isExternalLinkDialogOpen: false,
-      isUnsetPasswordConfirmDialogOpen: false,
-      isAPITokenDialogOpen: false,
       isShowDTableIODialog: false,
       isShowCopyDTable: false,
       isShowShareDTableDialog: false,
@@ -82,12 +79,6 @@ class Item extends Component {
         break;
       case 'External links':
         this.toggleExternalLinkDialog();
-        break;
-      case 'Unset password':
-        this.toggleUnsetPasswordConfirmDialog();
-        break;
-      case 'API tokens':
-        this.toggleAPITokenDialog();
         break;
       case 'Export':
         this.exportDTable();
@@ -170,7 +161,7 @@ class Item extends Component {
     });
   };
 
-  onDeleteDTable = () => {
+  onDeleteProject = () => {
     const item = this.props.item;
     const dtableName = item.name;
     const dtable_uuid = item.uuid;
@@ -202,12 +193,6 @@ class Item extends Component {
 
   };
 
-  onUnsetDTablePassword = () => {
-    const item = this.props.item;
-    this.props.unsetDTablePassword(item);
-    this.toggleUnsetPasswordConfirmDialog();
-  };
-
   onDTableIODialogToggle = () => {
     this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
   };
@@ -227,21 +212,13 @@ class Item extends Component {
     this.setState({ isExternalLinkDialogOpen: !this.state.isExternalLinkDialogOpen });
   };
 
-  toggleAPITokenDialog = () => {
-    this.setState({ isAPITokenDialogOpen: !this.state.isAPITokenDialogOpen });
-  };
-
-  toggleUnsetPasswordConfirmDialog = () => {
-    this.setState({ isUnsetPasswordConfirmDialogOpen: !this.state.isUnsetPasswordConfirmDialogOpen });
-  };
-
   onShareDTableToggle = () => {
     this.setState({ isShowShareDTableDialog: !this.state.isShowShareDTableDialog });
   };
 
   render() {
     const item = this.props.item;
-    let operations = ['External links', 'API tokens', 'Delete', 'Export', 'Copy', 'Repair'];
+    let operations = ['External links', 'Delete', 'Export', 'Copy', 'Repair'];
     if (!multiTenancy){
       operations = operations.concat('Share');
     }
@@ -290,19 +267,12 @@ class Item extends Component {
         </tr>
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
-            <DeleteTableDialog
-              currentTable={item}
-              onDeleteDTable={this.onDeleteDTable}
-              deleteCancel={this.toggleDeleteDialog}
-            />
-          </ModalPortal>
-        }
-        {this.state.isUnsetPasswordConfirmDialogOpen &&
-          <ModalPortal>
-            <UnsetPasswordConfirmDialog
-              currentTable={item}
-              onUnsetDTablePassword={this.onUnsetDTablePassword}
-              unsetPasswordCancel={this.toggleUnsetPasswordConfirmDialog}
+            <CommonOperationConfirmationDialog
+              title={gettext('Delete base')}
+              message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
+              executeOperation={this.onDeleteProject}
+              confirmBtnText={gettext('Delete')}
+              toggleDialog={this.toggleDeleteDialog}
             />
           </ModalPortal>
         }
@@ -314,14 +284,6 @@ class Item extends Component {
             />
           </ModalPortal>
         }
-        {this.state.isAPITokenDialogOpen && (
-          <ModalPortal>
-            <DTableAllAPITokensDialog
-              currentTable={item}
-              toggle={this.toggleAPITokenDialog}
-            />
-          </ModalPortal>
-        )}
         {this.state.isShowShareDTableDialog && (
           <SysAdminShareTableDialog
             currentTable={item}

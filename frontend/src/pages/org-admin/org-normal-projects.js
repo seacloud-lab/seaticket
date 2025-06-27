@@ -7,7 +7,7 @@ import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../../components/modal-portal';
-import DeleteTableDialog from '../dtable/dialog/delete-table-dialog';
+import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 import Paginator from '../../components/paginator';
 
 const ItemPropTypes = {
@@ -148,10 +148,12 @@ class Item extends React.Component {
         </tr>
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
-            <DeleteTableDialog
-              currentTable={item}
-              onDeleteDTable={this.onDeleteProject}
-              deleteCancel={this.toggleDeleteDialog}
+            <CommonOperationConfirmationDialog
+              title={gettext('Delete base')}
+              message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
+              executeOperation={this.onDeleteProject}
+              confirmBtnText={gettext('Delete')}
+              toggleDialog={this.toggleDeleteDialog}
             />
           </ModalPortal>
         }
