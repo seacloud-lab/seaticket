@@ -7,12 +7,12 @@ import ManageMembersDialog from '../dialog/manage-members-dialog';
 import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
 import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 import GroupInviteMembersDialog from '../dialog/group-invite-members-dialog';
-import { Utils, validateName } from '../../utils/utils';
+import { Utils } from '../../utils/utils';
 import { compareTwoString } from '../utils/compare-two-string';
-import { canAddProject, disableAddingPersonalBases } from '../../constants';
+import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import TransferGroupDialog from '../dialog/transfer-group-dialog';
-import MobileAddBase from '../mobile/mobile-add-base';
+import MobileAddProject from '../mobile/mobile-add-project';
 import MobileShareTable from '../mobile/mobile-share-table';
 import ModalPortal from '../../components/modal-portal';
 import RenameBaseView from '../mobile/rename-base-view';
@@ -30,12 +30,11 @@ const propTypes = {
   workspace: PropTypes.object.isRequired,
   renameGroupName: PropTypes.func,
   onDeleteGroup: PropTypes.func,
-  onCopyDTable: PropTypes.func.isRequired,
-  onDeleteTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedTable: PropTypes.func,
-  onAddGroupSharedTable: PropTypes.func,
-  onLeaveGroupSharedView: PropTypes.func,
-  onAddDTable: PropTypes.func,
+  onCopyProject: PropTypes.func.isRequired,
+  onDeleteProject: PropTypes.func.isRequired,
+  onLeaveGroupSharedProject: PropTypes.func,
+  onAddGroupSharedProject: PropTypes.func,
+  onAddProject: PropTypes.func,
   loadWorkspaceList: PropTypes.func,
   noBaseTip: PropTypes.object
 };
@@ -56,16 +55,16 @@ class Workspace extends React.Component {
       isShowCopyDTable: false,
       isOwner: false,
       isAdmin: false,
-      currentTable: null,
+      currentProject: null,
       toBeMovedItem: null,
       isShowGroupMember: false,
       isShowTransferGroupDialog: false,
       isShowTemplateList: false,
       isCreatedTemplateLoading: false,
-      isShowVirtualDtable: false,
+      isShowVirtualProject: false,
       isShowInviteDialog: false,
       isShowTrashDialog: false,
-      isShowMobileShareTable: false,
+      isShowMobileShareProject: false,
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
       isParsing: false,
@@ -120,51 +119,51 @@ class Workspace extends React.Component {
     this.setState({ isItemFreezed: false });
   };
 
-  onDeleteTableToggle = (table) => {
+  onDeleteProjectToggle = (project) => {
     this.setState({
       isShowDeleteDialog: !this.state.isShowDeleteDialog,
-      currentTable: table
+      currentProject: project
     });
     this.onUnfreezedItem();
   };
 
-  onDeleteDTable = () => {
-    let tableName = this.state.currentTable.name;
-    this.deleteTable(tableName);
-    this.onDeleteTableToggle();
+  onDeleteProject = () => {
+    const name = this.state.currentProject.name;
+    this.deleteProject(name);
+    this.onDeleteProjectToggle();
   };
 
-  onShareTableToggle = (table) => {
+  onShareProjectToggle = (project) => {
     this.setState({
       isShowSharedDialog: !this.state.isShowSharedDialog,
-      currentTable: table
+      currentProject: project
     });
     this.onUnfreezedItem();
   };
 
-  onMobileShareTableToggle = (table) => {
+  onMobileShareProjectToggle = (project) => {
     this.setState({
-      isShowMobileShareTable: !this.state.isShowMobileShareTable,
-      currentTable: table
+      isShowMobileShareProject: !this.state.isShowMobileShareProject,
+      currentProject: project
     });
   };
 
-  onMobileUpdateTableToggle = (table) => {
+  onMobileUpdateProjectToggle = (project) => {
     this.setState({
       isShowMobileRenameView: !this.state.isShowMobileRenameView,
-      currentTable: table
+      currentProject: project
     });
   };
 
-  hideMobileShareTable = (table) => {
+  hideMobileShareProject = (project) => {
     this.setState({
-      isShowMobileShareTable: false,
-      currentTable: table
+      isShowMobileShareProject: false,
+      currentProject: project
     });
   };
 
-  onCreateProject = (tableName, owner, icon, bgColor) => {
-    seaQAAPI.createProject(tableName, owner, icon, bgColor).then((res) => {
+  onCreateProject = (name, owner, icon, bgColor) => {
+    seaQAAPI.createProject(name, owner, icon, bgColor).then((res) => {
       this.state.projectList.push(res.data.project);
       this.setState({
         projectList: this.state.projectList
@@ -188,54 +187,28 @@ class Workspace extends React.Component {
     }
   };
 
-  createBlankTable = (project) => {
+  createBlankProject = (project) => {
     let { projectList } = this.state;
     let newProjectList = projectList.slice(0);
     newProjectList.push(project);
-    this.setState({ isShowVirtualDtable: false, projectList: newProjectList });
+    this.setState({ isShowVirtualProject: false, projectList: newProjectList });
   };
 
-  deleteTable = (projectName) => {
+  deleteProject = (projectName) => {
     let workspaceID = this.props.workspace.id;
-    seaQAAPI.deleteTable(workspaceID, projectName).then(() => {
+    seaQAAPI.deleteProject(workspaceID, projectName).then(() => {
       let projectList = this.state.projectList.filter(project => {
         return project.name !== projectName;
       });
       this.setState({ projectList: projectList });
-      this.props.onDeleteTable(workspaceID, projectList);
+      this.props.onDeleteProject(workspaceID, projectList);
     }).catch((error) => {
       this.handleError(error);
     });
   };
 
-  renameTable = (oldProjectName, newTableName) => {
-    let response = validateName(newTableName);
-    if (!response.isValid) {
-      toaster.danger(response.message);
-      this.forceUpdate();
-      return;
-    }
-    let workspaceID = this.props.workspace.id;
-    seaQAAPI.renameTable(workspaceID, oldProjectName, response.message).then((res) => {
-      let projectList = this.state.projectList.map((project) => {
-        if (project.name === oldProjectName) {
-          project = res.data.project;
-        }
-        return project;
-      });
-      this.setState({ projectList: projectList });
-    }).catch((error) => {
-      this.handleError(error);
-      // 400 error: base name invalid, new base name invalid, new base name is too long
-      // forceUpdate to make sure error name disappear
-      if (error && error.response && error.response.status === 400) {
-        this.forceUpdate();
-      }
-    });
-  };
-
-  onUpdateTable = (projectName, updated) => {
-    seaQAAPI.updateTable(this.props.workspace.id, projectName, updated).then((res) => {
+  onUpdateProject = (projectName, updated) => {
+    seaQAAPI.updateProject(this.props.workspace.id, projectName, updated).then((res) => {
       const updateProject = res.data.project;
       let projectList = this.state.projectList.map((project) => {
         if (project.name === projectName) {
@@ -249,16 +222,10 @@ class Workspace extends React.Component {
     });
   };
 
-  formatMsgByOperation = (operation) => {
-    if (operation === 'password_modify') {
-      return gettext('Successfully modified password');
-    }
-  };
-
-  onCopyDTableToggle = (table) => {
+  onCopyProjectToggle = (project) => {
     this.setState({
       isShowCopyDTable: !this.state.isShowCopyDTable,
-      currentTable: table
+      currentProject: project
     });
     this.onUnfreezedItem();
   };
@@ -281,7 +248,7 @@ class Workspace extends React.Component {
     });
   };
 
-  onRenameDtableGroupToggle = () => {
+  onRenameGroupToggle = () => {
     this.setState({
       isShowRenameTableDialog: !this.state.isShowRenameTableDialog
     });
@@ -339,27 +306,13 @@ class Workspace extends React.Component {
     });
   };
 
-  onLeaveGroupSharedTable = (table) => {
+  onLeaveGroupSharedProject = (project) => {
     let { workspace } = this.props;
-    seaQAAPI.deleteTableGroupShare(table.workspace_id, table.name, workspace.group_id).then(() => {
-      this.props.onLeaveGroupSharedTable(workspace.group_id, table);
+    seaQAAPI.deleteProjectGroupShare(project.workspace_id, project.name, workspace.group_id).then(() => {
+      this.props.onLeaveGroupSharedProject(workspace.group_id, project);
     }).catch((error) => {
       if (error.response && error.response.status === 404) {
-        this.props.onLeaveGroupSharedTable(workspace.group_id, table);
-      } else {
-        let errMessage = Utils.getErrorMsg(error);
-        toaster.danger(errMessage);
-      }
-    });
-  };
-
-  onLeaveGroupSharedView = (sharedView) => {
-    let { workspace } = this.props;
-    seaQAAPI.leaveGroupViewShare(sharedView.view_share_id).then(() => {
-      this.props.onLeaveGroupSharedView(workspace.group_id, sharedView);
-    }).catch((error) => {
-      if (error.response && error.response.status === 404) {
-        this.props.onLeaveGroupSharedView(workspace.group_id, sharedView);
+        this.props.onLeaveGroupSharedProject(workspace.group_id, project);
       } else {
         let errMessage = Utils.getErrorMsg(error);
         toaster.danger(errMessage);
@@ -371,31 +324,29 @@ class Workspace extends React.Component {
     this.setState({ isShowTemplateList: !this.state.isShowTemplateList });
   };
 
-  showVirtualDtable = () => {
-    this.setState({ isShowVirtualDtable: true });
+  showVirtualProject = () => {
+    this.setState({ isShowVirtualProject: true });
   };
 
-  hideVirtualDtable = () => {
-    this.setState({ isShowVirtualDtable: false });
+  hideVirtualProject = () => {
+    this.setState({ isShowVirtualProject: false });
   };
 
-  renderAddTableItem = () => {
+  renderAddItem = () => {
     const { workspace } = this.props;
     const isPersonal = workspace.type === 'personal';
     let { isItemFreezed } = this.state;
-    if (isPersonal && disableAddingPersonalBases) {
-      return null;
-    }
+    if (isPersonal && disableAddingPersonalProjects) return null;
     if (this.isDesktop) {
       return (
-        <div className={`table-item ${isItemFreezed ? '' : 'add-table-range'}`} onClick={this.showVirtualDtable}>
-          <div className="table-item-wrapper ml-0">
-            <div className="table-icon" aria-hidden="true">
-              <span className="table-icon-content">
+        <div className={`project-item ${isItemFreezed ? '' : 'add-project-range'}`} onClick={this.showVirtualProject}>
+          <div className="project-item-wrapper ml-0">
+            <div className="project-icon" aria-hidden="true">
+              <span className="project-icon-content">
                 <i className="project-icon icon-add project-icon-style"></i>
               </span>
             </div>
-            <div className="table-name">
+            <div className="project-name">
               <span className="a-simulate">{gettext('Add a blank project')}</span>
             </div>
           </div>
@@ -404,10 +355,9 @@ class Workspace extends React.Component {
       );
     }
     return (
-      <MobileAddBase
+      <MobileAddProject
         currentWorkspace={this.props.workspace}
         createProject={this.onCreateProject}
-        ref={ref => this.addBaseRef = ref}
         isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
       />
     );
@@ -452,14 +402,14 @@ class Workspace extends React.Component {
 
   render() {
     const { workspace } = this.props;
-    let groupSharedTables = [];
+    let groupSharedProjects = [];
     const isPersonal = workspace.type === 'personal';
     let { projectList, isItemFreezed, isDataLoading, isOwner, isAdmin } = this.state;
     if (isDataLoading) {
       return <Loading />;
     }
     if (workspace.type === 'group') {
-      groupSharedTables = workspace.group_shared_dtables;
+      groupSharedProjects = workspace.group_shared_projects;
     }
 
     const isOwnerOrAdmin = !isPersonal && (isOwner || isAdmin);
@@ -475,7 +425,7 @@ class Workspace extends React.Component {
             isOwnerOrAdmin={isOwnerOrAdmin}
             isOwner={isOwner}
             openGroupMember={this.openGroupMember}
-            onRenameDtableGroupToggle={this.onRenameDtableGroupToggle}
+            onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
             onDtableManageMembers={this.onDtableManageMembers}
             onDeleteGroupToggle={this.onDeleteGroupToggle}
@@ -492,52 +442,50 @@ class Workspace extends React.Component {
             isAdmin={isAdmin}
             workspace={workspace}
             projectList={projectList}
-            groupSharedTables={groupSharedTables}
+            groupSharedProjects={groupSharedProjects}
             canAddProject={canAddProject}
             isItemFreezed={isItemFreezed}
-            isShowVirtualDtable={this.state.isShowVirtualDtable}
-            createBlankTable={this.createBlankTable}
+            isShowVirtualProject={this.state.isShowVirtualProject}
+            createBlankProject={this.createBlankProject}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
-            renameTable={this.renameTable}
-            onShareTableToggle={this.onShareTableToggle}
-            onDeleteTableToggle={this.onDeleteTableToggle}
+            onShareProjectToggle={this.onShareProjectToggle}
+            onDeleteProjectToggle={this.onDeleteProjectToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onFreezedItem={this.onFreezedItem}
             onUnfreezedItem={this.onUnfreezedItem}
-            onCopyDTableToggle={this.onCopyDTableToggle}
-            onAddDTable={this.props.onAddDTable}
-            onUpdateTable={this.onUpdateTable}
-            onMobileShareTableToggle={this.onMobileShareTableToggle}
-            onMobileUpdateTableToggle={this.onMobileUpdateTableToggle}
-            onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-            onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            renderAddTableItem={this.renderAddTableItem}
+            onCopyProjectToggle={this.onCopyProjectToggle}
+            onAddProject={this.props.onAddProject}
+            onUpdateProject={this.onUpdateProject}
+            onMobileShareProjectToggle={this.onMobileShareProjectToggle}
+            onMobileUpdateProjectToggle={this.onMobileUpdateProjectToggle}
+            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
+            renderAddItem={this.renderAddItem}
             openGroupMember={this.openGroupMember}
-            onRenameDtableGroupToggle={this.onRenameDtableGroupToggle}
+            onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
             onDtableManageMembers={this.onDtableManageMembers}
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
             toggleGroupInviteDialog={this.toggleGroupInviteDialog}
-            hideVirtualDtable={this.hideVirtualDtable}
+            hideVirtualProject={this.hideVirtualProject}
             setDropdownState={this.setDropdownState}
             getDropdownState={this.getDropdownState}
-            onCopyDTable={this.props.onCopyDTable}
+            onCopyProject={this.props.onCopyProject}
           />
         </div>
         {this.renderEmpty()}
         {this.state.isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
             title={gettext('Delete base')}
-            message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${this.state.currentTable.name}</b>`)}
-            executeOperation={this.onDeleteDTable}
+            message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${this.state.currentProject.name}</b>`)}
+            executeOperation={this.onDeleteProject}
             confirmBtnText={gettext('Delete')}
-            toggleDialog={this.onDeleteTableToggle}
+            toggleDialog={this.onDeleteProjectToggle}
           />
         )}
         {this.state.isShowRenameTableDialog &&
           <RenameGroupNameDialog
-            onRenameDtableGroupToggle={this.onRenameDtableGroupToggle}
+            onRenameGroupToggle={this.onRenameGroupToggle}
             currentGroupName={workspace.name}
             groupID={workspace.group_id}
             renameGroupName={this.props.renameGroupName}
@@ -606,20 +554,20 @@ class Workspace extends React.Component {
             onGroupMemberToggle={this.onGroupMemberToggle}
           />
         )}
-        {this.state.isShowMobileShareTable &&
+        {this.state.isShowMobileShareProject &&
           <ModalPortal>
             <MobileShareTable
-              hideMobileShareTable={this.hideMobileShareTable}
-              currentTable={this.state.currentTable}
+              hideMobileShareProject={this.hideMobileShareProject}
+              currentProject={this.state.currentProject}
             />
           </ModalPortal>
         }
         {this.state.isShowMobileRenameView &&
           <ModalPortal>
             <RenameBaseView
-              onMobileUpdateItemToggle={this.onMobileUpdateTableToggle}
-              currentItem={this.state.currentTable}
-              onUpdateItem={this.onUpdateTable}
+              onMobileUpdateItemToggle={this.onMobileUpdateProjectToggle}
+              currentItem={this.state.currentProject}
+              onUpdateItem={this.onUpdateProject}
             />
           </ModalPortal>
         }

@@ -19,7 +19,7 @@ import SelectPermission from './select-permission';
 const Item = List.Item;
 
 const propTypes = {
-  currentTable: PropTypes.object,
+  currentProject: PropTypes.object,
   options: PropTypes.array,
   toggle: PropTypes.func.isRequired,
   addInviteLink: PropTypes.func.isRequired
@@ -94,7 +94,7 @@ class AddInviteLink extends React.Component {
       this.setState({ errMessage });
       return;
     }
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.createDTableInviteLink(workspace_id, name, invitePermission, password, expireDays).then(res => {
       let inviteLink = res.data;
       this.props.addInviteLink(inviteLink);

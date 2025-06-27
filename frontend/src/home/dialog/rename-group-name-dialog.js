@@ -10,7 +10,7 @@ import { DTableModalHeader } from 'dtable-ui-component';
 const propTypes = {
   groupID: PropTypes.number.isRequired,
   renameGroupName: PropTypes.func.isRequired,
-  onRenameDtableGroupToggle: PropTypes.func.isRequired,
+  onRenameGroupToggle: PropTypes.func.isRequired,
   currentGroupName: PropTypes.string.isRequired,
 };
 
@@ -52,11 +52,11 @@ class RenameGroupNameDialog extends React.Component {
     this.setState({
       newGroupName: '',
     });
-    this.props.onRenameDtableGroupToggle();
+    this.props.onRenameGroupToggle();
   };
 
   toggle = () => {
-    this.props.onRenameDtableGroupToggle();
+    this.props.onRenameGroupToggle();
   };
 
   handleKeyDown = (event) => {

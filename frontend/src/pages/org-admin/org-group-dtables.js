@@ -86,7 +86,7 @@ class Item extends Component {
     return (
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave} style={style}>
-          <td className="org-table-icon"><span className={iconClass} /></td>
+          <td className="org-project-icon"><span className={iconClass} /></td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>

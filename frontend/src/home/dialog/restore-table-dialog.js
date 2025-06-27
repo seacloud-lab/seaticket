@@ -6,7 +6,7 @@ import { gettext } from '../../constants/config';
 import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   restoreCancel: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   owner_deleted: PropTypes.bool
@@ -33,9 +33,9 @@ class RestoreTableDialog extends React.Component {
   };
 
   renderText = () => {
-    let currentTable = this.props.currentTable;
+    let currentProject = this.props.currentProject;
     let owner_deleted = this.props.owner_deleted;
-    let name = currentTable.name;
+    let name = currentProject.name;
     if (owner_deleted) {
       return (
         <p aria-label={gettext('The owner of this base has been deleted. Do you want to restore the base to your account?')}>{gettext('The owner of this base has been deleted. Do you want to restore the base to your account?')}</p>

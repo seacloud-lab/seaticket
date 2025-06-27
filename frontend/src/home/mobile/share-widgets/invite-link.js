@@ -15,7 +15,7 @@ const Item = List.Item;
 const Brief = Item.Brief;
 
 const propTypes = {
-  currentTable: PropTypes.object
+  currentProject: PropTypes.object
 };
 
 class InviteLink extends React.Component {
@@ -30,7 +30,7 @@ class InviteLink extends React.Component {
   }
 
   componentDidMount() {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.getDTableInviteLink(workspace_id, name).then(res => {
       let inviteLinks = res.data.dtable_share_links;
       this.setState({
@@ -121,7 +121,7 @@ class InviteLink extends React.Component {
           <AddInviteLink
             toggle={this.onAddInviteLink}
             addInviteLink={this.addInviteLink}
-            currentTable={this.props.currentTable}
+            currentProject={this.props.currentProject}
             options={this.options}
           />
         }

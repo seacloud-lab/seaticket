@@ -97,7 +97,7 @@ class Item extends Component {
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver}
           onMouseLeave={this.handleMouseOut}>
-          <td className="org-table-icon">
+          <td className="org-project-icon">
             <span className="dtable-font dtable-icon-table system-dtable-font" aria-hidden="true"></span>
           </td>
           <td>{item.name}</td>

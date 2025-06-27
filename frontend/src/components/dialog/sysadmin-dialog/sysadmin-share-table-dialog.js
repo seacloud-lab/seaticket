@@ -12,7 +12,7 @@ import '../../../css/share-link-dialog.css';
 
 const propTypes = {
   groupName: PropTypes.string,
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   shareCancel: PropTypes.func.isRequired,
   srcGroupID: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
@@ -28,7 +28,7 @@ class SysAdminShareTableDialog extends React.Component {
   }
 
   componentDidMount() {
-    let dtableUuid = this.props.currentTable.uuid;
+    let dtableUuid = this.props.currentProject.uuid;
     sysAdminServiceApi.sysAdminGetSharePermissions(dtableUuid).then((res) => {
       const customSharePermissions = res.data.permission_list;
       this.setState({ customSharePermissions });
@@ -81,13 +81,13 @@ class SysAdminShareTableDialog extends React.Component {
           <TabContent activeTab={this.state.activeTab}>
             <TabPane tabId="shareToUser" id="shareToUser">
               <SysAdminShareTableToUser
-                currentTable={this.props.currentTable}
+                currentProject={this.props.currentProject}
                 customSharePermissions={customSharePermissions}
               />
             </TabPane>
             <TabPane tabId="shareToGroup" id="shareToGroup">
               <SysAdminShareTableToGroup
-                currentTable={this.props.currentTable}
+                currentProject={this.props.currentProject}
                 customSharePermissions={customSharePermissions}
               />
             </TabPane>
@@ -98,8 +98,8 @@ class SysAdminShareTableDialog extends React.Component {
   };
 
   render() {
-    let currentTable = this.props.currentTable;
-    let name = currentTable.name;
+    let currentProject = this.props.currentProject;
+    let name = currentProject.name;
     return (
       <Modal isOpen={true} toggle={this.props.shareCancel} style={{ maxWidth: '850px' }} className="share-dialog" innerRef={ref => this.innerRef = ref}>
         <DTableModalHeader toggle={this.props.shareCancel}>

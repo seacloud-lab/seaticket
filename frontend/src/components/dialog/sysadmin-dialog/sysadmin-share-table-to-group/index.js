@@ -12,7 +12,7 @@ import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';
 import '../../../../css/invitations.css';
 
 const SysAdminShareTableToGroupPropTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func
 };
@@ -26,7 +26,7 @@ class SysAdminShareTableToGroup extends React.Component {
       groupIDs: [],
       groupShares: [],
     };
-    this.dtableUuid = this.props.currentTable.uuid;
+    this.dtableUuid = this.props.currentProject.uuid;
   }
 
   componentDidMount() {

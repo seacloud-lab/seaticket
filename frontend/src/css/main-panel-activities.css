@@ -57,7 +57,7 @@
   padding: 7px 0 7px 10px;
 }
 
-.activity-table .activities-base-detail .table-icon-content {
+.activity-table .activities-base-detail .project-icon-content {
   height: 24px;
   width: 24px;
   display: flex;
@@ -68,7 +68,7 @@
   background-color: #eee;
 }
 
-.activity-table .activities-base-detail .activities-table-name {
+.activity-table .activities-base-detail .activities-project-name {
   margin-left: 10px;
   color: #212529;
   cursor: pointer;
@@ -78,7 +78,7 @@
   text-overflow: ellipsis;
 }
 
-.activity-table .activities-base-detail .activities-table-name:hover {
+.activity-table .activities-base-detail .activities-project-name:hover {
   text-decoration: underline;
 }
 
@@ -322,13 +322,13 @@
 }
 
 .activity-table .activities-base-date td,
-.activity-table .activities-base-detail .table-icon-content .project-icon-style {
+.activity-table .activities-base-detail .project-icon-content .project-icon-style {
   font-size: 16px;
 }
 
 .activity-table .activities-base-detail .activities-base-operation,
-.activity-table-view .mobile-activities-info .activities-table-name,
-.activity-table .activities-base-detail .activities-table-name {
+.activity-table-view .mobile-activities-info .activities-project-name,
+.activity-table .activities-base-detail .activities-project-name {
   font-size: 14px;
 }
 

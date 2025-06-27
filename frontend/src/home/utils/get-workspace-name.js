@@ -5,7 +5,7 @@ export default function getWorkspaceName(table, workspaces) {
       return true;
     }
     let isGroupShared = false;
-    workspace.group_shared_dtables.forEach(item => {
+    workspace.group_shared_projects.forEach(item => {
       if (item.uuid === table.uuid) {
         isGroupShared = true;
       }

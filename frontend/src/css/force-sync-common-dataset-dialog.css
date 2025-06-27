@@ -36,13 +36,13 @@
   left: calc(1rem - 4px);
 }
 
-.force-sync-common-dataset-container .table-name {
+.force-sync-common-dataset-container .project-name {
   margin-left: 10px;
   height: 24px;
   line-height: 24px;
 }
 
-.force-sync-common-dataset-container .table-icon-content {
+.force-sync-common-dataset-container .project-icon-content {
   height: 24px;
   width: 24px;
   border-radius: 4px;

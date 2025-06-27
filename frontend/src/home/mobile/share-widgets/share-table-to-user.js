@@ -12,7 +12,7 @@ import { gettext } from '../../../constants';
 
 const propTypes = {
   customSharePermissions: PropTypes.array,
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
 };
 
 class ShareTableToUser extends React.Component {
@@ -28,7 +28,7 @@ class ShareTableToUser extends React.Component {
   }
 
   componentDidMount() {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.listTableShares(workspace_id, name).then((res) => {
       this.setState({ userList: res.data.user_list, isLoading: false });
     }).catch(error => {
@@ -43,7 +43,7 @@ class ShareTableToUser extends React.Component {
 
   addTableShare = (selectedOptions, permission) => {
     const { userList } = this.state;
-    const { workspace_id, name: tableName } = this.props.currentTable;
+    const { workspace_id, name: tableName } = this.props.currentProject;
     if (!selectedOptions || selectedOptions.length === 0) return;
     for (let i = 0; i < selectedOptions.length; i++) {
       const name = selectedOptions[i].name;
@@ -65,7 +65,7 @@ class ShareTableToUser extends React.Component {
   };
 
   updateTableShare = (userItem, permission) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     const email = userItem.email;
     seaQAAPI.updateTableShare(workspace_id, name, email, permission).then((res) => {
       let userList = this.state.userList.map(userInfo => {
@@ -81,7 +81,7 @@ class ShareTableToUser extends React.Component {
   };
 
   deleteTableShare = (userItem) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     const email = userItem.email;
     seaQAAPI.deleteTableShare(workspace_id, name, email).then((res) => {
       let userList = this.state.userList.filter(userInfo => {

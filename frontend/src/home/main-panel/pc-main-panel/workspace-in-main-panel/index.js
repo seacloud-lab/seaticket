@@ -20,9 +20,9 @@ class WorkspaceInMainPanel extends React.Component {
   };
 
   renderWorkspace = () => {
-    const { dtableID, workspaceList, onCopyDTable, onDeleteTable,
-      onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
-      onAddDTable } = this.props;
+    const { dtableID, workspaceList, onCopyProject, onDeleteProject,
+      onDeleteGroup, onAddGroupSharedProject, onLeaveGroupSharedProject,
+      onAddProject } = this.props;
 
     let workspace = workspaceList.find(workspace => {
       return workspace.id === Number(dtableID);
@@ -36,11 +36,11 @@ class WorkspaceInMainPanel extends React.Component {
         workspace={workspace}
         renameGroupName={this.renameGroupName}
         onDeleteGroup={onDeleteGroup}
-        onDeleteTable={onDeleteTable}
-        onCopyDTable={onCopyDTable}
-        onAddGroupSharedTable={onAddGroupSharedTable}
-        onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-        onAddDTable={onAddDTable}
+        onDeleteProject={onDeleteProject}
+        onCopyProject={onCopyProject}
+        onAddGroupSharedProject={onAddGroupSharedProject}
+        onLeaveGroupSharedProject={onLeaveGroupSharedProject}
+        onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
         noBaseTip={
           <DTableEmptyTip text={gettext('No bases.')} src={`${mediaUrl}img/no-items-tip.png`} />
@@ -84,11 +84,11 @@ WorkspaceInMainPanel.propTypes = {
   errorMsg: PropTypes.string,
   loadWorkspaceList: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
-  onCopyDTable: PropTypes.func.isRequired,
-  onDeleteTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedTable: PropTypes.func.isRequired,
-  onAddGroupSharedTable: PropTypes.func.isRequired,
-  onAddDTable: PropTypes.func.isRequired,
+  onCopyProject: PropTypes.func.isRequired,
+  onDeleteProject: PropTypes.func.isRequired,
+  onLeaveGroupSharedProject: PropTypes.func.isRequired,
+  onAddGroupSharedProject: PropTypes.func.isRequired,
+  onAddProject: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
   dtableID: PropTypes.string,
 };

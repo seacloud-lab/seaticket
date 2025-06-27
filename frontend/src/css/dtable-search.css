@@ -73,12 +73,12 @@
   color: #ED7109 !important;
 }
 
-.search-result-list .table-item .table-icon-content {
+.search-result-list .project-item .project-icon-content {
   height: 32px;
   width: 32px;
 }
 
-.search-result-list .table-item .table-icon-content .project-icon-style {
+.search-result-list .project-item .project-icon-content .project-icon-style {
   font-size: 20px;
 }
 

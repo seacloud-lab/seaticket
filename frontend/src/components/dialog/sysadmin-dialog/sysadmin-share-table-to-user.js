@@ -105,7 +105,7 @@ class UserItem extends React.Component {
 UserItem.propTypes = userItemPropTypes;
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func,
 };
@@ -119,7 +119,7 @@ class SysAdminShareTableToUser extends React.Component {
       permission: 'rw',
       userList: [],
     };
-    this.dtableUuid = this.props.currentTable.uuid;
+    this.dtableUuid = this.props.currentProject.uuid;
   }
 
   componentDidMount() {

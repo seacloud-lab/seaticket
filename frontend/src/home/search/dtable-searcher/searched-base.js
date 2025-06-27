@@ -6,7 +6,7 @@ import getWorkspaceName from '../../utils/get-workspace-name';
 const SearchedBase = (props) => {
   const { searchedBase, selected } = props;
   const path = getWorkspaceName(searchedBase, []);
-  const getClassName = `table-item ${selected ? 'table-item-selected' : ''}`;
+  const getClassName = `project-item ${selected ? 'project-item-selected' : ''}`;
 
   return (
     <SearchResultItem

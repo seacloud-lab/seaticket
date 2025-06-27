@@ -11,15 +11,15 @@ const siteRoot = window.app.config.siteRoot;
 
 const propTypes = {
   project: PropTypes.object.isRequired,
-  renameTable: PropTypes.func.isRequired,
-  onDeleteTableToggle: PropTypes.func.isRequired,
-  onShareTableToggle: PropTypes.func.isRequired,
+  onDeleteProjectToggle: PropTypes.func.isRequired,
+  onShareProjectToggle: PropTypes.func.isRequired,
+  onUpdateProject: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   isOwner: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
-  onMobileShareTableToggle: PropTypes.func,
-  onMobileUpdateTableToggle: PropTypes.func,
+  onMobileShareProjectToggle: PropTypes.func,
+  onMobileUpdateProjectToggle: PropTypes.func,
   changeContainerColor: PropTypes.func,
   setDropdownState: PropTypes.func,
   getDropdownState: PropTypes.func,
@@ -34,7 +34,7 @@ class Project extends React.Component {
     this.state = {
       dropdownOpen: false,
       active: false,
-      isShowIconSettings: false,
+      isShowSettings: false,
       name: name,
       bgColor: color,
       icon: icon,
@@ -66,20 +66,20 @@ class Project extends React.Component {
 
   onMouseLeave = () => {
     if (this.props.getDropdownState && this.props.getDropdownState()) return;
-    if (this.state.isShowIconSettings) return;
+    if (this.state.isShowSettings) return;
     this.setState({ active: false, dropdownOpen: false });
   };
 
-  onMobileUpdateTableToggle = () => {
-    this.props.onMobileUpdateTableToggle(this.props.project);
+  onMobileUpdateProjectToggle = () => {
+    this.props.onMobileUpdateProjectToggle(this.props.project);
   };
 
-  onDeleteTableToggle = () => {
-    this.props.onDeleteTableToggle(this.props.project);
+  onDeleteProjectToggle = () => {
+    this.props.onDeleteProjectToggle(this.props.project);
   };
 
-  onShareTableToggle = () => {
-    this.props.onShareTableToggle(this.props.project);
+  onShareProjectToggle = () => {
+    this.props.onShareProjectToggle(this.props.project);
   };
 
   onSetPasswordToggle = () => {
@@ -94,8 +94,8 @@ class Project extends React.Component {
     this.props.onModifyPasswordToggle(this.props.project);
   };
 
-  onMobileShareTableToggle = () => {
-    this.props.onMobileShareTableToggle(this.props.project);
+  onMobileShareProjectToggle = () => {
+    this.props.onMobileShareProjectToggle(this.props.project);
   };
 
   onConfirmExportDialogToggle = () => {
@@ -116,10 +116,10 @@ class Project extends React.Component {
     this.setState({ dropdownOpen: !this.state.dropdownOpen });
   };
 
-  onTableIconToggle = (e) => {
+  onProjectSettingsToggle = (e) => {
     if (e) e.stopPropagation();
-    this.setState({ isShowIconSettings: !this.state.isShowIconSettings }, () => {
-      if (!this.state.isShowIconSettings) {
+    this.setState({ isShowSettings: !this.state.isShowSettings }, () => {
+      if (!this.state.isShowSettings) {
         this.setState({ active: false });
         this.saveBaseProperty();
       }
@@ -147,6 +147,7 @@ class Project extends React.Component {
       if (newName !== name) {
         updated.new_name = newName;
       }
+      this.props.onUpdateProject(name, updated);
     }
   };
 
@@ -220,7 +221,7 @@ class Project extends React.Component {
               isOpen={this.state.dropdownOpen}
               toggle={this.dropdownToggle}
               direction="down"
-              className="table-item-more-operation"
+              className="project-item-more-operation"
               onClick={(e) => {e.stopPropagation();}}
             >
               <DropdownToggle
@@ -239,15 +240,15 @@ class Project extends React.Component {
                 <div className="mobile-operation-menu">
                   {(isOwner || isAdmin) &&
                     <Fragment>
-                      <DropdownItem onClick={this.onMobileShareTableToggle} className="mobile-dropdown-item">
+                      <DropdownItem onClick={this.onMobileShareProjectToggle} className="mobile-dropdown-item">
                         <span className="dtable-font dtable-icon-share"></span>
                         <span className="mobile-dropdown-span">{gettext('Share')}</span>
                       </DropdownItem>
-                      <DropdownItem onClick={this.onMobileUpdateTableToggle} className="mobile-dropdown-item">
+                      <DropdownItem onClick={this.onMobileUpdateProjectToggle} className="mobile-dropdown-item">
                         <span className="dtable-font dtable-icon-rename"></span>
                         <span className="mobile-dropdown-span">{gettext('Rename')}</span>
                       </DropdownItem>
-                      <DropdownItem onClick={this.onDeleteTableToggle} className="mobile-dropdown-item">
+                      <DropdownItem onClick={this.onDeleteProjectToggle} className="mobile-dropdown-item">
                         <span className="dtable-font dtable-icon-delete"></span>
                         <span className="mobile-dropdown-span">{gettext('Delete')}</span>
                       </DropdownItem>
@@ -266,14 +267,14 @@ class Project extends React.Component {
 
     return (
       <div
-        className={`table-item ${active ? 'tr-highlight' : ''}`}
+        className={`project-item ${active ? 'tr-highlight' : ''}`}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
         onClick={(e) => this.onTableItemClick(e, tableHref)}
       >
-        <div className="table-item-wrapper ml-0">
+        <div className="project-item-wrapper ml-0">
           <ProjectIcon bgColor={project.color} icon={project.icon} />
-          <div className="table-name">
+          <div className="project-name">
             <a href={tableHref}>{project.name}</a>
           </div>
         </div>
@@ -282,8 +283,8 @@ class Project extends React.Component {
             <Fragment>
               {(isOwner || isAdmin) && (
                 <span
-                  className="table-icon-settings"
-                  onClick={this.onTableIconToggle}
+                  className="project-icon-settings"
+                  onClick={this.onProjectSettingsToggle}
                   id={iconSettingsId}
                   title={gettext('Edit')}
                   aria-label={gettext('Edit')}
@@ -295,7 +296,7 @@ class Project extends React.Component {
                 isOpen={dropdownOpen}
                 toggle={this.dropdownToggle}
                 direction="down"
-                className="table-item-more-operation"
+                className="project-item-more-operation"
               >
                 <DropdownToggle
                   tag='i'
@@ -309,17 +310,17 @@ class Project extends React.Component {
                 >
                 </DropdownToggle>
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu drop-list" right={true} onMouseMove={this.onDropDownMouseMove}>
-                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onShareTableToggle}>{gettext('Share')}</DropdownItem>}
-                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onDeleteTableToggle}>{gettext('Delete')}</DropdownItem>}
+                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>}
+                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>}
                 </DropdownMenu>
               </Dropdown>
             </Fragment>
           )}
         </div>
-        {this.state.isShowIconSettings && (
+        {this.state.isShowSettings && (
           <ProjectSettingPopover
             target={iconSettingsId}
-            onToggle={this.onTableIconToggle}
+            onToggle={this.onProjectSettingsToggle}
             name={newName}
             bgColor={bgColor}
             icon={icon}

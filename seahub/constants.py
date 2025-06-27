@@ -65,11 +65,6 @@ ABUSE_TYPE_LIST = [COPYRIGHT_ISSUE, VIRUS_ISSUE, ABUSE_CONTENT_ISSUE, OTHER_ISSU
 ETCD_SERVER_KEY_PREFIX = 'dtable-server-'
 ETCD_ASSIGN_KEY_PREFIX = 'assign-'
 
-PASSWORD_ADD = 'password_add'
-PASSWORD_MODIFY = 'password_modify'
-PASSWORD_UNSET = 'password_unset'
-PASSWORD_UNSET_BY_PHONE = 'password_unset_by_phone'
-
 
 SAML_CERTS_DIR = '/opt/seatable/seahub-data/certs'
 SAML_ATTRIBUTE_MAP = {

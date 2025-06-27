@@ -87,11 +87,6 @@ class SysAdminServiceApi {
     return this.req.delete(url);
   }
 
-  sysAdminUnsetDTablePassword(dtable_uuid) {
-    const url = this.server + '/api/v2.1/admin/dtable/' + dtable_uuid + '/unset-password/';
-    return this.req.put(url);
-  }
-
   sysAdminRepairDtable(dtable_uuid) {
     const url = this.server + '/api/v2.1/admin/dtable/' + dtable_uuid + '/repair/';
     return this.req.put(url);

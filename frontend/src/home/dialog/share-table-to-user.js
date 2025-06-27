@@ -106,7 +106,7 @@ class UserItem extends React.Component {
 UserItem.propTypes = userItemPropTypes;
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func,
 };
@@ -121,8 +121,8 @@ class ShareTableToUser extends React.Component {
       userList: [],
       isShowDepartmentDetailDialog: false
     };
-    this.workspaceID = this.props.currentTable.workspace_id;
-    this.tableName = this.props.currentTable.name;
+    this.workspaceID = this.props.currentProject.workspace_id;
+    this.tableName = this.props.currentProject.name;
   }
 
   componentDidMount() {

@@ -11,7 +11,7 @@ const propTypes = {
   currentWorkspace: PropTypes.object,
 };
 
-class MobileAddBase extends React.Component {
+class MobileAddProject extends React.Component {
 
   constructor(props) {
     super(props);
@@ -71,7 +71,7 @@ class MobileAddBase extends React.Component {
               direction="down"
             >
               <div className="table-mobile-icon" aria-hidden="true">
-                <span className="table-icon-content">
+                <span className="project-icon-content">
                   <i className="project-icon icon-add project-icon-style"></i>
                 </span>
               </div>
@@ -105,6 +105,6 @@ class MobileAddBase extends React.Component {
   }
 }
 
-MobileAddBase.propTypes = propTypes;
+MobileAddProject.propTypes = propTypes;
 
-export default MobileAddBase;
+export default MobileAddProject;

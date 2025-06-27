@@ -61,7 +61,7 @@ class MainPanel extends React.Component {
     this.props.updateSidePanelGroups(true, true);
   };
 
-  onCopyDTable = (dtable) => {
+  onCopyProject = (dtable) => {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
       if (dtable.workspace_id === workspace.id) {
@@ -72,7 +72,7 @@ class MainPanel extends React.Component {
     this.setState({ workspaceList: newWorkspaceList });
   };
 
-  onAddDTable = (project) => {
+  onAddProject = (project) => {
     let newWorkspaceList = this.state.workspaceList.slice();
     newWorkspaceList = newWorkspaceList.map(item => {
       if (project.workspace_id === item.id) {
@@ -83,7 +83,7 @@ class MainPanel extends React.Component {
     this.setState({ workspaceList: newWorkspaceList });
   };
 
-  onDeleteTable = (deletedWorkspaceID, newTableList) => {
+  onDeleteProject = (deletedWorkspaceID, newTableList) => {
     let workspaceList = this.state.workspaceList.slice(0);
     for (let i = 0; i < workspaceList.length; i++) {
       if (workspaceList[i].id === deletedWorkspaceID) {
@@ -94,33 +94,22 @@ class MainPanel extends React.Component {
     this.setState({ workspaceList });
   };
 
-  onAddGroupSharedTable = (groupID, table) => {
+  onAddGroupSharedProject = (groupID, project) => {
     let workspaceList = this.state.workspaceList.slice();
     for (let workspace of workspaceList) {
       if (workspace.group_id === groupID) {
-        workspace.group_shared_dtables.push(table);
+        workspace.group_shared_projects.push(project);
         break;
       }
     }
     this.setState({ workspaceList: workspaceList });
   };
 
-  onLeaveGroupSharedTable = (groupID, table) => {
+  onLeaveGroupSharedProject = (groupID, project) => {
     let workspaceList = this.state.workspaceList.slice(0);
     for (let i = 0; i < workspaceList.length; i++) {
       if (workspaceList[i].group_id === groupID) {
-        workspaceList[i].group_shared_dtables = workspaceList[i].group_shared_dtables.filter((item) => {return item.id !== table.id;});
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
-  };
-
-  onLeaveGroupSharedView = (groupID, sharedView) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].group_id === groupID) {
-        workspaceList[i].group_shared_views = workspaceList[i].group_shared_views.filter((item) => {return item.view_share_id !== sharedView.view_share_id;});
+        workspaceList[i].group_shared_projects = workspaceList[i].group_shared_projects.filter((item) => item.id !== project.id);
         break;
       }
     }
@@ -138,12 +127,11 @@ class MainPanel extends React.Component {
             workspaceList={this.state.workspaceList}
             errorMsg={this.state.errorMsg}
             onDeleteGroup={this.onDeleteGroup}
-            onDeleteTable={this.onDeleteTable}
-            onCopyDTable={this.onCopyDTable}
-            onAddGroupSharedTable={this.onAddGroupSharedTable}
-            onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-            onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            onAddDTable={this.onAddDTable}
+            onDeleteProject={this.onDeleteProject}
+            onCopyProject={this.onCopyProject}
+            onAddGroupSharedProject={this.onAddGroupSharedProject}
+            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
+            onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
           <AllWorkspaces
@@ -153,12 +141,11 @@ class MainPanel extends React.Component {
             workspaceList={this.state.workspaceList}
             errorMsg={this.state.errorMsg}
             onDeleteGroup={this.onDeleteGroup}
-            onDeleteTable={this.onDeleteTable}
-            onCopyDTable={this.onCopyDTable}
-            onAddGroupSharedTable={this.onAddGroupSharedTable}
-            onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-            onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            onAddDTable={this.onAddDTable}
+            onDeleteProject={this.onDeleteProject}
+            onCopyProject={this.onCopyProject}
+            onAddGroupSharedProject={this.onAddGroupSharedProject}
+            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
+            onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
           <WorkspaceInMainPanel
@@ -168,12 +155,11 @@ class MainPanel extends React.Component {
             workspaceList={this.state.workspaceList}
             errorMsg={this.state.errorMsg}
             onDeleteGroup={this.onDeleteGroup}
-            onDeleteTable={this.onDeleteTable}
-            onCopyDTable={this.onCopyDTable}
-            onAddGroupSharedTable={this.onAddGroupSharedTable}
-            onLeaveGroupSharedTable={this.onLeaveGroupSharedTable}
-            onLeaveGroupSharedView={this.onLeaveGroupSharedView}
-            onAddDTable={this.onAddDTable}
+            onDeleteProject={this.onDeleteProject}
+            onCopyProject={this.onCopyProject}
+            onAddGroupSharedProject={this.onAddGroupSharedProject}
+            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
+            onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
         </Router>
