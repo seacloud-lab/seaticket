@@ -10,7 +10,7 @@ import { gettext, siteRoot } from '../../../constants';
 import MobileMine from '../../mobile/mobile-mine';
 import MobileHeader from '../../mobile/mobile-header';
 
-import '../../../css/mobile/mobile-main-panel.css';
+import './index.css';
 
 const propTypes = {
   searchPlaceholder: PropTypes.string,
