@@ -34,7 +34,7 @@ function DeletedGroupBaseItem(props) {
   return (
     <div className="deleted-group-base-item-container">
       <div className="base-item-icon">
-        <ProjectIcon dtableColor={baseItem.color} dtableIcon={baseItem.icon} />
+        <ProjectIcon bgColor={baseItem.color} icon={baseItem.icon} />
       </div>
       <div className="base-item-title text-truncate">{baseItem.name}</div>
       <div className="base-item-delete-time">

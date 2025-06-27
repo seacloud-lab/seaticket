@@ -10,11 +10,11 @@ class ProjectSettingPopover extends React.Component {
   static propTypes = {
     placement: PropTypes.string,
     popoverClassName: PropTypes.string,
-    tableIconSettingsId: PropTypes.string.isRequired,
-    onTableIconToggle: PropTypes.func.isRequired,
-    ProjectName: PropTypes.string.isRequired,
-    dtableColor: PropTypes.string,
-    dtableIcon: PropTypes.string,
+    target: PropTypes.string.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    name: PropTypes.string.isRequired,
+    bgColor: PropTypes.string,
+    icon: PropTypes.string,
     onColorChange: PropTypes.func.isRequired,
     onIconChange: PropTypes.func.isRequired,
     onNameChange: PropTypes.func.isRequired,
@@ -30,19 +30,19 @@ class ProjectSettingPopover extends React.Component {
     this.props.onNameChange(e.target.value);
   };
 
-  onColorChange = (dtableColor) => {
-    if (dtableColor === this.props.dtableColor) return;
-    this.props.onColorChange(dtableColor);
+  onColorChange = (bgColor) => {
+    if (bgColor === this.props.bgColor) return;
+    this.props.onColorChange(bgColor);
   };
 
-  onIconChange = (dtableIcon) => {
-    if (dtableIcon === this.props.dtableIcon) return;
-    this.props.onIconChange(dtableIcon);
+  onIconChange = (icon) => {
+    if (icon === this.props.icon) return;
+    this.props.onIconChange(icon);
   };
 
   onEnter = (e) => {
     e.preventDefault();
-    this.props.onTableIconToggle();
+    this.props.onToggle();
   };
 
   renderBaseName = () => {
@@ -51,7 +51,7 @@ class ProjectSettingPopover extends React.Component {
         <input
           type="text"
           className="form-control dtable-icon-settings-name-input"
-          value={this.props.ProjectName}
+          value={this.props.name}
           onChange={this.onChangeName}
           autoFocus={true}
           aria-label={gettext('Enter base name')}
@@ -62,8 +62,8 @@ class ProjectSettingPopover extends React.Component {
   };
 
   renderColorSettings = () => {
-    let { dtableColor } = this.props;
-    dtableColor = dtableColor || PROJECT_ICON_COLORS[0];
+    let { bgColor } = this.props;
+    bgColor = bgColor || PROJECT_ICON_COLORS[0];
     return (
       <div className="row dtable-color-content">
         {PROJECT_ICON_COLORS.map((color, index) => {
@@ -80,9 +80,9 @@ class ProjectSettingPopover extends React.Component {
                   style={{ backgroundColor: color }}
                   title={`${gettext('Color')} ${color}`}
                   aria-label={`${gettext('Color')} ${color}`}
-                  aria-selected={color === dtableColor}
+                  aria-selected={color === bgColor}
                 >
-                  {color === dtableColor &&
+                  {color === bgColor &&
                     <i aria-hidden="true" className="dtable-icon-color-check dtable-font dtable-icon-check-mark"></i>
                   }
                 </span>
@@ -95,25 +95,25 @@ class ProjectSettingPopover extends React.Component {
   };
 
   renderIconSettings = () => {
-    let { dtableIcon, dtableColor } = this.props;
-    dtableColor = dtableColor || PROJECT_ICON_COLORS[0];
-    dtableIcon = dtableIcon || PROJECT_ICON_LIST[0];
+    let { icon, bgColor } = this.props;
+    bgColor = bgColor || PROJECT_ICON_COLORS[0];
+    icon = icon || PROJECT_ICON_LIST[0];
     return (
       <div className="row dtable-icon-content">
-        {PROJECT_ICON_LIST.map((icon, index) => {
-          let isSelected = icon === dtableIcon;
+        {PROJECT_ICON_LIST.map((iconItem, index) => {
+          let isSelected = iconItem === icon;
           return (
             <div
               key={index}
               className="dtable-icon-item"
-              onClick={() => this.onIconChange(icon)}
+              onClick={() => this.onIconChange(iconItem)}
               role="button"
-              style={{ backgroundColor: isSelected ? dtableColor : '' }}
-              title={`${gettext('Icon')} ${icon}`}
-              aria-label={`${gettext('Icon')} ${icon}`}
+              style={{ backgroundColor: isSelected ? bgColor : '' }}
+              title={`${gettext('Icon')} ${iconItem}`}
+              aria-label={`${gettext('Icon')} ${iconItem}`}
             >
               <span className="colorinput dtable-icon-input" aria-selected={isSelected}>
-                <i aria-hidden="true" className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
+                <i aria-hidden="true" className={classnames('project-icon project-icon-style', { [iconItem]: iconItem, 'icon-color-white': isSelected })}></i>
               </span>
             </div>
           );
@@ -126,9 +126,9 @@ class ProjectSettingPopover extends React.Component {
     return (
       <DtablePopover
         placement={this.props.placement}
-        target={this.props.tableIconSettingsId}
-        hideDTablePopover={this.props.onTableIconToggle}
-        hideDTablePopoverWithEsc={this.props.onTableIconToggle}
+        target={this.props.target}
+        hideDTablePopover={this.props.onToggle}
+        hideDTablePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}
         hideArrow={true}
         popoverClassName={`dtable-icon-settings-popover ${this.props.popoverClassName}`}

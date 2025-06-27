@@ -112,7 +112,7 @@ class DTableItemGroupShared extends React.Component {
           className={`table-item ${active ? 'tr-highlight' : ''}`}
         >
           <div className="table-item-wrapper ml-0">
-            <ProjectIcon dtableColor={color} dtableIcon={icon} />
+            <ProjectIcon bgColor={color} icon={icon} />
             <div className="table-name">
               <a className="table-href" href={tableHref}>{shared_name || name}</a>
               <div
@@ -169,7 +169,7 @@ class DTableItemGroupShared extends React.Component {
         className="table-mobile-item"
         onClick={(e) => this.onTableItemClick(e, tableHref)}
       >
-        <ProjectIcon dtableColor={color} dtableIcon={icon} className="table-mobile-icon"/>
+        <ProjectIcon bgColor={color} icon={icon} className="table-mobile-icon"/>
         <div className="table-mobile-name d-flex align-items-center">
           <a className="table-href" href={tableHref}>{shared_name || name}</a>
           <div className="dtable-sharer-information">

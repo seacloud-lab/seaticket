@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { Input } from 'reactstrap';
 import { toaster } from 'dtable-ui-component';
 import MobileCommonHeader from '../mobile-common-header';
-import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../../constants/dtable-icon';
+import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../../constants';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { validateName } from '../../../utils/utils';
@@ -22,8 +22,8 @@ class AddBlankTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dtableIcon: PROJECT_ICON_LIST[0],
-      dtableColor: PROJECT_ICON_COLORS[0],
+      icon: PROJECT_ICON_LIST[0],
+      bgColor: PROJECT_ICON_COLORS[0],
       tableName: '',
       options: [],
     };
@@ -67,7 +67,7 @@ class AddBlankTable extends React.Component {
   };
 
   onCreateTable = () => {
-    const { tableName, options, dtableIcon, dtableColor } = this.state;
+    const { tableName, options, icon, bgColor } = this.state;
     const { currentWorkspace } = this.props;
     let response = validateName(tableName);
     if (!response.isValid) {
@@ -85,22 +85,22 @@ class AddBlankTable extends React.Component {
         }
       }
     }
-    this.props.createProject(response.message, email, dtableIcon, dtableColor);
+    this.props.createProject(response.message, email, icon, bgColor);
     this.props.onCreateProjectToggle();
   };
 
-  onIconChange = (dtableIcon) => {
-    if (dtableIcon === this.state.dtableIcon) return;
-    this.setState({ dtableIcon });
+  onIconChange = (icon) => {
+    if (icon === this.state.icon) return;
+    this.setState({ icon });
   };
 
-  onColorChange = (dtableColor) => {
-    if (dtableColor === this.state.dtableColor) return;
-    this.setState({ dtableColor });
+  onColorChange = (bgColor) => {
+    if (bgColor === this.state.bgColor) return;
+    this.setState({ bgColor });
   };
 
   renderColorSettings = () => {
-    let { dtableColor } = this.state;
+    let { bgColor } = this.state;
     return (
       <div className="row dtable-color-content">
         {PROJECT_ICON_COLORS.map((color, index) => {
@@ -108,7 +108,7 @@ class AddBlankTable extends React.Component {
             <div key={index} className="dtable-color-item" onClick={() => this.onColorChange(color)}>
               <label className="colorinput">
                 <span className="colorinput-color" style={{ backgroundColor: color }}>
-                  {color === dtableColor && <i className="dtable-icon-color-check dtable-font dtable-icon-check-mark"></i>}
+                  {color === bgColor && <i className="dtable-icon-color-check dtable-font dtable-icon-check-mark"></i>}
                 </span>
               </label>
             </div>
@@ -119,16 +119,16 @@ class AddBlankTable extends React.Component {
   };
 
   renderIconSettings = () => {
-    let { dtableColor, dtableIcon } = this.state;
+    let { bgColor, icon } = this.state;
 
     return (
       <div className="row dtable-icon-content mt-4">
-        {PROJECT_ICON_LIST.map((icon, index) => {
-          let isSelected = icon === dtableIcon;
+        {PROJECT_ICON_LIST.map((iconItem, index) => {
+          let isSelected = iconItem === icon;
           return (
-            <div key={index} className="dtable-icon-item" onClick={() => this.onIconChange(icon)} style={{ backgroundColor: isSelected ? dtableColor : '' }}>
+            <div key={index} className="dtable-icon-item" onClick={() => this.onIconChange(iconItem)} style={{ backgroundColor: isSelected ? bgColor : '' }}>
               <label className="colorinput dtable-icon-input">
-                <i className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
+                <i className={classnames('project-icon project-icon-style', { [iconItem]: iconItem, 'icon-color-white': isSelected })}></i>
               </label>
             </div>
           );

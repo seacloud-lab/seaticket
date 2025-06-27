@@ -23,7 +23,7 @@ class SearchResultItem extends React.Component {
     const pathName = group_name === 'personal' ? gettext('My projects') : group_name;
     return (
       <div className={getClassName} onClick={this.onClickHandler}>
-        <ProjectIcon dtableColor={color} dtableIcon={icon} />
+        <ProjectIcon bgColor={color} icon={icon} />
         <div className="table-name">
           <span>{shared_name || name}</span>
           {type === 'shared' && <span className="share-tip">{gettext('Shared')}</span>}

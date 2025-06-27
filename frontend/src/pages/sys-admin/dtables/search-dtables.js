@@ -86,12 +86,12 @@ class Item extends Component {
 
   onDeleteProject = () => {
     const item = this.props.item;
-    const dtableName = item.name;
+    const name = item.name;
     const dtable_uuid = item.uuid;
 
     sysAdminServiceApi.sysAdminDeleteDTable(dtable_uuid).then(() => {
       this.props.deleteDTable(item);
-      const msg = gettext('Successfully deleted {name}.').replace('{name}', dtableName);
+      const msg = gettext('Successfully deleted {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
@@ -103,11 +103,11 @@ class Item extends Component {
 
   onRepairDTableToggle = () => {
     const item = this.props.item;
-    const dtableName = item.name;
+    const name = item.name;
     const dtable_uuid = item.uuid;
 
     sysAdminServiceApi.sysAdminRepairDtable(dtable_uuid).then(() => {
-      const msg = gettext('Successfully repair {name}.').replace('{name}', dtableName);
+      const msg = gettext('Successfully repair {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);

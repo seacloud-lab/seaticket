@@ -20,9 +20,9 @@ class VirtualDtable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      ProjectName: gettext('Untitled project'),
-      dtableIcon: '',
-      dtableColor: '',
+      name: gettext('Untitled project'),
+      icon: '',
+      bgColor: '',
       isChange: true,
       isDataLoaded: false,
       baseCreated: [],
@@ -56,11 +56,11 @@ class VirtualDtable extends React.Component {
     });
   }
 
-  onCreateTable = () => {
-    const { ProjectName, dtableIcon, dtableColor, baseCreated, isChange } = this.state;
+  onCreate = () => {
+    const { name, icon, bgColor, baseCreated, isChange } = this.state;
     if (!isChange) return;
     const { currentWorkspace } = this.props;
-    let response = validateName(ProjectName);
+    let response = validateName(name);
     if (!response.isValid) {
       toaster.danger(response.message);
       return;
@@ -75,7 +75,7 @@ class VirtualDtable extends React.Component {
         }
       }
     }
-    seaQAAPI.createProject(response.message, email, dtableIcon, dtableColor, null).then((res) => {
+    seaQAAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
       let newProject = new Base(res.data.project);
       this.props.createBlankTable(newProject);
     }).catch((error) => {
@@ -91,36 +91,36 @@ class VirtualDtable extends React.Component {
     }
   };
 
-  onColorChange = (dtableColor) => {
-    this.setState({ dtableColor, isChange: true });
+  onColorChange = (bgColor) => {
+    this.setState({ bgColor, isChange: true });
   };
 
-  onIconChange = (dtableIcon) => {
-    this.setState({ dtableIcon, isChange: true });
+  onIconChange = (icon) => {
+    this.setState({ icon, isChange: true });
   };
 
-  onNameChange = (ProjectName) => {
-    this.setState({ ProjectName, isChange: true });
+  onNameChange = (name) => {
+    this.setState({ name, isChange: true });
   };
 
   render() {
-    const { ProjectName, dtableIcon, dtableColor } = this.state;
+    const { name, icon, bgColor } = this.state;
     return (
       <div
         className={'virtual-table table-item tr-highlight'}
-        id="create-base"
+        id="create-project"
       >
-        <ProjectIcon dtableColor={''} dtableIcon={''} />
+        <ProjectIcon bgColor="" icon="" />
         <div className="table-name">{gettext('Untitled project')}</div>
         {this.state.isDataLoaded && (
           <ProjectSettingPopover
-            placement='bottom-start'
-            popoverClassName='virtual-table-icon-settings'
-            tableIconSettingsId={'create-base'}
-            onTableIconToggle={this.onCreateTable}
-            ProjectName={ProjectName}
-            dtableColor={dtableColor}
-            dtableIcon={dtableIcon}
+            placement="bottom-start"
+            popoverClassName="virtual-project-settings"
+            target="create-project"
+            onToggle={this.onCreate}
+            name={name}
+            bgColor={bgColor}
+            icon={icon}
             onColorChange={this.onColorChange}
             onIconChange={this.onIconChange}
             onNameChange={this.onNameChange}

@@ -40,12 +40,12 @@ class GroupTrashDTablesItem extends React.PureComponent {
 
   onRestoreGroupDTable = () => {
     const { item, groupID } = this.props;
-    const { name: dtableName, uuid } = item;
+    const { name: name, uuid } = item;
     this.setState({ isRestoring: true });
     seaQAAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
       this.props.restoreDTable(item);
-      const msg = gettext('Successfully restored {name}.').replace('{name}', dtableName);
+      const msg = gettext('Successfully restored {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
       this.setState({ isRestoring: false });
@@ -64,7 +64,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
     return (
       <Fragment>
         <tr className={highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
-          <td><ProjectIcon dtableColor={item.color} dtableIcon={item.icon}/></td>
+          <td><ProjectIcon bgColor={item.color} icon={item.icon}/></td>
           <td>
             <div className="trash-table-name text-truncate" onClick={this.toggleRestoreDialog}>{item.name}</div>
           </td>

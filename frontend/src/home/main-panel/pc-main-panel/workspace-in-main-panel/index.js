@@ -43,7 +43,7 @@ class WorkspaceInMainPanel extends React.Component {
         onAddDTable={onAddDTable}
         loadWorkspaceList={this.props.loadWorkspaceList}
         noBaseTip={
-          <DTableEmptyTip text={gettext('No bases or folders.')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <DTableEmptyTip text={gettext('No bases.')} src={`${mediaUrl}img/no-items-tip.png`} />
         }
       />
     );

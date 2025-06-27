@@ -18,12 +18,11 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.organizations.models import OrgGroup
-from seahub.project.models import Workspaces, Projects, FolderItems, Folders, ProjectGroupOrders, \
+from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     Sites
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names, \
     add_init_crawl_site_task
-from seahub.project.constants import FOLDER_ITEM_PROJECT
 
 
 logger = logging.getLogger(__name__)
@@ -113,10 +112,6 @@ class WorkspacesView(APIView):
 
         try:
             project_list = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
-
-            # folders and folder-items
-            folders = list(Folders.objects.filter(workspace_id__in=[w.id for w in workspaces]))
-            folder_items = list(FolderItems.objects.filter(folder_id__in=[f.id for f in folders]))
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -133,23 +128,6 @@ class WorkspacesView(APIView):
                 workspace_id2project_list[project.workspace.id] = [project_info]
             project_info['starred'] = False
 
-        # handle folders and folder-items
-        folder_items_dict = {}
-        for item in folder_items:
-            if item.folder_id not in folder_items_dict:
-                folder_items_dict[item.folder_id] = [item]
-            else:
-                folder_items_dict[item.folder_id].append(item)
-        workspace_folders_dict = {}
-        for folder in folders:
-            folder_info = folder.to_dict()
-            items = folder_items_dict.get(folder.id, [])
-
-            folder_info.update({'items': [i.to_dict() for i in items]})
-            if folder.workspace_id not in workspace_folders_dict:
-                workspace_folders_dict[folder.workspace_id] = [folder_info]
-            else:
-                workspace_folders_dict[folder.workspace_id].append(folder_info)
 
         workspace_list_for_group =[]
         for workspace in workspaces:
@@ -163,13 +141,11 @@ class WorkspacesView(APIView):
                 res['group_owner'] = [g.creator_name for g in groups if g.id == group_id][0]
                 res['is_admin'] = group_id in admin_group_ids
                 res['project_list'] = workspace_id2project_list.get(workspace.id, [])
-                res['folders'] = workspace_folders_dict.get(workspace.id, [])
                 workspace_list_for_group.append(res)
             else:
                 res['name'] = 'personal'
                 res['type'] = 'personal'
                 res['project_list'] = workspace_id2project_list.get(workspace.id, [])
-                res['folders'] = workspace_folders_dict.get(workspace.id, [])
                 workspace_list.append(res)
         workspace_list_for_group = sorted(workspace_list_for_group, key=lambda x: group_id_list.index(x.get('group_id')))
         workspace_list.extend(workspace_list_for_group)

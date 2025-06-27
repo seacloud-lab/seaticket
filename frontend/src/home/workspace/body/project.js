@@ -35,9 +35,9 @@ class Project extends React.Component {
       dropdownOpen: false,
       active: false,
       isShowIconSettings: false,
-      dtableName: name,
-      dtableColor: color,
-      dtableIcon: icon,
+      name: name,
+      bgColor: color,
+      icon: icon,
       advancedDropdownOpen: false,
       isFinished: false,
       isShowConfirmExportDialog: false,
@@ -49,7 +49,7 @@ class Project extends React.Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.project.name !== nextProps.project.name) {
-      this.setState({ dtableName: nextProps.project.name });
+      this.setState({ name: nextProps.project.name });
     }
   }
 
@@ -128,38 +128,38 @@ class Project extends React.Component {
 
   saveBaseProperty = () => {
     const { color, name, icon } = this.props.project;
-    const { dtableColor, dtableIcon } = this.state;
-    let dtableName = this.state.dtableName.trim();
-    let response = validateName(dtableName);
+    const { bgColor, icon: newIcon } = this.state;
+    let newName = this.state.name.trim();
+    let response = validateName(newName);
     if (!response.isValid) {
       toaster.danger(response.message);
       return;
     }
-    dtableName = response.message;
-    if (dtableColor !== color || dtableIcon !== icon || dtableName !== name) {
+    newName = response.message;
+    if (bgColor !== color || newIcon !== icon || newName !== name) {
       let updated = {};
-      if (dtableColor !== color) {
-        updated.color = dtableColor;
+      if (bgColor !== color) {
+        updated.color = bgColor;
       }
-      if (dtableIcon !== icon) {
-        updated.icon = dtableIcon;
+      if (newIcon !== icon) {
+        updated.icon = newIcon;
       }
-      if (dtableName !== name) {
-        updated.new_name = dtableName;
+      if (newName !== name) {
+        updated.new_name = newName;
       }
     }
   };
 
-  onIconChange = (dtableIcon) => {
-    this.setState({ dtableIcon });
+  onIconChange = (icon) => {
+    this.setState({ icon });
   };
 
-  onColorChange = (dtableColor) => {
-    this.setState({ dtableColor });
+  onColorChange = (bgColor) => {
+    this.setState({ bgColor });
   };
 
-  onNameChange = (dtableName) => {
-    this.setState({ dtableName });
+  onNameChange = (name) => {
+    this.setState({ name });
   };
 
   onTableItemClick = (e, href) => {
@@ -198,21 +198,9 @@ class Project extends React.Component {
     }
   };
 
-  onDragStart = () => {
-    if (this.dropDownRef.current) {
-      this.dropDownRef.current.style.opacity = 0;
-    }
-  };
-
-  onDragEnd = () => {
-    if (this.dropDownRef.current) {
-      this.dropDownRef.current.style.opacity = 1;
-    }
-  };
-
   render() {
     let { isOwner, isAdmin, project } = this.props;
-    let { dtableName, dropdownOpen, dtableColor, dtableIcon, active } = this.state;
+    let { name: newName, dropdownOpen, bgColor, icon, active } = this.state;
     let { workspace_id, uuid, id, name, is_encrypted } = project;
     let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
@@ -222,7 +210,7 @@ class Project extends React.Component {
           className="table-mobile-item"
           onClick={(e) => this.onTableItemClick(e, tableHref)}
         >
-          <ProjectIcon dtableColor={project.color} dtableIcon={project.icon} className="table-mobile-icon"/>
+          <ProjectIcon bgColor={project.color} icon={project.icon} className="table-mobile-icon"/>
           <div className="table-mobile-name d-flex align-items-center">
             <a href={tableHref}>{name}</a>
             {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
@@ -283,8 +271,8 @@ class Project extends React.Component {
         onMouseLeave={this.onMouseLeave}
         onClick={(e) => this.onTableItemClick(e, tableHref)}
       >
-        <div className="table-item-wrapper ml-0" onDragStart={this.onDragStart} onDragEnd={this.onDragEnd}>
-          <ProjectIcon dtableColor={project.color} dtableIcon={project.icon} />
+        <div className="table-item-wrapper ml-0">
+          <ProjectIcon bgColor={project.color} icon={project.icon} />
           <div className="table-name">
             <a href={tableHref}>{project.name}</a>
           </div>
@@ -330,11 +318,11 @@ class Project extends React.Component {
         </div>
         {this.state.isShowIconSettings && (
           <ProjectSettingPopover
-            iconSettingsId={iconSettingsId}
-            onTableIconToggle={this.onTableIconToggle}
-            dtableName={dtableName}
-            dtableColor={dtableColor}
-            dtableIcon={dtableIcon}
+            target={iconSettingsId}
+            onToggle={this.onTableIconToggle}
+            name={newName}
+            bgColor={bgColor}
+            icon={icon}
             onColorChange={this.onColorChange}
             onIconChange={this.onIconChange}
             onNameChange={this.onNameChange}

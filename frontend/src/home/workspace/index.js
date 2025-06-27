@@ -163,8 +163,8 @@ class Workspace extends React.Component {
     });
   };
 
-  onCreateProject = (tableName, owner, dtableIcon, dtableColor) => {
-    seaQAAPI.createProject(tableName, owner, dtableIcon, dtableColor).then((res) => {
+  onCreateProject = (tableName, owner, icon, bgColor) => {
+    seaQAAPI.createProject(tableName, owner, icon, bgColor).then((res) => {
       this.state.projectList.push(res.data.project);
       this.setState({
         projectList: this.state.projectList

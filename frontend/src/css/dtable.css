@@ -818,13 +818,13 @@
   right: 8px;
 }
 
-.virtual-table-icon-settings .popover {
+.virtual-project-settings .popover {
   left: 12px !important;
   margin-bottom: -6px !important;
   margin-top: -6px !important;
 }
 
-.virtual-table-icon-settings .dtable-icon-settings-name-input {
+.virtual-project-settings .dtable-icon-settings-name-input {
   text-align: center;
 }
 
