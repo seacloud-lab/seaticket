@@ -11,41 +11,40 @@ const propTypes = {
   isOwnerOrAdmin: PropTypes.bool,
   isOwner: PropTypes.bool,
   openGroupMember: PropTypes.func,
-  onRenameDtableGroupToggle: PropTypes.func,
+  onRenameGroupToggle: PropTypes.func,
   toggleManageMembersDialog: PropTypes.func,
   onDtableManageMembers: PropTypes.func,
   onDeleteGroupToggle: PropTypes.func,
   onTransferGroupToggle: PropTypes.func,
   toggleGroupInviteDialog: PropTypes.func,
   projectList: PropTypes.array,
-  groupSharedTables: PropTypes.array,
+  groupSharedProjects: PropTypes.array,
   connectDropTarget: PropTypes.func,
   canDrop: PropTypes.bool,
   isAdmin: PropTypes.bool,
-  isShowVirtualDtable: PropTypes.bool,
+  isShowVirtualProject: PropTypes.bool,
   isItemFreezed: PropTypes.bool,
   isPersonal: PropTypes.bool,
   canAddProject: PropTypes.bool,
-  onLeaveGroupSharedTable: PropTypes.func,
+  onLeaveGroupSharedProject: PropTypes.func,
   onFreezedItem: PropTypes.func,
   onUnfreezedItem: PropTypes.func,
-  onLeaveGroupSharedView: PropTypes.func,
-  renderAddTableItem: PropTypes.func,
+  renderAddItem: PropTypes.func,
   hideVirtualDtable: PropTypes.func,
-  renameTable: PropTypes.func,
-  onShareTableToggle: PropTypes.func,
+  onShareProjectToggle: PropTypes.func,
   onSetPasswordToggle: PropTypes.func,
   onUnsetPasswordToggle: PropTypes.func,
   onModifyPasswordToggle: PropTypes.func,
-  onDeleteTableToggle: PropTypes.func,
-  onCopyDTableToggle: PropTypes.func,
-  onAddDTable: PropTypes.func,
-  onMobileShareTableToggle: PropTypes.func,
-  onMobileUpdateTableToggle: PropTypes.func,
-  createBlankTable: PropTypes.func,
+  onDeleteProjectToggle: PropTypes.func,
+  onCopyProjectToggle: PropTypes.func,
+  onAddProject: PropTypes.func,
+  onUpdateProject: PropTypes.func,
+  onMobileShareProjectToggle: PropTypes.func,
+  onMobileUpdateProjectToggle: PropTypes.func,
+  createBlankProject: PropTypes.func,
   setDropdownState: PropTypes.func,
   getDropdownState: PropTypes.func,
-  onCopyDTable: PropTypes.func,
+  onCopyProject: PropTypes.func,
 };
 
 class WorkspaceContainer extends Component {
@@ -55,7 +54,7 @@ class WorkspaceContainer extends Component {
 
     return (
       <div className={classnames('', {
-        'table-item-container': isDesktop,
+        'project-item-container': isDesktop,
         'table-mobile-item-container': !isDesktop,
       })}
       >
@@ -67,16 +66,16 @@ class WorkspaceContainer extends Component {
               isItemFreezed={isItemFreezed}
               isOwner={isOwner}
               isAdmin={isAdmin}
-              renameTable={this.props.renameTable}
-              onShareTableToggle={this.props.onShareTableToggle}
+              onShareProjectToggle={this.props.onShareProjectToggle}
               onSetPasswordToggle={this.props.onSetPasswordToggle}
               onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
               onModifyPasswordToggle={this.props.onModifyPasswordToggle}
-              onDeleteTableToggle={this.props.onDeleteTableToggle}
-              onCopyDTableToggle={this.props.onCopyDTableToggle}
-              onAddDTable={this.props.onAddDTable}
-              onMobileShareTableToggle={this.props.onMobileShareTableToggle}
-              onMobileUpdateTableToggle={this.props.onMobileUpdateTableToggle}
+              onDeleteProjectToggle={this.props.onDeleteProjectToggle}
+              onCopyProjectToggle={this.props.onCopyProjectToggle}
+              onAddProject={this.props.onAddProject}
+              onUpdateProject={this.props.onUpdateProject}
+              onMobileShareProjectToggle={this.props.onMobileShareProjectToggle}
+              onMobileUpdateProjectToggle={this.props.onMobileUpdateProjectToggle}
               onFreezedItem={this.props.onFreezedItem}
               onUnfreezedItem={this.props.onUnfreezedItem}
               setDropdownState={this.props.setDropdownState}
@@ -84,14 +83,14 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.isShowVirtualDtable && (
+        {this.props.isShowVirtualProject && (
           <VirtualProject
             currentWorkspace={this.props.workspace}
-            createBlankTable={this.props.createBlankTable}
+            createBlankProject={this.props.createBlankProject}
             hideVirtualDtable={this.props.hideVirtualDtable}
           />
         )}
-        {this.props.groupSharedTables.map((project, index) => {
+        {this.props.groupSharedProjects.map((project, index) => {
           return (
             <SharedProject
               key={index}
@@ -99,17 +98,17 @@ class WorkspaceContainer extends Component {
               project={project}
               isItemFreezed={isItemFreezed}
               isAdmin={isAdmin}
-              onLeaveShare={this.props.onLeaveGroupSharedTable}
+              onLeaveShare={this.props.onLeaveGroupSharedProject}
               setDropdownState={this.props.setDropdownState}
               getDropdownState={this.props.getDropdownState}
-              onCopyDTableToggle={this.props.onCopyDTableToggle}
-              onCopyDTable={this.props.onCopyDTable}
+              onCopyProjectToggle={this.props.onCopyProjectToggle}
+              onCopyProject={this.props.onCopyProject}
               currentWorkspace={this.props.workspace}
             />
           );
         })}
         {this.props.canAddProject && (this.props.isPersonal || isOwner || isAdmin) &&
-          this.props.renderAddTableItem()
+          this.props.renderAddItem()
         }
       </div>
     );

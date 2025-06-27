@@ -11,7 +11,7 @@ const gettext = window.gettext;
 
 const propTypes = {
   currentWorkspace: PropTypes.object,
-  createBlankTable: PropTypes.func,
+  createBlankProject: PropTypes.func,
   hideVirtualDtable: PropTypes.func,
 };
 
@@ -77,7 +77,7 @@ class VirtualDtable extends React.Component {
     }
     seaQAAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
       let newProject = new Base(res.data.project);
-      this.props.createBlankTable(newProject);
+      this.props.createBlankProject(newProject);
     }).catch((error) => {
       this.setState({ isChange: false });
       this.handleError(error);
@@ -107,11 +107,11 @@ class VirtualDtable extends React.Component {
     const { name, icon, bgColor } = this.state;
     return (
       <div
-        className={'virtual-table table-item tr-highlight'}
+        className={'virtual-table project-item tr-highlight'}
         id="create-project"
       >
         <ProjectIcon bgColor="" icon="" />
-        <div className="table-name">{gettext('Untitled project')}</div>
+        <div className="project-name">{gettext('Untitled project')}</div>
         {this.state.isDataLoaded && (
           <ProjectSettingPopover
             placement="bottom-start"

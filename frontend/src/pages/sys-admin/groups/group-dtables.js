@@ -103,7 +103,7 @@ class Item extends Component {
     return (
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td className="org-table-icon"><span className={iconClass} /></td>
+          <td className="org-project-icon"><span className={iconClass} /></td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>
@@ -133,7 +133,7 @@ class Item extends Component {
         {this.state.isExternalLinkDialogOpen &&
           <ModalPortal>
             <DTableAllExternalLinksDialog
-              currentTable={item}
+              currentProject={item}
               toggle={this.toggleExternalLinkDialog}
             />
           </ModalPortal>

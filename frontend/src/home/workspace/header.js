@@ -10,7 +10,7 @@ const propTypes = {
   isOwnerOrAdmin: PropTypes.bool,
   isOwner: PropTypes.bool,
   openGroupMember: PropTypes.func,
-  onRenameDtableGroupToggle: PropTypes.func,
+  onRenameGroupToggle: PropTypes.func,
   toggleManageMembersDialog: PropTypes.func,
   onDtableManageMembers: PropTypes.func,
   onDeleteGroupToggle: PropTypes.func,
@@ -72,7 +72,7 @@ class WorkspaceHeader extends Component {
         <span>{this.renderName()}</span>
         {show_group_menu_drop_down &&
           <GroupDropdownMenu
-            onRenameDtableGroup={this.props.onRenameDtableGroupToggle}
+            onRenameDtableGroup={this.props.onRenameGroupToggle}
             onManageMembersToggle={this.props.toggleManageMembersDialog}
             onDtableManageMembers={this.props.onDtableManageMembers}
             onDeleteGroupToggle={this.props.onDeleteGroupToggle}

@@ -203,7 +203,7 @@ class SearchDtable extends Component {
       <ul className="search-result-list" ref={ref => this.ulRef = ref}>
         {resultItems.map((item, index) => {
           const path = getWorkspaceName(item, workspaceList);
-          const getClassName = `table-item ${highLightIndex === index ? 'table-item-selected' : ''}`;
+          const getClassName = `project-item ${highLightIndex === index ? 'project-item-selected' : ''}`;
           return (
             <SearchResultItem
               key={path + item.id + index}

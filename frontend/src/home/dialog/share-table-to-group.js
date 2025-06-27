@@ -81,9 +81,9 @@ GroupItem.propTypes = groupItemPropTypes;
 
 
 const shareTableToGroupPropTypes = {
-  currentTable: PropTypes.object.isRequired,
-  onAddGroupSharedTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedTable: PropTypes.func.isRequired,
+  currentProject: PropTypes.object.isRequired,
+  onAddGroupSharedProject: PropTypes.func.isRequired,
+  onLeaveGroupSharedProject: PropTypes.func.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func,
   srcGroupID: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -103,7 +103,7 @@ class ShareTableToGroup extends React.Component {
 
   componentDidMount() {
     let { srcGroupID } = this.props;
-    let { workspace_id, name } = this.props.currentTable;
+    let { workspace_id, name } = this.props.currentProject;
     seaQAAPI.listGroups(true).then((res) => {
       let groups = res.data.filter(item => {
         return item.id !== srcGroupID;
@@ -130,8 +130,8 @@ class ShareTableToGroup extends React.Component {
   addTableShare = () => {
     let { permission, selectedOptions } = this.state;
     if (!selectedOptions || selectedOptions.length === 0) return;
-    const { currentTable, srcGroupID, groupName } = this.props;
-    let { workspace_id, name: tableName } = currentTable;
+    const { currentProject, srcGroupID, groupName } = this.props;
+    let { workspace_id, name: tableName } = currentProject;
     const groupIDs = selectedOptions.map(item => item.id);
     seaQAAPI.addTableGroupShare(workspace_id, tableName, groupIDs, permission).then((res) => {
       let groupShares = this.state.groupShares.slice();
@@ -155,16 +155,16 @@ class ShareTableToGroup extends React.Component {
               dtable_share_id,
               from_group_avatar: `${mediaUrl}/avatars/default.png`,
               from_group_name: groupName,
-            }, currentTable);
+            }, currentProject);
           } else {
             newTable = Object.assign({
               dtable_share_id,
               from_user: username,
               from_user_name: name,
               from_user_avatar: avatarURL,
-            }, currentTable);
+            }, currentProject);
           }
-          this.props.onAddGroupSharedTable(groupID, newTable);
+          this.props.onAddGroupSharedProject(groupID, newTable);
         });
       }
     }).catch((error) => {
@@ -173,7 +173,7 @@ class ShareTableToGroup extends React.Component {
   };
 
   updateTableShare = (groupID, permission) => {
-    let { workspace_id, name } = this.props.currentTable;
+    let { workspace_id, name } = this.props.currentProject;
     seaQAAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.map((item) => {
@@ -189,12 +189,12 @@ class ShareTableToGroup extends React.Component {
   };
 
   deleteTableShare = (groupID) => {
-    let { workspace_id, name } = this.props.currentTable;
-    seaQAAPI.deleteTableGroupShare(workspace_id, name, groupID).then(() => {
+    let { workspace_id, name } = this.props.currentProject;
+    seaQAAPI.deleteProjectGroupShare(workspace_id, name, groupID).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.filter((item) => {return item.group_id !== groupID;});
       this.setState({ groupShares: groupShares });
-      this.props.onLeaveGroupSharedTable(groupID, this.props.currentTable);
+      this.props.onLeaveGroupSharedProject(groupID, this.props.currentProject);
     }).catch((error) => {
       this.handleError(error);
     });

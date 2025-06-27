@@ -274,16 +274,16 @@ class ProjectView(APIView):
         # resource check
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
-            error_msg = 'Workspace %s not found.' % workspace_id
+            error_msg = f'Workspace {workspace_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        project = Projects.objects.get_dtable(workspace, project_name)
+        project = Projects.objects.get_project(workspace, project_name)
         if not project:
-            error_msg = _('Base %s not found.') % project_name
+            error_msg = _(f'Project {project_name} not found.')
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if Projects.objects.filter(workspace_id=workspace_id, name=new_project_name).exclude(pk=project.pk).exists():
-            error_msg = _('%s exists.') % (new_project_name,)
+            error_msg = _(f'{new_project_name} exists.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # permission check
@@ -304,7 +304,7 @@ class ProjectView(APIView):
             project.modifier = username
             project.save()
         except OperationalError:
-            error_msg = _('Base name contains illegal characters')
+            error_msg = _('Project name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         except Exception as e:
             logger.error(e)

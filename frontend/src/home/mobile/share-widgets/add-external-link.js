@@ -18,7 +18,7 @@ import {
 const Item = List.Item;
 
 const propTypes = {
-  currentTable: PropTypes.object,
+  currentProject: PropTypes.object,
   toggle: PropTypes.func.isRequired,
   addExternalLink: PropTypes.func.isRequired
 };
@@ -93,7 +93,7 @@ class AddExternalLink extends React.Component {
       this.setState({ errMessage });
       return;
     }
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     customToken = radioCheckName === 'customize' ? customToken : '';
     seaQAAPI.createDTableExternalLink(workspace_id, name, customToken, password, expireDays).then(res => {
       let externalLink = res.data;

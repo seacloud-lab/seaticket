@@ -12,7 +12,7 @@ class Workspace {
     // type === group
     this.group_id = obj.group_id || '';
     this.group_owner = obj.group_owner || '';
-    this.group_shared_dtables = obj.group_shared_dtables || [];
+    this.group_shared_projects = obj.group_shared_projects || [];
     this.is_admin = obj.is_admin || false;
     this.department_id = obj.department_id || '';
   }

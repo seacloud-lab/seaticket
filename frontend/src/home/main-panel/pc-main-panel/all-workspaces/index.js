@@ -58,9 +58,9 @@ class AllWorkspace extends React.Component {
   };
 
   render() {
-    let { isWorkspaceListLoading, workspaceList, errorMsg, onCopyDTable,
-      onDeleteTable, onDeleteGroup, onAddGroupSharedTable, onLeaveGroupSharedTable,
-      onAddDTable } = this.props;
+    let { isWorkspaceListLoading, workspaceList, errorMsg, onCopyProject,
+      onDeleteProject, onDeleteGroup, onAddGroupSharedProject, onLeaveGroupSharedProject,
+      onAddProject } = this.props;
     if (isWorkspaceListLoading) {
       return (<div className="mt-6"><Loading /></div>);
     }
@@ -92,11 +92,11 @@ class AllWorkspace extends React.Component {
                   {personalWorkspace &&
                     <Workspace
                       workspace={personalWorkspace}
-                      onCopyDTable={onCopyDTable}
-                      onDeleteTable={onDeleteTable}
-                      onAddGroupSharedTable={onAddGroupSharedTable}
-                      onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-                      onAddDTable={onAddDTable}
+                      onCopyProject={onCopyProject}
+                      onDeleteProject={onDeleteProject}
+                      onAddGroupSharedProject={onAddGroupSharedProject}
+                      onLeaveGroupSharedProject={onLeaveGroupSharedProject}
+                      onAddProject={onAddProject}
                       loadWorkspaceList={this.props.loadWorkspaceList}
                     />
                   }
@@ -107,11 +107,11 @@ class AllWorkspace extends React.Component {
                         workspace={workspace}
                         renameGroupName={this.renameGroupName}
                         onDeleteGroup={onDeleteGroup}
-                        onDeleteTable={onDeleteTable}
-                        onCopyDTable={onCopyDTable}
-                        onAddGroupSharedTable={onAddGroupSharedTable}
-                        onLeaveGroupSharedTable={onLeaveGroupSharedTable}
-                        onAddDTable={onAddDTable}
+                        onDeleteProject={onDeleteProject}
+                        onCopyProject={onCopyProject}
+                        onAddGroupSharedProject={onAddGroupSharedProject}
+                        onLeaveGroupSharedProject={onLeaveGroupSharedProject}
+                        onAddProject={onAddProject}
                         loadWorkspaceList={this.props.loadWorkspaceList}
                       />
                     );
@@ -146,11 +146,11 @@ AllWorkspace.propTypes = {
   workspaceList: PropTypes.array.isRequired,
   loadWorkspaceList: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
-  onCopyDTable: PropTypes.func.isRequired,
-  onDeleteTable: PropTypes.func.isRequired,
-  onLeaveGroupSharedTable: PropTypes.func.isRequired,
-  onAddGroupSharedTable: PropTypes.func.isRequired,
-  onAddDTable: PropTypes.func.isRequired,
+  onCopyProject: PropTypes.func.isRequired,
+  onDeleteProject: PropTypes.func.isRequired,
+  onLeaveGroupSharedProject: PropTypes.func.isRequired,
+  onAddGroupSharedProject: PropTypes.func.isRequired,
+  onAddProject: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
 };
 

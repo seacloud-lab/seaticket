@@ -22,7 +22,7 @@
  * go-back
  * top-logo
  * base-table
- * table-item rename-component
+ * project-item rename-component
  * more-btn
  * dropdown-menu
  * empty-tip
@@ -918,7 +918,7 @@ table td {
   background-color: #f2f4f6 !important;
 }
 
-/* table-item reanme-component */
+/* project-item reanme-component */
 .rename-container input {
   box-sizing: content-box;
   padding: 2px 3px;
@@ -957,7 +957,7 @@ table td {
   }
 }
 
-/* table-item loading-more-data */
+/* project-item loading-more-data */
 .list-show-more {
   padding: 0.25rem 0.75rem;
   line-height: 2rem;

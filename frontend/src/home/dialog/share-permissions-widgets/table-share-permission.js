@@ -39,7 +39,7 @@ class TableSharePermission extends Component {
     return (
       <div className="table-share-permission">
         <div className="table d-flex">
-          <div className="table-name d-flex align-items-center">
+          <div className="project-name d-flex align-items-center">
             <span className="toggle-expand-btn" onClick={this.onToggleExpandTable}>
               <i className={`icon-toggle-expand dtable-font dtable-icon-down3 ${this.state.expanded ? '' : 'rotate-270'}`}></i>
             </span>

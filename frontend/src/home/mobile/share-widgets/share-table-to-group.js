@@ -11,7 +11,7 @@ import AddShareGroup from './add-share-group';
 import { gettext } from '../../../constants';
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   customSharePermissions: PropTypes.array,
 };
 
@@ -28,7 +28,7 @@ class ShareTableToGroup extends React.Component {
   }
 
   componentDidMount() {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.listTableGroupShares(workspace_id, name).then(res => {
       this.setState({ groupShares: res.data.dtable_group_share_list, isLoading: false });
     }).catch(error => {
@@ -38,7 +38,7 @@ class ShareTableToGroup extends React.Component {
   }
 
   addTableShare = (selectedOptions, permission) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     const { groupShares } = this.state;
     if (!selectedOptions || selectedOptions.length === 0) return;
     const groupIDs = selectedOptions.map(item => item.value);
@@ -59,7 +59,7 @@ class ShareTableToGroup extends React.Component {
   };
 
   updateTableShare = (groupShare, permission) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     let groupID = groupShare.group_id;
     seaQAAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
       let groupShares = this.state.groupShares.slice();
@@ -77,9 +77,9 @@ class ShareTableToGroup extends React.Component {
   };
 
   deleteTableShare = (groupShare) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     let groupID = groupShare.group_id;
-    seaQAAPI.deleteTableGroupShare(workspace_id, name, groupID).then(() => {
+    seaQAAPI.deleteProjectGroupShare(workspace_id, name, groupID).then(() => {
 
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.filter((item) => {return item.group_id !== groupID;});

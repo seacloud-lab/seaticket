@@ -14,7 +14,7 @@ const Item = List.Item;
 const Brief = Item.Brief;
 
 const propTypes = {
-  currentTable: PropTypes.object
+  currentProject: PropTypes.object
 };
 
 class ExternalLink extends React.Component {
@@ -28,7 +28,7 @@ class ExternalLink extends React.Component {
   }
 
   componentDidMount() {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.getDTableExternalLink(workspace_id, name).then(res => {
       let externalLinks = res.data.links;
       this.setState({
@@ -66,7 +66,7 @@ class ExternalLink extends React.Component {
   };
 
   deleteExternalLink = (externalLink) => {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.deleteDTableExternalLink(workspace_id, name, externalLink.token).then(() => {
       let { externalLinks } = this.state;
       externalLinks = externalLinks.filter((item) => {
@@ -115,7 +115,7 @@ class ExternalLink extends React.Component {
           <AddExternalLink
             toggle={this.onAddExternalLink}
             addExternalLink={this.addExternalLink}
-            currentTable={this.props.currentTable}
+            currentProject={this.props.currentProject}
           />
         }
       </Fragment>

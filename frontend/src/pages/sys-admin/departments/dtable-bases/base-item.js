@@ -100,7 +100,7 @@ class BaseItem extends React.Component {
         }
         {isExternalLinkDialogOpen &&
           <DTableAllExternalLinksDialog
-            currentTable={item}
+            currentProject={item}
             toggle={this.toggleExternalLinkDialog}
           />
         }
@@ -116,7 +116,7 @@ class BaseItem extends React.Component {
     return (
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td className="org-table-icon"><span className={iconClass} /></td>
+          <td className="org-project-icon"><span className={iconClass} /></td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>

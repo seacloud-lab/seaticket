@@ -66,7 +66,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
         <tr className={highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
           <td><ProjectIcon bgColor={item.color} icon={item.icon}/></td>
           <td>
-            <div className="trash-table-name text-truncate" onClick={this.toggleRestoreDialog}>{item.name}</div>
+            <div className="trash-project-name text-truncate" onClick={this.toggleRestoreDialog}>{item.name}</div>
           </td>
           <td>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
@@ -87,7 +87,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
         {this.state.isRestoreDialogOpen &&
           <ModalPortal>
             <RestoreTableDialog
-              currentTable={item}
+              currentProject={item}
               handleSubmit={this.onRestoreGroupDTable}
               restoreCancel={this.toggleRestoreDialog}
               owner_deleted={item.owner_deleted}

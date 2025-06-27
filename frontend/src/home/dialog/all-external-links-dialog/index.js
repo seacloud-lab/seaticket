@@ -12,7 +12,7 @@ import DTableExternalLinks from '../dtable-external-links-widgets/dtable-externa
 import './index.css';
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
+  currentProject: PropTypes.object.isRequired,
   toggle: PropTypes.func,
 };
 
@@ -43,8 +43,8 @@ class AllExternalLinksDialog extends React.Component {
   };
 
   listDTableExternalLinks = () => {
-    const { currentTable } = this.props;
-    sysAdminServiceApi.sysAdminListDTableExternalLinks(currentTable.id).then((res) => {
+    const { currentProject } = this.props;
+    sysAdminServiceApi.sysAdminListDTableExternalLinks(currentProject.id).then((res) => {
       const external_link_list = res.data.dtable_external_link_list;
       this.setState({
         isLoading: false,
@@ -60,12 +60,12 @@ class AllExternalLinksDialog extends React.Component {
   };
 
   render() {
-    const { currentTable } = this.props;
+    const { currentProject } = this.props;
     const { currentTab, baseExternalLinks, viewExternalLinks, isLoading } = this.state;
     return (
       <ModalPortal>
         <Modal isOpen={true} toggle={this.toggle} className="dtable-external-links-dialog">
-          <DTableModalHeader toggle={this.toggle}>{currentTable.name}</DTableModalHeader>
+          <DTableModalHeader toggle={this.toggle}>{currentProject.name}</DTableModalHeader>
           <ModalBody className="dtable-external-links-body">
             {isLoading ?
               <Loading /> :

@@ -9,7 +9,7 @@
   margin-right: 4px;
 }
 
-.trash-table .trash-table-base-detail .table-icon-content {
+.trash-table .trash-table-base-detail .project-icon-content {
   height: 24px;
   width: 24px;
   display: flex;
@@ -20,7 +20,7 @@
   background-color: #eee;
 }
 
-.trash-table .trash-table-base-detail .table-icon-content .project-icon-style {
+.trash-table .trash-table-base-detail .project-icon-content .project-icon-style {
   font-size: 16px;
 }
 
@@ -28,13 +28,13 @@
   height: 56px;
 }
 
-.trash-table .trash-table-base-detail .trash-table-name {
+.trash-table .trash-table-base-detail .trash-project-name {
   color: #212529;
   font-weight: 500;
   padding-right: 20px;
 }
 
-.trash-table .trash-table-base-detail .trash-table-name:hover {
+.trash-table .trash-table-base-detail .trash-project-name:hover {
   text-decoration: underline;
   cursor: pointer;
 }
@@ -88,7 +88,7 @@
 }
 
 /*mobile*/
-.trash-table .trash-table-base-detail .trash-table-name-mobile {
+.trash-table .trash-table-base-detail .trash-project-name-mobile {
   font-weight: 500;
   font-size: 14px;
   padding-right: 10px;

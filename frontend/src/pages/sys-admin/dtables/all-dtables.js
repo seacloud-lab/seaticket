@@ -27,7 +27,6 @@ const itemPropTypes = {
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   deleteDTable: PropTypes.func.isRequired,
-  unsetDTablePassword: PropTypes.func,
 };
 
 class Item extends Component {
@@ -84,7 +83,7 @@ class Item extends Component {
         this.exportDTable();
         break;
       case 'Copy':
-        this.onCopyDTableToggle();
+        this.onCopyProjectToggle();
         break;
       case 'Share':
         this.onShareDTableToggle();
@@ -197,7 +196,7 @@ class Item extends Component {
     this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
   };
 
-  onCopyDTableToggle = () => {
+  onCopyProjectToggle = () => {
     this.setState({
       isShowCopyDTable: !this.state.isShowCopyDTable
     });
@@ -230,7 +229,7 @@ class Item extends Component {
     return (
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
-          <td className="org-table-icon">
+          <td className="org-project-icon">
             <i
               className={`dtable-font dtable-icon-table${item.is_encrypted ? '-encryption' : ''} system-dtable-font`}
               aria-hidden="true"
@@ -279,14 +278,14 @@ class Item extends Component {
         {this.state.isExternalLinkDialogOpen &&
           <ModalPortal>
             <DTableAllExternalLinksDialog
-              currentTable={item}
+              currentProject={item}
               toggle={this.toggleExternalLinkDialog}
             />
           </ModalPortal>
         }
         {this.state.isShowShareDTableDialog && (
           <SysAdminShareTableDialog
-            currentTable={item}
+            currentProject={item}
             shareCancel={this.onShareDTableToggle}
           />
         )}
@@ -305,7 +304,6 @@ const contentPropTypes = {
   pageInfo: PropTypes.object.isRequired,
   listDTablesByPage: PropTypes.func.isRequired,
   deleteDTable: PropTypes.func.isRequired,
-  unsetDTablePassword: PropTypes.func,
   resetPerPage: PropTypes.func.isRequired,
 };
 
@@ -382,7 +380,6 @@ class Content extends Component {
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
                   deleteDTable={this.props.deleteDTable}
-                  unsetDTablePassword={this.props.unsetDTablePassword}
                 />);
               })}
             </tbody>
@@ -479,24 +476,6 @@ class AllDTables extends Component {
     this.setState({ dtables: dtables });
   };
 
-  unsetDTablePassword = (dtable) => {
-    sysAdminServiceApi.sysAdminUnsetDTablePassword(dtable.uuid).then((res) => {
-      const updateTable = res.data.dtable;
-      let dtables = this.state.dtables.map((table) => {
-        if (table.uuid === dtable.uuid) {
-          table = Object.assign({}, table, updateTable);
-        }
-        return table;
-      });
-      this.setState({ dtables: dtables });
-      const msg = gettext('Successfully unset password of base {name}.').replace('{name}', dtable.name);
-      toaster.success(msg);
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
   getSearch = () => {
     return <Search
       placeholder={gettext('Search bases')}
@@ -525,7 +504,6 @@ class AllDTables extends Component {
                 curPerPage={perPage}
                 listDTablesByPage={this.listDTablesByPage}
                 deleteDTable={this.deleteDTable}
-                unsetDTablePassword={this.unsetDTablePassword}
                 resetPerPage={this.resetPerPage}
               />
             </div>

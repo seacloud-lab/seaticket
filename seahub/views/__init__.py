@@ -193,5 +193,5 @@ def seaqa_fake_view(request, **kwargs):
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
         'can_remove_base_password_via_phone': settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE if settings.ENABLE_BIND_PHONE else False,
         'has_bound_phone': True if phone else False,
-        'disable_adding_personal_bases': True if settings.DISABLE_ADDING_PERSONAL_BASES else False,
+        'disable_adding_personal_projects': True if settings.DISABLE_ADDING_PERSONAL_PROJECTS else False,
     })

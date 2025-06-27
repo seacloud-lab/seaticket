@@ -148,15 +148,7 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  renameTable(workspaceID, old_name, new_name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
-    let form = new FormData();
-    form.append('name', old_name);
-    form.append('new_name', new_name);
-    return this.req.put(url, form);
-  }
-
-  updateTable(workspaceID, project_name, updates) {
+  updateProject(workspaceID, project_name, updates) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let form = new FormData();
     form.append('name', project_name);
@@ -175,7 +167,7 @@ class SeaQAAPI {
     return this.req.put(url, form);
   }
 
-  deleteTable(workspaceID, name) {
+  deleteProject(workspaceID, name) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let params = { name: name };
     return this.req.delete(url, { data: params });
@@ -224,7 +216,7 @@ class SeaQAAPI {
     return this.req.post(url, params);
   }
 
-  deleteTableGroupShare(workspaceID, name, groupID) {
+  deleteProjectGroupShare(workspaceID, name, groupID) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/group-shares/' + groupID + '/';
     return this.req.delete(url);
   }

@@ -24,7 +24,7 @@ class SearchResultItem extends React.Component {
     return (
       <div className={getClassName} onClick={this.onClickHandler}>
         <ProjectIcon bgColor={color} icon={icon} />
-        <div className="table-name">
+        <div className="project-name">
           <span>{shared_name || name}</span>
           {type === 'shared' && <span className="share-tip">{gettext('Shared')}</span>}
           {pathName && <span className="share-tip text-truncate">{pathName}</span>}

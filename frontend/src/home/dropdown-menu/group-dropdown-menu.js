@@ -53,7 +53,7 @@ class GroupDropdownMenu extends React.Component {
     const { isOwner, isOwnerOrAdmin, workspace, isDepart } = this.props;
     const isDepartV2Group = enableAddressBookV2 && workspace.department_id;
     return (
-      <Dropdown isOpen={this.state.dropdownOpen} toggle={this.dropdownToggle} direction="down" className="table-item-more-operation">
+      <Dropdown isOpen={this.state.dropdownOpen} toggle={this.dropdownToggle} direction="down" className="project-item-more-operation">
         <DropdownToggle
           tag='i'
           role="button"

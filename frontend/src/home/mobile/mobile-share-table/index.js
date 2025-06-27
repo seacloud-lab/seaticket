@@ -14,8 +14,8 @@ import { gettext, cloudMode, isOrgContext } from '../../../constants';
 import './index.css';
 
 const propTypes = {
-  currentTable: PropTypes.object.isRequired,
-  hideMobileShareTable: PropTypes.func,
+  currentProject: PropTypes.object.isRequired,
+  hideMobileShareProject: PropTypes.func,
 };
 
 class MobileShareTable extends Component {
@@ -30,7 +30,7 @@ class MobileShareTable extends Component {
   }
 
   componentDidMount() {
-    const { workspace_id, name } = this.props.currentTable;
+    const { workspace_id, name } = this.props.currentProject;
     seaQAAPI.getSharePermissions(workspace_id, name).then((res) => {
       const customSharePermissions = res.data.permission_list;
       this.setState({ customSharePermissions, isLoading: false });
@@ -50,16 +50,16 @@ class MobileShareTable extends Component {
   };
 
   toggle = () => {
-    this.props.hideMobileShareTable();
+    this.props.hideMobileShareProject();
   };
 
   render() {
-    const { currentTable } = this.props;
+    const { currentProject } = this.props;
     const { activeTab, customSharePermissions, isLoading } = this.state;
     const title = (
       <>
         <span className="mr-1">{gettext('Share')}</span>
-        <span className="mobile-share-title-name">{currentTable.name}</span>
+        <span className="mobile-share-title-name">{currentProject.name}</span>
       </>
     );
     return (
@@ -105,16 +105,16 @@ class MobileShareTable extends Component {
               </div>
             </div>
             {activeTab === 'shareToUser' &&
-              <ShareTableToUser customSharePermissions={customSharePermissions} currentTable={this.props.currentTable} />
+              <ShareTableToUser customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
             }
             {(!cloudMode || isOrgContext) && activeTab === 'shareToGroup' &&
-              <ShareTableToGroup customSharePermissions={customSharePermissions} currentTable={this.props.currentTable} />
+              <ShareTableToGroup customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
             }
             {activeTab === 'externalLink' &&
-              <ExternalLink currentTable={this.props.currentTable} />
+              <ExternalLink currentProject={this.props.currentProject} />
             }
             {activeTab === 'inviteLink' &&
-              <InviteLink currentTable={this.props.currentTable} />
+              <InviteLink currentProject={this.props.currentProject} />
             }
           </>
         }

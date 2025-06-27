@@ -46,7 +46,7 @@ export const enableUserSetName = window.app.pageOptions.enableUserSetName;
 export const customNavItems = window.app.pageOptions.customNavItems;
 export const canRemoveBasePasswordViaPhone = window.app.pageOptions.canRemoveBasePasswordViaPhone;
 export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
-export const disableAddingPersonalBases = window.app.pageOptions.disableAddingPersonalBases;
+export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const enableSeatableAI = window.app.pageOptions.enableSeatableAI;
 export const isOrgStaff = window.app.pageOptions?.isOrgStaff;
 

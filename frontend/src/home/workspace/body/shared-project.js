@@ -65,8 +65,8 @@ class DTableItemGroupShared extends React.Component {
     Utils.openPage(e, href);
   };
 
-  onCopyDTableToggle = () => {
-    this.props.onCopyDTableToggle(this.props.project);
+  onCopyProjectToggle = () => {
+    this.props.onCopyProjectToggle(this.props.project);
   };
 
   toggleCopyDTableToCurrentGroup = () => {
@@ -109,11 +109,11 @@ class DTableItemGroupShared extends React.Component {
           onMouseEnter={this.onMouseEnter}
           onMouseLeave={this.onMouseLeave}
           onClick={(e) => this.onTableItemClick(e, tableHref)}
-          className={`table-item ${active ? 'tr-highlight' : ''}`}
+          className={`project-item ${active ? 'tr-highlight' : ''}`}
         >
-          <div className="table-item-wrapper ml-0">
+          <div className="project-item-wrapper ml-0">
             <ProjectIcon bgColor={color} icon={icon} />
-            <div className="table-name">
+            <div className="project-name">
               <a className="table-href" href={tableHref}>{shared_name || name}</a>
               <div
                 className="dtable-sharer-information"
@@ -138,7 +138,7 @@ class DTableItemGroupShared extends React.Component {
                 isOpen={this.state.dropdownOpen}
                 toggle={this.dropdownToggle}
                 direction="down"
-                className="table-item-more-operation"
+                className="project-item-more-operation"
                 onClick={(e) => {e.stopPropagation();}}
               >
                 <DropdownToggle
@@ -153,7 +153,7 @@ class DTableItemGroupShared extends React.Component {
                 />
                 <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
-                  {canCopy && <DropdownItem onClick={this.onCopyDTableToggle}>{gettext('Copy')}</DropdownItem>}
+                  {canCopy && <DropdownItem onClick={this.onCopyProjectToggle}>{gettext('Copy')}</DropdownItem>}
                   {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}
                 </DropdownMenu>
               </Dropdown>
@@ -183,7 +183,7 @@ class DTableItemGroupShared extends React.Component {
             isOpen={this.state.dropdownOpen}
             toggle={this.dropdownToggle}
             direction="down"
-            className="table-item-more-operation"
+            className="project-item-more-operation"
             onClick={(e) => {e.stopPropagation();}}
           >
             <DropdownToggle
@@ -222,8 +222,8 @@ DTableItemGroupShared.propTypes = {
   isAdmin: PropTypes.bool.isRequired,
   setDropdownState: PropTypes.func,
   getDropdownState: PropTypes.func,
-  onCopyDTableToggle: PropTypes.func,
-  onCopyDTable: PropTypes.func,
+  onCopyProjectToggle: PropTypes.func,
+  onCopyProject: PropTypes.func,
   currentWorkspace: PropTypes.object,
 };
 
