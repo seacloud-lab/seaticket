@@ -40,7 +40,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
 
   onRestoreGroupDTable = () => {
     const { item, groupID } = this.props;
-    const { name: name, uuid } = item;
+    const { name, uuid } = item;
     this.setState({ isRestoring: true });
     seaQAAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
