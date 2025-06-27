@@ -11,7 +11,7 @@ import Loading from '../../components/loading';
 import Paginator from '../../components/paginator';
 import ModalPortal from '../../components/modal-portal';
 import MainPanelTopbar from './main-panel-topbar';
-import DeleteTableDialog from '../dtable/dialog/delete-table-dialog';
+import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 
 const { orgID } = window.org.pageOptions;
 
@@ -76,7 +76,7 @@ class Item extends Component {
     });
   };
 
-  onDeleteDTable = () => {
+  onDeleteProject = () => {
     const { item } = this.props;
     this.props.deleteDTable(item);
     this.toggleDeleteDialog();
@@ -128,10 +128,12 @@ class Item extends Component {
         </tr>
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
-            <DeleteTableDialog
-              currentTable={item}
-              onDeleteDTable={this.onDeleteDTable}
-              deleteCancel={this.toggleDeleteDialog}
+            <CommonOperationConfirmationDialog
+              title={gettext('Delete base')}
+              message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
+              executeOperation={this.onDeleteProject}
+              confirmBtnText={gettext('Delete')}
+              toggleDialog={this.toggleDeleteDialog}
             />
           </ModalPortal>
         }

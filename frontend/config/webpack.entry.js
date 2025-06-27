@@ -4,7 +4,7 @@ const entryFiles = {
   settings: '/settings.js',
   orgAdmin: '/pages/org-admin',
   sysAdmin: '/pages/sys-admin',
-  appDTable: '/app-dtable',
+  home: '/home',
   project: '/project',
 };
 

@@ -12,7 +12,6 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_i
 from seahub.utils import gen_token, uuid_str_to_36_chars, normalize_cache_key, get_no_duplicate_obj_name, \
     utf8_normalize, is_valid_uuid
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.project.constants import FOLDER_ITEM_PROJECT_GROUP_SHARE, FOLDER_ITEM_PROJECT
 
 from seahub.utils import normalize_cache_key
 
@@ -138,10 +137,10 @@ class IdInOrgTuple(models.Model):
 
 class ProjectsManager(models.Manager):
 
-    def create_project(self, username, workspace, name, color=None, text_color=None, icon=None, password=None):
+    def create_project(self, username, workspace, name, color=None, text_color=None, icon=None):
         name = utf8_normalize(name)
         project = self.model(workspace=workspace, name=name, creator=username, modifier=username,
-                             color=color, text_color=text_color, icon=icon, password=password)
+                             color=color, text_color=text_color, icon=icon)
         project.save()
         return project
 
@@ -262,58 +261,6 @@ class Projects(models.Model):
 
     def is_encrypted(self):
         return False
-
-
-class FoldersManager(models.Manager):
-    def get_non_duplicated_name(self, name, workspace_id):
-        folders = super(FoldersManager, self).filter(workspace_id=workspace_id, name__startswith=name)
-        existed_names = [f.name for f in folders]
-        if not existed_names or name not in existed_names:
-            return name
-        return get_no_duplicate_obj_name(name, existed_names)
-
-
-class Folders(models.Model):
-    name = models.CharField(max_length=255, null=False)
-    workspace_id = models.IntegerField(db_index=True, null=False)
-
-    objects = FoldersManager()
-
-    class Meta:
-        db_table = 'folders'
-        unique_together = [('name', 'workspace_id')]
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'workspace_id': self.workspace_id
-        }
-
-
-class FolderItems(models.Model):
-    ITEM_TYPE_CHOICES = (
-        (FOLDER_ITEM_PROJECT_GROUP_SHARE, 'Project_Group_Share'),
-        (FOLDER_ITEM_PROJECT, 'Project'),
-    )
-
-    folder_id = models.IntegerField(null=False)
-    item_type = models.CharField(max_length=50, null=False, choices=ITEM_TYPE_CHOICES)
-    item_id = models.CharField(max_length=36, null=False)
-
-    class Meta:
-        db_table = 'folder_items'
-        index_together = [('item_type', 'item_id')]
-        unique_together = [('folder_id', 'item_type', 'item_id')]
-
-    def to_dict(self):
-        item_id = self.item_id if self.item_type != FOLDER_ITEM_PROJECT else uuid_str_to_36_chars(self.item_id)
-        return {
-            'folder_id': self.folder_id,
-            'item_type': self.item_type,
-            'item_id': item_id
-        }
-
 
 class ProjectGroupOrdersManager(models.Manager):
     def get_group_order_by_username(self, username):

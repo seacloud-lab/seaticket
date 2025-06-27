@@ -7,9 +7,9 @@ import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import ModalPortal from '../../components/modal-portal';
-import RestoreTableDialog from '../dtable/dialog/restore-table-dialog';
+import RestoreTableDialog from '../../home/dialog/restore-table-dialog';
 import Paginator from '../../components/paginator';
-import EmptyProjectTrashDialog from '../dtable/dialog/empty-project-trash-dialog';
+import EmptyProjectTrashDialog from '../../home/dialog/empty-project-trash-dialog';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,

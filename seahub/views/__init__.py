@@ -188,7 +188,7 @@ def seaqa_fake_view(request, **kwargs):
         except Exception as e:
             logger.error('get user phone failed. {}'.format(e))
 
-    return render(request, 'react_project.html', {
+    return render(request, 'home.html', {
         'version': SEAQA_VERSION,
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
         'can_remove_base_password_via_phone': settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE if settings.ENABLE_BIND_PHONE else False,

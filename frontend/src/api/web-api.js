@@ -131,22 +131,19 @@ class SeaQAAPI {
   }
 
   // ---- project api
-  createProject(name, owner, dtableIcon, dtableColor, textColor, folderID) {
+  createProject(name, owner, icon, bgColor, textColor) {
     const url = this.server + '/api/v2.1/projects/';
     let form = new FormData();
     form.append('name', name);
     form.append('owner', owner);
-    if (dtableColor) {
-      form.append('color', dtableColor);
+    if (bgColor) {
+      form.append('color', bgColor);
     }
-    if (dtableIcon) {
-      form.append('icon', dtableIcon);
+    if (icon) {
+      form.append('icon', icon);
     }
     if (textColor) {
       form.append('text_color', textColor);
-    }
-    if (folderID) {
-      form.append('folder_id', folderID);
     }
     return this._sendPostRequest(url, form);
   }
@@ -402,8 +399,8 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  listDTableSnapshots(workspaceID, dtableName, page, perPage) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/snapshots/';
+  listDTableSnapshots(workspaceID, name, page, perPage) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/snapshots/';
     let params = {
       page: page,
       per_page: perPage
@@ -411,8 +408,8 @@ class SeaQAAPI {
     return this.req.get(url, { params: params });
   }
 
-  restoreDTableSnapshot(workspaceID, dtableName, commitId, snapshotName, password, backupVersion) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/snapshots/' + commitId + '/restore/';
+  restoreDTableSnapshot(workspaceID, name, commitId, snapshotName, password, backupVersion) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/snapshots/' + commitId + '/restore/';
     let form = new FormData();
     form.append('snapshot_name', snapshotName);
     if (password) {
@@ -425,13 +422,13 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  listArchiveBackups(workspaceID, dtableName) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/archive-backups/';
+  listArchiveBackups(workspaceID, name) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/archive-backups/';
     return this.req.get(url);
   }
 
-  getBigDataState(workspaceID, dtableName) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(dtableName) + '/big-data-state/';
+  getBigDataState(workspaceID, name) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/big-data-state/';
     return this.req.get(url);
   }
 
@@ -454,73 +451,6 @@ class SeaQAAPI {
   restoreTrashDTable(dtableID) {
     let url = this.server + '/api/v2.1/trash-dtables/' + dtableID + '/';
     return this.req.put(url);
-  }
-
-  createFolder(workspaceID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/folders/';
-    let form = new FormData();
-    form.append('name', name);
-    return this._sendPostRequest(url, form);
-  }
-
-  updateFolder(workspaceID, folderID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/folders/' + folderID + '/';
-    let form = new FormData();
-    form.append('name', name);
-    return this.req.put(url, form);
-  }
-
-  deleteFolder(workspaceID, folderID) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/folders/' + folderID + '/';
-    return this.req.delete(url);
-  }
-
-  moveFolderItem(workspaceID, itemType, itemID, moveFrom, moveTo) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/folder-item-moving/';
-    let form = new FormData();
-    form.append('item_type', itemType);
-    form.append('item_id', itemID);
-    form.append('from', moveFrom);
-    form.append('to', moveTo);
-    return this._sendPostRequest(url, form);
-  }
-
-  createShareFolder(name) {
-    let url = this.server + '/api/v2.1/dtables/share-folders/';
-    let form = new FormData();
-    form.append('name', name);
-    return this._sendPostRequest(url, form);
-  }
-
-  renameShareFolder(name, share_folder_id) {
-    let url = this.server + '/api/v2.1/dtables/share-folders/' + share_folder_id + '/';
-    let form = new FormData();
-    form.append('name', name);
-    return this.req.put(url, form);
-  }
-
-  deleteShareFolder(share_folder_id) {
-    let url = this.server + '/api/v2.1/dtables/share-folders/' + share_folder_id + '/';
-    return this.req.delete(url);
-  }
-
-  getShareFolderContent(share_folder_id) {
-    let url = this.server + '/api/v2.1/dtables/share-folders/' + share_folder_id + '/';
-    return this.req.get(url);
-  }
-
-  moveShareTableToFolder(dtable_share_id, move_to) {
-    let url = this.server + '/api/v2.1/dtables/share-table-move-to-folder/' + dtable_share_id + '/';
-    let form = new FormData();
-    form.append('move_to', move_to);
-    return this._sendPostRequest(url, form);
-  }
-
-  moveShareViewToFolder(view_share_id, move_to) {
-    let url = this.server + '/api/v2.1/dtables/share-view-move-to-folder/' + view_share_id + '/';
-    let form = new FormData();
-    form.append('move_to', move_to);
-    return this._sendPostRequest(url, form);
   }
 
   querySql(dtableUuid, sql) {
@@ -556,40 +486,6 @@ class SeaQAAPI {
   leaveApp(appUserId) {
     let url = this.server + '/api/v2.1/app-users/' + appUserId + '/';
     return this.req.delete(url);
-  }
-
-  // universal-app-folders module
-  createAppFolder(name, folder_type) {
-    let url = this.server + '/api/v2.1/universal-apps/folders/';
-    let form = new FormData();
-    form.append('name', name);
-    form.append('folder_type', folder_type);
-    return this._sendPostRequest(url, form);
-  }
-
-  deleteAppFolder(app_folder_id) {
-    let url = this.server + '/api/v2.1/universal-apps/folders/' + app_folder_id + '/';
-    return this.req.delete(url);
-  }
-
-  renameAppFolder(name, app_folder_id) {
-    let url = this.server + '/api/v2.1/universal-apps/folders/' + app_folder_id + '/';
-    let form = new FormData();
-    form.append('name', name);
-    return this.req.put(url, form);
-  }
-
-  getAppFolderContent(app_folder_id) {
-    let url = this.server + '/api/v2.1/universal-apps/folders/' + app_folder_id + '/';
-    return this.req.get(url);
-  }
-
-  moveAppToFolder(appUuid, move_from, move_to) {
-    let url = this.server + `/api/v2.1/universal-apps/${appUuid}/move-app-to-folder/`;
-    let form = new FormData();
-    form.append('move_from', move_from);
-    form.append('move_to', move_to);
-    return this._sendPostRequest(url, form);
   }
 
   // ---- dtable data api
@@ -1134,33 +1030,33 @@ class SeaQAAPI {
     return this.req.put(url, form);
   }
 
-  getBaseSharePermission(workspaceId, dtableName) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/base-share-permission/';
+  getBaseSharePermission(workspaceId, name) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/base-share-permission/';
     return this.req.get(url);
   }
 
-  getSharePermission(workspaceId, dtableName, permissionId) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/share-permissions/' + permissionId + '/';
+  getSharePermission(workspaceId, name, permissionId) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.get(url);
   }
 
-  getSharePermissions(workspaceId, dtableName) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/share-permissions/';
+  getSharePermissions(workspaceId, name) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/';
     return this.req.get(url);
   }
 
-  addSharePermission(workspaceId, dtableName, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/share-permissions/';
+  addSharePermission(workspaceId, name, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/';
     return this.req.post(url, permission);
   }
 
-  updateSharePermission(workspaceId, dtableName, permissionId, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/share-permissions/' + permissionId + '/';
+  updateSharePermission(workspaceId, name, permissionId, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.put(url, permission);
   }
 
-  deleteSharePermission(workspaceId, dtableName, permissionId) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(dtableName) + '/share-permissions/' + permissionId + '/';
+  deleteSharePermission(workspaceId, name, permissionId) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.delete(url);
   }
 

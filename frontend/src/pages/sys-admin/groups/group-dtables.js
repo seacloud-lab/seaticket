@@ -12,10 +12,9 @@ import GroupNav from './group-nav';
 import DTableOpMenu from '../dtables/dtable-op-menu';
 import ModalPortal from '../../../components/modal-portal';
 import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-external-links-dialog';
-import DTableAllAPITokensDialog from '../../dtable/dialog/dtable-all-api-tokens-dialog';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
-const OPERATIONS = ['External links', 'API tokens', 'Delete'];
+const OPERATIONS = ['External links', 'Delete'];
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -34,7 +33,6 @@ class Item extends Component {
       isDeleteDTableDialogOpen: false,
       isExternalLinkDialogOpen: false,
       highlight: false,
-      isAPITokenDialogOpen: false,
     };
   }
 
@@ -81,17 +79,10 @@ class Item extends Component {
     this.setState({ isExternalLinkDialogOpen: !this.state.isExternalLinkDialogOpen });
   };
 
-  toggleAPITokenDialog = () => {
-    this.setState({ isAPITokenDialogOpen: !this.state.isAPITokenDialogOpen });
-  };
-
   onMenuItemClick = (operation) => {
     switch (operation) {
       case 'Delete':
         this.toggleDeleteDTableDialog();
-        break;
-      case 'API tokens':
-        this.toggleAPITokenDialog();
         break;
       case 'External links':
         this.toggleExternalLinkDialog();
@@ -147,14 +138,6 @@ class Item extends Component {
             />
           </ModalPortal>
         }
-        {this.state.isAPITokenDialogOpen && (
-          <ModalPortal>
-            <DTableAllAPITokensDialog
-              currentTable={item}
-              toggle={this.toggleAPITokenDialog}
-            />
-          </ModalPortal>
-        )}
       </Fragment>
     );
   }

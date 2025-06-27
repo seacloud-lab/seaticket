@@ -18,12 +18,11 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.organizations.models import OrgGroup
-from seahub.project.models import Workspaces, Projects, FolderItems, Folders, ProjectGroupOrders, \
+from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     Sites
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names, \
     add_init_crawl_site_task
-from seahub.project.constants import FOLDER_ITEM_PROJECT
 
 
 logger = logging.getLogger(__name__)
@@ -113,10 +112,6 @@ class WorkspacesView(APIView):
 
         try:
             project_list = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
-
-            # folders and folder-items
-            folders = list(Folders.objects.filter(workspace_id__in=[w.id for w in workspaces]))
-            folder_items = list(FolderItems.objects.filter(folder_id__in=[f.id for f in folders]))
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -133,23 +128,6 @@ class WorkspacesView(APIView):
                 workspace_id2project_list[project.workspace.id] = [project_info]
             project_info['starred'] = False
 
-        # handle folders and folder-items
-        folder_items_dict = {}
-        for item in folder_items:
-            if item.folder_id not in folder_items_dict:
-                folder_items_dict[item.folder_id] = [item]
-            else:
-                folder_items_dict[item.folder_id].append(item)
-        workspace_folders_dict = {}
-        for folder in folders:
-            folder_info = folder.to_dict()
-            items = folder_items_dict.get(folder.id, [])
-
-            folder_info.update({'items': [i.to_dict() for i in items]})
-            if folder.workspace_id not in workspace_folders_dict:
-                workspace_folders_dict[folder.workspace_id] = [folder_info]
-            else:
-                workspace_folders_dict[folder.workspace_id].append(folder_info)
 
         workspace_list_for_group =[]
         for workspace in workspaces:
@@ -163,13 +141,11 @@ class WorkspacesView(APIView):
                 res['group_owner'] = [g.creator_name for g in groups if g.id == group_id][0]
                 res['is_admin'] = group_id in admin_group_ids
                 res['project_list'] = workspace_id2project_list.get(workspace.id, [])
-                res['folders'] = workspace_folders_dict.get(workspace.id, [])
                 workspace_list_for_group.append(res)
             else:
                 res['name'] = 'personal'
                 res['type'] = 'personal'
                 res['project_list'] = workspace_id2project_list.get(workspace.id, [])
-                res['folders'] = workspace_folders_dict.get(workspace.id, [])
                 workspace_list.append(res)
         workspace_list_for_group = sorted(workspace_list_for_group, key=lambda x: group_id_list.index(x.get('group_id')))
         workspace_list.extend(workspace_list_for_group)
@@ -196,7 +172,6 @@ class ProjectsView(APIView):
         # argument check
         project_owner = request.POST.get('owner')
         workspace_id = request.POST.get('workspace_id')
-        folder_id = request.POST.get('folder_id')
 
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -211,7 +186,6 @@ class ProjectsView(APIView):
         color = request.data.get('color')
         text_color = request.data.get('text_color')
         icon = request.data.get('icon')
-        password = request.data.get('password', None)
 
         # resource check
         if project_owner:
@@ -240,13 +214,6 @@ class ProjectsView(APIView):
             error_msg = _('Project %s already exists in this workspace.') % project_name
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        folder = None
-        if folder_id:
-            folder = Folders.objects.filter(id=folder_id).first()
-            if not folder or folder.workspace_id != workspace.id:
-                error_msg = 'Folder not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         if not check_project_limit(workspace, request):
             error_msg = 'base exceeded.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -257,11 +224,7 @@ class ProjectsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            if password:
-                password = make_password(password)
-            project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon, password=password)
-            if folder:
-                FolderItems.objects.create(folder_id=folder.id, item_type=FOLDER_ITEM_PROJECT, item_id=project.uuid.hex)
+            project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

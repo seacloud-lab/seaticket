@@ -108,10 +108,6 @@ DTABLE_IS_ADVANCE_CACHE_TIMEOUT = 60 * 60
 DTABLE_ASSET_READ_PERMISSION = 'ASSET_READ_PERM_'
 DTABLE_ASSET_DOWNLOAD_PERMISSION = 'ASSET_DOWNLOAD_PERM_'
 
-# folder-item-type
-FOLDER_ITEM_PROJECT_GROUP_SHARE = 'project_group_share'
-FOLDER_ITEM_PROJECT = 'project'
-
 # single/multiple select options
 VALID_OPTION_TAGS = [
     {'color': '#FFFCB5', 'border_color': '#E8E79D', 'text_color': '#212529'},

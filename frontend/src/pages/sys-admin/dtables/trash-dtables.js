@@ -77,12 +77,12 @@ class Item extends Component {
 
   onRestoreDTable = () => {
     const item = this.props.item;
-    const dtableName = item.name;
+    const name = item.name;
     const owner_deleted = item.owner_deleted;
 
     sysAdminServiceApi.sysAdminRestoreTrashDTable(item.id, owner_deleted).then(() => {
       this.props.restoreDTable(item);
-      const msg = gettext('Successfully restored {name}.').replace('{name}', dtableName);
+      const msg = gettext('Successfully restored {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);

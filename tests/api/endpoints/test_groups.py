@@ -8,7 +8,6 @@ from seaserv import seafile_api
 
 from seahub.test_utils import BaseTestCase
 from seahub.api2.endpoints.groups import Groups
-from seahub.dtable.models import Folders
 from tests.common.utils import randstring
 
 class GroupsTest(BaseTestCase):
@@ -143,8 +142,6 @@ class GroupsTest(BaseTestCase):
         self.assertEqual(400, resp.status_code)
 
     def test_can_delete_group(self):
-        # create folder to test a group with workspace including a folder
-        Folders.objects.create(workspace_id=self.group_workspace.id, name='test')
         url = reverse('api-v2.1-group', args=[self.with_workspace_group_id])
         resp = self.client.delete(url)
         self.assertEqual(200, resp.status_code)

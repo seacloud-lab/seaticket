@@ -436,26 +436,6 @@ CREATE TABLE `projects`  (
   CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
-CREATE TABLE `folders`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `color` varchar(50) DEFAULT NULL,
-  `workspace_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name_workspace_id_n3o0u7t3_uniq_key`(`name`, `workspace_id`),
-  KEY `workspace_id_j3b8g5q0p8_key`(`workspace_id`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `folder_items` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `folder_id` int(11) NOT NULL,
-  `item_type` varchar(50) NOT NULL,
-  `item_id` varchar(36) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `folder_id_item_type_item_id_k8h5b6q1_uniq_key`(`folder_id`, `item_type`, `item_id`),
-  KEY `item_type_item_id_k3n8u0i0_union_key`(`item_type`, `item_id`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
 CREATE TABLE `project_group_orders` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
