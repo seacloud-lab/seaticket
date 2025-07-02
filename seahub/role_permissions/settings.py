@@ -46,6 +46,8 @@ def merge_roles(default, custom, fallback_role):
 DEFAULT_ENABLED_ROLE_PERMISSIONS = {
     DEFAULT_USER: {
         'can_add_project': True,
+        'can_add_ticket': True,
+        'can_add_ticket_reply': True,
         'can_add_group': True,
         'can_use_global_address_book': True,
         'can_invite_guest': False,

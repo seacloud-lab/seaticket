@@ -21,7 +21,7 @@ from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search
+    convert_project_trash_names, check_project_permission, search, get_project_related_users
 from seahub.project.constants import ConnectionType
 
 
@@ -348,6 +348,234 @@ class ProjectView(APIView):
             Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(UTC), name=new_project_name)
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class ProjectRelatedUsersView(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        # name
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            related_users = get_project_related_users(workspace.owner)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({"related_users": related_users})
+
+
+class SitesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request, workspace_id, name):
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        site_name = request.POST.get('name')
+        if not site_name:
+            error_msg = 'name invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        url = request.POST.get('url')
+        if not url:
+            error_msg = 'url invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        sitemap_url = request.POST.get('sitemap_url')
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = 'Project %s not found.' % name
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        existed_websites = Sites.objects.filter(project=project, url=url)
+        if len(existed_websites) > 0:
+            error_msg = _('Url %s already exists in this project.') % url
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            site = Sites.objects.create(request.user.username, project, site_name, url, sitemap_url)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        params = {
+            'site_id': site.id
+        }
+        add_init_crawl_site_task(params)
+
+        return Response({'site': site.to_dict()}, status=status.HTTP_201_CREATED)
+
+    def get(self, request, workspace_id, name):
+        """get all sites
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            current_page = int(request.GET.get('page', '1'))
+            per_page = int(request.GET.get('per_page', '100'))
+        except ValueError:
+            current_page = 1
+            per_page = 100
+
+        start = (current_page - 1) * per_page
+        end = start + per_page
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = 'Project %s not found.' % name
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        sites = Sites.objects.filter(project=project)[start:end]
+        sites = [site.to_dict() for site in sites]
+
+        return Response({'sites': sites}, status=status.HTTP_200_OK)
+
+
+class SiteView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def put(self, request, workspace_id, name, site_id):
+        """ modify site
+        """
+        # argument check
+        site_name = request.data.get('name')
+        if not site_name:
+            error_msg = 'name invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        url = request.data.get('url')
+        if not url:
+            error_msg = 'url invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        sitemap_url = request.data.get('sitemap_url')
+
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = f'Project {name} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            site = Sites.objects.modify(username, project, site_id, site_name, url, sitemap_url);
+        except Exception as e:
+            logger.error('delete website: %s error: %s', site_id, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'site': site.to_dict()}, status=status.HTTP_200_OK)
+
+    def delete(self, request, workspace_id, name, site_id):
+        """delete site
+        """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project(workspace, name)
+        if not project:
+            error_msg = f'Project {name} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            Sites.objects.filter(project=project, id=site_id).delete()
+        except Exception as e:
+            logger.error('delete website: %s error: %s', site_id, e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

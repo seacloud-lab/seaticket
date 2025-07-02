@@ -262,6 +262,12 @@ class UserPermissions(object):
     def can_add_project(self):
         return self._get_perm_by_roles('can_add_project')
 
+    def can_add_ticket(self):
+        return self._get_perm_by_roles('can_add_ticket')
+
+    def can_add_ticket_reply(self):
+        return self._get_perm_by_roles('can_add_ticket_reply')
+
     def can_use_global_address_book(self):
         return self._get_perm_by_roles('can_use_global_address_book')
 
