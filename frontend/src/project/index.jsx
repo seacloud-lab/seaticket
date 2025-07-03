@@ -17,6 +17,7 @@ const Project = () => {
         name: '',
         children: [
           { key: TAB.ASK, name: gettext('Ask') },
+          { key: TAB.SEARCH, name: gettext('Search') },
           { key: TAB.TICKETS, name: gettext('Tickets') }
         ]
       }, {

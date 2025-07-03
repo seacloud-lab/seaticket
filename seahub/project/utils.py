@@ -6,12 +6,13 @@ import json
 from urllib.parse import urljoin
 
 from seahub.project.models import Projects
-from seahub.group.utils import is_group_admin_or_owner
+from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group
 
 from seahub.settings import WEB_CRAWL_INDEX_SERVER_URL, SEAQA_PRIVATE_KEY
+from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
 
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,24 @@ def check_project_admin_permission(username, owner):
             return False
 
 
+def check_project_permission(username, workspace_owner, project=None):
+    """Check workspace/project access permission of a user.
+    """
+    if not username:
+        logger.warning('Username is empty')
+        return None
+
+    if '@seafile_group' in workspace_owner:
+        group_id = int(workspace_owner.split('@')[0])
+        if is_group_member(group_id, username):
+            return PERMISSION_READ_WRITE
+    else:
+        if username == workspace_owner:
+            return PERMISSION_READ_WRITE
+
+    return None
+
+
 def get_project_owner(project):
     # return the owner name and the existence of such owner of project
     # if the owner is deleted, return true, else false
@@ -90,3 +109,15 @@ def add_init_crawl_site_task(params):
 
     return json.loads(resp.content)
 
+
+def search(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, SEAQA_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(WEB_CRAWL_INDEX_SERVER_URL, '/search')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception('search error status: %s body: %s', resp.status_code, resp.text)
+    resp_json = resp.json()
+    results = resp_json.get('results')
+    return results

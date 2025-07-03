@@ -1,5 +1,6 @@
 export const TAB = {
   ASK: 'ask',
+  SEARCH: 'search',
   TICKETS: 'tickets',
   EMAILS: 'emails',
   GITHUB_ISSUES: 'github_issues',

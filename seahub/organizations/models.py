@@ -696,7 +696,7 @@ class OrgGroupManager(models.Manager):
         group = Group.objects.create(group_name=group_name, creator_name=username, parent_group_id=parent_group_id, timestamp=ctime)
         GroupUser.objects.create(group_id=group.group_id, user_name=username, is_staff=True)
         org_group = self.create(org_id=org_id, group_id=group.group_id)
-        return org_group
+        return group
 
     def get_org_groups_by_user(self, org_id, username):
         sql = """SELECT a.id, a.org_id, a.group_id, b.user_name, b.is_staff, c.group_name, c.parent_group_id, c.creator_name, c.timestamp 
