@@ -124,7 +124,7 @@ class WorkWeixinDepartmentsTreeNode extends Component {
                 aria-expanded={this.state.dropdownOpen}
               >
               </DropdownToggle>
-              <DropdownMenu className="dtable-dropdown-menu dropdown-menu drop-list" right={true}>
+              <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" right={true}>
                 <DropdownItem
                   onClick={this.importDepartmentDialogToggle.bind(this, department)}
                   id={department.id}

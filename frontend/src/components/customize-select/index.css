@@ -1,0 +1,100 @@
+.sea-qa-select {
+  position: relative;
+}
+
+.sea-qa-select.custom-select {
+  display: flex;
+  padding: 0 10px;
+  border-radius: 3px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 900px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -ms-user-select: none;
+  text-align: left;
+}
+
+.sea-qa-select.custom-select:focus,
+.sea-qa-select.custom-select.focus {
+  border-color: #1991eb !important;
+  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
+}
+
+.sea-qa-select.custom-select.disabled:focus,
+.sea-qa-select.custom-select.focus.disabled,
+.sea-qa-select.custom-select.disabled:hover {
+  border-color: rgba(0, 40, 100, 0.12) !important;
+  box-shadow: unset;
+  cursor: default;
+}
+
+.sea-qa-select.custom-select:hover {
+  cursor: pointer;
+  border-color: rgb(179, 179, 179);
+}
+
+.sea-qa-select .sea-qa-icon-svg {
+  height: 12px;
+  width: 12px;
+  color: #999;
+  transition: all 0.1s;
+}
+
+.sea-qa-select .sea-qa-icon-svg:hover {
+  color: #555;
+}
+
+.sea-qa-select .selected-option {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.sea-qa-select.dtable-ui-collaborator-selector .option-group .option-group-content,
+.sea-qa-select.selector-group .option-group .option-group-content {
+  padding: 10px;
+}
+
+.sea-qa-select.custom-select.dtable-ui-collaborator-selector .option-group .option-group-content {
+  padding: 10px 0;
+}
+
+.sea-qa-select.custom-select.dtable-ui-collaborator-selector .option {
+  padding: 5px 0 5px 10px !important;
+  line-height: 20px;
+}
+
+.sea-qa-select.selector-group .option {
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.sea-qa-select.selector-group .select-group-option {
+  justify-content: space-between;
+}
+
+.sea-qa-select.selector-group .selected-option .selected-group {
+  padding: 0 2px;
+  background: #eceff4;
+  border-radius: 3px;
+}
+
+.sea-qa-select .selected-option-show {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-qa-select .select-placeholder {
+  line-height: 1;
+  font-size: 14px;
+  white-space: nowrap;
+}

@@ -7,7 +7,7 @@ import json
 
 from django.db import models
 from django.core.exceptions import ValidationError
-from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT
+from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, CONNECTION_FIELDS
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
 from seahub.utils import gen_token, uuid_str_to_36_chars, normalize_cache_key, get_no_duplicate_obj_name, \
     utf8_normalize, is_valid_uuid
@@ -326,47 +326,128 @@ class ProjectGroupOrders(models.Model):
         self.save_group_ids(group_ids)
         return group_ids, None
 
+class ProjectConnectionsManager(models.Manager):
+    """ Project connections manager
+    """
 
-class SitesManager(models.Manager):
-    def create(self, username, project, name, url, sitemap_url):
-        project = self.model(project=project, name=name, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
-        project.save()
-        return project
+    def create(self, username, project, connection_type, name, value):
+        """ create record
+        """
 
-    def modify(self, username, project, site_id, name, url, sitemap_url):
-        site = self.filter(project=project, id=site_id).first()
-        if not site:
-            site = self.model(project=project, name=name, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
+        record = self.model(project=project, type=connection_type, name=name, value=value, modifier=username, status='pending')
+        record.save()
+        return record.to_dict()
+
+    def modify(self, username, project, connection_type, connection_id, name, value):
+        """ modify record: if not record, create it
+        """
+
+        record = self.filter(project=project, id=connection_id).first()
+        if not record:
+            record = self.model(project=project, type=connection_type, name=name, value=value, modifier=username, status='pending')
         else:
-            site.name = name
-            site.url = url
-            site.sitemap_url = sitemap_url
-        site.save()
-        return site
+            record.name = name
+            record.value = value
+        record.save()
+        return record
+
+    def get_records(self, project, connection_type):
+        """ get records by project and connection_type
+        """
+
+        records = self.filter(project=project, type=connection_type)
+        return records
+
+    def is_valid(self, connection_type, records, name, new_record_value):
+        """ check config is valid
+        """
+
+        if isinstance(new_record_value, str):
+            new_record_value = json.loads(new_record_value)
+
+        if not records:
+            return True
+
+        fields = CONNECTION_FIELDS.get(connection_type, [])
+        unique_fields = [f for f in fields if f.get('is_unique')]
+        required_fields = [f for f in fields if f.get('is_required')]
+
+        flag = True
+        for record in records:
+            if record.name == name:
+                flag = False
+                break
+            record_value = json.loads(record.value or '{}')
+            if unique_fields:
+                for field in unique_fields:
+                    key = field.get('key', '')
+                    if record_value.get(key, '') == new_record_value.get(key, ''):
+                        flag = False
+                    break
+                if not flag:
+                    break
+
+            if required_fields:
+                for field in unique_fields:
+                    key = field.get('key', '')
+                    if not new_record_value.get(key, ''):
+                        flag = False
+                    break
+                if not flag:
+                    break
+        return flag
+
+    def enable_create(self, project, connection_type, name, new_record_value):
+        """ check enable create
+        """
+
+        if not project or not connection_type:
+            return False
+
+        records = self.filter(project=project, type=connection_type)
+        return self.is_valid(connection_type, records, name, new_record_value)
+
+    def enable_modify(self, project, connection_type, connection_id, name, new_record_value):
+        """ check enable modify
+        """
+
+        if not project or not connection_type:
+            return False
+
+        connection_id = int(connection_id)
+        records = self.filter(project=project, type=connection_type)
+        records = [record for record in records if record.id != connection_id]
+        return self.is_valid(connection_type, records, name, new_record_value)
 
 
-class Sites(models.Model):
+class ProjectConnections(models.Model):
+    """ Project connections table
+    """
+
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
+
     name = models.CharField(max_length=255)
-    url = models.CharField(max_length=255)
-    sitemap_url = models.CharField(max_length=255)
+    type = models.CharField(max_length=255)
+    value = models.TextField()
+
     modifier = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
     last_crawled_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
 
-    objects = SitesManager()
+    objects = ProjectConnectionsManager()
 
     class Meta:
-        db_table = 'sites'
-        unique_together = [('url', 'project')]
+        db_table = 'project_connection'
+        unique_together = [('name', 'type', 'project')]
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'url': self.url,
-            'sitemap_url': self.sitemap_url,
+            'type': self.type,
+            'value': self.value,
             'modifier': self.modifier,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'last_crawled_at': datetime_to_isoformat_timestr(self.last_crawled_at),

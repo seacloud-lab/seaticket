@@ -18,7 +18,7 @@ from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswor
 from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SitesView, SiteView, SearchView
+from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
 from seahub.api2.endpoints.admin.sysinfo import SysInfo
@@ -152,10 +152,6 @@ urlpatterns = [
     re_path(r'^options/', include('seahub.options.urls')),
     re_path(r'^profile/', include('seahub.profile.urls')),
     re_path(r'^captcha/', include('captcha.urls')),
-
-    # website
-    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/(?P<name>.*)/sites/$', SitesView.as_view(), name='api-v2.1-sites'),
-    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/(?P<name>.*)/sites/(?P<site_id>\d+)/$', SiteView.as_view(), name='api-v2.1-website'),
 
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 

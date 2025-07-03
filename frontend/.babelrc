@@ -1,12 +1,16 @@
 {
-  "presets": ["react-app"],
+  "presets": [
+    "react-app"
+  ],
   "plugins": [
-    ["import", {
-      "libraryName": "dtable-ui-component",
-      "libraryDirectory": "lib",
-      "camel2DashComponentName": false,
-      "camel2UnderlineComponentName": false
-    },
+    [
+      "import",
+      {
+        "libraryName": "dtable-ui-component",
+        "libraryDirectory": "lib",
+        "camel2DashComponentName": false,
+        "camel2UnderlineComponentName": false
+      },
       "dtable-ui-component"
     ]
   ]

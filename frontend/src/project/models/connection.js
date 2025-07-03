@@ -1,11 +1,11 @@
 import dayjs from '../../utils/dayjs';
 
-class Site {
+class ConnectionRecord {
   constructor(object) {
     this.id = object.id || '';
     this.name = object.name || '';
-    this.url = object.url || '';
-    this.sitemap_url = object.sitemap_url || '';
+    this.type = object.type || '';
+    this.value = JSON.parse(object.value || '{}') || {};
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
     this.last_crawled = object.last_crawled_at || '';
@@ -22,4 +22,4 @@ class Site {
   }
 }
 
-export default Site;
+export default ConnectionRecord;

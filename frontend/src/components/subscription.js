@@ -12,7 +12,6 @@ import SlideCaptchaDialog from './dialog/slide-captcha-dialog';
 import '../css/layout.css';
 import '../css/subscription.css';
 
-
 const PlansPropTypes = {
   plans: PropTypes.array.isRequired,
   onPay: PropTypes.func.isRequired,

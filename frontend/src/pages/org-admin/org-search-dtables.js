@@ -119,7 +119,7 @@ class Item extends Component {
                   data-toggle="dropdown"
                   aria-expanded={this.state.isItemMenuShow}
                 />
-                <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
+                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>

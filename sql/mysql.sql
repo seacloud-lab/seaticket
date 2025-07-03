@@ -190,14 +190,6 @@ CREATE TABLE `id_in_org_tuple` (
   KEY `id_in_org_org_id_169def82` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `notifications_notification` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `message` varchar(512) NOT NULL,
-  `primary` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `notifications_notification_primary_4f95ec21` (`primary`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 CREATE TABLE `org_group` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
@@ -434,28 +426,18 @@ CREATE TABLE `project_group_orders` (
   UNIQUE KEY `project_group_order_username_uwuyehjb`(`username`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `options_useroptions`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `option_key` varchar(50) NOT NULL,
-  `option_val` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `options_useroptions_email_77d5726a`(`email`),
-  KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
-CREATE TABLE `sites`  (
+CREATE TABLE IF NOT EXISTS `project_connection`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `url` varchar(255) NOT NULL,
-  `sitemap_url` varchar(255) NULL,
+  `type` varchar(255) NOT NULL,
+  `value` longtext NOT NULL,
   `modifier` varchar(255) NOT NULL,
   `created_at` datetime(6) NOT NULL,
   `last_crawled_at` datetime(6) NULL,
   `project_id` int(11) NOT NULL,
   `status` varchar(20) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `websites_created_at_e5618f4b`(`created_at`),
-  CONSTRAINT `websites_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  UNIQUE KEY `project_project_id_type_name_0b89d91b_uniq`(`project_id`, `type`, `name`),
+  KEY `project_connection_created_at_e5618f4b`(`created_at`),
+  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
