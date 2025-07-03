@@ -11,7 +11,7 @@ class GroupUserManager(models.Manager):
         self.filter(user_name=username).delete()
 
     def is_group_user(self, group_id, username):
-        return self.filter(croup_id=group_id, user_name=username).exists()
+        return self.filter(group_id=group_id, user_name=username).exists()
 
 
 class GroupUser(models.Model):
