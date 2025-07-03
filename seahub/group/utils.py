@@ -50,31 +50,15 @@ def check_group_name_conflict(request, new_group_name):
 
     return False
 
-def is_group_member(group_id, email, in_structure=None):
+def is_group_member(group_id, email):
 
     group_id = int(group_id)
 
-    group = ccnet_api.get_group(group_id)
+    group = Group.objects.get(group_id=group_id)
     if not group:
         return False
 
-    is_member = False
-
-    if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-        is_member = is_department_v2_group_member(group_id, email)
-    else:
-        if in_structure in (True, False):
-            return ccnet_api.is_group_user(group_id, email, in_structure)
-        if group.parent_group_id == 0:
-            # -1: top address book group
-            #  0: group not in address book
-            # >0: sub group in address book
-            # if `in_structure` is False, NOT check sub groups in address book
-            is_member = ccnet_api.is_group_user(group_id, email, in_structure=False)
-        else:
-            is_member = ccnet_api.is_group_user(group_id, email)
-
-    return is_member
+    return GroupUser.objects.is_group_user(group_id, email)
 
 def is_group_admin(group_id, email):
     if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):

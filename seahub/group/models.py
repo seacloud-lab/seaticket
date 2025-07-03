@@ -10,6 +10,9 @@ class GroupUserManager(models.Manager):
     def remove_group_user(self, username):
         self.filter(user_name=username).delete()
 
+    def is_group_user(self, group_id, username):
+        return self.filter(croup_id=group_id, user_name=username).exists()
+
 
 class GroupUser(models.Model):
     group_id = models.IntegerField()

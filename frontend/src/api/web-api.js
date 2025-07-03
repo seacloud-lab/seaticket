@@ -173,6 +173,16 @@ class SeaQAAPI {
     return this.req.delete(url, { data: params });
   }
 
+  search(workspaceID, projectUuid, query) {
+    const url = this.server + '/api/v2.1/search/';
+    let params = {
+      query: query,
+      project_uuid: projectUuid,
+      workspace_id: workspaceID,
+    };
+    return this.req.post(url, params);
+  }
+
   listTableShares(workspaceID, name) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/share/';
     return this.req.get(url);

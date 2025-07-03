@@ -150,11 +150,11 @@ class ProjectsManager(models.Manager):
         except self.model.DoesNotExist:
             return None
 
-    def get_project_by_uuid(self, dtable_uuid, include_deleted=True):
+    def get_project_by_uuid(self, project_uuid, include_deleted=True):
         try:
             if not include_deleted:
-                return super(ProjectsManager, self).get(uuid=dtable_uuid, deleted=False)
-            return super(ProjectsManager, self).get(uuid=dtable_uuid)
+                return super(ProjectsManager, self).get(uuid=project_uuid, deleted=False)
+            return super(ProjectsManager, self).get(uuid=project_uuid)
         except self.model.DoesNotExist:
             return None
         except ValidationError:  # uuid maybe invalid
@@ -332,7 +332,7 @@ class SitesManager(models.Manager):
         project = self.model(project=project, name=name, url=url, sitemap_url=sitemap_url, modifier=username, status='pending')
         project.save()
         return project
-    
+
     def modify(self, username, project, site_id, name, url, sitemap_url):
         site = self.filter(project=project, id=site_id).first()
         if not site:

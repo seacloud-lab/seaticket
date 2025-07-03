@@ -16,13 +16,13 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.utils import is_org_context
+from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     Sites
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, convert_project_trash_names, \
-    add_init_crawl_site_task
+    add_init_crawl_site_task, check_project_permission, search
 
 
 logger = logging.getLogger(__name__)
@@ -538,3 +538,52 @@ class SiteView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class SearchView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace_id = request.data.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        query = request.data.get('query')
+        if not query:
+            error_msg = 'query invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = 'Workspace %s not found.' % workspace_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'project %s not found.' % project_uuid
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        params = {
+            'project_uuid': uuid_str_to_32_chars(project_uuid),
+            'query': query,
+        }
+        results = search(params)
+
+        return Response({'results': results})

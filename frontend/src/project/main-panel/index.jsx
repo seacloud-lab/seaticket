@@ -3,12 +3,14 @@ import { TAB } from '../constants';
 import Sites from './sites';
 import { name, avatarURL, username } from '../../constants';
 import Account from '../components/account';
+import Search from './search';
 
 import './index.css';
 
 const MainPanelContainer = ({ activeTab }) => {
   if (!activeTab) return null;
   if (activeTab === TAB.ASK) return null; // ask page
+  if (activeTab === TAB.SEARCH) return (<Search/>); // search page
   if (activeTab === TAB.TICKETS) return null; // tickets page
   if (activeTab === TAB.EMAILS) return null; // emails page
   if (activeTab === TAB.DISCOURSE_FORUMS) return null;
