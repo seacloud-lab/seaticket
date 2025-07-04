@@ -20,7 +20,7 @@ from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner_by_group
-from seahub.project.models import Workspaces
+from seahub.project.models import Workspaces, ProjectGroupOrders
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
@@ -378,7 +378,7 @@ class GroupMoveView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, err_msg)
 
         username = request.user.username
-        group_order = DTableGroupOrders.objects.get_group_order_by_username(username)
+        group_order = ProjectGroupOrders.objects.get_group_order_by_username(username)
         if not group_order:
             err_msg = "group orders info does not exists"
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
