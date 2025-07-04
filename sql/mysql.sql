@@ -5,11 +5,11 @@ CREATE TABLE `admin_log_orgadminlog` (
   `detail` longtext NOT NULL,
   `datetime` datetime(6) NOT NULL,
   `org_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `admin_log_orgadminlog_email_7213c993` (`email`) USING BTREE,
-  KEY `admin_log_orgadminlog_operation_4bad7bd1` (`operation`) USING BTREE,
-  KEY `admin_log_org_id` (`org_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `admin_log_orgadminlog_email_7213c993` (`email`),
+  KEY `admin_log_orgadminlog_operation_4bad7bd1` (`operation`),
+  KEY `admin_log_org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_content_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -17,7 +17,7 @@ CREATE TABLE `django_content_type` (
   `model` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `django_content_type_app_label_model_76bd3d3b_uniq` (`app_label`,`model`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 CREATE TABLE `auth_group` (
@@ -25,7 +25,7 @@ CREATE TABLE `auth_group` (
   `name` varchar(150) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `auth_permission` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -35,7 +35,7 @@ CREATE TABLE `auth_permission` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `auth_permission_content_type_id_codename_01ab375a_uniq` (`content_type_id`,`codename`),
   CONSTRAINT `auth_permission_content_type_id_2f476e4b_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `auth_group_permissions` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -46,7 +46,7 @@ CREATE TABLE `auth_group_permissions` (
   KEY `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` (`permission_id`),
   CONSTRAINT `auth_group_permissio_permission_id_84c5c92e_fk_auth_perm` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission` (`id`),
   CONSTRAINT `auth_group_permissions_group_id_b120cbf9_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `auth_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -62,7 +62,7 @@ CREATE TABLE `auth_user` (
   `date_joined` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `auth_user_groups` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -92,17 +92,17 @@ CREATE TABLE `avatar_avatar` (
   `primary` tinyint(1) NOT NULL,
   `avatar` varchar(1024) NOT NULL,
   `date_uploaded` datetime(6) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_emailuser` (`emailuser`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `idx_emailuser` (`emailuser`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `base_userlastlogin` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `last_login` datetime(6) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `base_userlastlogin_username_270de06f` (`username`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `base_userlastlogin_username_270de06f` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `captcha_captchastore` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -112,7 +112,7 @@ CREATE TABLE `captcha_captchastore` (
   `expiration` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `hashkey` (`hashkey`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_admin_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -128,7 +128,7 @@ CREATE TABLE `django_admin_log` (
   KEY `django_admin_log_user_id_c564eba6_fk_auth_user_id` (`user_id`),
   CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
   CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_migrations` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -136,7 +136,7 @@ CREATE TABLE `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_session` (
   `session_key` varchar(40) NOT NULL,
@@ -154,10 +154,10 @@ CREATE TABLE `email_user` (
   `is_active` tinyint(1) NOT NULL,
   `ctime` bigint(20) DEFAULT NULL,
   `reference_id` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `email` (`email`) USING BTREE,
-  UNIQUE KEY `reference_id` (`reference_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `reference_id` (`reference_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `group` (
   `group_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -166,29 +166,29 @@ CREATE TABLE `group` (
   `timestamp` bigint(20) DEFAULT NULL,
   `type` varchar(32) DEFAULT NULL,
   `parent_group_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`group_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `group_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `group_id` bigint(20) DEFAULT NULL,
   `user_name` varchar(255) DEFAULT NULL,
   `is_staff` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `group_id` (`group_id`,`user_name`) USING BTREE,
-  KEY `user_name` (`user_name`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `group_id` (`group_id`,`user_name`),
+  KEY `user_name` (`user_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `id_in_org_tuple` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `virtual_id` varchar(255) NOT NULL,
   `id_in_org` varchar(255) NOT NULL,
   `org_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `id_in_org_virtual_id_41ccd900` (`virtual_id`) USING BTREE,
-  KEY `id_in_org_id_in_org_ffee1607` (`id_in_org`) USING BTREE,
-  KEY `id_in_org_org_id_169def82` (`org_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `id_in_org_virtual_id_41ccd900` (`virtual_id`),
+  KEY `id_in_org_id_in_org_ffee1607` (`id_in_org`),
+  KEY `id_in_org_org_id_169def82` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `notifications_notification` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -196,36 +196,26 @@ CREATE TABLE `notifications_notification` (
   `primary` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `notifications_notification_primary_4f95ec21` (`primary`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
-CREATE TABLE `options_useroptions` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `option_key` varchar(50) NOT NULL,
-  `option_val` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `options_useroptions_email_77d5726a` (`email`),
-  KEY `options_useroptions_option_key_7bf7ae4b` (`option_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `org_group` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
   `group_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `org_id` (`org_id`,`group_id`) USING BTREE,
-  KEY `group_id` (`group_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id` (`org_id`,`group_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `org_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `is_staff` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `org_id` (`org_id`,`email`) USING BTREE,
-  KEY `email` (`email`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id` (`org_id`,`email`),
+  KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `organization_organization` (
   `org_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -233,9 +223,9 @@ CREATE TABLE `organization_organization` (
   `url_prefix` varchar(255) DEFAULT NULL,
   `creator` varchar(255) DEFAULT NULL,
   `ctime` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`org_id`) USING BTREE,
-  UNIQUE KEY `url_prefix` (`url_prefix`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`org_id`),
+  UNIQUE KEY `url_prefix` (`url_prefix`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `organizations_org_corp_auth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -244,36 +234,36 @@ CREATE TABLE `organizations_org_corp_auth` (
   `corp_name` varchar(255) NOT NULL,
   `permanent_code` varchar(255) NOT NULL,
   `extra_data` longtext NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `org_id` (`org_id`) USING BTREE,
-  UNIQUE KEY `corp_id` (`corp_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id` (`org_id`),
+  UNIQUE KEY `corp_id` (`corp_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `organizations_orgadminsettings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
   `key` varchar(255) NOT NULL,
   `value` text NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `org_id_key_o0u4b7x9_unique_key` (`org_id`,`key`) USING BTREE,
-  KEY `org_id_n3x9b4v0_key` (`org_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id_key_o0u4b7x9_unique_key` (`org_id`,`key`),
+  KEY `org_id_n3x9b4v0_key` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `organizations_orgmemberquota` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
   `quota` int(11) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `organizations_orgmemberquota_org_id_93dde51d` (`org_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `organizations_orgmemberquota_org_id_93dde51d` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `organizations_orgsettings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
   `role` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `organizations_orgsettings_org_id_630f6843_uniq` (`org_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `organizations_orgsettings_org_id_630f6843_uniq` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `profile_profile` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -290,22 +280,22 @@ CREATE TABLE `profile_profile` (
   `unit` longtext DEFAULT NULL,
   `sms_2fa` tinyint(1) DEFAULT 0,
   `is_manually_set_contact_email` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `user` (`user`) USING BTREE,
-  UNIQUE KEY `login_id` (`login_id`) USING BTREE,
-  UNIQUE KEY `profile_profile_contact_email_0975e4bf_uniq` (`contact_email`) USING BTREE,
-  UNIQUE KEY `phone` (`phone`) USING BTREE,
-  KEY `profile_profile_institution_c0286bd1` (`institution`) USING BTREE,
-  KEY `profile_profile_list_in_address_book_b1009a78` (`list_in_address_book`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user` (`user`),
+  UNIQUE KEY `login_id` (`login_id`),
+  UNIQUE KEY `profile_profile_contact_email_0975e4bf_uniq` (`contact_email`),
+  UNIQUE KEY `phone` (`phone`),
+  KEY `profile_profile_institution_c0286bd1` (`institution`),
+  KEY `profile_profile_list_in_address_book_b1009a78` (`list_in_address_book`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `role_permissions_adminrole` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(254) NOT NULL,
   `role` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `email` (`email`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `session_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -314,12 +304,12 @@ CREATE TABLE `session_log` (
   `remote_address` varchar(60) NOT NULL,
   `session_key` varchar(40) NOT NULL,
   `op_time` datetime NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `session_log_user_name` (`user_name`) USING BTREE,
-  KEY `session_log_remote_address` (`remote_address`) USING BTREE,
-  KEY `session_key` (`session_key`) USING BTREE,
-  KEY `op_time_g4i9u7k1_key` (`op_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `session_log_user_name` (`user_name`),
+  KEY `session_log_remote_address` (`remote_address`),
+  KEY `session_key` (`session_key`),
+  KEY `op_time_g4i9u7k1_key` (`op_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `social_auth_usersocialauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -327,10 +317,10 @@ CREATE TABLE `social_auth_usersocialauth` (
   `provider` varchar(32) NOT NULL,
   `uid` varchar(255) NOT NULL,
   `extra_data` longtext NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `social_auth_usersocialauth_provider_uid_e6b5e668_uniq` (`provider`,`uid`) USING BTREE,
-  KEY `social_auth_usersocialauth_username_3f06b5cf` (`username`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `social_auth_usersocialauth_provider_uid_e6b5e668_uniq` (`provider`,`uid`),
+  KEY `social_auth_usersocialauth_username_3f06b5cf` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `sysadmin_extra_userloginlog` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -338,10 +328,10 @@ CREATE TABLE `sysadmin_extra_userloginlog` (
   `login_date` datetime(6) NOT NULL,
   `login_ip` varchar(128) NOT NULL,
   `login_success` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `sysadmin_extra_userloginlog_username_5748b9e3` (`username`) USING BTREE,
-  KEY `sysadmin_extra_userloginlog_login_date_c171d790` (`login_date`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  KEY `sysadmin_extra_userloginlog_username_5748b9e3` (`username`),
+  KEY `sysadmin_extra_userloginlog_login_date_c171d790` (`login_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `two_factor_phonedevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -351,28 +341,28 @@ CREATE TABLE `two_factor_phonedevice` (
   `number` varchar(40) NOT NULL,
   `key` varchar(40) NOT NULL,
   `method` varchar(4) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `user` (`user`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `two_factor_staticdevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(255) NOT NULL,
   `name` varchar(64) NOT NULL,
   `confirmed` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `user` (`user`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `two_factor_statictoken` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `token` varchar(16) NOT NULL,
   `device_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `two_factor_statictok_device_id_93095b45_fk_two_facto` (`device_id`) USING BTREE,
-  KEY `two_factor_statictoken_token_2ade1084` (`token`) USING BTREE,
+  PRIMARY KEY (`id`),
+  KEY `two_factor_statictok_device_id_93095b45_fk_two_facto` (`device_id`),
+  KEY `two_factor_statictoken_token_2ade1084` (`token`),
   CONSTRAINT `two_factor_statictok_device_id_93095b45_fk_two_facto` FOREIGN KEY (`device_id`) REFERENCES `two_factor_staticdevice` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `two_factor_totpdevice` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -386,18 +376,18 @@ CREATE TABLE `two_factor_totpdevice` (
   `tolerance` smallint(5) unsigned NOT NULL,
   `drift` smallint(6) NOT NULL,
   `last_t` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `user` (`user`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `user_role` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) DEFAULT NULL,
   `role` varchar(255) DEFAULT NULL,
   `is_manual_set` int(11) DEFAULT 0,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `email` (`email`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `workspaces`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -411,7 +401,7 @@ CREATE TABLE `workspaces`  (
   UNIQUE KEY `owner`(`owner`),
   INDEX `idx_org_id`(`org_id`),
   INDEX `workspaces_deleted_idx`(`deleted`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `projects`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -434,7 +424,7 @@ CREATE TABLE `projects`  (
   KEY `projects_created_at_e6716f4b`(`created_at`),
   KEY `updated_at_h3g4o9u6_key`(`updated_at`),
   CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_group_orders` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -442,7 +432,7 @@ CREATE TABLE `project_group_orders` (
   `detail` longtext NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_group_order_username_uwuyehjb`(`username`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `options_useroptions`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -452,7 +442,7 @@ CREATE TABLE `options_useroptions`  (
   PRIMARY KEY (`id`),
   KEY `options_useroptions_email_77d5726a`(`email`),
   KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 CREATE TABLE `sites`  (
@@ -468,4 +458,4 @@ CREATE TABLE `sites`  (
   PRIMARY KEY (`id`),
   KEY `websites_created_at_e5618f4b`(`created_at`),
   CONSTRAINT `websites_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
