@@ -2,12 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import isHotkey from 'is-hotkey';
 import { Link } from '@gatsbyjs/reach-router';
-import { DropTarget } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import toaster from '../../components/toaster';
 import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink, siteRoot, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import { seaQAAPI } from '../../api/web-api';
-import html5DragDropContext from '../../utils/html5DragDropContext';
 import GroupItem from './group-item';
 
 const propTypes = {
@@ -144,43 +144,11 @@ class SidePanel extends React.Component {
     });
   };
 
-  getGroupsList = () => {
-    const { groupItems } = this.state;
-    return (
-      <>
-        {groupItems.map((item, index) => {
-          const isDepart = item.group_owner === 'system admin';
-          return (
-            <GroupItem
-              key={item.id}
-              item={item}
-              index={index}
-              getActiveClass={this.getActiveClass}
-              onGroupTabClick={this.onGroupTabClick}
-              moveGroupItem={this.moveGroupItem}
-              isDepart={isDepart}
-              isOpenGroupExpanded={this.props.isOpenGroupExpanded}
-            />
-          );
-        })}
-      </>
-    );
-  };
-
-  getDragDropGroupsList = () => {
-    return html5DragDropContext(
-      DropTarget('SidePanelGroupItem', {}, connect => ({
-        connectDropTarget: connect.dropTarget()
-      }))(this.getGroupsList)
-    );
-  };
-
   renderWorkspaceItems = () => {
-    let { workspaceList } = this.state;
+    let { workspaceList, groupItems } = this.state;
     let personalWorkspace = workspaceList.find(workspace => {
       return workspace.type === 'personal';
     });
-    const Groups = this.getDragDropGroupsList();
     const tabIndex = this.props.isOpenGroupExpanded ? 0 : -1;
 
     return (
@@ -214,7 +182,21 @@ class SidePanel extends React.Component {
             <span className="nav-text">{gettext('Shared with me')}</span>
           </Link>
         </div>
-        <Groups />
+        {groupItems.map((item, index) => {
+          const isDepart = item.group_owner === 'system admin';
+          return (
+            <GroupItem
+              key={item.id}
+              item={item}
+              index={index}
+              isOpenGroupExpanded={this.props.isOpenGroupExpanded}
+              isDepart={isDepart}
+              getActiveClass={this.getActiveClass}
+              onGroupTabClick={this.onGroupTabClick}
+              onMove={this.moveGroupItem}
+            />
+          );
+        })}
       </div>
     );
   };
@@ -224,67 +206,69 @@ class SidePanel extends React.Component {
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
 
     return (
-      <div
-        className={`side-panel ${this.props.isSidePanelClosed ? '' : 'left-zero'}`}
-        aria-label={gettext('Side panel')}
-        role="navigation"
-        tabIndex={0}
-      >
-        {!this.props.isDesktop &&
-          <header className="side-panel-north dtable-header">
-            <a className="dtable-logo" href={siteRoot}>
-              <img
-                src={logoUrl}
-                height={logoHeight}
-                width={logoWidth}
-                title={siteTitle}
-                alt={gettext('SeaTable logo')}
-                aria-label={gettext('SeaTable logo')}
-              />
-            </a>
-          </header>
-        }
-        <div className="side-panel-center">
-          <nav className="dtable-side-nav">
-            <span className="dtable-nav-title">{gettext('Workspace')}</span>
-            <div className="nav nav-pills flex-column dtable-nav-list">
-              <div
-                className={`nav-item dtable-nav-item bases-nav ${this.getActiveClass('project')} ${this.getActiveClass('project') ? 'seatable-bg-orange' : ''}`}
-                onClick={this.onTabClick.bind(this, 'project')}
-              >
-                <Link
-                  to={siteRoot + 'projects/'}
-                  aria-label={gettext('Projects')}
-                  className="nav-link dtable-nav-link"
-                >
-                  <span className="dtable-font dtable-icon-dtable-logo nav-icon" aria-hidden="true"></span>
-                  <span className="nav-text">{gettext('Projects')}</span>
-                </Link>
+      <DndProvider backend={HTML5Backend}>
+        <div
+          className={`side-panel ${this.props.isSidePanelClosed ? '' : 'left-zero'}`}
+          aria-label={gettext('Side panel')}
+          role="navigation"
+          tabIndex={0}
+        >
+          {!this.props.isDesktop &&
+            <header className="side-panel-north dtable-header">
+              <a className="dtable-logo" href={siteRoot}>
+                <img
+                  src={logoUrl}
+                  height={logoHeight}
+                  width={logoWidth}
+                  title={siteTitle}
+                  alt={gettext('SeaTable logo')}
+                  aria-label={gettext('SeaTable logo')}
+                />
+              </a>
+            </header>
+          }
+          <div className="side-panel-center">
+            <nav className="dtable-side-nav">
+              <span className="dtable-nav-title">{gettext('Workspace')}</span>
+              <div className="nav nav-pills flex-column dtable-nav-list">
                 <div
-                  className="nav-toggle-container h-100"
-                  aria-label={gettext('Expand all workspaces')}
-                  aria-expanded={this.props.isOpenGroupExpanded}
-                  tabIndex={0}
-                  role="button"
-                  onKeyDown={this.onKeyDown}
-                  onClick={this.onBasesListExtended}
+                  className={`nav-item dtable-nav-item bases-nav ${this.getActiveClass('project')} ${this.getActiveClass('project') ? 'seatable-bg-orange' : ''}`}
+                  onClick={this.onTabClick.bind(this, 'project')}
                 >
-                  {!this.state.isDataLoading && (
-                    <span className={`dtable-font dtable-icon-down3 nav-toggle-icon ${!this.props.isOpenGroupExpanded ? 'nav-toggle-icon-spin' : ''}`}></span>
-                  )}
+                  <Link
+                    to={siteRoot + 'projects/'}
+                    aria-label={gettext('Projects')}
+                    className="nav-link dtable-nav-link"
+                  >
+                    <span className="dtable-font dtable-icon-dtable-logo nav-icon" aria-hidden="true"></span>
+                    <span className="nav-text">{gettext('Projects')}</span>
+                  </Link>
+                  <div
+                    className="nav-toggle-container h-100"
+                    aria-label={gettext('Expand all workspaces')}
+                    aria-expanded={this.props.isOpenGroupExpanded}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={this.onKeyDown}
+                    onClick={this.onBasesListExtended}
+                  >
+                    {!this.state.isDataLoading && (
+                      <span className={`dtable-font dtable-icon-down3 nav-toggle-icon ${!this.props.isOpenGroupExpanded ? 'nav-toggle-icon-spin' : ''}`}></span>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className={`workspace-list flex-column ${this.props.isOpenGroupExpanded ? 'side-panel-slide' : 'side-panel-slide-up'}`}
+                  style={style}
+                  aria-hidden={!this.props.isOpenGroupExpanded}
+                >
+                  {!this.state.isDataLoading && this.renderWorkspaceItems()}
                 </div>
               </div>
-              <div
-                className={`workspace-list flex-column ${this.props.isOpenGroupExpanded ? 'side-panel-slide' : 'side-panel-slide-up'}`}
-                style={style}
-                aria-hidden={!this.props.isOpenGroupExpanded}
-              >
-                {!this.state.isDataLoading && this.renderWorkspaceItems()}
-              </div>
-            </div>
-          </nav>
+            </nav>
+          </div>
         </div>
-      </div>
+      </DndProvider>
     );
   }
 }
