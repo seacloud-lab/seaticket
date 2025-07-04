@@ -37,7 +37,7 @@ const Records = ({ type, title }) => {
       { key: 'name', name: gettext('Name'), width: '25%' },
       ...displayColumns,
       { key: 'ctime', name: gettext('Create time'), width: '15%' },
-      { key: 'last_crawled', name: gettext('Last crawled'), width: '15%' },
+      { key: 'updated_at', name: gettext('Last Update'), width: '15%' },
       { key: 'status', name: gettext('Status'), width: '10%' },
       { key: 'op', name: '', width: '10%' },
     ];
@@ -61,8 +61,8 @@ const Records = ({ type, title }) => {
     setIsShowRecordDialog(false);
   }, []);
 
-  const createConnectionRecord = useCallback(({ name, value }, resetSubmittingState) => {
-    seaQAAPI.createConnection(workspaceID, projectName, type, { name, value }).then(res => {
+  const createConnection = useCallback(({ name, config }, resetSubmittingState) => {
+    seaQAAPI.createConnection(workspaceID, projectName, type, { name, config }).then(res => {
       const record = res.data.record;
       const newRecords = [...records, new Connection(record)];
       setRecords(newRecords);
@@ -76,7 +76,7 @@ const Records = ({ type, title }) => {
 
   const deleteConnectionRecord = useCallback(() => {
     console.log(activeRecordRef.current);
-    seaQAAPI.deleteConnection(workspaceID, projectName, type, activeRecordRef.current.id).then(res => {
+    seaQAAPI.deleteConnection(workspaceID, projectName, activeRecordRef.current.id).then(res => {
       const activeSiteIndex = records.findIndex(record => record.id === activeRecordRef.current.id);
       let newSites = records.slice(0);
       if (activeSiteIndex > -1) {
@@ -92,7 +92,7 @@ const Records = ({ type, title }) => {
       setIsShowConfirmDialog(false);
       activeRecordRef.current = null;
     });
-  }, [type, records]);
+  }, [records]);
 
   const closeDeleteConfirmDialog = useCallback(() => {
     setIsShowConfirmDialog(false);
@@ -103,8 +103,8 @@ const Records = ({ type, title }) => {
     setIsShowConfirmDialog(true);
   }, []);
 
-  const modifyConnection = useCallback(({ name, value }, resetSubmittingState) => {
-    seaQAAPI.modifyConnection(workspaceID, projectName, type, activeRecordRef.current.id, { name, value }).then(res => {
+  const modifyConnection = useCallback(({ name, config }, resetSubmittingState) => {
+    seaQAAPI.modifyConnection(workspaceID, projectName, type, activeRecordRef.current.id, { name, config }).then(res => {
       const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
@@ -187,7 +187,7 @@ const Records = ({ type, title }) => {
           record={activeRecordRef.current}
           fields={fields}
           onToggle={closeConnectionDialog}
-          onSubmit={activeRecordRef.current ? modifyConnection : createConnectionRecord} />
+          onSubmit={activeRecordRef.current ? modifyConnection : createConnection} />
       )}
       {isShowConfirmDialog && (
         <CommonOperationConfirmationDialog

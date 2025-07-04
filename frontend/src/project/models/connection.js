@@ -5,10 +5,10 @@ class ConnectionRecord {
     this.id = object.id || '';
     this.name = object.name || '';
     this.type = object.type || '';
-    this.value = JSON.parse(object.value || '{}') || {};
+    this.config = JSON.parse(object.config || '{}') || {};
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
-    this.last_crawled = object.last_crawled_at || '';
+    this.updated_at = object.updated_at || '';
     this.project_id = object.project_id || '';
     this.status = object.status || '';
 
@@ -17,7 +17,7 @@ class ConnectionRecord {
       this.ctime = dayjs(this.ctime).format('YYYY-MM-DD HH:mm:ss');
     }
 
-    this.last_crawled = this.last_crawled ? dayjs(this.last_crawled).fromNow() : '--';
+    this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
 
   }
 }

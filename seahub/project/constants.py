@@ -17,10 +17,6 @@ class ConnectionType(Enum):
     def is_valid(cls, value):
         return value in {item.value for item in cls}
 
-    @classmethod
-    def get_pattern(cls):
-        return '|'.join(item.value for item in cls)
-
 
 class ConnectionField(object):
     def __init__(self, key, is_required=False, is_unique=False):

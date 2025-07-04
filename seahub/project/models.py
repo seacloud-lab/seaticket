@@ -330,24 +330,24 @@ class ProjectConnectionsManager(models.Manager):
     """ Project connections manager
     """
 
-    def create(self, username, project, connection_type, name, value):
+    def create(self, username, project, connection_type, name, config):
         """ create record
         """
 
-        record = self.model(project=project, type=connection_type, name=name, value=value, modifier=username, status='pending')
+        record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status='pending')
         record.save()
         return record.to_dict()
 
-    def modify(self, username, project, connection_type, connection_id, name, value):
+    def modify(self, username, project, connection_type, connection_id, name, config):
         """ modify record: if not record, create it
         """
 
         record = self.filter(project=project, id=connection_id).first()
         if not record:
-            record = self.model(project=project, type=connection_type, name=name, value=value, modifier=username, status='pending')
+            record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status='pending')
         else:
             record.name = name
-            record.value = value
+            record.config = config
         record.save()
         return record
 
@@ -358,12 +358,12 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(project=project, type=connection_type)
         return records
 
-    def is_valid(self, connection_type, records, name, new_record_value):
+    def is_valid(self, connection_type, records, name, config):
         """ check config is valid
         """
 
-        if isinstance(new_record_value, str):
-            new_record_value = json.loads(new_record_value)
+        if isinstance(config, str):
+            config = json.loads(config)
 
         if not records:
             return True
@@ -377,27 +377,27 @@ class ProjectConnectionsManager(models.Manager):
             if record.name == name:
                 flag = False
                 break
-            record_value = json.loads(record.value or '{}')
+            record_config = json.loads(record.config or '{}')
             if unique_fields:
                 for field in unique_fields:
                     key = field.get('key', '')
-                    if record_value.get(key, '') == new_record_value.get(key, ''):
+                    if record_config.get(key, '') == config.get(key, ''):
                         flag = False
                     break
                 if not flag:
                     break
 
             if required_fields:
-                for field in unique_fields:
+                for field in required_fields:
                     key = field.get('key', '')
-                    if not new_record_value.get(key, ''):
+                    if not config.get(key, ''):
                         flag = False
                     break
                 if not flag:
                     break
         return flag
 
-    def enable_create(self, project, connection_type, name, new_record_value):
+    def enable_create(self, project, connection_type, name, config):
         """ check enable create
         """
 
@@ -405,9 +405,9 @@ class ProjectConnectionsManager(models.Manager):
             return False
 
         records = self.filter(project=project, type=connection_type)
-        return self.is_valid(connection_type, records, name, new_record_value)
+        return self.is_valid(connection_type, records, name, config)
 
-    def enable_modify(self, project, connection_type, connection_id, name, new_record_value):
+    def enable_modify(self, project, connection_type, connection_id, name, config):
         """ check enable modify
         """
 
@@ -417,7 +417,7 @@ class ProjectConnectionsManager(models.Manager):
         connection_id = int(connection_id)
         records = self.filter(project=project, type=connection_type)
         records = [record for record in records if record.id != connection_id]
-        return self.is_valid(connection_type, records, name, new_record_value)
+        return self.is_valid(connection_type, records, name, config)
 
 
 class ProjectConnections(models.Model):
@@ -428,12 +428,12 @@ class ProjectConnections(models.Model):
 
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
-    value = models.TextField()
+    config = models.TextField()
 
     modifier = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
-    last_crawled_at = models.DateTimeField(null=True)
+    updated_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
 
     objects = ProjectConnectionsManager()
@@ -447,9 +447,9 @@ class ProjectConnections(models.Model):
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'value': self.value,
+            'config': self.config,
             'modifier': self.modifier,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
-            'last_crawled_at': datetime_to_isoformat_timestr(self.last_crawled_at),
+            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
             'status': self.status,
         }

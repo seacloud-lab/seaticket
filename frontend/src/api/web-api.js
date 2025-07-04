@@ -80,32 +80,35 @@ class SeaQAAPI {
 
   // connections
   listConnections(workspaceID, projectName, type, page, perPage) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + type + '/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
     let params = {
       page: page,
-      per_page: perPage
+      per_page: perPage,
+      type: type,
     };
     return this.req.get(url, { params: params });
   }
 
-  createConnection(workspaceID, projectName, type, { name, value }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + type + '/';
+  createConnection(workspaceID, projectName, type, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
     let form = new FormData();
     form.append('name', name);
-    form.append('value', JSON.stringify(value));
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
     return this._sendPostRequest(url, form);
   }
 
-  modifyConnection(workspaceID, projectName, type, connectionID, { name, value }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + type + '/' + connectionID + '/';
+  modifyConnection(workspaceID, projectName, type, connectionID, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('name', name);
-    form.append('value', JSON.stringify(value));
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
     return this.req.put(url, form);
   }
 
-  deleteConnection(workspaceID, projectName, type, connectionID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + type + '/' + connectionID + '/';
+  deleteConnection(workspaceID, projectName, connectionID) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
     return this.req.delete(url);
   }
 

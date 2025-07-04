@@ -3,35 +3,40 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
 import { gettext } from '../../../constants';
 import CustomModalHeader from '../../../components/modal-header';
+import { validateName } from '../../../utils/utils';
 
 const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
-  const [config, setConfig] = useState(record?.value || {});
+  const [config, setConfig] = useState(record?.config || {});
+  const [isChanged, setChanged] = useState(record ? false : true);
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const isValid = useMemo(() => {
+    if (!name.trim()) return false;
     return fields.length > 0 ? fields.every(c => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [config, fields]);
+  }, [name, config, fields]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
     if (newValue === name) return;
     setName(newValue);
+    setChanged(true);
   }, [name]);
 
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
     setConfig({ ...config, [key]: value });
+    setChanged(true);
   }, [config]);
 
   const handleSubmit = useCallback(() => {
-    const validName = name.trim();
-    if (!validName) {
-      setErrorMsg(gettext('Name is required'));
+    const { isValid, message } = validateName(name);
+    if (!isValid) {
+      setErrorMsg(message);
       return;
     }
     setSubmitting(true);
@@ -39,7 +44,7 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
     Object.keys(config).forEach((key) => {
       validConfig[key] = config[key] ? config[key].trim() : '';
     });
-    onSubmit({ name, value: validConfig }, () => setSubmitting(false));
+    onSubmit({ name: message, config: validConfig }, () => setSubmitting(false));
   }, [record, name, config, onSubmit, onToggle]);
 
   return (
@@ -67,7 +72,7 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>
+        <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !isChanged}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>
   );

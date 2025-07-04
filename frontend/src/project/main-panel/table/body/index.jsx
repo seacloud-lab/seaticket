@@ -46,7 +46,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
                   </div>
                 );
               }
-              const value = is_custom ? row['value']?.[key] : row[key];
+              const value = is_custom ? row['config']?.[key] : row[key];
               return (<div className="sea-qa-project-custom-table-cell" key={key} style={{ width }}>{value}</div>);
             })}
           </div>
