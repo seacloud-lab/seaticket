@@ -7,3 +7,71 @@
 .sea-qa-project-main-panel .sea-qa-project-main-panel-header {
   justify-content: flex-end;
 }
+
+.sea-qa-project-custom-table {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row.sea-qa-project-custom-table-row-title {
+  background-color: #fff;
+  height: 37px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row:not(.sea-qa-project-custom-table-row-title):hover {
+  background-color: #f5f5f5;
+  cursor: default;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell {
+  font-size: 14px;
+  height: 100%;
+  line-height: 39px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 10px;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row.sea-qa-project-custom-table-row-title .sea-qa-project-custom-table-cell {
+  color: #999;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 10px 0 6px;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:first-child {
+  padding-left: 10px;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:last-child {
+  padding-right: 0;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell .sea-qa-project-custom-table-op-cell-content {
+  display: none;
+  height: 100%;
+  width: 100%;
+}
+
+.sea-qa-project-custom-table .sea-qa-project-custom-table-row:hover .sea-qa-project-custom-table-cell .sea-qa-project-custom-table-op-cell-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

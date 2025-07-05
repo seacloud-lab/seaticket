@@ -141,7 +141,7 @@ class Item extends React.Component {
                   data-toggle="dropdown"
                   aria-expanded={this.state.isItemMenuShow}
                 />
-                <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
+                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleRestoreDialog}>{gettext('Restore')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>

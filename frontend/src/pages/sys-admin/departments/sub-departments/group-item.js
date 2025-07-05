@@ -89,7 +89,7 @@ class GroupItem extends React.Component {
                 data-toggle="dropdown"
                 aria-expanded={this.state.isItemMenuShow}
               />
-              <DropdownMenu className="dtable-dropdown-menu dropdown-menu mr-2">
+              <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mr-2">
                 <DropdownItem onClick={this.toggleRenameDialog}>{gettext('Rename')}</DropdownItem>
                 <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
               </DropdownMenu>

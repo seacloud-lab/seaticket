@@ -67,7 +67,7 @@ class GroupDropdownMenu extends React.Component {
           tabIndex={0}
         >
         </DropdownToggle>
-        <DropdownMenu className="dtable-dropdown-menu dropdown-menu drop-list">
+        <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list">
           <Fragment>
             {isOwner &&
               <DropdownItem onClick={this.onRenameTableToggle}>{gettext('Rename')}</DropdownItem>

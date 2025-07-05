@@ -222,7 +222,7 @@ class Project extends React.Component {
               toggle={this.dropdownToggle}
               direction="down"
               className="project-item-more-operation"
-              onClick={(e) => {e.stopPropagation();}}
+              onClick={(e) => e.stopPropagation()}
             >
               <DropdownToggle
                 tag='i'
@@ -309,7 +309,7 @@ class Project extends React.Component {
                   aria-haspopup={true}
                 >
                 </DropdownToggle>
-                <DropdownMenu className="dtable-dropdown-menu dropdown-menu drop-list" right={true} onMouseMove={this.onDropDownMouseMove}>
+                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" end={true} onMouseMove={this.onDropDownMouseMove}>
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>}
                   {(isOwner || isAdmin) && <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>}
                 </DropdownMenu>

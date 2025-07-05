@@ -68,7 +68,7 @@ class DTableTrashOpMenu extends React.Component {
           data-toggle="dropdown"
           aria-expanded={this.state.isItemMenuShow}
         />
-        <DropdownMenu className="dtable-dropdown-menu dropdown-menu mr-2">
+        <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mr-2">
           {operations.map((item, index ) => {
             return (<DropdownItem key={index} data-op={item} onClick={this.onRestoreDTable}>{this.translateOperations(item)}</DropdownItem>);
           })}

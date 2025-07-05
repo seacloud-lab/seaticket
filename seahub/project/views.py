@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 import json
 
 from django.shortcuts import render
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def project_view(request, workspace_id, name):
+def project_view(request, workspace_id, project_name):
     # resource check
     workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
     if not workspace:
@@ -34,7 +33,7 @@ def project_view(request, workspace_id, name):
             error_msg = f'Group {group_id} not found.'
             return render_error(request, error_msg)
 
-    project = Projects.objects.get_project(workspace, name)
+    project = Projects.objects.get_project(workspace, project_name)
     if not project:
         return render_error(request, _('This project does not exist'))
 
@@ -46,7 +45,7 @@ def project_view(request, workspace_id, name):
 
     return_dict = {
         'version': SEAQA_VERSION,
-        'project_name': name,
+        'project_name': project_name,
         'workspace_id': workspace_id,
         'project_uuid': str(project.uuid),
         'current_group_id': int(group_id) if project.is_owned_by_group else None,
@@ -56,3 +55,4 @@ def project_view(request, workspace_id, name):
     }
 
     return render(request, 'project_view_react.html', return_dict)
+

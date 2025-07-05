@@ -78,55 +78,37 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  listSites(workspaceID, projectName, page, perPage) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/';
+  // connections
+  listConnections(workspaceID, projectName, type, page, perPage) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
     let params = {
       page: page,
-      per_page: perPage
+      per_page: perPage,
+      type: type,
     };
     return this.req.get(url, { params: params });
   }
 
-  createSite(workspaceID, projectName, { name, url: siteUrl, sitemapUrl }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/';
+  createConnection(workspaceID, projectName, type, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
     let form = new FormData();
     form.append('name', name);
-    form.append('url', siteUrl);
-    form.append('sitemap_url', sitemapUrl);
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
     return this._sendPostRequest(url, form);
   }
 
-  modifySite(workspaceID, projectName, siteID, { name, url: siteUrl, sitemapUrl }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/' + siteID + '/';
+  modifyConnection(workspaceID, projectName, type, connectionID, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('name', name);
-    form.append('url', siteUrl);
-    form.append('sitemap_url', sitemapUrl);
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
     return this.req.put(url, form);
   }
 
-  deleteSite(workspaceID, projectName, siteID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/sites/' + siteID + '/';
-    return this.req.delete(url);
-  }
-
-  listSharedViews() {
-    let url = this.server + '/api/v2.1/dtables/view-shares-user-shared/';
-    return this.req.get(url);
-  }
-
-  leaveViewShare(viewShareId) {
-    let url = this.server + '/api/v2.1/dtables/view-shares-user-shared/' + viewShareId + '/';
-    return this.req.delete(url);
-  }
-
-  listGroupSharedViews() {
-    let url = this.server + '/api/v2.1/dtables/view-shares-group-shared/';
-    return this.req.get(url);
-  }
-
-  leaveGroupViewShare(viewShareId) {
-    let url = this.server + '/api/v2.1/dtables/view-shares-group-shared/' + viewShareId + '/';
+  deleteConnection(workspaceID, projectName, connectionID) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
     return this.req.delete(url);
   }
 

@@ -185,7 +185,7 @@ class UserItem extends React.Component {
                   aria-expanded={this.state.isItemMenuShow}
                   onClick={this.onDropdownToggleClick}
                 />
-                <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
+                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {currentTab === 'users' && <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>}
                   {currentTab === 'users' && <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>}
                   {currentTab === 'admins' && <DropdownItem onClick={this.toggleRevokeAdmin}>{gettext('Revoke admin')}</DropdownItem>}

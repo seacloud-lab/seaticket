@@ -56,7 +56,7 @@ class OpMenu extends React.Component {
           data-toggle="dropdown"
           aria-expanded={this.state.isItemMenuShow}
         />
-        <DropdownMenu className="dtable-dropdown-menu dropdown-menu my-1 mr-2">
+        <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu my-1 mr-2">
           {operations.map((item, index ) => {
             return (<DropdownItem key={index} data-op={item} onClick={this.onMenuItemClick}>{translateOperations(item)}</DropdownItem>);
           })}

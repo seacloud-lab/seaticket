@@ -1,5 +1,5 @@
-import Site from './site';
+import Connection from './connection';
 
 export {
-  Site,
+  Connection,
 };

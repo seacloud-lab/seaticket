@@ -151,7 +151,7 @@ class DTableItemGroupShared extends React.Component {
                   aria-expanded={this.state.dropdownOpen}
                   aria-haspopup={true}
                 />
-                <DropdownMenu className="dtable-dropdown-menu dropdown-menu">
+                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
                   {canCopy && <DropdownItem onClick={this.onCopyProjectToggle}>{gettext('Copy')}</DropdownItem>}
                   {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}

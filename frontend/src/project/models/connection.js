@@ -1,14 +1,14 @@
 import dayjs from '../../utils/dayjs';
 
-class Site {
+class ConnectionRecord {
   constructor(object) {
     this.id = object.id || '';
     this.name = object.name || '';
-    this.url = object.url || '';
-    this.sitemap_url = object.sitemap_url || '';
+    this.type = object.type || '';
+    this.config = JSON.parse(object.config || '{}') || {};
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
-    this.last_crawled = object.last_crawled_at || '';
+    this.updated_at = object.updated_at || '';
     this.project_id = object.project_id || '';
     this.status = object.status || '';
 
@@ -17,9 +17,9 @@ class Site {
       this.ctime = dayjs(this.ctime).format('YYYY-MM-DD HH:mm:ss');
     }
 
-    this.last_crawled = this.last_crawled ? dayjs(this.last_crawled).fromNow() : '--';
+    this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
 
   }
 }
 
-export default Site;
+export default ConnectionRecord;

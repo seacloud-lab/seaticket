@@ -1279,7 +1279,7 @@
   "Email_content_is_required": "Email content is required",
   "Use_column_name_to_insert_the_rows_column_value": "Use {column name} to insert the row's column value.",
   "Use_column_name_to_insert_the_rows_column_value_and_more": "Use {column name} to insert the row's column value. Use {user.name} or {user.id} to fill with user's name or ID.",
-  "Connection_limit_exceeded": "Connection limit exceeded",
+  "Connection_limit_exceeded": "ConnectionIndex limit exceeded",
   "This_table_is_created_from_a_common_dataset": "This table is created from a common dataset.",
   "This_table_has_associated_workflows": "This table has associated workflows",
   "This_table_contains_app_users": "This table contains app users",
