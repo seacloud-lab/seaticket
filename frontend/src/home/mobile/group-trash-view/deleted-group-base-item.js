@@ -13,13 +13,13 @@ function DeletedGroupBaseItem(props) {
   const [loading, setLoading] = useState(false);
   const { baseItem, groupID } = props;
 
-  async function restoreGroupTrashDTable() {
+  async function restoreGroupTrashProject() {
     const { name, uuid } = baseItem;
     setLoading(true);
     try {
-      await seaQAAPI.restoreGroupTrashDTable(uuid, groupID);
+      await seaQAAPI.restoreGroupTrashProject(uuid, groupID);
       setLoading(false);
-      props.restoreDTable(baseItem);
+      props.restoreProject(baseItem);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);
       toaster.success(msg);
     } catch (error) {
@@ -44,7 +44,7 @@ function DeletedGroupBaseItem(props) {
         {loading ?
           <span className="loading-icon loading-tip" />
           :
-          <span onClick={restoreGroupTrashDTable}>{gettext('Restore')}</span>
+          <span onClick={restoreGroupTrashProject}>{gettext('Restore')}</span>
         }
       </div>
     </div>
@@ -54,7 +54,7 @@ function DeletedGroupBaseItem(props) {
 DeletedGroupBaseItem.propTypes = {
   baseItem: PropTypes.object.isRequired,
   groupID: PropTypes.number.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
 export default DeletedGroupBaseItem;

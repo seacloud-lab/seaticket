@@ -6,7 +6,7 @@ import { toaster, EmptyTip, ModalPortal, Paginator } from '../../components';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
-import RestoreTableDialog from '../../home/dialog/restore-table-dialog';
+import RestoreProjectDialog from '../../home/dialog/restore-project-dialog';
 import EmptyProjectTrashDialog from '../../home/dialog/empty-project-trash-dialog';
 
 const ItemPropTypes = {
@@ -66,7 +66,7 @@ class Item extends React.Component {
     }
   };
 
-  onRestoreDTable = () => {
+  onRestoreProject = () => {
     const item = this.props.item;
     let projectName = item.name;
     let owner_deleted = item.owner_deleted;
@@ -148,9 +148,9 @@ class Item extends React.Component {
         </tr>
         {this.state.isRestoreDialogOpen &&
           <ModalPortal>
-            <RestoreTableDialog
+            <RestoreProjectDialog
               currentProject={item}
-              handleSubmit={this.onRestoreDTable}
+              handleSubmit={this.onRestoreProject}
               restoreCancel={this.toggleRestoreDialog}
               owner_deleted={item.owner_deleted}
             />
@@ -236,7 +236,7 @@ class OrgTrashProjects extends React.Component {
 
   handleEmptyTrashTables = () => {
     const { orgID } = window.org.pageOptions;
-    orgAdminServiceApi.orgAdminCleanTrashDTables(orgID).then((res) => {
+    orgAdminServiceApi.orgAdminCleanTrashProjects(orgID).then((res) => {
       this.setState({
         projectList: [],
         page: 1
@@ -256,7 +256,7 @@ class OrgTrashProjects extends React.Component {
     let { projectList, page, per_page, count, expireDays } = this.state;
     if (!projectList.length) {
       return (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted projects')} />
       );
     }
     return (

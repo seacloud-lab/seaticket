@@ -155,12 +155,12 @@ class AccountInfo(APIView):
         if getattr(settings, 'MULTI_INSTITUTION', False):
             info['is_inst_admin'] = request.user.inst_admin
 
-        dtable_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(email)
+        project_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(email)
         info[
-            'dtable_updates_email_interval'] = dtable_updates_email_interval if dtable_updates_email_interval is not None else 0
-        dtable_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(email)
+            'project_updates_email_interval'] = project_updates_email_interval if project_updates_email_interval is not None else 0
+        project_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(email)
         info[
-            'dtable_collaborate_email_interval'] = dtable_collaborate_email_interval if dtable_collaborate_email_interval is not None else 0
+            'project_collaborate_email_interval'] = project_collaborate_email_interval if project_collaborate_email_interval is not None else 0
         return info
 
     def get(self, request, format=None):
@@ -181,21 +181,21 @@ class AccountInfo(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST,
                         _("Name should not include '/'."))
 
-        dtable_updates_email_interval = request.data.get("dtable_updates_email_interval", None)
-        if dtable_updates_email_interval is not None:
+        project_updates_email_interval = request.data.get("project_updates_email_interval", None)
+        if project_updates_email_interval is not None:
             try:
-                dtable_updates_email_interval = int(dtable_updates_email_interval)
+                project_updates_email_interval = int(project_updates_email_interval)
             except ValueError:
                 return api_error(
-                    status.HTTP_400_BAD_REQUEST, 'dtable_updates_email_interval invalid')
+                    status.HTTP_400_BAD_REQUEST, 'project_updates_email_interval invalid')
 
-        dtable_collaborate_email_interval = request.data.get("dtable_collaborate_email_interval", None)
-        if dtable_collaborate_email_interval is not None:
+        project_collaborate_email_interval = request.data.get("project_collaborate_email_interval", None)
+        if project_collaborate_email_interval is not None:
             try:
-                dtable_collaborate_email_interval = int(dtable_collaborate_email_interval)
+                project_collaborate_email_interval = int(project_collaborate_email_interval)
             except ValueError:
                 return api_error(
-                    status.HTTP_400_BAD_REQUEST, 'dtable_collaborate_email_interval invalid')
+                    status.HTTP_400_BAD_REQUEST, 'project_collaborate_email_interval invalid')
 
         # update user info
 
@@ -206,15 +206,15 @@ class AccountInfo(APIView):
             profile.nickname = name
             profile.save()
 
-        if dtable_updates_email_interval is not None:
-            if dtable_updates_email_interval <= 0:
+        if project_updates_email_interval is not None:
+            if project_updates_email_interval <= 0:
                 UserOptions.objects.unset_dtable_updates_email_interval(username)
             else:
                 UserOptions.objects.set_dtable_updates_email_interval(
-                    username, dtable_updates_email_interval)
+                    username, project_updates_email_interval)
 
-        if dtable_collaborate_email_interval is not None:
+        if project_collaborate_email_interval is not None:
             UserOptions.objects.set_dtable_collaborate_email_interval(
-                username, dtable_collaborate_email_interval)
+                username, project_collaborate_email_interval)
 
         return Response(self._get_account_info(request))

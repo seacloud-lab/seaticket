@@ -174,6 +174,14 @@ class ProjectsManager(models.Manager):
             query_result = query_result.filter(deleted=False)
         return query_result
 
+    def delete_project(self, workspace, name):
+        try:
+            project = super(ProjectsManager, self).get(workspace=workspace, name=name)
+            project.delete()
+            return True
+        except self.model.DoesNotExist:
+            return False
+    
     def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):

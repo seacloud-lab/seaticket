@@ -93,9 +93,9 @@ class DTableItemGroupShared extends React.Component {
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
       color, icon, view_share_id, shared_name, is_encrypted, permission } = project;
     let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
-    let tableHref = siteRoot + 'workspace/' + workspace_id + '/dtable/' + encodeURIComponent(name) + '/';
+    let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(name) + '/';
     if (view_share_id !== undefined) {
-      tableHref = `${siteRoot}dtable-shared-view/group/${view_share_id}/`;
+      tableHref = `${siteRoot}project-shared-view/group/${view_share_id}/`;
     }
     let canCopy = !view_share_id && canAddProject && (permission === 'r' || permission === 'rw');
     const isDesktop = Utils.isDesktop();

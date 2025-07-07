@@ -26,22 +26,22 @@ class AccountInfoTest(BaseTestCase):
     def test_update(self, ):
         self.login_as(self.user)
 
-        resp = self._do_put('name=foo&dtable_updates_email_interval=3000')
+        resp = self._do_put('name=foo&project_updates_email_interval=3000')
         self.assertEqual(200, resp.status_code)
 
         json_resp = json.loads(resp.content)
-        assert json_resp['dtable_updates_email_interval'] == 3000
+        assert json_resp['project_updates_email_interval'] == 3000
         assert json_resp['name'] == 'foo'
 
     def test_dtable_updates_email_interval(self, ):
         self.login_as(self.user)
 
-        resp = self._do_put('dtable_updates_email_interval=3000')
+        resp = self._do_put('project_updates_email_interval=3000')
         self.assertEqual(200, resp.status_code)
         json_resp = json.loads(resp.content)
-        assert json_resp['dtable_updates_email_interval'] == 3000
+        assert json_resp['project_updates_email_interval'] == 3000
 
-        resp = self._do_put('dtable_updates_email_interval=0')
+        resp = self._do_put('project_updates_email_interval=0')
         self.assertEqual(200, resp.status_code)
         json_resp = json.loads(resp.content)
-        assert json_resp['dtable_updates_email_interval'] == 0
+        assert json_resp['project_updates_email_interval'] == 0

@@ -28,7 +28,7 @@ class ShareTableToUser extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.listTableShares(workspace_id, name).then((res) => {
+    seaQAAPI.listProjectShares(workspace_id, name).then((res) => {
       this.setState({ userList: res.data.user_list, isLoading: false });
     }).catch(error => {
       this.setState({ isLoading: false });
@@ -40,7 +40,7 @@ class ShareTableToUser extends React.Component {
     this.setState({ isShowAddShareUser: !this.state.isShowAddShareUser });
   };
 
-  addTableShare = (selectedOptions, permission) => {
+  addProjectShare = (selectedOptions, permission) => {
     const { userList } = this.state;
     const { workspace_id, name: tableName } = this.props.currentProject;
     if (!selectedOptions || selectedOptions.length === 0) return;
@@ -48,7 +48,7 @@ class ShareTableToUser extends React.Component {
       const name = selectedOptions[i].name;
       const email = selectedOptions[i].email;
       const avatar_url = selectedOptions[i].avatar_url;
-      seaQAAPI.addTableShare(workspace_id, tableName, email, permission).then((res) => {
+      seaQAAPI.addProjectShare(workspace_id, tableName, email, permission).then((res) => {
         let userInfo = {
           name,
           email,
@@ -63,10 +63,10 @@ class ShareTableToUser extends React.Component {
     }
   };
 
-  updateTableShare = (userItem, permission) => {
+  updateProjectShare = (userItem, permission) => {
     const { workspace_id, name } = this.props.currentProject;
     const email = userItem.email;
-    seaQAAPI.updateTableShare(workspace_id, name, email, permission).then((res) => {
+    seaQAAPI.updateProjectShare(workspace_id, name, email, permission).then((res) => {
       let userList = this.state.userList.map(userInfo => {
         if (userInfo.email === email) {
           userInfo.permission = permission;
@@ -79,10 +79,10 @@ class ShareTableToUser extends React.Component {
     });
   };
 
-  deleteTableShare = (userItem) => {
+  deleteProjectShare = (userItem) => {
     const { workspace_id, name } = this.props.currentProject;
     const email = userItem.email;
-    seaQAAPI.deleteTableShare(workspace_id, name, email).then((res) => {
+    seaQAAPI.deleteProjectShare(workspace_id, name, email).then((res) => {
       let userList = this.state.userList.filter(userInfo => {
         return userInfo.email !== email;
       });
@@ -112,8 +112,8 @@ class ShareTableToUser extends React.Component {
                 <ShareItem
                   key={userItem.email}
                   item={userItem}
-                  deleteTableShare={this.deleteTableShare}
-                  updateTableShare={this.updateTableShare}
+                  deleteProjectShare={this.deleteProjectShare}
+                  updateProjectShare={this.updateProjectShare}
                   shareName={userItem.name}
                   isShowImage={true}
                   options={this.options}
@@ -125,7 +125,7 @@ class ShareTableToUser extends React.Component {
         {isShowAddShareUser &&
           <AddShareUser
             toggle={this.onAddShareUser}
-            addTableShare={this.addTableShare}
+            addProjectShare={this.addProjectShare}
             customSharePermissions={this.props.customSharePermissions}
             options={this.options}
           />

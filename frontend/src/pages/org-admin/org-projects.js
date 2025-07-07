@@ -41,7 +41,7 @@ class OrgProjects extends React.Component {
   };
 
   searchItems = (keyword) => {
-    navigate(`${siteRoot}org/search-dtables/?query=${encodeURIComponent(keyword)}`);
+    navigate(`${siteRoot}org/search-projects/?query=${encodeURIComponent(keyword)}`);
   };
 
   render() {

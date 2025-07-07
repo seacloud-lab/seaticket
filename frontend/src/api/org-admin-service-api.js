@@ -13,11 +13,11 @@ class OrgAdminServiceApi {
         headers: { 'Authorization': 'Token ' + this.accessToken }
       });
     } else {
-      this.initForDTableUsage();
+      this.initForUsage();
     }
   }
 
-  initForDTableUsage() {
+  initForUsage() {
     const xcsrfHeaders = cookie.load('seaqa_csrftoken');
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
@@ -78,13 +78,13 @@ class OrgAdminServiceApi {
     return this._sendPostRequest(url, form);
   }
 
-  orgAdminListGroupDTables(orgID, groupID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/dtables/';
+  orgAdminListGroupProjects(orgID, groupID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/projects/';
     return this.req.get(url);
   }
 
-  orgAdminDeleteDTableFromGroup(orgID, groupID, tableID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/dtables/' + tableID + '/';
+  orgAdminDeleteProjectFromGroup(orgID, groupID, projectID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/projects/' + projectID + '/';
     return this.req.delete(url);
   }
 
@@ -371,8 +371,8 @@ class OrgAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminDeleteProject(orgID, dtableID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableID + '/';
+  orgAdminDeleteProject(orgID, projectID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + projectID + '/';
     return this.req.delete(url);
   }
 
@@ -385,21 +385,21 @@ class OrgAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminCleanTrashDTables(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/';
+  orgAdminCleanTrashProjects(orgID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-projects/';
     return this.req.delete(url);
   }
 
-  orgAdminRestoreTrashProject(orgID, dtableID, restoreToAdminAccount) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/' + dtableID + '/';
+  orgAdminRestoreTrashProject(orgID, projectID, restoreToAdminAccount) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-projects/' + projectID + '/';
     const data = {
       restore_to_admin_account: restoreToAdminAccount
     };
     return this.req.put(url, data);
   }
 
-  orgAdminSearchDTables(orgID, query, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/search-dtables/';
+  orgAdminSearchProjects(orgID, query, page, perPage) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/search-projects/';
     let params = {
       query: query,
       page: page,
@@ -432,195 +432,10 @@ class OrgAdminServiceApi {
     return this.req.delete(url);
   }
 
-  orgAdminGetWorkWeixinInfo(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/info/';
-    return this.req.get(url);
-  }
-
-  orgAdminListWorkWeixinUsers(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/users/';
-    return this.req.get(url);
-  }
-
-  orgAdminImportWorkWeixinUser(orgID, user) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/users/';
-    return this.req.post(url, { user: user });
-  }
-
-  orgAdminDisconnectWorkWeixinUser(orgID, user) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/user/';
-    let params = { user: user };
-    return this.req.delete(url, { data: params });
-  }
-
-  orgAdminWorkWeixinCreateLicenseOrder(orgID, count) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/create-license-order/';
-    return this.req.post(url, { count: count });
-  }
-
-  orgAdminGetDingtalkInfo(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dingtalk/info/';
-    return this.req.get(url);
-  }
-
-  orgAdminAddWorkWeixinUsersBatch(orgID, userList) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/users/batch/';
-    return this.req.post(url, { userlist: userList });
-  }
-
-  orgAdminImportWorkWeixinDepartment(orgID, departmentID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/departments/import/';
-    return this.req.post(url, { work_weixin_department_id: departmentID });
-  }
-
-  orgAdminListWorkWeixinDepartmentMembers(orgID, departmentID, params) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/departments/' + departmentID + '/members/';
-    return this.req.get(url, { params: params });
-  }
-
-  orgAdminListWorkWeixinDepartments(orgID, departmentID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/work-weixin/departments/';
-    const params = {};
-    if (departmentID) {
-      params.department_id = departmentID;
-    }
-    return this.req.get(url, { params: params });
-  }
-
-  orgAdminListDTableExternalLinks(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/external-links/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  orgAdminDeleteDTableExternalLink(orgID, token) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/external-links/' + token + '/';
-    return this.req.delete(url);
-  }
-
-  orgAdminListViewExternalLinks(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/view-external-links/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  orgAdminDeleteViewExternalLink(orgID, token) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/view-external-links/' + token + '/';
-    return this.req.delete(url);
-  }
-
-  orgAdminGetSamlConfig(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/saml-config/';
-    return this.req.get(url);
-  }
-
-  orgAdminUpdateSamlConfig(orgID, metadataUrl, domain, idpCertificate) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/saml-config/';
-    let formData = new FormData();
-    if (metadataUrl) {
-      formData.append('metadata_url', metadataUrl);
-    }
-    if (domain) {
-      formData.append('domain', domain);
-    }
-    if (idpCertificate) {
-      formData.append('idp_certificate', idpCertificate);
-    }
-    return this.req.put(url, formData);
-  }
-
-  orgAdminVerifyDomain(orgID, domain) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/verify-domain/';
-    let data = {
-      domain: domain
-    };
-    return this.req.put(url, data);
-  }
-
-  orgAdminGetSharePermissions(orgID, dtableUuid) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/share-permissions/';
-    return this.req.get(url);
-  }
-
-  orgAdminListTableShares(orgID, dtableUuid) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/';
-    return this.req.get(url);
-  }
-
-  orgAdminAddTableUserShare(orgID, dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/';
-    let data = {
-      email: email,
-      permission: permission
-    };
-    return this.req.post(url, data);
-  }
-
-  orgAdminDeleteTableUserShare(orgID, dtableUuid, email) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
-    return this.req.delete(url);
-  }
-
-  orgAdminUpdateTableUserShare(orgID, dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
-    let data = {
-      permission: permission
-    };
-    return this.req.put(url, data);
-  }
-
-  orgAdminAddTableGroupShare(orgID, dtableUuid, groupId, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/';
-    let data = {
-      group_id: groupId,
-      permission: permission
-    };
-    return this.req.post(url, data);
-  }
-
-  orgAdminDeleteTableGroupShare(orgID, dtableUuid, groupId) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/' + groupId + '/';
-    return this.req.delete(url);
-  }
-
-  orgAdminUpdateTableGroupShare(orgID, dtableUuid, groupId, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/' + groupId + '/';
-    let data = {
-      permission: permission
-    };
-    return this.req.put(url, data);
-  }
-
   orgAdminSearchGroups(orgID, query) {
     let url = this.server + '/api/v2.1/org/' + orgID + '/admin/search-groups/';
     let params = {
       query: query
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  orgAdminListAuditLogs(orgID, page, perPage) {
-    let url = this.server + '/api/v2.1/org/' + orgID + '/admin/audit-logs/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  orgAdminListFileAccessLogs(orgID, page, perPage) {
-    let url = this.server + '/api/v2.1/org/' + orgID + '/admin/file-access-logs/';
-    let params = {
-      page: page,
-      per_page: perPage
     };
     return this.req.get(url, {
       params: params

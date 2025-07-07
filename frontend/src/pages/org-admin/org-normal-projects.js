@@ -146,7 +146,7 @@ class Item extends React.Component {
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
             <CommonOperationConfirmationDialog
-              title={gettext('Delete base')}
+              title={gettext('Delete project')}
               message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
               executeOperation={this.onDeleteProject}
               confirmBtnText={gettext('Delete')}

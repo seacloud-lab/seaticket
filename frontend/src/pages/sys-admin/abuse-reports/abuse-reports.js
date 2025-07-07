@@ -171,8 +171,8 @@ class Item extends Component {
     return (
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td>{item.dtable_name}</td>
-          <td>{item.dtable_uuid}</td>
+          <td>{item.project_name}</td>
+          <td>{item.project_uuid}</td>
           <td>{item.reporter}</td>
           <td>{item.external_link_token}</td>
           <td>{item.abuse_type}</td>

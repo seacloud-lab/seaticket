@@ -151,11 +151,11 @@ else:
     etcd_cache_client = None
 
 
-def get_server_by_dtable_uuid(dtable_uuid, is_local=False):
+def get_server_by_dtable_uuid(project_uuid, is_local=False):
     if not enable_dtable_server_cluster:
         return dtable_server_default
 
-    dtable_uuid_str = uuid_str_to_32_chars(dtable_uuid)
+    dtable_uuid_str = uuid_str_to_32_chars(project_uuid)
     # key such as 'assign-0f'
     dtable_server_mapping_key = ETCD_ASSIGN_KEY_PREFIX + dtable_uuid_str[:2]
 

@@ -16,7 +16,7 @@ const propTypes = {
   hideMobileShareProject: PropTypes.func,
 };
 
-class MobileShareTable extends Component {
+class MobileShareProject extends Component {
 
   constructor(props) {
     super(props);
@@ -121,6 +121,6 @@ class MobileShareTable extends Component {
   }
 }
 
-MobileShareTable.propTypes = propTypes;
+MobileShareProject.propTypes = propTypes;
 
-export default MobileShareTable;
+export default MobileShareProject;

@@ -83,7 +83,7 @@ def bind_token_user(function):
 
 
 def bind_cookie_user(function):
-    def get_access_token_user(request, dtable_uuid):
+    def get_access_token_user(request, project_uuid):
         access_token = request.COOKIES.get('access-token')
         try:
             payload = jwt.decode(access_token, settings.SEAQA_PRIVATE_KEY, algorithms=['HS256'])
@@ -92,8 +92,8 @@ def bind_cookie_user(function):
         if not payload.get('is_internal'):
             return None
         payload_username = payload.get('username')
-        payload_dtable_uuid = payload.get('dtable_uuid')
-        if uuid_str_to_36_chars(payload_dtable_uuid) != uuid_str_to_36_chars(dtable_uuid):
+        payload_dtable_uuid = payload.get('project_uuid')
+        if uuid_str_to_36_chars(payload_dtable_uuid) != uuid_str_to_36_chars(project_uuid):
             return None
         user = User(payload_username)
         user.is_from_cookie = True
@@ -103,7 +103,7 @@ def bind_cookie_user(function):
     def wrapper(request, *args, **kwargs):
         if request.user and not isinstance(request.user, AnonymousUser):
             return function(request, *args, **kwargs)
-        request_dtable_uuid = kwargs.get('dtable_uuid')
+        request_dtable_uuid = kwargs.get('project_uuid')
         if not request_dtable_uuid:
             return function(request, *args, **kwargs)
         access_token_user = get_access_token_user(request, request_dtable_uuid)

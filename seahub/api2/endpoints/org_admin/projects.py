@@ -13,7 +13,7 @@ from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects, Workspaces
-from seahub.project.utils import get_project_owner, convert_project_trash_names
+from seahub.project.utils import get_project_owner, convert_project_trash_names, restore_trash_project_name
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import BASE_DELETE
 from seahub.organizations.models import Organization
@@ -86,19 +86,19 @@ class OrgAdminProjectView(APIView):
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
     permission_classes = (IsProVersion, IsOrgAdminUser)
 
-    def delete(self, request, org_id, dtable_id):
+    def delete(self, request, org_id, project_id):
         error, _ = _check_org(org_id)
         if error:
             return error
         # resource check
-        project = Projects.objects.filter(id=dtable_id, deleted=False, workspace__org_id=org_id).select_related('workspace').first()
+        project = Projects.objects.filter(id=project_id, deleted=False, workspace__org_id=org_id).select_related('workspace').first()
         if not project:
             error_msg = 'project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        new_dtable_name = convert_project_trash_names(project)
+        new_project_name = convert_project_trash_names(project)
         try:
-            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_dtable_name)
+            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
         except Exception as e:
             logger.error('delete dtable: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
@@ -106,7 +106,7 @@ class OrgAdminProjectView(APIView):
 
         detail = {
             'name': project.name,
-            'dtable_uuid': str(project.uuid)
+            'project_uuid': str(project.uuid)
         }
         if GROUP_DOMAIN in project.workspace.owner:
             group_id = int(project.workspace.owner.split('@')[0])
@@ -127,7 +127,7 @@ class OrgAdminTrashProjectsView(APIView):
 
     def _delete_project(self, project):
         try:
-            Projects.objects.delete_dtable(project.workspace, project.name)
+            Projects.objects.delete_project(project.workspace, project.name)
         except Exception as e:
             logger.error('delete project: %s error: %s', str(project.uuid), e)
 
@@ -140,7 +140,8 @@ class OrgAdminTrashProjectsView(APIView):
             page = int(request.GET.get('page', 1))
             page = page if page > 0 else 1
             per_page = int(request.GET.get('per_page', 25))
-        except:
+        except Exception as e:
+            logger.error(e)
             error_msg = 'per_page or page invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -176,3 +177,52 @@ class OrgAdminTrashProjectsView(APIView):
         return Response({
             'success': True
         })
+
+
+class OrgAdminTrashProjectView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+
+    def _delete_project(self, project):
+        try:
+            Projects.objects.delete_dtable(project.workspace, project.name)
+        except Exception as e:
+            logger.error('delete project: %s error: %s', str(project.uuid), e)
+
+
+    def put(self, request, org_id, project_id):
+        error, _ = _check_org(org_id)
+        if error:
+            return api_error
+
+        # resource check
+        project = Projects.objects.filter(id=project_id, deleted=True, workspace__org_id=org_id).first()
+        if not project:
+            error_msg = 'project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        new_name = restore_trash_project_name(project)
+
+        try:
+            Projects.objects.filter(id=project.id).update(deleted=False, delete_time=None, name=new_name)
+        except Exception as e:
+            logger.error('recover project: %s name: %s error: %s', project.id, project.name, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        detail = {
+            'name': project.name,
+            'project_uuid': str(project.uuid)
+        }
+        if GROUP_DOMAIN in project.workspace.owner:
+            group_id = int(project.workspace.owner.split('@')[0])
+            group = Group.objects.get_group(group_id)
+            if group:
+                detail['group_id'] = group_id
+                detail['group_name'] = group.group_name
+
+        org_admin_operation.send(sender=None, admin_name=request.user.username, operation=BASE_DELETE, detail=detail, org_id=org_id)
+
+        return Response({'success': True})
+

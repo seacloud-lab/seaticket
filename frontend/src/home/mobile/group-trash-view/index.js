@@ -7,7 +7,7 @@ import DeletedGroupBaseItem from './deleted-group-base-item';
 import './index.css';
 
 function GroupTrashView(props) {
-  const { trashDTableList, toggle, groupID, restoreDTable, isLoading } = props;
+  const { trashDTableList, toggle, groupID, restoreProject, isLoading } = props;
   return (
     <div className="group-trash-view w-100 h-100 position-fixed" >
       <MobileCommonHeader
@@ -33,7 +33,7 @@ function GroupTrashView(props) {
       <div className="group-trash-view-content" style={{ height: document.body.clientHeight - 50 }}>
         {isLoading && <Loading />}
         {!isLoading && trashDTableList.length === 0 &&
-          <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+          <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted projects')} />
         }
         {!isLoading && trashDTableList.length > 0 && trashDTableList.map(baseItem => {
           return (
@@ -41,7 +41,7 @@ function GroupTrashView(props) {
               key={baseItem.id}
               baseItem={baseItem}
               groupID={groupID}
-              restoreDTable={restoreDTable}
+              restoreProject={restoreProject}
             />
           );
         })}
@@ -55,7 +55,7 @@ GroupTrashView.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   trashDTableList: PropTypes.array.isRequired,
   toggle: PropTypes.func.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
 export default GroupTrashView;

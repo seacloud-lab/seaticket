@@ -11,7 +11,7 @@ const propTypes = {
   toggle: PropTypes.func,
   options: PropTypes.array.isRequired,
   customSharePermissions: PropTypes.array,
-  addTableShare: PropTypes.func,
+  addProjectShare: PropTypes.func,
 };
 
 class AddShareUser extends React.Component {
@@ -48,7 +48,7 @@ class AddShareUser extends React.Component {
 
   addShareUser = () => {
     const { selectedOptions, permissionItem } = this.state;
-    this.props.addTableShare(selectedOptions, permissionItem.value);
+    this.props.addProjectShare(selectedOptions, permissionItem.value);
     this.props.toggle();
   };
 

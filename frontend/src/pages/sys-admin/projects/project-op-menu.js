@@ -4,13 +4,7 @@ import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 
-const propTypes = {
-  onFreezedItem: PropTypes.func.isRequired,
-  onUnfreezedItem: PropTypes.func.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
-};
-
-class DTableTrashOpMenu extends React.Component {
+class ProjectOpMenu extends React.Component {
 
   constructor(props) {
     super(props);
@@ -19,18 +13,17 @@ class DTableTrashOpMenu extends React.Component {
     };
   }
 
-  onRestoreDTable = (e) => {
+  onMenuItemClick = (e) => {
     let operation = Utils.getEventData(e, 'op');
-    this.props.restoreDTable(operation);
+    this.props.onMenuItemClick(operation);
   };
 
   onDropdownToggleClick = (e) => {
     this.toggleOperationMenu(e);
   };
 
-  toggleOperationMenu = (e) => {
-    this.setState(
-      { isItemMenuShow: !this.state.isItemMenuShow },
+  toggleOperationMenu = () => {
+    this.setState({ isItemMenuShow: !this.state.isItemMenuShow },
       () => {
         if (this.state.isItemMenuShow) {
           this.props.onFreezedItem();
@@ -42,20 +35,30 @@ class DTableTrashOpMenu extends React.Component {
   };
 
   translateOperations = (item) => {
-    let translateResult = '';
     switch (item) {
-      case 'Restore':
-        translateResult = gettext('Restore');
-        break;
+      case 'Delete':
+        return gettext('Delete');
+      case 'External links':
+        return gettext('External links');
+      case 'Unset password':
+        return gettext('Unset password');
+      case 'API tokens':
+        return gettext('API tokens');
+      case 'Export':
+        return gettext('Export');
+      case 'Copy':
+        return gettext('Copy');
+      case 'Share':
+        return gettext('Share');
+      case 'Repair':
+        return gettext('Repair');
       default:
-        break;
+        return '';
     }
-
-    return translateResult;
   };
 
   render() {
-    let operations = ['Restore',];
+    const operations = this.props.operations || ['External links', 'Delete'];
 
     return (
       <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
@@ -70,7 +73,11 @@ class DTableTrashOpMenu extends React.Component {
         />
         <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mr-2">
           {operations.map((item, index ) => {
-            return (<DropdownItem key={index} data-op={item} onClick={this.onRestoreDTable}>{this.translateOperations(item)}</DropdownItem>);
+            return (
+              <DropdownItem key={index} data-op={item} onClick={this.onMenuItemClick}>
+                {this.translateOperations(item)}
+              </DropdownItem>
+            );
           })}
         </DropdownMenu>
       </Dropdown>
@@ -78,6 +85,11 @@ class DTableTrashOpMenu extends React.Component {
   }
 }
 
-DTableTrashOpMenu.propTypes = propTypes;
+ProjectOpMenu.propTypes = {
+  operations: PropTypes.array,
+  onFreezedItem: PropTypes.func.isRequired,
+  onUnfreezedItem: PropTypes.func.isRequired,
+  onMenuItemClick: PropTypes.func.isRequired,
+};
 
-export default DTableTrashOpMenu;
+export default ProjectOpMenu;

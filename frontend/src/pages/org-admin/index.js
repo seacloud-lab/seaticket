@@ -11,11 +11,11 @@ import OrgUsers from './org-users';
 import OrgUserProfile from './org-user-profile';
 import OrgGroups from './org-groups';
 import OrgGroupInfo from './org-group-info';
-import OrgGroupDtables from './org-group-dtables';
+import OrgGroupProjects from './org-group-projects';
 import OrgGroupMembers from './org-group-members';
 import OrgInfo from './org-info';
 import OrgProjects from './org-projects';
-import OrgSearchDTables from './org-search-dtables';
+import OrgSearchProjects from './org-search-projects';
 import OrgSettings from './org-admin-settings';
 import OrgSearchUsers from './org-search-users';
 
@@ -79,10 +79,10 @@ class Org extends React.Component {
             <OrgUserProfile path={siteRoot + 'org/useradmin/info/:email/'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroups path={siteRoot + 'org/groupadmin'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroupInfo path={siteRoot + 'org/groupadmin/:groupID/'} onCloseSidePanel={this.onCloseSidePanel} />
-            <OrgGroupDtables path={siteRoot + 'org/groupadmin/:groupID/dtables/'} onCloseSidePanel={this.onCloseSidePanel} />
+            <OrgGroupProjects path={siteRoot + 'org/groupadmin/:groupID/projects/'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroupMembers path={siteRoot + 'org/groupadmin/:groupID/members/'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgProjects path={siteRoot + 'org/projectadmin'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
-            <OrgSearchDTables path={siteRoot + 'org/search-dtables'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
+            <OrgSearchProjects path={siteRoot + 'org/search-projects'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
             <OrgSettings path={siteRoot + 'org/settings'} onCloseSidePanel={this.onCloseSidePanel} />
           </Router>
         </div>

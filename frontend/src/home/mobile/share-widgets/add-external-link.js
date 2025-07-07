@@ -93,7 +93,7 @@ class AddExternalLink extends React.Component {
     }
     const { workspace_id, name } = this.props.currentProject;
     customToken = radioCheckName === 'customize' ? customToken : '';
-    seaQAAPI.createDTableExternalLink(workspace_id, name, customToken, password, expireDays).then(res => {
+    seaQAAPI.createProjectExternalLink(workspace_id, name, customToken, password, expireDays).then(res => {
       let externalLink = res.data;
       this.props.addExternalLink(externalLink);
       this.toggle();

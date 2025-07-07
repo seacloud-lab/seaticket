@@ -28,7 +28,7 @@ class ExternalLink extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.getDTableExternalLink(workspace_id, name).then(res => {
+    seaQAAPI.getProjectExternalLink(workspace_id, name).then(res => {
       let externalLinks = res.data.links;
       this.setState({
         externalLinks: externalLinks,
@@ -66,7 +66,7 @@ class ExternalLink extends React.Component {
 
   deleteExternalLink = (externalLink) => {
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.deleteDTableExternalLink(workspace_id, name, externalLink.token).then(() => {
+    seaQAAPI.deleteProjectExternalLink(workspace_id, name, externalLink.token).then(() => {
       let { externalLinks } = this.state;
       externalLinks = externalLinks.filter((item) => {
         return item.token !== externalLink.token;

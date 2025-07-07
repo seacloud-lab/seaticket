@@ -19,7 +19,7 @@ class SeaQAAPI {
     return this;
   }
 
-  initForDTableUsage({ siteRoot, xcsrfHeaders }) {
+  initForUsage({ siteRoot, xcsrfHeaders }) {
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
       this.server = server;
@@ -165,13 +165,13 @@ class SeaQAAPI {
     return this.req.post(url, params);
   }
 
-  listTableShares(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/share/';
+  listProjectShares(workspaceID, name) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/share/';
     return this.req.get(url);
   }
 
-  addTableShare(workspaceID, name, email, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/share/';
+  addProjectShare(workspaceID, name, email, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/share/';
     let params = {
       email: email,
       permission: permission
@@ -179,14 +179,14 @@ class SeaQAAPI {
     return this.req.post(url, params);
   }
 
-  deleteTableShare(workspaceID, name, email) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/share/';
+  deleteProjectShare(workspaceID, name, email) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/share/';
     let params = { email: email };
     return this.req.delete(url, { data: params });
   }
 
-  updateTableShare(workspaceID, name, email, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/share/';
+  updateProjectShare(workspaceID, name, email, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/share/';
     let params = {
       email: email,
       permission: permission
@@ -194,13 +194,13 @@ class SeaQAAPI {
     return this.req.put(url, params);
   }
 
-  listTableGroupShares(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/group-shares/';
+  listProjectGroupShares(workspaceID, name) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/group-shares/';
     return this.req.get(url);
   }
 
-  addTableGroupShare(workspaceID, name, groupIDs, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/group-shares/';
+  addProjectGroupShare(workspaceID, name, groupIDs, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/group-shares/';
     let params = {
       group_ids: groupIDs,
       permission: permission
@@ -209,28 +209,28 @@ class SeaQAAPI {
   }
 
   deleteProjectGroupShare(workspaceID, name, groupID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/group-shares/' + groupID + '/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/group-shares/' + groupID + '/';
     return this.req.delete(url);
   }
 
-  updateTableGroupShare(workspaceID, name, groupID, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/group-shares/' + groupID + '/';
+  updateProjectGroupShare(workspaceID, name, groupID, permission) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/group-shares/' + groupID + '/';
     let params = {
       permission: permission
     };
     return this.req.put(url, params);
   }
 
-  getDTableInviteLink(workspaceID, name) {
-    var url = this.server + '/api/v2.1/dtables/invite-links/?workspace_id=' + workspaceID + '&table_name=' + encodeURIComponent(name);
+  getProjectInviteLink(workspaceID, name) {
+    var url = this.server + '/api/v2.1/projects/invite-links/?workspace_id=' + workspaceID + '&project_name=' + encodeURIComponent(name);
     return this.req.get(url);
   }
 
-  createDTableInviteLink(workspaceID, name, permission, password, expire_days) {
-    let url = this.server + '/api/v2.1/dtables/invite-links/';
+  createProjectInviteLink(workspaceID, name, permission, password, expire_days) {
+    let url = this.server + '/api/v2.1/projects/invite-links/';
     let form = new FormData();
     form.append('workspace_id', workspaceID);
-    form.append('table_name', name);
+    form.append('project_name', name);
 
     if (permission) {
       form.append('permission', permission);
@@ -247,18 +247,18 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  deleteDTableInviteLink(token) {
-    var url = this.server + '/api/v2.1/dtables/invite-links/' + token + '/';
+  deleteProjectInviteLink(token) {
+    var url = this.server + '/api/v2.1/projects/invite-links/' + token + '/';
     return this.req.delete(url);
   }
 
-  getDTableExternalLink(workspaceID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/external-links/';
+  getProjectExternalLink(workspaceID, name) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/external-links/';
     return this.req.get(url);
   }
 
-  createDTableExternalLink(workspaceID, name, token, password, expireDays) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/external-links/';
+  createProjectExternalLink(workspaceID, name, token, password, expireDays) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/external-links/';
     let form = new FormData();
     if (token) {
       form.append('token', token);
@@ -272,54 +272,21 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  deleteDTableExternalLink(workspaceID, name, token) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/external-links/' + token + '/';
+  deleteProjectExternalLink(workspaceID, name, token) {
+    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/external-links/' + token + '/';
     return this.req.delete(url);
   }
 
-  listTableAPITokens(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/api-tokens/';
+  queryProjectIOStatusByTaskId(taskId) {
+    let url = this.server + '/api/v2.1/project-io-status/?task_id=' + taskId;
     return this.req.get(url);
   }
 
-  addTableAPIToken(workspaceID, name, appName, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/api-tokens/';
-    let params = {
-      app_name: appName,
-      permission: permission
-    };
-    return this.req.post(url, params);
-  }
-
-  updateTableAPIToken(workspaceID, name, appName, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/api-tokens/' + encodeURIComponent(appName) + '/';
-    let params = {
-      permission: permission
-    };
-    return this.req.put(url, params);
-  }
-
-  deleteTableAPIToken(workspaceID, name, appName) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/api-tokens/' + encodeURIComponent(appName) + '/';
-    return this.req.delete(url);
-  }
-
-  getDTableTempAPIToken(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/temp-api-token/';
-    return this.req.get(url);
-  }
-
-
-  queryDTableIOStatusByTaskId(taskId) {
-    let url = this.server + '/api/v2.1/dtable-io-status/?task_id=' + taskId;
-    return this.req.get(url);
-  }
-
-  cancelDTableIOTask(taskId, dtable_uuid, task_type) {
-    let url = this.server + '/api/v2.1/dtable-io-status/';
+  cancelProjectIOTask(taskId, project_uuid, task_type) {
+    let url = this.server + '/api/v2.1/project-io-status/';
     let params = {
       task_id: taskId,
-      dtable_uuid: dtable_uuid,
+      project_uuid: project_uuid,
       task_type: task_type
     };
     return this.req.delete(url, { params: params });
@@ -327,7 +294,7 @@ class SeaQAAPI {
 
 
   searchItems(query_str, query_type) {
-    let url = this.server + '/api/v2.1/dtable/items-search/';
+    let url = this.server + '/api/v2.1/project/items-search/';
     let params = {};
     if (query_str) {
       params.query_str = query_str;
@@ -340,141 +307,9 @@ class SeaQAAPI {
     });
   }
 
-  getDTableWebhooks(workspaceID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/webhooks/';
-    return this.req.get(url);
-  }
-
-  createDTableWebhook(workspaceID, name, hookURL, secret) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/webhooks/';
-    let form = new FormData();
-    form.append('url', hookURL);
-    if (secret) {
-      form.append('secret', secret);
-    }
-    return this._sendPostRequest(url, form);
-  }
-
-  deleteDTableWebhook(workspaceID, name, webhookID) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/webhooks/' + webhookID + '/';
-    return this.req.delete(url);
-  }
-
-  updateDTableWebhook(workspaceID, name, webhookID, updates) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/webhooks/' + webhookID + '/';
-    let form = new FormData();
-    if (updates.url) {
-      form.append('url', updates.url);
-    }
-    if (updates.secret) {
-      form.append('secret', updates.secret);
-    }
-    return this.req.put(url, form);
-  }
-
-  getActivitiesDetail(dtable_uuid, opDate, pageNum) {
-    let params = 'dtable_uuid=' + dtable_uuid + '&op_date=' + encodeURIComponent(opDate) + '&page=' + pageNum;
-    let url = this.server + '/api/v2.1/dtable-activities/detail/?' + params;
-    return this.req.get(url);
-  }
-
-  getDTableActivities(pageNum, to_tz) {
-    let url = this.server + '/api/v2.1/dtable-activities/?page=' + pageNum + '&to_tz=' + encodeURIComponent(to_tz);
-    return this.req.get(url);
-  }
-
-  listDTableSnapshots(workspaceID, name, page, perPage) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/snapshots/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  restoreDTableSnapshot(workspaceID, name, commitId, snapshotName, password, backupVersion) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/snapshots/' + commitId + '/restore/';
-    let form = new FormData();
-    form.append('snapshot_name', snapshotName);
-    if (password) {
-      form.append('password', password);
-    }
-    if (backupVersion) {
-      form.append('backup_version', backupVersion);
-    }
-
-    return this._sendPostRequest(url, form);
-  }
-
-  listArchiveBackups(workspaceID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/archive-backups/';
-    return this.req.get(url);
-  }
-
-  getBigDataState(workspaceID, name) {
-    let url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/big-data-state/';
-    return this.req.get(url);
-  }
-
-  listTrashDTables(page, perPage) {
-    let url = this.server + '/api/v2.1/trash-dtables/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  cleanTrashDTables() {
-    let url = this.server + '/api/v2.1/trash-dtables/';
-    return this.req.delete(url);
-  }
-
-  restoreTrashDTable(dtableID) {
-    let url = this.server + '/api/v2.1/trash-dtables/' + dtableID + '/';
-    return this.req.put(url);
-  }
-
-  querySql(dtableUuid, sql) {
-    let url = this.server + '/api/v2.1/dtable-db/query/' + dtableUuid + '/';
-    let form = new FormData();
-    form.append('sql', sql);
-    return this._sendPostRequest(url, form);
-  }
-
-  pageDesignQueryRowLinkRecords(dtableUuid, tableId, rowId, linkColumns) {
-    let url = this.server + '/api/v2.1/page-design/row-link-records/' + dtableUuid + '/';
-    let form = new FormData();
-    form.append('table_id', tableId);
-    form.append('row_id', rowId);
-    form.append('link_columns', linkColumns);
-    return this._sendPostRequest(url, form);
-  }
-
-  pageDesignQueryRowsLinkRecords(dtableUuid, tableId, rowIds, linkColumns) {
-    let url = this.server + '/api/v2.1/page-design/rows-link-records/' + dtableUuid + '/';
-    let form = new FormData();
-    form.append('table_id', tableId);
-    form.append('row_ids', rowIds);
-    form.append('link_columns', linkColumns);
-    return this._sendPostRequest(url, form);
-  }
-
-  listUserApps() {
-    let url = this.server + '/api/v2.1/universal-apps/';
-    return this.req.get(url);
-  }
-
-  leaveApp(appUserId) {
-    let url = this.server + '/api/v2.1/app-users/' + appUserId + '/';
-    return this.req.delete(url);
-  }
-
-  // ---- dtable data api
-  getTableRelatedUsers(workspaceID, name, reqParams) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + encodeURIComponent(name) + '/related-users/';
+  // ---- project data api
+  getProjectRelatedUsers(workspaceID, name, reqParams) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/related-users/';
     let params = {};
     if (reqParams) {
       if (reqParams.workflowToken) {
@@ -485,21 +320,6 @@ class SeaQAAPI {
       }
     }
     return this.req.get(url, { params });
-  }
-
-  getTableAssetUploadLink(workspaceID, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable-asset-upload-link/?name=' + encodeURIComponent(name);
-    return this.req.get(url);
-  }
-
-  isDTableAssetExist(workspaceID, tableName, path) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/dtable/' + tableName + '/asset-exists/?path=' + path;
-    return this.req.get(url);
-  }
-
-  listThirdPartyAccounts(dtableUuid) {
-    let url = this.server + '/api/v2.1/third-party-accounts/' + dtableUuid + '/';
-    return this.req.get(url);
   }
 
   // other not-admin APIs
@@ -629,13 +449,13 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  listGroupTrashDTables(groupID) {
-    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-dtables/';
+  listGroupTrashProjects(groupID) {
+    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-projects/';
     return this.req.get(url);
   }
 
-  restoreGroupTrashDTable(dtableUuid, groupID) {
-    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-dtables/' + dtableUuid + '/';
+  restoreGroupTrashProject(projectUuid, groupID) {
+    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-projects/' + projectUuid + '/';
     return this.req.put(url);
   }
 
@@ -677,81 +497,6 @@ class SeaQAAPI {
     return this._sendPostRequest(url, operation, { headers: { 'Content-type': 'application/json' } });
   }
 
-  getDTableAssetSize(dtableUuid) {
-    let url = this.server + '/api/v2.1/dtable-asset/' + dtableUuid + '/asset-size/';
-    return this.req.get(url);
-  }
-
-  listCommonDatasets(dstDTableUuid, byGroup = false) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/';
-    let params = {};
-    if (dstDTableUuid) {
-      params.dst_dtable_uuid = dstDTableUuid;
-    }
-    params.by_group = byGroup;
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  getCommonDataset(datasetId, start, limit) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/?';
-    if (start || start === 0) {
-      url += `start=${start}&`;
-    }
-    if (limit) {
-      url += `limit=${limit}`;
-    }
-    return this.req.get(url);
-  }
-
-  getCommonDatasetInfo(datasetId) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/info/';
-    return this.req.get(url);
-  }
-
-  renameCommonDataset(datasetId, datasetName) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/';
-    let form = new FormData();
-    form.append('dataset_name', datasetName);
-    return this.req.put(url, form);
-  }
-
-  deleteCommonDataset(datasetId) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/';
-    return this.req.delete(url);
-  }
-
-  forceSyncCommonDataset(datasetId, dst_dtable_uuids = []) {
-    const url = this.server + `/api/v2.1/dtable/common-datasets/${datasetId}/force-sync/`;
-    const data = {
-      dst_dtable_uuids: dst_dtable_uuids,
-    };
-    return this.req.post(url, data);
-  }
-
-  listCommonDatasetSyncs(dst_dtable_uuid) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/syncs/';
-    url += '?dst_dtable_uuid=' + dst_dtable_uuid;
-    return this.req.get(url);
-  }
-
-  listDatasetAccessibleGroups(datasetId) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/access-groups/';
-    return this.req.get(url);
-  }
-
-  addDatasetAccessibleGroup(datasetId, groupIdList) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/access-groups/';
-    let formData = new FormData();
-    groupIdList.map(groupId => formData.append('group_id', groupId));
-    return this._sendPostRequest(url, formData);
-  }
-
-  deleteDatasetAccessibleGroup(datasetId, groupId) {
-    let url = this.server + '/api/v2.1/dtable/common-datasets/' + datasetId + '/access-groups/' + groupId + '/';
-    return this.req.delete(url);
-  }
 
   markNoticeAsRead(noticeId) {
     const url = this.server + '/api/v2.1/notification/';
@@ -877,11 +622,6 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  listAddressBookV2DepartmentMemberDTables(departmentId, email) {
-    const url = this.server + `/api/v2.1/address-book-v2/departments/${departmentId}/members/${email}/dtables/`;
-    return this.req.get(url);
-  }
-
   getAddressBookV2DepartmentGroupMembersCount(groupId) {
     const url = this.server + `/api/v2.1/address-book-v2/departments/groups/${groupId}/members-count/`;
     return this.req.get(url);
@@ -970,11 +710,11 @@ class SeaQAAPI {
     return this.req.post(url);
   }
 
-  updateEmailNotificationInterval(dtableUpdatesEmailInterval, dtableCollaborateEmailInterval) {
+  updateEmailNotificationInterval(emailInterval, collaborateEmailInterval) {
     const url = this.server + '/api2/account/info/';
     const data = {
-      'dtable_updates_email_interval': dtableUpdatesEmailInterval,
-      'dtable_collaborate_email_interval': dtableCollaborateEmailInterval,
+      'project_updates_email_interval': emailInterval,
+      'project_collaborate_email_interval': collaborateEmailInterval,
     };
     return this.req.put(url, data);
   }
@@ -1015,32 +755,32 @@ class SeaQAAPI {
   }
 
   getBaseSharePermission(workspaceId, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/base-share-permission/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/base-share-permission/';
     return this.req.get(url);
   }
 
   getSharePermission(workspaceId, name, permissionId) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.get(url);
   }
 
   getSharePermissions(workspaceId, name) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/share-permissions/';
     return this.req.get(url);
   }
 
   addSharePermission(workspaceId, name, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/share-permissions/';
     return this.req.post(url, permission);
   }
 
   updateSharePermission(workspaceId, name, permissionId, permission) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.put(url, permission);
   }
 
   deleteSharePermission(workspaceId, name, permissionId) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/dtable/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
+    const url = this.server + '/api/v2.1/workspace/' + workspaceId + '/project/' + encodeURIComponent(name) + '/share-permissions/' + permissionId + '/';
     return this.req.delete(url);
   }
 
@@ -1068,6 +808,6 @@ class SeaQAAPI {
 
 const seaQAAPI = new SeaQAAPI();
 const xcsrfHeaders = cookie.load('seaqa_csrftoken');
-seaQAAPI.initForDTableUsage({ siteRoot, xcsrfHeaders });
+seaQAAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { seaQAAPI };

@@ -36,9 +36,9 @@ KEY_DEFAULT_REPO = "default_repo"
 KEY_WEBDAV_SECRET = "webdav_secret"
 KEY_FILE_UPDATES_EMAIL_INTERVAL = "file_updates_email_interval"
 KEY_FILE_UPDATES_LAST_EMAILED_TIME = "file_updates_last_emailed_time"
-KEY_DTABLE_UPDATES_EMAIL_INTERVAL = "dtable_updates_email_interval"
+KEY_DTABLE_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
 KEY_DTABLE_UPDATES_LAST_EMAILED_TIME = "dtable_updates_last_emailed_time"
-KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL = 'dtable_collaborate_email_interval'
+KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL = 'project_collaborate_email_interval'
 
 
 class CryptoOptionNotSetError(Exception):

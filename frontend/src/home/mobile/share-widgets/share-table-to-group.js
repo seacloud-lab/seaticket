@@ -28,7 +28,7 @@ class ShareTableToGroup extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.listTableGroupShares(workspace_id, name).then(res => {
+    seaQAAPI.listProjectGroupShares(workspace_id, name).then(res => {
       this.setState({ groupShares: res.data.dtable_group_share_list, isLoading: false });
     }).catch(error => {
       this.setState({ isLoading: false });
@@ -36,12 +36,12 @@ class ShareTableToGroup extends React.Component {
     });
   }
 
-  addTableShare = (selectedOptions, permission) => {
+  addProjectShare = (selectedOptions, permission) => {
     const { workspace_id, name } = this.props.currentProject;
     const { groupShares } = this.state;
     if (!selectedOptions || selectedOptions.length === 0) return;
     const groupIDs = selectedOptions.map(item => item.value);
-    seaQAAPI.addTableGroupShare(workspace_id, name, groupIDs, permission).then((res) => {
+    seaQAAPI.addProjectGroupShare(workspace_id, name, groupIDs, permission).then((res) => {
       const { success: successGroupShares, failed: failedGroupShares } = res.data;
       if (successGroupShares.length > 0) {
         groupShares.push(...successGroupShares);
@@ -57,10 +57,10 @@ class ShareTableToGroup extends React.Component {
     });
   };
 
-  updateTableShare = (groupShare, permission) => {
+  updateProjectShare = (groupShare, permission) => {
     const { workspace_id, name } = this.props.currentProject;
     let groupID = groupShare.group_id;
-    seaQAAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
+    seaQAAPI.updateProjectGroupShare(workspace_id, name, groupID, permission).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.map((item) => {
         if (item.group_id === groupID) {
@@ -75,7 +75,7 @@ class ShareTableToGroup extends React.Component {
     });
   };
 
-  deleteTableShare = (groupShare) => {
+  deleteProjectShare = (groupShare) => {
     const { workspace_id, name } = this.props.currentProject;
     let groupID = groupShare.group_id;
     seaQAAPI.deleteProjectGroupShare(workspace_id, name, groupID).then(() => {
@@ -113,8 +113,8 @@ class ShareTableToGroup extends React.Component {
                 <ShareItem
                   key={groupItem.group_id}
                   item={groupItem}
-                  deleteTableShare={this.deleteTableShare}
-                  updateTableShare={this.updateTableShare}
+                  deleteProjectShare={this.deleteProjectShare}
+                  updateProjectShare={this.updateProjectShare}
                   shareName={groupItem.group_name}
                   options={this.options}
                 />
@@ -125,7 +125,7 @@ class ShareTableToGroup extends React.Component {
         {isShowAddShareGroup &&
           <AddShareGroup
             toggle={this.onAddShareGroup}
-            addTableShare={this.addTableShare}
+            addProjectShare={this.addProjectShare}
             options={this.options}
             customSharePermissions={this.props.customSharePermissions}
           />

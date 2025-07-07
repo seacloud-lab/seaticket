@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { toaster, Loading } from '../../../../components';
 import { gettext } from '../../../../constants';
-import BaseItem from './base-item';
+import Item from './item';
 import { Utils } from '../../../../utils/utils';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';
 
@@ -10,45 +10,45 @@ const propTypes = {
   groupID: PropTypes.string,
 };
 
-class Bases extends Component {
+class Projects extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
       isLoading: true,
-      dtables: [],
+      projects: [],
       isItemFreezed: false,
     };
   }
 
   componentDidMount() {
-    this.listDTables();
+    this.listProjects();
   }
 
-  listDTables = () => {
+  listProjects = () => {
     const { groupID } = this.props;
-    sysAdminServiceApi.sysAdminListGroupDTables(groupID).then(res => {
+    sysAdminServiceApi.sysAdminListGroupProjects(groupID).then(res => {
       this.setState({
         isLoading: false,
-        dtables: res.data.tables
+        projects: res.data.tables
       });
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
       this.setState({
         isLoading: false,
-        dtables: [],
+        projects: [],
       });
     });
   };
 
-  deleteDTable = (dtable) => {
+  deleteProject = (project) => {
     const { groupID } = this.props;
-    sysAdminServiceApi.sysAdminDeleteDTableFromGroup(groupID, dtable.uuid).then(res => {
+    sysAdminServiceApi.sysAdminDeleteProjectsFromGroup(groupID, project.uuid).then(res => {
       if (res.data.success) {
-        const msg = gettext('Successfully delete base {placeholder}').replace('{placeholder}', dtable.name);
+        const msg = gettext('Successfully delete base {placeholder}').replace('{placeholder}', project.name);
         toaster.success(msg);
-        this.listDTables(groupID);
+        this.listProjects(groupID);
       }
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
@@ -61,15 +61,15 @@ class Bases extends Component {
   };
 
   render() {
-    const { isLoading, dtables, isItemFreezed } = this.state;
+    const { isLoading, projects, isItemFreezed } = this.state;
     return (
       <div className="cur-view-subcontainer org-bases">
         <div className="cur-view-content">
           {isLoading && <Loading />}
-          {!isLoading && dtables.length === 0 && (
+          {!isLoading && projects.length === 0 && (
             <p className="no-base">{gettext('No bases')}</p>
           )}
-          {!isLoading && dtables.length > 0 && (
+          {!isLoading && projects.length > 0 && (
             <table className="table-hover">
               <thead>
                 <tr>
@@ -83,15 +83,15 @@ class Bases extends Component {
                 </tr>
               </thead>
               <tbody>
-                {dtables.map((item, index) => {
+                {projects.map((item, index) => {
                   return (
-                    <BaseItem
+                    <Item
                       key={index}
                       item={item}
                       isItemFreezed={isItemFreezed}
                       onFreezedItem={this.toggleItemFreezed}
                       onUnfreezedItem={this.toggleItemFreezed}
-                      deleteDTable={this.deleteDTable}
+                      deleteProject={this.deleteProject}
                     />
                   );
                 })}
@@ -104,6 +104,6 @@ class Bases extends Component {
   }
 }
 
-Bases.propTypes = propTypes;
+Projects.propTypes = propTypes;
 
-export default Bases;
+export default Projects;

@@ -103,8 +103,8 @@ class Item extends Component {
       case 'user_delete': return gettext('Delete user');
       case 'user_activate': return gettext('Activate user');
       case 'user_deactivate': return gettext('Deactivate user');
-      case 'base_delete': return gettext('Delete base');
-      case 'base_restore': return gettext('Restore base');
+      case 'base_delete': return gettext('Delete project');
+      case 'base_restore': return gettext('Restore project');
       case 'department_create': return gettext('Create addressbook');
       case 'department_rename': return gettext('Rename addressbook');
       case 'department_delete': return gettext('Delete addressbook');
@@ -172,12 +172,12 @@ class Item extends Component {
         return detailText;
 
       case 'base_delete':
-        detailText = gettext('Delete base {name}')
+        detailText = gettext('Delete project {name}')
           .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + groupInfo;
         return detailText;
 
       case 'base_restore':
-        detailText = gettext('Restore base {name}')
+        detailText = gettext('Restore project {name}')
           .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + groupInfo;
         return detailText;
 

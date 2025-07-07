@@ -99,6 +99,15 @@ def convert_project_trash_names(project):
 
     return new_project_name
 
+def restore_trash_project_name(project):
+    """
+    get trash project's original name and generate old and new .project names
+    """
+    assert project.deleted is True
+    new_project_name = project.name[project.name.find(' ')+1:]
+
+    return new_project_name
+
 
 def add_init_crawl_site_task(params):
     payload = {'exp': int(time.time()) + 300, }

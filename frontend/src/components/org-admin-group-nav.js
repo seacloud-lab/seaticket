@@ -20,7 +20,7 @@ class OrgAdminGroupNav extends React.Component {
             <Link to={urlBase} className={`nav-link${currentItem === 'info' ? ' active' : ''}`}>{gettext('Group Info')}</Link>
           </li>
           <li className="nav-item">
-            <Link to={`${urlBase}dtables/`} className={`nav-link${currentItem === 'dtables' ? ' active' : ''}`}>{gettext('Bases')}</Link>
+            <Link to={`${urlBase}projects/`} className={`nav-link${currentItem === 'dtables' ? ' active' : ''}`}>{gettext('Bases')}</Link>
           </li>
           <li className="nav-item">
             <Link to={`${urlBase}members/`} className={`nav-link${currentItem === 'members' ? ' active' : ''}`}>{gettext('Members')}</Link>

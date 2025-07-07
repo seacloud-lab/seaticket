@@ -10,11 +10,11 @@ const openBaseOnBlankWindow = (searchedBase) => {
   const { workspace_id, name, share_type, share_id } = searchedBase;
   let href;
   if (share_type === 'user-view-share') {
-    href = siteRoot + 'dtable-shared-view/personal/' + share_id + '/';
+    href = siteRoot + 'project-shared-view/personal/' + share_id + '/';
   } else if (share_type === 'group-view-share') {
-    href = siteRoot + 'dtable-shared-view/group/' + share_id + '/';
+    href = siteRoot + 'project-shared-view/group/' + share_id + '/';
   } else {
-    href = siteRoot + 'workspace/' + workspace_id + '/dtable/' + name + '/';
+    href = siteRoot + 'workspace/' + workspace_id + '/project/' + name + '/';
   }
   window.open(href, '_blank');
 };

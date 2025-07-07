@@ -127,6 +127,7 @@ class OrgInfo extends Component {
                   <p>{gettext('Space used')}</p>
                   <p>{`${this.getPercent(percentType.SPACE)}%`}</p>
                   <Progress
+                    position="unset"
                     percent={this.getPercent(percentType.SPACE)}
                   />
                   <span className="mt-1">
@@ -139,6 +140,7 @@ class OrgInfo extends Component {
                   <p>{gettext('API calls count this month')}</p>
                   <p>{`${this.getPercent(percentType.API_GATEWAY_CALLS_COUNT_USED)}%`}</p>
                   <Progress
+                    position="unset"
                     percent={this.getPercent(percentType.API_GATEWAY_CALLS_COUNT_USED)}
                   />
                   <span className="mt-1">
@@ -150,6 +152,7 @@ class OrgInfo extends Component {
                     <p>{gettext('AI credit used this month')}</p>
                     <p>{`${this.getPercent(percentType.AI_CREDIT_USED)}%`}</p>
                     <Progress
+                      position="unset"
                       percent={this.getPercent(percentType.AI_CREDIT_USED)}
                     />
                     <span className="mt-1">

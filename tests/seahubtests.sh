@@ -34,9 +34,6 @@ export PYTHONPATH="/usr/local/lib/python3.12/site-packages:/usr/local/lib/python
 cd "$SEAHUB_SRCDIR"
 set +x
 
-# init plugins repo
-repo_id=$(python -c "from seaserv import seafile_api; repo_id = seafile_api.create_repo('plugins repo', 'plugins repo', 'dtable@seafile'); print(repo_id)")
-sudo echo -e "\nPLUGINS_REPO_ID='"${repo_id}"'" >>./seahub/settings.py
 
 function init() {
     ###############################

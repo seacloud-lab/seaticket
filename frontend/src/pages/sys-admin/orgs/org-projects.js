@@ -6,7 +6,7 @@ import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import { EmptyTip, Loading, Paginator } from '../../../components';
 import MainPanelTopbar from '../main-panel-topbar';
-import Nav from './user-nav';
+import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const itemPropTypes = {
@@ -23,6 +23,7 @@ class Item extends Component {
     this.state = {
       isOpIconShown: false,
       highlight: false,
+      isDeleteDialogOpen: false,
     };
   }
 
@@ -52,6 +53,20 @@ class Item extends Component {
     this.props.onUnfreezedItem();
   };
 
+  onMenuItemClick = (operation) => {
+    switch (operation) {
+      case 'Delete':
+        this.toggleDeleteDialog();
+        break;
+      default:
+        break;
+    }
+  };
+
+  toggleDeleteDialog = () => {
+    this.setState({ isDeleteDialogOpen: !this.state.isDeleteDialogOpen });
+  };
+
   render() {
     const item = this.props.item;
     const file_size = item.file_size ? Utils.bytesToSize(item.file_size) : '--';
@@ -65,7 +80,7 @@ class Item extends Component {
           </td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>
-          <td>{item.creator}</td>
+          <td>{item.owner}</td>
           <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>{file_size}</td>
         </tr>
@@ -81,8 +96,7 @@ const contentPropTypes = {
   errorMsg: PropTypes.string,
   items: PropTypes.array.isRequired,
   curPerPage: PropTypes.number,
-  curPage: PropTypes.number,
-  count: PropTypes.number,
+  pageInfo: PropTypes.object.isRequired,
   listDTablesByPage: PropTypes.func.isRequired,
   resetPerPage: PropTypes.func.isRequired,
 };
@@ -106,15 +120,15 @@ class Content extends Component {
   };
 
   getPreviousPageList = () => {
-    this.props.listDTablesByPage(this.props.curPage - 1);
+    this.props.listDTablesByPage(this.props.pageInfo.current_page - 1);
   };
 
   getNextPageList = () => {
-    this.props.listDTablesByPage(this.props.curPage + 1);
+    this.props.listDTablesByPage(this.props.pageInfo.current_page + 1);
   };
 
   render() {
-    const { loading, errorMsg, items, curPerPage, curPage, count } = this.props;
+    const { loading, errorMsg, items, pageInfo } = this.props;
     if (loading) {
       return <Loading />;
     } else if (errorMsg) {
@@ -132,7 +146,7 @@ class Content extends Component {
                 <th width="15%">{gettext('Name')}</th>
                 <th width="30%">ID</th>
                 <th width="10%">{gettext('Rows')}</th>
-                <th width="15%">{gettext('Creator')}</th>
+                <th width="15%">{gettext('Owner')}</th>
                 <th width="15%">{gettext('Created at')}</th>
                 <th width="10%">
                   {gettext('Size')}
@@ -162,8 +176,8 @@ class Content extends Component {
           <Paginator
             gotoPreviousPage={this.getPreviousPageList}
             gotoNextPage={this.getNextPageList}
-            currentPage={curPage}
-            hasNextPage={Utils.hasNextPage(curPage, curPerPage, count)}
+            currentPage={pageInfo.current_page}
+            hasNextPage={pageInfo.has_next_page}
             canResetPerPage={true}
             curPerPage={this.props.curPerPage}
             resetPerPage={this.props.resetPerPage}
@@ -178,12 +192,7 @@ class Content extends Component {
 
 Content.propTypes = contentPropTypes;
 
-const userDTablesPropTypes = {
-  email: PropTypes.string,
-  onCloseSidePanel: PropTypes.func
-};
-
-class UserDTables extends Component {
+class OrgProjects extends Component {
 
   constructor(props) {
     super(props);
@@ -191,18 +200,17 @@ class UserDTables extends Component {
       loading: true,
       errorMsg: '',
       dtables: [],
+      pageInfo: {},
       perPage: 25,
       currentPage: 1,
-      count: 0,
-      userInfo: {},
+      orgName: '',
     };
   }
 
   componentDidMount() {
-    const email = decodeURIComponent(this.props.email);
-    sysAdminServiceApi.sysAdminGetUser(email).then((res) => {
+    sysAdminServiceApi.sysAdminGetOrg(this.props.orgID).then((res) => {
       this.setState({
-        userInfo: res.data
+        orgName: res.data.org_name
       }, () => {
         let urlParams = (new URL(window.location)).searchParams;
         const { currentPage, perPage } = this.state;
@@ -213,26 +221,6 @@ class UserDTables extends Component {
           this.listDTablesByPage(this.state.currentPage);
         });
       });
-    }).catch((error) => {
-      if (error.response) {
-        if (error.response.status === 403) {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Permission denied')
-          });
-          location.href = `${loginUrl}?next=${encodeURIComponent(location.href)}`;
-        } else {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Error')
-          });
-        }
-      } else {
-        this.setState({
-          loading: false,
-          errorMsg: gettext('Please check the network.')
-        });
-      }
     });
   }
 
@@ -246,13 +234,15 @@ class UserDTables extends Component {
 
   listDTablesByPage = (page) => {
     let { perPage } = this.state;
-    const email = decodeURIComponent(this.props.email);
-    sysAdminServiceApi.sysAdminListUserDTables(email, page, perPage).then((res) => {
+    sysAdminServiceApi.sysAdminListOrgProjects(this.props.orgID, page, perPage).then((res) => {
       this.setState({
         loading: false,
         dtables: res.data.dtable_list,
         currentPage: page,
-        count: res.data.count
+        pageInfo: {
+          current_page: page,
+          has_next_page: Utils.hasNextPage(page, perPage, res.data.count),
+        },
       });
     }).catch((error) => {
       if (error.response) {
@@ -283,15 +273,18 @@ class UserDTables extends Component {
         <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
-            <Nav currentItem="dtables" email={this.props.email} userName={this.state.userInfo.name} />
+            <OrgNav
+              currentItem="dtables"
+              orgID={this.props.orgID}
+              orgName={this.state.orgName}
+            />
             <div className="cur-view-content">
               <Content
                 loading={this.state.loading}
                 errorMsg={this.state.errorMsg}
                 items={this.state.dtables}
                 curPerPage={this.state.perPage}
-                curPage={this.state.currentPage}
-                count={this.state.count}
+                pageInfo={this.state.pageInfo}
                 listDTablesByPage={this.listDTablesByPage}
                 resetPerPage={this.resetPerPage}
               />
@@ -303,6 +296,9 @@ class UserDTables extends Component {
   }
 }
 
-UserDTables.propTypes = userDTablesPropTypes;
+OrgProjects.propTypes = {
+  orgID: PropTypes.string,
+  onCloseSidePanel: PropTypes.func
+};
 
-export default UserDTables;
+export default OrgProjects;

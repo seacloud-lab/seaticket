@@ -4,7 +4,7 @@ from django.urls import reverse
 from seaserv import seafile_api
 
 from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
-from seahub.dtable.models import Workspaces, DTables, DTableShare, DTableGroupShare
+from seahub.dtable.models import Workspaces, DTables, DTableGroupShare
 from seahub.dtable.utils import check_dtable_permission, check_dtable_admin_permission, list_dtable_related_users
 from seahub.department_v2.models import DepartmentsV2, DepartmentMembersV2
 from seahub.group.utils import is_group_admin, is_group_member, get_group_members, \
@@ -271,12 +271,8 @@ class DepartmentV2DTableTest(BaseTestCase):
 #         # user(not in dep and no share) permission
 #         permission = check_dtable_permission(self.user.username, self.workspace, self.dtable)
 #         self.assertIsNone(permission)
-#         # share dtable to user with permission 'r'
-#         share_obj = DTableShare.objects.add(self.dtable, self.admin.username, self.user.username, PERMISSION_READ)
 #         permission = check_dtable_permission(self.user.username, self.workspace, self.dtable)
 #         self.assertEqual(PERMISSION_READ, permission)
-#         # drop share
-#         share_obj.delete()
 #         # add user to dpeartment
 #         DepartmentMembersV2.objects.bulk_add_users([self.user.username], self.department.id)
 #         permission = check_dtable_permission(self.user.username, self.workspace, self.dtable)
@@ -329,8 +325,6 @@ class DepartmentV2DTableRelatedUsersTest(BaseTestCase):
         self.user_repo_id = seafile_api.create_repo('Seatable', 'Seatable', self.user.username)
         self.user_workspace = Workspaces.objects.create_workspace(self.user.username, self.user_repo_id, -1)
         self.user_dtable = DTables.objects.create_dtable(self.user.username, self.user_workspace, 'user-demo')
-        # share department group dtable to user
-        self.user_share_obj = DTableShare.objects.add(self.dtable, self.admin.username, self.user.username, PERMISSION_READ)
         # share user dtable to department group
         self.group_share_obj = DTableGroupShare.objects.create(
             dtable=self.user_dtable,

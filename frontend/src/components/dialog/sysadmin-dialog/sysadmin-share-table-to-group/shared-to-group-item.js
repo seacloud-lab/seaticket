@@ -20,15 +20,15 @@ class SharedToGroupItem extends React.Component {
     this.setState({ isOperationShow: false });
   };
 
-  updateTableShare = (permission) => {
+  updateProjectShare = (permission) => {
     if (permission === 'addCustomSharePermission') return;
     if (permission !== this.props.groupShare.permission) {
-      this.props.updateTableShare(this.props.groupShare.group_id, permission);
+      this.props.updateProjectShare(this.props.groupShare.group_id, permission);
     }
   };
 
-  deleteTableShare = () => {
-    this.props.deleteTableShare(this.props.groupShare.group_id);
+  deleteProjectShare = () => {
+    this.props.deleteProjectShare(this.props.groupShare.group_id);
   };
 
   render() {
@@ -42,14 +42,14 @@ class SharedToGroupItem extends React.Component {
             isEditIconShow={this.state.isOperationShow}
             currentPermission={permission}
             customSharePermissions={this.props.customSharePermissions}
-            onPermissionChanged={this.updateTableShare}
+            onPermissionChanged={this.updateProjectShare}
             onAddCustomSharePermission={this.props.onAddCustomSharePermission}
           />
         </td>
         <td>
           <span
             className={`dtable-font dtable-icon-x action-icon ${this.state.isOperationShow ? '' : 'hide'}`}
-            onClick={this.deleteTableShare}
+            onClick={this.deleteProjectShare}
             title={gettext('Delete')}
             aria-label={gettext('Delete')}
           />
@@ -61,8 +61,8 @@ class SharedToGroupItem extends React.Component {
 
 SharedToGroupItem.propTypes = {
   groupShare: PropTypes.object.isRequired,
-  updateTableShare: PropTypes.func.isRequired,
-  deleteTableShare: PropTypes.func.isRequired,
+  updateProjectShare: PropTypes.func.isRequired,
+  deleteProjectShare: PropTypes.func.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func,
 };

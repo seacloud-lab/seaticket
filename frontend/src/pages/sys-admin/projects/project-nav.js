@@ -1,23 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
-import { siteRoot, gettext, isPro } from '../../../constants';
+import { siteRoot, gettext } from '../../../constants';
 
 const propTypes = {
   currentItem: PropTypes.string.isRequired
 };
 
-class DTableNav extends React.Component {
+class ProjectNav extends React.Component {
 
   constructor(props) {
     super(props);
     this.navItems = [
-      { name: 'all-dtables', urlPart: 'all-dtables', text: gettext('Bases') },
-      { name: 'trash-dtables', urlPart: 'trash-dtables', text: gettext('Trash') },
+      { name: 'all-projects', urlPart: 'all-projects', text: gettext('Projects') },
+      { name: 'trash-projects', urlPart: 'trash-projects', text: gettext('Trash') },
     ];
-    if (isPro) {
-      this.navItems.push({ name: 'database-storage', urlPart: 'database-storage', text: gettext('Big data storage') });
-    }
   }
 
   render() {
@@ -38,6 +35,6 @@ class DTableNav extends React.Component {
   }
 }
 
-DTableNav.propTypes = propTypes;
+ProjectNav.propTypes = propTypes;
 
-export default DTableNav;
+export default ProjectNav;

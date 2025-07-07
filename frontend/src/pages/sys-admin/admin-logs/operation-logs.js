@@ -106,10 +106,9 @@ class Item extends Component {
       case 'group_create': return gettext('Create group');
       case 'group_transfer': return gettext('Transfer group');
       case 'group_delete': return gettext('Delete group');
-      case 'base_delete': return gettext('Delete base');
-      case 'base_restore': return gettext('Restore base');
-      case 'base_repair': return gettext('Repair base');
-      case 'base_unset_password': return gettext('Unset base password');
+      case 'base_delete': return gettext('Delete project');
+      case 'base_restore': return gettext('Restore project');
+      case 'base_repair': return gettext('Repair project');
       case 'user_add': return gettext('Add user');
       case 'user_delete': return gettext('Delete user');
       case 'user_activate': return gettext('Activate user');
@@ -140,9 +139,9 @@ class Item extends Component {
       repoPageUrl = siteRoot + 'sys/libraries/' + detail.id + '/' + encodeURIComponent(detail.name) + '/';
     }
     if (item.operation === 'group_create' || item.operation === 'group_delete' || item.operation === 'group_transfer') {
-      groupPageUrl = siteRoot + 'sys/groups/' + detail.id + '/dtables/';
+      groupPageUrl = siteRoot + 'sys/groups/' + detail.id + '/projects/';
     } else if (detail.group_id) {
-      groupPageUrl = siteRoot + 'sys/groups/' + detail.group_id + '/dtables/';
+      groupPageUrl = siteRoot + 'sys/groups/' + detail.group_id + '/projects/';
     }
 
     if (detail.org_id) {
@@ -202,22 +201,17 @@ class Item extends Component {
         return detailText;
 
       case 'base_delete':
-        detailText = gettext('Delete base {name}')
+        detailText = gettext('Delete project {name}')
           .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + OGInfo;
         return detailText;
 
       case 'base_restore':
-        detailText = gettext('Restore base {name}')
+        detailText = gettext('Restore project {name}')
           .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + OGInfo;
         return detailText;
 
       case 'base_repair':
-        detailText = gettext('Repair base {name}')
-          .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + OGInfo;
-        return detailText;
-
-      case 'base_unset_password':
-        detailText = gettext('Unset base {name}\'s password')
+        detailText = gettext('Repair project {name}')
           .replace('{name}', '<span class="font-weight-bold">' + detail.name + '</span>') + OGInfo;
         return detailText;
 

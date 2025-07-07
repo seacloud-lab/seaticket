@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from seaserv import seafile_api, ccnet_api
 
-from seahub.dtable.models import Workspaces, DTableShare, DTables
+from seahub.dtable.models import Workspaces, DTables
 from seahub.test_utils import BaseTestCase
 
 GROUP_DOMAIN = '@seafile_group'
@@ -42,12 +42,6 @@ class DTableRelatedUsersViewTest(BaseTestCase):
             self.user.username, self.group_workspace, 'group'
         )
         assert DTables.objects.all().count() == 1
-
-        # share group dtable to admin
-        DTableShare.objects.add(
-            self.group_dtable, str(self.group_id) + GROUP_DOMAIN, self.admin.username, 'rw'
-        )
-        assert DTableShare.objects.all().count() == 1
 
         self.url = reverse(
             'api-v2.1-dtable-related-users', args=[self.group_workspace.id, self.group_dtable.name]

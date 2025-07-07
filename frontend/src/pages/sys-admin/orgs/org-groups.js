@@ -106,7 +106,7 @@ class Item extends Component {
 
     const groupUrl = item.parent_group_id === 0 ?
       `${siteRoot}sys/groups/${item.group_id}/libraries/` :
-      `${siteRoot}sys/groups/${item.group_id}/dtables/`;
+      `${siteRoot}sys/groups/${item.group_id}/projects/`;
 
     return (
       <Fragment>

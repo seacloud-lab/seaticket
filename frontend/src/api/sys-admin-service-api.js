@@ -13,11 +13,11 @@ class SysAdminServiceApi {
         headers: { 'Authorization': 'Token ' + this.accessToken }
       });
     } else {
-      this.initForDTableUsage();
+      this.initForUsage();
     }
   }
 
-  initForDTableUsage() {
+  initForUsage() {
     const xcsrfHeaders = cookie.load('seaqa_csrftoken');
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
@@ -44,8 +44,8 @@ class SysAdminServiceApi {
   }
 
   // sys-admin
-  sysAdminListAllDTables(page, perPage) {
-    const url = this.server + '/api/v2.1/admin/dtables/';
+  sysAdminListAllProjects(page, perPage) {
+    const url = this.server + '/api/v2.1/admin/projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -53,8 +53,8 @@ class SysAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  sysAdminListTrashDTables(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/trash-dtables/';
+  sysAdminListTrashProjects(page, perPage) {
+    let url = this.server + '/api/v2.1/admin/trash-projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -64,31 +64,21 @@ class SysAdminServiceApi {
     });
   }
 
-  sysAdminRestoreTrashDTable(dtableID, restoreToAdminAccount) {
-    const url = this.server + '/api/v2.1/admin/trash-dtables/' + dtableID + '/';
+  sysAdminRestoreTrashProject(projectID, restoreToAdminAccount) {
+    const url = this.server + '/api/v2.1/admin/trash-projects/' + projectID + '/';
     const data = {
       restore_to_admin_account: restoreToAdminAccount
     };
     return this.req.put(url, data);
   }
 
-  sysAdminSearchDTables(query, page, perPage) {
-    let url = this.server + '/api/v2.1/admin/search-dtable/';
-    let params = {
-      query: query,
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  sysAdminDeleteDTable(dtable_uuid) {
-    const url = this.server + '/api/v2.1/admin/dtable/' + dtable_uuid + '/';
+  sysAdminDeleteProject(project_uuid) {
+    const url = this.server + '/api/v2.1/admin/project/' + project_uuid + '/';
     return this.req.delete(url);
   }
 
-  sysAdminRepairDtable(dtable_uuid) {
-    const url = this.server + '/api/v2.1/admin/dtable/' + dtable_uuid + '/repair/';
+  sysAdminRepairProject(project_uuid) {
+    const url = this.server + '/api/v2.1/admin/project/' + project_uuid + '/repair/';
     return this.req.put(url);
   }
 
@@ -244,19 +234,8 @@ class SysAdminServiceApi {
     return this.req.get(url);
   }
 
-  sysAdminListOrgDTables(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/dtables/';
-    let params = {
-      page: page,
-      per_page: perPage
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  sysAdminListOrgExternalApps(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/external-apps/';
+  sysAdminListOrgProjects(orgID, page, perPage) {
+    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -549,28 +528,6 @@ class SysAdminServiceApi {
     return this.req.post(url, data, { headers: { 'Content-Type': 'application/json' } });
   }
 
-  sysAdminListUserDTables(email, page, per_page) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/dtables/';
-    let params = {
-      page: page,
-      per_page: per_page
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
-  sysAdminListUserSharedDTables(email, page, per_page) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/shared-dtables/';
-    let params = {
-      page: page,
-      per_page: per_page
-    };
-    return this.req.get(url, {
-      params: params
-    });
-  }
-
   sysAdminListUserRepoDirents(email, parentDir) {
     let url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/storage/';
     let params = {
@@ -606,13 +563,13 @@ class SysAdminServiceApi {
     return this.req.delete(url);
   }
 
-  sysAdminListGroupDTables(groupID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/dtables/';
+  sysAdminListGroupProjects(groupID) {
+    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/';
     return this.req.get(url);
   }
 
-  sysAdminDeleteDTableFromGroup(groupID, tableID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/dtables/' + tableID + '/';
+  sysAdminDeleteProjectsFromGroup(groupID, projectID) {
+    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/' + projectID + '/';
     return this.req.delete(url);
   }
 
@@ -1009,38 +966,28 @@ class SysAdminServiceApi {
     return this.req.get(url, { params });
   }
 
-  sysAdminListDTableExternalLinks(dtable_id) {
-    let url = this.server + '/api/v2.1/admin/dtable/' + dtable_id + '/external-links/';
+  sysAdminListProjectExternalLinks(project_id) {
+    let url = this.server + '/api/v2.1/admin/project/' + project_id + '/external-links/';
     return this.req.get(url);
   }
 
-  sysAdminListDTableAPITokens(dtableUuid) {
-    let url = this.server + '/api/v2.1/admin/dtables/' + dtableUuid + '/api-tokens/';
+  sysAdminExportProject(projectUuid) {
+    const url = this.server + '/api/v2.1/admin/projects/' + projectUuid + '/export-project/';
     return this.req.get(url);
   }
 
-  sysAdminDeleteDTableAPIToken(dtableUuid, apiToken) {
-    let url = this.server + '/api/v2.1/admin/dtables/' + dtableUuid + '/api-tokens/' + apiToken + '/';
-    return this.req.delete(url);
-  }
-
-  sysAdminExportDtable(dtableUuid) {
-    const url = this.server + '/api/v2.1/admin/dtables/' + dtableUuid + '/export-dtable/';
+  sysAdminGetSharePermissions(projectUuid) {
+    const url = this.server + '/api/v2.1/admin/projects/share-permissions/' + projectUuid + '/';
     return this.req.get(url);
   }
 
-  sysAdminGetSharePermissions(dtableUuid) {
-    const url = this.server + '/api/v2.1/admin/dtables/share-permissions/' + dtableUuid + '/';
+  sysAdminListProjectShares(projectUuid) {
+    const url = this.server + '/api/v2.1/admin/projects/share/' + projectUuid + '/';
     return this.req.get(url);
   }
 
-  sysAdminListTableShares(dtableUuid) {
-    const url = this.server + '/api/v2.1/admin/dtables/share/' + dtableUuid + '/';
-    return this.req.get(url);
-  }
-
-  sysAdminAddTableShare(dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/admin/dtables/share/' + dtableUuid + '/';
+  sysAdminAddProjectShare(projectUuid, email, permission) {
+    const url = this.server + '/api/v2.1/admin/projects/share/' + projectUuid + '/';
     let data = {
       email: email,
       permission: permission
@@ -1048,14 +995,14 @@ class SysAdminServiceApi {
     return this.req.post(url, data);
   }
 
-  sysAdminDeleteTableShare(dtableUuid, email) {
-    const url = this.server + '/api/v2.1/admin/dtables/share/' + dtableUuid + '/';
+  sysAdminDeleteProjectShare(projectUuid, email) {
+    const url = this.server + '/api/v2.1/admin/projects/share/' + projectUuid + '/';
     let params = { email: email };
     return this.req.delete(url, { data: params });
   }
 
-  sysAdminUpdateTableShare(dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/admin/dtables/share/' + dtableUuid + '/';
+  sysAdminUpdateProjectShare(projectUuid, email, permission) {
+    const url = this.server + '/api/v2.1/admin/projects/share/' + projectUuid + '/';
     let data = {
       email: email,
       permission: permission
@@ -1063,13 +1010,13 @@ class SysAdminServiceApi {
     return this.req.put(url, data);
   }
 
-  sysAdminListTableGroupShares(dtableUuid) {
-    const url = this.server + '/api/v2.1/admin/dtables/group-shares/' + dtableUuid + '/';
+  sysAdminListProjectGroupShares(projectUuid) {
+    const url = this.server + '/api/v2.1/admin/projects/group-shares/' + projectUuid + '/';
     return this.req.get(url);
   }
 
-  sysAdminAddTableGroupShare(dtableUuid, groupID, permission) {
-    const url = this.server + '/api/v2.1/admin/dtables/group-shares/' + dtableUuid + '/';
+  sysAdminAddProjectGroupShare(projectUuid, groupID, permission) {
+    const url = this.server + '/api/v2.1/admin/projects/group-shares/' + projectUuid + '/';
     let params = {
       group_id: groupID,
       permission: permission
@@ -1077,8 +1024,8 @@ class SysAdminServiceApi {
     return this.req.post(url, params);
   }
 
-  sysAdminDeleteTableGroupShare(dtableUuid, groupID) {
-    const url = this.server + '/api/v2.1/admin/dtables/group-shares/' + dtableUuid + '/';
+  sysAdminDeleteProjectGroupShare(projectUuid, groupID) {
+    const url = this.server + '/api/v2.1/admin/projects/group-shares/' + projectUuid + '/';
     let params = {
       group_id: groupID,
     };
@@ -1087,29 +1034,13 @@ class SysAdminServiceApi {
     });
   }
 
-  sysAdminUpdateTableGroupShare(dtableUuid, groupID, permission) {
-    const url = this.server + '/api/v2.1/admin/dtables/group-shares/' + dtableUuid + '/';
+  sysAdminUpdateProjectGroupShare(projectUuid, groupID, permission) {
+    const url = this.server + '/api/v2.1/admin/projects/group-shares/' + projectUuid + '/';
     let params = {
       group_id: groupID,
       permission: permission
     };
     return this.req.put(url, params);
-  }
-
-  sysAdminCopyDTable(srcWorkspaceID, dstWorkspaceID, name) {
-    const url = this.server + '/api/v2.1/admin/dtable-copy/';
-    let formData = new FormData();
-    formData.append('src_workspace_id', srcWorkspaceID);
-    formData.append('dst_workspace_id', dstWorkspaceID);
-    formData.append('name', name);
-    return this._sendPostRequest(url, formData);
-  }
-
-  sysAdminDoTaskAfterCopyDTable(dst_dtable_uuid) {
-    const url = this.server + '/api/v2.1/admin/dtable-copy/do-task-after-copy/';
-    let formData = new FormData();
-    formData.append('dst_dtable_uuid', dst_dtable_uuid);
-    return this._sendPostRequest(url, formData);
   }
 
   sysAdminGetRepoHistorySetting(repoID) {
@@ -1134,35 +1065,6 @@ class SysAdminServiceApi {
     let formData = new FormData();
     formData.append('license', file);
     return this._sendPostRequest(url, formData);
-  }
-
-  sysAdminListPlugins() {
-    const url = this.server + '/api/v2.1/admin/dtable-system-plugins/';
-    return this.req.get(url);
-  }
-
-  sysAdminAddPlugin(formData) {
-    const url = this.server + '/api/v2.1/admin/dtable-system-plugins/';
-    return this.req.post(url, formData);
-  }
-
-  sysAdminUpdatePlugin(plugin_id, formData) {
-    const url = this.server + '/api/v2.1/admin/dtable-system-plugins/' + plugin_id + '/';
-    return this.req.put(url, formData);
-  }
-
-  sysAdminDeletePlugin(plugin_id) {
-    const url = this.server + '/api/v2.1/admin/dtable-system-plugins/' + plugin_id + '/';
-    return this.req.delete(url);
-  }
-
-  sysAdminListPluginsInstallCount(page, per_page) {
-    const url = this.server + '/api/v2.1/admin/plugins-install-count/';
-    let params = {
-      page: page,
-      per_page: per_page
-    };
-    return this.req.get(url, { params: params });
   }
 
   sysAdminListAbuseReports(page, per_page) {

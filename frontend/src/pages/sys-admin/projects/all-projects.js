@@ -10,9 +10,9 @@ import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { loginUrl, gettext, siteRoot, multiTenancy, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import MainPanelTopbar from '../main-panel-topbar';
-import DTableOpMenu from './dtable-op-menu';
-import DTableNav from './dtables-nav';
-import DTableAllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
+import ProjectOpMenu from './project-op-menu';
+import ProjectNav from './project-nav';
+import AllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 
 import '../../../css/system-dtable.css';
@@ -22,7 +22,7 @@ const itemPropTypes = {
   isItemFreezed: PropTypes.bool.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
 };
 
 class Item extends Component {
@@ -92,10 +92,10 @@ class Item extends Component {
     }
   };
 
-  cancelDTableIOTask = () => {
+  cancelProjectIOTask = () => {
     clearInterval(this.timer);
-    let dtable_uuid = this.props.item.uuid;
-    seaQAAPI.cancelDTableIOTask(this.state.taskId, dtable_uuid, 'export').then(res => {
+    let project_uuid = this.props.item.uuid;
+    seaQAAPI.cancelProjectIOTask(this.state.taskId, project_uuid, 'export').then(res => {
       this.setState({
         isShowDTableIODialog: false,
         taskId: '',
@@ -110,25 +110,25 @@ class Item extends Component {
     let { item } = this.props;
     const dtableUuid = item.uuid;
     let task_id = '';
-    sysAdminServiceApi.sysAdminExportDtable(dtableUuid).then(res => {
+    sysAdminServiceApi.sysAdminExportProject(dtableUuid).then(res => {
       task_id = res.data.task_id;
       this.setState({
         isShowDTableIODialog: true,
         taskId: task_id
       });
-      return seaQAAPI.queryDTableIOStatusByTaskId(task_id);
+      return seaQAAPI.queryProjectIOStatusByTaskId(task_id);
     }).then(res => {
       if (res.data.is_finished === true) {
         this.setState({ isShowDTableIODialog: false });
-        location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
+        location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
       } else {
         this.timer = setInterval(() => {
-          seaQAAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
+          seaQAAPI.queryProjectIOStatusByTaskId(task_id).then(res => {
             if (res.data.is_finished === true) {
               this.setState({ isFinished: true });
               clearInterval(this.timer);
               this.setState({ isShowDTableIODialog: false });
-              location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
+              location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
             }
           }).catch(error => {
             if (this.state.isFinished === false) {
@@ -159,10 +159,10 @@ class Item extends Component {
   onDeleteProject = () => {
     const item = this.props.item;
     const name = item.name;
-    const dtable_uuid = item.uuid;
+    const project_uuid = item.uuid;
 
-    sysAdminServiceApi.sysAdminDeleteDTable(dtable_uuid).then(() => {
-      this.props.deleteDTable(item);
+    sysAdminServiceApi.sysAdminDeleteProject(project_uuid).then(() => {
+      this.props.deleteProject(item);
       const msg = gettext('Successfully deleted {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
@@ -176,9 +176,9 @@ class Item extends Component {
   onRepairDTableToggle = () => {
     const item = this.props.item;
     const name = item.name;
-    const dtable_uuid = item.uuid;
+    const project_uuid = item.uuid;
 
-    sysAdminServiceApi.sysAdminRepairDtable(dtable_uuid).then(() => {
+    sysAdminServiceApi.sysAdminRepairProject(project_uuid).then(() => {
       const msg = gettext('Successfully repair {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
@@ -251,7 +251,7 @@ class Item extends Component {
           <td><span className="pl-4">{file_size}</span></td>
           <td>
             {this.state.isOpIconShown &&
-              <DTableOpMenu
+              <ProjectOpMenu
                 operations={operations}
                 onMenuItemClick={this.onMenuItemClick}
                 onFreezedItem={this.props.onFreezedItem}
@@ -263,8 +263,8 @@ class Item extends Component {
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
             <CommonOperationConfirmationDialog
-              title={gettext('Delete base')}
-              message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
+              title={gettext('Delete project')}
+              message={gettext('Are you sure you want to delete the project {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
               executeOperation={this.onDeleteProject}
               confirmBtnText={gettext('Delete')}
               toggleDialog={this.toggleDeleteDialog}
@@ -273,7 +273,7 @@ class Item extends Component {
         }
         {this.state.isExternalLinkDialogOpen &&
           <ModalPortal>
-            <DTableAllExternalLinksDialog
+            <AllExternalLinksDialog
               currentProject={item}
               toggle={this.toggleExternalLinkDialog}
             />
@@ -299,7 +299,7 @@ const contentPropTypes = {
   curPerPage: PropTypes.number,
   pageInfo: PropTypes.object.isRequired,
   listDTablesByPage: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
   resetPerPage: PropTypes.func.isRequired,
 };
 
@@ -375,7 +375,7 @@ class Content extends Component {
                   isItemFreezed={this.state.isItemFreezed}
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
-                  deleteDTable={this.props.deleteDTable}
+                  deleteProject={this.props.deleteProject}
                 />);
               })}
             </tbody>
@@ -409,7 +409,7 @@ class AllDTables extends Component {
     this.state = {
       loading: true,
       errorMsg: '',
-      dtables: [],
+      projects: [],
       pageInfo: {},
       perPage: 25,
       currentPage: 1
@@ -436,10 +436,10 @@ class AllDTables extends Component {
   };
 
   listDTablesByPage = (page) => {
-    sysAdminServiceApi.sysAdminListAllDTables(page, this.state.perPage).then((res) => {
+    sysAdminServiceApi.sysAdminListAllProjects(page, this.state.perPage).then((res) => {
       this.setState({
         loading: false,
-        dtables: res.data.dtables,
+        projects: res.data.dtables,
         pageInfo: res.data.page_info,
       });
     }).catch((error) => {
@@ -465,11 +465,11 @@ class AllDTables extends Component {
     });
   };
 
-  deleteDTable = (dtable) => {
-    let dtables = this.state.dtables.filter(table => {
+  deleteProject = (dtable) => {
+    let projects = this.state.projects.filter(table => {
       return table.uuid !== dtable.uuid;
     });
-    this.setState({ dtables: dtables });
+    this.setState({ projects });
   };
 
   getSearch = () => {
@@ -480,26 +480,26 @@ class AllDTables extends Component {
   };
 
   searchItems = (keyword) => {
-    navigate(`${siteRoot}sys/search-dtables/?query=${encodeURIComponent(keyword)}`);
+    navigate(`${siteRoot}sys/search-projects/?query=${encodeURIComponent(keyword)}`);
   };
 
   render() {
-    const { loading, errorMsg, dtables, pageInfo, perPage } = this.state;
+    const { loading, errorMsg, projects, pageInfo, perPage } = this.state;
     return (
       <Fragment>
         <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}></MainPanelTopbar>
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
-            <DTableNav currentItem='all-dtables' />
+            <ProjectNav currentItem='all-projects' />
             <div className="cur-view-content">
               <Content
                 loading={loading}
                 errorMsg={errorMsg}
-                items={dtables}
+                items={projects}
                 pageInfo={pageInfo}
                 curPerPage={perPage}
                 listDTablesByPage={this.listDTablesByPage}
-                deleteDTable={this.deleteDTable}
+                deleteProject={this.deleteProject}
                 resetPerPage={this.resetPerPage}
               />
             </div>

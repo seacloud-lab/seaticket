@@ -62,10 +62,10 @@ def edit_profile(request):
     else:
         webdav_passwd = ''
 
-    dtable_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(username)
-    dtable_updates_email_interval = dtable_updates_email_interval if dtable_updates_email_interval is not None else 0
-    dtable_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(username)
-    dtable_collaborate_email_interval = dtable_collaborate_email_interval if dtable_collaborate_email_interval is not None else COLLABORATE_EMAIL_INTERVAL_DEFAULT
+    project_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(username)
+    project_updates_email_interval = project_updates_email_interval if project_updates_email_interval is not None else 0
+    project_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(username)
+    project_collaborate_email_interval = project_collaborate_email_interval if project_collaborate_email_interval is not None else COLLABORATE_EMAIL_INTERVAL_DEFAULT
 
     # social oauth
     enable_work_weixin = False
@@ -163,8 +163,8 @@ def edit_profile(request):
             'ENABLE_CONVERT_TO_TEAM_ACCOUNT': False if is_org_context(request) else ENABLE_CONVERT_TO_TEAM_ACCOUNT,
             'ENABLE_UPDATE_USER_INFO': ENABLE_UPDATE_USER_INFO,
             'webdav_passwd': webdav_passwd,
-            'dtable_updates_email_interval': dtable_updates_email_interval,
-            'dtable_collaborate_email_interval': dtable_collaborate_email_interval,
+            'project_updates_email_interval': project_updates_email_interval,
+            'project_collaborate_email_interval': project_collaborate_email_interval,
             'enable_work_weixin': enable_work_weixin,
             'enable_dingtalk': enable_dingtalk,
             'enable_org_work_weixin': enable_org_work_weixin,
