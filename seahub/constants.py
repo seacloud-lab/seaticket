@@ -33,14 +33,6 @@ RUN_CONDITION_PER_WEEK = 'per_week'
 RUN_CONDITION_PER_MONTH = 'per_month'
 RUN_CONDITION_PER_UPDATE = 'per_update'
 RUN_CONDITION_LIST = [RUN_CONDITION_PER_DAY, RUN_CONDITION_PER_WEEK, RUN_CONDITION_PER_UPDATE]
-# dtable notification/automation rule trigger condition
-TRIGGER_CONDITION_ROWS_MODIFIED = 'rows_modified'
-TRIGGER_CONDITION_ROWS_ADDED = 'rows_added'
-TRIGGER_CONDITION_FILTERS_SATISFY = 'filters_satisfy'
-TRIGGER_CONDITION_NEAR_DEADLINE = 'near_deadline'
-TRIGGER_CONDITION_PERIODICALLY = 'run_periodically'
-TRIGGER_CONDITION_PERIODICALLY_BY_CONDITION = 'run_periodically_by_condition'
-TRIGGER_CONDITION_LIST = [TRIGGER_CONDITION_ROWS_MODIFIED, TRIGGER_CONDITION_FILTERS_SATISFY, TRIGGER_CONDITION_NEAR_DEADLINE]
 
 DEFAULT_ADMIN = 'default_admin'
 SYSTEM_ADMIN = 'system_admin'
@@ -61,8 +53,8 @@ OTHER_ISSUE = 'other'
 
 ABUSE_TYPE_LIST = [COPYRIGHT_ISSUE, VIRUS_ISSUE, ABUSE_CONTENT_ISSUE, OTHER_ISSUE]
 
-# {<:node_id>:<:domain>} such as {"dtable-server-01": "https://dtabler-server-01.seatable.cn", "dtable-server-02": ...}
-ETCD_SERVER_KEY_PREFIX = 'dtable-server-'
+# {<:node_id>:<:domain>} such as {"project-server-01": "https://project-server-01.seatable.cn", "project-server-02": ...}
+ETCD_SERVER_KEY_PREFIX = 'project-server-'
 ETCD_ASSIGN_KEY_PREFIX = 'assign-'
 
 

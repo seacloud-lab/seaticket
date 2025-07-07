@@ -1,11 +1,11 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { toaster, ModalHeader, Loading, ModalPortal } from '../../../components';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import DTableExternalLinks from '../dtable-external-links-widgets/dtable-external-links';
+import ExternalLinks from './external-links';
 
 import './index.css';
 
@@ -20,14 +20,12 @@ class AllExternalLinksDialog extends React.Component {
     super(props);
     this.state = {
       isLoading: true,
-      currentTab: 'dtablelinkex',
-      baseExternalLinks: [],
-      viewExternalLinks: []
+      links: [],
     };
   }
 
   componentDidMount() {
-    this.listDTableExternalLinks();
+    this.listProjectExternalLinks();
   }
 
   toggle = () => {
@@ -40,14 +38,13 @@ class AllExternalLinksDialog extends React.Component {
     this.setState({ currentTab: tab });
   };
 
-  listDTableExternalLinks = () => {
+  listProjectExternalLinks = () => {
     const { currentProject } = this.props;
-    sysAdminServiceApi.sysAdminListDTableExternalLinks(currentProject.id).then((res) => {
-      const external_link_list = res.data.dtable_external_link_list;
+    sysAdminServiceApi.sysAdminListProjectExternalLinks(currentProject.id).then((res) => {
+      const links = res.data?.links || [];
       this.setState({
         isLoading: false,
-        baseExternalLinks: external_link_list.base_external_links,
-        viewExternalLinks: external_link_list.view_external_links,
+        links,
       });
     }).catch((error) => {
       const errMsg = Utils.getErrorMsg(error, true);
@@ -59,7 +56,7 @@ class AllExternalLinksDialog extends React.Component {
 
   render() {
     const { currentProject } = this.props;
-    const { currentTab, baseExternalLinks, viewExternalLinks, isLoading } = this.state;
+    const { links, isLoading } = this.state;
     return (
       <ModalPortal>
         <Modal isOpen={true} toggle={this.toggle} className="dtable-external-links-dialog">
@@ -67,36 +64,12 @@ class AllExternalLinksDialog extends React.Component {
           <ModalBody className="dtable-external-links-body">
             {isLoading ?
               <Loading /> :
-              <Fragment>
-                <ul className="nav dtable-external-links-tab">
-                  <li className="nav-item mr-3" onClick={() => this.tabItemClick('dtablelinkex')}>
-                    <span
-                      className={`nav-link ${currentTab === 'dtablelinkex' ? 'active' : ''}`}>{gettext('Base external links')}
-                    </span>
-                  </li>
-                  <li className="nav-item" onClick={() => this.tabItemClick('viewlinkex')}>
-                    <span
-                      className={`nav-link ${currentTab === 'viewlinkex' ? 'active' : ''}`}>{gettext('View external links')}
-                    </span>
-                  </li>
-                </ul>
-                {currentTab === 'dtablelinkex' &&
-                  <div className="dtable-external-links-content">
-                    <DTableExternalLinks
-                      dtableExternalLinks={baseExternalLinks}
-                      emptyExternalLinksTip={gettext('No base external links')}
-                    />
-                  </div>
-                }
-                {currentTab === 'viewlinkex' &&
-                  <div className="dtable-external-links-content">
-                    <DTableExternalLinks
-                      dtableExternalLinks={viewExternalLinks}
-                      emptyExternalLinksTip={gettext('No view external links')}
-                    />
-                  </div>
-                }
-              </Fragment>
+              <div className="dtable-external-links-content">
+                <ExternalLinks
+                  links={links}
+                  emptyTip={gettext('No links')}
+                />
+              </div>
             }
           </ModalBody>
         </Modal>

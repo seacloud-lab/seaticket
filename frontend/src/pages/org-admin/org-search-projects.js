@@ -13,7 +13,7 @@ const { orgID } = window.org.pageOptions;
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
 };
 
 class Item extends Component {
@@ -74,7 +74,7 @@ class Item extends Component {
 
   onDeleteProject = () => {
     const { item } = this.props;
-    this.props.deleteDTable(item);
+    this.props.deleteProject(item);
     this.toggleDeleteDialog();
   };
 
@@ -149,7 +149,7 @@ const contentPropTypes = {
   curPerPage: PropTypes.number,
   resetPerPage: PropTypes.func,
   getListByPage: PropTypes.func,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
 };
 
 class Content extends Component {
@@ -167,7 +167,7 @@ class Content extends Component {
   };
 
   render() {
-    const { loading, errorMsg, items, deleteDTable } = this.props;
+    const { loading, errorMsg, items, deleteProject } = this.props;
     if (loading) {
       return <Loading/>;
     } else if (errorMsg) {
@@ -197,7 +197,7 @@ class Content extends Component {
                   return (<Item
                     key={index}
                     item={item}
-                    deleteDTable={deleteDTable}
+                    deleteProject={deleteProject}
                   />);
                 })}
               </tbody>
@@ -234,7 +234,7 @@ class OrgSearchProjects extends Component {
       currentPage: 1,
       perPage: 25,
       hasNextPage: false,
-      dtables: [],
+      projects: [],
       isSubmitBtnActive: false,
     };
   }
@@ -266,9 +266,9 @@ class OrgSearchProjects extends Component {
 
   getItems = (page) => {
     let { query, perPage } = this.state;
-    orgAdminServiceApi.orgAdminSearchDTables(orgID, query.trim(), page, perPage).then(res => {
+    orgAdminServiceApi.orgAdminSearchProjects(orgID, query.trim(), page, perPage).then(res => {
       this.setState({
-        dtables: res.data.results,
+        projects: res.data.results,
         loading: false,
         hasNextPage: res.data.results.length >= perPage,
         currentPage: page
@@ -309,16 +309,16 @@ class OrgSearchProjects extends Component {
     });
   };
 
-  deleteDTable = (table) => {
-    orgAdminServiceApi.orgAdminDeleteDTable(orgID, table.id).then(res => {
-      let newTableList = this.state.dtables.filter(item => {
-        return item.id !== table.id;
+  deleteProject = (project) => {
+    orgAdminServiceApi.orgAdminDeleteProject(orgID, project.id).then(res => {
+      let newTableList = this.state.projects.filter(item => {
+        return item.id !== project.id;
       });
       this.setState({
-        dtables: newTableList
+        projects: newTableList
       });
       const msg = gettext('Successfully delete base {placeholder}')
-        .replace('{placeholder}', table.name);
+        .replace('{placeholder}', project.name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
@@ -360,8 +360,8 @@ class OrgSearchProjects extends Component {
                 <Content
                   loading={this.state.loading}
                   errorMsg={this.state.errorMsg}
-                  items={this.state.dtables}
-                  deleteDTable={this.deleteDTable}
+                  items={this.state.projects}
+                  deleteProject={this.deleteProject}
                   currentPage={this.state.currentPage}
                   hasNextPage={this.state.hasNextPage}
                   curPerPage={this.state.perPage}

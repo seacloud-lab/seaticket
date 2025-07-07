@@ -11,7 +11,7 @@ export default class UserService {
   }
 
   getRelatedUsers(workspaceID, fileName, params, callback) {
-    seaQAAPI.getTableRelatedUsers(workspaceID, fileName, params).then(res => {
+    seaQAAPI.getProjectRelatedUsers(workspaceID, fileName, params).then(res => {
       res.data.user_list.forEach(user => {
         this.emailUserMap[user.email] = user;
       });

@@ -492,7 +492,7 @@ def clear_token(username):
 
 
 def inactive_user(username):
-    # del tokens and personal dtable api tokens (not group)
+    # del tokens and personal project api tokens (not group)
     from seahub.utils import clear_token
     try:
         clear_token(username)
@@ -576,18 +576,18 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # To not perform the csrf check previously happening
 
 
-def uuid_str_to_32_chars(dtable_uuid):
-    if len(dtable_uuid) == 36:
-        return uuid.UUID(dtable_uuid).hex
+def uuid_str_to_32_chars(project_uuid):
+    if len(project_uuid) == 36:
+        return uuid.UUID(project_uuid).hex
     else:
-        return dtable_uuid
+        return project_uuid
 
 
-def uuid_str_to_36_chars(dtable_uuid):
-    if len(dtable_uuid) == 32:
-        return str(uuid.UUID(dtable_uuid))
+def uuid_str_to_36_chars(project_uuid):
+    if len(project_uuid) == 32:
+        return str(uuid.UUID(project_uuid))
     else:
-        return dtable_uuid
+        return project_uuid
 
 
 def utf8_normalize(raw_str):

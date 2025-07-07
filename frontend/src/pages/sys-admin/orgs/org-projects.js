@@ -234,7 +234,7 @@ class OrgProjects extends Component {
 
   listDTablesByPage = (page) => {
     let { perPage } = this.state;
-    sysAdminServiceApi.sysAdminListOrgDTables(this.props.orgID, page, perPage).then((res) => {
+    sysAdminServiceApi.sysAdminListOrgProjects(this.props.orgID, page, perPage).then((res) => {
       this.setState({
         loading: false,
         dtables: res.data.dtable_list,

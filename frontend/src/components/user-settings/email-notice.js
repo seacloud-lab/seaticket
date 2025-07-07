@@ -5,7 +5,7 @@ import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 
 const {
-  initialDTableUpdatesEmailInterval, initialDTableCollaborateEmailInterval,
+  initialProjectUpdatesEmailInterval, initialProjectCollaborateEmailInterval,
 } = window.app.pageOptions;
 
 class EmailNotice extends React.Component {
@@ -25,31 +25,31 @@ class EmailNotice extends React.Component {
     ];
 
     this.state = {
-      dtableUpdatesEmailInterval: initialDTableUpdatesEmailInterval,
-      dtableCollaborateEmailInterval: initialDTableCollaborateEmailInterval,
+      projectUpdatesEmailInterval: initialProjectUpdatesEmailInterval,
+      projectCollaborateEmailInterval: initialProjectCollaborateEmailInterval,
     };
   }
 
-  onDTableUpdatesEmailIntervalChange = (e) => {
+  onEmailIntervalChange = (e) => {
     if (e.target.checked) {
       this.setState({
-        dtableUpdatesEmailInterval: parseInt(e.target.value)
+        projectUpdatesEmailInterval: parseInt(e.target.value)
       });
     }
   };
 
-  onDTableCollaborateEmailIntervalChange = (e) => {
+  onCollaborateEmailIntervalChange = (e) => {
     if (e.target.checked) {
       this.setState({
-        dtableCollaborateEmailInterval: parseInt(e.target.value)
+        projectCollaborateEmailInterval: parseInt(e.target.value)
       });
     }
   };
 
   formSubmit = (e) => {
     e.preventDefault();
-    const { dtableUpdatesEmailInterval, dtableCollaborateEmailInterval } = this.state;
-    seaQAAPI.updateEmailNotificationInterval(dtableUpdatesEmailInterval, dtableCollaborateEmailInterval).then((res) => {
+    const { projectUpdatesEmailInterval, projectCollaborateEmailInterval } = this.state;
+    seaQAAPI.updateEmailNotificationInterval(projectUpdatesEmailInterval, projectCollaborateEmailInterval).then((res) => {
       toaster.success(gettext('Email notification updated'));
     }).catch((error) => {
       let errorMsg = Utils.getErrorMsg(error);
@@ -58,7 +58,7 @@ class EmailNotice extends React.Component {
   };
 
   render() {
-    const { dtableUpdatesEmailInterval, dtableCollaborateEmailInterval } = this.state;
+    const { projectUpdatesEmailInterval, projectCollaborateEmailInterval } = this.state;
     return (
       <div className="setting-item" id="email-notice">
         <h3 className="setting-item-heading">{gettext('Email notification')}</h3>
@@ -72,8 +72,8 @@ class EmailNotice extends React.Component {
                   name="set-updates-email-interval"
                   value={item.interval}
                   label={item.text}
-                  isChecked={dtableUpdatesEmailInterval === item.interval}
-                  onCheckedChange={this.onDTableUpdatesEmailIntervalChange}
+                  isChecked={projectUpdatesEmailInterval === item.interval}
+                  onCheckedChange={this.onEmailIntervalChange}
                 />
                 <br />
               </React.Fragment>
@@ -90,8 +90,8 @@ class EmailNotice extends React.Component {
                   name="set-collaborate-email-interval"
                   value={item.interval}
                   label={item.text}
-                  isChecked={dtableCollaborateEmailInterval === item.interval}
-                  onCheckedChange={this.onDTableCollaborateEmailIntervalChange}
+                  isChecked={projectCollaborateEmailInterval === item.interval}
+                  onCheckedChange={this.onCollaborateEmailIntervalChange}
                 />
                 <br />
               </React.Fragment>

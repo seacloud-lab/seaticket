@@ -30,7 +30,7 @@ class SysAdminShareTableToGroup extends React.Component {
   }
 
   componentDidMount() {
-    sysAdminServiceApi.sysAdminListTableGroupShares(this.dtableUuid).then((res) => {
+    sysAdminServiceApi.sysAdminListProjectGroupShares(this.dtableUuid).then((res) => {
       const { dtable_group_share_list: groupShares } = res.data || {};
       this.setState({ groupShares });
     }).catch(error => {
@@ -42,10 +42,10 @@ class SysAdminShareTableToGroup extends React.Component {
     this.setState({ permission });
   };
 
-  addTableShare = () => {
+  addProjectShare = () => {
     const { groupIDs, permission } = this.state;
     groupIDs.forEach((groupID) => {
-      sysAdminServiceApi.sysAdminAddTableGroupShare(this.dtableUuid, groupID, permission).then((res) => {
+      sysAdminServiceApi.sysAdminAddProjectGroupShare(this.dtableUuid, groupID, permission).then((res) => {
         let groupShares = this.state.groupShares.slice();
         groupShares.push(res.data.dtable_group_share);
         this.setState({ groupShares: groupShares });
@@ -56,8 +56,8 @@ class SysAdminShareTableToGroup extends React.Component {
     this.groupSelect.clearSelect();
   };
 
-  updateTableShare = (groupID, permission) => {
-    sysAdminServiceApi.sysAdminUpdateTableGroupShare(this.dtableUuid, groupID, permission).then(() => {
+  updateProjectShare = (groupID, permission) => {
+    sysAdminServiceApi.sysAdminUpdateProjectGroupShare(this.dtableUuid, groupID, permission).then(() => {
       const groupShares = this.state.groupShares.map((item) => {
         if (item.group_id === groupID) {
           item.permission = permission;
@@ -70,8 +70,8 @@ class SysAdminShareTableToGroup extends React.Component {
     });
   };
 
-  deleteTableShare = (groupID) => {
-    sysAdminServiceApi.sysAdminDeleteTableGroupShare(this.dtableUuid, groupID).then(() => {
+  deleteProjectShare = (groupID) => {
+    sysAdminServiceApi.sysAdminDeleteProjectGroupShare(this.dtableUuid, groupID).then(() => {
       const groupShares = this.state.groupShares.filter((item) => item.group_id !== groupID);
       this.setState({ groupShares });
     }).catch((error) => {
@@ -121,8 +121,8 @@ class SysAdminShareTableToGroup extends React.Component {
         <SharedToGroupItem
           groupShare={item}
           key={index}
-          updateTableShare={this.updateTableShare}
-          deleteTableShare={this.deleteTableShare}
+          updateProjectShare={this.updateProjectShare}
+          deleteProjectShare={this.deleteProjectShare}
           customSharePermissions={this.props.customSharePermissions}
           onAddCustomSharePermission={this.props.onAddCustomSharePermission}
         />
@@ -163,7 +163,7 @@ class SysAdminShareTableToGroup extends React.Component {
                 />
               </td>
               <td>
-                <Button className="w-100" onClick={this.addTableShare}>{gettext('Submit')}</Button>
+                <Button className="w-100" onClick={this.addProjectShare}>{gettext('Submit')}</Button>
               </td>
             </tr>
           </tbody>

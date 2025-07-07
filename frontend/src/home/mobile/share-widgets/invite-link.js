@@ -30,7 +30,7 @@ class InviteLink extends React.Component {
 
   componentDidMount() {
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.getDTableInviteLink(workspace_id, name).then(res => {
+    seaQAAPI.getProjectInviteLink(workspace_id, name).then(res => {
       let inviteLinks = res.data.dtable_share_links;
       this.setState({
         inviteLinks: inviteLinks,
@@ -67,7 +67,7 @@ class InviteLink extends React.Component {
   };
 
   deleteInviteLink = (inviteLink) => {
-    seaQAAPI.deleteDTableInviteLink(inviteLink.token).then(() => {
+    seaQAAPI.deleteProjectInviteLink(inviteLink.token).then(() => {
       let { inviteLinks } = this.state;
       inviteLinks = inviteLinks.filter((item) => {
         return item.token !== inviteLink.token;

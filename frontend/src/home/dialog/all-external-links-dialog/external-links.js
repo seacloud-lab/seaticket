@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { gettext, mediaUrl } from '../../../constants';
 import { EmptyTip } from '../../../components';
 
-class DTableExternalLinks extends React.Component {
+class ExternalLinks extends React.Component {
 
   render() {
-    const { dtableExternalLinks, emptyExternalLinksTip } = this.props;
+    const { links, emptyTip: emptyTipText } = this.props;
     const table = (
       <table>
         <thead>
@@ -16,7 +16,7 @@ class DTableExternalLinks extends React.Component {
           </tr>
         </thead>
         <tbody>
-          {dtableExternalLinks.map((item, index) => {
+          {links.map((item, index) => {
             return (
               <tr key={index} className="external-link-item ">
                 <td className="pl-2">
@@ -32,16 +32,16 @@ class DTableExternalLinks extends React.Component {
       </table>
     );
     const emptyTip = (
-      <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={emptyExternalLinksTip} />
+      <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={emptyTipText} />
     );
 
-    return dtableExternalLinks.length === 0 ? emptyTip : table;
+    return links.length === 0 ? emptyTip : table;
   }
 }
 
-DTableExternalLinks.propTypes = {
-  dtableExternalLinks: PropTypes.array,
-  emptyExternalLinksTip: PropTypes.string,
+ExternalLinks.propTypes = {
+  links: PropTypes.array,
+  emptyTip: PropTypes.string,
 };
 
-export default DTableExternalLinks;
+export default ExternalLinks;

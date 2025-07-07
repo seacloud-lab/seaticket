@@ -96,9 +96,9 @@ class OrgAdminProjectView(APIView):
             error_msg = 'project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        new_dtable_name = convert_project_trash_names(project)
+        new_project_name = convert_project_trash_names(project)
         try:
-            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_dtable_name)
+            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
         except Exception as e:
             logger.error('delete dtable: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
@@ -106,7 +106,7 @@ class OrgAdminProjectView(APIView):
 
         detail = {
             'name': project.name,
-            'dtable_uuid': str(project.uuid)
+            'project_uuid': str(project.uuid)
         }
         if GROUP_DOMAIN in project.workspace.owner:
             group_id = int(project.workspace.owner.split('@')[0])
@@ -213,7 +213,7 @@ class OrgAdminTrashProjectView(APIView):
 
         detail = {
             'name': project.name,
-            'dtable_uuid': str(project.uuid)
+            'project_uuid': str(project.uuid)
         }
         if GROUP_DOMAIN in project.workspace.owner:
             group_id = int(project.workspace.owner.split('@')[0])

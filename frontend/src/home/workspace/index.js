@@ -11,9 +11,9 @@ import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import TransferGroupDialog from '../dialog/transfer-group-dialog';
 import MobileAddProject from '../mobile/mobile-add-project';
-import MobileShareTable from '../mobile/mobile-share-table';
+import MobileShareProject from '../mobile/mobile-share-project';
 import ModalPortal from '../../components/modal-portal';
-import RenameBaseView from '../mobile/rename-base-view';
+import RenameProjectView from '../mobile/rename-project-view';
 import Header from './header';
 import Body from './body';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
@@ -554,7 +554,7 @@ class Workspace extends React.Component {
         )}
         {this.state.isShowMobileShareProject &&
           <ModalPortal>
-            <MobileShareTable
+            <MobileShareProject
               hideMobileShareProject={this.hideMobileShareProject}
               currentProject={this.state.currentProject}
             />
@@ -562,7 +562,7 @@ class Workspace extends React.Component {
         }
         {this.state.isShowMobileRenameView &&
           <ModalPortal>
-            <RenameBaseView
+            <RenameProjectView
               onMobileUpdateItemToggle={this.onMobileUpdateProjectToggle}
               currentItem={this.state.currentProject}
               onUpdateItem={this.onUpdateProject}

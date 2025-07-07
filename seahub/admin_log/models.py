@@ -23,7 +23,7 @@ DEPARTMENT_RENAME = 'department_rename'
 DEPARTMENT_DELETE = 'department_delete'
 
 
-# 'base_delete': {'name': base_name, 'dtable_uuid': dtable_uuid, [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
+# 'base_delete': {'name': base_name, 'project_uuid': project_uuid, [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
 BASE_DELETE = 'base_delete'
 # 'base_restore': {'name': base_name [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
 BASE_RESTORE = 'base_restore'

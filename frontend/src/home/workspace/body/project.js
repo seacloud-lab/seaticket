@@ -82,18 +82,6 @@ class Project extends React.Component {
     this.props.onShareProjectToggle(this.props.project);
   };
 
-  onSetPasswordToggle = () => {
-    this.props.onSetPasswordToggle(this.props.project);
-  };
-
-  onUnsetPasswordToggle = () => {
-    this.props.onUnsetPasswordToggle(this.props.project);
-  };
-
-  onModifyPasswordToggle = () => {
-    this.props.onModifyPasswordToggle(this.props.project);
-  };
-
   onMobileShareProjectToggle = () => {
     this.props.onMobileShareProjectToggle(this.props.project);
   };

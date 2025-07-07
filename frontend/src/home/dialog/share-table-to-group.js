@@ -11,8 +11,8 @@ import '../../../css/invitations.css';
 
 const groupItemPropTypes = {
   groupShare: PropTypes.object.isRequired,
-  updateTableShare: PropTypes.func.isRequired,
-  deleteTableShare: PropTypes.func.isRequired,
+  updateProjectShare: PropTypes.func.isRequired,
+  deleteProjectShare: PropTypes.func.isRequired,
   customSharePermissions: PropTypes.array,
   onAddCustomSharePermission: PropTypes.func,
 };
@@ -38,15 +38,15 @@ class GroupItem extends React.Component {
     this.setState({ isOperationShow: false });
   };
 
-  updateTableShare = (permission) => {
+  updateProjectShare = (permission) => {
     if (permission === 'addCustomSharePermission') return;
     if (permission !== this.props.groupShare.permission) {
-      this.props.updateTableShare(this.props.groupShare.group_id, permission);
+      this.props.updateProjectShare(this.props.groupShare.group_id, permission);
     }
   };
 
-  deleteTableShare = () => {
-    this.props.deleteTableShare(this.props.groupShare.group_id);
+  deleteProjectShare = () => {
+    this.props.deleteProjectShare(this.props.groupShare.group_id);
   };
 
   render() {
@@ -60,14 +60,14 @@ class GroupItem extends React.Component {
             isEditIconShow={this.state.isOperationShow}
             currentPermission={permission}
             customSharePermissions={this.props.customSharePermissions}
-            onPermissionChanged={this.updateTableShare}
+            onPermissionChanged={this.updateProjectShare}
             onAddCustomSharePermission={this.props.onAddCustomSharePermission}
           />
         </td>
         <td>
           <span
             className={`dtable-font dtable-icon-x action-icon ${this.state.isOperationShow ? '' : 'hide'}`}
-            onClick={this.deleteTableShare}
+            onClick={this.deleteProjectShare}
             title={gettext('Delete')}
             aria-label={gettext('Delete')}
           />
@@ -115,7 +115,7 @@ class ShareTableToGroup extends React.Component {
         };
       });
       this.setState({ groups: groups });
-      return seaQAAPI.listTableGroupShares(workspace_id, name);
+      return seaQAAPI.listProjectGroupShares(workspace_id, name);
     }).then((res) => {
       this.setState({ groupShares: res.data.dtable_group_share_list });
     }).catch(error => {
@@ -127,13 +127,13 @@ class ShareTableToGroup extends React.Component {
     this.setState({ permission: permission });
   };
 
-  addTableShare = () => {
+  addProjectShare = () => {
     let { permission, selectedOptions } = this.state;
     if (!selectedOptions || selectedOptions.length === 0) return;
     const { currentProject, srcGroupID, groupName } = this.props;
     let { workspace_id, name: tableName } = currentProject;
     const groupIDs = selectedOptions.map(item => item.id);
-    seaQAAPI.addTableGroupShare(workspace_id, tableName, groupIDs, permission).then((res) => {
+    seaQAAPI.addProjectGroupShare(workspace_id, tableName, groupIDs, permission).then((res) => {
       let groupShares = this.state.groupShares.slice();
       const { success: successGroupShares, failed: failedGroupShares } = res.data;
       if (failedGroupShares.length > 0) {
@@ -172,9 +172,9 @@ class ShareTableToGroup extends React.Component {
     });
   };
 
-  updateTableShare = (groupID, permission) => {
+  updateProjectShare = (groupID, permission) => {
     let { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.updateTableGroupShare(workspace_id, name, groupID, permission).then(() => {
+    seaQAAPI.updateProjectGroupShare(workspace_id, name, groupID, permission).then(() => {
       let groupShares = this.state.groupShares.slice();
       groupShares = groupShares.map((item) => {
         if (item.group_id === groupID) {
@@ -188,7 +188,7 @@ class ShareTableToGroup extends React.Component {
     });
   };
 
-  deleteTableShare = (groupID) => {
+  deleteProjectShare = (groupID) => {
     let { workspace_id, name } = this.props.currentProject;
     seaQAAPI.deleteProjectGroupShare(workspace_id, name, groupID).then(() => {
       let groupShares = this.state.groupShares.slice();
@@ -234,8 +234,8 @@ class ShareTableToGroup extends React.Component {
         <GroupItem
           groupShare={item}
           key={index}
-          updateTableShare={this.updateTableShare}
-          deleteTableShare={this.deleteTableShare}
+          updateProjectShare={this.updateProjectShare}
+          deleteProjectShare={this.deleteProjectShare}
           customSharePermissions={this.props.customSharePermissions}
           onAddCustomSharePermission={this.props.onAddCustomSharePermission}
         />
@@ -275,7 +275,7 @@ class ShareTableToGroup extends React.Component {
                 />
               </td>
               <td>
-                <Button className="w-100" onClick={this.addTableShare}>{gettext('Submit')}</Button>
+                <Button className="w-100" onClick={this.addProjectShare}>{gettext('Submit')}</Button>
               </td>
             </tr>
           </tbody>

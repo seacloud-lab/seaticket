@@ -49,8 +49,8 @@ window.app.pageOptions = {
     return list;
   })(),
 
-  initialDTableUpdatesEmailInterval: {{ dtable_updates_email_interval }},
-  initialDTableCollaborateEmailInterval: {{ dtable_collaborate_email_interval }},
+  initialProjectUpdatesEmailInterval: {{ project_updates_email_interval }},
+  initialProjectCollaborateEmailInterval: {{ project_collaborate_email_interval }},
 
   twoFactorAuthEnabled: {% if two_factor_auth_enabled %} true {% else %} false {% endif %},
   {% if two_factor_auth_enabled %}

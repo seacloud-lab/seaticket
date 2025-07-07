@@ -41,7 +41,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
     const { item, groupID } = this.props;
     const { name, uuid } = item;
     this.setState({ isRestoring: true });
-    seaQAAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
+    seaQAAPI.restoreGroupTrashProject(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
       this.props.restoreProject(item);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);

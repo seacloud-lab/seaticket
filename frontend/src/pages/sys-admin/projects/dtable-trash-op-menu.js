@@ -7,7 +7,7 @@ import { Utils } from '../../../utils/utils';
 const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
 class DTableTrashOpMenu extends React.Component {
@@ -19,9 +19,9 @@ class DTableTrashOpMenu extends React.Component {
     };
   }
 
-  onRestoreDTable = (e) => {
+  onRestoreProject = (e) => {
     let operation = Utils.getEventData(e, 'op');
-    this.props.restoreDTable(operation);
+    this.props.restoreProject(operation);
   };
 
   onDropdownToggleClick = (e) => {
@@ -70,7 +70,7 @@ class DTableTrashOpMenu extends React.Component {
         />
         <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mr-2">
           {operations.map((item, index ) => {
-            return (<DropdownItem key={index} data-op={item} onClick={this.onRestoreDTable}>{this.translateOperations(item)}</DropdownItem>);
+            return (<DropdownItem key={index} data-op={item} onClick={this.onRestoreProject}>{this.translateOperations(item)}</DropdownItem>);
           })}
         </DropdownMenu>
       </Dropdown>

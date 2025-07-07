@@ -12,7 +12,7 @@ import { Utils } from '../../../utils/utils';
 import MainPanelTopbar from '../main-panel-topbar';
 import ProjectOpMenu from './project-op-menu';
 import ProjectNav from './project-nav';
-import DTableAllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
+import AllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 
 import '../../../css/system-dtable.css';
@@ -22,7 +22,7 @@ const itemPropTypes = {
   isItemFreezed: PropTypes.bool.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
 };
 
 class Item extends Component {
@@ -92,10 +92,10 @@ class Item extends Component {
     }
   };
 
-  cancelDTableIOTask = () => {
+  cancelProjectIOTask = () => {
     clearInterval(this.timer);
-    let dtable_uuid = this.props.item.uuid;
-    seaQAAPI.cancelDTableIOTask(this.state.taskId, dtable_uuid, 'export').then(res => {
+    let project_uuid = this.props.item.uuid;
+    seaQAAPI.cancelProjectIOTask(this.state.taskId, project_uuid, 'export').then(res => {
       this.setState({
         isShowDTableIODialog: false,
         taskId: '',
@@ -110,25 +110,25 @@ class Item extends Component {
     let { item } = this.props;
     const dtableUuid = item.uuid;
     let task_id = '';
-    sysAdminServiceApi.sysAdminExportDtable(dtableUuid).then(res => {
+    sysAdminServiceApi.sysAdminExportProject(dtableUuid).then(res => {
       task_id = res.data.task_id;
       this.setState({
         isShowDTableIODialog: true,
         taskId: task_id
       });
-      return seaQAAPI.queryDTableIOStatusByTaskId(task_id);
+      return seaQAAPI.queryProjectIOStatusByTaskId(task_id);
     }).then(res => {
       if (res.data.is_finished === true) {
         this.setState({ isShowDTableIODialog: false });
-        location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
+        location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
       } else {
         this.timer = setInterval(() => {
-          seaQAAPI.queryDTableIOStatusByTaskId(task_id).then(res => {
+          seaQAAPI.queryProjectIOStatusByTaskId(task_id).then(res => {
             if (res.data.is_finished === true) {
               this.setState({ isFinished: true });
               clearInterval(this.timer);
               this.setState({ isShowDTableIODialog: false });
-              location.href = siteRoot + 'sys/dtableadmin/export-dtable/?task_id=' + task_id + '&dtable_uuid=' + dtableUuid;
+              location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
             }
           }).catch(error => {
             if (this.state.isFinished === false) {
@@ -159,10 +159,10 @@ class Item extends Component {
   onDeleteProject = () => {
     const item = this.props.item;
     const name = item.name;
-    const dtable_uuid = item.uuid;
+    const project_uuid = item.uuid;
 
-    sysAdminServiceApi.sysAdminDeleteDTable(dtable_uuid).then(() => {
-      this.props.deleteDTable(item);
+    sysAdminServiceApi.sysAdminDeleteProject(project_uuid).then(() => {
+      this.props.deleteProject(item);
       const msg = gettext('Successfully deleted {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
@@ -176,9 +176,9 @@ class Item extends Component {
   onRepairDTableToggle = () => {
     const item = this.props.item;
     const name = item.name;
-    const dtable_uuid = item.uuid;
+    const project_uuid = item.uuid;
 
-    sysAdminServiceApi.sysAdminRepairDtable(dtable_uuid).then(() => {
+    sysAdminServiceApi.sysAdminRepairProject(project_uuid).then(() => {
       const msg = gettext('Successfully repair {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
@@ -273,7 +273,7 @@ class Item extends Component {
         }
         {this.state.isExternalLinkDialogOpen &&
           <ModalPortal>
-            <DTableAllExternalLinksDialog
+            <AllExternalLinksDialog
               currentProject={item}
               toggle={this.toggleExternalLinkDialog}
             />
@@ -299,7 +299,7 @@ const contentPropTypes = {
   curPerPage: PropTypes.number,
   pageInfo: PropTypes.object.isRequired,
   listDTablesByPage: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired,
+  deleteProject: PropTypes.func.isRequired,
   resetPerPage: PropTypes.func.isRequired,
 };
 
@@ -375,7 +375,7 @@ class Content extends Component {
                   isItemFreezed={this.state.isItemFreezed}
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
-                  deleteDTable={this.props.deleteDTable}
+                  deleteProject={this.props.deleteProject}
                 />);
               })}
             </tbody>
@@ -465,7 +465,7 @@ class AllDTables extends Component {
     });
   };
 
-  deleteDTable = (dtable) => {
+  deleteProject = (dtable) => {
     let projects = this.state.projects.filter(table => {
       return table.uuid !== dtable.uuid;
     });
@@ -499,7 +499,7 @@ class AllDTables extends Component {
                 pageInfo={pageInfo}
                 curPerPage={perPage}
                 listDTablesByPage={this.listDTablesByPage}
-                deleteDTable={this.deleteDTable}
+                deleteProject={this.deleteProject}
                 resetPerPage={this.resetPerPage}
               />
             </div>

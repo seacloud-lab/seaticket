@@ -17,7 +17,7 @@ const itemPropTypes = {
   isItemFreezed: PropTypes.bool.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired
+  deleteProject: PropTypes.func.isRequired
 };
 
 class Item extends Component {
@@ -55,9 +55,9 @@ class Item extends Component {
     this.props.onUnfreezedItem();
   };
 
-  deleteDTable = () => {
+  deleteProject = () => {
     const { item } = this.props;
-    this.props.deleteDTable(item);
+    this.props.deleteProject(item);
     this.toggleDeleteDTableDialog();
   };
 
@@ -113,7 +113,7 @@ class Item extends Component {
           <CommonOperationConfirmationDialog
             title={gettext('Delete project')}
             message={dialogMsg}
-            executeOperation={this.deleteDTable}
+            executeOperation={this.deleteProject}
             confirmBtnText={gettext('Delete')}
             toggleDialog={this.toggleDeleteDTableDialog}
           />
@@ -129,7 +129,7 @@ const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
   errorMsg: PropTypes.string,
   items: PropTypes.array,
-  deleteDTable: PropTypes.func.isRequired
+  deleteProject: PropTypes.func.isRequired
 };
 
 class Content extends Component {
@@ -177,7 +177,7 @@ class Content extends Component {
                 return (<Item
                   key={index}
                   item={item}
-                  deleteDTable={this.props.deleteDTable}
+                  deleteProject={this.props.deleteProject}
                   isItemFreezed={this.state.isItemFreezed}
                   onFreezedItem={this.onFreezedItem}
                   onUnfreezedItem={this.onUnfreezedItem}
@@ -205,16 +205,16 @@ class GroupProjects extends Component {
     };
   }
 
-  deleteDTable = (dtable) => {
-    orgAdminServiceApi.orgAdminDeleteDTableFromGroup(orgID, this.props.groupID, dtable.uuid).then(res => {
+  deleteProject = (project) => {
+    orgAdminServiceApi.orgAdminDeleteProjectFromGroup(orgID, this.props.groupID, project.uuid).then(res => {
       let newTableList = this.state.tableList.filter(item => {
-        return item.id !== dtable.id;
+        return item.id !== project.id;
       });
       this.setState({
         tableList: newTableList
       });
       const msg = gettext('Successfully delete base {placeholder}')
-        .replace('{placeholder}', dtable.name);
+        .replace('{placeholder}', project.name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
@@ -223,7 +223,7 @@ class GroupProjects extends Component {
   };
 
   componentDidMount() {
-    orgAdminServiceApi.orgAdminListGroupDTables(orgID, this.props.groupID).then((res) => {
+    orgAdminServiceApi.orgAdminListGroupProjects(orgID, this.props.groupID).then((res) => {
       this.setState({
         loading: false,
         tableList: res.data.tables,
@@ -268,7 +268,7 @@ class GroupProjects extends Component {
                 loading={this.state.loading}
                 errorMsg={this.state.errorMsg}
                 items={this.state.tableList}
-                deleteDTable={this.deleteDTable}
+                deleteProject={this.deleteProject}
               />
             </div>
           </div>

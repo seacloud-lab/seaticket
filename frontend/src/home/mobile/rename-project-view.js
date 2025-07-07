@@ -12,7 +12,7 @@ const propTypes = {
   onUpdateItem: PropTypes.func.isRequired,
 };
 
-class RenameBaseView extends React.Component {
+class RenameProjectView extends React.Component {
 
   constructor(props) {
     super(props);
@@ -132,6 +132,6 @@ class RenameBaseView extends React.Component {
   }
 }
 
-RenameBaseView.propTypes = propTypes;
+RenameProjectView.propTypes = propTypes;
 
-export default RenameBaseView;
+export default RenameProjectView;

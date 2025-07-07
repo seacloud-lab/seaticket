@@ -3,16 +3,16 @@ import PropTypes from 'prop-types';
 import { Utils } from '../../../../utils/utils';
 import { gettext } from '../../../../constants';
 import dayjs from '../../../../utils/dayjs';
-import DTableOpMenu from '../../projects/dtable-op-menu';
+import ProjectOpMenu from '../../projects/project-op-menu';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
-import DTableAllExternalLinksDialog from '../../../dtable/dialog/dtable-all-external-links-dialog';
+import DTableAllExternalLinksDialog from '../../../dtable/dialog/all-external-links-dialog';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
   isItemFreezed: PropTypes.bool.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
-  deleteDTable: PropTypes.func.isRequired
+  deleteProject: PropTypes.func.isRequired
 };
 
 class BaseItem extends React.Component {
@@ -58,9 +58,9 @@ class BaseItem extends React.Component {
     this.setState({ isDeleteDTableDialogOpen: !this.state.isDeleteDTableDialogOpen });
   };
 
-  deleteDTable = () => {
+  deleteProject = () => {
     const { item } = this.props;
-    this.props.deleteDTable(item);
+    this.props.deleteProject(item);
     this.toggleDeleteDTableDialog();
   };
 
@@ -94,7 +94,7 @@ class BaseItem extends React.Component {
             title={gettext('Delete project')}
             message={dialogMsg}
             confirmBtnText={gettext('Delete')}
-            executeOperation={this.deleteDTable}
+            executeOperation={this.deleteProject}
             toggleDialog={this.toggleDeleteDTableDialog}
           />
         }
@@ -124,7 +124,7 @@ class BaseItem extends React.Component {
           <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown &&
-              <DTableOpMenu
+              <ProjectOpMenu
                 onFreezedItem={this.props.onFreezedItem}
                 onMenuItemClick={this.onMenuItemClick}
                 onUnfreezedItem={this.onUnfreezedItem}

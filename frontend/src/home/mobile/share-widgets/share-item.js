@@ -7,8 +7,8 @@ const propTypes = {
   shareName: PropTypes.string,
   options: PropTypes.array.isRequired,
   item: PropTypes.object.isRequired,
-  updateTableShare: PropTypes.func,
-  deleteTableShare: PropTypes.func,
+  updateProjectShare: PropTypes.func,
+  deleteProjectShare: PropTypes.func,
 };
 
 class ShareItem extends React.Component {
@@ -24,14 +24,14 @@ class ShareItem extends React.Component {
     this.setState({ isSelectedPermission: !this.state.isSelectedPermission });
   };
 
-  updateTableShare = (permission) => {
+  updateProjectShare = (permission) => {
     const { item } = this.props;
-    this.props.updateTableShare(item, permission);
+    this.props.updateProjectShare(item, permission);
   };
 
-  deleteTableShare = () => {
+  deleteProjectShare = () => {
     const { item } = this.props;
-    this.props.deleteTableShare(item);
+    this.props.deleteProjectShare(item);
   };
 
   render() {
@@ -57,10 +57,10 @@ class ShareItem extends React.Component {
         {isSelectedPermission &&
           <SelectPermission
             toggle={this.onShowSelectedPermission}
-            setPermission={this.updateTableShare}
+            setPermission={this.updateProjectShare}
             permission={item.permission}
             isShowDeleteBtn={true}
-            onHandleDeleteShare={this.deleteTableShare}
+            onHandleDeleteShare={this.deleteProjectShare}
             options={options}
           />
         }

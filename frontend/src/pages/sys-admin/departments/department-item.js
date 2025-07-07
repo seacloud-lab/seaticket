@@ -6,7 +6,7 @@ import { Utils } from '../../../utils/utils.js';
 import MainPanelTopbar from '../main-panel-topbar';
 import { siteRoot, gettext } from '../../../constants';
 import { AddDepartmentOperation, AddMemberOperation } from './common-operations';
-import Bases from './dtable-bases';
+import Projects from './projects';
 import SubDepartments from './sub-departments';
 import Members from './members';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api.js';
@@ -120,7 +120,7 @@ class DepartmentItem extends React.Component {
             <Router role='group'>
               <SubDepartments path="/" isLoading={isLoading} groups={groups} onDepartChanged={this.onSubDepartChanged}/>
               <Members path="members" isLoading={isLoading} members={members} onMemberChanged={this.onMemberChanged}/>
-              <Bases path="bases" />
+              <Projects path="bases" />
             </Router>
           </div>
         </div>

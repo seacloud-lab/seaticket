@@ -9,7 +9,7 @@ import { gettext } from '../../../constants';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
-  addTableShare: PropTypes.func,
+  addProjectShare: PropTypes.func,
   options: PropTypes.array.isRequired,
   customSharePermissions: PropTypes.array,
 };
@@ -49,7 +49,7 @@ class AddShareGroup extends React.Component {
 
   addShareGroup = () => {
     const { selectedOptions, permissionItem } = this.state;
-    this.props.addTableShare(selectedOptions, permissionItem.value);
+    this.props.addProjectShare(selectedOptions, permissionItem.value);
     this.props.toggle();
   };
 

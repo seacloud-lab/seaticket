@@ -17,7 +17,7 @@ function GroupTrashDialog(props) {
   const [trashDTableList, setTrashDTableList] = useState([]);
 
   useEffect(() => {
-    seaQAAPI.listGroupTrashDTables(groupID).then(res => {
+    seaQAAPI.listGroupTrashProjects(groupID).then(res => {
       setLoading(false);
       setTrashDTableList(res.data.trash_dtable_list);
     }).catch(error => {

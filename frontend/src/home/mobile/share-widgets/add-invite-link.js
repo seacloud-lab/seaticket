@@ -93,7 +93,7 @@ class AddInviteLink extends React.Component {
       return;
     }
     const { workspace_id, name } = this.props.currentProject;
-    seaQAAPI.createDTableInviteLink(workspace_id, name, invitePermission, password, expireDays).then(res => {
+    seaQAAPI.createProjectInviteLink(workspace_id, name, invitePermission, password, expireDays).then(res => {
       let inviteLink = res.data;
       this.props.addInviteLink(inviteLink);
       this.toggle();
