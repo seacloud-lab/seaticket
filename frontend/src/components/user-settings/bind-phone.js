@@ -45,8 +45,6 @@ class BindPhone extends React.Component {
       isSendCodeAvailable: false,
       intervalCount: 60,
     };
-
-    this.timter = null;
   }
 
   componentDidMount() {
