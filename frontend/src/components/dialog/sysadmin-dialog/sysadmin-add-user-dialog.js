@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DTableModalHeader } from 'dtable-ui-component';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, InputGroup } from 'reactstrap';
 import SelectEditor from '../../select-editor/select-editor';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
+import ModalHeader from '../../modal-header';
 
 import '../../../css/admin-common.css';
 
@@ -133,7 +133,7 @@ class SysAdminAddUserDialog extends React.Component {
 
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{dialogTitle || gettext('Add member')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{dialogTitle || gettext('Add member')}</ModalHeader>
         <ModalBody>
           <Form autoComplete="off">
             <FormGroup>

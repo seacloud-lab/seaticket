@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster, ModalHeader } from '../../../../components';
 import { gettext } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import GroupSelect from '../../../../components/group-select';
-import { DTableModalHeader } from 'dtable-ui-component';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -102,10 +101,9 @@ class AddUserToGroupsOperation extends React.Component {
         <button {...btnProps}>{title}</button>
         {isShowDialog && (
           <Modal isOpen={true} toggle={this.toggleDialog}>
-            <DTableModalHeader toggle={this.toggleDialog}>
+            <ModalHeader toggle={this.toggleDialog}>
               {gettext('Add user to groups')}
-            </DTableModalHeader>
-
+            </ModalHeader>
             <ModalBody>
               <GroupSelect
                 placeholder={gettext('Search groups')}

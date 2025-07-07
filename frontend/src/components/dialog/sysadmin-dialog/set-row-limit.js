@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input, InputGroup } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -47,7 +47,7 @@ class SetRowLimitDialog extends React.Component {
     const { rowLimit, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Set row limit')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Set row limit')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

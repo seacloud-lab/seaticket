@@ -2,13 +2,10 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import dayjs from 'dayjs';
-import { toaster } from 'dtable-ui-component';
+import { toaster, ModalPortal, CommonOperationConfirmationDialog, Paginator } from '../../components';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
-import ModalPortal from '../../components/modal-portal';
-import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
-import Paginator from '../../components/paginator';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,

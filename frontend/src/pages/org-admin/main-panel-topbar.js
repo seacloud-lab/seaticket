@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Account from '../../components/common/account';
+import Account from '../../components/account';
 import { Utils } from '../../utils/utils';
 
 const propTypes = {

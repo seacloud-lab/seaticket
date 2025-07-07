@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
 import { gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
+import toaster from '../toaster';
 
 const propTypes = {
   member: PropTypes.object.isRequired,
@@ -38,7 +38,7 @@ class DeleteMemberDialog extends React.Component {
     subtitle = subtitle.replace('{placeholder}', '<span class="op-target">' + Utils.HTMLescape(this.props.member.name) + '</span>');
     return (
       <Modal isOpen={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Delete member')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Delete member')}</ModalHeader>
         <ModalBody>
           <div dangerouslySetInnerHTML={{ __html: subtitle }}></div>
         </ModalBody>

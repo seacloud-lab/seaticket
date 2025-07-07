@@ -1,12 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
-import { toaster } from 'dtable-ui-component';
+import { toaster, ModalPortal } from '../../components';
 import OrgUsersList from './org-users-list';
 import OrgAdminList from './org-admin-list';
 import MainPanelTopbar from './main-panel-topbar';
 import AddOrgAdminDialog from '../../components/dialog/org-add-admin-dialog';
-import ModalPortal from '../../components/modal-portal';
 import AddOrgUserDialog from '../../components/dialog/org-add-user-dialog';
 import InviteUserDialog from '../../components/dialog/org-admin-invite-user-dialog';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';

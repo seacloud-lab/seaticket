@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Label, Form, InputGroup, FormGroup } from 'reactstrap';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -132,7 +132,7 @@ class AddOrgUserDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Add user')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Add user')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input, InputGroup, InputGroupText } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -47,7 +47,7 @@ class SetQuotaDialog extends React.Component {
     const { quota, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Set quota')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Set quota')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

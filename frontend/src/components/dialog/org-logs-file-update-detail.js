@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
+import toaster from '../toaster';
 
 const propTypes = {
   repoID: PropTypes.string.isRequired,
@@ -51,8 +51,8 @@ class FileUpdateDetailDialog extends React.Component {
     for (var i = 0, len = items.length; i < len; i++) {
       con += '<li class="list-group-item">' + items[i] + '</li>';
     }
-    con += '</ul>'; 
-    return {__html: con};
+    con += '</ul>';
+    return { __html: con };
   };
 
   renderContent = () => {
@@ -120,9 +120,9 @@ class FileUpdateDetailDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.props.toggleCancel}>
-        <DTableModalHeader toggle={this.props.toggleCancel}>
+        <ModalHeader toggle={this.props.toggleCancel}>
           {gettext('Modification details')}
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody>
           {this.renderContent()}
         </ModalBody>

@@ -2,8 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import copy from 'copy-to-clipboard';
-import { List, Icon, ActionSheet } from 'antd-mobile';
-import { toaster } from 'dtable-ui-component';
+import { List, IconButton, ActionSheet, toaster } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import AddExternalLink from './add-external-link';
 import ShareAddedBtn from './share-add-btn';
@@ -101,7 +100,7 @@ class ExternalLink extends React.Component {
                 <Item
                   key={item.token}
                   multipleLine
-                  extra={<Icon type="ellipsis" onClick={() => {this.showActionSheet(item);}}/>}
+                  extra={<IconButton icon="ellipsis" onClick={() => this.showActionSheet(item)}/>}
                 >
                   {url}
                   <Brief>{gettext('Expire date')}: {item.expire_date ? dayjs(item.expire_date).format('YYYY-MM-DD HH:mm') : '-'}</Brief>

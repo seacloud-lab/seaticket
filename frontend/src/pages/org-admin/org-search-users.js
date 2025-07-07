@@ -1,9 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RoleStatusEditor, toaster, DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../components/loading';
-import Paginator from '../../components/paginator';
+import { RoleStatusEditor, toaster, EmptyTip, Loading, Paginator } from '../../components';
 import MainPanelTopbar from './main-panel-topbar';
 import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';
 import OrgUserInfo from '../../models/org-user';
@@ -233,7 +231,7 @@ class Content extends Component {
     } else {
       if (items.length === 0) {
         return (
-          <DTableEmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
         );
       } else {
         return (

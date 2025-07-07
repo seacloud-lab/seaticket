@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Button } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../../toaster';
 import UserSelect from '../../../components/user-select';
 import DtableSharePermissionEditor from '../../../components/select-editor/dtable-share-permission-editor';
 import { UserInfoPopover } from '../../../components/popover';

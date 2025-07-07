@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/async';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../toaster';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils.js';
 import { sysAdminServiceApi } from '../../api/sys-admin-service-api.js';

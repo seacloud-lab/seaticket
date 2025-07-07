@@ -2,12 +2,12 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
-import { DTableEmptyTip } from 'dtable-ui-component';
 import Loading from '../../../components/loading';
 import MainPanelTopbar from '../main-panel-topbar';
 import Paginator from '../../../components/paginator';
 import Nav from './user-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
+import { EmptyTip } from '../../../components';
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -119,7 +119,7 @@ class Content extends Component {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
       );
       const table = (
         <Fragment>

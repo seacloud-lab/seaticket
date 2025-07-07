@@ -1,9 +1,10 @@
 import React from 'react';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../components/toaster';
 import { mediaUrl, gettext, serviceURL, lang, avatarURL } from '../constants/config';
 import { strChineseFirstPY } from './pinyin-by-unicode';
 import { NOTIFICATION_TYPE } from '../constants/notification-constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
+import { canUseDOM } from './dom-operations';
 
 export const Utils = {
 
@@ -55,6 +56,10 @@ export const Utils = {
 
   isDesktop: function () {
     return window.innerWidth >= 768;
+  },
+
+  isIOS: function () {
+    return canUseDOM && /iphone|ipad|ipod/i.test(window.navigator.userAgent);
   },
 
   openPage: function (event, href) {

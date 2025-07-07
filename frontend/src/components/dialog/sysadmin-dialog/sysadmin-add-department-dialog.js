@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Alert, Button, Modal, ModalBody, ModalFooter, Input, Form, FormGroup, Label } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { validateName } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -57,7 +57,7 @@ class AddDepartDialog extends React.Component {
     let header = this.props.parentGroupID ? gettext('New sub-department') : gettext('New department');
     return (
       <Modal isOpen={true} toggle={this.props.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.props.toggle}>{header}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{header}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

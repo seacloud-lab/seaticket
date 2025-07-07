@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '../../../constants/config';
 import { Utils } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   headerText: PropTypes.string.isRequired,
@@ -31,7 +31,7 @@ class DeleteConfirmDialog extends Component {
 
     return (
       <Modal isOpen={this.props.isOpen} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{this.props.headerText}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{this.props.headerText}</ModalHeader>
         <ModalBody>
           <p dangerouslySetInnerHTML={{ __html: message }}></p>
         </ModalBody>

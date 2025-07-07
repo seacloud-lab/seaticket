@@ -1,10 +1,9 @@
 import React, { Fragment, } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { toaster, DTableEmptyTip, DTableModalHeader } from 'dtable-ui-component';
+import { toaster, EmptyTip, ModalHeader, Loading } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
-import Loading from '../../../components/loading';
 import Department from '../../../models/department';
 import DepartmentGroup from './department-group';
 import DepartmentGroupMembers from './department-group-members';
@@ -265,7 +264,7 @@ class DepartmentDetailDialog extends React.Component {
 
   renderHeader = () => {
     const title = this.props.usedFor === 'add_group_member' ? gettext('Select group members') : gettext('Select shared users');
-    return <DTableModalHeader toggle={this.toggle}>{title}</DTableModalHeader>;
+    return <ModalHeader toggle={this.toggle}>{title}</ModalHeader>;
   };
 
   render() {
@@ -285,7 +284,7 @@ class DepartmentDetailDialog extends React.Component {
       <Modal isOpen={true} toggle={this.toggle}>
         {this.renderHeader()}
         <ModalBody>
-          <DTableEmptyTip text={gettext('No departments')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No departments')} src={`${mediaUrl}img/no-items-tip.png`} />
         </ModalBody>
       </Modal>
     );

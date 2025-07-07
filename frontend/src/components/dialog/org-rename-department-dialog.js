@@ -4,7 +4,7 @@ import { Alert, Button, Modal, ModalBody, ModalFooter, Input, Form, FormGroup, L
 import { gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { validateName } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   groupID: PropTypes.string.isRequired,
@@ -71,7 +71,7 @@ class RenameDepartmentDialog extends React.Component {
     const { isSubmitBtnActive, errMessage } = this.state;
     return (
       <Modal isOpen={true} toggle={this.props.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Rename')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Rename')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

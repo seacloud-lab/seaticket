@@ -2,8 +2,7 @@ import React from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
+import { toaster, ModalHeader, Loading } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import User from '../../../models/user';
 import { gettext } from '../../../constants/config';
@@ -67,7 +66,7 @@ export default class WorkspaceMemberDialog extends React.Component {
     if (isLoading) {
       return (
         <Modal isOpen={true} toggle={this.toggle} className="dtable-group-member-content">
-          <DTableModalHeader toggle={this.toggle}>{gettext('Group members')}</DTableModalHeader>
+          <ModalHeader toggle={this.toggle}>{gettext('Group members')}</ModalHeader>
           <ModalBody className='group-members'>
             <div className="my-4">
               <Loading />
@@ -78,7 +77,7 @@ export default class WorkspaceMemberDialog extends React.Component {
     }
     return (
       <Modal isOpen={true} toggle={this.toggle} className="dtable-group-member-content">
-        <DTableModalHeader toggle={this.toggle}>{gettext('Group members') + ` (${groupMembers.length})`}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Group members') + ` (${groupMembers.length})`}</ModalHeader>
         <ModalBody className={classnames('group-members', { 'group-members-not-overflow': groupMembers.length < 7 })}>
           {this.getMembers()}
         </ModalBody>

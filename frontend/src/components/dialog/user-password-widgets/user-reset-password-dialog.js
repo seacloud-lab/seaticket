@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Input, Label, Button, Form, FormGroup, Alert } from 'reactstrap';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import PasswordInput from './password-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, loginUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { isValidPassword } from '../../../utils/validate';
+import toaster from '../../toaster';
+import ModalHeader from '../../modal-header'
 
 import '../../../css/user-reset-password-dialog.css';
 
@@ -132,7 +133,7 @@ class UserResetPassword extends React.Component {
       newPassword, confirmPassword } = this.state;
     return (
       <Modal isOpen={true} centered={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Reset password')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Reset password')}</ModalHeader>
         <ModalBody>
           <Form autoComplete="off">
             <FormGroup>

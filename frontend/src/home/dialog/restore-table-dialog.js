@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import isHotkey from 'is-hotkey';
 import { gettext } from '../../constants/config';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { ModalHeader } from '../../components';
 
 const propTypes = {
   currentProject: PropTypes.object.isRequired,
@@ -50,7 +50,7 @@ class RestoreTableDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Restore base')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Restore base')}</ModalHeader>
         <ModalBody>
           {this.renderText()}
         </ModalBody>

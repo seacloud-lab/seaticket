@@ -3,15 +3,11 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
 import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, Paginator, ModalPortal, CommonOperationConfirmationDialog } from '../../components';
 import { Utils } from '../../utils/utils';
 import { gettext, siteRoot, loginUrl, mediaUrl } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import Loading from '../../components/loading';
-import Paginator from '../../components/paginator';
-import ModalPortal from '../../components/modal-portal';
 import MainPanelTopbar from './main-panel-topbar';
-import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 
 const { orgID } = window.org.pageOptions;
 
@@ -179,7 +175,7 @@ class Content extends Component {
     } else {
       if (items.length === 0) {
         return (
-          <DTableEmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
         );
       } else {
         return (

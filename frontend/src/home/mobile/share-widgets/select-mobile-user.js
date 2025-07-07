@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../../components';
 import { Utils } from '../../../utils/utils';
-import Loading from '../../../components/loading';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants/config';
 
@@ -61,7 +60,7 @@ class SelectUser extends React.Component {
     });
   };
 
-  onSelectOption = (event, userItem) => {
+  onChange = (event, userItem) => {
     event.stopPropagation();
     let newSelectedOptions = this.state.selectedOptions.slice(0);
     const optionIndex = newSelectedOptions.findIndex(optionItem => optionItem && optionItem.email === userItem.email);
@@ -118,7 +117,7 @@ class SelectUser extends React.Component {
         {userList.map((option) => {
           const isSelectedOption = selectedOptions.find((item) => item.email === option.email);
           return (
-            <div className="mobile-list-item" key={option.email} onClick={(event) => this.onSelectOption(event, option)}>
+            <div className="mobile-list-item" key={option.email} onClick={(event) => this.onChange(event, option)}>
               <div className="select-container">
                 <span className="select-item">
                   <img className="select-avatar" alt={option.name} src={option.avatar_url} />

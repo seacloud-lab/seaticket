@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../../constants';
 import SysAdminUserSelect from '../../select-editor/sysadmin-user-select';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -40,7 +40,7 @@ class SysAdminGroupAddMemberDialog extends React.Component {
     const { orgID } = this.props;
     return (
       <Modal isOpen={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Add member')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Add member')}</ModalHeader>
         <ModalBody>
           <SysAdminUserSelect
             ref="userSelect"

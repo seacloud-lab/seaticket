@@ -34,7 +34,6 @@ const Search = () => {
     setQueryStr(inputValue);
   }, [queryStr]);
 
-
   return (
     <>
       <div>

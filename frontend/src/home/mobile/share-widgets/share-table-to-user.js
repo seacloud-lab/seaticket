@@ -1,10 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../../components';
 import ShareItem from './share-item';
 import { Utils } from '../../../utils/utils';
 import ShareAddedBtn from './share-add-btn';
-import Loading from '../../../components/loading';
 import ShareUtils from './share-utils';
 import { seaQAAPI } from '../../../api/web-api';
 import AddShareUser from './add-share-user';

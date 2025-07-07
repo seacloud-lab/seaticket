@@ -2,13 +2,11 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import dayjs from 'dayjs';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, ModalPortal, Paginator } from '../../components';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
-import ModalPortal from '../../components/modal-portal';
 import RestoreTableDialog from '../../home/dialog/restore-table-dialog';
-import Paginator from '../../components/paginator';
 import EmptyProjectTrashDialog from '../../home/dialog/empty-project-trash-dialog';
 
 const ItemPropTypes = {
@@ -258,7 +256,7 @@ class OrgTrashProjects extends React.Component {
     let { projectList, page, per_page, count, expireDays } = this.state;
     if (!projectList.length) {
       return (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
       );
     }
     return (

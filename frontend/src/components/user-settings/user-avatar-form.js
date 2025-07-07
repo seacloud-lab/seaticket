@@ -1,5 +1,5 @@
 import React from 'react';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../toaster';
 import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';

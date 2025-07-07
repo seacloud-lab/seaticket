@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -42,7 +42,7 @@ class DeleteDepartDialog extends React.Component {
     subtitle = subtitle.replace('{placeholder}', '<span class="op-target">' + Utils.HTMLescape(this.props.groupName) + '</span>');
     return (
       <Modal isOpen={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Delete department')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Delete department')}</ModalHeader>
         <ModalBody>
           <div dangerouslySetInnerHTML={{ __html: subtitle }}></div>
           { this.state.errMessage && <p className="error">{this.state.errMessage}</p> }

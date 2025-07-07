@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../constants';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { gettext } from '../../../constants';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   unlinkDevice: PropTypes.func.isRequired,
@@ -34,7 +34,7 @@ class SysAdminUnlinkDevice extends React.Component {
     const toggle = this.props.toggleDialog;
     return (
       <Modal isOpen={true} toggle={toggle}>
-        <DTableModalHeader toggle={toggle}>{gettext('Unlink device')}</DTableModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('Unlink device')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Are you sure you want to unlink this device?')}</p>
           <div className="d-flex align-items-center">

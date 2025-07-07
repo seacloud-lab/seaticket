@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../../../components';
 import { gettext } from '../../../../constants';
-import Loading from '../../../../components/loading';
 import BaseItem from './base-item';
 import { Utils } from '../../../../utils/utils';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
+import toaster from '../../toaster';
+import ModalHeader from '../../modal-header';
 import PasswordInput from './password-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
@@ -57,7 +58,7 @@ const UserUpdatePassword = ({ toggle }) => {
 
   return (
     <Modal centered={true} isOpen={true} toggle={toggle}>
-      <DTableModalHeader toggle={toggle}>{gettext('Update password')}</DTableModalHeader>
+      <ModalHeader toggle={toggle}>{gettext('Update password')}</ModalHeader>
       <ModalBody>
         <Form>
           <PasswordInput

@@ -1,5 +1,5 @@
 import { seaQAAPI } from '../api/web-api';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../components';
 import { Utils } from './utils';
 
 export default class UserService {

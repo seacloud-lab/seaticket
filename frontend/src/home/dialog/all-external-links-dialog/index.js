@@ -1,12 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
+import { toaster, ModalHeader, Loading, ModalPortal } from '../../../components';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import ModalPortal from '../../../components/modal-portal';
-import Loading from '../../../components/loading';
 import DTableExternalLinks from '../dtable-external-links-widgets/dtable-external-links';
 
 import './index.css';
@@ -65,7 +63,7 @@ class AllExternalLinksDialog extends React.Component {
     return (
       <ModalPortal>
         <Modal isOpen={true} toggle={this.toggle} className="dtable-external-links-dialog">
-          <DTableModalHeader toggle={this.toggle}>{currentProject.name}</DTableModalHeader>
+          <ModalHeader toggle={this.toggle}>{currentProject.name}</ModalHeader>
           <ModalBody className="dtable-external-links-body">
             {isLoading ?
               <Loading /> :

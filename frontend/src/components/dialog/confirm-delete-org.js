@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input } from 'reactstrap';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   title: PropTypes.string.isRequired,
@@ -47,7 +47,7 @@ class ConfirmDeleteOrg extends Component {
     let canDelete = this.state.confirmText === orgName ? true : false;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{title}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{title}</ModalHeader>
         <ModalBody>
           <p dangerouslySetInnerHTML={{ __html: message }}></p>
           <div className="form-group">

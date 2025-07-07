@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -26,9 +26,9 @@ class ConfirmDTableExportDialog extends Component {
     const { toggle, sizeLimit } = this.props;
     return (
       <Modal isOpen={true} toggle={toggle} size="md" className="dtable-set-password-dialog">
-        <DTableModalHeader toggle={this.props.toggle}>
+        <ModalHeader toggle={this.props.toggle}>
           <span className="mr-1">{gettext('Export base')}</span>
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody className='pb-0'>
           <p>{gettext('The assets in the base exceed the limit of {sizeLimit} MB. You can choose to export the base without assets.').replace('{sizeLimit}', sizeLimit)}</p>
         </ModalBody>

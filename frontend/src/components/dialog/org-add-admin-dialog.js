@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
 import { Button, Modal, ModalBody, ModalFooter, Alert } from 'reactstrap';
 import { gettext, orgID } from '../../constants';
 import { Utils } from '../../utils/utils';
 import UserSelect from '../user-select';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import OrgUserInfo from '../../models/org-user';
-import { DTableModalHeader } from 'dtable-ui-component';
+import toaster from '../toaster';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -51,7 +51,7 @@ class AddOrgAdminDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Add admins')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Add admins')}</ModalHeader>
         <ModalBody>
           <UserSelect
             ref="userSelect"

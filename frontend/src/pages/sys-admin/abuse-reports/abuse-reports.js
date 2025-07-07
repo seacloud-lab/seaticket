@@ -1,11 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, Paginator } from '../../../components';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
 import MainPanelTopbar from '../main-panel-topbar';
 import OpMenu from './op-menu';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -56,7 +54,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No abuse reports')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No abuse reports')} />
       );
       const table = (
         <Fragment>

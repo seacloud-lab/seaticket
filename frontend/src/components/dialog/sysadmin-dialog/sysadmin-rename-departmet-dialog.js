@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Alert, Button, Modal, ModalBody, ModalFooter, Input, Form, FormGroup, Label } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { Utils, validateName } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -70,7 +70,7 @@ class RenameDepartmentDialog extends React.Component {
     const { isSubmitBtnActive, errMessage } = this.state;
     return (
       <Modal isOpen={true} toggle={this.props.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Rename')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Rename')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

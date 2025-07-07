@@ -1,9 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { List, InputItem } from 'antd-mobile';
 import { Alert, Button } from 'reactstrap';
-import { toaster, DTableRadio } from 'dtable-ui-component';
-import MobileCommonHeader from '../mobile-common-header';
+import { List, InputItem, toaster, Radio, MobileCommonHeader } from '../../../components';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../utils/utils';
@@ -161,13 +159,13 @@ class AddExternalLink extends React.Component {
             </List>
             <List renderHeader="URL">
               <Item onClick={() => this.onChangeRadioCheckedName('default')}>
-                <DTableRadio
+                <Radio
                   isChecked={radioCheckName === 'default'}
                   label={gettext('Random URL')}
                 />
               </Item>
               <Item onClick={() => this.onChangeRadioCheckedName('customize')}>
-                <DTableRadio
+                <Radio
                   isChecked={radioCheckName === 'customize'}
                   onCheckedChange={() => this.onChangeRadioCheckedName('customize')}
                   label={gettext('Custom URL')}

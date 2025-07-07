@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { ModalHeader } from '../../components';
 import { mediaUrl } from '../../constants';
 import { isWorkWeChat } from '../../utils/wechat-utils';
 
@@ -22,9 +22,9 @@ class WechatDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle} zIndex='1060'>
-        <DTableModalHeader toggle={this.toggle}>
+        <ModalHeader toggle={this.toggle}>
           加入咨询群
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody>
           <div className="wechat-dialog-body">
             <img src={`${mediaUrl}img/wechat-QR-code.png`} width="150" alt="" />

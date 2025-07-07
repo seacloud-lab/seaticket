@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 import { gettext } from '../../../constants';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { DIALOG_MAX_HEIGHT } from '../../../utils/utils';
@@ -102,10 +102,10 @@ class SysAdminShareTableDialog extends React.Component {
     let name = currentProject.name;
     return (
       <Modal isOpen={true} toggle={this.props.shareCancel} style={{ maxWidth: '850px' }} className="share-dialog" innerRef={ref => this.innerRef = ref}>
-        <DTableModalHeader toggle={this.props.shareCancel}>
+        <ModalHeader toggle={this.props.shareCancel}>
           <span className="mr-1">{gettext('Share')}</span>
           <span className="op-target" title={name}>{name}</span>
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody className="share-dialog-content">
           {this.renderContent()}
         </ModalBody>

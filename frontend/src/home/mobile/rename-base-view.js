@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { List, InputItem } from 'antd-mobile';
-import { toaster } from 'dtable-ui-component';
-import MobileCommonHeader from './mobile-common-header';
+import { toaster, List, InputItem, MobileCommonHeader } from '../../components';
 import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
 import { gettext } from '../../constants';
 import { validateName } from '../../utils/utils';

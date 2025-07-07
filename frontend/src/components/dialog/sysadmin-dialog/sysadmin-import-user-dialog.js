@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Alert, Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext, siteRoot } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -48,7 +48,7 @@ class SysAdminImportUserDialog extends React.Component {
     let { errorMsg } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Import users from a .xlsx file')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Import users from a .xlsx file')}</ModalHeader>
         <ModalBody>
           <p><a className="text-secondary small" href={`${siteRoot}useradmin/batchadduser/example/`}>{gettext('Download an example file')}</a></p>
           <button className="btn btn-outline-primary" onClick={this.openFileInput}>{gettext('Upload file')}</button>

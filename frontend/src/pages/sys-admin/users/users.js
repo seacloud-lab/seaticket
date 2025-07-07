@@ -2,9 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
-import { RoleStatusEditor, toaster, DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
+import { RoleStatusEditor, toaster, Loading, Paginator, EmptyTip } from '../../../components';
 import SelectEditor from '../../../components/select-editor/select-editor';
 import SysAdminAddSysUserNotificationDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-sys-user-notification-dialog';
 import SysAdminUserSetQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-quota';
@@ -79,7 +77,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No users')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No users')} />
       );
 
       let columns = [];

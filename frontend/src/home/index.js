@@ -11,7 +11,7 @@ import MainPanel from './main-panel';
 
 import '../css/layout.css';
 import '../css/side-panel.css';
-import '../css/dtable.css';
+import './index.css';
 
 class Home extends React.Component {
 

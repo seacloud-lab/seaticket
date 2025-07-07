@@ -1,9 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { List } from 'antd-mobile';
 import { Alert, Button } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
-import MobileCommonHeader from '../mobile-common-header';
+import { List, toaster, MobileCommonHeader } from '../../../components';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../utils/utils';

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Input, Col } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext, loginUrl } from '../../../constants';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';

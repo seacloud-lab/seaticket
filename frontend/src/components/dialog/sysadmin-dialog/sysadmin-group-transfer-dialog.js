@@ -4,7 +4,7 @@ import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants';
 import SysAdminUserSelect from '../../select-editor/sysadmin-user-select';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   transferGroup: PropTypes.func.isRequired,
@@ -45,9 +45,9 @@ class SysAdminTransferGroupDialog extends React.Component {
     const msg = gettext('Transfer group {library_name} to').replace('{library_name}', innerSpan);
     return (
       <Modal isOpen={true} toggle={this.props.toggleDialog}>
-        <DTableModalHeader toggle={this.props.toggleDialog}>
+        <ModalHeader toggle={this.props.toggleDialog}>
           <span dangerouslySetInnerHTML={{ __html: msg }}></span>
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody>
           <SysAdminUserSelect
             ref="userSelect"

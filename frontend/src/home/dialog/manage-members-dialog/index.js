@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { ModalHeader } from '../../../components';
 import { gettext } from '../../../constants/config';
 import ListAndAddGroupMembers from '../list-and-add-group-members';
 
@@ -26,9 +26,9 @@ class ManageMembersDialog extends React.Component {
     const { groupID, isOwner, toggleManageMembersDialog, toggleDepartmentDetailDialog, isAdmin, loadWorkspaceList } = this.props;
     return (
       <Modal isOpen={true} toggle={this.toggle} className="group-manage-members-dialog">
-        <DTableModalHeader toggle={this.toggle}>
+        <ModalHeader toggle={this.toggle}>
           {gettext('Manage group members')}
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody className="pb-0">
           <ListAndAddGroupMembers
             groupID={groupID}

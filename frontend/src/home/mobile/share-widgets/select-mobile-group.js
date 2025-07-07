@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../../components';
 import { Utils } from '../../../utils/utils';
-import Loading from '../../../components/loading';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
 

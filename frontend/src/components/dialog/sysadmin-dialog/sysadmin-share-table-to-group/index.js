@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../../../toaster';
 import DtableSharePermissionEditor from '../../../../components/select-editor/dtable-share-permission-editor';
 import GroupSelect from '../../../../components/group-select';
 import SharedToGroupItem from './shared-to-group-item';

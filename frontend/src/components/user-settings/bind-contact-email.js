@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../toaster';
 import { enableUserSetContactEmail, gettext } from '../../constants';
 import ModalPortal from '../modal-portal';
 import SetContactEmailDialog from '../dialog/set-contact-email-dialog';

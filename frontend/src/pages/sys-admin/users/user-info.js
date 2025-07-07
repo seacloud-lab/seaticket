@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Label, Input, Button } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled, multiTenancy } from '../../../constants';
 import Loading from '../../../components/loading';

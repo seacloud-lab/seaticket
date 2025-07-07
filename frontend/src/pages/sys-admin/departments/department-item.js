@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link, Router } from '@gatsbyjs/reach-router';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import { Utils } from '../../../utils/utils.js';
 import MainPanelTopbar from '../main-panel-topbar';
 import { siteRoot, gettext } from '../../../constants';

@@ -3,18 +3,14 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { UncontrolledTooltip } from 'reactstrap';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import Search from '../search';
 import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { loginUrl, gettext, siteRoot, multiTenancy, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import ModalPortal from '../../../components/modal-portal';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
 import MainPanelTopbar from '../main-panel-topbar';
 import DTableOpMenu from './dtable-op-menu';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import DTableNav from './dtables-nav';
 import DTableAllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
@@ -341,7 +337,7 @@ class Content extends Component {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
       );
       const table = (
         <Fragment>

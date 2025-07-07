@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
 import dayjs from 'dayjs';
-import { RoleStatusEditor, toaster, DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
+import { RoleStatusEditor, toaster, EmptyTip, Loading } from '../../../components';
 import SysAdminAddOrgDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-org-dialog';
 import ConfirmDeleteOrg from '../../../components/dialog/confirm-delete-org';
 import MainPanelTopbar from '../main-panel-topbar';
@@ -56,7 +55,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No organizations')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No organizations')} />
       );
       const table = (
         <Fragment>

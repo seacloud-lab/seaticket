@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../../../constants';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { gettext } from '../../../../constants';
+import { toaster, ModalHeader } from '../../../../components';
 import { Utils } from '../../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
 import { sysAdminServiceApi } from '../../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -66,16 +65,14 @@ class MigrateToNewVersionOperation extends React.Component {
         <button {...btnProps}>{title}</button>
         {isShowDialog && (
           <Modal isOpen={true} toggle={this.toggleDialog}>
-            <DTableModalHeader toggle={this.toggleDialog}>
+            <ModalHeader toggle={this.toggleDialog}>
               {gettext('Migrate departments to new version')}
-            </DTableModalHeader>
-
+            </ModalHeader>
             <ModalBody>
               <p>
                 <span>{gettext('Are you sure to migrate departments and members to new version?')}</span>
               </p>
             </ModalBody>
-
             <ModalFooter>
               <Button color="secondary" onClick={this.toggleDialog}>{gettext('Cancel')}</Button>
               <Button color="primary" disable={isMigrating} onClick={this.handleSubmit}>{gettext('Submit')}</Button>
