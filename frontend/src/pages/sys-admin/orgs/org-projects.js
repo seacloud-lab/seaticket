@@ -192,12 +192,7 @@ class Content extends Component {
 
 Content.propTypes = contentPropTypes;
 
-const orgGroupsPropTypes = {
-  orgID: PropTypes.string,
-  onCloseSidePanel: PropTypes.func
-};
-
-class OrgDTables extends Component {
+class OrgProjects extends Component {
 
   constructor(props) {
     super(props);
@@ -301,6 +296,9 @@ class OrgDTables extends Component {
   }
 }
 
-OrgDTables.propTypes = orgGroupsPropTypes;
+OrgProjects.propTypes = {
+  orgID: PropTypes.string,
+  onCloseSidePanel: PropTypes.func
+};
 
-export default OrgDTables;
+export default OrgProjects;

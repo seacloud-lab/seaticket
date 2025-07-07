@@ -20,8 +20,8 @@ const propTypes = {
 
 const BAR_ITEMS = [
   {
-    key: 'Bases',
-    title: gettext('Bases'),
+    key: 'Projects',
+    title: gettext('Projects'),
     icon: <span className="dtable-font dtable-icon-dtable-logo tab-item"></span>,
     selectedIcon: <span className="dtable-font dtable-icon-dtable-logo selected-tab-item"></span>
   },

@@ -7,7 +7,7 @@ import { gettext, loginUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { isValidPassword } from '../../../utils/validate';
 import toaster from '../../toaster';
-import ModalHeader from '../../modal-header'
+import ModalHeader from '../../modal-header';
 
 import '../../../css/user-reset-password-dialog.css';
 

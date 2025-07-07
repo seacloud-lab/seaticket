@@ -79,12 +79,12 @@ class OrgAdminServiceApi {
   }
 
   orgAdminListGroupDTables(orgID, groupID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/dtables/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/projects/';
     return this.req.get(url);
   }
 
   orgAdminDeleteDTableFromGroup(orgID, groupID, tableID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/dtables/' + tableID + '/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/groups/' + groupID + '/projects/' + tableID + '/';
     return this.req.delete(url);
   }
 
@@ -371,8 +371,8 @@ class OrgAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminDeleteProject(orgID, dtableID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableID + '/';
+  orgAdminDeleteProject(orgID, projectID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + projectID + '/';
     return this.req.delete(url);
   }
 
@@ -385,13 +385,13 @@ class OrgAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  orgAdminCleanTrashDTables(orgID) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/';
+  orgAdminCleanTrashProjects(orgID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-projects/';
     return this.req.delete(url);
   }
 
-  orgAdminRestoreTrashProject(orgID, dtableID, restoreToAdminAccount) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-dtables/' + dtableID + '/';
+  orgAdminRestoreTrashProject(orgID, projectID, restoreToAdminAccount) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/trash-projects/' + projectID + '/';
     const data = {
       restore_to_admin_account: restoreToAdminAccount
     };
@@ -399,7 +399,7 @@ class OrgAdminServiceApi {
   }
 
   orgAdminSearchDTables(orgID, query, page, perPage) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/search-dtables/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/search-projects/';
     let params = {
       query: query,
       page: page,
@@ -544,17 +544,17 @@ class OrgAdminServiceApi {
   }
 
   orgAdminGetSharePermissions(orgID, dtableUuid) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/share-permissions/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/share-permissions/';
     return this.req.get(url);
   }
 
   orgAdminListTableShares(orgID, dtableUuid) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/';
     return this.req.get(url);
   }
 
   orgAdminAddTableUserShare(orgID, dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/users/';
     let data = {
       email: email,
       permission: permission
@@ -563,12 +563,12 @@ class OrgAdminServiceApi {
   }
 
   orgAdminDeleteTableUserShare(orgID, dtableUuid, email) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
     return this.req.delete(url);
   }
 
   orgAdminUpdateTableUserShare(orgID, dtableUuid, email, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/users/' + encodeURIComponent(email) + '/';
     let data = {
       permission: permission
     };
@@ -576,7 +576,7 @@ class OrgAdminServiceApi {
   }
 
   orgAdminAddTableGroupShare(orgID, dtableUuid, groupId, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/groups/';
     let data = {
       group_id: groupId,
       permission: permission
@@ -585,12 +585,12 @@ class OrgAdminServiceApi {
   }
 
   orgAdminDeleteTableGroupShare(orgID, dtableUuid, groupId) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/' + groupId + '/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/groups/' + groupId + '/';
     return this.req.delete(url);
   }
 
   orgAdminUpdateTableGroupShare(orgID, dtableUuid, groupId, permission) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/dtables/' + dtableUuid + '/shares/groups/' + groupId + '/';
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/' + dtableUuid + '/shares/groups/' + groupId + '/';
     let data = {
       permission: permission
     };

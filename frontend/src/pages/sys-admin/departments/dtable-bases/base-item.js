@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Utils } from '../../../../utils/utils';
 import { gettext } from '../../../../constants';
 import dayjs from '../../../../utils/dayjs';
-import DTableOpMenu from '../../dtables/dtable-op-menu';
+import DTableOpMenu from '../../projects/dtable-op-menu';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
 import DTableAllExternalLinksDialog from '../../../dtable/dialog/dtable-all-external-links-dialog';
 
@@ -91,7 +91,7 @@ class BaseItem extends React.Component {
       <Fragment>
         {isDeleteDTableDialogOpen &&
           <CommonOperationConfirmationDialog
-            title={gettext('Delete base')}
+            title={gettext('Delete project')}
             message={dialogMsg}
             confirmBtnText={gettext('Delete')}
             executeOperation={this.deleteDTable}

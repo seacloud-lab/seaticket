@@ -5,16 +5,16 @@ import { toaster, ModalPortal } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
-import RestoreTableDialog from '../restore-table-dialog';
+import RestoreProjectDialog from '../restore-project-dialog';
 import ProjectIcon from '../../workspace/body/project-icon';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
   groupID: PropTypes.number.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
-class GroupTrashDTablesItem extends React.PureComponent {
+class GroupTrashProjectsItem extends React.PureComponent {
 
   constructor(props) {
     super(props);
@@ -43,7 +43,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
     this.setState({ isRestoring: true });
     seaQAAPI.restoreGroupTrashDTable(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
-      this.props.restoreDTable(item);
+      this.props.restoreProject(item);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);
       toaster.success(msg);
     }).catch((error) => {
@@ -85,7 +85,7 @@ class GroupTrashDTablesItem extends React.PureComponent {
         </tr>
         {this.state.isRestoreDialogOpen &&
           <ModalPortal>
-            <RestoreTableDialog
+            <RestoreProjectDialog
               currentProject={item}
               handleSubmit={this.onRestoreGroupDTable}
               restoreCancel={this.toggleRestoreDialog}
@@ -98,6 +98,6 @@ class GroupTrashDTablesItem extends React.PureComponent {
   }
 }
 
-GroupTrashDTablesItem.propTypes = propTypes;
+GroupTrashProjectsItem.propTypes = propTypes;
 
-export default GroupTrashDTablesItem;
+export default GroupTrashProjectsItem;

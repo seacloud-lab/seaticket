@@ -474,8 +474,8 @@ class Workspace extends React.Component {
         {this.renderEmpty()}
         {this.state.isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
-            title={gettext('Delete base')}
-            message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${this.state.currentProject.name}</b>`)}
+            title={gettext('Delete project')}
+            message={gettext('Are you sure you want to delete the project {placeholder} ?').replace('{placeholder}', `<b>${this.state.currentProject.name}</b>`)}
             executeOperation={this.onDeleteProject}
             confirmBtnText={gettext('Delete')}
             toggleDialog={this.onDeleteProjectToggle}

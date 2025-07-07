@@ -82,7 +82,7 @@ class Item extends Component {
     if (item.group_id === -1) {
       return `${siteRoot}org/useradmin/info/${encodeURIComponent(item.email)}/`;
     }
-    return `${siteRoot}org/groupadmin/${encodeURIComponent(item.group_id)}/dtables/`;
+    return `${siteRoot}org/groupadmin/${encodeURIComponent(item.group_id)}/projects/`;
   };
 
   render() {
@@ -125,7 +125,7 @@ class Item extends Component {
         {this.state.isDeleteDialogOpen &&
           <ModalPortal>
             <CommonOperationConfirmationDialog
-              title={gettext('Delete base')}
+              title={gettext('Delete project')}
               message={gettext('Are you sure you want to delete the base {placeholder} ?').replace('{placeholder}', `<b>${item.name}</b>`)}
               executeOperation={this.onDeleteProject}
               confirmBtnText={gettext('Delete')}
@@ -223,7 +223,7 @@ const propTypes = {
   onCloseSidePanel: PropTypes.func
 };
 
-class OrgSearchDTables extends Component {
+class OrgSearchProjects extends Component {
 
   constructor(props) {
     super(props);
@@ -377,6 +377,6 @@ class OrgSearchDTables extends Component {
   }
 }
 
-OrgSearchDTables.propTypes = propTypes;
+OrgSearchProjects.propTypes = propTypes;
 
-export default OrgSearchDTables;
+export default OrgSearchProjects;

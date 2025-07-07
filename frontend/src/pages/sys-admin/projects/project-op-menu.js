@@ -4,7 +4,7 @@ import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 
-class DTableOpMenu extends React.Component {
+class ProjectOpMenu extends React.Component {
 
   constructor(props) {
     super(props);
@@ -85,11 +85,11 @@ class DTableOpMenu extends React.Component {
   }
 }
 
-DTableOpMenu.propTypes = {
+ProjectOpMenu.propTypes = {
   operations: PropTypes.array,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   onMenuItemClick: PropTypes.func.isRequired,
 };
 
-export default DTableOpMenu;
+export default ProjectOpMenu;

@@ -222,12 +222,12 @@ class SeaQAAPI {
   }
 
   getDTableInviteLink(workspaceID, name) {
-    var url = this.server + '/api/v2.1/dtables/invite-links/?workspace_id=' + workspaceID + '&table_name=' + encodeURIComponent(name);
+    var url = this.server + '/api/v2.1/projects/invite-links/?workspace_id=' + workspaceID + '&table_name=' + encodeURIComponent(name);
     return this.req.get(url);
   }
 
   createDTableInviteLink(workspaceID, name, permission, password, expire_days) {
-    let url = this.server + '/api/v2.1/dtables/invite-links/';
+    let url = this.server + '/api/v2.1/projects/invite-links/';
     let form = new FormData();
     form.append('workspace_id', workspaceID);
     form.append('table_name', name);
@@ -248,7 +248,7 @@ class SeaQAAPI {
   }
 
   deleteDTableInviteLink(token) {
-    var url = this.server + '/api/v2.1/dtables/invite-links/' + token + '/';
+    var url = this.server + '/api/v2.1/projects/invite-links/' + token + '/';
     return this.req.delete(url);
   }
 
@@ -417,7 +417,7 @@ class SeaQAAPI {
   }
 
   listTrashDTables(page, perPage) {
-    let url = this.server + '/api/v2.1/trash-dtables/';
+    let url = this.server + '/api/v2.1/trash-projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -428,12 +428,12 @@ class SeaQAAPI {
   }
 
   cleanTrashDTables() {
-    let url = this.server + '/api/v2.1/trash-dtables/';
+    let url = this.server + '/api/v2.1/trash-projects/';
     return this.req.delete(url);
   }
 
   restoreTrashDTable(dtableID) {
-    let url = this.server + '/api/v2.1/trash-dtables/' + dtableID + '/';
+    let url = this.server + '/api/v2.1/trash-projects/' + dtableID + '/';
     return this.req.put(url);
   }
 
@@ -630,12 +630,12 @@ class SeaQAAPI {
   }
 
   listGroupTrashDTables(groupID) {
-    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-dtables/';
+    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-projects/';
     return this.req.get(url);
   }
 
   restoreGroupTrashDTable(dtableUuid, groupID) {
-    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-dtables/' + dtableUuid + '/';
+    let url = this.server + '/api/v2.1/groups/' + groupID + '/trash-projects/' + dtableUuid + '/';
     return this.req.put(url);
   }
 
@@ -878,7 +878,7 @@ class SeaQAAPI {
   }
 
   listAddressBookV2DepartmentMemberDTables(departmentId, email) {
-    const url = this.server + `/api/v2.1/address-book-v2/departments/${departmentId}/members/${email}/dtables/`;
+    const url = this.server + `/api/v2.1/address-book-v2/departments/${departmentId}/members/${email}/projects/`;
     return this.req.get(url);
   }
 

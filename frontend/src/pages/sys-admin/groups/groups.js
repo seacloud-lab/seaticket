@@ -192,7 +192,7 @@ class Item extends Component {
     let groupName = '<span class="op-target">' + Utils.HTMLescape(item.name) + '</span>';
     let deleteDialogMsg = gettext('Are you sure you want to delete {placeholder} ?').replace('{placeholder}', groupName);
 
-    const groupUrl = `${siteRoot}sys/groups/${item.id}/dtables/`;
+    const groupUrl = `${siteRoot}sys/groups/${item.id}/projects/`;
 
     return (
       <Fragment>

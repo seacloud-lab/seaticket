@@ -203,7 +203,7 @@ class Item extends Component {
     let deleteDialogMsg = gettext('Are you sure you want to delete {placeholder} ?').replace('{placeholder}', groupName);
 
     const groupUrl = item.parent_group_id === 0 ?
-      `${siteRoot}sys/groups/${item.id}/dtables/` :
+      `${siteRoot}sys/groups/${item.id}/projects/` :
       `${siteRoot}sys/departments/${item.id}/`;
 
     return (

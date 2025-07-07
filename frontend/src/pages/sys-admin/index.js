@@ -20,9 +20,9 @@ import Orgs from './orgs/orgs';
 import OrgInfo from './orgs/org-info';
 import OrgUsers from './orgs/org-users';
 import OrgGroups from './orgs/org-groups';
-import OrgDTables from './orgs/org-dtables';
+import OrgProjects from './orgs/org-projects';
 import SearchOrgs from './orgs/search-orgs';
-import AllDTables from './dtables/all-dtables';
+import AllProjects from './projects/all-projects';
 
 import Groups from './groups/groups';
 import GroupMembers from './groups/group-members';
@@ -54,8 +54,8 @@ class SysAdmin extends React.Component {
         urlPartList: ['organizations/', 'search-organizations/']
       },
       {
-        tab: 'dtables',
-        urlPartList: ['all-dtables/', 'trash-dtables/', 'search-dtables/']
+        tab: 'projects',
+        urlPartList: ['all-projects/', 'trash-projects/', 'search-projects/']
       },
       {
         tab: 'groups',
@@ -108,13 +108,13 @@ class SysAdmin extends React.Component {
         <MainPanel>
           <Router className="reach-router" role='group'>
             <Info path={siteRoot + 'sys/info'} onCloseSidePanel={this.onCloseSidePanel} />
-            <AllDTables path={siteRoot + 'sys/all-dtables'} onCloseSidePanel={this.onCloseSidePanel} />
+            <AllProjects path={siteRoot + 'sys/all-projects'} onCloseSidePanel={this.onCloseSidePanel} />
             <Orgs path={siteRoot + 'sys/organizations'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgInfo path={siteRoot + 'sys/organizations/:orgID/info'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgUsers path={siteRoot + 'sys/organizations/:orgID/users'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgAdminUsers path={siteRoot + 'sys/organizations/:orgID/admin-users'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgGroups path={siteRoot + 'sys/organizations/:orgID/groups'} onCloseSidePanel={this.onCloseSidePanel} />
-            <OrgDTables path={siteRoot + 'sys/organizations/:orgID/dtables'} onCloseSidePanel={this.onCloseSidePanel} />
+            <OrgProjects path={siteRoot + 'sys/organizations/:orgID/projects'} onCloseSidePanel={this.onCloseSidePanel} />
             <SearchOrgs path={siteRoot + 'sys/search-organizations/'} onCloseSidePanel={this.onCloseSidePanel}/>
             <WebSettings path={siteRoot + 'sys/web-settings'} onCloseSidePanel={this.onCloseSidePanel} />
 

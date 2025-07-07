@@ -7,7 +7,8 @@ from seahub.api2.endpoints.org_admin.user_set_password import OrgAdminUserSetPas
 from seahub.api2.endpoints.org_admin.groups import OrgAdminGroups, OrgAdminGroup, OrgAdminSearchGroups
 from seahub.api2.endpoints.org_admin.info import OrgAdminInfo
 from seahub.api2.endpoints.org_admin.settings import OrgAdminSettingsView
-from seahub.api2.endpoints.org_admin.projects import OrgAdminProjectsView, OrgAdminProjectView, OrgAdminTrashProjectsView
+from seahub.api2.endpoints.org_admin.projects import OrgAdminProjectsView, OrgAdminProjectView, \
+    OrgAdminTrashProjectsView, OrgAdminTrashProjectView
 
 urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/search-groups/$', OrgAdminSearchGroups.as_view(), name='api-admin-search-groups'),
@@ -16,8 +17,9 @@ urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/groups/(?P<group_id>\d+)/$', OrgAdminGroup.as_view(), name='api-admin-group'),
 
     re_path(r'^(?P<org_id>\d+)/admin/projects/$', OrgAdminProjectsView.as_view(), name='api-v2.1-org-admin-projects'),
-    re_path(r'^(?P<org_id>\d+)/admin/projects/(?P<dtable_id>\d+)/$', OrgAdminProjectView.as_view(), name='api-v2.1-org-admin-project'),
+    re_path(r'^(?P<org_id>\d+)/admin/projects/(?P<project_id>\d+)/$', OrgAdminProjectView.as_view(), name='api-v2.1-org-admin-project'),
     re_path(r'^(?P<org_id>\d+)/admin/trash-projects/$', OrgAdminTrashProjectsView.as_view(), name='api-v2.1-org-admin-trash-projects'),
+    re_path(r'^(?P<org_id>\d+)/admin/trash-projects/(?P<project_id>\d+)/$', OrgAdminTrashProjectView.as_view(), name='api-v2.1-org-admin-trash-project'),
 
     re_path(r'^(?P<org_id>\d+)/admin/users/$', OrgAdminUsers.as_view(), name='api-v2.1-org-admin-users'),
     re_path(r'^(?P<org_id>\d+)/admin/search-users/$', OrgAdminSearchUsers.as_view(), name='api-v2.1-org-admin-search-users'),

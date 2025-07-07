@@ -2,21 +2,21 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants/config';
 import { EmptyTip } from '../../../components';
-import GroupTrashDTablesItem from './group-trash-dtables-item';
+import GroupTrashProjectsItem from './group-trash-projects-item';
 
 const propTypes = {
   trashDTableList: PropTypes.array.isRequired,
   groupID: PropTypes.number.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
-class GroupTrashDtables extends React.Component {
+class GroupTrashProjects extends React.Component {
 
   render() {
     const { trashDTableList, groupID } = this.props;
     if (trashDTableList.length === 0) {
       return (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted projects')} />
       );
     }
     return (
@@ -24,7 +24,7 @@ class GroupTrashDtables extends React.Component {
         <p className="seatable-tip-default">
           {gettext('Tip: tables deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
         </p>
-        <table className="trash-dtables">
+        <table className="trash-projects">
           <thead>
             <tr>
               <th width="5%">{/* icon*/}</th>
@@ -36,11 +36,11 @@ class GroupTrashDtables extends React.Component {
           <tbody>
             {trashDTableList.map((item, index) => {
               return (
-                <GroupTrashDTablesItem
+                <GroupTrashProjectsItem
                   key={item.id}
                   item={item}
                   groupID={groupID}
-                  restoreDTable={this.props.restoreDTable}
+                  restoreProject={this.props.restoreProject}
                 />
               );
             })}
@@ -51,6 +51,6 @@ class GroupTrashDtables extends React.Component {
   }
 }
 
-GroupTrashDtables.propTypes = propTypes;
+GroupTrashProjects.propTypes = propTypes;
 
-export default GroupTrashDtables;
+export default GroupTrashProjects;

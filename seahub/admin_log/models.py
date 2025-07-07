@@ -29,8 +29,6 @@ BASE_DELETE = 'base_delete'
 BASE_RESTORE = 'base_restore'
 # 'base_repair': {'name': base_name [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
 BASE_REPAIR = 'base_repair'
-# 'base_unset_password': {'name': base_name [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
-BASE_UNSET_PASSWORD = 'base_unset_password'
 
 # 'user_add': {'email': new_user, 'username': username}
 USER_ADD = 'user_add'
@@ -44,7 +42,7 @@ USER_UNSET_ORG_ADMIN = 'user_unset_org_admin'
 
 ADMIN_LOG_OPERATION_TYPE = (
         GROUP_CREATE, GROUP_TRANSFER, GROUP_DELETE,
-        BASE_DELETE, BASE_RESTORE, BASE_REPAIR, BASE_UNSET_PASSWORD,
+        BASE_DELETE, BASE_RESTORE, BASE_REPAIR,
         USER_ADD, USER_DELETE, USER_ACTIVATE, USER_DEACTIVATE, USER_SET_ORG_ADMIN, USER_UNSET_ORG_ADMIN
         )
 

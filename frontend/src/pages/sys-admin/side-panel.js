@@ -59,7 +59,7 @@ class SidePanel extends React.Component {
                   this.renderItem('info', 'sys/info/', 'info', gettext('Info'))
                 }
                 {isDefaultAdmin &&
-                  this.renderItem('dtables', 'sys/all-dtables/', 'dtable-logo', gettext('Bases'))
+                  this.renderItem('projects', 'sys/all-projects/', 'dtable-logo', gettext('Projects'))
                 }
                 {canManageUser &&
                   this.renderItem('users', 'sys/users/', 'mine', gettext('Users'))

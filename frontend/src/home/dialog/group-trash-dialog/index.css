@@ -15,11 +15,11 @@
   overflow: auto;
 }
 
-.group-manage-trash-dialog .trash-dtables tbody tr {
+.group-manage-trash-dialog .trash-projects tbody tr {
   height: 56px;
 }
 
-.group-manage-trash-dialog .trash-dtables .project-icon-content {
+.group-manage-trash-dialog .trash-projects .project-icon-content {
   height: 24px;
   width: 24px;
   display: flex;
@@ -30,26 +30,26 @@
   background-color: #eee;
 }
 
-.group-manage-trash-dialog .trash-dtables .trash-project-name {
+.group-manage-trash-dialog .trash-projects .trash-project-name {
   color: #212529;
   font-weight: 500;
   padding-right: 20px;
 }
 
-.group-manage-trash-dialog .trash-dtables .trash-project-name:hover {
+.group-manage-trash-dialog .trash-projects .trash-project-name:hover {
   text-decoration: underline;
   cursor: pointer;
 }
 
-.group-manage-trash-dialog .trash-dtables .project-icon-content .project-icon-style {
+.group-manage-trash-dialog .trash-projects .project-icon-content .project-icon-style {
   font-size: 16px;
 }
 
-.group-manage-trash-dialog .trash-dtables .trash-table-restore {
+.group-manage-trash-dialog .trash-projects .trash-table-restore {
   cursor: pointer;
   color: #ED7109;
 }
 
-.group-manage-trash-dialog .trash-dtables .trash-table-restore:hover {
+.group-manage-trash-dialog .trash-projects .trash-table-restore:hover {
   text-decoration: underline;
 }

@@ -150,7 +150,7 @@ const contentPropTypes = {
   resetPerPage: PropTypes.func.isRequired,
 };
 
-class Content extends Component { // todo: check all-dtables page delete function
+class Content extends Component { // todo: check all-projects page delete function
   constructor(props) {
     super(props);
     this.state = {
@@ -313,7 +313,7 @@ class TrashDTables extends Component {
         <MainPanelTopBar onCloseSidePanel={this.props.onCloseSidePanel} />
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
-            <DTableNav currentItem='trash-dtables' />
+            <DTableNav currentItem='trash-projects' />
             <div className="cur-view-content">
               <Content
                 loading={this.state.loading}

@@ -19,7 +19,7 @@ function DeletedGroupBaseItem(props) {
     try {
       await seaQAAPI.restoreGroupTrashDTable(uuid, groupID);
       setLoading(false);
-      props.restoreDTable(baseItem);
+      props.restoreProject(baseItem);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);
       toaster.success(msg);
     } catch (error) {
@@ -54,7 +54,7 @@ function DeletedGroupBaseItem(props) {
 DeletedGroupBaseItem.propTypes = {
   baseItem: PropTypes.object.isRequired,
   groupID: PropTypes.number.isRequired,
-  restoreDTable: PropTypes.func.isRequired,
+  restoreProject: PropTypes.func.isRequired,
 };
 
 export default DeletedGroupBaseItem;
