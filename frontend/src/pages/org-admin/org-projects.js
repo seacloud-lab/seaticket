@@ -64,7 +64,7 @@ class OrgProjects extends React.Component {
             <div className="cur-view-path org-user-nav tab-nav-container">
               <ul className="nav">
                 <li className="nav-item" onClick={() => this.tabItemClick('projects')}>
-                  <span className={`nav-link ${this.props.currentTab === 'projects' ? 'active' : ''}`}>{gettext('projects')}</span>
+                  <span className={`nav-link ${this.props.currentTab === 'projects' ? 'active' : ''}`}>{gettext('Projects')}</span>
                 </li>
                 <li className="nav-item" onClick={() => this.tabItemClick('trash')}>
                   <span className={`nav-link ${this.props.currentTab === 'trash' ? 'active' : ''}`} >{gettext('Trash')}</span>
