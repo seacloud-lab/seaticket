@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { ModalHeader } from '../../../components';
 import { gettext } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import UserSelect from '../../../components/user-select';
@@ -54,7 +54,7 @@ class TransferGroupDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Transfer group')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Transfer group')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Transfer group to')}</p>
           <UserSelect

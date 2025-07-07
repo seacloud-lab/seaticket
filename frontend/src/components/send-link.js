@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Form, FormGroup, Label } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import toaster from './toaster';
 import { seaQAAPI } from '../api/web-api';
 import { gettext } from '../constants';
 import { Utils } from '../utils/utils';

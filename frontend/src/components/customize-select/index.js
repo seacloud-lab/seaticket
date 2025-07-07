@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
-import OptionGroup from './option-group';
+import OptionGroup from '../select-option-group';
 import Icon from '../icon';
 
 import './index.css';
@@ -95,7 +95,7 @@ class CustomizeSelect extends Component {
             isShowSelected={this.props.isShowSelected}
             top={this.getSelectedOptionTop()}
             options={options}
-            onSelectOption={this.props.onSelectOption}
+            onChange={this.props.onChange}
             searchable={searchable}
             searchPlaceholder={searchPlaceholder}
             noOptionsPlaceholder={noOptionsPlaceholder}
@@ -117,7 +117,7 @@ class CustomizeSelect extends Component {
               isInModal={isInModal}
               top={this.getSelectedOptionTop()}
               options={options}
-              onSelectOption={this.props.onSelectOption}
+              onChange={this.props.onChange}
               searchable={searchable}
               searchPlaceholder={searchPlaceholder}
               noOptionsPlaceholder={noOptionsPlaceholder}
@@ -138,7 +138,7 @@ CustomizeSelect.propTypes = {
   value: PropTypes.object,
   options: PropTypes.array,
   placeholder: PropTypes.string,
-  onSelectOption: PropTypes.func,
+  onChange: PropTypes.func,
   disabled: PropTypes.bool,
   searchable: PropTypes.bool,
   addOptionAble: PropTypes.bool,

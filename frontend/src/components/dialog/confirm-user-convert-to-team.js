@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import toaster from '../toaster';
+import ModalHeader from '../modal-header';
 import { gettext, siteRoot } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired
@@ -31,7 +31,7 @@ class ConfirmUserConvertToTeam extends Component {
     const { toggle } = this.props;
     return (
       <Modal centered={true} isOpen={true} toggle={toggle}>
-        <DTableModalHeader toggle={toggle}>{gettext('Convert to team account')}</DTableModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('Convert to team account')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Do you really want to convert to team account?')}</p>
         </ModalBody>

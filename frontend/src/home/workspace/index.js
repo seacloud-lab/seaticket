@@ -1,11 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading, CommonOperationConfirmationDialog } from '../../components';
 import { seaQAAPI } from '../../api/web-api';
-import Loading from '../../components/loading';
 import ManageMembersDialog from '../dialog/manage-members-dialog';
 import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
-import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 import GroupInviteMembersDialog from '../dialog/group-invite-members-dialog';
 import { Utils } from '../../utils/utils';
 import { compareTwoString } from '../utils/compare-two-string';

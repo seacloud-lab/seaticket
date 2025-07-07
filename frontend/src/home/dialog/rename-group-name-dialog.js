@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { ModalHeader, toaster } from '../../components';
 
 const propTypes = {
   groupID: PropTypes.number.isRequired,
@@ -68,7 +67,7 @@ class RenameGroupNameDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Rename group')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Rename group')}</ModalHeader>
         <ModalBody>
           <label htmlFor="newGroupName">{gettext('Rename group to')}</label>
           <Input type="text" id="newGroupName" value={this.state.newGroupName}

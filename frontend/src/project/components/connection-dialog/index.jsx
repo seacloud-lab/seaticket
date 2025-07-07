@@ -79,7 +79,7 @@ const ConnectionDialog = ({ onSubmit, onToggle, connection, connections }) => {
               value={selectedType}
               placeholder={gettext('Select a type')}
               options={typeOptions}
-              onSelectOption={onTypeChange}
+              onChange={onTypeChange}
               searchPlaceholder={gettext('Search types')}
               noOptionsPlaceholder={gettext('No types')}
             />

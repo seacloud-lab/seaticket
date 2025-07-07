@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   value: PropTypes.string,
@@ -48,7 +48,7 @@ class SysAdminSetOrgMaxUserNumberDialog extends React.Component {
     const { value, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Set max number of members')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Set max number of members')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../toaster';
 import { gettext } from '../../constants';
 import { validateName } from '../../utils/utils';
 

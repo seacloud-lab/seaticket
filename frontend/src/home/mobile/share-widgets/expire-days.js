@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Alert } from 'reactstrap';
-import { List, InputItem } from 'antd-mobile';
-import MobileCommonHeader from '../mobile-common-header';
+import { List, InputItem, MobileCommonHeader } from '../../../components';
 import {
   gettext,
   shareLinkExpireDaysMax,

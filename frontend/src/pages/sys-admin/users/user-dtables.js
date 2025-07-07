@@ -4,10 +4,8 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
-import { DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
+import { EmptyTip, Loading, Paginator } from '../../../components';
 import MainPanelTopbar from '../main-panel-topbar';
-import Paginator from '../../../components/paginator';
 import Nav from './user-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
@@ -123,7 +121,7 @@ class Content extends Component {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
       );
       const table = (
         <Fragment>

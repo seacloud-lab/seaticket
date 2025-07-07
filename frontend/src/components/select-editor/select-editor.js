@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
-import { DTableSelect } from 'dtable-ui-component';
+import CustomizeReactSelect from '../customize-react-select';
 import '../../css/select-editor.css';
 
 const propTypes = {
@@ -84,7 +84,7 @@ class SelectEditor extends React.Component {
     return (
       <div className="permission-editor" onClick={this.onSelectHandler}>
         {(!isTextMode || this.state.isEditing) &&
-          <DTableSelect
+          <CustomizeReactSelect
             options={this.state.options}
             className="permission-editor-select"
             classNamePrefix="permission-editor"

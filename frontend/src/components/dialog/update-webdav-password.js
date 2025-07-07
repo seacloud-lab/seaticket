@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input, InputGroup } from 'reactstrap';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   password: PropTypes.string.isRequired,
@@ -55,7 +55,7 @@ class UpdateWebdavPassword extends Component {
     const { toggle } = this.props;
     return (
       <Modal centered={true} isOpen={true} toggle={toggle}>
-        <DTableModalHeader toggle={toggle}>{gettext('WebDav password')}</DTableModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('WebDav password')}</ModalHeader>
         <ModalBody>
           <InputGroup className="">
             <Input type={this.state.isPasswordVisible ? 'text' : 'password'} value={this.state.password} onChange={this.handleInputChange} />

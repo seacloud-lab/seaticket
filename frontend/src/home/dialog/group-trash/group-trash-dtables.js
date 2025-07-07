@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants/config';
-import { DTableEmptyTip } from 'dtable-ui-component';
+import { EmptyTip } from '../../../components';
 import GroupTrashDTablesItem from './group-trash-dtables-item';
 
 const propTypes = {
@@ -16,7 +16,7 @@ class GroupTrashDtables extends React.Component {
     const { trashDTableList, groupID } = this.props;
     if (trashDTableList.length === 0) {
       return (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
       );
     }
     return (

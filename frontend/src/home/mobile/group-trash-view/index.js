@@ -1,10 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
-import { DTableEmptyTip } from 'dtable-ui-component';
-import MobileCommonHeader from '../mobile-common-header';
+import { EmptyTip, Loading, MobileCommonHeader } from '../../../components';
 import DeletedGroupBaseItem from './deleted-group-base-item';
-import Loading from '../../../components/loading';
 
 import './index.css';
 
@@ -35,7 +33,7 @@ function GroupTrashView(props) {
       <div className="group-trash-view-content" style={{ height: document.body.clientHeight - 50 }}>
         {isLoading && <Loading />}
         {!isLoading && trashDTableList.length === 0 &&
-          <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
+          <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted bases')} />
         }
         {!isLoading && trashDTableList.length > 0 && trashDTableList.map(baseItem => {
           return (

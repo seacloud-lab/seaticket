@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { DTableSearchInput } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
+import { SearchInput, Loading } from '../../../components';
 import { gettext, isOrgContext } from '../../../constants/config';
 
 const ItemPropTypes = {
@@ -128,7 +127,7 @@ class DepartmentGroup extends Component {
       <div className="department-dialog-group">
         <div className="members-search-container">
           <i className="dtable-search-icon input-icon-addon dtable-font dtable-icon-search"></i>
-          <DTableSearchInput
+          <SearchInput
             className="dtable-search-input mb-2"
             onChange={onSearch}
             placeholder={gettext('Search users')}

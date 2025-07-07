@@ -1,5 +1,5 @@
 import React from 'react';
-import { DTableSelect } from 'dtable-ui-component';
+import CustomizeSelect from '../customize-select';
 import { gettext, siteRoot } from '../../constants';
 
 const {
@@ -8,9 +8,9 @@ const {
 
 class LanguageSetting extends React.Component {
 
-  onSelectChange = (selectedItem) => {
+  onChange = (lang) => {
     // selectedItem: {value: '...', label: '...'}
-    location.href = `${siteRoot}i18n/?lang=${selectedItem.value}`;
+    location.href = `${siteRoot}i18n/?lang=${lang}`;
   };
 
   render() {
@@ -25,10 +25,10 @@ class LanguageSetting extends React.Component {
       <div className="setting-item" id="lang-setting">
         <h3 className="setting-item-heading">{gettext('Language setting')}</h3>
         <div className="language-selector">
-          <DTableSelect
+          <CustomizeSelect
             value={options.find(option => option.value === currentLang.langCode)}
             options={options}
-            onChange={this.onSelectChange}
+            onChange={this.onChange}
             maxWidth={200}
           />
         </div>

@@ -1,11 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster } from 'dtable-ui-component';
+import { toaster, ModalPortal } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
-import ModalPortal from '../../../components/modal-portal';
 import RestoreTableDialog from '../restore-table-dialog';
 import ProjectIcon from '../../workspace/body/project-icon';
 

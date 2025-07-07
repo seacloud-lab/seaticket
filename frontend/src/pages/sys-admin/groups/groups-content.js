@@ -4,11 +4,8 @@ import { Link } from '@gatsbyjs/reach-router';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import { DTableEmptyTip } from 'dtable-ui-component';
-import Paginator from '../../../components/paginator';
+import { EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import OpMenu from '../../../components/dialog/op-menu';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import SysAdminTransferGroupDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-group-transfer-dialog';
 import UserLink from '../user-link';
 
@@ -55,7 +52,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
       );
       const table = (
         <Fragment>

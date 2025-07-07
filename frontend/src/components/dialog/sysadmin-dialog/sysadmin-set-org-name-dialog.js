@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   name: PropTypes.string,
@@ -48,7 +48,7 @@ class SysAdminSetOrgNameDialog extends React.Component {
     const { name, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Set name')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Set name')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

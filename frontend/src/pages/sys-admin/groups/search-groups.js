@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Form, FormGroup, Input, Label, Col } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';

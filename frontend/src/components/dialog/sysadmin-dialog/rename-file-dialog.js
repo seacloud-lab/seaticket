@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input, InputGroup } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -48,7 +48,7 @@ class RenameFileDialog extends React.Component {
     const { newName, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Set new name')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Set new name')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Label } from 'reactstrap';
-import MobileCommonHeader from '../mobile-common-header';
+import { MobileCommonHeader } from '../../../components';
 import RightAngle from './right-angle';
 import SelectMobileUser from './select-mobile-user';
 import SelectMobilePermission from './select-mobile-permission';

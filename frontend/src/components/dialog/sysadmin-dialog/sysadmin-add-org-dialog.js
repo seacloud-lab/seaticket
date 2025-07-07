@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { validateName } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   toggleDialog: PropTypes.func.isRequired,
@@ -104,7 +104,7 @@ class SysAdminAddOrgDialog extends React.Component {
     const { errorMsg, password, passwordAgain, adminEmail, adminName, name, isSubmitBtnActive } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Add organization')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Add organization')}</ModalHeader>
         <ModalBody>
           <Form autoComplete="off">
             <FormGroup>

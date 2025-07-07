@@ -2,8 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import copy from 'copy-to-clipboard';
-import { List, Icon, ActionSheet } from 'antd-mobile';
-import { toaster } from 'dtable-ui-component';
+import { List, ActionSheet, toaster, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import AddInviteLink from './add-invite-link';
 import ShareAddedBtn from './share-add-btn';
@@ -106,7 +105,7 @@ class InviteLink extends React.Component {
                   extra={
                     <div>
                       <span className="mr-2" style={{ fontSize: '14px' }}>{permissionTip}</span>
-                      <Icon type="ellipsis" onClick={() => {this.showActionSheet(item);}}/>
+                      <IconButton icon="ellipsis" onClick={() => this.showActionSheet(item)} />
                     </div>
                   }
                 >

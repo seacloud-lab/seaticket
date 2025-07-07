@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '../../constants/config';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { DTableModalHeader } from 'dtable-ui-component';
+import { gettext } from '../../constants/config';
+import { ModalHeader } from '../../components';
 
 const propTypes = {
   workspace: PropTypes.object.isRequired,
@@ -22,7 +22,7 @@ class LeaveGroupDialog extends React.Component {
 
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Leave group')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Leave group')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Are you sure to leave group')}{' '}<b>{groupName}</b> ?</p>
         </ModalBody>

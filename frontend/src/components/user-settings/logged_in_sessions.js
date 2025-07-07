@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster } from 'dtable-ui-component';
+import toaster from '../toaster';
 import { seaQAAPI } from '../../api/web-api';
 import { loginUrl, gettext, mediaUrl } from '../../constants';
 import { Utils } from '../../utils/utils';

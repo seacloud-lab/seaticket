@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   formActionURL: PropTypes.string.isRequired,
@@ -25,7 +25,7 @@ class ConfirmDisconnectWechat extends Component {
     const { formActionURL, csrfToken, toggle } = this.props;
     return (
       <Modal centered={true} isOpen={true} toggle={toggle}>
-        <DTableModalHeader toggle={toggle}>{gettext('Disconnect')}</DTableModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('Disconnect')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Are you sure you want to disconnect?')}</p>
           <form ref={this.form} className="d-none" method="post" action={formActionURL}>

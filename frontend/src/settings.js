@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from './components';
 import { Utils, isMobile } from './utils/utils';
 import { isWorkWeChat } from './utils/wechat-utils';
 import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from './constants';
@@ -16,7 +16,7 @@ import DeleteAccount from './components/user-settings/delete-account';
 import UserConvertToTeam from './components/user-settings/user-convert-to-team';
 import BindPhone from './components/user-settings/bind-phone';
 import EmailNotice from './components/user-settings/email-notice';
-import Account from './components/common/account';
+import Account from './components/account';
 import BindContactEmail from './components/user-settings/bind-contact-email';
 import LoggedInSessions from './components/user-settings/logged_in_sessions';
 import UserSetPassword from './components/dialog/user-password-widgets/user-set-password-dialog';

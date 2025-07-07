@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import ProjectIcon from '../../workspace/body/project-icon';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';

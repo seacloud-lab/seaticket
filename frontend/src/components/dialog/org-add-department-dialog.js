@@ -4,7 +4,7 @@ import { Alert, Button, Modal, ModalBody, ModalFooter, Input, Form, FormGroup, L
 import { gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { validateName } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   parentGroupID: PropTypes.string,
@@ -56,7 +56,7 @@ class AddDepartDialog extends React.Component {
     let header = this.props.parentGroupID ? gettext('New sub-department') : gettext('New department');
     return (
       <Modal isOpen={true} toggle={this.props.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.props.toggle}>{header}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{header}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -1,7 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../../../components/loading';
+import { EmptyTip, Loading } from '../../../../components';
 import { isOrgContext, orgName, mediaUrl } from '../../../../constants';
 import Workspace from '../../../workspace';
 import { Utils } from '../../../../utils/utils';
@@ -43,7 +42,7 @@ class WorkspaceInMainPanel extends React.Component {
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
         noBaseTip={
-          <DTableEmptyTip text={gettext('No bases.')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No bases.')} src={`${mediaUrl}img/no-items-tip.png`} />
         }
       />
     );

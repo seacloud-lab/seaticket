@@ -1,8 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { RoleStatusEditor, toaster, DTableEmptyTip } from 'dtable-ui-component';
-import Loading from '../../../components/loading';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
+import { RoleStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import OpMenu from './user-op-menu';
@@ -46,7 +44,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No members')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No members')} />
       );
       const table = (
         <Fragment>

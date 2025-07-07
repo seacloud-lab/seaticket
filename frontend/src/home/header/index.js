@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from '../../constants';
 import { isMac } from '../../utils/utils';
 import { isEnter, isModF } from '../../utils/hotkey';
-import Account from '../../components/common/account';
+import Account from '../../components/account';
 import DtableSearcher from '../search/dtable-searcher';
 import { QUERY_TYPE } from '../search/dtable-searcher/constant';
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
+import toaster from '../../toaster';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const propTypes = {
@@ -110,10 +110,10 @@ class SysAdminLibHistorySettingDialog extends React.Component {
     const itemName = this.props.itemName;
     return (
       <Modal isOpen={true} toggle={this.props.toggleDialog}>
-        <DTableModalHeader toggle={this.props.toggleDialog}>
+        <ModalHeader toggle={this.props.toggleDialog}>
           <span className="op-target" title={itemName}>{itemName}</span>{' '}
           {gettext('History setting')}
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup check>

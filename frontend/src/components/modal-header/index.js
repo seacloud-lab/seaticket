@@ -1,20 +1,20 @@
 import React from 'react';
-import { ModalHeader } from 'reactstrap';
+import { ModalHeader as DefaultModalHeader } from 'reactstrap';
 import IconButton from '../icon-button';
 
 import './index.css';
 
-const CustomModalHeader = ({ children, ...props }) => {
+const ModalHeader = ({ children, ...props }) => {
   const customCloseBtn = (
     <button type="button" className="close sea-qa-modal-close" data-dismiss="modal" aria-label="Close" onClick={props.toggle}>
       <IconButton icon="x" className="sea-qa-modal-close-inner" />
     </button>
   );
   return (
-    <ModalHeader {...props} close={customCloseBtn}>
+    <DefaultModalHeader {...props} close={customCloseBtn}>
       {children}
-    </ModalHeader>
+    </DefaultModalHeader>
   );
 };
 
-export default CustomModalHeader;
+export default ModalHeader;

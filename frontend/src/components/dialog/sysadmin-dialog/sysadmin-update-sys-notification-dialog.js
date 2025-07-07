@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter, Form, FormGroup, Input } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
@@ -44,7 +44,7 @@ class SysAdminUpdateSysNotificationDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('Modify notification')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Modify notification')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
-import MobileCommonHeader from '../mobile-common-header';
+import { toaster, Loading, MobileCommonHeader } from '../../../components';
 import ShareTableToUser from '../share-widgets/share-table-to-user';
 import ShareTableToGroup from '../share-widgets/share-table-to-group';
 import { Utils } from '../../../utils/utils';
-import Loading from '../../../components/loading';
 import ExternalLink from '../share-widgets/external-link';
 import InviteLink from '../share-widgets/invite-link';
 import { seaQAAPI } from '../../../api/web-api';

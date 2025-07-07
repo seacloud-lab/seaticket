@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import MobileCommonHeader from '../mobile-common-header';
+import { MobileCommonHeader } from '../../../components';
 import { gettext } from '../../../constants';
 
 const propTypes = {

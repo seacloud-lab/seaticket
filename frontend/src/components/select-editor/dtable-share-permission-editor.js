@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { DTableSelect } from 'dtable-ui-component';
+import CustomizeReactSelect from '../customize-react-select';
 import { Utils } from '../../utils/utils';
 import { gettext, canUseAdvancedPerms } from '../../constants/config';
 
@@ -142,7 +142,7 @@ class DtableSharePermissionEditor extends React.Component {
             }
           </Fragment>
           :
-          <DTableSelect
+          <CustomizeReactSelect
             className="permission-editor-select"
             classNamePrefix="permission-editor"
             options={options}

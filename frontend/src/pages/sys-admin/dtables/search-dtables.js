@@ -3,17 +3,13 @@ import PropTypes from 'prop-types';
 import { Col, Form, FormGroup, Input, UncontrolledTooltip } from 'reactstrap';
 import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext, loginUrl, siteRoot, multiTenancy, mediaUrl } from '../../../constants';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import MainPanelTopbar from '../main-panel-topbar';
 import DTableOpMenu from './dtable-op-menu';
-import Loading from '../../../components/loading';
-import ModalPortal from '../../../components/modal-portal';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-external-links-dialog';
-import Paginator from '../../../components/paginator';
 import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
 
 
@@ -265,7 +261,7 @@ class Content extends Component {
     } else {
       if (!items.length) {
         return (
-          <DTableEmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
         );
       } else {
         return (

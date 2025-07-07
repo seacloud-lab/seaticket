@@ -1,7 +1,6 @@
 import React from 'react';
-import { List } from 'antd-mobile';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, List } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
 import { isWorkWeChat } from '../../../utils/wechat-utils';

@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Form, FormGroup, Label, Alert } from 'reactstrap';
 import { gettext } from '../../../constants';
 import UserSelect from '../../user-select';
-import { DTableModalHeader } from 'dtable-ui-component';
-
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   createRepo: PropTypes.func.isRequired,
@@ -24,12 +23,12 @@ class SysAdminCreateRepoDialog extends React.Component {
 
   handleRepoNameChange = (e) => {
     if (!e.target.value.trim()) {
-      this.setState({isSubmitBtnActive: false});
+      this.setState({ isSubmitBtnActive: false });
     } else {
-      this.setState({isSubmitBtnActive: true});
+      this.setState({ isSubmitBtnActive: true });
     }
 
-    this.setState({repoName: e.target.value});
+    this.setState({ repoName: e.target.value });
   };
 
   handleSubmit = () => {
@@ -59,16 +58,16 @@ class SysAdminCreateRepoDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('New library')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('New library')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
               <Label for="repoName">{gettext('Name')}</Label>
-              <Input 
+              <Input
                 id="repoName"
-                onKeyDown={this.onKeyDown} 
+                onKeyDown={this.onKeyDown}
                 autoFocus
-                value={this.state.repoName} 
+                value={this.state.repoName}
                 onChange={this.handleRepoNameChange}
               />
             </FormGroup>

@@ -1,10 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../components';
 import { enableUserSetContactEmail, gettext, loginUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
-import Loading from '../../components/loading';
 import OrgAdminUserNav from '../../components/org-admin-user-nav';
 import SetOrgUserName from '../../components/dialog/set-org-user-name';
 import SetOrgUserContactEmail from '../../components/dialog/set-org-user-contact-email';

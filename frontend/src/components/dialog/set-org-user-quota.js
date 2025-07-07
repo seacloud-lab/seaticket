@@ -4,7 +4,7 @@ import { Modal, ModalBody, ModalFooter, InputGroup, InputGroupText } from 'react
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   orgID: PropTypes.string.isRequired,
@@ -63,7 +63,7 @@ class SetOrgUserQuota extends React.Component {
     const { inputValue, formErrorMsg, submitBtnDisabled } = this.state;
     return (
       <Modal isOpen={true} centered={true} toggle={this.props.toggleDialog}>
-        <DTableModalHeader toggle={this.props.toggleDialog}>{gettext('Set user quota')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggleDialog}>{gettext('Set user quota')}</ModalHeader>
         <ModalBody>
           <React.Fragment>
             <InputGroup>

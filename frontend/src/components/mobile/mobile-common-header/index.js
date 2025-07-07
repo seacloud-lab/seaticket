@@ -6,9 +6,9 @@ import './index.css';
 function MobileCommonHeader(props) {
   const { title, titleClass, onLeftClick, leftName, onRightClick, rightName, rightStyle } = props;
   const style = rightStyle ? rightStyle : { color: '#f09f3f' };
-  const preCls = 'seatable-am-list-header-content';
+  const preCls = 'sea-qa-am-list-header-content';
   return (
-    <div className={`am-list-header seatable-am-list-header ${titleClass || ''}`}>
+    <div className={`am-list-header sea-qa-am-list-header ${titleClass || ''}`}>
       <div className={`${preCls}`}>
         <span className={`${preCls}-btn`} onClick={onLeftClick}>{leftName || ''}</span>
         <h4 className={`${preCls}-title`}>{title}</h4>

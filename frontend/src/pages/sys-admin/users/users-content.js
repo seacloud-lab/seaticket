@@ -2,15 +2,12 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from '../../../utils/dayjs';
-import { DTableEmptyTip, RoleStatusEditor, toaster } from 'dtable-ui-component';
+import { EmptyTip, RoleStatusEditor, toaster, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { isPro, username, gettext, multiInstitution, siteRoot, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
 import SelectEditor from '../../../components/select-editor/select-editor';
 import OpMenu from '../../../components/dialog/op-menu';
 import SysAdminUserSetQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-quota';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import UserLink from '../user-link';
 import { getRoleOptions, getStatusOptions } from '../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -71,7 +68,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No users')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No users')} />
       );
       let columns = [];
       const colNameText = `${gettext('Name')} / ${gettext('Contact email')}`;

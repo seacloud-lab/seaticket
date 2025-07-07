@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
-import { RoleStatusEditor, toaster } from 'dtable-ui-component';
+import { RoleStatusEditor, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
 import { gettext, username } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';

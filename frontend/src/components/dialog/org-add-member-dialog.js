@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api.js';
 import { Utils } from '../../utils/utils';
 import UserSelect from '../user-select.js';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
+import toaster from '../toaster';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -53,7 +53,7 @@ class AddMemberDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Add member')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Add member')}</ModalHeader>
         <ModalBody>
           <UserSelect
             placeholder={gettext('Search users')}

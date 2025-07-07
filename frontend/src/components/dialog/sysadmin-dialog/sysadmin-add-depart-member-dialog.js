@@ -4,7 +4,7 @@ import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import UserSelect from '../../user-select';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 export default class AddDepartMemberDialog extends React.Component {
@@ -49,7 +49,7 @@ export default class AddDepartMemberDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.props.toggle}>
-        <DTableModalHeader toggle={this.props.toggle}>{gettext('Add member')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggle}>{gettext('Add member')}</ModalHeader>
         <ModalBody>
           <UserSelect
             placeholder={gettext('Search users')}

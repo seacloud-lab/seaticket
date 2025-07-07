@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import Base from '../../models/base';
 import { Utils, validateName } from '../../../utils/utils';

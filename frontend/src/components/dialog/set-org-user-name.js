@@ -4,7 +4,7 @@ import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   orgID: PropTypes.string.isRequired,
@@ -57,7 +57,7 @@ class SetOrgUserName extends React.Component {
     const { inputValue, formErrorMsg, submitBtnDisabled } = this.state;
     return (
       <Modal isOpen={true} centered={true} toggle={this.props.toggleDialog}>
-        <DTableModalHeader toggle={this.props.toggleDialog}>{gettext('Set user name')}</DTableModalHeader>
+        <ModalHeader toggle={this.props.toggleDialog}>{gettext('Set user name')}</ModalHeader>
         <ModalBody>
           <React.Fragment>
             <input type="text" className="form-control" value={inputValue} onChange={this.handleInputChange} />

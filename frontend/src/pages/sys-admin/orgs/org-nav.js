@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
-import { DTableSearchInput } from 'dtable-ui-component';
+import { SearchInput } from '../../../components';
 import { siteRoot, gettext } from '../../../constants';
 
 const propTypes = {
@@ -54,7 +54,7 @@ class Nav extends React.Component {
           {currentItem === 'users' && (
             <div className="search-org-number input-icon">
               <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search" />
-              <DTableSearchInput
+              <SearchInput
                 autoFocus={false}
                 placeholder={gettext('Search member')}
                 style={{ height: '30px' }}

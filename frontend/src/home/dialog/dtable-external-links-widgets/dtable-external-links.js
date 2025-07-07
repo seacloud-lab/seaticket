@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext, mediaUrl } from '../../../constants';
-import { DTableEmptyTip } from 'dtable-ui-component';
+import { EmptyTip } from '../../../components';
 
 class DTableExternalLinks extends React.Component {
 
@@ -32,7 +32,7 @@ class DTableExternalLinks extends React.Component {
       </table>
     );
     const emptyTip = (
-      <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={emptyExternalLinksTip} />
+      <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={emptyExternalLinksTip} />
     );
 
     return dtableExternalLinks.length === 0 ? emptyTip : table;

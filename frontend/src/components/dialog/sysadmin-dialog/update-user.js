@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   value: PropTypes.string,
@@ -44,7 +44,7 @@ class UpdateUser extends React.Component {
     const { toggleDialog } = this.props;
     return (
       <Modal isOpen={true} toggle={toggleDialog}>
-        <DTableModalHeader toggle={toggleDialog}>{this.props.dialogTitle}</DTableModalHeader>
+        <ModalHeader toggle={toggleDialog}>{this.props.dialogTitle}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

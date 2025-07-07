@@ -1,11 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -31,7 +29,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
       );
       const table = (
         <Fragment>

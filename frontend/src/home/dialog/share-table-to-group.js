@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { toaster, DTableGroupSelect } from 'dtable-ui-component';
+import { toaster, CustomizeGroupSelect } from '../../components';
 import DtableSharePermissionEditor from '../../components/select-editor/dtable-share-permission-editor';
 import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
@@ -207,7 +207,7 @@ class ShareTableToGroup extends React.Component {
     }
   };
 
-  onSelectOption = (option) => {
+  onChange = (option) => {
     const selectedOptions = this.state.selectedOptions.slice(0);
     const index = selectedOptions.findIndex(item => item.id === option.id);
     if (index > -1) {
@@ -254,10 +254,10 @@ class ShareTableToGroup extends React.Component {
           <tbody>
             <tr>
               <td>
-                <DTableGroupSelect
+                <CustomizeGroupSelect
                   selectedOptions={this.state.selectedOptions}
                   options={this.state.groups}
-                  onSelectOption={this.onSelectOption}
+                  onChange={this.onChange}
                   onDeleteOption={this.onDeleteOption}
                   searchPlaceholder={gettext('Select groups')}
                   noOptionsPlaceholder={gettext('No results')}

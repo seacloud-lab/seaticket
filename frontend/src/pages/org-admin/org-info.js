@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Progress } from 'antd-mobile';
+import { Progress } from '../../components';
 import { gettext, orgMemberQuotaEnabled, mediaUrl, enableSeatableAI } from '../../constants';
 import { Utils } from '../../utils/utils';
 import MainPanelTopbar from './main-panel-topbar';

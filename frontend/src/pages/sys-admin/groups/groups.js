@@ -2,13 +2,10 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import dayjs from '../../../utils/dayjs';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import SysAdminCreateGroupDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-create-group-dialog';
 import SysAdminTransferGroupDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-group-transfer-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
@@ -61,7 +58,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No groups')} />
       );
       const table = (
         <Fragment>

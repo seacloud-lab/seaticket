@@ -35,7 +35,7 @@ const customStyles = {
   }
 };
 
-class GroupSelect extends React.Component {
+class CustomizeGroupSelect extends React.Component {
 
   constructor(props) {
     super(props);
@@ -99,6 +99,6 @@ class GroupSelect extends React.Component {
   }
 }
 
-GroupSelect.propTypes = propTypes;
+CustomizeGroupSelect.propTypes = propTypes;
 
-export default GroupSelect;
+export default CustomizeGroupSelect;

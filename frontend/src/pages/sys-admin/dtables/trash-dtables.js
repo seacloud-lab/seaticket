@@ -2,15 +2,12 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, ModalPortal, Paginator } from '../../../components';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { loginUrl, gettext, siteRoot, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import MainPanelTopBar from '../main-panel-topbar';
 import DTableNav from './dtables-nav';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
 import { Utils } from '../../../utils/utils';
-import ModalPortal from '../../../components/modal-portal';
 import RestoreTableDialog from '../../dtable/dialog/restore-table-dialog';
 import DTableTrashOpMenu from './dtable-trash-op-menu';
 
@@ -186,7 +183,7 @@ class Content extends Component { // todo: check all-dtables page delete functio
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No trash bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No trash bases')} />
       );
       const table = (
         <Fragment>

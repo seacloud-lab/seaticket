@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Form, FormGroup, Label, Alert } from 'reactstrap';
 import { gettext } from '../../../constants';
 import UserSelect from '../../user-select';
-import { DTableModalHeader } from 'dtable-ui-component';
-
+import ModalHeader from '../../modal-header';
 
 const propTypes = {
   createGroup: PropTypes.func.isRequired,
@@ -58,7 +57,7 @@ class SysAdminCreateGroupDialog extends React.Component {
   render() {
     return (
       <Modal isOpen={true} toggle={this.toggle} autoFocus={false}>
-        <DTableModalHeader toggle={this.toggle}>{gettext('New group')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('New group')}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>

@@ -2,12 +2,9 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
-import { RoleStatusEditor, DTableEmptyTip } from 'dtable-ui-component';
+import { RoleStatusEditor, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import Paginator from '../../../components/paginator';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import UserLink from '../user-link';
 import { getRoleOptions } from '../../../utils/role-status-utils';
 
@@ -48,7 +45,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No organizations')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No organizations')} />
       );
       const table = (
         <Fragment>

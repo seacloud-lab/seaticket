@@ -1,13 +1,13 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
+import { toaster, Loading } from '../../components';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
 import MainPanelTopbar from './main-panel-topbar';
 import Section from '../sys-admin/web-settings/section';
 import CheckboxItem from '../sys-admin/web-settings/checkbox-item';
 import { gettext, displayTwoFactorAuth } from '../../constants';
-import Loading from '../../components/loading';
+
 import '../../css/system-admin-web-settings.css';
 
 const propTypes = {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { toaster, DTableRadio } from 'dtable-ui-component';
+import { toaster, Radio } from '../../components';
 import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
@@ -64,12 +64,12 @@ class EmailNotice extends React.Component {
         <h3 className="setting-item-heading">{gettext('Email notification')}</h3>
         <h6 className="">{gettext('Notifications of base changes')}</h6>
         <p className="mb-1">{gettext('Do you want a summary of all notifications of base changes to be sent to you by email?')}</p>
-        <form method="post" action="" id="set-dtable-updates-email-interval-form">
+        <form method="post" action="" id="set-updates-email-interval-form">
           {this.dtableUpdatesIntervalOptions.map((item, index) => {
             return (
               <React.Fragment key={index}>
-                <DTableRadio
-                  name="set-dtable-updates-email-interval"
+                <Radio
+                  name="set-updates-email-interval"
                   value={item.interval}
                   label={item.text}
                   isChecked={dtableUpdatesEmailInterval === item.interval}
@@ -82,12 +82,12 @@ class EmailNotice extends React.Component {
         </form>
         <h6 className="mt-4">{gettext('Notifications of collaboration')}</h6>
         <p className="mb-1">{gettext('Do you want a summary of all notifications of collaboration (i.e., notifications about shared bases, row comments) to be sent to you by email?')}</p>
-        <form method="post" action="" id="set-dtable-collaborate-email-interval-form">
+        <form method="post" action="" id="set-collaborate-email-interval-form">
           {this.dtableCollaborateIntervalOptions.map((item, index) => {
             return (
               <React.Fragment key={index}>
-                <DTableRadio
-                  name="set-dtable-collaborate-email-interval"
+                <Radio
+                  name="set-collaborate-email-interval"
                   value={item.interval}
                   label={item.text}
                   isChecked={dtableCollaborateEmailInterval === item.interval}

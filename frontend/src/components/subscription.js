@@ -1,7 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
 import { Modal, ModalBody, ModalFooter, InputGroup, InputGroupText, Input, Button, Form, FormGroup, Alert, Col, Label } from 'reactstrap';
+import toaster from './toaster';
+import ModalHeader from './modal-header';
 import { gettext, isOrgContext, serviceURL, enableSlideCaptcha } from '../constants';
 import { Utils, isMobile } from '../utils/utils';
 import { seaQAAPI } from '../api/web-api';
@@ -525,7 +526,7 @@ class PlansDialog extends Component {
     if (isLoading) {
       return (
         <Modal isOpen={true} toggle={toggleDialog}>
-          <DTableModalHeader toggle={toggleDialog}>{paymentTypeTrans}</DTableModalHeader>
+          <ModalHeader toggle={toggleDialog}>{paymentTypeTrans}</ModalHeader>
           <ModalBody>
             <Loading />
           </ModalBody>
@@ -535,7 +536,7 @@ class PlansDialog extends Component {
     if (isWaiting) {
       return (
         <Modal isOpen={true} toggle={this.onReload}>
-          <DTableModalHeader toggle={this.onReload}>{paymentTypeTrans}</DTableModalHeader>
+          <ModalHeader toggle={this.onReload}>{paymentTypeTrans}</ModalHeader>
           <ModalBody>
             <div>{'是否完成付款?'}</div>
           </ModalBody>
@@ -547,7 +548,7 @@ class PlansDialog extends Component {
     }
     return (
       <Modal isOpen={true} toggle={toggleDialog} style={isMobile ? {} : modalStyle}>
-        <DTableModalHeader toggle={toggleDialog}>{paymentTypeTrans}</DTableModalHeader>
+        <ModalHeader toggle={toggleDialog}>{paymentTypeTrans}</ModalHeader>
         <ModalBody>
           <div className="d-flex justify-content-between">
             <Plans
@@ -604,7 +605,7 @@ class RedeemCodeExchangeDialog extends Component {
     if (this.isMobile) {
       return (
         <Modal className="redeem-code-exchange-dialog" isOpen={true} toggle={toggleRedeemCodeExchange}>
-          <DTableModalHeader toggle={toggleRedeemCodeExchange}>{'兑换代金币'}</DTableModalHeader>
+          <ModalHeader toggle={toggleRedeemCodeExchange}>{'兑换代金币'}</ModalHeader>
           <ModalBody>
             <Label className="redeem-code-exchange-dialog-code">
               <span>{'请输入兑换码:'}</span>
@@ -620,7 +621,7 @@ class RedeemCodeExchangeDialog extends Component {
     }
     return (
       <Modal className="redeem-code-exchange-dialog" isOpen={true} toggle={toggleRedeemCodeExchange}>
-        <DTableModalHeader toggle={toggleRedeemCodeExchange}>{'兑换代金币'}</DTableModalHeader>
+        <ModalHeader toggle={toggleRedeemCodeExchange}>{'兑换代金币'}</ModalHeader>
         <ModalBody>
           <div className="d-flex justify-content-between w-100">
             <Form className="w-100">

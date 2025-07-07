@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input } from 'reactstrap';
-import { toaster } from 'dtable-ui-component';
 import { gettext } from '../../constants';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
+import toaster from '../toaster';
 
 const propTypes = {
   contactEmail: PropTypes.string.isRequired,
@@ -59,7 +59,7 @@ class SetContactEmailDialog extends Component {
     let { newContactEmail, submitted, submitDisabled } = this.state;
     return (
       <Modal isOpen={true} toggle={toggle}>
-        <DTableModalHeader toggle={toggle}>{gettext('Bind contact email')}</DTableModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('Bind contact email')}</ModalHeader>
         <ModalBody>
           <Input
             onKeyDown={this.onKeyDown}

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import Loading from '../loading';
-import { DTableModalHeader } from 'dtable-ui-component';
+import ModalHeader from '../modal-header';
 
 const propTypes = {
   importDepartmentDialogToggle: PropTypes.func.isRequired,
@@ -34,9 +34,9 @@ class ImportWorkWeixinDepartmentDialog extends React.Component {
     const { departmentsCount, membersCount, departmentName } = this.props;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
-        <DTableModalHeader toggle={this.toggle}>
+        <ModalHeader toggle={this.toggle}>
           <span>{'导入部门 '}</span><span className="op-target" title={departmentName}>{departmentName}</span>
-        </DTableModalHeader>
+        </ModalHeader>
         <ModalBody>
           <p>{'将要导入 '}<strong>{departmentsCount}</strong>{' 个部门，其中包括 '}<strong>{membersCount}</strong>{' 个成员'}</p>
           {this.state.isLoading && <Loading/>}

@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AsyncSelect from 'react-select/async';
-import { toaster } from 'dtable-ui-component';
+import toaster from './toaster';
 import { seaQAAPI } from '../api/web-api.js';
 import { gettext, enableShowIDInOrgWhenSearchUser } from '../constants/config.js';
 import { Utils } from '../utils/utils.js';
-import { UserSelectStyle } from 'dtable-ui-component/lib/DTableSelect/utils';
-import 'dtable-ui-component/lib/DTableSelect/user-select.css';
+import { UserSelectStyle } from './customize-react-select/utils.js';
+
+import './customize-react-select/user-select.css';
 import '../css/user-select.css';
 
 const propTypes = {

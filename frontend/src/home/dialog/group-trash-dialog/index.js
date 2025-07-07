@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
+import { toaster, ModalHeader } from '../../../components';
 import GroupTrashDtableList from '../group-trash/group-trash-dtable-list';
 import GroupTrashView from '../../mobile/group-trash-view';
 import { gettext } from '../../../constants/config';
@@ -52,7 +52,7 @@ function GroupTrashDialog(props) {
   }
   return (
     <Modal isOpen={true} toggle={toggle} className="group-manage-trash-dialog">
-      <DTableModalHeader toggle={toggle}>{gettext('Trash')}</DTableModalHeader>
+      <ModalHeader toggle={toggle}>{gettext('Trash')}</ModalHeader>
       <ModalBody className="group-manage-trash-body">
         <GroupTrashDtableList
           groupID={groupID}

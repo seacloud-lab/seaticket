@@ -2,15 +2,12 @@ import React, { Component, Fragment } from 'react';
 import { UncontrolledTooltip } from 'reactstrap';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, DTableEmptyTip } from 'dtable-ui-component';
+import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, ModalPortal } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
 import GroupNav from './group-nav';
 import DTableOpMenu from '../dtables/dtable-op-menu';
-import ModalPortal from '../../../components/modal-portal';
 import DTableAllExternalLinksDialog from '../../dtable/dialog/dtable-all-external-links-dialog';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
@@ -177,7 +174,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <DTableEmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
       );
       const table = (
         <Fragment>

@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'reactstrap';
-import { DTableEmptyTip } from 'dtable-ui-component';
+import { EmptyTip, Loading } from '../../../components';
 import { gettext, mediaUrl } from '../../../constants';
-import Loading from '../../../components/loading';
 
 const ItemPropTypes = {
   member: PropTypes.object,
@@ -212,7 +211,7 @@ class DepartmentGroupMembers extends Component {
               {isLoadingMore ? <Loading /> : ''}
             </Fragment>
             :
-            <DTableEmptyTip src={`${mediaUrl}img/no-users-tip.png`} text={gettext('No members')}/>
+            <EmptyTip src={`${mediaUrl}img/no-users-tip.png`} text={gettext('No members')}/>
           }
         </div>
       </div>

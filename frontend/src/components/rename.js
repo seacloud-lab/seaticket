@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from 'dtable-ui-component';
 import classnames from 'classnames';
+import toaster from './toaster';
 import { validateName } from '../utils/utils';
 
 const propTypes = {

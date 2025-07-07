@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import { DTableSearchInput, toaster } from 'dtable-ui-component';
+import { SearchInput, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
 import { cloudMode, gettext, isOrgContext } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
@@ -167,7 +167,7 @@ class ListAndAddGroupMembers extends React.Component {
         {(groupMembers.length > 10 || searchValue) &&
           <div className="search-input-container">
             <i className="search-icon dtable-font dtable-icon-search"></i>
-            <DTableSearchInput
+            <SearchInput
               value={searchValue}
               autoFocus={false}
               onChange={this.onSearchGroupMembers}

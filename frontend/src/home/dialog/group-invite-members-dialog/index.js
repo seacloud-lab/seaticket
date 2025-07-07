@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { toaster, DTableModalHeader } from 'dtable-ui-component';
+import { toaster, ModalHeader } from '../../../components';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
@@ -76,7 +76,7 @@ class GroupInviteMembersDialog extends React.Component {
     const link = inviteList[0];
     return (
       <Modal isOpen={true} toggle={this.toggle} className="group-invite-members">
-        <DTableModalHeader toggle={this.toggle}>{gettext('Invite members')}</DTableModalHeader>
+        <ModalHeader toggle={this.toggle}>{gettext('Invite members')}</ModalHeader>
         <ModalBody>
           {link ?
             <>
