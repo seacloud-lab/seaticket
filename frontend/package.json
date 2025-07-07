@@ -10,7 +10,6 @@
     "@uiw/react-codemirror": "^4.19.4",
     "autoprefixer": "7.1.6",
     "axios": "~1.8.*",
-    "chart.js": "4.4.7",
     "classnames": "^2.3.2",
     "copy-to-clipboard": "3.3.1",
     "dayjs": "1.10.7",
@@ -35,8 +34,7 @@
     "rmc-feedback": "2.0.0",
     "rmc-tabs": "1.2.29",
     "socket.io-client": "^2.2.0",
-    "unified": "7.0.0",
-    "video.js": "^7.4.1"
+    "unified": "7.0.0"
   },
   "scripts": {
     "start": "node scripts/start.js",

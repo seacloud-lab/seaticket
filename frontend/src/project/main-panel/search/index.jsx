@@ -21,7 +21,7 @@ const Search = () => {
     }
     seaQAAPI.search(workspaceID, projectUuid, queryStr).then(res => {
       const results = res.data.results;
-      setSearchResult(results)
+      setSearchResult(results);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -31,9 +31,8 @@ const Search = () => {
 
   const onChangeHandler = useCallback((event) => {
     let inputValue = event.target.value;
-    setQueryStr(inputValue)
+    setQueryStr(inputValue);
   }, [queryStr]);
-
 
   return (
     <>
