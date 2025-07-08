@@ -61,11 +61,11 @@ class MainPanel extends React.Component {
     this.props.updateSidePanelGroups(true, true);
   };
 
-  onCopyProject = (dtable) => {
+  onCopyProject = (project) => {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
-      if (dtable.workspace_id === workspace.id) {
-        workspace.project_list.push(dtable);
+      if (project.workspace_id === workspace.id) {
+        workspace.project_list.push(project);
         break;
       }
     }
@@ -149,7 +149,7 @@ class MainPanel extends React.Component {
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
           <WorkspaceInMainPanel
-            path={siteRoot + 'dtable/:dtableID'}
+            path={siteRoot + 'project/:projectID'}
             loadWorkspaceList={this.loadWorkspaceList}
             isWorkspaceListLoading={this.state.isWorkspaceListLoading}
             workspaceList={this.state.workspaceList}

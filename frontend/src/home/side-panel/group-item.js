@@ -52,21 +52,21 @@ const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabC
       <div
         ref={dragPreview}
         className={classnames('nav-item workspace-nav-item',
-          { 'seatable-bg-orange active': getActiveClass(`dtable/${item.id}`) === 'active' },
+          { 'seatable-bg-orange active': getActiveClass(`project/${item.id}`) === 'active' },
           { 'group-can-drop': isOver && canDrop && !isDragging },
           { 'group-can-drop-top': isOver && canDrop && isDragging }
         )}
-        onClick={(event) => onGroupTabClick(event, `dtable/${item.id}`)}
+        onClick={(event) => onGroupTabClick(event, `project/${item.id}`)}
       >
         <span
           ref={dragRef}
           className={classnames('drop-button',
-            { 'drop-button-active': getActiveClass(`dtable/${item.id}`) === 'active' }
+            { 'drop-button-active': getActiveClass(`project/${item.id}`) === 'active' }
           )}
         >
           <i className="dtable-font dtable-icon-drag"></i>
         </span>
-        <Link tabIndex={tabIndex} to={siteRoot + 'dtable/' + item.id + '/'} className="workspace-nav-link ellipsis">
+        <Link tabIndex={tabIndex} to={siteRoot + 'project/' + item.id + '/'} className="workspace-nav-link ellipsis">
           <span
             className={`table-workspace-icon dtable-font dtable-icon-${isDepart ? 'department' : 'collaborator'}`}
             aria-hidden="true"

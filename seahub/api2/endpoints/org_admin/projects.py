@@ -20,7 +20,7 @@ from seahub.organizations.models import Organization
 from seahub.group.models import Group
 
 logger = logging.getLogger(__name__)
-FILE_TYPE = '.dtable'
+FILE_TYPE = '.project'
 GROUP_DOMAIN = '@seafile_group'
 
 
@@ -100,7 +100,7 @@ class OrgAdminProjectView(APIView):
         try:
             Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
         except Exception as e:
-            logger.error('delete dtable: %s error: %s', project.id, e)
+            logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

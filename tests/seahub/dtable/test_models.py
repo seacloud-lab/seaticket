@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.urls import reverse
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.test_utils import BaseTestCase
 
 

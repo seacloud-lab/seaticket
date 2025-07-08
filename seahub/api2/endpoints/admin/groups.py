@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
-from seahub.project.models import Workspaces
+from seahub.project.models import Workspaces, Projects
 from seahub.signals import group_deleted
 from seahub.utils import is_valid_username, is_pro_version
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
@@ -294,7 +294,7 @@ class AdminGroup(APIView):
         # if there are bases in this group, prohibit deletion of groups
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if DTables.objects.filter(workspace=workspace, deleted=False).exists():
+        if Projects.objects.filter(workspace=workspace, deleted=False).exists():
             error_msg = _('Cannot delete group with bases')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 

@@ -15,15 +15,15 @@ const MAX_HEIGHT = 800;
 const DISTANCE_BOTTOM = 100;
 const ITEM_HEIGHT = 56;
 
-const DtableSearcher = (props) => {
+const ProjectSearcher = (props) => {
   const [searchStr, setSearchStr] = useState('');
-  const [currQueryType, setCurrQueryType] = useState(props.defaultQueryType || QUERY_TYPE.BASE);
+  const [currQueryType, setCurrQueryType] = useState(props.defaultQueryType || QUERY_TYPE.PROJECT);
   const [isLoading, setIsLoading] = useState(false);
   const [showRecent, setShowRecent] = useState(true);
   const [searchedRes, setSearchedRes] = useState({});
 
   const mounted = useRef(false);
-  const dtableSearcherRef = useRef(null);
+  const searcherRef = useRef(null);
   const searchListContainerRef = useRef(null);
   const recentUsedRef = useRef([]);
   recentUsedRef.current = loadRecentUsed();
@@ -93,10 +93,10 @@ const DtableSearcher = (props) => {
   };
 
   const initSearcherStyle = () => {
-    if (!dtableSearcherRef.current) {
+    if (!searcherRef.current) {
       return;
     }
-    const { top: offsetTop } = dtableSearcherRef.current.getBoundingClientRect();
+    const { top: offsetTop } = searcherRef.current.getBoundingClientRect();
     const clientHeight = document.body.clientHeight;
     let maxHeight = clientHeight - offsetTop - DISTANCE_BOTTOM;
     if (maxHeight <= MIN_HEIGHT) {
@@ -104,7 +104,7 @@ const DtableSearcher = (props) => {
     } else if (maxHeight >= MAX_HEIGHT) {
       maxHeight = MAX_HEIGHT;
     }
-    dtableSearcherRef.current.style.maxHeight = `${maxHeight}px`;
+    searcherRef.current.style.maxHeight = `${maxHeight}px`;
   };
 
   useEffect(() => {
@@ -187,14 +187,14 @@ const DtableSearcher = (props) => {
     );
   };
 
-  let queryTypes = [QUERY_TYPE.BASE];
+  let queryTypes = [QUERY_TYPE.PROJECT];
 
   return (
-    <div className='dtable-searcher' ref={dtableSearcherRef}>
+    <div className='dtable-searcher' ref={searcherRef}>
       <SearcherInput
         stopSearch={stopSearch}
         startSearch={startSearch}
-        onCloseDtableSearcher={props.onCloseDtableSearcher}
+        onCloseSearcher={props.onCloseSearcher}
         searchStr={searchStr}
         setSearchStr={setSearchStr}
       />
@@ -226,9 +226,9 @@ const DtableSearcher = (props) => {
   );
 };
 
-DtableSearcher.propTypes = {
-  onCloseDtableSearcher: PropTypes.func,
+ProjectSearcher.propTypes = {
+  onCloseSearcher: PropTypes.func,
   defaultQueryType: PropTypes.string,
 };
 
-export default DtableSearcher;
+export default ProjectSearcher;

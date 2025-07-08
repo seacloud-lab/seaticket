@@ -124,7 +124,7 @@ class Info extends Component {
 
   render() {
     let { license_mode, license_to, license_expiration, org_count, license_maxusers, multi_tenancy_enabled,
-      active_users_count, users_count, groups_count, with_license, dtables_count,
+      active_users_count, users_count, groups_count, with_license, projects_count,
       version, archived_base_count, archived_base_storage, archived_row_count } = this.state.sysInfo;
     let { loading, errorMsg } = this.state;
 
@@ -169,7 +169,7 @@ class Info extends Component {
 
                 <dt className="info-item-heading">{gettext('Bases')}</dt>
                 <dd className="info-item-content">
-                  {this.renderBaseInfo(dtables_count, archived_base_count, archived_base_storage, archived_row_count)}
+                  {this.renderBaseInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
                 </dd>
                 {isPro ?
                   <Fragment>

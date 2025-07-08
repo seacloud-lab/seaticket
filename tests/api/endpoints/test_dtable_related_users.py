@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from seaserv import seafile_api, ccnet_api
 
-from seahub.dtable.models import Workspaces, DTables
+from seahub.project.models import Workspaces, Project
 from seahub.test_utils import BaseTestCase
 
 GROUP_DOMAIN = '@seafile_group'
@@ -27,24 +27,24 @@ class DTableRelatedUsersViewTest(BaseTestCase):
         group_repo_id = seafile_api.create_repo(
             _("My workspace"),
             _("My workspace"),
-            "dtable@seafile"
+            "project@seafile"
         )
         self.group_workspace = Workspaces.objects.create_workspace(
             str(self.group_id) + GROUP_DOMAIN, group_repo_id, -1
         )
         assert Workspaces.objects.all().count() == 1
 
-        # create group dtable
+        # create group project
         seafile_api.post_empty_file(
-            group_repo_id, '/', 'group.dtable', self.user.username
+            group_repo_id, '/', 'group.project', self.user.username
         )
-        self.group_dtable = DTables.objects.create_dtable(
+        self.group_dtable = Project.objects.create_dtable(
             self.user.username, self.group_workspace, 'group'
         )
-        assert DTables.objects.all().count() == 1
+        assert Project.objects.all().count() == 1
 
         self.url = reverse(
-            'api-v2.1-dtable-related-users', args=[self.group_workspace.id, self.group_dtable.name]
+            'api-v2.1-project-related-users', args=[self.group_workspace.id, self.group_dtable.name]
         )
 
     def tearDown(self):

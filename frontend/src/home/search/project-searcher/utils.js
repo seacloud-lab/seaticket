@@ -12,7 +12,7 @@ export const getNormalizeSearchedList = (searchedList, queryType) => {
       query_type: queryType,
     };
     switch (queryType) {
-      case QUERY_TYPE.BASE: {
+      case QUERY_TYPE.PROJECT: {
         normalizedSearchedItem.searched_id = searchedItem.id;
         break;
       }

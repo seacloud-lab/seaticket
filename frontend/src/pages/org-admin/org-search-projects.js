@@ -175,7 +175,7 @@ class Content extends Component {
     } else {
       if (items.length === 0) {
         return (
-          <EmptyTip text={gettext('No bases')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No projects')} src={`${mediaUrl}img/no-items-tip.png`} />
         );
       } else {
         return (
@@ -259,7 +259,7 @@ class OrgSearchProjects extends Component {
     });
   };
 
-  getSearchDtables = (e) => {
+  getSearchProjects = (e) => {
     e.preventDefault();
     this.getItems(1);
   };
@@ -349,7 +349,7 @@ class OrgSearchProjects extends Component {
                     <Col sm={{ size: 5 }}>
                       <button
                         className="btn btn-outline-primary" disabled={!isSubmitBtnActive}
-                        onClick={this.getSearchDtables}>{gettext('Submit')}
+                        onClick={this.getSearchProjects}>{gettext('Submit')}
                       </button>
                     </Col>
                   </FormGroup>

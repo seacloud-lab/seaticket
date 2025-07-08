@@ -600,7 +600,7 @@ def saml_complete(request):
     else:
         token = get_token_v1(request.user.username)
 
-    resp = HttpResponseRedirect(reverse('dtable'))
+    resp = HttpResponseRedirect(reverse('project'))
     resp.set_cookie('seahub_auth', request.user.username + '@' + token.key)
 
     if request.user.is_authenticated:

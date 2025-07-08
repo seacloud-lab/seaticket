@@ -112,7 +112,7 @@ def _handle_login_form_valid(request, user, redirect_to, remember_me):
 @csrf_protect
 @never_cache
 def login(request, template_name='registration/login.html',
-          redirect_if_logged_in='dtable',
+          redirect_if_logged_in='project',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm):
     """Displays the login form and handles the login action."""
@@ -339,7 +339,7 @@ def redirect_to_login(next, login_url=None, redirect_field_name=REDIRECT_FIELD_N
 
 ### Custom Auth Login
 def custom_login(request, template_name='registration/login.html',
-          redirect_if_logged_in='dtable',
+          redirect_if_logged_in='project',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm):
     if not ENABLE_CUSTOM_AUTH:

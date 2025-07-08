@@ -42,7 +42,7 @@ class WorkspaceInMainPanel extends React.Component {
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
         noBaseTip={
-          <EmptyTip text={gettext('No bases.')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No projects.')} src={`${mediaUrl}img/no-items-tip.png`} />
         }
       />
     );

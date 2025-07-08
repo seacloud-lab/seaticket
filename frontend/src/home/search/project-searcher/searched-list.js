@@ -1,13 +1,13 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchedBase from './searched-base';
+import SearchedBase from './searched-project';
 import { Utils } from '../../../utils/utils';
 import { QUERY_TYPE } from './constant';
 
 const siteRoot = window.app.config.siteRoot;
 
-const openBaseOnBlankWindow = (searchedBase) => {
-  const { workspace_id, name, share_type, share_id } = searchedBase;
+const openOnBlankWindow = (searched) => {
+  const { workspace_id, name, share_type, share_id } = searched;
   let href;
   if (share_type === 'user-view-share') {
     href = siteRoot + 'project-shared-view/personal/' + share_id + '/';
@@ -27,9 +27,9 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
   const mounted = useRef(false);
   const searchedListRef = useRef(null);
 
-  const clickSearchedBase = (searchedBase) => {
-    props.handleClickSearchedItem(searchedBase);
-    openBaseOnBlankWindow(searchedBase);
+  const clickSearched = (searched) => {
+    props.handleClickSearchedItem(searched);
+    openOnBlankWindow(searched);
   };
 
   if (ref) {
@@ -47,9 +47,9 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
 
     props.handleClickSearchedItem(searchedItem);
     switch (searchedItem.query_type) {
-      case QUERY_TYPE.BASE: {
+      case QUERY_TYPE.PROJECT: {
         const searchedBase = searchedList[highlightIndex];
-        clickSearchedBase(searchedBase);
+        clickSearched(searchedBase);
         break;
       }
       default: {
@@ -112,17 +112,17 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
 
   return (
     <ul className='search-result-list' ref={searchedListRef}>
-      {Array.isArray(searchedList) && searchedList.map((searchedItem, index) => {
-        const { query_type } = searchedItem;
+      {Array.isArray(searchedList) && searchedList.map((project, index) => {
+        const { query_type } = project;
         const selected = highlightIndex === index;
         switch (query_type) {
-          case QUERY_TYPE.BASE: {
+          case QUERY_TYPE.PROJECT: {
             return (
               <SearchedBase
-                key={`${query_type}-${searchedItem.id}-${index}`}
-                searchedBase={searchedItem}
+                key={`${query_type}-${project.id}-${index}`}
+                project={project}
                 selected={selected}
-                clickSearchedBase={clickSearchedBase}
+                clickSearched={clickSearched}
               />
             );
           }

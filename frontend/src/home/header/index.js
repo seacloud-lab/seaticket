@@ -4,8 +4,8 @@ import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from '
 import { isMac } from '../../utils/utils';
 import { isEnter, isModF } from '../../utils/hotkey';
 import Account from '../../components/account';
-import DtableSearcher from '../search/dtable-searcher';
-import { QUERY_TYPE } from '../search/dtable-searcher/constant';
+import ProjectSearcher from '../search/project-searcher';
+import { QUERY_TYPE } from '../search/project-searcher/constant';
 
 const gettext = window.gettext;
 const controlKey = isMac() ? '⌘' : 'Ctrl';
@@ -16,7 +16,7 @@ class AppDTableHeader extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isShowDtableSearcher: false,
+      isShowSearcher: false,
     };
     this.searchContainerRef = React.createRef();
   }
@@ -32,10 +32,10 @@ class AppDTableHeader extends React.Component {
   onDocumentKeydown = (e) => {
     if (isModF(e)) {
       e.preventDefault();
-      this.onShowDtableSearcher();
+      this.onShowSearcher();
     } else if (isEnter(e)) {
       if (document.activeElement && document.activeElement.id === 'search-container') {
-        this.onShowDtableSearcher();
+        this.onShowSearcher();
       }
     }
   };
@@ -43,20 +43,20 @@ class AppDTableHeader extends React.Component {
   getQueryTypeByActiveTab = () => {
     switch (this.props.currentTab) {
       default: {
-        return QUERY_TYPE.BASE;
+        return QUERY_TYPE.PROJECT;
       }
     }
   };
 
-  onShowDtableSearcher = () => {
-    if (!this.state.isShowDtableSearcher) {
-      this.setState({ isShowDtableSearcher: true });
+  onShowSearcher = () => {
+    if (!this.state.isShowSearcher) {
+      this.setState({ isShowSearcher: true });
     }
   };
 
-  onCloseDtableSearcher = () => {
-    if (this.state.isShowDtableSearcher) {
-      this.setState({ isShowDtableSearcher: false }, () => {
+  onCloseSearcher = () => {
+    if (this.state.isShowSearcher) {
+      this.setState({ isShowSearcher: false }, () => {
         setTimeout(() => {
           this.searchContainerRef?.focus();
         }, 0);
@@ -65,19 +65,19 @@ class AppDTableHeader extends React.Component {
   };
 
   renderSearchBar = () => {
-    const { isShowDtableSearcher } = this.state;
+    const { isShowSearcher } = this.state;
     return (
-      <div className={classnames('search', { active: isShowDtableSearcher })} ref={ref => this.dtableSearcher = ref}>
-        <div className={`search-mask ${isShowDtableSearcher ? '' : 'hide'}`} onClick={this.onCloseDtableSearcher} role="button"></div>
+      <div className={classnames('search', { active: isShowSearcher })}>
+        <div className={`search-mask ${isShowSearcher ? '' : 'hide'}`} onClick={this.onCloseSearcher} role="button"></div>
         <div
           tabIndex={0}
           className="search-container"
-          onClick={this.onShowDtableSearcher}
+          onClick={this.onShowSearcher}
           ref={ref => this.searchContainerRef = ref}
           id="search-container"
           role="button"
         >
-          {!isShowDtableSearcher &&
+          {!isShowSearcher &&
             <div className="input-icon">
               <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search"></i>
               <span
@@ -92,10 +92,10 @@ class AppDTableHeader extends React.Component {
               </span>
             </div>
           }
-          {isShowDtableSearcher &&
-            <DtableSearcher
+          {isShowSearcher &&
+            <ProjectSearcher
               defaultQueryType={this.getQueryTypeByActiveTab()}
-              onCloseDtableSearcher={this.onCloseDtableSearcher}
+              onCloseSearcher={this.onCloseSearcher}
             />
           }
         </div>

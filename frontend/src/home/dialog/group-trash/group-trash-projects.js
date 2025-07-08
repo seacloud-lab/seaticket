@@ -5,7 +5,7 @@ import { EmptyTip } from '../../../components';
 import GroupTrashProjectsItem from './group-trash-projects-item';
 
 const propTypes = {
-  trashDTableList: PropTypes.array.isRequired,
+  trashList: PropTypes.array.isRequired,
   groupID: PropTypes.number.isRequired,
   restoreProject: PropTypes.func.isRequired,
 };
@@ -13,8 +13,8 @@ const propTypes = {
 class GroupTrashProjects extends React.Component {
 
   render() {
-    const { trashDTableList, groupID } = this.props;
-    if (trashDTableList.length === 0) {
+    const { trashList, groupID } = this.props;
+    if (trashList.length === 0) {
       return (
         <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted projects')} />
       );
@@ -34,7 +34,7 @@ class GroupTrashProjects extends React.Component {
             </tr>
           </thead>
           <tbody>
-            {trashDTableList.map((item, index) => {
+            {trashList.map((item, index) => {
               return (
                 <GroupTrashProjectsItem
                   key={item.id}

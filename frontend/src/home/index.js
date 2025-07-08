@@ -33,16 +33,16 @@ class Home extends React.Component {
       return location.href.indexOf(`${siteRoot}${tab}`) > -1;
     });
 
-    currentTab = currentTab ? currentTab : 'dtable';
+    currentTab = currentTab ? currentTab : 'project';
 
     const { pathname } = location;
     const mainPath = `${siteRoot}${currentTab}`;
     const mainPathIndex = pathname.indexOf(mainPath);
     if (mainPathIndex > -1) {
-      if (mainPath.indexOf('dtable') > -1) {
-        let dtableID = pathname.slice(mainPathIndex + mainPath.length, pathname.length - 1);
-        if (dtableID) {
-          currentTab = `${currentTab}${dtableID}`;
+      if (mainPath.indexOf('project') > -1) {
+        let projectID = pathname.slice(mainPathIndex + mainPath.length, pathname.length - 1);
+        if (projectID) {
+          currentTab = `${currentTab}${projectID}`;
           this.setState({ isOpenGroupExpanded: true });
         }
       }
@@ -68,12 +68,12 @@ class Home extends React.Component {
 
   updateSidePanelGroups = (status, isDeleteGroup) => {
     if (isDeleteGroup) {
-      this.setState({ currentTab: 'dtable' });
+      this.setState({ currentTab: 'project' });
       let { pathname, href } = location;
       let paths = pathname.split('/');
       paths = paths.filter(item => item !== '');
-      if (paths[paths.length - 2] === 'dtable') {
-        let newURL = href.slice(0, href.indexOf('/dtable/') + 8);
+      if (paths[paths.length - 2] === 'project') {
+        let newURL = href.slice(0, href.indexOf('/project/') + 8);
         navigate(newURL);
       }
     }

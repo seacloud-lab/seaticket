@@ -14,6 +14,7 @@ from seahub.utils.licenseparse import parse_license
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
+from seahub.project.models import Projects
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -102,12 +103,12 @@ class SysInfo(APIView):
             with_license = False
             max_users = 0
 
-        # count dtables
+        # count projects
         try:
-            dtables_count = DTables.objects.count()
+            projects_count = Projects.objects.count()
         except Exception as e:
             logger.error(e)
-            dtables_count = 0
+            projects_count = 0
 
         info = {
             'version': SEAQA_VERSION,
@@ -115,7 +116,7 @@ class SysInfo(APIView):
             'active_users_count': active_users,
             'groups_count': groups_count,
             'org_count': org_count,
-            'dtables_count': dtables_count,
+            'projects_count': projects_count,
             'multi_tenancy_enabled': multi_tenancy_enabled,
             'is_pro': is_pro,
             'with_license': with_license,

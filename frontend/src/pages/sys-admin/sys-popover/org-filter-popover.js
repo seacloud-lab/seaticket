@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import DTablePopover from '../../../components/dtable-popover';
+import CustomizePopover from '../../../components/customize-popover';
 import { gettext } from '../../../constants';
 import SysFiltersItem from './filter-widgets/filters-item';
 import '../../../css/system-filter.css';
@@ -46,10 +46,10 @@ class SysOrgFilterPopover extends Component {
   render() {
     const { orgRole } = this.state;
     return (
-      <DTablePopover
+      <CustomizePopover
         target="dtable-filter-popover"
         popoverClassName="sys-filter-popover"
-        hideDTablePopover={this.props.hideFilterPopover}
+        hidePopover={this.props.hideFilterPopover}
         placement="bottom-end"
       >
         <div className="sys-filters-container">
@@ -70,7 +70,7 @@ class SysOrgFilterPopover extends Component {
             <Button color="primary" onClick={this.handleSubmit}>{gettext('Submit')}</Button>
           </div>
         </div>
-      </DTablePopover>
+      </CustomizePopover>
     );
   }
 }

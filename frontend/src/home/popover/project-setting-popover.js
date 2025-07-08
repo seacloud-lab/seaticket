@@ -3,7 +3,7 @@ import { PopoverBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS, gettext } from '../../constants';
-import DtablePopover from '../../components/dtable-popover';
+import CustomizePopover from '../../components/customize-popover';
 
 class ProjectSettingPopover extends React.Component {
 
@@ -124,11 +124,11 @@ class ProjectSettingPopover extends React.Component {
 
   render() {
     return (
-      <DtablePopover
+      <CustomizePopover
         placement={this.props.placement}
         target={this.props.target}
-        hideDTablePopover={this.props.onToggle}
-        hideDTablePopoverWithEsc={this.props.onToggle}
+        hidePopover={this.props.onToggle}
+        hidePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}
         hideArrow={true}
         popoverClassName={`dtable-icon-settings-popover ${this.props.popoverClassName}`}
@@ -138,7 +138,7 @@ class ProjectSettingPopover extends React.Component {
           {this.renderColorSettings()}
           {this.renderIconSettings()}
         </PopoverBody>
-      </DtablePopover>
+      </CustomizePopover>
     );
   }
 }

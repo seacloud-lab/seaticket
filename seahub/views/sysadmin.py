@@ -35,7 +35,7 @@ from seahub.work_weixin.settings import ENABLE_WORK_WEIXIN
 
 
 logger = logging.getLogger(__name__)
-FILE_TYPE = '.dtable'
+FILE_TYPE = '.project'
 
 @login_required
 @sys_staff_required

@@ -120,7 +120,7 @@ class Item extends Component {
     }).then(res => {
       if (res.data.is_finished === true) {
         this.setState({ isShowDTableIODialog: false });
-        location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
+        location.href = siteRoot + 'sys/projectadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
       } else {
         this.timer = setInterval(() => {
           seaQAAPI.queryProjectIOStatusByTaskId(task_id).then(res => {
@@ -128,7 +128,7 @@ class Item extends Component {
               this.setState({ isFinished: true });
               clearInterval(this.timer);
               this.setState({ isShowDTableIODialog: false });
-              location.href = siteRoot + 'sys/dtableadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
+              location.href = siteRoot + 'sys/projectadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
             }
           }).catch(error => {
             if (this.state.isFinished === false) {
@@ -298,7 +298,7 @@ const contentPropTypes = {
   items: PropTypes.array.isRequired,
   curPerPage: PropTypes.number,
   pageInfo: PropTypes.object.isRequired,
-  listDTablesByPage: PropTypes.func.isRequired,
+  listProjectsByPage: PropTypes.func.isRequired,
   deleteProject: PropTypes.func.isRequired,
   resetPerPage: PropTypes.func.isRequired,
 };
@@ -322,11 +322,11 @@ class Content extends Component {
   };
 
   getPreviousPageList = () => {
-    this.props.listDTablesByPage(this.props.pageInfo.current_page - 1);
+    this.props.listProjectsByPage(this.props.pageInfo.current_page - 1);
   };
 
   getNextPageList = () => {
-    this.props.listDTablesByPage(this.props.pageInfo.current_page + 1);
+    this.props.listProjectsByPage(this.props.pageInfo.current_page + 1);
   };
 
   render() {
@@ -337,7 +337,7 @@ class Content extends Component {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No projects')} />
       );
       const table = (
         <Fragment>
@@ -398,11 +398,7 @@ class Content extends Component {
 
 Content.propTypes = contentPropTypes;
 
-const allDTablesPropTypes = {
-  onCloseSidePanel: PropTypes.func,
-};
-
-class AllDTables extends Component {
+class AllProjects extends Component {
 
   constructor(props) {
     super(props);
@@ -423,7 +419,7 @@ class AllDTables extends Component {
       perPage: parseInt(urlParams.get('per_page') || perPage),
       currentPage: parseInt(urlParams.get('page') || currentPage)
     }, () => {
-      this.listDTablesByPage(this.state.currentPage);
+      this.listProjectsByPage(this.state.currentPage);
     });
   }
 
@@ -431,15 +427,15 @@ class AllDTables extends Component {
     this.setState({
       perPage: perPage
     }, () => {
-      this.listDTablesByPage(1);
+      this.listProjectsByPage(1);
     });
   };
 
-  listDTablesByPage = (page) => {
+  listProjectsByPage = (page) => {
     sysAdminServiceApi.sysAdminListAllProjects(page, this.state.perPage).then((res) => {
       this.setState({
         loading: false,
-        projects: res.data.dtables,
+        projects: res.data.projects,
         pageInfo: res.data.page_info,
       });
     }).catch((error) => {
@@ -465,16 +461,16 @@ class AllDTables extends Component {
     });
   };
 
-  deleteProject = (dtable) => {
+  deleteProject = (project) => {
     let projects = this.state.projects.filter(table => {
-      return table.uuid !== dtable.uuid;
+      return table.uuid !== project.uuid;
     });
     this.setState({ projects });
   };
 
   getSearch = () => {
     return <Search
-      placeholder={gettext('Search bases')}
+      placeholder={gettext('Search projects')}
       submit={this.searchItems}
     />;
   };
@@ -498,7 +494,7 @@ class AllDTables extends Component {
                 items={projects}
                 pageInfo={pageInfo}
                 curPerPage={perPage}
-                listDTablesByPage={this.listDTablesByPage}
+                listProjectsByPage={this.listProjectsByPage}
                 deleteProject={this.deleteProject}
                 resetPerPage={this.resetPerPage}
               />
@@ -510,6 +506,8 @@ class AllDTables extends Component {
   }
 }
 
-AllDTables.propTypes = allDTablesPropTypes;
+AllProjects.propTypes = {
+  onCloseSidePanel: PropTypes.func,
+};
 
-export default AllDTables;
+export default AllProjects;

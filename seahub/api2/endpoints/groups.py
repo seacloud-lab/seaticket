@@ -20,7 +20,7 @@ from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner_by_group
-from seahub.project.models import Workspaces, ProjectGroupOrders
+from seahub.project.models import Workspaces, ProjectGroupOrders, Projects
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
@@ -324,10 +324,10 @@ class Group(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # if there are dtables in this group, prohibit deletion of groups
+        # if there are projects in this group, prohibit deletion of groups
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if DTables.objects.filter(workspace=workspace, deleted=False).exists():
+        if Projects.objects.filter(workspace=workspace, deleted=False).exists():
             error_msg = _('Cannot delete group with bases')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 

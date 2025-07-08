@@ -15,7 +15,7 @@ const propTypes = {
   onSearchedClick: PropTypes.func.isRequired,
 };
 
-class SearchDtable extends Component {
+class SearchProject extends Component {
 
   constructor(props) {
     super(props);
@@ -160,11 +160,11 @@ class SearchDtable extends Component {
   }
 
   sendRequest = (queryData) => {
-    let query_str = queryData.q.trim();
-    seaQAAPI.searchItems(query_str, 'base').then(res => {
-      let dtables = res.data.results;
+    const query_str = queryData.q.trim();
+    seaQAAPI.searchItems(query_str, 'project').then(res => {
+      const results = res.data.results;
       this.setState({
-        resultItems: dtables,
+        resultItems: results,
         isResultGetted: true,
       });
     });
@@ -296,6 +296,6 @@ class SearchDtable extends Component {
   }
 }
 
-SearchDtable.propTypes = propTypes;
+SearchProject.propTypes = propTypes;
 
-export default SearchDtable;
+export default SearchProject;

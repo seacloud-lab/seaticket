@@ -181,10 +181,10 @@ class OrgTrashProjects extends React.Component {
   }
 
   componentDidMount() {
-    this.loadDTables(1);
+    this.loadProjects(1);
   }
 
-  loadDTables = (page) => {
+  loadProjects = (page) => {
     orgAdminServiceApi.orgAdminListTrashProjects(orgID, page, this.state.per_page).then((res) => {
       this.setState({
         projectList: res.data.project_list,
@@ -214,7 +214,7 @@ class OrgTrashProjects extends React.Component {
     this.setState({
       page: this.state.page - 1
     }, () => {
-      this.loadDTables(this.state.page);
+      this.loadProjects(this.state.page);
     });
   };
 
@@ -222,7 +222,7 @@ class OrgTrashProjects extends React.Component {
     this.setState({
       page: this.state.page + 1
     }, () => {
-      this.loadDTables(this.state.page);
+      this.loadProjects(this.state.page);
     });
   };
 
@@ -230,7 +230,7 @@ class OrgTrashProjects extends React.Component {
     this.setState({
       per_page: per_page
     }, () => {
-      this.loadDTables(1);
+      this.loadProjects(1);
     });
   };
 

@@ -14,12 +14,12 @@ function GroupTrashDialog(props) {
 
   const { groupID, isDesktop } = props;
   const [loading, setLoading] = useState(true);
-  const [trashDTableList, setTrashDTableList] = useState([]);
+  const [trashList, setTrashList] = useState([]);
 
   useEffect(() => {
     seaQAAPI.listGroupTrashProjects(groupID).then(res => {
       setLoading(false);
-      setTrashDTableList(res.data.trash_dtable_list);
+      setTrashList(res.data.trash_dtable_list);
     }).catch(error => {
       setLoading(false);
       const errMessage = Utils.getErrorMsg(error, true);
@@ -29,9 +29,9 @@ function GroupTrashDialog(props) {
     });
   });
 
-  function restoreProject(dtable) {
-    const storedTableList = trashDTableList.filter(table => table.uuid !== dtable.uuid);
-    setTrashDTableList(storedTableList);
+  function restoreProject(project) {
+    const storedList = trashList.filter(t => t.uuid !== project.uuid);
+    setTrashList(storedList);
     props.loadWorkspaceList();
   }
 
@@ -44,7 +44,7 @@ function GroupTrashDialog(props) {
       <GroupTrashView
         groupID={groupID}
         isLoading={loading}
-        trashDTableList={trashDTableList}
+        trashList={trashList}
         toggle={toggle}
         restoreProject={restoreProject}
       />
@@ -56,7 +56,7 @@ function GroupTrashDialog(props) {
       <ModalBody className="group-manage-trash-body">
         <GroupTrashProjectList
           groupID={groupID}
-          trashDTableList={trashDTableList}
+          trashList={trashList}
           restoreProject={restoreProject}
           isLoading={loading}
         />
