@@ -192,8 +192,8 @@ class ProjectsManager(models.Manager):
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).order_by('id')[start:end]
 
     def get_non_duplicated_name(self, name, workspace_id):
-        dtables = super(ProjectsManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)
-        existed_names = [d.name for d in dtables]
+        projects = super(ProjectsManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)
+        existed_names = [d.name for d in projects]
         if not existed_names or name not in existed_names:
             return name
         return get_no_duplicate_obj_name(name, existed_names)

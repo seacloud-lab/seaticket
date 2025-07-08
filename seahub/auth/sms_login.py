@@ -83,7 +83,7 @@ def sms_login(request):
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
-            return HttpResponseRedirect(reverse('dtable'))
+            return HttpResponseRedirect(reverse('project'))
     redirect_to = redirect_to or LOGIN_REDIRECT_URL
 
     phone = ''

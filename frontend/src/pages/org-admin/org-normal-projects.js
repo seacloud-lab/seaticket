@@ -201,7 +201,7 @@ class OrgNormalProjects extends React.Component {
 
   deleteProject = (item) => {
     let projectList = this.state.projectList.slice();
-    projectList = projectList.filter((dtable) => {return dtable.id !== item.id;});
+    projectList = projectList.filter((project) => {return project.id !== item.id;});
     this.setState({ projectList: projectList });
   };
 

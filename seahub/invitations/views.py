@@ -98,7 +98,7 @@ def invitation_link_view(request, token):
     get_object_or_404(InvitationLinks, token=token)
 
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('dtable'))
+        return HttpResponseRedirect(reverse('project'))
 
     response = HttpResponseRedirect('https://www.seatable.cn/?source=invitation&invitation_token=%s' % token)
 

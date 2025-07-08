@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from seaserv import seafile_api
 
-from seahub.dtable.models import Workspaces
+from seahub.project.models import Workspaces
 from seahub.test_utils import BaseTestCase
 from tests.common.utils import randstring
 

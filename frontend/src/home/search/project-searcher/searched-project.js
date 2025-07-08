@@ -3,25 +3,25 @@ import PropTypes from 'prop-types';
 import SearchResultItem from '../search-result-item';
 import getWorkspaceName from '../../utils/get-workspace-name';
 
-const SearchedBase = (props) => {
-  const { searchedBase, selected } = props;
-  const path = getWorkspaceName(searchedBase, []);
+const SearchedProject = (props) => {
+  const { project, selected } = props;
+  const path = getWorkspaceName(project, []);
   const getClassName = `project-item ${selected ? 'project-item-selected' : ''}`;
 
   return (
     <SearchResultItem
-      item={searchedBase}
+      item={project}
       path={path}
       getClassName={getClassName}
-      onItemClickHandler={props.clickSearchedBase.bind(this, searchedBase)}
+      onItemClickHandler={props.clickSearched.bind(this, project)}
     />
   );
 };
 
-SearchedBase.propTypes = {
-  searchedBase: PropTypes.object,
+SearchedProject.propTypes = {
+  project: PropTypes.object,
   selected: PropTypes.bool,
-  clickSearchedBase: PropTypes.func,
+  clickSearched: PropTypes.func,
 };
 
-export default SearchedBase;
+export default SearchedProject;

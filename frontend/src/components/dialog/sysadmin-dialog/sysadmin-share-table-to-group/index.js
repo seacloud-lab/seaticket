@@ -26,11 +26,11 @@ class SysAdminShareTableToGroup extends React.Component {
       groupIDs: [],
       groupShares: [],
     };
-    this.dtableUuid = this.props.currentProject.uuid;
+    this.uuid = this.props.currentProject.uuid;
   }
 
   componentDidMount() {
-    sysAdminServiceApi.sysAdminListProjectGroupShares(this.dtableUuid).then((res) => {
+    sysAdminServiceApi.sysAdminListProjectGroupShares(this.uuid).then((res) => {
       const { dtable_group_share_list: groupShares } = res.data || {};
       this.setState({ groupShares });
     }).catch(error => {
@@ -45,7 +45,7 @@ class SysAdminShareTableToGroup extends React.Component {
   addProjectShare = () => {
     const { groupIDs, permission } = this.state;
     groupIDs.forEach((groupID) => {
-      sysAdminServiceApi.sysAdminAddProjectGroupShare(this.dtableUuid, groupID, permission).then((res) => {
+      sysAdminServiceApi.sysAdminAddProjectGroupShare(this.uuid, groupID, permission).then((res) => {
         let groupShares = this.state.groupShares.slice();
         groupShares.push(res.data.dtable_group_share);
         this.setState({ groupShares: groupShares });
@@ -57,7 +57,7 @@ class SysAdminShareTableToGroup extends React.Component {
   };
 
   updateProjectShare = (groupID, permission) => {
-    sysAdminServiceApi.sysAdminUpdateProjectGroupShare(this.dtableUuid, groupID, permission).then(() => {
+    sysAdminServiceApi.sysAdminUpdateProjectGroupShare(this.uuid, groupID, permission).then(() => {
       const groupShares = this.state.groupShares.map((item) => {
         if (item.group_id === groupID) {
           item.permission = permission;
@@ -71,7 +71,7 @@ class SysAdminShareTableToGroup extends React.Component {
   };
 
   deleteProjectShare = (groupID) => {
-    sysAdminServiceApi.sysAdminDeleteProjectGroupShare(this.dtableUuid, groupID).then(() => {
+    sysAdminServiceApi.sysAdminDeleteProjectGroupShare(this.uuid, groupID).then(() => {
       const groupShares = this.state.groupShares.filter((item) => item.group_id !== groupID);
       this.setState({ groupShares });
     }).catch((error) => {

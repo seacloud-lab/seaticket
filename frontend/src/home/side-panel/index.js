@@ -155,29 +155,29 @@ class SidePanel extends React.Component {
       <div id="workspace-items">
         {personalWorkspace && (
           <div
-            className={`nav-item workspace-nav-item ${this.getActiveClass(`dtable/${personalWorkspace.id}`) ? 'seatable-bg-orange active' : ''}`}
-            onClick={(event) => this.onGroupTabClick(event, `dtable/${personalWorkspace.id}`)}
+            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'seatable-bg-orange active' : ''}`}
+            onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
-            <Link tabIndex={tabIndex} to={siteRoot + 'dtable/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
+            <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
               <span className="table-workspace-icon dtable-font dtable-icon-creator" aria-hidden="true"></span>
               <span className="nav-text">{gettext('My projects')}</span>
             </Link>
           </div>
         )}
         <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('dtable/starred') ? 'seatable-bg-orange active' : ''}`}
-          onClick={(event) => this.onGroupTabClick(event, 'dtable/starred')}
+          className={`nav-item workspace-nav-item ${this.getActiveClass('project/starred') ? 'seatable-bg-orange active' : ''}`}
+          onClick={(event) => this.onGroupTabClick(event, 'project/starred')}
         >
-          <Link tabIndex={tabIndex} to={siteRoot + 'dtable/starred/'} className="workspace-nav-link ellipsis">
+          <Link tabIndex={tabIndex} to={siteRoot + 'project/starred/'} className="workspace-nav-link ellipsis">
             <span className="table-workspace-icon dtable-font dtable-icon-star" aria-hidden="true"></span>
             <span className="nav-text">{gettext('Favorites')}</span>
           </Link>
         </div>
         <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('dtable/shared') ? 'seatable-bg-orange active' : ''}`}
-          onClick={(event) => this.onGroupTabClick(event, 'dtable/shared')}
+          className={`nav-item workspace-nav-item ${this.getActiveClass('project/shared') ? 'seatable-bg-orange active' : ''}`}
+          onClick={(event) => this.onGroupTabClick(event, 'project/shared')}
         >
-          <Link tabIndex={tabIndex} to={siteRoot + 'dtable/shared/'} className="workspace-nav-link ellipsis">
+          <Link tabIndex={tabIndex} to={siteRoot + 'project/shared/'} className="workspace-nav-link ellipsis">
             <span className="table-workspace-icon dtable-font dtable-icon-share-with-me" aria-hidden="true"></span>
             <span className="nav-text">{gettext('Shared with me')}</span>
           </Link>

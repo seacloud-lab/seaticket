@@ -21,10 +21,7 @@ class Nav extends React.Component {
       { name: 'users', urlPart: 'users', text: gettext('Members') },
       { name: 'admin-users', urlPart: 'admin-users', text: gettext('Admins') },
       { name: 'groups', urlPart: 'groups', text: gettext('Groups') },
-      { name: 'dtables', urlPart: 'dtables', text: gettext('Bases') },
-      { name: 'external-apps', urlPart: 'external-apps', text: gettext('Apps') },
-      { name: 'external-links', urlPart: 'external-links', text: gettext('External links') },
-      { name: 'view-external-links', urlPart: 'view-external-links', text: gettext('View external links') },
+      { name: 'projects', urlPart: 'projects', text: gettext('Projects') },
       // {name: 'traffic', urlPart: 'traffic', text: gettext('traffic')},
       // {name: 'settings', urlPart: 'settings', text: gettext('Settings')}
     ];

@@ -293,7 +293,7 @@ export const Utils = {
     return title;
   },
 
-  dtableSharePermsExplanation: function (permission) {
+  projectSharePermsExplanation: function (permission) {
     var title;
     switch (permission) {
       case 'rw':
@@ -345,7 +345,7 @@ export const Utils = {
     }
   },
 
-  getDTableShareLinkPermissionObject: function (permission) {
+  getProjectShareLinkPermissionObject: function (permission) {
     switch (permission) {
       case 'read-only':
         return {

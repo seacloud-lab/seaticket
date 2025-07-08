@@ -91,7 +91,7 @@ class DtableSharePermissionEditor extends React.Component {
   };
 
   translateExplanation = (explanation) => {
-    return Utils.dtableSharePermsExplanation(explanation);
+    return Utils.projectSharePermsExplanation(explanation);
   };
 
   onHideSelect = (event) => {

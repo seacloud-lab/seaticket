@@ -9,8 +9,8 @@ const propTypes = {
   innerClassName: PropTypes.string,
   popoverClassName: PropTypes.string,
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  hideDTablePopover: PropTypes.func.isRequired,
-  hideDTablePopoverWithEsc: PropTypes.func,
+  hidePopover: PropTypes.func.isRequired,
+  hidePopoverWithEsc: PropTypes.func,
   hideArrow: PropTypes.bool,
   placement: PropTypes.string,
   onEnter: PropTypes.func,
@@ -18,37 +18,37 @@ const propTypes = {
   modifiers: PropTypes.object,
 };
 
-class DTablePopover extends React.Component {
+class CustomizePopover extends React.Component {
 
   dtablePopoverRef = null;
 
   componentDidMount() {
-    document.addEventListener('click', this.hideDTablePopover, true);
+    document.addEventListener('click', this.hidePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     window.addEventListener('popstate', this.onHistoryState);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.hideDTablePopover, true);
+    document.removeEventListener('click', this.hidePopover, true);
     document.removeEventListener('keydown', this.onHotKey);
     window.removeEventListener('popstate', this.onHistoryState);
   }
 
   onHistoryState = (e) => {
     e.preventDefault();
-    this.props.hideDTablePopover(e);
+    this.props.hidePopover(e);
   };
 
   onHotKey = (e) => {
     if (isHotkey('esc', e)) {
       e.preventDefault();
-      this.props.hideDTablePopoverWithEsc();
+      this.props.hidePopoverWithEsc();
     } else if (isHotkey('enter', e)) {
       this.props.onEnter && this.props.onEnter(e);
     }
   };
 
-  hideDTablePopover = (e) => {
+  hidePopover = (e) => {
     if (this.dtablePopoverRef && e && !this.dtablePopoverRef.contains(e.target)) {
       let className = '';
       if (e.target.tagName.toLowerCase() === 'svg') {
@@ -61,7 +61,7 @@ class DTablePopover extends React.Component {
         if (this.props.onInnerClick && this.props.onInnerClick(e) === false) {
           return;
         }
-        this.props.hideDTablePopover(e);
+        this.props.hidePopover(e);
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -95,11 +95,11 @@ class DTablePopover extends React.Component {
   }
 }
 
-DTablePopover.defaultProps = {
+CustomizePopover.defaultProps = {
   hideArrow: true,
   placement: 'bottom-start'
 };
 
-DTablePopover.propTypes = propTypes;
+CustomizePopover.propTypes = propTypes;
 
-export default DTablePopover;
+export default CustomizePopover;

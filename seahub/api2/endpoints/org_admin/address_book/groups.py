@@ -16,7 +16,7 @@ from seahub.api2.permissions import IsProVersion
 from seahub.api2.authentication import TokenAuthentication
 from seahub.organizations.permissions import IsOrgAdmin
 from seahub.organizations.utils import check_org_admin
-from seahub.project.models import Workspaces, DTables
+from seahub.project.models import Workspaces, Projects
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, refresh_group_name_cache
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
@@ -254,7 +254,7 @@ class AdminAddressBookGroup(APIView):
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.get_workspace_by_owner(owner)
         if workspace:
-            if DTables.objects.filter(workspace=workspace, deleted=False).exists():
+            if Projects.objects.filter(workspace=workspace, deleted=False).exists():
                 error_msg = _('Cannot delete group with bases')
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 

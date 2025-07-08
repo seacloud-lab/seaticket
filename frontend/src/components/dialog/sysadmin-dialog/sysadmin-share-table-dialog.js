@@ -28,8 +28,8 @@ class SysAdminShareTableDialog extends React.Component {
   }
 
   componentDidMount() {
-    let dtableUuid = this.props.currentProject.uuid;
-    sysAdminServiceApi.sysAdminGetSharePermissions(dtableUuid).then((res) => {
+    let uuid = this.props.currentProject.uuid;
+    sysAdminServiceApi.sysAdminGetSharePermissions(uuid).then((res) => {
       const customSharePermissions = res.data.permission_list;
       this.setState({ customSharePermissions });
     });

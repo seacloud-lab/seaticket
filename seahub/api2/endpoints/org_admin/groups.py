@@ -345,7 +345,7 @@ class OrgAdminGroup(APIView):
             error_msg = 'Group %s not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # dtables check
+        # projects check
         owner = '%s@seafile_group' % (group_id)
         workspace = Workspaces.objects.filter(owner=owner).first()
         if workspace and Projects.objects.filter(workspace=workspace, deleted=False).exists():

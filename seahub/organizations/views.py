@@ -268,7 +268,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             login(request, new_user)
 
             if not redirect_to:
-                response = HttpResponseRedirect(reverse('dtable'))
+                response = HttpResponseRedirect(reverse('project'))
             else:
                 response = HttpResponseRedirect(redirect_to)
 
@@ -480,7 +480,7 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 clear_send_sms_attempts(phone, ip)
 
                 if not redirect_to:
-                    response = HttpResponseRedirect(reverse('dtable'))
+                    response = HttpResponseRedirect(reverse('project'))
                 else:
                     response = HttpResponseRedirect(redirect_to)
 

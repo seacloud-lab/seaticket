@@ -163,4 +163,4 @@ class RegistrationBackend(object):
         account activation.
 
         """
-        return 'dtable', (), {}
+        return 'project', (), {}

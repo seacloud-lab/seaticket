@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import DtableMenuToolbar from './toolbar/dtable-menu-toolbar';
-import SearchDtable from '../search/search-dtable';
+// import SearchProject from '../search/search-project';
 import { gettext } from '../../constants';
 import { MobileCommonHeader } from '../../components';
 
 const MOBILE_HEADER_TITLE = {
-  templates: 'Templates',
-  apps: 'Apps',
-  mine: 'Mine'
+  projects: 'Projects',
+  mine: gettext('Mine')
 };
 
 export default class MobileHeader extends Component {
@@ -29,10 +28,10 @@ export default class MobileHeader extends Component {
           loadWorkspaceList={this.props.loadWorkspaceList}
         />
         <div className="common-toolbar">
-          <SearchDtable
-            placeholder={this.props.searchPlaceholder || gettext('Search bases')}
+          {/* <SearchProject
+            placeholder={this.props.searchPlaceholder || gettext('Search projects')}
             onSearchedClick={this.props.onSearchedClick}
-          />
+          /> */}
         </div>
       </header>
     );
@@ -40,12 +39,12 @@ export default class MobileHeader extends Component {
 
   render(){
     const { selectedTab } = this.props;
-    if (selectedTab === 'bases') {
+    if (selectedTab === 'projects') {
       return this.renderBasesHeader();
     }
     const title = MOBILE_HEADER_TITLE[selectedTab];
     return (
-      <MobileCommonHeader title={gettext(title)} />
+      <MobileCommonHeader title={title} />
     );
   }
 }

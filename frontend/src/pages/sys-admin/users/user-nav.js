@@ -16,8 +16,8 @@ class Nav extends React.Component {
     this.navItems = [
       { name: 'info', urlPart: '', text: gettext('Info') },
       { name: 'groups', urlPart: 'groups', text: gettext('Groups') },
-      { name: 'dtables', urlPart: 'dtables', text: gettext('Bases') },
-      { name: 'shared-dtables', urlPart: 'shared-dtables', text: gettext('Shared bases') },
+      { name: 'projects', urlPart: 'projects', text: gettext('Projects') },
+      { name: 'shared-projects', urlPart: 'shared-projects', text: gettext('Shared projects') },
       { name: 'storage', urlPart: 'storage', text: gettext('Storage') },
     ];
   }

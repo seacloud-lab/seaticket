@@ -271,7 +271,7 @@ class GroupMember(APIView):
         # group owner/admin delete a group member
         try:
             if is_group_owner(group_id, username):
-                # clean related-users of dtables in group or ancestors' groups
+                # clean related-users of projects in group or ancestors' groups
                 clean_related_users_cache_by_group(group_id)
                 # group owner can delete all group member
                 ccnet_api.group_remove_member(group_id, username, email)
@@ -281,7 +281,7 @@ class GroupMember(APIView):
             elif is_group_admin(group_id, username):
                 # group admin can NOT delete group owner/admin
                 if not is_group_admin_or_owner(group_id, email):
-                    # clean related-users of dtables in group or ancestors' groups
+                    # clean related-users of projects in group or ancestors' groups
                     clean_related_users_cache_by_group(group_id)
                     ccnet_api.group_remove_member(group_id, username, email)
                     seafile_api.remove_group_repos_by_owner(group_id, email)

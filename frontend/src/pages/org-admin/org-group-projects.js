@@ -262,7 +262,7 @@ class GroupProjects extends Component {
         <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
-            <OrgAdminGroupNav groupID={this.props.groupID} currentItem='dtables' />
+            <OrgAdminGroupNav groupID={this.props.groupID} currentItem='projects' />
             <div className="cur-view-content">
               <Content
                 loading={this.state.loading}

@@ -119,11 +119,11 @@ class SysAdminShareTableToUser extends React.Component {
       permission: 'rw',
       userList: [],
     };
-    this.dtableUuid = this.props.currentProject.uuid;
+    this.Uuid = this.props.currentProject.uuid;
   }
 
   componentDidMount() {
-    sysAdminServiceApi.sysAdminListProjectShares(this.dtableUuid).then((res) => {
+    sysAdminServiceApi.sysAdminListProjectShares(this.uuid).then((res) => {
       this.setState({ userList: res.data.user_list });
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
@@ -148,7 +148,7 @@ class SysAdminShareTableToUser extends React.Component {
       let name = selectedOptions[i].value;
       let email = selectedOptions[i].email;
       let avatar_url = selectedOptions[i].avatar_url;
-      sysAdminServiceApi.sysAdminAddProjectShare(this.dtableUuid, email, permission).then((res) => {
+      sysAdminServiceApi.sysAdminAddProjectShare(this.uuid, email, permission).then((res) => {
         let userInfo = {
           name: name,
           email: email,
@@ -170,7 +170,7 @@ class SysAdminShareTableToUser extends React.Component {
 
   deleteProjectShare = (email) => {
     const { userList } = this.state;
-    sysAdminServiceApi.sysAdminDeleteProjectShare(this.dtableUuid, email).then((res) => {
+    sysAdminServiceApi.sysAdminDeleteProjectShare(this.uuid, email).then((res) => {
       let newUserList = userList.filter(userInfo => {
         return userInfo.email !== email;
       });
@@ -195,7 +195,7 @@ class SysAdminShareTableToUser extends React.Component {
   };
 
   updateProjectShare = (email, permission) => {
-    sysAdminServiceApi.sysAdminUpdateProjectShare(this.dtableUuid, email, permission).then((res) => {
+    sysAdminServiceApi.sysAdminUpdateProjectShare(this.uuid, email, permission).then((res) => {
       let userList = this.state.userList.filter(userInfo => {
         if (userInfo.email === email) {
           userInfo.permission = permission;
@@ -223,7 +223,7 @@ class SysAdminShareTableToUser extends React.Component {
     for (let i = 0; i < emails.length; i++) {
       let email = emails[i];
       let avatar_url = membersSelectedObj[email].avatar_url;
-      await sysAdminServiceApi.sysAdminAddProjectShare(this.dtableUuid, email, permission).then((res) => {
+      await sysAdminServiceApi.sysAdminAddProjectShare(this.uuid, email, permission).then((res) => {
         let userInfo = {
           name: membersSelectedObj[email].name,
           email: email,

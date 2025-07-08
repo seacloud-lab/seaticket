@@ -6,7 +6,7 @@ import { toaster } from '../../components';
 import UserSelect from '../../components/user-select';
 import DtableSharePermissionEditor from '../../components/select-editor/dtable-share-permission-editor';
 import DepartmentDetailDialog from './department-detail-dialog';
-import UserInfoPopover from '../dtable-popover/user-info-popover';
+import UserInfoPopover from '../../components/popover/user-info-popover';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import { gettext, cloudMode, isOrgContext } from '../../constants';

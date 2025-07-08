@@ -4,7 +4,7 @@ import GroupTrashProjects from './group-trash-projects';
 import { Loading } from '../../../components';
 
 function GroupTrashProjectList(props) {
-  const { groupID, isLoading, trashDTableList, restoreProject } = props;
+  const { groupID, isLoading, trashList, restoreProject } = props;
   if (isLoading) {
     return <Loading />;
   }
@@ -12,7 +12,7 @@ function GroupTrashProjectList(props) {
     <div className="manage-trash-projects">
       <GroupTrashProjects
         groupID={groupID}
-        trashDTableList={trashDTableList}
+        trashList={trashList}
         restoreProject={restoreProject}
       />
     </div>
@@ -22,7 +22,7 @@ function GroupTrashProjectList(props) {
 GroupTrashProjectList.propTypes = {
   groupID: PropTypes.number.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  trashDTableList: PropTypes.array.isRequired,
+  trashList: PropTypes.array.isRequired,
   restoreProject: PropTypes.func.isRequired,
 };
 

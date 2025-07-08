@@ -15,7 +15,7 @@ from seahub.organizations.views import get_org_id_by_group
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.permissions import IsProVersion
 from seahub.api2.authentication import TokenAuthentication
-from seahub.project.models import Workspaces
+from seahub.project.models import Workspaces, Projects
 
 
 logger = logging.getLogger(__name__)
@@ -61,11 +61,11 @@ class AdminOrgAddressBookGroup(APIView):
             error_msg = 'There are sub-departments in this department.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # dtables check
+        # projects check
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.get_workspace_by_owner(owner)
         if workspace:
-            if DTables.objects.filter(workspace=workspace, deleted=False).exists():
+            if Projects.objects.filter(workspace=workspace, deleted=False).exists():
                 error_msg = _('Cannot delete group with bases')
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 

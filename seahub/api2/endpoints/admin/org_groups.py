@@ -15,7 +15,7 @@ from seahub.api2.permissions import IsProVersion
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.signals import group_deleted
-from seahub.project.models import Workspaces
+from seahub.project.models import Workspaces, Projects
 from seahub.organizations.views import get_org_id_by_group
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_DELETE
@@ -112,10 +112,10 @@ class AdminOrgGroup(APIView):
         group_owner = group.creator_name
         group_name = group.group_name
 
-        # dtables check
+        # projects check
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.filter(owner=owner).first()
-        if workspace and DTables.objects.filter(workspace=workspace, deleted=False).exists():
+        if workspace and Projects.objects.filter(workspace=workspace, deleted=False).exists():
             return api_error(status.HTTP_400_BAD_REQUEST, _('Cannot delete group with bases'))
 
         # mark group's workspace as deleted

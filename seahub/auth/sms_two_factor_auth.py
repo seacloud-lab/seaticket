@@ -68,7 +68,7 @@ def sms_two_factor_auth(request):
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
-            return HttpResponseRedirect(reverse('dtable'))
+            return HttpResponseRedirect(reverse('project'))
     redirect_to = redirect_to or LOGIN_REDIRECT_URL
 
     username = request.session.get(SESSION_KEY_SMS_TWO_FACTOR_AUTH_USERNAME)

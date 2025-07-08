@@ -459,7 +459,7 @@ class AdminWorkWeixinDepartmentsImport(APIView):
                         email, api_user_name, department_id, '导入部门成员失败')
                     failed.append(failed_msg)
 
-        # clean related-users of dtables in these groups or their ancestors' groups
+        # clean related-users of projects in these groups or their ancestors' groups
         for _, group_id in department_map_to_group_dict.items():
             clean_related_users_cache_by_group(group_id)
 

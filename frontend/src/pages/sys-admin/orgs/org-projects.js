@@ -97,7 +97,7 @@ const contentPropTypes = {
   items: PropTypes.array.isRequired,
   curPerPage: PropTypes.number,
   pageInfo: PropTypes.object.isRequired,
-  listDTablesByPage: PropTypes.func.isRequired,
+  listProjectsByPage: PropTypes.func.isRequired,
   resetPerPage: PropTypes.func.isRequired,
 };
 
@@ -120,11 +120,11 @@ class Content extends Component {
   };
 
   getPreviousPageList = () => {
-    this.props.listDTablesByPage(this.props.pageInfo.current_page - 1);
+    this.props.listProjectsByPage(this.props.pageInfo.current_page - 1);
   };
 
   getNextPageList = () => {
-    this.props.listDTablesByPage(this.props.pageInfo.current_page + 1);
+    this.props.listProjectsByPage(this.props.pageInfo.current_page + 1);
   };
 
   render() {
@@ -135,7 +135,7 @@ class Content extends Component {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No projects')} />
       );
       const table = (
         <Fragment>
@@ -199,7 +199,7 @@ class OrgProjects extends Component {
     this.state = {
       loading: true,
       errorMsg: '',
-      dtables: [],
+      projects: [],
       pageInfo: {},
       perPage: 25,
       currentPage: 1,
@@ -218,7 +218,7 @@ class OrgProjects extends Component {
           perPage: parseInt(urlParams.get('per_page') || perPage),
           currentPage: parseInt(urlParams.get('page') || currentPage)
         }, () => {
-          this.listDTablesByPage(this.state.currentPage);
+          this.listProjectsByPage(this.state.currentPage);
         });
       });
     });
@@ -228,16 +228,16 @@ class OrgProjects extends Component {
     this.setState({
       perPage: perPage
     }, () => {
-      this.listDTablesByPage(1);
+      this.listProjectsByPage(1);
     });
   };
 
-  listDTablesByPage = (page) => {
+  listProjectsByPage = (page) => {
     let { perPage } = this.state;
     sysAdminServiceApi.sysAdminListOrgProjects(this.props.orgID, page, perPage).then((res) => {
       this.setState({
         loading: false,
-        dtables: res.data.dtable_list,
+        projects: res.data.dtable_list,
         currentPage: page,
         pageInfo: {
           current_page: page,
@@ -274,7 +274,7 @@ class OrgProjects extends Component {
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
             <OrgNav
-              currentItem="dtables"
+              currentItem="projects"
               orgID={this.props.orgID}
               orgName={this.state.orgName}
             />
@@ -282,10 +282,10 @@ class OrgProjects extends Component {
               <Content
                 loading={this.state.loading}
                 errorMsg={this.state.errorMsg}
-                items={this.state.dtables}
+                items={this.state.projects}
                 curPerPage={this.state.perPage}
                 pageInfo={this.state.pageInfo}
-                listDTablesByPage={this.listDTablesByPage}
+                listProjectsByPage={this.listProjectsByPage}
                 resetPerPage={this.resetPerPage}
               />
             </div>

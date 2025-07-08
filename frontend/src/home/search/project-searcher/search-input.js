@@ -53,9 +53,9 @@ const SearcherInput = (props) => {
     props.stopSearch();
   };
 
-  const onCloseDtableSearcher = (event) => {
+  const onCloseSearcher = (event) => {
     event.stopPropagation();
-    props.onCloseDtableSearcher();
+    props.onCloseSearcher();
   };
 
   const onDocumentKeydown = (event) => {
@@ -65,7 +65,7 @@ const SearcherInput = (props) => {
       inputRef && inputRef.current.focus();
     }
     if (event.keyCode === Utils.keyCodes.esc) {
-      onCloseDtableSearcher(event);
+      onCloseSearcher(event);
     }
   };
 
@@ -126,7 +126,7 @@ const SearcherInput = (props) => {
 SearcherInput.propTypes = {
   stopSearch: PropTypes.func,
   startSearch: PropTypes.func,
-  onCloseDtableSearcher: PropTypes.func,
+  onCloseSearcher: PropTypes.func,
   searchStr: PropTypes.string,
   setSearchStr: PropTypes.func,
 };

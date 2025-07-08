@@ -38,7 +38,7 @@ class MobileMainPanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedTab: 'bases',
+      selectedTab: 'projects',
       errorMsg: null,
       workspaceList: [],
       isWorkspaceListLoading: true,
@@ -46,7 +46,7 @@ class MobileMainPanel extends React.Component {
   }
 
   onSearchedClick = (item) => {
-    let url = siteRoot + 'workspace/' + item.workspace_id + '/dtable/' + item.name + '/';
+    let url = siteRoot + 'workspace/' + item.workspace_id + '/project/' + item.name + '/';
     location.href = url;
   };
 
@@ -82,11 +82,11 @@ class MobileMainPanel extends React.Component {
     this.props.updateSidePanelGroups(true, true);
   };
 
-  onCopyProject = (dtable) => {
+  onCopyProject = (project) => {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
-      if (dtable.workspace_id === workspace.id) {
-        workspace.project_list.push(dtable);
+      if (project.workspace_id === workspace.id) {
+        workspace.project_list.push(project);
         break;
       }
     }
@@ -174,7 +174,7 @@ class MobileMainPanel extends React.Component {
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
         <WorkspaceInMainPanel
-          path={siteRoot + 'dtable/:dtableID'}
+          path={siteRoot + 'project/:projectID'}
           loadWorkspaceList={this.loadWorkspaceList}
           isWorkspaceListLoading={this.state.isWorkspaceListLoading}
           workspaceList={this.state.workspaceList}
@@ -209,7 +209,7 @@ class MobileMainPanel extends React.Component {
         {tabBarItems.map(item => {
           let innerContent = null;
           let itemTabValue = item.key.toLocaleLowerCase();
-          if (selectedTab === 'bases' && itemTabValue === 'bases') {
+          if (selectedTab === 'projects' && itemTabValue === 'projects') {
             innerContent = this.renderMainContent();
           }
           return (
