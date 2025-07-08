@@ -34,7 +34,7 @@ const propTypes = {
   onAddGroupSharedProject: PropTypes.func,
   onAddProject: PropTypes.func,
   loadWorkspaceList: PropTypes.func,
-  noBaseTip: PropTypes.object
+  emptyTip: PropTypes.object
 };
 
 class Workspace extends React.Component {
@@ -394,7 +394,7 @@ class Workspace extends React.Component {
 
   renderEmpty = () => {
     if (this.state.projectList.length === 0) {
-      return this.props.noBaseTip || '';
+      return this.props.emptyTip || '';
     }
   };
 

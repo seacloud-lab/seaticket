@@ -4,6 +4,7 @@ import { EmptyTip, Loading } from '../../../../components';
 import { isOrgContext, orgName, mediaUrl } from '../../../../constants';
 import Workspace from '../../../workspace';
 import { Utils } from '../../../../utils/utils';
+import { isNumber } from '../../../../utils/type-detection';
 
 const gettext = window.gettext;
 
@@ -19,12 +20,18 @@ class WorkspaceInMainPanel extends React.Component {
   };
 
   renderWorkspace = () => {
-    const { dtableID, workspaceList, onCopyProject, onDeleteProject,
+    const { projectID, workspaceList, onCopyProject, onDeleteProject,
       onDeleteGroup, onAddGroupSharedProject, onLeaveGroupSharedProject,
       onAddProject } = this.props;
 
+    if (!isNumber(projectID)) {
+      if (projectID === 'starred' || projectID === 'shared') {
+        return (<EmptyTip text={gettext('No projects.')} src={`${mediaUrl}img/no-items-tip.png`} />);
+      }
+    }
+
     let workspace = workspaceList.find(workspace => {
-      return workspace.id === Number(dtableID);
+      return workspace.id === Number(projectID);
     });
     if (!workspace) {
       workspace = workspaceList.find(workspace => workspace.type === 'personal');
@@ -41,7 +48,7 @@ class WorkspaceInMainPanel extends React.Component {
         onLeaveGroupSharedProject={onLeaveGroupSharedProject}
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
-        noBaseTip={
+        emptyTip={
           <EmptyTip text={gettext('No projects.')} src={`${mediaUrl}img/no-items-tip.png`} />
         }
       />
@@ -89,7 +96,7 @@ WorkspaceInMainPanel.propTypes = {
   onAddGroupSharedProject: PropTypes.func.isRequired,
   onAddProject: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
-  dtableID: PropTypes.string,
+  projectID: PropTypes.string,
 };
 
 export default WorkspaceInMainPanel;
