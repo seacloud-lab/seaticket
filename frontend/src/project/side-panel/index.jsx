@@ -15,9 +15,9 @@ const SidePanel = ({ activeBar, toggleBar }) => {
       key: '_',
       name: '',
       children: [
-        { key: BAR.ASK, name: gettext('Ask') },
-        { key: BAR.SEARCH, name: gettext('Search') },
-        { key: BAR.TICKETS, name: gettext('Tickets') }
+        { key: BAR.ASK, name: gettext('Ask'), icon: 'ask' },
+        { key: BAR.SEARCH, name: gettext('Search'), icon: 'search' },
+        { key: BAR.TICKETS, name: gettext('Tickets'), icon: 'ticket' }
       ]
     }, {
       key: 'connections',

@@ -29,18 +29,22 @@ export const CONNECTION_TYPES = [
   {
     key: CONNECTION_TYPE.EMAIL,
     type: CONNECTION_TYPE.EMAIL,
+    icon: 'email',
     name: gettext('Emails'),
   }, {
     key: CONNECTION_TYPE.GITHUB_ISSUE,
     type: CONNECTION_TYPE.GITHUB_ISSUE,
+    icon: 'github-issue',
     name: gettext('Github issues'),
   }, {
     key: CONNECTION_TYPE.DISCOURSE_FORUM,
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
+    icon: 'discourse-forum',
     name: gettext('Discourse forums'),
   }, {
     key: CONNECTION_TYPE.SITE,
     type: CONNECTION_TYPE.SITE,
+    icon: 'site',
     name: gettext('Sites'),
   }
 ];

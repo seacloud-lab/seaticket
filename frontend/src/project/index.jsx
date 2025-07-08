@@ -5,9 +5,10 @@ import MainPanel from './main-panel';
 import { BAR } from './constants';
 
 import './index.css';
+import { gettext } from '../constants';
 
 const Project = () => {
-  const [activeBar, setActiveBar] = useState({ key: BAR.SEARCH });
+  const [activeBar, setActiveBar] = useState({ key: BAR.SEARCH, name: gettext('Search') });
 
   const toggleBar = useCallback((bar) => {
     if (activeBar?.key === bar.key) return;

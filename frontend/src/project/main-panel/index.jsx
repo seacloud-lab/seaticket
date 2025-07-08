@@ -12,10 +12,10 @@ const MainPanelContainer = ({ activeBar }) => {
   if (activeBar.key === BAR.ASK) return null; // ask page
   if (activeBar.key === BAR.SEARCH) return (<Search/>); // search page
   if (activeBar.key === BAR.TICKETS) return null; // tickets page
-  return (<Records type={activeBar.type} title={activeBar.name} />);
+  return (<Records type={activeBar.type} title={activeBar.name} />); // connections page
 };
 
-const MainPanelTopBar = () => {
+const MainPanelTopBar = ({ activeBar }) => {
   const user = useMemo(() => {
     return {
       name,
@@ -25,6 +25,9 @@ const MainPanelTopBar = () => {
   }, []);
   return (
     <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
+      <div className="sea-qa-project-main-panel-header-left">
+        <div className="sea-qa-project-main-panel-header-name">{activeBar?.name}</div>
+      </div>
       <Account user={user} />
     </div>
   );
@@ -33,7 +36,7 @@ const MainPanelTopBar = () => {
 const MainPanel = ({ activeBar }) => {
   return (
     <div className="sea-qa-project-main-panel">
-      <MainPanelTopBar />
+      <MainPanelTopBar activeBar={activeBar} />
       <MainPanelContainer activeBar={activeBar} />
     </div>
   );

@@ -26,9 +26,10 @@ class ResizeBar extends Component {
 
   onMouseEnter = (evt) => {
     if (!this.state.isShowResizeHandler) {
-      this.setState({ isShowResizeHandler: true });
-      this.handleResizeHandlePosition(evt);
-      this.sidebarResize.addEventListener('mouseleave', this.onMouseLeave);
+      this.setState({ isShowResizeHandler: true }, () => {
+        this.handleResizeHandlePosition(evt);
+        this.sidebarResize.addEventListener('mouseleave', this.onMouseLeave);
+      });
     }
   };
 

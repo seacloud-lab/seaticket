@@ -29,19 +29,20 @@ const Node = ({ node, level, activeNode, onClick, onCreate, onDelete, onEdit }) 
     onDelete && onDelete(node.key);
   }, [node, onDelete]);
 
-  const { key, name, editable } = node;
+  const { key, name, editable, icon } = node;
   return (
     <>
       <div
         className={classnames('sea-qa-project-navigation-node', {
-          'sea-qa-project-navigation-node-active': key === activeNode?.key,
           'sea-qa-project-navigation-node-level0': level === 0,
           'sea-qa-project-navigation-node-level1': level === 1,
           'sea-qa-project-navigation-node-level': level > 1,
+          'sea-qa-project-navigation-node-active': key === activeNode?.key,
         })}
         style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
         onClick={() => onClick(node)}
       >
+        {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-node-icon" />)}
         <span className="sea-qa-project-navigation-node-name">{name}</span>
         {editable && (onCreate || onEdit || onDelete) && (
           <Dropdown

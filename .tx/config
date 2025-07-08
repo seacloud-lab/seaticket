@@ -1,16 +1,1 @@
-[main]
-host = https://www.transifex.com
-
-; todo: use transifex 
-
-; [o:seafile-ltd:p:sea-qa:r:djangopo]
-; file_filter = locale/<lang>/LC_MESSAGES/django.po
-; source_file = locale/en/LC_MESSAGES/django.po
-; source_lang = en
-; type = PO
-
-; [o:seafile-ltd:p:sea-qa:r:djangojspo]
-; file_filter = locale/<lang>/LC_MESSAGES/djangojs.po
-; source_file = locale/en/LC_MESSAGES/djangojs.po
-; source_lang = en
-; type = PO
+; Only translate locally, don't upload to transifex

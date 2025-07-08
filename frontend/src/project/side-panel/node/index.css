@@ -1,7 +1,7 @@
 .sea-qa-project-navigation-node {
   display: flex;
   align-items: center;
-  height: 38px;
+  height: 32px;
   width: 100%;
   padding: 0 .5rem;
   border-radius: 3px;
@@ -9,24 +9,14 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-navigation-node:not(.sea-qa-project-navigation-node-level0):hover,
-.sea-qa-project-navigation-node.sea-qa-project-navigation-node-active,
-.sea-qa-project-navigation-node:has(> .sea-qa-project-navigation-node-more-operation.show) {
-  background-color: #F5F5F5;
-  position: relative;
+.sea-qa-project-navigation-node:not(.sea-qa-project-navigation-node-level0):hover {
+  background-color: #EFEFED;
 }
 
-.sea-qa-project-navigation-node.sea-qa-project-navigation-node-active::before {
-  content: '';
-  position: absolute;
-  display: block;
-  width: 4px;
-  height: 34px;
-  left: -8px;
-  top: 2px;
-  background-color: #ff9800;
-  border-radius: 2px;
-  z-index: 2;
+.sea-qa-project-navigation-node.sea-qa-project-navigation-node-active,
+.sea-qa-project-navigation-node:has(> .sea-qa-project-navigation-node-more-operation.show) {
+  background-color: #EDEDEA;
+  position: relative;
 }
 
 .sea-qa-project-navigation-node .sea-qa-project-navigation-node-name {
@@ -47,10 +37,14 @@
 
 .sea-qa-project-navigation-node-level0 {
   padding: 0 .5rem;
-  font-size: .9375rem;
+  font-size: 14px;
   color: #666666;
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 10px;
+}
+
+.sea-qa-project-navigation-node .sea-qa-project-navigation-node-icon {
+  color: #666;
+  margin-right: 8px;
 }
