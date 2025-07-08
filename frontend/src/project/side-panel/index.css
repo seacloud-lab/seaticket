@@ -2,6 +2,7 @@
   height: 100%;
   user-select: none;
   display: flex;
+  background-color: #F7F7F5;
 }
 
 .sea-qa-project .sea-qa-project-side-panel .sea-qa-project-side-panel-header {
@@ -19,10 +20,10 @@
 
 .sea-qa-project-side-panel .sea-qa-project-navigation {
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px 8px;
   display: flex;
   flex: auto;
   flex-direction: column;
   overflow: auto;
-  font-size: 15px;
+  font-size: 14px;
 }
