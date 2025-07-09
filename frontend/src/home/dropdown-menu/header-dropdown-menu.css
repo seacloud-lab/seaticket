@@ -1,0 +1,26 @@
+.header-more-operation {
+  display: inline-flex;
+  margin-left: 8px;
+  width: 36px;
+  padding-left: 8px;
+  padding: 2px 4px;
+}
+
+.header-more-operation i {
+  color: #666;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.header-more-operation a:hover {
+  text-decoration: none;
+}
+
+.header-more-operation .dtable-icon-add-table {
+  margin-right: 2px;
+  font-size: 16px;
+}
+
+.header-more-operation .dtable-icon-down3 {
+  font-size: 12px;
+}

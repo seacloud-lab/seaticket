@@ -1,0 +1,289 @@
+.main-panel-project-header {
+  margin: 20px 0;
+  justify-content: space-between;
+}
+
+.main-panel-project-header .main-panel-project-title {
+  font-size: 18px;
+  color: #000;
+  font-weight: 700;
+}
+
+.main-panel-project-header .main-panel-project-help {
+  cursor: pointer;
+}
+
+.main-panel-project-header .main-panel-project-help .dtable-icon-use-help {
+  font-size: 20px;
+  line-height: 1;
+  color: #bdbdbd;
+}
+
+.main-panel-project-header .main-panel-project-help:hover .dtable-icon-use-help {
+  color: #666666;
+}
+
+.main-panel-project-todo {
+  margin-bottom: 40px;
+}
+
+.main-panel-project-todo .project-todo-title,
+.project-group-container .project-group-name {
+  font-size: 16px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.project-group-container .project-group-name .toggle-icon {
+  display: inline-flex;
+  transform: scale(0.8);
+  transition: all 0.1s;
+  margin-left: 5px;
+  font-size: 12px;
+  color: #666666;
+  cursor: pointer;
+}
+
+.project-group-container .project-group-name .toggle-icon:hover {
+  color: #666;
+}
+
+.project-group-container .projects-dropdown .create-project-folder-item {
+  padding: 3px 12px;
+  min-height: 32px;
+  line-height: 1.5;
+  width: 160px;
+  cursor: pointer;
+}
+
+.project-group-container .projects-dropdown .create-project-folder-item .item-icon {
+  font-size: 14px;
+  margin-right: 10px;
+  color: #8c8c8c;
+}
+
+.project-folder-dropdown .dropdown-item:hover .operation-icon,
+.project-group-container .projects-dropdown .create-project-folder-item:hover .item-icon {
+  color: #fff;
+}
+
+.main-panel-project-todo .project-todo-content {
+  width: 300px;
+  height: 120px;
+  background-color: #fff5eb;
+  border-radius: 6px;
+}
+
+.main-panel-project-todo .project-todo-content:hover {
+  cursor: pointer;
+}
+
+.main-panel-project-todo .project-todo-image-container {
+  margin-right: 54px;
+}
+
+.main-panel-project-todo .project-todo-image-container .project-todo-image {
+  width: 64px;
+  height: 64px;
+}
+
+.main-panel-project-todo .project-todo-count-container {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 17px 0;
+}
+
+.main-panel-project-todo .project-todo-count-container .project-todo-count-title {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.main-panel-project-todo .project-todo-count-container .project-todo-count {
+  font-size: 36px;
+}
+
+.main-panel-my-projects-title {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.main-panel-my-projects {
+  margin-bottom: 150px;
+}
+
+.project-group-container:last-child {
+  margin-bottom: 0;
+}
+
+.project-group-container .project-group-content {
+  flex-wrap: wrap;
+}
+
+.project-group-container .project-group-content .load-more-projects {
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.project-group-container .load-more-projects .load-more-projects-tip {
+  color: #ED7109;
+  margin: 0 16px;
+  cursor: pointer;
+}
+
+.project-group-container .load-more-projects .load-more-projects-line {
+  flex: 1;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.project-group-container .empty-tip .no-items-img-tip {
+  width: 60px;
+  height: 60px;
+}
+
+/* project item and project folder item */
+.project-group-container .project-folder-item,
+.project-group-container .project-item {
+  min-width: 168px;
+  height: 176px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 14px;
+  cursor: pointer;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.project-group-container .project-folder-item:hover {
+  background: rgb(255, 240, 204) !important;
+}
+
+.project-item .project-item-icon-more {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.project-folder-item .project-folder-item-icon,
+.project-item .project-item-icon {
+  height: 32px;
+  width: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.project-folder-item .project-folder-item-more {
+  position: absolute;
+  right: 0;
+  line-height: 1;
+  color: #999;
+}
+
+.project-folder-item .project-folder-item-more:hover {
+  color: #666666;
+}
+
+.project-folder-dropdown {
+  margin-left: -16px;
+  min-width: 10rem;
+}
+
+.project-folder-dropdown .dropdown-item {
+  line-height: 1.5;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 3px 12px;
+}
+
+.project-folder-dropdown .operation-icon {
+  font-size: 14px;
+  margin-right: 10px;
+  color: #8c8c8c;
+}
+
+.project-item .project-item-more {
+  height: 24px;
+  width: 24px;
+}
+
+.project-item .project-item-icon-font {
+  font-size: 20px;
+}
+
+.project-access-permissions .multicolor-icon {
+  vertical-align: -0.1rem;
+}
+
+.project-item-more .dtable-icon-more-level,
+.project-item-more .dtable-icon-more-vertical {
+  color: #999;
+  line-height: 1;
+}
+
+.project-folder-item .project-folder-item-name,
+.project-item .project-item-name {
+  height: 42px;
+  width: 100%;
+  margin-top: 14px;
+  margin-bottom: 40px;
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+.project-item .project-item-group {
+  height: 18px;
+  width: 100%;
+  line-height: 18px;
+  font-size: 12px;
+  color: #666666;
+}
+
+.project-item .project-item-group .table-workspace-icon {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.project-item .project-item-records {
+  width: 100%;
+  font-size: 12px;
+  color: #666666;
+}
+
+@media (max-width: 767px) {
+  .main-panel-project .cur-view-content {
+    padding: 0 16px;
+  }
+
+  .main-panel-project-header {
+    margin: 10px 0 14px;
+  }
+
+  .main-panel-project-header .main-panel-project-help:hover .dtable-icon-use-help {
+    color: #aaa;
+  }
+
+  .main-panel-project-todo {
+    margin-bottom: 30px;
+  }
+
+  .main-panel-project-todo .project-todo-content {
+    width: 100%;
+  }
+
+  .project-group-container .project-group-content {
+    flex-wrap: initial;
+  }
+
+  .workspace:last-child {
+    margin-bottom: 50px;
+  }
+
+  .project-group-container .mobile-operation-menu {
+    text-align: left;
+  }
+}

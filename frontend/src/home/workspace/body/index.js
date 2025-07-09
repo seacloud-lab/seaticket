@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import Project from './project';
 import SharedProject from './shared-project';
 import VirtualProject from './virtual-project';
+import './index.css';
 
 const propTypes = {
   workspace: PropTypes.object,
@@ -25,11 +26,9 @@ const propTypes = {
   isShowVirtualProject: PropTypes.bool,
   isItemFreezed: PropTypes.bool,
   isPersonal: PropTypes.bool,
-  canAddProject: PropTypes.bool,
   onLeaveGroupSharedProject: PropTypes.func,
   onFreezedItem: PropTypes.func,
   onUnfreezedItem: PropTypes.func,
-  renderAddItem: PropTypes.func,
   hideVirtualDtable: PropTypes.func,
   onShareProjectToggle: PropTypes.func,
   onSetPasswordToggle: PropTypes.func,
@@ -50,22 +49,26 @@ const propTypes = {
 class WorkspaceContainer extends Component {
 
   render() {
-    const { isDesktop, isOwner, isAdmin, isItemFreezed } = this.props;
-
+    const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle } = this.props;
+    const total = this.props.projectList.length + this.props.groupSharedProjects.length;
     return (
-      <div className={classnames('', {
+      <div className={classnames('project-group-content d-flex', {
         'project-item-container': isDesktop,
         'table-mobile-item-container': !isDesktop,
       })}
       >
         {this.props.projectList.map((project, index) => {
+          const { className, style } = getProjectClassAndStyle(index, total);
           return (
             <Project
+              className={className}
+              style={style}
               key={index}
               project={project}
               isItemFreezed={isItemFreezed}
               isOwner={isOwner}
               isAdmin={isAdmin}
+              workspace={this.props.workspace}
               onShareProjectToggle={this.props.onShareProjectToggle}
               onSetPasswordToggle={this.props.onSetPasswordToggle}
               onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
@@ -83,21 +86,18 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.isShowVirtualProject && (
-          <VirtualProject
-            currentWorkspace={this.props.workspace}
-            createBlankProject={this.props.createBlankProject}
-            hideVirtualDtable={this.props.hideVirtualDtable}
-          />
-        )}
         {this.props.groupSharedProjects.map((project, index) => {
+          const { className, style } = getProjectClassAndStyle(this.props.projectList.length + index, total);
           return (
             <SharedProject
+              className={className}
+              style={style}
               key={index}
               sharedItemKey={`table-${index}`}
               project={project}
               isItemFreezed={isItemFreezed}
               isAdmin={isAdmin}
+              workspace={this.props.workspace}
               onLeaveShare={this.props.onLeaveGroupSharedProject}
               setDropdownState={this.props.setDropdownState}
               getDropdownState={this.props.getDropdownState}
@@ -107,9 +107,14 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.canAddProject && (this.props.isPersonal || isOwner || isAdmin) &&
-          this.props.renderAddItem()
-        }
+        {this.props.isShowVirtualProject && (
+          <VirtualProject
+            currentWorkspace={this.props.workspace}
+            createBlankProject={this.props.createBlankProject}
+            hideVirtualDtable={this.props.hideVirtualDtable}
+            getProjectClassAndStyle={this.props.getProjectClassAndStyle}
+          />
+        )}
       </div>
     );
   }
