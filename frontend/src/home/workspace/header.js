@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import GroupDropdownMenu from '../dropdown-menu/group-dropdown-menu';
+import HeaderDropdownMenu from '../dropdown-menu/group-dropdown-menu';
 
 const gettext = window.gettext;
 
@@ -55,38 +55,40 @@ class WorkspaceHeader extends Component {
   };
 
   render() {
-    const { isDesktop, isOwnerOrAdmin, isOwner, workspace } = this.props;
+    const { isDesktop, isOwnerOrAdmin, isOwner, workspace, isAdmin } = this.props;
     const isPersonal = workspace.type === 'personal';
     const isDepart = workspace.group_owner === 'system admin';
     const isDepartV2 = workspace.group_owner === 'system admin' && workspace.department_id;
-    let show_group_menu_drop_down = true;
+    let showGroupOptions = true;
     if (isPersonal) {
-      show_group_menu_drop_down = false;
+      showGroupOptions = false;
     } else if (isDepart) {
       if (!isDepartV2 && !isOwnerOrAdmin) { // old department and non-admin no dropdown
-        show_group_menu_drop_down = false;
+        showGroupOptions = false;
       }
     }
     return (
       <div className={`${isDesktop ? '' : 'table-mobile-heading ' }table-heading`}>
         <span>{this.renderName()}</span>
-        {show_group_menu_drop_down &&
-          <GroupDropdownMenu
-            onRenameDtableGroup={this.props.onRenameGroupToggle}
-            onManageMembersToggle={this.props.toggleManageMembersDialog}
-            onDtableManageMembers={this.props.onDtableManageMembers}
-            onDeleteGroupToggle={this.props.onDeleteGroupToggle}
-            onLeaveGroupToggle={this.props.onLeaveGroupToggle}
-            onTransferGroupToggle={this.props.onTransferGroupToggle}
-            toggleGroupInviteDialog={this.props.toggleGroupInviteDialog}
-            toggleGroupTrashDialog={this.props.toggleGroupTrashDialog}
-            openGroupMember={this.props.openGroupMember}
-            isOwner={isOwner}
-            isOwnerOrAdmin={isOwnerOrAdmin}
-            isDepart={isDepart}
-            workspace={workspace}
-          />
-        }
+        <HeaderDropdownMenu
+          onRenameGroupToggle={this.props.onRenameGroupToggle}
+          onManageMembersToggle={this.props.toggleManageMembersDialog}
+          onDtableManageMembers={this.props.onDtableManageMembers}
+          onDeleteGroupToggle={this.props.onDeleteGroupToggle}
+          onLeaveGroupToggle={this.props.onLeaveGroupToggle}
+          onTransferGroupToggle={this.props.onTransferGroupToggle}
+          toggleGroupInviteDialog={this.props.toggleGroupInviteDialog}
+          toggleGroupTrashDialog={this.props.toggleGroupTrashDialog}
+          openGroupMember={this.props.openGroupMember}
+          isPersonal={isPersonal}
+          isOwner={isOwner}
+          isAdmin={isAdmin}
+          isOwnerOrAdmin={isOwnerOrAdmin}
+          isDepart={isDepart}
+          workspace={workspace}
+          showVirtualProject={this.props.showVirtualProject}
+          showGroupOptions={showGroupOptions}
+        />
       </div>
     );
   }

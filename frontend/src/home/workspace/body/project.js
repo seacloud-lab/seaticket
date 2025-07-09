@@ -1,10 +1,11 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { toaster } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { ProjectSettingPopover } from '../../popover';
-import ProjectIcon from './project-icon';
+import ModalPortal from '../../../components/modal-portal';
+import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
@@ -43,6 +44,7 @@ class Project extends React.Component {
       isShowConfirmExportDialog: false,
       ignore_asset: 'false',
       size_limit: 0,
+      isMouseEnter: false,
     };
     this.dropDownRef = React.createRef();
   }
@@ -151,10 +153,9 @@ class Project extends React.Component {
     this.setState({ name });
   };
 
-  onTableItemClick = (e, href) => {
+  onItemClick = (e, href) => {
     Utils.openPage(e, href);
   };
-
 
   toggleAdvancedMenu = (e) => {
     e.stopPropagation();
@@ -188,98 +189,53 @@ class Project extends React.Component {
   };
 
   render() {
-    let { isOwner, isAdmin, project } = this.props;
+    let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
     let { name: newName, dropdownOpen, bgColor, icon, active } = this.state;
-    let { workspace_id, uuid, id, name, is_encrypted } = project;
-    let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
+    let { workspace_id, uuid, id, is_encrypted } = project;
+    let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
+    const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
+    const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+
     if (!isDesktop) {
       return (
-        <div
-          className="table-mobile-item"
-          onClick={(e) => this.onTableItemClick(e, tableHref)}
-        >
-          <ProjectIcon bgColor={project.color} icon={project.icon} className="table-mobile-icon"/>
-          <div className="table-mobile-name d-flex align-items-center">
-            <a href={tableHref}>{name}</a>
+        <div className="project-mobile-item" onClick={(e) => this.onItemClick(e, projectHref)}>
+          <div className="project-mobile-icon">
+            <span className="project-icon-content" style={{ backgroundColor: project.color || DEFAULT_COLOR }}>
+              <i className={`base-font ${project.icon || 'project-icon icon-color-white icon-worksheet project-icon-style'}`}></i>
+            </span>
+          </div>
+          <div className="project-mobile-name d-flex align-items-center">
+            {newName}
             {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
           </div>
-          <div className="table-mobile-dropdown-menu">
-            <Dropdown
-              isOpen={this.state.dropdownOpen}
-              toggle={this.dropdownToggle}
-              direction="down"
-              className="project-item-more-operation"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownToggle
-                tag='i'
-                role="button"
-                className='dtable-font dtable-icon-more-vertical table-dropdown-menu-icon'
-                title={gettext('More operations')}
-                aria-label={gettext('More operations')}
-                data-toggle="dropdown"
-                aria-expanded={this.state.dropdownOpen}
-                aria-haspopup={true}
-              >
-              </DropdownToggle>
-              <div className={this.state.dropdownOpen ? '' : 'd-none'} onClick={this.dropdownToggle}>
-                <div className="mobile-operation-menu-bg-layer"></div>
-                <div className="mobile-operation-menu">
-                  {(isOwner || isAdmin) &&
-                    <Fragment>
-                      <DropdownItem onClick={this.onMobileShareProjectToggle} className="mobile-dropdown-item">
-                        <span className="dtable-font dtable-icon-share"></span>
-                        <span className="mobile-dropdown-span">{gettext('Share')}</span>
-                      </DropdownItem>
-                      <DropdownItem onClick={this.onMobileUpdateProjectToggle} className="mobile-dropdown-item">
-                        <span className="dtable-font dtable-icon-rename"></span>
-                        <span className="mobile-dropdown-span">{gettext('Rename')}</span>
-                      </DropdownItem>
-                      <DropdownItem onClick={this.onDeleteProjectToggle} className="mobile-dropdown-item">
-                        <span className="dtable-font dtable-icon-delete"></span>
-                        <span className="mobile-dropdown-span">{gettext('Delete')}</span>
-                      </DropdownItem>
-                      <DropdownItem divider />
-                    </Fragment>
-                  }
-                </div>
-              </div>
-            </Dropdown>
+          <div
+            className="project-item-more d-flex justify-content-center">
+            <i className="dtable-font dtable-icon-more-vertical" title={gettext('More operations')} aria-label={gettext('More operations')}></i>
           </div>
-
         </div>
       );
-    }
-    const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
-
-    return (
-      <div
-        className={`project-item ${active ? 'tr-highlight' : ''}`}
-        onMouseEnter={this.onMouseEnter}
-        onMouseLeave={this.onMouseLeave}
-        onClick={(e) => this.onTableItemClick(e, tableHref)}
-      >
-        <div className="project-item-wrapper ml-0">
-          <ProjectIcon bgColor={project.color} icon={project.icon} />
-          <div className="project-name">
-            <a href={tableHref}>{project.name}</a>
-          </div>
-        </div>
-        <div className="table-dropdown-menu" ref={this.dropDownRef}>
-          {active && (
-            <Fragment>
-              {(isOwner || isAdmin) && (
-                <span
-                  className="project-icon-settings"
-                  onClick={this.onProjectSettingsToggle}
-                  id={iconSettingsId}
-                  title={gettext('Edit')}
-                  aria-label={gettext('Edit')}
-                >
-                  <i className="dtable-font dtable-icon-rename cursor-pointer attr-action-icon"></i>
-                </span>
-              )}
+    } else {
+      return (
+        <div
+          id={id}
+          className={`project-item d-flex ${className}`}
+          onClick={(e) => this.onItemClick(e, projectHref)}
+          style={{
+            ...style,
+            backgroundColor: backgroundColorMap[project.color || DEFAULT_COLOR],
+          }}
+          onMouseEnter={this.onMouseEnter}
+          onMouseLeave={this.onMouseLeave}
+        >
+          <div className="project-item-icon-more d-flex">
+            <div
+              className="project-item-icon d-flex align-items-center justify-content-center"
+              style={{ backgroundColor: project.color || DEFAULT_COLOR }}
+            >
+              <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
+            </div>
+            {active && (isOwner || isAdmin) &&
               <Dropdown
                 isOpen={dropdownOpen}
                 toggle={this.dropdownToggle}
@@ -289,7 +245,7 @@ class Project extends React.Component {
                 <DropdownToggle
                   tag='i'
                   role="button"
-                  className='dtable-font dtable-icon-more-vertical cursor-pointer attr-action-icon table-dropdown-menu-icon'
+                  className='dtable-font dtable-icon-more-level cursor-pointer attr-action-icon table-dropdown-menu-icon'
                   title={gettext('More operations')}
                   aria-label={gettext('More operations')}
                   data-toggle="dropdown"
@@ -297,28 +253,39 @@ class Project extends React.Component {
                   aria-haspopup={true}
                 >
                 </DropdownToggle>
-                <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" end={true} onMouseMove={this.onDropDownMouseMove}>
-                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>}
-                  {(isOwner || isAdmin) && <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>}
-                </DropdownMenu>
+                <ModalPortal>
+                  <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" end={true} onMouseMove={this.onDropDownMouseMove}>
+                    <DropdownItem onClick={this.onProjectSettingsToggle}>{gettext('Edit')}</DropdownItem>
+                    <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>
+                    <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>
+                  </DropdownMenu>
+                </ModalPortal>
               </Dropdown>
-            </Fragment>
+            }
+          </div>
+          <div className="project-item-name" title={newName} id={iconSettingsId}>
+            {newName}
+            {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
+          </div>
+          <div className="project-item-group text-truncate">
+            <i className='table-workspace-icon dtable-font dtable-icon-collaborator'></i>
+            {workspace.name}
+          </div>
+          {this.state.isShowSettings && (
+            <ProjectSettingPopover
+              target={iconSettingsId}
+              onToggle={this.onProjectSettingsToggle}
+              name={newName}
+              bgColor={bgColor}
+              icon={icon}
+              onColorChange={this.onColorChange}
+              onIconChange={this.onIconChange}
+              onNameChange={this.onNameChange}
+            />
           )}
         </div>
-        {this.state.isShowSettings && (
-          <ProjectSettingPopover
-            target={iconSettingsId}
-            onToggle={this.onProjectSettingsToggle}
-            name={newName}
-            bgColor={bgColor}
-            icon={icon}
-            onColorChange={this.onColorChange}
-            onIconChange={this.onIconChange}
-            onNameChange={this.onNameChange}
-          />
-        )}
-      </div>
-    );
+      );
+    }
   }
 }
 

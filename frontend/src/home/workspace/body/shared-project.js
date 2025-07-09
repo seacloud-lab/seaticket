@@ -5,6 +5,7 @@ import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, canAddProject } from '../../../constants';
 import { UserInfoPopover } from '../../../components/popover';
 import ProjectIcon from './project-icon';
+import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 class DTableItemGroupShared extends React.Component {
 
@@ -61,7 +62,7 @@ class DTableItemGroupShared extends React.Component {
     this.setState({ dropdownOpen: !this.state.dropdownOpen });
   };
 
-  onTableItemClick = (e, href) => {
+  onItemClick = (e, href) => {
     Utils.openPage(e, href);
   };
 
@@ -88,68 +89,60 @@ class DTableItemGroupShared extends React.Component {
   };
 
   render() {
-    const { isUserDetailPopoverShow } = this.state;
-    let { project, isAdmin, sharedItemKey } = this.props;
+    const { isUserDetailPopoverShow, dropdownOpen } = this.state;
+    let { project, isAdmin, sharedItemKey, className = '', style = {}, workspace } = this.props;
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
-      color, icon, view_share_id, shared_name, is_encrypted, permission } = project;
+      color, icon, view_share_id, shared_name, is_encrypted, permission, uuid, id } = project;
     let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
-    let tableHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(name) + '/';
+    let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(name) + '/';
     if (view_share_id !== undefined) {
-      tableHref = `${siteRoot}project-shared-view/group/${view_share_id}/`;
+      projectHref = `${siteRoot}project-shared-view/group/${view_share_id}/`;
     }
     let canCopy = !view_share_id && canAddProject && (permission === 'r' || permission === 'rw');
     const isDesktop = Utils.isDesktop();
     const active = this.state.active;
     const displayName = isFromGroup ? from_group_name : from_user_name;
     const displayAvatar = isFromGroup ? from_group_avatar : from_user_avatar;
+    const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+    const backgroundColor = backgroundColorMap[project.color || DEFAULT_COLOR];
+    const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
 
     if (isDesktop) {
       return (
         <div
+          id={id}
+          className={`project-item d-flex ${className}`}
+          onClick={e => this.onItemClick(e, projectHref)}
+          style={{ ...style, backgroundColor }}
           onMouseEnter={this.onMouseEnter}
           onMouseLeave={this.onMouseLeave}
-          onClick={(e) => this.onTableItemClick(e, tableHref)}
-          className={`project-item ${active ? 'tr-highlight' : ''}`}
+          role="button"
+          aria-label={shared_name || name}
         >
-          <div className="project-item-wrapper ml-0">
-            <ProjectIcon bgColor={color} icon={icon} />
-            <div className="project-name">
-              <a className="table-href" href={tableHref}>{shared_name || name}</a>
-              <div
-                className="dtable-sharer-information"
-                onMouseEnter={this.onShareMouseEnter}
-                onMouseLeave={this.onShareMouseLeave}
-                id={`shared-item-group-${sharedItemKey}`}
-              >
-                <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
-                <span className="dtable-sharer-name">{displayName}</span>
-                <UserInfoPopover
-                  target={`shared-item-group-${sharedItemKey}`}
-                  isUserDetailPopoverShow={!isFromGroup && isUserDetailPopoverShow}
-                  userEmail={from_user}
-                >
-                </UserInfoPopover>
-              </div>
+          <div className="project-item-icon-more d-flex">
+            <div
+              className="project-item-icon d-flex align-items-center justify-content-center"
+              style={{ backgroundColor: project.color || DEFAULT_COLOR }}
+            >
+              <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} />
             </div>
-          </div>
-          <div className="table-dropdown-menu">
-            {active &&
+            {active && (
               <Dropdown
-                isOpen={this.state.dropdownOpen}
+                isOpen={dropdownOpen}
                 toggle={this.dropdownToggle}
                 direction="down"
                 className="project-item-more-operation"
-                onClick={(e) => {e.stopPropagation();}}
+                onClick={e => e.stopPropagation()}
               >
                 <DropdownToggle
                   tag="i"
                   role="button"
-                  className="dtable-font dtable-icon-more-vertical cursor-pointer attr-action-icon table-dropdown-menu-icon"
+                  className="dtable-font dtable-icon-more-level cursor-pointer attr-action-icon table-dropdown-menu-icon"
                   title={gettext('More operations')}
                   aria-label={gettext('More operations')}
                   data-toggle="dropdown"
-                  aria-expanded={this.state.dropdownOpen}
-                  aria-haspopup={true}
+                  aria-expanded={dropdownOpen}
+                  aria-haspopup="true"
                 />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
@@ -157,21 +150,41 @@ class DTableItemGroupShared extends React.Component {
                   {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}
                 </DropdownMenu>
               </Dropdown>
-            }
+            )}
+          </div>
+          <div className="project-item-name project-name" title={shared_name || name} id={iconSettingsId}>
+            <a className="table-href" href={projectHref}>{shared_name || name}</a>
+          </div>
+          <div
+            className="dtable-sharer-information"
+            onMouseEnter={this.onShareMouseEnter}
+            onMouseLeave={this.onShareMouseLeave}
+            id={`shared-item-group-${sharedItemKey}`}
+          >
+            <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
+            <span className="dtable-sharer-name">{displayName}</span>
+            <UserInfoPopover
+              target={iconSettingsId}
+              isUserDetailPopoverShow={!isFromGroup && isUserDetailPopoverShow}
+              userEmail={from_user}
+            />
+          </div>
+          <div className="project-item-group text-truncate">
+            <i className="table-workspace-icon dtable-font dtable-icon-collaborator"></i>
+            {workspace.name}
           </div>
         </div>
       );
-
     }
 
     return (
       <div
         className="table-mobile-item"
-        onClick={(e) => this.onTableItemClick(e, tableHref)}
+        onClick={(e) => this.onItemClick(e, projectHref)}
       >
         <ProjectIcon bgColor={color} icon={icon} className="table-mobile-icon"/>
         <div className="table-mobile-name d-flex align-items-center">
-          <a className="table-href" href={tableHref}>{shared_name || name}</a>
+          <a className="table-href" href={projectHref}>{shared_name || name}</a>
           <div className="dtable-sharer-information">
             <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
             <span className="dtable-sharer-name">{displayName}</span>

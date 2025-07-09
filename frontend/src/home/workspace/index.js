@@ -7,10 +7,8 @@ import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
 import GroupInviteMembersDialog from '../dialog/group-invite-members-dialog';
 import { Utils } from '../../utils/utils';
 import { compareTwoString } from '../utils/compare-two-string';
-import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import TransferGroupDialog from '../dialog/transfer-group-dialog';
-import MobileAddProject from '../mobile/mobile-add-project';
 import MobileShareProject from '../mobile/mobile-share-project';
 import ModalPortal from '../../components/modal-portal';
 import RenameProjectView from '../mobile/rename-project-view';
@@ -66,16 +64,25 @@ class Workspace extends React.Component {
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
       isParsing: false,
+      projectItemWidth: 168,
+      numberOfItemsPerRow: 1,
     };
     this.isDropdownOpen = false;
     this.isDesktop = Utils.isDesktop();
   }
 
   componentDidMount() {
+    window.addEventListener('resize', this.onResize);
     const { workspace } = this.props;
     const { projectList } = this.getSortedWorkspaceContent(workspace);
-    this.setState({ projectList, isDataLoading: false });
+    this.setState({ projectList, isDataLoading: false }, () => {
+      this.onResize();
+    });
     this.setWorkspaceAdminState(workspace);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
   }
 
   setWorkspaceAdminState = (workspace) => {
@@ -101,6 +108,72 @@ class Workspace extends React.Component {
       this.setWorkspaceAdminState(nextProps.workspace);
     }
   }
+
+  onResize = () => {
+    // 16: project item margin with or view content padding width
+    // 184: project Item min-width[168] and margin right[16]
+    // 352: two project Item min-width sum[336] + padding[32] + margin right[16]
+    // 536: three project Item min-width sum[504] + padding[32] + two margin right[32]
+    if (!this.curViewContent) return;
+    const { clientWidth, offsetWidth } = this.curViewContent;
+    if (!this.isDesktop) {
+      const contentWidth = clientWidth - 16 * 2;
+      let numberOfItemsPerRow = 1;
+      let projectItemWidth = contentWidth;
+      if (contentWidth >= 536) {
+        numberOfItemsPerRow = 3;
+        // The first and second project items margin-right sum is 32
+        projectItemWidth = (contentWidth - 32) / 3;
+      } else if (contentWidth >= 352) {
+        numberOfItemsPerRow = 2;
+        // The first project item margin-right is 16
+        projectItemWidth = (contentWidth - 16) / 2;
+      }
+      this.setState({ projectItemWidth, numberOfItemsPerRow });
+    } else {
+      const scrollBarWidth = offsetWidth - clientWidth;
+      const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 16 * 2 + 16 - scrollBarWidth);
+      const numberOfItemsPerRow = Math.floor(projectListWidth / 184);
+      const remainingWidth = projectListWidth % 184;
+      let projectItemWidth;
+      if (remainingWidth > 0) {
+        projectItemWidth = 168 + remainingWidth / numberOfItemsPerRow;
+      } else {
+        projectItemWidth = 168;
+      }
+      this.setState({ projectItemWidth, numberOfItemsPerRow });
+    }
+  };
+
+  getProjectClassAndStyle = (index, totalCount) => {
+    const { projectItemWidth, numberOfItemsPerRow } = this.state;
+
+    // 0.22: percentage of side panel; 16: cur-view-content's padding left/right;
+    // 168: project item width; 20: project item margin right/bottom
+    let allLineProjectCount = parseInt(totalCount / numberOfItemsPerRow) * numberOfItemsPerRow;
+    if (allLineProjectCount === totalCount) {
+      allLineProjectCount = allLineProjectCount - numberOfItemsPerRow;
+    }
+    let className = '';
+    let style = { width: projectItemWidth };
+
+    if (this.isDesktop) {
+      const validIndex = index + 1;
+      if (validIndex % numberOfItemsPerRow === 0) {
+        className += 'mr-0 ';
+      }
+      if (validIndex > allLineProjectCount) {
+        className += 'mb-0 ';
+      }
+      return { className, style };
+    }
+    if (index > numberOfItemsPerRow - 1) {
+      style.marginLeft = index % numberOfItemsPerRow === 0 ? - ((projectItemWidth + 16) * numberOfItemsPerRow) : 0;
+      style.marginTop = parseInt(index / numberOfItemsPerRow) * 192;
+      return { className, style };
+    }
+    return { className, style };
+  };
 
   getSortedWorkspaceContent = (workspace) => {
     let { project_list = [] } = workspace || {};
@@ -330,37 +403,6 @@ class Workspace extends React.Component {
     this.setState({ isShowVirtualProject: false });
   };
 
-  renderAddItem = () => {
-    const { workspace } = this.props;
-    const isPersonal = workspace.type === 'personal';
-    let { isItemFreezed } = this.state;
-    if (isPersonal && disableAddingPersonalProjects) return null;
-    if (this.isDesktop) {
-      return (
-        <div className={`project-item ${isItemFreezed ? '' : 'add-project-range'}`} onClick={this.showVirtualProject}>
-          <div className="project-item-wrapper ml-0">
-            <div className="project-icon" aria-hidden="true">
-              <span className="project-icon-content">
-                <i className="project-icon icon-add project-icon-style"></i>
-              </span>
-            </div>
-            <div className="project-name">
-              <span className="a-simulate">{gettext('Add a blank project')}</span>
-            </div>
-          </div>
-
-        </div>
-      );
-    }
-    return (
-      <MobileAddProject
-        currentWorkspace={this.props.workspace}
-        createProject={this.onCreateProject}
-        isCreatedTemplateLoading={this.state.isCreatedTemplateLoading}
-      />
-    );
-  };
-
   onGroupMemberToggle = () => {
     this.setState({ isShowGroupMember: !this.state.isShowGroupMember });
   };
@@ -416,12 +458,14 @@ class Workspace extends React.Component {
 
     return (
       <Fragment>
-        <div className="workspace">
+        <div className="workspace project-group-container" ref={ref => this.curViewContent = ref}>
           <Header
             workspace={workspace}
             isDesktop={this.isDesktop}
             isOwnerOrAdmin={isOwnerOrAdmin}
+            isPersonal={isPersonal}
             isOwner={isOwner}
+            isAdmin={isAdmin}
             openGroupMember={this.openGroupMember}
             onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
@@ -431,6 +475,7 @@ class Workspace extends React.Component {
             onTransferGroupToggle={this.onTransferGroupToggle}
             toggleGroupInviteDialog={this.toggleGroupInviteDialog}
             toggleGroupTrashDialog={this.toggleGroupTrashDialog}
+            showVirtualProject={this.showVirtualProject}
           />
           <Body
             isDesktop={this.isDesktop}
@@ -441,7 +486,6 @@ class Workspace extends React.Component {
             workspace={workspace}
             projectList={projectList}
             groupSharedProjects={groupSharedProjects}
-            canAddProject={canAddProject}
             isItemFreezed={isItemFreezed}
             isShowVirtualProject={this.state.isShowVirtualProject}
             createBlankProject={this.createBlankProject}
@@ -457,7 +501,6 @@ class Workspace extends React.Component {
             onMobileShareProjectToggle={this.onMobileShareProjectToggle}
             onMobileUpdateProjectToggle={this.onMobileUpdateProjectToggle}
             onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
-            renderAddItem={this.renderAddItem}
             openGroupMember={this.openGroupMember}
             onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
@@ -469,6 +512,7 @@ class Workspace extends React.Component {
             setDropdownState={this.setDropdownState}
             getDropdownState={this.getDropdownState}
             onCopyProject={this.props.onCopyProject}
+            getProjectClassAndStyle={this.getProjectClassAndStyle}
           />
         </div>
         {this.renderEmpty()}

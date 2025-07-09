@@ -4,18 +4,18 @@ import { toaster } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import Base from '../../models/base';
 import { Utils, validateName } from '../../../utils/utils';
-import ProjectIcon from './project-icon';
 import { ProjectSettingPopover } from '../../popover';
+import { PROJECT_BACKGROUND_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 const gettext = window.gettext;
 
 const propTypes = {
   currentWorkspace: PropTypes.object,
   createBlankProject: PropTypes.func,
-  hideVirtualDtable: PropTypes.func,
+  hideVirtualProject: PropTypes.func,
 };
 
-class VirtualDtable extends React.Component {
+class VirtualProject extends React.Component {
 
   constructor(props) {
     super(props);
@@ -48,11 +48,11 @@ class VirtualDtable extends React.Component {
         this.setState({ baseCreated, isDataLoaded: true });
       }).catch((err) => {
         this.handleError(err);
-        this.props.hideVirtualDtable();
+        this.props.hideVirtualProject();
       });
     }).catch((error) => {
       this.handleError(error);
-      this.props.hideVirtualDtable();
+      this.props.hideVirtualProject();
     });
   }
 
@@ -104,18 +104,37 @@ class VirtualDtable extends React.Component {
   };
 
   render() {
+    let { className = '', style = {}, currentWorkspace } = this.props;
     const { name, icon, bgColor } = this.state;
+    const backgroundColorMap = PROJECT_BACKGROUND_COLOR_MAP;
     return (
       <div
-        className={'virtual-table project-item tr-highlight'}
+        className={`project-item d-flex ${className}`}
         id="create-project"
+        style={{
+          ...style,
+          backgroundColor: backgroundColorMap[bgColor] || backgroundColorMap[DEFAULT_COLOR],
+        }}
       >
-        <ProjectIcon bgColor="" icon="" />
-        <div className="project-name">{gettext('Untitled project')}</div>
+        <div className="project-item-icon-more d-flex">
+          <div
+            className="project-item-icon d-flex align-items-center justify-content-center"
+            style={{ backgroundColor: bgColor || DEFAULT_COLOR }}
+          >
+            <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${icon || 'icon-worksheet'}`}></i>
+          </div>
+        </div>
+        <div className="project-item-name" title={name}>
+          {name}
+        </div>
+        <div className="project-item-group text-truncate">
+          <i className='table-workspace-icon dtable-font dtable-icon-collaborator'></i>
+          {currentWorkspace.name}
+        </div>
         {this.state.isDataLoaded && (
           <ProjectSettingPopover
-            placement="bottom-start"
             popoverClassName="virtual-project-settings"
+            placement="bottom-start"
             target="create-project"
             onToggle={this.onCreate}
             name={name}
@@ -131,6 +150,6 @@ class VirtualDtable extends React.Component {
   }
 }
 
-VirtualDtable.propTypes = propTypes;
+VirtualProject.propTypes = propTypes;
 
-export default VirtualDtable;
+export default VirtualProject;
