@@ -1,3 +1,5 @@
+export const DEFAULT_COLOR = '#FF8000';
+
 export const PROJECT_BACKGROUND_COLOR_MAP = {
   '#FF8000': '#FFF5EB',
   '#FFB600': '#FFFAEB',

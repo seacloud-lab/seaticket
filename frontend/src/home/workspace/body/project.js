@@ -5,7 +5,7 @@ import { toaster } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { ProjectSettingPopover } from '../../popover';
 import ModalPortal from '../../../components/modal-portal';
-import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP } from '../constants';
+import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
@@ -201,7 +201,7 @@ class Project extends React.Component {
       return (
         <div className="project-mobile-item" onClick={(e) => this.onItemClick(e, projectHref)}>
           <div className="project-mobile-icon">
-            <span className="project-icon-content" style={{ backgroundColor: project.color || '#FF8000' }}>
+            <span className="project-icon-content" style={{ backgroundColor: project.color || DEFAULT_COLOR }}>
               <i className={`base-font ${project.icon || 'project-icon icon-color-white icon-worksheet project-icon-style'}`}></i>
             </span>
           </div>
@@ -223,7 +223,7 @@ class Project extends React.Component {
           onClick={(e) => this.onItemClick(e, projectHref)}
           style={{
             ...style,
-            backgroundColor: backgroundColorMap[project.color || '#FF8000'],
+            backgroundColor: backgroundColorMap[project.color || DEFAULT_COLOR],
           }}
           onMouseEnter={this.onMouseEnter}
           onMouseLeave={this.onMouseLeave}
@@ -231,7 +231,7 @@ class Project extends React.Component {
           <div className="project-item-icon-more d-flex">
             <div
               className="project-item-icon d-flex align-items-center justify-content-center"
-              style={{ backgroundColor: project.color || '#FF8000' }}
+              style={{ backgroundColor: project.color || DEFAULT_COLOR }}
             >
               <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
             </div>
@@ -255,9 +255,9 @@ class Project extends React.Component {
                 </DropdownToggle>
                 <ModalPortal>
                   <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" end={true} onMouseMove={this.onDropDownMouseMove}>
-                    {<DropdownItem onClick={this.onProjectSettingsToggle}>{gettext('Edit')}</DropdownItem>}
-                    {<DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>}
-                    {<DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>}
+                    <DropdownItem onClick={this.onProjectSettingsToggle}>{gettext('Edit')}</DropdownItem>
+                    <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>
+                    <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>
                   </DropdownMenu>
                 </ModalPortal>
               </Dropdown>

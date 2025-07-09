@@ -5,7 +5,7 @@ import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, canAddProject } from '../../../constants';
 import { UserInfoPopover } from '../../../components/popover';
 import ProjectIcon from './project-icon';
-import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP } from '../constants';
+import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 class DTableItemGroupShared extends React.Component {
 
@@ -89,7 +89,7 @@ class DTableItemGroupShared extends React.Component {
   };
 
   render() {
-    const { isUserDetailPopoverShow } = this.state;
+    const { isUserDetailPopoverShow, dropdownOpen } = this.state;
     let { project, isAdmin, sharedItemKey, className = '', style = {}, workspace } = this.props;
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
       color, icon, view_share_id, shared_name, is_encrypted, permission, uuid, id } = project;
@@ -104,6 +104,7 @@ class DTableItemGroupShared extends React.Component {
     const displayName = isFromGroup ? from_group_name : from_user_name;
     const displayAvatar = isFromGroup ? from_group_avatar : from_user_avatar;
     const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+    const backgroundColor = backgroundColorMap[project.color || DEFAULT_COLOR];
     const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
 
     if (isDesktop) {
@@ -111,31 +112,27 @@ class DTableItemGroupShared extends React.Component {
         <div
           id={id}
           className={`project-item d-flex ${className}`}
-          onClick={(e) => this.onItemClick(e, projectHref)}
-          style={{
-            ...style,
-            backgroundColor: backgroundColorMap[project.color || '#FF8000'],
-          }}
+          onClick={e => this.onItemClick(e, projectHref)}
+          style={{ ...style, backgroundColor }}
           onMouseEnter={this.onMouseEnter}
           onMouseLeave={this.onMouseLeave}
+          role="button"
+          aria-label={shared_name || name}
         >
           <div className="project-item-icon-more d-flex">
             <div
               className="project-item-icon d-flex align-items-center justify-content-center"
-              style={{ backgroundColor: project.color || '#FF8000' }}
+              style={{ backgroundColor: project.color || DEFAULT_COLOR }}
             >
-              <i
-                className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}
-              >
-              </i>
+              <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} />
             </div>
-            {active &&
+            {active && (
               <Dropdown
-                isOpen={this.state.dropdownOpen}
+                isOpen={dropdownOpen}
                 toggle={this.dropdownToggle}
                 direction="down"
                 className="project-item-more-operation"
-                onClick={(e) => {e.stopPropagation();}}
+                onClick={e => e.stopPropagation()}
               >
                 <DropdownToggle
                   tag="i"
@@ -144,8 +141,8 @@ class DTableItemGroupShared extends React.Component {
                   title={gettext('More operations')}
                   aria-label={gettext('More operations')}
                   data-toggle="dropdown"
-                  aria-expanded={this.state.dropdownOpen}
-                  aria-haspopup={true}
+                  aria-expanded={dropdownOpen}
+                  aria-haspopup="true"
                 />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
@@ -153,7 +150,7 @@ class DTableItemGroupShared extends React.Component {
                   {isAdmin && canCopy && <DropdownItem onClick={this.onCopyDTableToCurrentGroup}>{gettext('Copy to current group')}</DropdownItem>}
                 </DropdownMenu>
               </Dropdown>
-            }
+            )}
           </div>
           <div className="project-item-name project-name" title={shared_name || name} id={iconSettingsId}>
             <a className="table-href" href={projectHref}>{shared_name || name}</a>
@@ -170,11 +167,10 @@ class DTableItemGroupShared extends React.Component {
               target={iconSettingsId}
               isUserDetailPopoverShow={!isFromGroup && isUserDetailPopoverShow}
               userEmail={from_user}
-            >
-            </UserInfoPopover>
+            />
           </div>
           <div className="project-item-group text-truncate">
-            <i className={'table-workspace-icon dtable-font dtable-icon-collaborator'}></i>
+            <i className="table-workspace-icon dtable-font dtable-icon-collaborator"></i>
             {workspace.name}
           </div>
         </div>

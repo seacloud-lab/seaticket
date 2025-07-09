@@ -29,7 +29,7 @@ const propTypes = {
   onLeaveGroupSharedProject: PropTypes.func,
   onFreezedItem: PropTypes.func,
   onUnfreezedItem: PropTypes.func,
-  hideVirtualDtable: PropTypes.func,
+  hideVirtualProject: PropTypes.func,
   onShareProjectToggle: PropTypes.func,
   onSetPasswordToggle: PropTypes.func,
   onUnsetPasswordToggle: PropTypes.func,
@@ -51,6 +51,7 @@ class WorkspaceContainer extends Component {
   render() {
     const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle } = this.props;
     const total = this.props.projectList.length + this.props.groupSharedProjects.length;
+    const { className: virtualClassName, style: virtualStyle } = getProjectClassAndStyle(total, total);
     return (
       <div className={classnames('project-group-content d-flex', {
         'project-item-container': isDesktop,
@@ -109,9 +110,11 @@ class WorkspaceContainer extends Component {
         })}
         {this.props.isShowVirtualProject && (
           <VirtualProject
+            className={virtualClassName}
+            style={virtualStyle}
             currentWorkspace={this.props.workspace}
             createBlankProject={this.props.createBlankProject}
-            hideVirtualDtable={this.props.hideVirtualDtable}
+            hideVirtualProject={this.props.hideVirtualProject}
             getProjectClassAndStyle={this.props.getProjectClassAndStyle}
           />
         )}
