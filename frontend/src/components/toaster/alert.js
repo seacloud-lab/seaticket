@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Icon from '../icon';
 
 const propTypes = {
   intent: PropTypes.string.isRequired,
@@ -11,27 +12,28 @@ const propTypes = {
 
 class Alert extends React.PureComponent {
 
-  getIconClass(intent) {
+  getIconSymbol(intent) {
     switch (intent) {
       case 'success':
-        return 'dtable-font dtable-icon-check-circle';
+        return 'check-circle';
       case 'warning':
-        return 'dtable-font dtable-icon-exclamation-triangle';
+        return 'exclamation-triangle';
       case 'none':
-        return 'dtable-font dtable-icon-exclamation-circle';
       case 'danger':
-        return 'dtable-font dtable-icon-exclamation-circle';
+        return 'exclamation-circle';
       default:
-        return 'dtable-font dtable-icon-check-circle';
+        return 'check-circle';
     }
   }
 
   render() {
     const { intent, title, children, isRemovable, onRemove } = this.props;
-    const iconClass = this.getIconClass(intent);
+    const symbol = this.getIconSymbol(intent);
     return (
-      <div className={`dtable-toast-alert-container ${intent || 'success'}`}>
-        <div className="toast-alert-icon"><i className={iconClass} /></div>
+      <div className={`sea-qa-toast-alert-container ${intent || 'success'}`}>
+        <div className="toast-alert-icon">
+          <Icon symbol={symbol} />
+        </div>
         <div className="toast-text-container">
           <p className="toast-text-title">{title}</p>
           {children ? <p className="toast-text-child">{children}</p> : null}

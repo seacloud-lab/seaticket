@@ -47,7 +47,7 @@ class DtableSharePermissionEditor extends React.Component {
         label: (
           <div>
             {this.translatePermission(permission)}
-            <div className="permission-editor-explanation seatable-tip-default">{this.translateExplanation(permission)}</div>
+            <div className="permission-editor-explanation sea-qa-tip-default">{this.translateExplanation(permission)}</div>
           </div>
         )
       };
