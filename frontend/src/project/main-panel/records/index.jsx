@@ -34,11 +34,12 @@ const Records = ({ type, title }) => {
     });
 
     return [
-      { key: 'name', name: gettext('Name'), width: '25%' },
+      { key: 'name', name: gettext('Name'), width: '20%' },
       ...displayColumns,
       { key: 'ctime', name: gettext('Create time'), width: '15%' },
       { key: 'updated_at', name: gettext('Last Update'), width: '15%' },
       { key: 'status', name: gettext('Status'), width: '10%' },
+      { key: 'index_time', name: gettext('Index time'), width: '15%' },
       { key: 'op', name: '', width: '10%' },
     ];
   }, [fields]);

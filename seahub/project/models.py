@@ -181,7 +181,7 @@ class ProjectsManager(models.Manager):
             return True
         except self.model.DoesNotExist:
             return False
-    
+
     def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):
@@ -433,16 +433,14 @@ class ProjectConnections(models.Model):
     """
 
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
-
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     config = models.TextField()
-
     modifier = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
     updated_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
+    index_time = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
@@ -459,5 +457,6 @@ class ProjectConnections(models.Model):
             'modifier': self.modifier,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'index_time': datetime_to_isoformat_timestr(self.index_time),
             'status': self.status,
         }
