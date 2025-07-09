@@ -121,7 +121,7 @@ class SearchOrgs extends Component {
             <div className="cur-view-content">
               <div className="mt-4 mb-6">
                 <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search organizations')}</h4>
-                <p className="seatable-tip-default">{gettext('Tip: you can search by keyword in name.')}</p>
+                <p className="sea-qa-tip-default">{gettext('Tip: you can search by keyword in name.')}</p>
                 <Form>
                   <FormGroup row>
                     <Label for="name" sm={1}>{gettext('Name')}</Label>

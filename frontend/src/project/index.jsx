@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { BAR } from './constants';
+import { gettext } from '../constants';
 
 import './index.css';
-import { gettext } from '../constants';
 
 const Project = () => {
   const [activeBar, setActiveBar] = useState({ key: BAR.SEARCH, name: gettext('Search') });

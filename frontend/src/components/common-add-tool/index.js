@@ -1,12 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Icon from '../icon';
 
 import './index.css';
 
 function CommonAddTool({ callBack, footerName, className }) {
   return (
     <div className={`common-add-tool ${className || ''}`} onClick={(e) => {e.stopPropagation(); callBack(e);}}>
-      <i className="dtable-font dtable-icon-add-table" aria-hidden="true"></i>
+      <Icon symbol="add" className="common-add-tool-icon" />
       <span className="text-truncate" title={footerName} aria-label={footerName}>{footerName}</span>
     </div>
   );
