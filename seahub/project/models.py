@@ -598,7 +598,6 @@ class TicketReplies(models.Model):
         result = {
             'number': self.number,
             'content': self.content,
-            'status': self.status,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
         }

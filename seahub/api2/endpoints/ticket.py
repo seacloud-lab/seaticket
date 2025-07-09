@@ -153,8 +153,9 @@ class TicketsAPIView(APIView):
 
         # main
         try:
+            ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, status, participants, tags)
+                project_uuid, username, title, content, ticket_status, participants, tags)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -212,9 +213,10 @@ class TicketAPIView(APIView):
 
         has_next_page = len(ticket_replies) == end
 
+        ticket = ticket.to_dict()
+        ticket['replies'] = [ticket_reply.to_dict() for ticket_reply in ticket_replies]
         return Response({
-            'ticket': ticket.to_dict(),
-            'ticket_replies': [ticket_reply.to_dict() for ticket_reply in ticket_replies],
+            'ticket': ticket,
             'has_next_page': has_next_page,
         })
 
@@ -238,9 +240,9 @@ class TicketAPIView(APIView):
 
         content = request.data.get('content')
 
-        status = request.data.get('status')
-        if status is not None:
-            if status not in TICKET_STATUS:
+        ticket_status = request.data.get('status')
+        if ticket_status is not None:
+            if ticket_status not in TICKET_STATUS:
                 error_msg = 'status invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -294,8 +296,8 @@ class TicketAPIView(APIView):
 
         # group admin can modify status
         if username != ticket.creator:
-            if status and check_project_admin_permission(username, workspace.owner):
-                ticket.status = status
+            if ticket_status and check_project_admin_permission(username, workspace.owner):
+                ticket.status = ticket_status
                 ticket.save()
                 return Response({"ticket": ticket.to_dict()})
             else:
@@ -308,8 +310,8 @@ class TicketAPIView(APIView):
                 ticket.title = title
             if content:
                 ticket.content = content
-            if status:
-                ticket.status = status
+            if ticket_status:
+                ticket.status = ticket_status
             if participants or participants == []:
                 ticket.participants = json.dumps(participants)
             if tags or tags == []:

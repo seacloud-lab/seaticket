@@ -329,6 +329,110 @@ class SeaQAAPI {
     return this.req.get(url, { params });
   }
 
+  listProjectTickets(projectUuid, page, perPage, owned) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    let params = {};
+    if (page) {
+      params.page = page;
+    }
+    if (perPage) {
+      params.per_page = perPage;
+    }
+    if (owned) {
+      params.owned = owned;
+    }
+    return this.req.get(url, { params });
+  }
+
+  createProjectTicket(projectUuid, title, content, participants, tags) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    let form = new FormData();
+    if (title) {
+      form.append('title', title);
+    }
+    if (content) {
+      form.append('content', content);
+    }
+    if (participants) {
+      form.append('participants', participants);
+    }
+    if (tags) {
+      form.append('tags', tags);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyProjectTicket(projectUuid, ticketNumber, title, content, participants, tags, status) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    let form = new FormData();
+    if (title) {
+      form.append('title', title);
+    }
+    if (content) {
+      form.append('content', content);
+    }
+    if (participants) {
+      form.append('participants', participants);
+    }
+    if (tags) {
+      form.append('tags', tags);
+    }
+    if (status) {
+      form.append('status', status);
+    }
+    return this.req.put(url, form);
+  }
+
+  getProjectTicket(projectUuid, ticketNumber) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    return this.req.get(url);
+  }
+
+  deleteProjectTicket(projectUuid, ticketNumber) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
+    return this.req.delete(url);
+  }
+
+  listProjectRelatedUsers(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
+    return this.req.get(url);
+  }
+
+  listProjectTicketReplies(projectUuid, ticketNumber, page, perPage) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
+    let params = {};
+    if (page) {
+      params.page = page;
+    }
+    if (perPage) {
+      params.per_page = perPage;
+    }
+    return this.req.get(url, { params });
+  }
+
+  createProjectTicketReply(projectUuid, ticketNumber, content) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
+    let form = new FormData();
+    if (content) {
+      form.append('content', content);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyProjectTicketReply(projectUuid, ticketNumber, replyNumber, content) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/' + replyNumber + '/';
+    let form = new FormData();
+    if (content) {
+      form.append('content', content);
+    }
+    return this.req.put(url, form);
+  }
+
+  deleteProjectTicketReply(projectUuid, ticketNumber, replyNumber) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/' + replyNumber + '/';
+    return this.req.delete(url);
+  }
+
   // other not-admin APIs
   getUserInfo() {
     const url = this.server + '/api/v2.1/user/';
