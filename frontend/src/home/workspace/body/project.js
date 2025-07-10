@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { toaster } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { ProjectSettingPopover } from '../../popover';
-import ModalPortal from '../../../components/modal-portal';
 import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
+import ProjectItemPopover from './project-item-popover';
 
 const gettext = window.gettext;
 const siteRoot = window.app.config.siteRoot;
@@ -45,6 +44,7 @@ class Project extends React.Component {
       ignore_asset: 'false',
       size_limit: 0,
       isMouseEnter: false,
+      isMoreOperationPopoverShow: false,
     };
     this.dropDownRef = React.createRef();
   }
@@ -188,9 +188,14 @@ class Project extends React.Component {
     }
   };
 
+  toggleMoreOperation = (event) => {
+    event && event.stopPropagation();
+    this.setState({ isMoreOperationPopoverShow: !this.state.isMoreOperationPopoverShow });
+  };
+
   render() {
     let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
-    let { name: newName, dropdownOpen, bgColor, icon, active } = this.state;
+    let { name: newName, bgColor, icon, active } = this.state;
     let { workspace_id, uuid, id, is_encrypted } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
@@ -218,7 +223,7 @@ class Project extends React.Component {
     } else {
       return (
         <div
-          id={id}
+          id={`project-item-${id}`}
           className={`project-item d-flex ${className}`}
           onClick={(e) => this.onItemClick(e, projectHref)}
           style={{
@@ -236,32 +241,19 @@ class Project extends React.Component {
               <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
             </div>
             {active && (isOwner || isAdmin) &&
-              <Dropdown
-                isOpen={dropdownOpen}
-                toggle={this.dropdownToggle}
-                direction="down"
-                className="project-item-more-operation"
-              >
-                <DropdownToggle
-                  tag='i'
-                  role="button"
-                  className='dtable-font dtable-icon-more-level cursor-pointer attr-action-icon table-dropdown-menu-icon'
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={dropdownOpen}
-                  aria-haspopup={true}
-                >
-                </DropdownToggle>
-                <ModalPortal>
-                  <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" end={true} onMouseMove={this.onDropDownMouseMove}>
-                    <DropdownItem onClick={this.onProjectSettingsToggle}>{gettext('Edit')}</DropdownItem>
-                    <DropdownItem onClick={this.onShareProjectToggle}>{gettext('Share')}</DropdownItem>
-                    <DropdownItem onClick={this.onDeleteProjectToggle}>{gettext('Delete')}</DropdownItem>
-                  </DropdownMenu>
-                </ModalPortal>
-              </Dropdown>
+              <div className="d-flex justify-content-center" onClick={this.toggleMoreOperation}>
+                <i className="dtable-font dtable-icon-more-level" title={gettext('More operations')} aria-label={gettext('More operations')} />
+              </div>
             }
+            {this.state.isMoreOperationPopoverShow && (
+              <ProjectItemPopover
+                target={`project-item-${id}`}
+                onToggle={this.toggleMoreOperation}
+                onProjectSettingsToggle={this.onProjectSettingsToggle}
+                onShareProjectToggle={this.onShareProjectToggle}
+                onDeleteProjectToggle={this.onDeleteProjectToggle}
+              />
+            )}
           </div>
           <div className="project-item-name" title={newName} id={iconSettingsId}>
             {newName}

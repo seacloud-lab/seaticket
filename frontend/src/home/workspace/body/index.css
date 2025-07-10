@@ -165,6 +165,14 @@
   justify-content: space-between;
 }
 
+.project-item .project-item-icon-more .dtable-icon-more-level {
+  color: #999;
+}
+
+.project-item .project-item-icon-more .dtable-icon-more-level:hover {
+  color: #666;
+}
+
 .project-folder-item .project-folder-item-icon,
 .project-item .project-item-icon {
   height: 32px;
