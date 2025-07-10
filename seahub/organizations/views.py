@@ -37,7 +37,7 @@ from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.throttling import OrgRegisterRateThrottle
-from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML
+from seahub.settings import ENABLE_SLIDE_CAPTCHA, ENABLE_MULTI_SAML, USER_STRONG_PASSWORD_REQUIRED
 
 from seahub.organizations.models import OrgUser
 
@@ -494,7 +494,7 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
     up = urlparse(service_url)
     service_url_scheme = up.scheme
     service_url_remaining = up.netloc + up.path
-    strong_pwd_required = config.USER_STRONG_PASSWORD_REQUIRED
+    strong_pwd_required = USER_STRONG_PASSWORD_REQUIRED
 
     return render(request, 'organizations/sms_org_register.html', {
         'ENABLE_SLIDE_CAPTCHA': ENABLE_SLIDE_CAPTCHA,

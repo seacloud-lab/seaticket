@@ -24,7 +24,8 @@ from seahub.profile.models import Profile
 from seahub.registration.forms import SmsRegistrationForm
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.utils import get_api_token
-
+from seahub.settings import USER_STRONG_PASSWORD_REQUIRED, USER_PASSWORD_MIN_LENGTH, \
+    USER_PASSWORD_STRENGTH_LEVEL
 SESSION_KEY_SMS_REGISTRATION_PHONE = 'sms-registration-phone'
 SESSION_KEY_SMS_REGISTRATION_LOCK_TIME = 'sms-registration-lock-time'
 SMS_REGISTRATION_SMS_TYPE = 'sms-registration'
@@ -246,7 +247,7 @@ def register(request, backend, success_url=None, form_class=None,
         form = form_class(initial={'email': src})
 
     context['form'] = form
-    context['strong_pwd_required'] = config.USER_STRONG_PASSWORD_REQUIRED
+    context['strong_pwd_required'] = USER_STRONG_PASSWORD_REQUIRED
 
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
@@ -313,9 +314,9 @@ def org_register(request, org_id, backend, success_url=None, form_class=None,
         form = form_class(initial={'email': src})
 
     context['form'] = form
-    context['min_len'] = config.USER_PASSWORD_MIN_LENGTH
-    context['strong_pwd_required'] = config.USER_STRONG_PASSWORD_REQUIRED
-    context['level'] = config.USER_PASSWORD_STRENGTH_LEVEL
+    context['min_len'] = USER_PASSWORD_MIN_LENGTH
+    context['strong_pwd_required'] = USER_STRONG_PASSWORD_REQUIRED
+    context['level'] = USER_PASSWORD_STRENGTH_LEVEL
 
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
@@ -346,9 +347,9 @@ def render_sms_registration_error(request, redirect_to, error_msg, send_button_d
         'send_button_disabled': send_button_disabled,
         'phone': phone,
         'form': SmsRegistrationForm(),
-        'min_len': config.USER_PASSWORD_MIN_LENGTH,
-        'strong_pwd_required': config.USER_STRONG_PASSWORD_REQUIRED,
-        'level': config.USER_PASSWORD_STRENGTH_LEVEL,
+        'min_len': USER_PASSWORD_MIN_LENGTH,
+        'strong_pwd_required': USER_STRONG_PASSWORD_REQUIRED,
+        'level': USER_PASSWORD_STRENGTH_LEVEL,
         'enable_weixin': weixin_check(),
     })
 
@@ -508,7 +509,7 @@ def sms_register(request, backend, success_url=None, form_class=None,
     context = {}
 
     context['form'] = form
-    context['strong_pwd_required'] = config.USER_STRONG_PASSWORD_REQUIRED
+    context['strong_pwd_required'] = USER_STRONG_PASSWORD_REQUIRED
 
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path

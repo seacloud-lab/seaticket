@@ -24,7 +24,7 @@ from seahub.work_weixin.utils import work_weixin_oauth_check
 from seahub.weixin.utils import weixin_check, get_mp_weixin_users_openid
 from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOUNT, ENABLE_UPDATE_USER_INFO, ENABLE_BIND_PHONE, \
     ENABLE_LDAP_USER_CHANGE_PASSWORD, USE_EXTERNAL_TEAM_ADMIN, ENABLE_CONVERT_TO_TEAM_ACCOUNT, \
-    ENABLE_SAML, ENABLE_MULTI_SAML, ENABLE_USER_SET_NAME
+    ENABLE_SAML, ENABLE_MULTI_SAML, ENABLE_USER_SET_NAME, USER_STRONG_PASSWORD_REQUIRED
 from seahub.auth.models import SocialAuthUser
 from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
 from seahub.weixin.settings import WEIXIN_PROVIDER, MP_OPENID
@@ -190,7 +190,7 @@ def edit_profile(request):
             'org_saml_connected': org_saml_connected,
             'org_id': org_id,
             'can_update_password': can_update_password,
-            'strong_password_required': bool(config.USER_STRONG_PASSWORD_REQUIRED),
+            'strong_password_required': bool(USER_STRONG_PASSWORD_REQUIRED),
             'enable_member_modify_name': enable_member_modify_name,
     }
 

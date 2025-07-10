@@ -16,6 +16,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, DeleteView, TemplateView
 from django.views.generic.base import View
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 import qrcode
 import qrcode.image.svg
@@ -271,7 +272,7 @@ class QRGeneratorView(View):
 
     def get(self, request, *args, **kwargs): # pylint: disable=unused-argument
         # Get the data from the session
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             raise Http404()
         try:
             key = self.request.session[QR_SESSION_KEY]

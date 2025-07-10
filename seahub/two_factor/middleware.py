@@ -11,7 +11,7 @@ from . import DEVICE_ID_SESSION_KEY
 from .models import Device
 from seahub.options.models import UserOptions
 from seahub.organizations.models import OrgAdminSettings
-from seahub.settings import SITE_ROOT, ENABLE_FORCE_2FA_TO_ALL_USERS
+from seahub.settings import SITE_ROOT, ENABLE_FORCE_2FA_TO_ALL_USERS, ENABLE_TWO_FACTOR_AUTH
 from seahub.utils import is_org_context
 
 
@@ -36,7 +36,7 @@ class OTPMiddleware(MiddlewareMixin):
     which returns ``True`` if ``user.otp_device`` is not ``None``.
     """
     def process_request(self, request):
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             return None
 
         user = getattr(request, 'user', None)
@@ -85,7 +85,7 @@ class ForceTwoFactorAuthMiddleware(MiddlewareMixin):
         return False
 
     def process_request(self, request):
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             return None
 
         user = getattr(request, 'user', None)

@@ -17,7 +17,7 @@ except ImportError:
     from django.contrib.formtools.wizard.forms import ManagementForm
     from django.contrib.formtools.wizard.views import SessionWizardView
     from django.contrib.formtools.wizard.storage.session import SessionStorage
-
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 logger = logging.getLogger(__name__)
 
@@ -207,6 +207,6 @@ def class_view_decorator(function_decorator):
 
 class CheckTwoFactorEnabledMixin(object):
     def dispatch(self, *a, **kw):
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             return HttpResponseRedirect(reverse('edit_profile'))
         return super(CheckTwoFactorEnabledMixin, self).dispatch(*a, **kw)

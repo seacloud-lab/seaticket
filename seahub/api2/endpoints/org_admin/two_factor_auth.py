@@ -14,6 +14,7 @@ from seahub.two_factor.models import devices_for_user
 from constance import config
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 import logging
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class OrgAdminTwoFactorAuthView(APIView):
     def put(self, request, org_id, email):
         """Set/unset force 2FA for the user `email`.
         """
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             error_msg = 'Two factor auth is not enabled'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -61,7 +62,7 @@ class OrgAdminTwoFactorAuthView(APIView):
 
     def delete(self, request, org_id, email):
 
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             error_msg = 'Two factor auth is not enabled'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

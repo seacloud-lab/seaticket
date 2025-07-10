@@ -8,7 +8,7 @@ from .forms import RegistrationForm
 from .models import RegistrationProfile
 from seahub.auth import login
 from seahub.profile.models import Profile
-
+from seahub.settings import ACTIVATE_AFTER_REGISTRATION
 
 class RegistrationBackend(object):
     """
@@ -78,7 +78,7 @@ class RegistrationBackend(object):
         username = email
         site = get_current_site(request)
 
-        if bool(config.ACTIVATE_AFTER_REGISTRATION) is True:
+        if bool(ACTIVATE_AFTER_REGISTRATION) is True:
             # since user will be activated after registration,
             # so we will not use email sending, just create acitvated user
             new_user = RegistrationProfile.objects.create_active_user(

@@ -29,7 +29,7 @@ from seahub.api2.permissions import IsProVersion
 from seahub.api2.endpoints.utils import is_org_user
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_ACTIVATE, USER_DEACTIVATE, USER_SET_ORG_ADMIN, USER_UNSET_ORG_ADMIN
-
+from seahub.settings import FORCE_PASSWORD_CHANGE
 
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
@@ -230,7 +230,7 @@ class AdminOrgUsers(APIView):
         if name:
             Profile.objects.add_or_update(user.email, name)
 
-        if config.FORCE_PASSWORD_CHANGE:
+        if FORCE_PASSWORD_CHANGE:
             UserOptions.objects.set_force_passwd_change(user.email)
 
         user_info = get_org_user_info(org_id, user)

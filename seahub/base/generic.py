@@ -2,6 +2,7 @@
 from django.views.generic import TemplateView
 
 from constance import config
+from seahub.settings import ENABLE_SIGNUP, REGISTRATION_SEND_MAIL
 
 class DirectTemplateView(TemplateView):
     """
@@ -18,6 +19,6 @@ class DirectTemplateView(TemplateView):
                 else:
                     context[key] = value
 
-        context['enable_signup'] = config.ENABLE_SIGNUP
-        context['send_mail'] = config.REGISTRATION_SEND_MAIL
+        context['enable_signup'] = ENABLE_SIGNUP
+        context['send_mail'] = REGISTRATION_SEND_MAIL
         return context

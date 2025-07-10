@@ -31,7 +31,7 @@ from seahub.utils import is_valid_username, is_org_context, \
     IS_EMAIL_CONFIGURED, send_html_email, get_site_name
 from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
     SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_EMAIL_ON_ACTIVATING_USER, ENABLE_LDAP, \
-    ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_LDAP_USER_CHANGE_PASSWORD
+    ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_LDAP_USER_CHANGE_PASSWORD, FORCE_PASSWORD_CHANGE
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
 from seahub.utils.file_size import get_file_size_unit
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
@@ -390,7 +390,7 @@ class AdminUsers(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if config.FORCE_PASSWORD_CHANGE:
+        if FORCE_PASSWORD_CHANGE:
             UserOptions.objects.set_force_passwd_change(user_obj.email)
 
         add_user_tip = _('Successfully added user %(user)s.') % {'user': email}
@@ -859,7 +859,7 @@ class AdminUserResetPassword(APIView):
         user.set_password(new_password)
         user.save()
 
-        if config.FORCE_PASSWORD_CHANGE:
+        if FORCE_PASSWORD_CHANGE:
             UserOptions.objects.set_force_passwd_change(user.username)
 
         contact_email = Profile.objects.get_contact_email_by_user(email)

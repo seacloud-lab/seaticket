@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from seahub.auth.signals import user_logged_in
 
 from constance import config
+from seahub.settings import LOGIN_REMEMBER_DAYS
 
 SESSION_KEY = '_auth_user_name'
 BACKEND_SESSION_KEY = '_auth_user_backend_2'
@@ -99,7 +100,7 @@ def login(request, user, mobile_login=False):
         request.session[SESSION_MOBILE_LOGIN_KEY] = mobile_login
         request.session.set_expiry(MOBILE_SESSION_DAYS * 24 * 60 * 60)
     elif request.session.get('remember_me', False):
-        request.session.set_expiry(config.LOGIN_REMEMBER_DAYS * 24 * 60 * 60)
+        request.session.set_expiry(LOGIN_REMEMBER_DAYS * 24 * 60 * 60)
     
     if hasattr(request, 'user'):
         request.user = user

@@ -13,6 +13,7 @@ from seahub.options.models import UserOptions
 from seahub.two_factor.models import devices_for_user
 from constance import config
 import logging
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class TwoFactorAuthView(APIView):
     def put(self, request, email):
         """Set/unset force 2FA for the user `email`.
         """
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             error_msg = 'Two factor auth is not enabled'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         try:
@@ -47,7 +48,7 @@ class TwoFactorAuthView(APIView):
         return Response({'success': True})
 
     def delete(self, request, email):
-        if not config.ENABLE_TWO_FACTOR_AUTH:
+        if not ENABLE_TWO_FACTOR_AUTH:
             error_msg = 'Two factor auth is not enabled'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

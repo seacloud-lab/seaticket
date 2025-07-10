@@ -50,6 +50,9 @@ from seahub.work_weixin.utils import work_weixin_base_check
 from seahub.dingtalk.utils import dingtalk_check
 from seahub.auth.sms_two_factor_auth import sms_two_factor_auth_enabled, \
     handle_sms_two_factor_auth
+from seahub.settings import LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED, \
+    LOGIN_REMEMBER_DAYS, USER_PASSWORD_MIN_LENGTH, USER_STRONG_PASSWORD_REQUIRED, \
+    USER_PASSWORD_STRENGTH_LEVEL
 
 from constance import config
 
@@ -145,10 +148,10 @@ def login(request, template_name='registration/login.html',
 
         # check the form
         used_captcha_already = False
-        if bool(config.FREEZE_USER_ON_LOGIN_FAILED) is True:
+        if bool(FREEZE_USER_ON_LOGIN_FAILED) is True:
             form = authentication_form(data=request.POST)
         else:
-            if failed_attempt >= config.LOGIN_ATTEMPT_LIMIT:
+            if failed_attempt >= LOGIN_ATTEMPT_LIMIT:
                 form = CaptchaAuthenticationForm(data=request.POST)
                 used_captcha_already = True
             else:
@@ -163,8 +166,8 @@ def login(request, template_name='registration/login.html',
         failed_attempt = incr_login_failed_attempts(username=login,
                                                     ip=ip)
 
-        if failed_attempt >= config.LOGIN_ATTEMPT_LIMIT:
-            if bool(config.FREEZE_USER_ON_LOGIN_FAILED) is True:
+        if failed_attempt >= LOGIN_ATTEMPT_LIMIT:
+            if bool(FREEZE_USER_ON_LOGIN_FAILED) is True:
                 # log user in if password is valid otherwise freeze account
                 logger.warn('Login attempt limit reached, try freeze the user, email/username: %s, ip: %s, attemps: %d' %
                             (login, ip, failed_attempt))
@@ -192,8 +195,8 @@ def login(request, template_name='registration/login.html',
     else:
         ### GET
         failed_attempt = get_login_failed_attempts(ip=ip)
-        if failed_attempt >= config.LOGIN_ATTEMPT_LIMIT:
-            if bool(config.FREEZE_USER_ON_LOGIN_FAILED) is True:
+        if failed_attempt >= LOGIN_ATTEMPT_LIMIT:
+            if bool(FREEZE_USER_ON_LOGIN_FAILED) is True:
                 form = authentication_form()
             else:
                 logger.warn('Login attempt limit reached, show Captcha, ip: %s, attempts: %d' %
@@ -236,7 +239,7 @@ def login(request, template_name='registration/login.html',
         redirect_field_name: redirect_to,
         'site': current_site,
         'site_name': get_site_name(),
-        'remember_days': config.LOGIN_REMEMBER_DAYS,
+        'remember_days': LOGIN_REMEMBER_DAYS,
         'signup_url': signup_url,
         'enable_sso': enable_sso,
         'enable_multi_saml': getattr(settings, 'ENABLE_MULTI_SAML', False),
@@ -529,9 +532,9 @@ def password_change(request, template_name='registration/password_change_form.ht
 
     return render(request, template_name, {
         'form': form,
-        'min_len': config.USER_PASSWORD_MIN_LENGTH,
-        'strong_pwd_required': config.USER_STRONG_PASSWORD_REQUIRED,
-        'level': config.USER_PASSWORD_STRENGTH_LEVEL,
+        'min_len': USER_PASSWORD_MIN_LENGTH,
+        'strong_pwd_required': USER_STRONG_PASSWORD_REQUIRED,
+        'level': USER_PASSWORD_STRENGTH_LEVEL,
         'force_passwd_change': request.session.get('force_passwd_change', False),
     })
 

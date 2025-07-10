@@ -16,13 +16,13 @@ from django.utils import translation
 from django.utils.functional import lazy
 from constance import config
 
-from seahub.settings import SEAFILE_VERSION, SITE_TITLE, SITE_NAME, \
+from seahub.settings import SEAFILE_VERSION, SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
     LOGO_PATH, BRANDING_CSS, LOGO_WIDTH, LOGO_HEIGHT,\
     SITE_ROOT, ENABLE_GUEST_INVITATION, \
     FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
     ENABLE_THUMBNAIL, THUMBNAIL_SIZE_FOR_ORIGINAL, \
     MEDIA_ROOT, SHOW_LOGOUT_ICON, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
-    LOGIN_BG_IMAGE_PATH, \
+    LOGIN_BG_IMAGE_PATH, SHARE_LINK_PASSWORD_MIN_LENGTH, \
     CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
     ENABLE_SIGNUP, CN_FORCE_USER_AGREE_TERMS
 
@@ -106,9 +106,9 @@ def base(request):
     result = {
         'version': SEAQA_VERSION,
         'seafile_version': SEAFILE_VERSION,
-        'site_title': config.SITE_TITLE,
+        'site_title': SITE_TITLE,
         'branding_css': BRANDING_CSS,
-        'enable_branding_css': config.ENABLE_BRANDING_CSS,
+        'enable_branding_css': ENABLE_BRANDING_CSS,
         'favicon_path': favicon_path,
         'apple_touch_icon_path': apple_touch_icon_path,
         'favicon_notification_path': favicon_notification_path,
@@ -120,7 +120,7 @@ def base(request):
         'org': org,
         'site_name': get_site_name(),
         'enable_signup': ENABLE_SIGNUP,
-        'share_link_password_min_length': config.SHARE_LINK_PASSWORD_MIN_LENGTH,
+        'share_link_password_min_length': SHARE_LINK_PASSWORD_MIN_LENGTH,
         'events_enabled': False,
         'sysadmin_extra_enabled': ENABLE_SYSADMIN_EXTRA,
         'multi_tenancy': MULTI_TENANCY,

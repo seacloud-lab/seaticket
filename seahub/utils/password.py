@@ -1,6 +1,7 @@
 import re
 
 from constance import config
+from seahub.settings import USER_STRONG_PASSWORD_REQUIRED
 
 MIDDLE_STRENGTH = 4
 STRONG_STRENGTH = 6
@@ -51,12 +52,12 @@ def evaluate_password_strength(password):
 
 def is_password_strength_valid(password):
     strength = evaluate_password_strength(password)
-    if config.USER_STRONG_PASSWORD_REQUIRED:
+    if USER_STRONG_PASSWORD_REQUIRED:
         return strength >= STRONG_STRENGTH
     return strength >= MIDDLE_STRENGTH
 
 
 def get_password_strength_requirements():
-    if config.USER_STRONG_PASSWORD_REQUIRED:
+    if USER_STRONG_PASSWORD_REQUIRED:
         return PASSWORD_STRENGTH_REQUIREMENTS.get(STRONG_STRENGTH)
     return PASSWORD_STRENGTH_REQUIREMENTS.get(MIDDLE_STRENGTH)

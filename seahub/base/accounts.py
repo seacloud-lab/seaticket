@@ -22,7 +22,8 @@ from seahub.utils import get_site_name, \
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.models import SocialAuthUser, UserQuota
-from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, SASL_AUTHC_ID_ATTR
+from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, \
+    SASL_AUTHC_ID_ATTR, ENABLE_USER_CREATE_ORG_REPO
 from seahub.auth.models import EmailUser
 
 try:
@@ -278,7 +279,7 @@ class UserPermissions(object):
         elif self.user.is_staff:
             return True
         elif self._get_perm_by_roles('can_add_public_repo') and \
-                bool(config.ENABLE_USER_CREATE_ORG_REPO):
+                bool(ENABLE_USER_CREATE_ORG_REPO):
             return True
         else:
             return False

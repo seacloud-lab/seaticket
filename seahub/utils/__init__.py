@@ -32,7 +32,8 @@ from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.api2.models import Token, TokenV2
 import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
-        MEDIA_ROOT, CUSTOM_LOGO_PATH
+    MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
+    USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL
 
 try:
     from seahub.settings import EMAIL_HOST
@@ -286,7 +287,7 @@ def get_site_scheme_and_netloc():
 def get_site_name():
     """Return site name from settings.
     """
-    return config.SITE_NAME
+    return SITE_NAME
 
 def send_html_email(subject, con_template, con_context, from_email, to_email,
                     reply_to=None):
@@ -429,7 +430,7 @@ def is_user_password_strong(password):
        num, upper letter, lower letter, other symbols
     """
 
-    if len(password) < config.USER_PASSWORD_MIN_LENGTH:
+    if len(password) < USER_PASSWORD_MIN_LENGTH:
         return False
     else:
         num = 0
@@ -438,7 +439,7 @@ def is_user_password_strong(password):
             # bitwise OR
             num |= get_char_mode(ord(letter))
 
-        if calculate_bitwise(num) < config.USER_PASSWORD_STRENGTH_LEVEL:
+        if calculate_bitwise(num) < USER_PASSWORD_STRENGTH_LEVEL:
             return False
         else:
             return True

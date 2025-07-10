@@ -19,7 +19,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from formtools.wizard.views import SessionWizardView
 
-
+from seahub.settings import ENABLE_TWO_FACTOR_AUTH
 from seahub.auth import REDIRECT_FIELD_NAME, get_backends
 from seahub.auth import login as auth_login
 from seahub.base.accounts import User
@@ -204,7 +204,7 @@ class TwoFactorVerifyView(SessionWizardView):
         return done_response
 
 def two_factor_auth_enabled(user):
-    return config.ENABLE_TWO_FACTOR_AUTH and user_has_device(user)
+    return ENABLE_TWO_FACTOR_AUTH and user_has_device(user)
 
 SESSION_KEY_TWO_FACTOR_AUTH_USERNAME = '2fa-username'
 SESSION_KEY_TWO_FACTOR_REDIRECT_URL = '2fa-redirect-url'

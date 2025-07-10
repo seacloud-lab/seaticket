@@ -20,7 +20,7 @@ from seahub.utils.ip import get_remote_ip
 from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
 from seahub.settings import IS_SHOW_UNIT, SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, \
-    ENABLE_GUEST_INVITATION, DISABLE_ADDRESSBOOK_V1
+    ENABLE_GUEST_INVITATION, DISABLE_ADDRESSBOOK_V1, LOGIN_ATTEMPT_LIMIT
 try:
     from seahub.settings import MULTI_TENANCY
     from seahub.organizations.models import OrgSettings
@@ -118,7 +118,7 @@ def sys_sudo_mode(request):
 
         from seahub.auth.utils import get_login_failed_attempts, incr_login_failed_attempts
         failed_attempt = get_login_failed_attempts(username=username, ip=ip)
-        if failed_attempt >= config.LOGIN_ATTEMPT_LIMIT:
+        if failed_attempt >= LOGIN_ATTEMPT_LIMIT:
             # logout user
             from seahub.auth import logout
             logout(request)

@@ -20,7 +20,8 @@ from seahub.profile.models import Profile
 from seahub.utils.auth import get_login_bg_image_path
 from seahub.utils import get_site_name, render_error
 from seahub.settings import ENABLE_SMS_LOGIN, LOGIN_REDIRECT_URL, \
-    LOGIN_ATTEMPT_TIMEOUT, SEND_SMS_ATTEMPT_LIMIT, SEND_SMS_ATTEMPT_TIMEOUT
+    LOGIN_ATTEMPT_TIMEOUT, SEND_SMS_ATTEMPT_LIMIT, SEND_SMS_ATTEMPT_TIMEOUT, \
+    LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.utils import get_api_token
 
@@ -94,7 +95,7 @@ def sms_login(request):
 
     # login failed attempts
     ip = get_remote_ip(request)
-    if get_login_failed_attempts(ip=ip) >= config.LOGIN_ATTEMPT_LIMIT:
+    if get_login_failed_attempts(ip=ip) >= LOGIN_ATTEMPT_LIMIT:
         phone = request.session.get(SESSION_KEY_SMS_LOGIN_PHONE, '')
         error_msg = '验证码错误次数过多，请 %s 分钟后再试' % (LOGIN_ATTEMPT_TIMEOUT // 60)
         return render_sms_login_error(request, redirect_to, error_msg, send_button_disabled, phone, is_android)
@@ -188,8 +189,8 @@ def sms_login(request):
 
             if not verify_success:
                 failed_attempt = incr_login_failed_attempts(username=username, ip=ip)
-                if failed_attempt >= config.LOGIN_ATTEMPT_LIMIT:
-                    if bool(config.FREEZE_USER_ON_LOGIN_FAILED) is True:
+                if failed_attempt >= LOGIN_ATTEMPT_LIMIT:
+                    if bool(FREEZE_USER_ON_LOGIN_FAILED) is True:
                         user.freeze_user(notify_admins=True)
                         error_msg = _('This account has been frozen due to too many failed login attempts.')
                         return render_error(request, error_msg)

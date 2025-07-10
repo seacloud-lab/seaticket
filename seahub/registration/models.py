@@ -17,6 +17,7 @@ from .signals import user_registered
 from seahub.base.accounts import User
 from seahub.utils import get_site_scheme_and_netloc, send_html_email
 from seahub.profile.models import Profile
+from seahub.settings import ACTIVATE_AFTER_REGISTRATION, REGISTRATION_SEND_MAIL
 
 logger = logging.getLogger(__name__)
 
@@ -360,8 +361,8 @@ def email_admin_on_registration(sender, **kwargs):
     This email will be sent when both ``ACTIVATE_AFTER_REGISTRATION`` and
     ``REGISTRATION_SEND_MAIL`` are set to False.
     """
-    if bool(config.ACTIVATE_AFTER_REGISTRATION) is False and \
-            bool(config.REGISTRATION_SEND_MAIL) is False:
+    if bool(ACTIVATE_AFTER_REGISTRATION) is False and \
+            bool(REGISTRATION_SEND_MAIL) is False:
         reg_email = kwargs['user'].email
         notify_admins_on_activate_request(reg_email)
 

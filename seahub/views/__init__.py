@@ -145,7 +145,7 @@ def image_view(request, filename):
     return response
 
 def custom_css_view(request):
-    file_content = config.CUSTOM_CSS
+    file_content = CUSTOM_CSS
     response = HttpResponse(content=file_content, content_type='text/css')
     return response
 

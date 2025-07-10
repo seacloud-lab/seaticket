@@ -13,6 +13,8 @@ from seahub.utils.licenseparse import user_number_over_limit
 from seahub.utils import is_user_password_strong
 from seahub.profile.models import Profile
 from seahub.utils.password import is_password_strength_valid, get_password_strength_requirements
+from seahub.settings import USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
+    USER_STRONG_PASSWORD_REQUIRED
 
 # I put this on all required fields, because it's easier to pick up
 # on them with CSS or JavaScript if they have a class of "required"
@@ -186,7 +188,7 @@ class SmsRegistrationForm(forms.Form):
         if 'password1' in self.cleaned_data:
             pwd = self.cleaned_data['password1']
 
-            if bool(config.USER_STRONG_PASSWORD_REQUIRED) is True:
+            if bool(USER_STRONG_PASSWORD_REQUIRED) is True:
                 if bool(is_user_password_strong(pwd)) is True:
                     return pwd
                 else:
@@ -194,8 +196,8 @@ class SmsRegistrationForm(forms.Form):
                         _(("%(pwd_len)s characters or more, include "
                            "%(num_types)s types or more of these: "
                            "letters(case sensitive), numbers, and symbols")) %
-                        {'pwd_len': config.USER_PASSWORD_MIN_LENGTH,
-                         'num_types': config.USER_PASSWORD_STRENGTH_LEVEL})
+                        {'pwd_len': USER_PASSWORD_MIN_LENGTH,
+                         'num_types': USER_PASSWORD_STRENGTH_LEVEL})
             else:
                 return pwd
 
