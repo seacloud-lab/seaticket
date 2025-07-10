@@ -9,7 +9,7 @@ class ConnectionRecord {
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
     this.updated_at = object.updated_at || '';
-    this.index_time = object.index_time || '';
+    this.indexed_at = object.indexed_at || '';
     this.project_id = object.project_id || '';
     this.status = object.status || '';
 
@@ -19,7 +19,7 @@ class ConnectionRecord {
     }
 
     this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
-    this.index_time = this.index_time ? dayjs(this.index_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+    this.indexed_at = this.indexed_at ? dayjs(this.indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
 
   }
 }

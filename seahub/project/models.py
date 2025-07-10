@@ -440,7 +440,7 @@ class ProjectConnections(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
-    index_time = models.DateTimeField(null=True)
+    indexed_at = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
@@ -457,6 +457,6 @@ class ProjectConnections(models.Model):
             'modifier': self.modifier,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
-            'index_time': datetime_to_isoformat_timestr(self.index_time),
+            'indexed_at': datetime_to_isoformat_timestr(self.indexed_at),
             'status': self.status,
         }
