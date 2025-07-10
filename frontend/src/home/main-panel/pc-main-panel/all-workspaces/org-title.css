@@ -1,0 +1,26 @@
+.dtable-center .dtable-org-title {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.dtable-center .dtable-org-title.dtable-mobile-org-title {
+  padding: 0 16px;
+}
+
+.dtable-center .dtable-org-title .dtable-org-icon {
+  color: #999;
+}
+
+.dtable-center .dtable-org-title .dtable-org-name {
+  max-width: calc(100% - 36px);
+  margin: 0 8px;
+  font-weight: 400;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline;
+}

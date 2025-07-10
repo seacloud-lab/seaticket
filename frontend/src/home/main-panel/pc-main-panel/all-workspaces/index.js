@@ -1,11 +1,12 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Loading from '../../../../components/loading';
-import { gettext, canAddGroup, isOrgContext, orgName } from '../../../../constants';
+import { isOrgContext } from '../../../../constants';
 import Workspace from '../../../workspace';
 import CreateGroupDialog from '../../../dialog/create-group-dialog';
 import { Utils } from '../../../../utils/utils';
 import SessionStorage from '../../../../utils/session-utils';
+import OrgTitle from './org-title';
 
 class AllWorkspace extends React.Component {
 
@@ -81,10 +82,10 @@ class AllWorkspace extends React.Component {
               ref={ref => this.viewContent = ref}
             >
               {isOrgContext &&
-                <div className={`py-4 dtable-org-title ${isDesktop ? '' : 'dtable-mobile-org-title'}`}>
-                  <i aria-hidden="true" className="dtable-org-icon dtable-font dtable-icon-organization-name"></i>
-                  <h1 title={orgName} aria-label={orgName} className="dtable-org-name">{orgName}</h1>
-                </div>
+                <OrgTitle
+                  isDesktop={isDesktop}
+                  onCreateGroupToggle={this.onCreateGroupToggle}
+                />
               }
               {errorMsg && <p className="error text-center">{errorMsg}</p>}
               {!errorMsg && (
@@ -116,18 +117,6 @@ class AllWorkspace extends React.Component {
                       />
                     );
                   })}
-                  {isDesktop && canAddGroup &&
-                    <div>
-                      <button
-                        className="btn btn-secondary dtable-add-btn my-4"
-                        onClick={this.onCreateGroupToggle}
-                        title={gettext('New group')}
-                        aria-label={gettext('New group')}
-                      >
-                        {gettext('New group')}
-                      </button>
-                    </div>
-                  }
                 </Fragment>
               )}
             </div>
