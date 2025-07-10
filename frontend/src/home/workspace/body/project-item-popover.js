@@ -45,6 +45,10 @@ class ProjectItemPopover extends React.Component {
         hidePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}
         hideArrow={true}
+        modifiers={[
+          { name: 'preventOverflow', options: { boundary: document.body } },
+          { name: 'offset', options: { offset: [0, 0] } }
+        ]}
       >
         <PopoverBody className="project-item-popover-content">
           {(
