@@ -400,7 +400,7 @@
 .project-item-more-operation i {
   color: #666;
   cursor: pointer;
-  font-size: 12px;
+  padding: 4px;
 }
 
 .project-item-more-operation a:hover {
