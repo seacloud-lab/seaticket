@@ -36,7 +36,7 @@ const Search = () => {
 
   return (
     <>
-      <div>
+      <div className="w-100">
         <input
           type="text"
           onChange={onChangeHandler}

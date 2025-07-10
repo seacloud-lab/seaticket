@@ -7,6 +7,7 @@ import Loading from '../../../../components/loading';
 import { gettext } from '../../../../constants';
 
 import './index.css';
+import { TABLE_COLUMN_TYPE } from '../../../constants';
 
 const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete, onModify }) => {
 
@@ -35,8 +36,8 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
         return (
           <div className="sea-qa-project-custom-table-row" key={row.id}>
             {columns.map(column => {
-              const { key, width, is_custom } = column;
-              if (key === 'op') {
+              const { key, width, is_custom, type } = column;
+              if (type === TABLE_COLUMN_TYPE.OP) {
                 return (
                   <div className="sea-qa-project-custom-table-cell sea-qa-project-custom-table-op-cell" key={key} style={{ width }}>
                     <div className="sea-qa-project-custom-table-op-cell-content">
@@ -47,7 +48,15 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
                 );
               }
               const value = is_custom ? row['config']?.[key] : row[key];
-              return (<div className="sea-qa-project-custom-table-cell" key={key} style={{ width }}>{value}</div>);
+              if (type === TABLE_COLUMN_TYPE.URL) {
+                return (
+                  <div className="sea-qa-project-custom-table-cell" key={key} style={{ width }}>
+                    <a className="sea-qa-project-custom-table-a" href={value} target="_blank" rel="noopener noreferrer">{value}</a>
+                  </div>
+                );
+              }
+
+              return (<div className="sea-qa-project-custom-table-cell" key={key} style={{ width }} title={value}>{value}</div>);
             })}
           </div>
         );

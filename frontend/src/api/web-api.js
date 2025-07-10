@@ -79,8 +79,8 @@ class SeaQAAPI {
   }
 
   // connections
-  listConnections(workspaceID, projectName, type, page, perPage) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
+  listConnections(workspaceID, projectUuid, type, page, perPage) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/';
     let params = {
       page: page,
       per_page: perPage,
@@ -89,8 +89,8 @@ class SeaQAAPI {
     return this.req.get(url, { params: params });
   }
 
-  createConnection(workspaceID, projectName, type, { name, config }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/';
+  createConnection(workspaceID, projectUuid, type, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/';
     let form = new FormData();
     form.append('name', name);
     form.append('type', type);
@@ -98,8 +98,8 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  modifyConnection(workspaceID, projectName, type, connectionID, { name, config }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
+  modifyConnection(workspaceID, projectUuid, type, connectionID, { name, config }) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('name', name);
     form.append('type', type);
@@ -107,8 +107,8 @@ class SeaQAAPI {
     return this.req.put(url, form);
   }
 
-  deleteConnection(workspaceID, projectName, connectionID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connectionID + '/';
+  deleteConnection(workspaceID, projectUuid, connectionID) {
+    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/' + connectionID + '/';
     return this.req.delete(url);
   }
 
@@ -155,14 +155,16 @@ class SeaQAAPI {
     return this.req.delete(url, { data: params });
   }
 
-  search(workspaceID, projectUuid, query) {
-    const url = this.server + '/api/v2.1/search/';
-    let params = {
-      query: query,
-      project_uuid: projectUuid,
-      workspace_id: workspaceID,
-    };
-    return this.req.post(url, params);
+  // search
+  getSource() {
+    let CancelToken = axios.CancelToken;
+    let source = CancelToken.source();
+    return source;
+  }
+
+  search(workspaceID, projectUuid, query, cancelToken) {
+    const url = `${this.server}/api/v2.1/search/?workspace_id=${workspaceID}&project_uuid=${projectUuid}&query_str=${query}`;
+    return this.req.get(url, { cancelToken: cancelToken });
   }
 
   listProjectShares(workspaceID, name) {

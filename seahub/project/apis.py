@@ -29,7 +29,7 @@ class ProjectConnectionsView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, workspace_id, project_name):
+    def get(self, request, workspace_id, project_uuid):
         """get project connection records
         """
 
@@ -59,17 +59,17 @@ class ProjectConnectionsView(APIView):
             error_msg = f'Workspace {workspace_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        project = Projects.objects.get_project(workspace, project_name)
+        project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            error_msg = f'Project {project_name} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)            
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         records = ProjectConnections.objects.filter(project=project, type=connection_type)[start:end]
         records = [record.to_dict() for record in records]
 
         return Response({'records': records}, status=status.HTTP_200_OK)
 
-    def post(self, request, workspace_id, project_name):
+    def post(self, request, workspace_id, project_uuid):
         """modify project connection
         """
 
@@ -109,9 +109,9 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project = Projects.objects.get_project(workspace, project_name)
+        project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            error_msg = f'Project {project_name} not found.'
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         enable_create = ProjectConnections.objects.enable_create(project, connection_type, name, config)
@@ -140,7 +140,7 @@ class ProjectConnectionView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def put(self, request, workspace_id, project_name, connection_id):
+    def put(self, request, workspace_id, project_uuid, connection_id):
         """ modify connection
         """
         # role permission check
@@ -178,9 +178,9 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project = Projects.objects.get_project(workspace, project_name)
+        project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            error_msg = f'Project {project_name} not found.'
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         enable_modify = ProjectConnections.objects.enable_modify(project, connection_type, connection_id, name, config)
@@ -197,7 +197,7 @@ class ProjectConnectionView(APIView):
 
         return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
 
-    def delete(self, request, workspace_id, project_name, connection_id):
+    def delete(self, request, workspace_id, project_uuid, connection_id):
         """delete connection
         """
         # role permission check
@@ -219,9 +219,9 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project = Projects.objects.get_project(workspace, project_name)
+        project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            error_msg = f'Project {project_name} not found.'
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
