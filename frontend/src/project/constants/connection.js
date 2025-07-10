@@ -1,4 +1,5 @@
 import { gettext } from '../../constants';
+import { TABLE_COLUMN_TYPE } from './table-column';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -9,19 +10,19 @@ export const CONNECTION_TYPE = {
 
 export const CONNECTION_FIELDS = {
   [CONNECTION_TYPE.EMAIL]: [
-    { key: 'host', name: gettext('Host'), is_required: true, is_unique: true, is_display: true },
-    { key: 'username', name: gettext('Username'), is_required: true },
-    { key: 'password', name: gettext('Password'), is_required: true },
+    { key: 'host', name: gettext('Host'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true, is_display: true },
+    { key: 'username', name: gettext('Username'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true },
+    { key: 'password', name: gettext('Password'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true },
   ],
   [CONNECTION_TYPE.GITHUB_ISSUE]: [
-    { key: 'repository', name: gettext('Repository'), is_required: true, is_unique: true, is_display: true },
+    { key: 'repository', name: gettext('Repository'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
-    { key: 'url', name: gettext('URL'), is_required: true, is_unique: true, is_display: true },
+    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
   ],
   [CONNECTION_TYPE.SITE]: [
-    { key: 'url', name: gettext('URL'), is_required: true, is_unique: true, is_display: true },
-    { key: 'sitemap_url', 'name': gettext('Sitemap URL') },
+    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
+    { key: 'sitemap_url', 'name': gettext('Sitemap URL'), type: TABLE_COLUMN_TYPE.URL },
   ],
 };
 

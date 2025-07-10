@@ -2,6 +2,9 @@
   flex: 1;
   overflow: hidden;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sea-qa-project-main-panel .sea-qa-project-main-panel-header {

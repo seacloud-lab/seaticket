@@ -2,3 +2,11 @@
   flex: 1;
   overflow: hidden;
 }
+
+.sea-qa-project-table .sea-qa-project-custom-table-a {
+  color: var(--bs-body-color);
+}
+
+.sea-qa-project-table .sea-qa-project-custom-table-a:hover {
+  color: #ed7109;
+}
