@@ -81,7 +81,7 @@ class HeaderDropdownMenu extends React.Component {
           aria-haspopup={true}
           tabIndex={0}
         >
-          <i className="dtable-font dtable-icon-add-table"></i>
+          <i className="dtable-font dtable-icon-new"></i>
           <i className="dtable-font dtable-icon-down3"></i>
         </DropdownToggle>
         <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list">

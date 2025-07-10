@@ -1,11 +1,11 @@
 @font-face {
   font-family: "dtable-font"; /* Project id 1206632 */
-  src: url('./dtable-fonts/dtable-font.eot?t=1739957838557'); /* IE9 */
-  src: url('./dtable-fonts/dtable-font.eot?t=1739957838557#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('./dtable-fonts/dtable-font.woff2?t=1739957838557') format('woff2'),
-       url('./dtable-fonts/dtable-font.woff?t=1739957838557') format('woff'),
-       url('./dtable-fonts/dtable-font.ttf?t=1739957838557') format('truetype'),
-       url('./dtable-fonts/dtable-font.svg?t=1739957838557#dtable-font') format('svg');
+  src: url('./dtable-fonts/dtable-font.eot?t=1752130011867'); /* IE9 */
+  src: url('./dtable-fonts/dtable-font.eot?t=1752130011867#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('./dtable-fonts/dtable-font.woff2?t=1752130011867') format('woff2'),
+       url('./dtable-fonts/dtable-font.woff?t=1752130011867') format('woff'),
+       url('./dtable-fonts/dtable-font.ttf?t=1752130011867') format('truetype'),
+       url('./dtable-fonts/dtable-font.svg?t=1752130011867#dtable-font') format('svg');
 }
 
 .dtable-font {
@@ -14,6 +14,30 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.dtable-icon-new:before {
+  content: "\e81e";
+}
+
+.dtable-icon-calendar2:before {
+  content: "\e85e";
+}
+
+.dtable-icon-private-calendar:before {
+  content: "\e85d";
+}
+
+.dtable-icon-jump-to:before {
+  content: "\e85b";
+}
+
+.dtable-icon-private-kanban:before {
+  content: "\e858";
+}
+
+.dtable-icon-app-reservation-resources:before {
+  content: "\e845";
 }
 
 .dtable-icon-cross:before {
