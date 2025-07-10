@@ -38,7 +38,7 @@ const Records = ({ type, title }) => {
       ...displayColumns, // 20%
       { key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' },
       { key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' },
-      { key: 'index_time', name: gettext('Index time'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' },
+      { key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' },
       { key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' },
     ];
   }, [fields]);
