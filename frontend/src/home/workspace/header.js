@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import HeaderDropdownMenu from '../dropdown-menu/group-dropdown-menu';
 
 const gettext = window.gettext;
 
@@ -70,25 +69,6 @@ class WorkspaceHeader extends Component {
     return (
       <div className={`${isDesktop ? '' : 'table-mobile-heading ' }table-heading`}>
         <span>{this.renderName()}</span>
-        <HeaderDropdownMenu
-          onRenameGroupToggle={this.props.onRenameGroupToggle}
-          onManageMembersToggle={this.props.toggleManageMembersDialog}
-          onDtableManageMembers={this.props.onDtableManageMembers}
-          onDeleteGroupToggle={this.props.onDeleteGroupToggle}
-          onLeaveGroupToggle={this.props.onLeaveGroupToggle}
-          onTransferGroupToggle={this.props.onTransferGroupToggle}
-          toggleGroupInviteDialog={this.props.toggleGroupInviteDialog}
-          toggleGroupTrashDialog={this.props.toggleGroupTrashDialog}
-          openGroupMember={this.props.openGroupMember}
-          isPersonal={isPersonal}
-          isOwner={isOwner}
-          isAdmin={isAdmin}
-          isOwnerOrAdmin={isOwnerOrAdmin}
-          isDepart={isDepart}
-          workspace={workspace}
-          showVirtualProject={this.props.showVirtualProject}
-          showGroupOptions={showGroupOptions}
-        />
       </div>
     );
   }
