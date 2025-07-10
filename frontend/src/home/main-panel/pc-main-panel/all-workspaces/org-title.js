@@ -6,7 +6,7 @@ import './org-title.css';
 function OrgTitle(props) {
   const { isDesktop, onCreateGroupToggle } = props;
   return (
-    <div className={`dtable-org-title${isDesktop ? '' : ' dtable-mobile-org-title'}`}>
+    <div className={`justify-content-between dtable-org-title${isDesktop ? '' : ' dtable-mobile-org-title'}`}>
       <div className="dtable-org-title-left">
         <i aria-hidden="true" className="dtable-org-icon dtable-font dtable-icon-organization-name"></i>
         <h1 title={orgName} aria-label={orgName} className="dtable-org-name">{orgName}</h1>

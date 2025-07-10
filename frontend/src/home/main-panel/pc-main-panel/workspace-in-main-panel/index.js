@@ -26,7 +26,7 @@ class WorkspaceInMainPanel extends React.Component {
 
     if (!isNumber(projectID)) {
       if (projectID === 'starred' || projectID === 'shared') {
-        return (<EmptyTip text={gettext('No projects.')} src={`${mediaUrl}img/no-items-tip.png`} />);
+        return (<EmptyTip text={gettext('No projects')} src={`${mediaUrl}img/no-items-tip.png`} />);
       }
     }
 
@@ -49,7 +49,7 @@ class WorkspaceInMainPanel extends React.Component {
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
         emptyTip={
-          <EmptyTip text={gettext('No projects.')} src={`${mediaUrl}img/no-items-tip.png`} />
+          <EmptyTip text={gettext('No projects')} src={`${mediaUrl}img/no-items-tip.png`} />
         }
       />
     );
@@ -69,7 +69,7 @@ class WorkspaceInMainPanel extends React.Component {
           <div className="cur-view-container d-flex flex-1 flex-column">
             <div className={`${isDesktop ? '' : 'p-0'} cur-view-content`}>
               {isOrgContext &&
-                <div className={`py-4 dtable-org-title ${isDesktop ? '' : 'dtable-mobile-org-title'}`}>
+                <div className={`justify-content-start dtable-org-title${isDesktop ? '' : ' dtable-mobile-org-title'}`}>
                   <i aria-hidden="true" className="dtable-org-icon dtable-font dtable-icon-organization-name"></i>
                   <h1 title={orgName} aria-label={orgName} className="dtable-org-name">{orgName}</h1>
                 </div>
