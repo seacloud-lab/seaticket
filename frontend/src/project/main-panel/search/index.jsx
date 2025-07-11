@@ -29,8 +29,10 @@ const Search = () => {
 
   const onChange = useCallback((value = '') => {
     setValue(value);
-    setResults([]);
-    if (!value) return;
+    if (!value) {
+      setResults([]);
+      return;
+    }
 
     if (source.current) {
       source.current.cancel('prev request is cancelled');
@@ -44,6 +46,7 @@ const Search = () => {
       if (!axios.isCancel(error)) {
         let errMessage = Utils.getErrorMsg(error);
         toaster.danger(errMessage);
+        setResults([]);
       }
     });
   }, []);
@@ -80,10 +83,14 @@ const Search = () => {
           <Icon symbol="down" />
         </div>
       </div>
-      {!value && (<div className="sea-qa-project-search-value-empty-tip">{gettext('Type characters to start search')}</div>)}
+      {!value && (
+        <div className="sea-qa-project-search-value-empty-tip">
+          <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
+        </div>
+      )}
       {value && results.length === 0 && (
         <div className="sea-qa-project-search-result-empty-tip">
-          <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No results')} />
+          <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
         </div>
       )}
       {results.length > 0 && (
