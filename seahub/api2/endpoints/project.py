@@ -358,24 +358,24 @@ class SearchView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request):
+    def post(self, request):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_uuid = request.GET.get('project_uuid')
+        project_uuid = request.data.get('project_uuid')
         if not project_uuid:
             error_msg = 'project_uuid invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace_id = request.GET.get('workspace_id')
+        workspace_id = request.data.get('workspace_id')
         if not workspace_id:
             error_msg = 'workspace_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        query = request.GET.get('query_str')
+        query = request.data.get('query')
         if not query:
-            error_msg = 'query_str invalid.'
+            error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)

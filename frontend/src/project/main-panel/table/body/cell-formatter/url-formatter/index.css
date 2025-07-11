@@ -1,0 +1,7 @@
+.sea-qa-url-formatter {
+  color: var(--bs-body-color);
+}
+
+.sea-qa-url-formatter:hover {
+  color: #ed7109;
+}

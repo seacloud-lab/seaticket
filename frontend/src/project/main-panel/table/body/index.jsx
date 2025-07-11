@@ -5,9 +5,10 @@ import EmptyImage from '../../../../assets/image/empty.png';
 import IconButton from '../../../../components/icon-button';
 import Loading from '../../../../components/loading';
 import { gettext } from '../../../../constants';
+import { TABLE_COLUMN_TYPE } from '../../../constants';
+import Formatter from './cell-formatter';
 
 import './index.css';
-import { TABLE_COLUMN_TYPE } from '../../../constants';
 
 const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete, onModify }) => {
 
@@ -48,10 +49,10 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
                 );
               }
               const value = is_custom ? row['config']?.[key] : row[key];
-              if (type === TABLE_COLUMN_TYPE.URL) {
+              if (type === TABLE_COLUMN_TYPE.URL || type === TABLE_COLUMN_TYPE.LONG_TEXT) {
                 return (
-                  <div className="sea-qa-project-custom-table-cell" key={key} style={{ width }}>
-                    <a className="sea-qa-project-custom-table-a" href={value} target="_blank" rel="noopener noreferrer">{value}</a>
+                  <div className={`sea-qa-project-custom-table-cell sea-qa-project-custom-table-${type}-cell`} key={key} style={{ width }}>
+                    <Formatter type={type} value={value} />
                   </div>
                 );
               }

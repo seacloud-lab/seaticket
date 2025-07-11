@@ -64,22 +64,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 10px;
+  padding-right: 16px;
 }
 
 .sea-qa-project-custom-table .sea-qa-project-custom-table-row.sea-qa-project-custom-table-row-title .sea-qa-project-custom-table-cell {
-  color: #999;
+  color: #666;
   font-size: 13px;
   line-height: 20px;
   padding: 10px 0 6px;
 }
 
 .sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:first-child {
-  padding-left: 10px;
+  padding-left: 8px;
 }
 
 .sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:last-child {
-  padding-right: 0;
+  padding-right: 8px;
 }
 
 .sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell .sea-qa-project-custom-table-op-cell-content {

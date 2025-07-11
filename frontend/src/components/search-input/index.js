@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isFunction } from '../../utils/utils';
+import IconButton from '../icon-button';
 
 class SearchInput extends Component {
 
@@ -54,10 +55,10 @@ class SearchInput extends Component {
     this.onChange(e);
   };
 
-  clearSearch = () => {
-    const { clearValue } = this.props;
+  onClear = () => {
+    const { onClear } = this.props;
     this.setState({ searchValue: '' }, () => {
-      clearValue && clearValue();
+      onClear && onClear();
     });
   };
 
@@ -71,17 +72,11 @@ class SearchInput extends Component {
   };
 
   renderClear = () => {
-    const { isClearable, clearClassName, components = {} } = this.props;
+    const { onClear } = this.props;
     const { searchValue } = this.state;
-    if (!isClearable || !searchValue) return null;
-    const { ClearIndicator } = components;
-    if (React.isValidElement(ClearIndicator)) {
-      return React.cloneElement(ClearIndicator, { clearValue: this.clearSearch });
-    } else if (isFunction(ClearIndicator)) {
-      return <ClearIndicator clearValue={this.clearSearch} />;
-    }
+    if (!isFunction(onClear) || !searchValue) return null;
     return (
-      <i className={classnames('search-text-clear input-icon-addon', clearClassName)} onClick={this.clearSearch}>×</i>
+      <IconButton icon="x" className="sea-qa-search-input-clear" onClick={this.onClear} />
     );
   };
 
@@ -120,10 +115,7 @@ SearchInput.propTypes = {
   wait: PropTypes.number,
   disabled: PropTypes.bool,
   style: PropTypes.object,
-  isClearable: PropTypes.bool,
-  clearValue: PropTypes.func,
-  clearClassName: PropTypes.string,
-  components: PropTypes.object,
+  onClear: PropTypes.func,
   value: PropTypes.string,
 };
 
