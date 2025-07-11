@@ -1,0 +1,11 @@
+import URLFormatter from './url-formatter';
+import LongTextFormatter from './long-text-formatter';
+import { TABLE_COLUMN_TYPE } from '../../../../constants';
+
+const Formatter = ({ type, value, ...props }) => {
+  if (type === TABLE_COLUMN_TYPE.URL) return (<URLFormatter value={value} { ...props } />);
+  if (type === TABLE_COLUMN_TYPE.LONG_TEXT) return (<LongTextFormatter value={value} { ...props } />);
+  return (<>{value}</>);
+};
+
+export default Formatter;

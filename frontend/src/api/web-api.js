@@ -163,8 +163,13 @@ class SeaQAAPI {
   }
 
   search(workspaceID, projectUuid, query, cancelToken) {
-    const url = `${this.server}/api/v2.1/search/?workspace_id=${workspaceID}&project_uuid=${projectUuid}&query_str=${query}`;
-    return this.req.get(url, { cancelToken: cancelToken });
+    const url = `${this.server}/api/v2.1/search/`;
+    let params = {
+      query: query,
+      project_uuid: projectUuid,
+      workspace_id: workspaceID,
+    };
+    return this.req.post(url, params, { cancelToken: cancelToken });
   }
 
   listProjectShares(workspaceID, name) {

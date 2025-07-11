@@ -173,17 +173,7 @@ class ListAndAddGroupMembers extends React.Component {
               onChange={this.onSearchGroupMembers}
               className="search-group-members-input"
               placeholder={gettext('Search group members')}
-              isClearable={true}
-              clearValue={this.clearValue}
-              components={{
-                ClearIndicator: () => {
-                  return (
-                    <span className="clear-search-text" onClick={this.clearValue}>
-                      <i className="dtable-font dtable-icon-x-"></i>
-                    </span>
-                  );
-                }
-              }}
+              onClear={this.clearValue}
             />
           </div>
         }

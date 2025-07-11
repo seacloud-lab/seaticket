@@ -3,10 +3,9 @@
   overflow: hidden;
 }
 
-.sea-qa-project-table .sea-qa-project-custom-table-a {
-  color: var(--bs-body-color);
+/* cell formatter */
+.sea-qa-project-table .sea-qa-project-custom-table-long_text-cell {
+  display: flex;
+  align-items: center;
 }
 
-.sea-qa-project-table .sea-qa-project-custom-table-a:hover {
-  color: #ed7109;
-}
