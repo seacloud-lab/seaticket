@@ -344,7 +344,7 @@ class SeaQAAPI {
     return this.req.get(url, { params });
   }
 
-  createProjectTicket(projectUuid, title, content, participants, tags) {
+  createProjectTicket(projectUuid, title, content, type, participants, tags) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     let form = new FormData();
     if (title) {
@@ -352,6 +352,9 @@ class SeaQAAPI {
     }
     if (content) {
       form.append('content', content);
+    }
+    if (type) {
+      form.append('type', type);
     }
     if (participants) {
       form.append('participants', participants);
@@ -362,7 +365,7 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  modifyProjectTicket(projectUuid, ticketNumber, title, content, participants, tags, status) {
+  modifyProjectTicket(projectUuid, ticketNumber, title, content, status, type, participants, tags) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     let form = new FormData();
     if (title) {
@@ -371,14 +374,17 @@ class SeaQAAPI {
     if (content) {
       form.append('content', content);
     }
+    if (status) {
+      form.append('status', status);
+    }
+    if (type) {
+      form.append('type', type);
+    }
     if (participants) {
       form.append('participants', participants);
     }
     if (tags) {
       form.append('tags', tags);
-    }
-    if (status) {
-      form.append('status', status);
     }
     return this.req.put(url, form);
   }

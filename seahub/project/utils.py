@@ -18,12 +18,22 @@ from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
 
 logger = logging.getLogger(__name__)
 TICKET_STATUS = (
+    '',
     'open',
     'completed',
     'not planned',
     'duplicate',
 )
-TICKET_TAGS =  (
+
+TICKET_TYPE =  (
+    '',
+    'bug',
+    'feature',
+    'request',
+    'support',
+)
+
+TICKET_TAG =  (
     'bug',
     'documentation',
     'duplicate',

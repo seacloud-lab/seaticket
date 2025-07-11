@@ -13,7 +13,14 @@ export const TICKET_STATUS = {
   DUPLICATE: 'duplicate',
 };
 
-export const TICKET_TAGS = {
+export const TICKET_TYPE = {
+  BUG: 'bug',
+  FEATURE: 'feature',
+  REQUEST: 'request',
+  SUPPORT: 'support',
+};
+
+export const TICKET_TAG = {
   BUG: 'bug',
   DOCUMENTATION: 'documentation',
   DUPLICATE: 'duplicate',

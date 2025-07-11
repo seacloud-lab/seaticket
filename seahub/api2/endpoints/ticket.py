@@ -18,7 +18,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, Tickets, TicketReplies
-from seahub.project.utils import TICKET_STATUS, TICKET_TAGS, \
+from seahub.project.utils import TICKET_STATUS, TICKET_TAG, TICKET_TYPE, \
     check_project_admin_permission, check_project_permission
 
 
@@ -94,11 +94,6 @@ class TicketsAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # role permission check
-        if not request.user.permissions.can_add_ticket():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         title = request.POST.get('title')
         if not title:
@@ -110,17 +105,32 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         participants = request.POST.get('participants')
         if participants is not None:
+            try:
+                participants = json.loads(participants)
+            except:
+                error_msg = 'participants invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)     
             if not isinstance(participants, list):
                 error_msg = 'participants invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             participants = list(set(participants))
+        ticket_type = request.data.get('type')
+        if ticket_type is not None:
+            if ticket_type not in TICKET_TYPE:
+                error_msg = 'type invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         tags = request.POST.get('tags')
         if tags is not None:
+            try:
+                tags = json.loads(tags)
+            except:
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg) 
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             for tag in tags:
-                if tag not in TICKET_TAGS:
+                if tag not in TICKET_TAG:
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
@@ -155,7 +165,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, ticket_status, participants, tags)
+                project_uuid, username, title, content, ticket_status, ticket_type, participants, tags)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -230,11 +240,6 @@ class TicketAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # role permission check
-        if not request.user.permissions.can_add_ticket():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         title = request.data.get('title')
 
@@ -246,8 +251,19 @@ class TicketAPIView(APIView):
                 error_msg = 'status invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        ticket_type = request.data.get('type')
+        if ticket_type is not None:
+            if ticket_type not in TICKET_TYPE:
+                error_msg = 'type invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         participants = request.data.get('participants')
         if participants is not None:
+            try:
+                participants = json.loads(participants)
+            except:
+                error_msg = 'participants invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             if not isinstance(participants, list):
                 error_msg = 'participants invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -255,16 +271,21 @@ class TicketAPIView(APIView):
 
         tags = request.data.get('tags')
         if tags is not None:
+            try:
+                tags = json.loads(tags)
+            except:
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             for tag in tags:
-                if tag not in TICKET_TAGS:
+                if tag not in TICKET_TAG:
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
 
-        if not any([title, content, status]) \
+        if not any([title, content, ticket_status, ticket_type]) \
                 and participants is None and tags is None:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -310,8 +331,10 @@ class TicketAPIView(APIView):
                 ticket.title = title
             if content:
                 ticket.content = content
-            if ticket_status:
+            if ticket_status or ticket_status == '':
                 ticket.status = ticket_status
+            if ticket_type or ticket_type == '':
+                ticket.type = ticket_type
             if participants or participants == []:
                 ticket.participants = json.dumps(participants)
             if tags or tags == []:
@@ -432,11 +455,6 @@ class TicketRepliesAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # role permission check
-        if not request.user.permissions.can_add_ticket_reply():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         content = request.POST.get('content')
         if not content:
@@ -505,11 +523,6 @@ class TicketReplyAPIView(APIView):
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # role permission check
-        if not request.user.permissions.can_add_ticket_reply():
-            error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check

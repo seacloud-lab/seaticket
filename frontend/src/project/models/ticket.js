@@ -12,6 +12,7 @@ class TicketObject {
     this.title = object.title || '';
     this.content = object.content || '';
     this.status = object.status || '';
+    this.type = object.type || '';
     this.tags = object.tags || [];
     this.participants = object.participants || [];
     this.reply_count = object.reply_count || '';

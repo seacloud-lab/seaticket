@@ -468,7 +468,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, participants=None, tags=None):
+    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None, participants=None, tags=None):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -480,6 +480,7 @@ class TicketsManager(models.Manager):
                     title=title,
                     content=content,
                     status=status,
+                    type=ticket_type,
                     participants=json.dumps(participants) if participants else None,
                     tags=json.dumps(tags) if tags else None,
                 )
@@ -493,7 +494,7 @@ class TicketsManager(models.Manager):
         return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
 
     def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
-        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).first()
+        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
 
 
 class Tickets(models.Model):
@@ -505,10 +506,11 @@ class Tickets(models.Model):
     content = models.TextField()
     participants = models.TextField(null=True)
     tags = models.CharField(max_length=1024, null=True)
-    status = models.CharField(max_length=50, null=True)
+    status = models.CharField(max_length=50, null=True, db_index=True)
+    type = models.CharField(max_length=50, null=True)
     reply_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     reply_updated_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     delete_time = models.DateTimeField(null=True)
@@ -528,6 +530,7 @@ class Tickets(models.Model):
             'participants': [],
             'tags': json.loads(self.tags) if self.tags else [],
             'status': self.status,
+            'type': self.type,
             'reply_count': self.reply_count,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
@@ -535,7 +538,7 @@ class Tickets(models.Model):
         }
         result.update(get_user_common_info(self.creator))
         if self.participants:
-            participants = json.loads(participants)
+            participants = json.loads(self.participants)
             result['participants'] = [
                 get_user_common_info(participant) for participant in participants]
         if include_deleted:
@@ -549,7 +552,7 @@ class TicketRepliesManager(models.Manager):
 
     def list_replies(self, ticket_id, start, end):
         return self.filter(
-            ticket_id=ticket_id, deleted=False).order_by('-number')[start: end]
+            ticket_id=ticket_id, deleted=False).order_by('number')[start: end]
 
     def get_replies_count(self, ticket_id):
         return self.filter(
@@ -575,7 +578,7 @@ class TicketRepliesManager(models.Manager):
         return self.filter(ticket_id=ticket_id, number=number, deleted=deleted).first()
 
     def get_previous_reply_by_username(self, ticket_id, username, deleted=False):
-        return self.filter(ticket_id=ticket_id, creator=username, deleted=deleted).first()
+        return self.filter(ticket_id=ticket_id, creator=username, deleted=deleted).order_by('-number').first()
 
 class TicketReplies(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -583,8 +586,8 @@ class TicketReplies(models.Model):
     number = models.IntegerField()
     creator = models.CharField(max_length=255, db_index=True)
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     delete_time = models.DateTimeField(null=True)
 

@@ -451,6 +451,7 @@ CREATE TABLE `tickets`  (
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
   `status` varchar(50) DEFAULT NULL,
+  `type` varchar(50) DEFAULT NULL,
   `participants` text DEFAULT NULL,
   `tags` varchar(1024) DEFAULT NULL,
   `reply_count` int(11) NOT NULL DEFAULT 0,
@@ -461,7 +462,6 @@ CREATE TABLE `tickets`  (
   `delete_time` datetime(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
-  KEY `tickets_reply_updated_at`(`reply_updated_at`),
   KEY `tickets_creator`(`creator`),
   KEY `tickets_status`(`status`),
   KEY `tickets_deleted`(`deleted`)

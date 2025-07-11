@@ -23,6 +23,10 @@ const Tickets = () => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [status, setStatus] = useState('');
+  const [type, setType] = useState('');
+  const [participants, setParticipants] = useState([]);
+  const [tags, setTags] = useState([]);
   const [reply, setReply] = useState('');
   const [isChanged, setChanged] = useState(false);
 
@@ -84,7 +88,7 @@ const Tickets = () => {
   }, []);
 
   const createTicket = useCallback(() => {
-    seaQAAPI.createProjectTicket(projectUuid, title, content).then(res => {
+    seaQAAPI.createProjectTicket(projectUuid, title, content, type, participants, tags).then(res => {
       const newTicket = new TicketObject(res.data.ticket);
       const newTickets = [newTicket, ...tickets];
       setTickets(newTickets);
@@ -96,10 +100,10 @@ const Tickets = () => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [title, content]);
+  }, [title, content, type, participants, tags]);
 
   const modifyTicket = useCallback((resetSubmittingState) => {
-    seaQAAPI.modifyProjectTicket(projectUuid, activeTicketRef.current.id, title, content).then(res => {
+    seaQAAPI.modifyProjectTicket(projectUuid, activeTicketRef.current.id, title, content, status, type, participants, tags).then(res => {
       const activeTicketIndex = tickets.findIndex(c => c.id === activeTicketRef.current.id);
       const newTicket = new TicketObject(res.data.Ticket);
       let newTickets = tickets.slice(0);
@@ -115,7 +119,7 @@ const Tickets = () => {
       toaster.danger(errorMessage);
       resetSubmittingState && resetSubmittingState();
     });
-  }, [title, content]);
+  }, [title, content, status, type, participants, tags]);
 
   const getTicket = useCallback((resetSubmittingState) => {
     seaQAAPI.getProjectTicket(projectUuid, activeTicketRef.current.id).then(res => {
@@ -167,7 +171,6 @@ const Tickets = () => {
       setTickets(newTickets);
       setLoading(false);
     }).catch(error => {
-      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setLoading(false);
@@ -193,6 +196,34 @@ const Tickets = () => {
     setChanged(true);
     setContent(newValue);
   }, [content]);
+
+  const onStatusChange = useCallback((event) => {
+    const newValue = event.target.value;
+    if (newValue === status) return;
+    setChanged(true);
+    setStatus(newValue);
+  }, [status]);
+
+  const onTypeChange = useCallback((event) => {
+    const newValue = event.target.value;
+    if (newValue === type) return;
+    setChanged(true);
+    setType(newValue);
+  }, [type]);
+
+  const onParticipantsChange = useCallback((event) => {
+    const newValue = event.target.value;
+    if (newValue === participants) return;
+    setChanged(true);
+    setParticipants(newValue);
+  }, [participants]);
+
+  const onTagsChange = useCallback((event) => {
+    const newValue = event.target.value;
+    if (newValue === tags) return;
+    setChanged(true);
+    setTags(newValue);
+  }, [tags]);
 
   const onReplyChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -224,12 +255,16 @@ const Tickets = () => {
   const renderTicket = (() => {
     return (
       <>
-        <p>{activeTicketRef.current.title}</p>
-        <p>{activeTicketRef.current.content}</p>
+        <p>{'title: '}{activeTicketRef.current.title}</p>
+        <p>{'content: '}{activeTicketRef.current.content}</p>
+        <p>{'status: '}{activeTicketRef.current.status}</p>
+        <p>{'type: '}{activeTicketRef.current.type}</p>
+        <p>{'participants: '}{activeTicketRef.current.participants.toString()}</p>
+        <p>{'tags: '}{activeTicketRef.current.tags.toString()}</p>
         {activeTicketRef.current.replies.map(row => {
           return (
             <div className="sea-qa-project-custom-table-row" key={row.id}>
-              <div className="sea-qa-project-custom-table-cell">{row.content}</div>
+              <div className="sea-qa-project-custom-table-cell">{'reply'}{row.id}{': '}{row.content}</div>
             </div>
           );
         })}
@@ -244,6 +279,9 @@ const Tickets = () => {
       <>
         <Input value={title} onChange={onTitleChange} autoFocus placeholder={gettext('Please input title')} id="ticket-title" />
         <Input value={content} onChange={onContentChange} autoFocus placeholder={gettext('Please input content')} id="ticket-content" />
+        <Input value={type} onChange={onTypeChange} autoFocus placeholder={gettext('Please input type')} id="ticket-type" />
+        <Input value={participants} onChange={onParticipantsChange} autoFocus placeholder={gettext('Please input participants')} id="ticket-participants" />
+        <Input value={tags} onChange={onTagsChange} autoFocus placeholder={gettext('Please input tags')} id="ticket-tags" />
         <Button color="primary" onClick={createTicket} >{gettext('Submit')}</Button>
       </>
     );
@@ -252,6 +290,13 @@ const Tickets = () => {
   const renderModifyTicket = (() => {
     return (
       <>
+        <Input value={title} onChange={onTitleChange} autoFocus placeholder={gettext('Please input title')} id="ticket-title" />
+        <Input value={content} onChange={onContentChange} autoFocus placeholder={gettext('Please input content')} id="ticket-content" />
+        <Input value={status} onChange={onStatusChange} autoFocus placeholder={gettext('Please input status')} id="ticket-status" />
+        <Input value={type} onChange={onTypeChange} autoFocus placeholder={gettext('Please input type')} id="ticket-type" />
+        <Input value={participants} onChange={onParticipantsChange} autoFocus placeholder={gettext('Please input participants')} id="ticket-participants" />
+        <Input value={tags} onChange={onTagsChange} autoFocus placeholder={gettext('Please input tags')} id="ticket-tags" />
+        <Button color="primary" onClick={createTicket} >{gettext('Submit')}</Button>
       </>
     );
   });
