@@ -32,7 +32,7 @@ from seahub.utils import is_valid_username, is_org_context, \
 from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
     SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_EMAIL_ON_ACTIVATING_USER, ENABLE_LDAP, \
     ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_LDAP_USER_CHANGE_PASSWORD, FORCE_PASSWORD_CHANGE
-from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
+from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.utils.file_size import get_file_size_unit
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils.user_permissions import get_user_role
@@ -278,7 +278,7 @@ class AdminUsers(APIView):
 
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(username)
-            info['last_login'] = datetime_to_isoformat_timestr(last_login_obj.last_login) if last_login_obj else ''
+            info['last_login'] = last_login_obj.last_login if last_login_obj else ''
             if not info.get('org_id'):
                 info['role'] = get_user_role(user)
             else:
@@ -782,7 +782,7 @@ class AdminSearchUser(APIView):
 
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(user.email)
-            info['last_login'] = datetime_to_isoformat_timestr(last_login_obj.last_login) if last_login_obj else ''
+            info['last_login'] = last_login_obj.last_login if last_login_obj else ''
 
             if not orgs:
                 info['role'] = get_user_role(user)
@@ -1055,7 +1055,7 @@ class AdminAdminUsers(APIView):
 
             user_info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(user.email)
-            user_info['last_login'] = datetime_to_isoformat_timestr(last_login_obj.last_login) if last_login_obj else ''
+            user_info['last_login'] = last_login_obj.last_login if last_login_obj else ''
 
             try:
                 admin_role = AdminRole.objects.get_admin_role(user.email)

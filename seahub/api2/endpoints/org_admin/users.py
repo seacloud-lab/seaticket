@@ -18,7 +18,7 @@ from seahub.base.models import UserLastLogin
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.profile.models import Profile
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, send_html_email, get_site_name
-from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
+from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.project.models import IdInOrgTuple, Workspaces
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils.two_factor_auth import has_two_factor_auth
@@ -111,7 +111,7 @@ class OrgAdminUsers(APIView):
             user_info['last_login'] = None
             for last_login in last_logins:
                 if last_login.username == user.email:
-                    user_info['last_login'] = datetime_to_isoformat_timestr(last_login.last_login)
+                    user_info['last_login'] = last_login.last_login
 
             user_info['id'] = user.id
             user_info['is_active'] = user.is_active
@@ -419,7 +419,7 @@ class OrgAdminUser(APIView):
 
         try:
             last_login = UserLastLogin.objects.get(username=user.email)
-            info['last_login'] = datetime_to_isoformat_timestr(last_login.last_login)
+            info['last_login'] = last_login.last_login
         except UserLastLogin.DoesNotExist:
             info['last_login'] = None
 
@@ -528,7 +528,7 @@ class OrgAdminSearchUsers(APIView):
             user_info['last_login'] = None
             for last_login in last_logins:
                 if last_login.username == user.email:
-                    user_info['last_login'] = datetime_to_isoformat_timestr(last_login.last_login)
+                    user_info['last_login'] = last_login.last_login
 
             user_info['id'] = user.id
             user_info['is_active'] = user.is_active

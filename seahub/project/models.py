@@ -8,10 +8,8 @@ import json
 from django.db import models
 from django.core.exceptions import ValidationError
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, CONNECTION_FIELDS
-from seahub.utils.timeutils import timestamp_to_isoformat_timestr, datetime_to_isoformat_timestr
-from seahub.utils import gen_token, uuid_str_to_36_chars, normalize_cache_key, get_no_duplicate_obj_name, \
+from seahub.utils import get_no_duplicate_obj_name, \
     utf8_normalize, is_valid_uuid
-from seahub.base.templatetags.seahub_tags import email2nickname
 
 from seahub.utils import normalize_cache_key
 
@@ -232,8 +230,8 @@ class Projects(models.Model):
             'workspace_id': self.workspace_id,
             'uuid': str(self.uuid),
             'name': self.project_name,
-            'created_at': datetime_to_isoformat_timestr(self.created_at),
-            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'color': self.color,
             'text_color': self.text_color,
             'icon': self.icon,
@@ -242,7 +240,7 @@ class Projects(models.Model):
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
-                'delete_time': datetime_to_isoformat_timestr(self.delete_time) if self.delete_time else '',
+                'delete_time': self.delete_time if self.delete_time else '',
             })
         return result
 
@@ -455,8 +453,8 @@ class ProjectConnections(models.Model):
             'type': self.type,
             'config': self.config,
             'modifier': self.modifier,
-            'created_at': datetime_to_isoformat_timestr(self.created_at),
-            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
-            'indexed_at': datetime_to_isoformat_timestr(self.indexed_at),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'indexed_at': self.indexed_at,
             'status': self.status,
         }

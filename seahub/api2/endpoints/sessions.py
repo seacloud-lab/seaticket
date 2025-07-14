@@ -17,8 +17,6 @@ from django.contrib.sessions.models import Session
 from seahub.base.templatetags.seahub_tags import email2nickname
 from user_agents import parse
 
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
-from seahub.settings import LOGIN_REMEMBER_DAYS
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +82,7 @@ class SessionsView(APIView):
                     session_dict = {'user_name': email2nickname(session.user_name),
                                     'user_agent': get_user_agent_info(session.user_agent),
                                     'remote_address': session.remote_address,
-                                    'op_time': datetime_to_isoformat_timestr(session.op_time),
+                                    'op_time': session.op_time,
                                     'is_online': False,
                                     'session_id': session.id
                                     }

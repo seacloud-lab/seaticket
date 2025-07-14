@@ -12,7 +12,6 @@ from django.utils.translation import gettext as _
 from seahub.base.fields import LowerCaseCharField
 from seahub.invitations.settings import INVITATIONS_TOKEN_AGE
 from seahub.utils import gen_token, get_site_name
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.utils.mail import send_html_email_with_dj_template
 
 GUEST = _('Guest')
@@ -66,7 +65,7 @@ class Invitation(models.Model):
         self.save()
 
     def to_dict(self):
-        accept_time = datetime_to_isoformat_timestr(self.accept_time) \
+        accept_time = self.accept_time \
                       if self.accept_time else ""
         return {
             "id": self.pk,
@@ -74,9 +73,9 @@ class Invitation(models.Model):
             "inviter": self.inviter,
             "accepter": self.accepter,
             "type": self.invite_type,
-            "invite_time": datetime_to_isoformat_timestr(self.invite_time),
+            "invite_time": self.invite_time,
             "accept_time": accept_time,
-            "expire_time": datetime_to_isoformat_timestr(self.expire_time),
+            "expire_time": self.expire_time,
         }
 
     def is_guest(self):

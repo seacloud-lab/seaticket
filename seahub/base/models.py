@@ -1,7 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
 from django.db import models
-from django.utils import timezone
+import datetime
 
 
 from seahub.auth.signals import user_logged_in
@@ -31,7 +31,7 @@ class UserLastLoginManager(models.Manager):
 
 class UserLastLogin(models.Model):
     username = models.CharField(max_length=255, db_index=True)
-    last_login = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(auto_now_add=True)
     objects = UserLastLoginManager()
 
 def update_last_login(sender, user, **kwargs):
@@ -42,7 +42,7 @@ def update_last_login(sender, user, **kwargs):
     user_last_login = UserLastLogin.objects.get_by_username(user.username)
     if user_last_login is None:
         user_last_login = UserLastLogin(username=user.username)
-    user_last_login.last_login = timezone.now()
+    user_last_login.last_login = datetime.datetime.now(datetime.UTC)
     user_last_login.save()
 user_logged_in.connect(update_last_login)
 
