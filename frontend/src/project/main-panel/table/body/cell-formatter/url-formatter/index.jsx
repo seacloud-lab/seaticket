@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import './index.css';
 
 const URLFormatter = ({ value }) => {
-  console.log(value);
   if (!value) return null;
 
   return (

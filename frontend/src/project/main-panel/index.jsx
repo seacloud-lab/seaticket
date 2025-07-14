@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BAR } from '../constants';
+import { BAR_TYPE } from '../constants';
 import Records from './records';
 import { name, avatarURL, username } from '../../constants';
 import Account from '../components/account';
@@ -9,9 +9,9 @@ import './index.css';
 
 const MainPanelContainer = ({ activeBar }) => {
   if (!activeBar) return null;
-  if (activeBar.key === BAR.ASK) return null; // ask page
-  if (activeBar.key === BAR.SEARCH) return (<Search/>); // search page
-  if (activeBar.key === BAR.TICKETS) return null; // tickets page
+  if (activeBar.key === BAR_TYPE.ASK) return null; // ask page
+  if (activeBar.key === BAR_TYPE.SEARCH) return (<Search/>); // search page
+  if (activeBar.key === BAR_TYPE.TICKETS) return null; // tickets page
   return (<Records type={activeBar.type} title={activeBar.name} />); // connections page
 };
 

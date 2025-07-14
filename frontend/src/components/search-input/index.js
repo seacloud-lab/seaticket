@@ -57,6 +57,7 @@ class SearchInput extends Component {
 
   onClear = () => {
     const { onClear } = this.props;
+    this.timer && clearTimeout(this.timer);
     this.setState({ searchValue: '' }, () => {
       onClear && onClear();
     });
