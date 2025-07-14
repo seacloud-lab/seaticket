@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 17:26+0800\n"
+"POT-Creation-Date: 2025-07-14 17:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,7 +148,7 @@ msgid ""
 "configuration."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:841 seahub/auth/views.py:397
+#: seahub/api2/endpoints/admin/users.py:841 seahub/auth/views.py:400
 msgid "Unable to reset password."
 msgstr ""
 
@@ -203,8 +203,8 @@ msgstr ""
 
 #: seahub/api2/endpoints/group_members.py:135
 #: seahub/api2/endpoints/group_members.py:368
-#: seahub/api2/endpoints/org_admin/two_factor_auth.py:51
-#: seahub/api2/endpoints/org_admin/two_factor_auth.py:90
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:52
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:91
 #: seahub/api2/endpoints/org_admin/users.py:257
 #: seahub/api2/endpoints/org_admin/work_weixin.py:256
 #, python-format
@@ -231,9 +231,9 @@ msgstr ""
 
 #: seahub/api2/endpoints/org_admin/settings.py:55
 #: seahub/api2/endpoints/org_admin/settings.py:73
-#: seahub/api2/endpoints/org_admin/settings.py:105 seahub/auth/sms_login.py:73
-#: seahub/auth/sms_two_factor_auth.py:60 seahub/auth/views.py:346
-#: seahub/auth/views.py:360 seahub/oauth/views.py:258 seahub/oauth/views.py:270
+#: seahub/api2/endpoints/org_admin/settings.py:105 seahub/auth/sms_login.py:74
+#: seahub/auth/sms_two_factor_auth.py:60 seahub/auth/views.py:349
+#: seahub/auth/views.py:363 seahub/oauth/views.py:258 seahub/oauth/views.py:270
 #: seahub/org_dingtalk/views.py:141 seahub/org_dingtalk/views.py:170
 #: seahub/org_dingtalk/views.py:202 seahub/org_dingtalk/views.py:240
 #: seahub/org_dingtalk/views.py:401 seahub/org_dingtalk/views.py:425
@@ -420,38 +420,38 @@ msgstr ""
 msgid "A user with this email already exists."
 msgstr ""
 
-#: seahub/auth/sms_login.py:132 seahub/auth/sms_login.py:156
-#: seahub/auth/sms_login.py:180 seahub/auth/sms_two_factor_auth.py:83
+#: seahub/auth/sms_login.py:133 seahub/auth/sms_login.py:157
+#: seahub/auth/sms_login.py:181 seahub/auth/sms_two_factor_auth.py:83
 #: seahub/auth/sms_two_factor_auth.py:122 seahub/org_dingtalk/views.py:352
 #: seahub/org_work_weixin/views.py:308 seahub/org_work_weixin/views.py:337
 #: seahub/org_work_weixin/views.py:420 seahub/org_work_weixin/views.py:503
 #: seahub/org_work_weixin/views.py:647 seahub/org_work_weixin/views.py:697
 #: seahub/organizations/views.py:414 seahub/organizations/views.py:545
-#: seahub/profile/views.py:289 seahub/utils/__init__.py:97
+#: seahub/profile/views.py:289 seahub/utils/__init__.py:98
 #: seahub/weixin/views.py:187 seahub/work_weixin/views.py:78
 #: seahub/work_weixin/views.py:112 seahub/work_weixin/views.py:202
 msgid "Internal Server Error"
 msgstr ""
 
-#: seahub/auth/sms_login.py:134 seahub/auth/sms_login.py:182
+#: seahub/auth/sms_login.py:135 seahub/auth/sms_login.py:183
 #: seahub/auth/sms_two_factor_auth.py:85 seahub/dingtalk/views.py:91
 #, python-format
 msgid "User %s not found or inactive."
 msgstr ""
 
-#: seahub/auth/sms_login.py:194 seahub/auth/views.py:184
+#: seahub/auth/sms_login.py:195 seahub/auth/views.py:187
 msgid "This account has been frozen due to too many failed login attempts."
 msgstr ""
 
-#: seahub/auth/views.py:318
+#: seahub/auth/views.py:321
 msgid "Logged out"
 msgstr ""
 
-#: seahub/auth/views.py:416
+#: seahub/auth/views.py:419
 msgid "Failed to send email, please contact administrator."
 msgstr ""
 
-#: seahub/auth/views.py:501
+#: seahub/auth/views.py:504
 msgid "Unable to change password."
 msgstr ""
 
@@ -460,7 +460,7 @@ msgstr ""
 msgid "Avatar for %s"
 msgstr ""
 
-#: seahub/base/accounts.py:587
+#: seahub/base/accounts.py:588
 #, python-format
 msgid "Account %(account)s froze on %(site)s."
 msgstr ""
@@ -1440,7 +1440,7 @@ msgstr ""
 msgid "Disable"
 msgstr ""
 
-#: seahub/utils/__init__.py:83
+#: seahub/utils/__init__.py:84
 msgid "permission error"
 msgstr ""
 
