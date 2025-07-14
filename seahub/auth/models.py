@@ -9,7 +9,6 @@ from django.db.models.manager import EmptyManager
 from django.utils.encoding import smart_str
 from django.contrib.auth.hashers import make_password
 
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
 UNUSABLE_PASSWORD = '!'  # This will never be a valid hash
@@ -216,7 +215,7 @@ class SessionLog(models.Model):
             'user_agent': self.user_agent,
             'remote_address': self.remote_address,
             'session_key': self.session_key,
-            'op_time': datetime_to_isoformat_timestr(self.op_time)
+            'op_time': self.op_time
         }
 
 
@@ -236,7 +235,7 @@ def _handle_auth_login(sender, request, user, **kwargs):
     if session_key:
         request.session['user_agent'] = user_agent
         request.session['remote_address'] = remote_address
-        request.session['op_time'] = datetime_to_isoformat_timestr(datetime.datetime.now())
+        request.session['op_time'] = str(datetime.datetime.now(datetime.UTC))
         try:
             SessionLog.objects.create(user.username, user_agent, remote_address, session_key)
         except Exception as e:
