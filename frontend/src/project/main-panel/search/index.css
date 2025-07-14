@@ -93,7 +93,8 @@
 }
 
 .sea-qa-project-search .sea-qa-project-search-result-empty-tip,
-.sea-qa-project-search .sea-qa-project-search-value-empty-tip {
+.sea-qa-project-search .sea-qa-project-search-value-empty-tip,
+.sea-qa-project-search .sea-qa-project-search-loading-tip {
   flex: 1;
   width: 100%;
 }

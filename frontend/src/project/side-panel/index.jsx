@@ -1,30 +1,13 @@
-import React, { useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import NodeGroup from './node-group';
 import ResizeBar from '../../components/resize-bar';
 import Header from './header';
-import { BAR, CONNECTION_TYPES } from '../constants';
-import { gettext } from '../../constants';
 
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
 
-const SidePanel = ({ activeBar, toggleBar }) => {
-  const nodes = useMemo(() => [
-    {
-      key: '_',
-      name: '',
-      children: [
-        { key: BAR.ASK, name: gettext('Ask'), icon: 'ask' },
-        { key: BAR.SEARCH, name: gettext('Search'), icon: 'search' },
-        { key: BAR.TICKETS, name: gettext('Tickets'), icon: 'ticket' }
-      ]
-    }, {
-      key: 'connections',
-      name: gettext('Connections'),
-      children: CONNECTION_TYPES
-    }
-  ], []);
+const SidePanel = ({ bars, activeBar, toggleBar }) => {
 
   const ref = useRef(null);
 
@@ -43,7 +26,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
       <div className="sea-qa-project-side-panel-container">
         <Header />
         <div className="sea-qa-project-navigation">
-          {nodes.map(node => (
+          {bars.map(node => (
             <NodeGroup
               key={node.key}
               node={node}

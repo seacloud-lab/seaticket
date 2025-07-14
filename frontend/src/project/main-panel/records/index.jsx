@@ -164,6 +164,7 @@ const Records = ({ type, title }) => {
   useEffect(() => {
     pageRef.current = 1;
     hasMoreRef.current = true;
+    setRecords([]);
     loadMore();
   }, [type]);
 

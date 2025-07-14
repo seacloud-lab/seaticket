@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef, useMemo } from 'react';
 import axios from 'axios';
-import { IconButton, toaster, SearchInput, EmptyTip, Icon } from '../../../components';
+import { IconButton, toaster, SearchInput, EmptyTip, Icon, CenteredLoading } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -17,6 +17,7 @@ const {
 const Search = () => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
 
   const source = useRef(null);
   const columns = useMemo(() => {
@@ -29,24 +30,27 @@ const Search = () => {
 
   const onChange = useCallback((value = '') => {
     setValue(value);
-    if (!value) {
-      setResults([]);
-      return;
-    }
-
+    setSearching(true);
+    setResults([]);
+    const cancelError = 'The current request has been automatically canceled';
     if (source.current) {
-      source.current.cancel('prev request is cancelled');
+      source.current.cancel(cancelError);
     }
-    source.current = seaQAAPI.getSource();
+    if (!value) return;
 
+    source.current = seaQAAPI.getSource();
     seaQAAPI.search(workspaceID, projectUuid, value, source.current.token).then(res => {
       const results = res.data?.results || [];
       setResults(results.map(r => new SearchResult(r)));
+      setSearching(false);
+      source.current = null;
     }).catch(error => {
       if (!axios.isCancel(error)) {
         let errMessage = Utils.getErrorMsg(error);
         toaster.danger(errMessage);
-        setResults([]);
+        setSearching(false);
+      } else {
+        setSearching(error.message === cancelError);
       }
     });
   }, []);
@@ -54,6 +58,10 @@ const Search = () => {
   const onClear = useCallback(() => {
     setValue('');
     setResults([]);
+    setSearching(false);
+    if (source.current) {
+      source.current.cancel('The current request has been manually canceled');
+    }
   }, []);
 
   return (
@@ -64,6 +72,7 @@ const Search = () => {
           autoFocus={true}
           isClearable={true}
           placeholder={gettext('Search')}
+          wait={200}
           onChange={onChange}
           onClear={onClear}
         />
@@ -83,22 +92,28 @@ const Search = () => {
           <Icon symbol="down" />
         </div>
       </div>
-      {!value && (
-        <div className="sea-qa-project-search-value-empty-tip">
-          <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
-        </div>
-      )}
-      {value && results.length === 0 && (
-        <div className="sea-qa-project-search-result-empty-tip">
-          <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
-        </div>
-      )}
-      {results.length > 0 && (
-        <Table
-          columns={columns}
-          rows={results}
-          className="p-0"
-        />
+      {searching ? (
+        <CenteredLoading className="sea-qa-project-search-loading-tip" />
+      ) : (
+        <>
+          {!value && (
+            <div className="sea-qa-project-search-value-empty-tip">
+              <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
+            </div>
+          )}
+          {value && results.length === 0 && (
+            <div className="sea-qa-project-search-result-empty-tip">
+              <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
+            </div>
+          )}
+          {results.length > 0 && (
+            <Table
+              columns={columns}
+              rows={results}
+              className="p-0"
+            />
+          )}
+        </>
       )}
     </div>
   );
