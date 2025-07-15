@@ -497,3 +497,13 @@ CREATE TABLE `ticket_participants`  (
   KEY `ticket_participants_ticket_id`(`ticket_id`),
   KEY `ticket_participants_participant`(`participant`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `options_useroptions`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `option_key` varchar(50) NOT NULL,
+  `option_val` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `options_useroptions_email_77d5726a`(`email`),
+  KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
