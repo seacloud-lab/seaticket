@@ -20,12 +20,6 @@ class ProjectSettingPopover extends React.Component {
     onNameChange: PropTypes.func.isRequired,
   };
 
-  static defaultProps = {
-    placement: 'bottom-end',
-    autoFocus: false,
-    popoverClassName: '',
-  };
-
   onChangeName = (e) => {
     this.props.onNameChange(e.target.value);
   };
@@ -125,13 +119,13 @@ class ProjectSettingPopover extends React.Component {
   render() {
     return (
       <CustomizePopover
-        placement={this.props.placement}
+        placement={this.props.placement || 'right-start'}
         target={this.props.target}
         hidePopover={this.props.onToggle}
         hidePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}
         hideArrow={true}
-        popoverClassName={`dtable-icon-settings-popover ${this.props.popoverClassName}`}
+        popoverClassName={`dtable-icon-settings-popover ${this.props.popoverClassName || ''}`}
       >
         <PopoverBody className="dtable-icon-settings-content">
           {this.renderBaseName()}

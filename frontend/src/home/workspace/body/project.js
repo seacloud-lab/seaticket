@@ -196,10 +196,9 @@ class Project extends React.Component {
   render() {
     let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
     let { name: newName, bgColor, icon, active } = this.state;
-    let { workspace_id, uuid, id, is_encrypted } = project;
+    let { workspace_id, id, is_encrypted } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
-    const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
     const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
 
     if (!isDesktop) {
@@ -255,7 +254,7 @@ class Project extends React.Component {
               />
             )}
           </div>
-          <div className="project-item-name" title={newName} id={iconSettingsId}>
+          <div className="project-item-name" title={newName}>
             {newName}
             {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
           </div>
@@ -265,7 +264,7 @@ class Project extends React.Component {
           </div>
           {this.state.isShowSettings && (
             <ProjectSettingPopover
-              target={iconSettingsId}
+              target={`project-item-${id}`}
               onToggle={this.onProjectSettingsToggle}
               name={newName}
               bgColor={bgColor}
