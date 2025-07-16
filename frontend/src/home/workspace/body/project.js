@@ -35,14 +35,9 @@ class Project extends React.Component {
       dropdownOpen: false,
       active: false,
       isShowSettings: false,
-      name: name,
+      name,
       bgColor: color,
-      icon: icon,
-      advancedDropdownOpen: false,
-      isFinished: false,
-      isShowConfirmExportDialog: false,
-      ignore_asset: 'false',
-      size_limit: 0,
+      icon,
       isMouseEnter: false,
       isMoreOperationPopoverShow: false,
     };
@@ -86,10 +81,6 @@ class Project extends React.Component {
 
   onMobileShareProjectToggle = () => {
     this.props.onMobileShareProjectToggle(this.props.project);
-  };
-
-  onConfirmExportDialogToggle = () => {
-    this.setState({ isShowConfirmExportDialog: !this.state.isShowConfirmExportDialog });
   };
 
   dropdownToggle = (e) => {
@@ -157,27 +148,6 @@ class Project extends React.Component {
     Utils.openPage(e, href);
   };
 
-  toggleAdvancedMenu = (e) => {
-    e.stopPropagation();
-    this.setState({
-      advancedDropdownOpen: !this.state.advancedDropdownOpen
-    });
-  };
-
-  onAdvancedMouseEnter = () => {
-    this.setState({
-      advancedDropdownOpen: true
-    });
-  };
-
-  onDropDownMouseMove = (e) => {
-    if (this.state.advancedDropdownOpen && e.target && e.target.className === 'dropdown-item') {
-      this.setState({
-        advancedDropdownOpen: false
-      });
-    }
-  };
-
   onAdvancedMouseMove = (e) => {
     e.stopPropagation();
   };
@@ -195,12 +165,11 @@ class Project extends React.Component {
 
   render() {
     let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
-    let { name: newName, bgColor, icon, active } = this.state;
-    let { workspace_id, uuid, id, is_encrypted } = project;
+    let { name: newName, bgColor, icon, active, isMoreOperationPopoverShow } = this.state;
+    let { workspace_id, id, is_encrypted } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
-    const iconSettingsId = `table_item_${workspace_id}_${uuid}_${id}`;
-    const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+    const backgroundColorMap = (active || isMoreOperationPopoverShow) ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
 
     if (!isDesktop) {
       return (
@@ -240,7 +209,7 @@ class Project extends React.Component {
             >
               <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
             </div>
-            {active && (isOwner || isAdmin) &&
+            {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) &&
               <div className="d-flex justify-content-center" onClick={this.toggleMoreOperation}>
                 <i className="dtable-font dtable-icon-more-level" title={gettext('More operations')} aria-label={gettext('More operations')} />
               </div>
@@ -255,7 +224,7 @@ class Project extends React.Component {
               />
             )}
           </div>
-          <div className="project-item-name" title={newName} id={iconSettingsId}>
+          <div className="project-item-name" title={newName}>
             {newName}
             {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
           </div>
@@ -265,7 +234,7 @@ class Project extends React.Component {
           </div>
           {this.state.isShowSettings && (
             <ProjectSettingPopover
-              target={iconSettingsId}
+              target={`project-item-${id}`}
               onToggle={this.onProjectSettingsToggle}
               name={newName}
               bgColor={bgColor}
