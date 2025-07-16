@@ -35,14 +35,9 @@ class Project extends React.Component {
       dropdownOpen: false,
       active: false,
       isShowSettings: false,
-      name: name,
+      name,
       bgColor: color,
-      icon: icon,
-      advancedDropdownOpen: false,
-      isFinished: false,
-      isShowConfirmExportDialog: false,
-      ignore_asset: 'false',
-      size_limit: 0,
+      icon,
       isMouseEnter: false,
       isMoreOperationPopoverShow: false,
     };
@@ -86,10 +81,6 @@ class Project extends React.Component {
 
   onMobileShareProjectToggle = () => {
     this.props.onMobileShareProjectToggle(this.props.project);
-  };
-
-  onConfirmExportDialogToggle = () => {
-    this.setState({ isShowConfirmExportDialog: !this.state.isShowConfirmExportDialog });
   };
 
   dropdownToggle = (e) => {
@@ -155,27 +146,6 @@ class Project extends React.Component {
 
   onItemClick = (e, href) => {
     Utils.openPage(e, href);
-  };
-
-  toggleAdvancedMenu = (e) => {
-    e.stopPropagation();
-    this.setState({
-      advancedDropdownOpen: !this.state.advancedDropdownOpen
-    });
-  };
-
-  onAdvancedMouseEnter = () => {
-    this.setState({
-      advancedDropdownOpen: true
-    });
-  };
-
-  onDropDownMouseMove = (e) => {
-    if (this.state.advancedDropdownOpen && e.target && e.target.className === 'dropdown-item') {
-      this.setState({
-        advancedDropdownOpen: false
-      });
-    }
   };
 
   onAdvancedMouseMove = (e) => {
