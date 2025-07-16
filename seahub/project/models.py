@@ -69,10 +69,6 @@ class WorkspacesManager(models.Manager):
         for workspace in workspaces:
             self.delete_workspace(workspace.id)
 
-    def get_deleted_workspaces_by_expire_seconds(self, expire_seconds):
-        return super(WorkspacesManager, self).filter(
-            deleted=True, delete_time__lt=(datetime.datetime.now() - datetime.timedelta(seconds=expire_seconds)))
-
 
 class Workspaces(models.Model):
     name = models.CharField(max_length=255, null=True)

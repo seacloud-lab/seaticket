@@ -12,7 +12,7 @@ from seahub.auth.models import SessionLog
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from django.contrib.sessions.models import Session
 from seahub.base.templatetags.seahub_tags import email2nickname
 from user_agents import parse
@@ -55,7 +55,7 @@ class SessionsView(APIView):
         session_key_list = [session.session_key for session in log_sessions if session.session_key]
         session_key_id_map = {session.session_key: session.id for session in log_sessions if session.session_key}
         try:
-            online_sessions = Session.objects.filter(expire_date__gte=datetime.now(), session_key__in=session_key_list).order_by('-expire_date')
+            online_sessions = Session.objects.filter(expire_date__gte=datetime.now(UTC), session_key__in=session_key_list).order_by('-expire_date')
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

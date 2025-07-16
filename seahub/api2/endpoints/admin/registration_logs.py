@@ -30,7 +30,7 @@ class RegistrationLogsView(APIView):
         start, end = (page - 1) * per_page, page * per_page
         try:
             if not register_date:
-                register_date = datetime.datetime.now()
+                register_date = datetime.datetime.now(datetime.UTC)
             elif isinstance(register_date, str):
                 register_date = datetime.datetime.strptime(register_date, "%Y-%m-%d")
             if register_date and source == 'invitation':

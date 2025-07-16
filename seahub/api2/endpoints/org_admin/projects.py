@@ -1,8 +1,8 @@
 import uuid
 import logging
-from datetime import datetime
-import json
-import os
+
+from django.utils import timezone
+
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -15,7 +15,7 @@ from seahub.api2.utils import api_error
 from seahub.project.models import Projects, Workspaces
 from seahub.project.utils import get_project_owner, convert_project_trash_names, restore_trash_project_name
 from seahub.admin_log.signals import org_admin_operation
-from seahub.admin_log.models import BASE_DELETE
+from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.organizations.models import Organization
 from seahub.group.models import Group
 
@@ -98,7 +98,7 @@ class OrgAdminProjectView(APIView):
 
         new_project_name = convert_project_trash_names(project)
         try:
-            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
+            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=timezone.now(), name=new_project_name)
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
@@ -222,7 +222,7 @@ class OrgAdminTrashProjectView(APIView):
                 detail['group_id'] = group_id
                 detail['group_name'] = group.group_name
 
-        org_admin_operation.send(sender=None, admin_name=request.user.username, operation=BASE_DELETE, detail=detail, org_id=org_id)
+        org_admin_operation.send(sender=None, admin_name=request.user.username, operation=BASE_RESTORE, detail=detail, org_id=org_id)
 
         return Response({'success': True})
 

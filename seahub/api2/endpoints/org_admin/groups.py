@@ -1,6 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -353,7 +353,7 @@ class OrgAdminGroup(APIView):
 
         # mark group's workspace as deleted
         try:
-            Workspaces.objects.filter(owner=owner).update(deleted=True, delete_time=datetime.now())
+            Workspaces.objects.filter(owner=owner).update(deleted=True, delete_time=datetime.now(UTC))
         except Exception as e:
             logger.error('Failed to delete workspace, owner: %s, error: %s' % (owner, e))
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

@@ -54,7 +54,7 @@ class TokenV2Manager(models.Manager):
     def get_current_connected_devices_count(self):
         # get number of devices last one hour accessed
         devices = super(TokenV2Manager, self).filter(wiped_at=None)
-        date_from = datetime.datetime.now() - datetime.timedelta(hours=1)
+        date_from = datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=1)
 
         # greater than or equal to.
         return devices.filter(last_accessed__gte=date_from).count()
@@ -127,7 +127,7 @@ class TokenV2Manager(models.Manager):
         token = self._get_token_by_user_device(username, platform, device_id)
         if not token:
             return
-        token.wiped_at = datetime.datetime.now()
+        token.wiped_at = datetime.datetime.now(datetime.UTC)
         token.save()
 
 class TokenV2(models.Model):
