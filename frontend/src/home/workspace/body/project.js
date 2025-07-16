@@ -165,11 +165,11 @@ class Project extends React.Component {
 
   render() {
     let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
-    let { name: newName, bgColor, icon, active } = this.state;
+    let { name: newName, bgColor, icon, active, isMoreOperationPopoverShow } = this.state;
     let { workspace_id, id, is_encrypted } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
-    const backgroundColorMap = active ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+    const backgroundColorMap = (active || isMoreOperationPopoverShow) ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
 
     if (!isDesktop) {
       return (
@@ -209,7 +209,7 @@ class Project extends React.Component {
             >
               <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
             </div>
-            {active && (isOwner || isAdmin) &&
+            {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) &&
               <div className="d-flex justify-content-center" onClick={this.toggleMoreOperation}>
                 <i className="dtable-font dtable-icon-more-level" title={gettext('More operations')} aria-label={gettext('More operations')} />
               </div>
