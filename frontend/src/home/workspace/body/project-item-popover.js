@@ -59,7 +59,7 @@ class ProjectItemPopover extends React.Component {
               </button>
               <button className="dropdown-item project-item-operation" onClick={this.onProjectSettingsToggle}>
                 <i className="project-item-operation-icon dtable-font dtable-icon-edit"></i>
-                {gettext('Edit')}
+                {gettext('Edit name and icon')}
               </button>
               <button className="dropdown-item project-item-operation" onClick={this.onDeleteProjectToggle}>
                 <i className="project-item-operation-icon dtable-font dtable-icon-delete"></i>
