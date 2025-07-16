@@ -50,3 +50,31 @@ CONNECTION_FIELDS = {
         ConnectionField('sitemap_url', False, False).to_dict()
     ]
 }
+
+TICKET_STATUS = (
+    '',
+    'open',
+    'completed',
+    'not planned',
+    'duplicate',
+)
+
+TICKET_TYPE =  (
+    '',
+    'bug',
+    'feature',
+    'request',
+    'support',
+)
+
+TICKET_TAG =  (
+    'bug',
+    'documentation',
+    'duplicate',
+    'enhancement',
+    'good first issue',
+    'help wanted',
+    'invalid',
+    'question',
+    'wontfix',
+)

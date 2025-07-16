@@ -17,33 +17,7 @@ from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
 
 
 logger = logging.getLogger(__name__)
-TICKET_STATUS = (
-    '',
-    'open',
-    'completed',
-    'not planned',
-    'duplicate',
-)
 
-TICKET_TYPE =  (
-    '',
-    'bug',
-    'feature',
-    'request',
-    'support',
-)
-
-TICKET_TAG =  (
-    'bug',
-    'documentation',
-    'duplicate',
-    'enhancement',
-    'good first issue',
-    'help wanted',
-    'invalid',
-    'question',
-    'wontfix',
-)
 
 def check_project_limit(workspace, request):
     from seahub.settings import PERSONAL_BASE_LIMIT, GROUP_BASE_LIMIT, FREE_ORG_BASE_LIMIT

@@ -14,6 +14,7 @@ from seahub.utils import get_no_duplicate_obj_name, \
 from seahub.api2.utils import get_user_common_info
 
 from seahub.utils import normalize_cache_key
+from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
 
@@ -468,7 +469,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None, participants=None, tags=None):
+    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -481,8 +482,6 @@ class TicketsManager(models.Manager):
                     content=content,
                     status=status,
                     type=ticket_type,
-                    participants=json.dumps(participants) if participants else None,
-                    tags=json.dumps(tags) if tags else None,
                 )
                 return item
             except self.model.MultipleObjectsReturned:
@@ -504,8 +503,6 @@ class Tickets(models.Model):
     creator = models.CharField(max_length=255, db_index=True)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    participants = models.TextField(null=True)
-    tags = models.CharField(max_length=1024, null=True)
     status = models.CharField(max_length=50, null=True, db_index=True)
     type = models.CharField(max_length=50, null=True)
     reply_count = models.IntegerField(default=0)
@@ -513,7 +510,7 @@ class Tickets(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     reply_updated_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
-    delete_time = models.DateTimeField(null=True)
+    delete_at = models.DateTimeField(null=True)
 
     objects = TicketsManager()
 
@@ -521,14 +518,14 @@ class Tickets(models.Model):
         unique_together = (('project_uuid', 'number'),)
         db_table = 'tickets'
 
-    def to_dict(self, include_deleted=False):
+    def to_dict(self, tags_dict={}, participants_dict={}, include_deleted=False):
         result = {
             'project_uuid': str(self.project_uuid),
             'number': self.number,
             'title': self.title,
             'content': self.content,
             'participants': [],
-            'tags': json.loads(self.tags) if self.tags else [],
+            'tags': [],
             'status': self.status,
             'type': self.type,
             'reply_count': self.reply_count,
@@ -537,14 +534,15 @@ class Tickets(models.Model):
             'reply_updated_at': datetime_to_isoformat_timestr(self.reply_updated_at),
         }
         result.update(get_user_common_info(self.creator))
-        if self.participants:
-            participants = json.loads(self.participants)
+        if self.id in tags_dict:
+            result['tags'] = tags_dict[self.id]
+        if self.id in participants_dict:
             result['participants'] = [
-                get_user_common_info(participant) for participant in participants]
+                get_user_common_info(participant) for participant in participants_dict[self.id]]
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
-                'delete_time': datetime_to_isoformat_timestr(self.delete_time) if self.delete_time else '',
+                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
             })
         return result
 
@@ -589,7 +587,7 @@ class TicketReplies(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
-    delete_time = models.DateTimeField(null=True)
+    delete_at= models.DateTimeField(null=True)
 
     objects = TicketRepliesManager()
 
@@ -608,6 +606,24 @@ class TicketReplies(models.Model):
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
-                'delete_time': datetime_to_isoformat_timestr(self.delete_time) if self.delete_time else '',
+                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
             })
         return result
+
+
+class TicketTags(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField(db_index=True)
+    tag = models.CharField(max_length=50, db_index=True)
+
+    class Meta:
+        db_table = 'ticket_tags'
+
+
+class TicketParticipants(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField(db_index=True)
+    participant = models.CharField(max_length=255, db_index=True)
+
+    class Meta:
+        db_table = 'ticket_participants'
