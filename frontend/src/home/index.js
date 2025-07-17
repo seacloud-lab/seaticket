@@ -47,6 +47,7 @@ class Home extends React.Component {
         }
       }
     }
+    console.log(currentTab);
     this.setState({ currentTab });
   }
 

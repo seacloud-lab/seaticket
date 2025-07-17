@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import className from 'classnames';
+import classnames from 'classnames';
 import { DropdownMenu, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import { navigate } from '@gatsbyjs/reach-router';
 import { gettext } from '../../constants';
+import Icon from '../icon';
+import IconBtn from '../icon-button';
 
 import './index.css';
 
 const propTypes = {
   currentPage: PropTypes.number.isRequired,
-  gotoPreviousPage: PropTypes.func.isRequired,
-  gotoNextPage: PropTypes.func.isRequired,
+  goPreviousPage: PropTypes.func.isRequired,
+  goNextPage: PropTypes.func.isRequired,
   hasNextPage: PropTypes.bool.isRequired,
   resetPerPage: PropTypes.func.isRequired,
   curPerPage: PropTypes.number.isRequired
@@ -35,13 +37,13 @@ class Paginator extends Component {
   goToPrevious = () => {
     const { currentPage, curPerPage } = this.props;
     this.updateURL(currentPage - 1, curPerPage);
-    this.props.gotoPreviousPage();
+    this.props.goPreviousPage();
   };
 
   goToNext = () => {
     const { currentPage, curPerPage } = this.props;
     this.updateURL(currentPage + 1, curPerPage);
-    this.props.gotoNextPage();
+    this.props.goNextPage();
   };
 
   updateURL = (page, perPage) => {
@@ -64,9 +66,9 @@ class Paginator extends Component {
 
   renderDropdownItem = (curPerPage, perPage) => {
     return (
-      <DropdownItem onClick={() => {this.resetPerPage(perPage);}} key={perPage}>
+      <DropdownItem onClick={() => this.resetPerPage(perPage)} key={perPage}>
         <span className='paginator-dropdown-tick'>
-          {curPerPage === perPage && <i className="dtable-font dtable-icon-check-mark"></i>}
+          {curPerPage === perPage && (<Icon symbol="check" />)}
         </span>
         <span>
           {this.getPerPageText(perPage)}
@@ -81,22 +83,9 @@ class Paginator extends Component {
     let rightDisabled = !this.props.hasNextPage;
     return (
       <div className="my-6 paginator d-flex align-items-center justify-content-center">
-        <button
-          className="btn btn-secondary"
-          disabled={leftDisabled}
-          onClick={this.goToPrevious}
-        >
-          <span className={`dtable-font dtable-icon-left ${leftDisabled ? 'paginator-disabled-btn' : ''}`} aria-hidden="true"></span>
-        </button>
-        <span className="btn btn-primary mx-4">{currentPage}</span>
-        <button
-          className="btn btn-secondary"
-          disabled={rightDisabled}
-          onClick={this.goToNext}
-        >
-          <span className={`dtable-font dtable-icon-right ${rightDisabled ? 'paginator-disabled-btn' : ''}`} aria-hidden="true"></span>
-        </button>
-
+        <IconBtn icon="left" disabled={leftDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToPrevious} />
+        <div className="btn btn-primary mx-4 paginator-btn">{currentPage}</div>
+        <IconBtn icon="right" disabled={rightDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToNext} />
         <Dropdown isOpen={this.state.isMenuShow} toggle={this.toggleOperationMenu} direction="up" className="paginator-dropdown">
           <DropdownToggle
             className="ml-6"
@@ -104,8 +93,8 @@ class Paginator extends Component {
             aria-expanded={this.state.isMenuShow}
             onClick={this.toggleOperationMenu}
           >
-            <span className='pr-3'>{this.getPerPageText(curPerPage)}</span>
-            <span className={className('dtable-font dtable-icon-down3 d-inline-block', { 'rotate-180': this.state.isMenuShow })}></span>
+            <span className="pr-3">{this.getPerPageText(curPerPage)}</span>
+            <Icon symbol="down" className={classnames('d-inline-block', { 'rotate-180': this.state.isMenuShow })} />
           </DropdownToggle>
           <DropdownMenu>
             {PAGES.map(perPage => {

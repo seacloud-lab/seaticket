@@ -5,6 +5,7 @@ import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
 import UpdateWebdavPassword from '../dialog/update-webdav-password';
+import IconButton from '../icon-button';
 
 const { webdavPasswd } = window.app.pageOptions;
 
@@ -13,7 +14,7 @@ class WebdavPassword extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      password: webdavPasswd,
+      password: webdavPasswd || '',
       isPasswordVisible: false,
       isDialogOpen: false
     };
@@ -56,7 +57,7 @@ class WebdavPassword extends React.Component {
               <div className="d-flex align-items-center">
                 <label className="m-0 mr-2">{gettext('Password:')}</label>
                 <input className="border-0 mr-1" type="text" value={isPasswordVisible ? password : '**********'} readOnly={true} size={Math.max(password.length, 10)} />
-                <span onClick={this.togglePasswordVisible} className={`eye-icon dtable-font ${this.state.isPasswordVisible ? 'dtable-icon-eye' : 'dtable-icon-eye-slash'}`}></span>
+                <IconButton icon={this.state.isPasswordVisible ? 'eye' : 'eye-slash'} onClick={this.togglePasswordVisible} />
               </div>
               <button className="btn btn-outline-primary mt-2" onClick={this.toggleDialog}>{gettext('Update')}</button>
             </React.Fragment>

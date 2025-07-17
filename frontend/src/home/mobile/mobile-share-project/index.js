@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading, MobileCommonHeader } from '../../../components';
-import ShareTableToUser from '../share-widgets/share-table-to-user';
-import ShareTableToGroup from '../share-widgets/share-table-to-group';
+import { toaster, Loading, MobileCommonHeader, Icon } from '../../../components';
+import ShareProjectToUser from '../share-widgets/share-table-to-user';
+import ShareProjectToGroup from '../share-widgets/share-table-to-group';
 import { Utils } from '../../../utils/utils';
 import ExternalLink from '../share-widgets/external-link';
 import InviteLink from '../share-widgets/invite-link';
@@ -61,12 +61,12 @@ class MobileShareProject extends Component {
       </>
     );
     return (
-      <div className="mobile-share-table">
+      <div className="mobile-share-project">
         <MobileCommonHeader
           title={title}
           titleClass='mobile-share-header'
           onLeftClick={this.toggle}
-          leftName={<i className="dtable-font dtable-icon-return" />}
+          leftName={<Icon symbol="return" />}
         />
         {isLoading ?
           <Loading /> :
@@ -103,10 +103,10 @@ class MobileShareProject extends Component {
               </div>
             </div>
             {activeTab === 'shareToUser' &&
-              <ShareTableToUser customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
+              <ShareProjectToUser customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
             }
             {(!cloudMode || isOrgContext) && activeTab === 'shareToGroup' &&
-              <ShareTableToGroup customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
+              <ShareProjectToGroup customSharePermissions={customSharePermissions} currentProject={this.props.currentProject} />
             }
             {activeTab === 'externalLink' &&
               <ExternalLink currentProject={this.props.currentProject} />

@@ -20,7 +20,7 @@ const Header = () => {
     <div className="sea-qa-project-panel-header sea-qa-project-side-panel-header">
       <a className="sea-qa-project-icon" style={{ backgroundColor: icon.bg_color }} href={siteRoot}>
         <i className={`project-icon icon-color-white ${icon.name}`}></i>
-        <Icon symbol="return-home" className="sea-qa-project-return-home-icon" />
+        <Icon symbol="home" className="sea-qa-project-return-home-icon" />
       </a>
       <span className="sea-qa-project-name" title={projectName} aria-label={projectName}>{projectName}</span>
     </div>

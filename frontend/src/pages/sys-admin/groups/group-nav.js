@@ -42,11 +42,10 @@ class Nav extends React.Component {
           </ul>
           {currentItem === 'members' && (
             <div className="search-group-member input-icon">
-              <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search" />
               <SearchInput
                 autoFocus={false}
                 placeholder={gettext('Search member')}
-                style={{ height: '30px' }}
+                size={30}
                 onChange={onChangeSearchValue}
               />
             </div>

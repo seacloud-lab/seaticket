@@ -202,12 +202,12 @@
   font-size: 0.9375rem;
 }
 
-.dtable-nav-list .workspace-list {
+.sea-qa-nav-list .workspace-list {
   overflow: hidden;
   width: 100%;
 }
 
-.dtable-nav-list .workspace-list .workspace-nav-item {
+.sea-qa-nav-list .workspace-list .workspace-nav-item {
   height: 28px;
   display: flex;
   align-items: center;
@@ -217,11 +217,11 @@
   position: relative;
 }
 
-.dtable-nav-list .workspace-list .workspace-nav-item:hover {
+.sea-qa-nav-list .workspace-list .workspace-nav-item:hover {
   background-color: #f5f5f5;
 }
 
-.dtable-nav-list .workspace-list .workspace-nav-item.active .workspace-nav-link {
+.sea-qa-nav-list .workspace-list .workspace-nav-item.active .workspace-nav-link {
   color: #fff;
 }
 
@@ -232,24 +232,26 @@
   text-decoration: none;
 }
 
-.workspace-nav-item.active .workspace-nav-link .table-workspace-icon {
+.workspace-nav-item.active .workspace-nav-link .project-workspace-icon,
+nav-toggle-container {
   color: #fff;
 }
 
-.workspace-nav-item .workspace-nav-link .table-workspace-icon {
+.workspace-nav-item .workspace-nav-link .project-workspace-icon {
   color: #999;
   margin-right: 5px;
+  margin-top: -2px;
 }
 
 .workspace-nav-item .workspace-nav-link .nav-text {
   font-size: 14px;
 }
 
-.dtable-nav-list .side-panel-slide {
+.sea-qa-nav-list .side-panel-slide {
   transition: all 0.3s ease-in-out;
 }
 
-.dtable-nav-list .side-panel-slide-up {
+.sea-qa-nav-list .side-panel-slide-up {
   transition: all 0.3s ease-in-out;
   height: 0;
 }
@@ -257,16 +259,22 @@
 .workspace-nav-item .drop-button {
   position: absolute;
   right: 10px;
-  color: #c2c2c2;
   cursor: grab;
   visibility: hidden;
+  background-color: inherit;
 }
 
-.workspace-nav-item .dtable-icon-drag {
-  font-size: 18px;
+.workspace-nav-item .drop-button:hover {
+  background-color: inherit;
 }
 
-.workspace-nav-item .drop-button-active {
+.workspace-nav-item .drop-button .sea-qa-icon-svg {
+  color: #c2c2c2;
+  height: 18px;
+  width: 18px;
+}
+
+.workspace-nav-item .drop-button-active.drop-button .sea-qa-icon-svg {
   color: #fff;
 }
 

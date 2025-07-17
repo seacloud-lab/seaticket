@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
-import { gettext, isPro } from '../../../constants';
+import { Dropdown, DropdownItem, DropdownMenu } from 'reactstrap';
+import { isPro } from '../../../constants';
+import { IconButton, CustomizeDropdownMoreToggle } from '../../../components';
 
 const WorkWeixinDepartmentsTreeNodePropTypes = {
   index: PropTypes.number,
@@ -85,10 +86,6 @@ class WorkWeixinDepartmentsTreeNode extends Component {
 
   render() {
     const { isChildrenShow, department, checkedDepartmentId } = this.props;
-    let toggleClass = classNames({
-      'folder-toggle-icon dtable-font dtable-icon-down3': department.children && this.state.isChildrenShow,
-      'folder-toggle-icon dtable-font dtable-icon-down3 rotate-270': department.children && !this.state.isChildrenShow,
-    });
     let nodeInnerClass = classNames({
       'tree-node-inner': true,
       'tree-node-inner-hover': this.state.active,
@@ -103,9 +100,11 @@ class WorkWeixinDepartmentsTreeNode extends Component {
             onMouseEnter={this.onMouseEnter}
             onMouseLeave={this.onMouseLeave}
           >
-            <span className="tree-node-icon" onClick={(e) => this.toggleChildren(e)}>
-              <i className={toggleClass}></i>
-            </span>
+            <IconButton
+              icon={department.children ? 'down' : ''}
+              className={classNames('folder-toggle-icon tree-node-icon', { 'rotate-icon-270': !this.state.isChildrenShow })}
+              onClick={(e) => this.toggleChildren(e)}
+            />
             <span className="tree-node-text">{department.name}</span>
             {isPro &&
             <Dropdown
@@ -114,16 +113,7 @@ class WorkWeixinDepartmentsTreeNode extends Component {
               direction="down"
               style={this.state.active ? {} : { opacity: 0 }}
             >
-              <DropdownToggle
-                tag='a'
-                role="button"
-                className='attr-action-icon dtable-font dtable-icon-more-vertical'
-                title={gettext('More operations')}
-                aria-label={gettext('More operations')}
-                data-toggle="dropdown"
-                aria-expanded={this.state.dropdownOpen}
-              >
-              </DropdownToggle>
+              <CustomizeDropdownMoreToggle isOpen={this.state.dropdownOpen} />
               <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list" right={true}>
                 <DropdownItem
                   onClick={this.importDepartmentDialogToggle.bind(this, department)}

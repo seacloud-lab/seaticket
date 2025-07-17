@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { EmptyTip, Loading } from '../../../../components';
+import { EmptyTip, Icon, Loading } from '../../../../components';
 import { isOrgContext, orgName, mediaUrl } from '../../../../constants';
 import Workspace from '../../../workspace';
 import { Utils } from '../../../../utils/utils';
@@ -65,13 +65,13 @@ class WorkspaceInMainPanel extends React.Component {
 
     return (
       <Fragment>
-        <div className="main-panel-center dtable-center">
+        <div className="main-panel-center project-center">
           <div className="cur-view-container d-flex flex-1 flex-column">
             <div className={`${isDesktop ? '' : 'p-0'} cur-view-content`}>
               {isOrgContext &&
-                <div className={`justify-content-start dtable-org-title${isDesktop ? '' : ' dtable-mobile-org-title'}`}>
-                  <i aria-hidden="true" className="dtable-org-icon dtable-font dtable-icon-organization-name"></i>
-                  <h1 title={orgName} aria-label={orgName} className="dtable-org-name">{orgName}</h1>
+                <div className={`justify-content-start project-org-title${isDesktop ? '' : ' project-mobile-org-title'}`}>
+                  <Icon symbol="organization-name" className="project-org-icon" />
+                  <h1 title={orgName} aria-label={orgName} className="project-org-name">{orgName}</h1>
                 </div>
               }
               {errorMsg && <p className="error text-center">{errorMsg}</p>}

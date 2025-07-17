@@ -19,7 +19,7 @@
   line-height: 2rem;
 }
 
-.dir-content-main table .dtable-icon-check-mark {
+.dir-content-main table .sea-qa-icon-svg-check-mark {
   color: #21bc2e;
 }
 
@@ -85,7 +85,7 @@
   color: #fff !important;
 }
 
-.tree-node-inner .attr-action-icon.dtable-icon-more-vertical {
+.tree-node-inner .attr-action-icon.sea-qa-icon-svg-more-vertical {
   font-size: 12px;
   transform: scale(0.8);
   top: 28%;
@@ -95,7 +95,7 @@
   padding-right: 1.5rem;
 }
 
-.tree-node-icon .dtable-font {
+.tree-node-icon .sea-qa-icon-svg {
   font-size: 12px;
   top: 15%;
   transform: scale(0.8);

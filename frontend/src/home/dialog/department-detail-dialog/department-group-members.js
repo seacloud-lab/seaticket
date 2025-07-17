@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'reactstrap';
-import { EmptyTip, Loading } from '../../../components';
+import { EmptyTip, Icon, Loading } from '../../../components';
 import { gettext, mediaUrl } from '../../../constants';
 
 const ItemPropTypes = {
@@ -54,7 +54,7 @@ class Item extends Component {
           <td width="12%"><img className="avatar" src={member.avatar_url} alt=""/></td>
           <td width="60%">{member.name}</td>
           <td width="15%" className={this.state.highlight ? 'visible' : 'invisible' } id={`no-select-${index}`}>
-            <i className="dtable-font dtable-icon-use-help"></i>
+            <Icon symbol="help" />
             <Tooltip placement='bottom' isOpen={this.state.tooltipOpen} toggle={this.toggleTooltip} target={`no-select-${index}`} delay={{ show: 0, hide: 0 }} fade={false}>
               {tip}
             </Tooltip>

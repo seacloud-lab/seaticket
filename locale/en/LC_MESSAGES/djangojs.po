@@ -332,8 +332,8 @@ msgstr ""
 #: frontend/src/pages/sys-admin/orgs/op-menu.js:73
 #: frontend/src/pages/sys-admin/orgs/user-op-menu.js:84
 #: frontend/src/pages/sys-admin/orgs/user-op-menu.js:85
-#: frontend/src/pages/sys-admin/projects/dtable-trash-op-menu.js:66
-#: frontend/src/pages/sys-admin/projects/dtable-trash-op-menu.js:67
+#: frontend/src/pages/sys-admin/projects/sea-qa-trash-op-menu.js:66
+#: frontend/src/pages/sys-admin/projects/sea-qa-trash-op-menu.js:67
 #: frontend/src/pages/sys-admin/projects/project-op-menu.js:69
 #: frontend/src/pages/sys-admin/projects/project-op-menu.js:70
 #: frontend/src/pages/sys-admin/users/user-op-menu.js:54
@@ -1184,11 +1184,11 @@ msgstr ""
 msgid "User not found"
 msgstr ""
 
-#: frontend/src/components/select-editor/dtable-share-permission-editor.js:80
+#: frontend/src/components/select-editor/sea-qa-share-permission-editor.js:80
 msgid "Add custom permission"
 msgstr ""
 
-#: frontend/src/components/select-editor/dtable-share-permission-editor.js:141
+#: frontend/src/components/select-editor/sea-qa-share-permission-editor.js:141
 #: frontend/src/components/select-editor/select-editor.js:101
 #: frontend/src/home/dialog/share-permissions-widgets/share-permissions-manage.js:69
 #: frontend/src/home/dialog/share-permissions-widgets/share-permissions-manage.js:70
@@ -1767,7 +1767,7 @@ msgstr ""
 
 #: frontend/src/home/dialog/restore-project-dialog.js:59
 #: frontend/src/pages/org-admin/org-trash-projects.js:143
-#: frontend/src/pages/sys-admin/projects/dtable-trash-op-menu.js:48
+#: frontend/src/pages/sys-admin/projects/sea-qa-trash-op-menu.js:48
 msgid "Restore"
 msgstr ""
 
@@ -3201,7 +3201,7 @@ msgstr ""
 
 #: frontend/src/pages/sys-admin/web-settings/web-settings.js:96
 msgid ""
-"Note: Settings via web interface are saved in database table (dtable-db/"
+"Note: Settings via web interface are saved in database table (sea-qa-db/"
 "constance_config). They have a higher priority over the settings in config "
 "files."
 msgstr ""

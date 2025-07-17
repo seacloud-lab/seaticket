@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../components';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
+import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, ProjectIcon, CustomizeDropdownMoreToggle } from '../../components';
 import { Utils } from '../../utils/utils';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { loginUrl, gettext, mediaUrl } from '../../constants';
@@ -76,7 +76,6 @@ class Item extends Component {
   render() {
     let { isOpIconShown, isDeleteDTableDialogOpen, isItemMenuShow } = this.state;
     let { item } = this.props;
-    let iconClass = Utils.getDTableIconClass();
     let tableName = '<span class="op-target">' + Utils.HTMLescape(item.name) + '</span>';
     let dialogMsg = gettext('Are you sure you want to delete {placeholder} ?').replace('{placeholder}', tableName);
 
@@ -84,7 +83,9 @@ class Item extends Component {
     return (
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave} style={style}>
-          <td className="org-project-icon"><span className={iconClass} /></td>
+          <td className="org-project-icon">
+            <ProjectIcon size="small" bgColor={item.color} icon={item.icon}/>
+          </td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>
@@ -93,15 +94,7 @@ class Item extends Component {
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={isItemMenuShow}
-                />
+                <CustomizeDropdownMoreToggle isOpen={isItemMenuShow} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDTableDialog}>{gettext('Delete')}</DropdownItem>
                 </DropdownMenu>

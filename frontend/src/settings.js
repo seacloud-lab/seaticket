@@ -27,7 +27,7 @@ import UserResetPassword from './components/dialog/user-password-widgets/user-re
 import './css/toolbar.css';
 import './css/search.css';
 import './css/user-settings.css';
-import './css/dtable-search.css';
+import './css/project-search.css';
 
 const {
   canUpdatePassword,
@@ -151,7 +151,7 @@ class Settings extends React.Component {
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
       <React.Fragment>
-        <div className="dtable-web-settings h-100 d-flex flex-column">
+        <div className="sea-qa-web-settings h-100 d-flex flex-column">
           <div className="top-header d-flex justify-content-between">
             <a href={siteRoot}>
               <img src={logoUrl} height={logoHeight} width={logoWidth} title={siteTitle} alt="logo" />

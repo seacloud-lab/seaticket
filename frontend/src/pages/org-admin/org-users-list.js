@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
 import UserItem from './org-user-item';
-import OrgPaginator from './org-paginator';
+import { Paginator } from '../../components';
 
 const propTypes = {
   currentTab: PropTypes.string.isRequired,
@@ -66,13 +66,13 @@ class OrgUsersList extends React.Component {
               );})}
           </tbody>
         </table>
-        <OrgPaginator
+        <Paginator
+          curPerPage={perPage}
           currentPage={page}
           hasNextPage={pageNext}
-          currentPerPage={perPage}
-          goToPreviousPage={() => this.props.onChangePageNum(-1)}
-          goToNextPage={() => this.props.onChangePageNum(1)}
-          changePerPage={this.props.onChangePerPage}
+          goNextPage={() => this.onChangePageNum(1)}
+          goPreviousPage={() => this.onChangePageNum(-1)}
+          resetPerPage={this.props.onChangePerPage}
         />
       </div>
     );

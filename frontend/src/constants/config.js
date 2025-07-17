@@ -1,89 +1,89 @@
 export const gettext = window.gettext;
 
-export const isPro = window.app.config.isPro === 'True';
-export const siteRoot = window.app.config.siteRoot;
-export const loginUrl = window.app.config.loginUrl;
-export const mediaUrl = window.app.config.mediaUrl;
-export const siteTitle = window.app.config.siteTitle;
-export const siteName = window.app.config.siteName;
-export const logoPath = window.app.config.logoPath;
-export const logoWidth = window.app.config.logoWidth;
-export const logoHeight = window.app.config.logoHeight;
-export const lang = window.app.config.lang;
-export const seafileVersion = window.app.config.seafileVersion;
-export const serviceURL = window.app.config.serviceURL;
-export const faviconPath = window.app.config.faviconPath;
-export const faviconNotificationPath = window.app.config.faviconNotificationPath;
-export const loginBGPath = window.app.config.loginBGPath;
+export const isPro = window.app?.config?.isPro === 'True';
+export const siteRoot = window.app?.config?.siteRoot;
+export const loginUrl = window.app?.config?.loginUrl;
+export const mediaUrl = window.app?.config?.mediaUrl;
+export const siteTitle = window.app?.config?.siteTitle;
+export const siteName = window.app?.config?.siteName;
+export const logoPath = window.app?.config?.logoPath;
+export const logoWidth = window.app?.config?.logoWidth;
+export const logoHeight = window.app?.config?.logoHeight;
+export const lang = window.app?.config?.lang;
+export const seafileVersion = window.app?.config?.seafileVersion;
+export const serviceURL = window.app?.config?.serviceURL;
+export const faviconPath = window.app?.config?.faviconPath;
+export const faviconNotificationPath = window.app?.config?.faviconNotificationPath;
+export const loginBGPath = window.app?.config?.loginBGPath;
 
 // pageOptions
-export const server = window.app.pageOptions.server;
+export const server = window.app?.pageOptions?.server;
 export const apiGatewayUrl = (server || '').replace(/\/*$/, '') + '/api-gateway/';
-export const name = window.app.pageOptions.name;
-export const contactEmail = window.app.pageOptions.contactEmail;
-export const username = window.app.pageOptions.username;
-export const avatarURL = window.app.pageOptions.avatarURL;
-export const canAddGroup = window.app.pageOptions.canAddGroup;
-export const canAddProject = window.app.pageOptions.canAddProject;
-export const canGenerateExternalLink = window.app.pageOptions.canGenerateExternalLink;
-export const canUseAdvancedPerms = window.app.pageOptions.canUseAdvancedPerms;
-export const canUseAdvancedCustomization = window.app.pageOptions.canUseAdvancedCustomization;
-export const enableAbuseReport = window.app.pageOptions.enableAbuseReport;
-export const canGenerateUploadLink = window.app.pageOptions.canGenerateUploadLink;
-export const canSendShareLinkEmail = window.app.pageOptions.canSendShareLinkEmail;
-export const canViewOrg = window.app.pageOptions.canViewOrg === 'True';
-export const fileAuditEnabled = window.app.pageOptions.fileAuditEnabled;
-export const enableFileComment = window.app.pageOptions.enableFileComment ? true : false;
-export const folderPermEnabled = window.app.pageOptions.folderPermEnabled;
-export const thumbnailSizeForOriginal = window.app.pageOptions.thumbnailSizeForOriginal;
-export const shareLinkPasswordMinLength = window.app.pageOptions.shareLinkPasswordMinLength;
-export const shareLinkExpireDaysMin = window.app.pageOptions.shareLinkExpireDaysMin;
-export const shareLinkExpireDaysMax = window.app.pageOptions.shareLinkExpireDaysMax;
-export const shareLinkExpireDaysDefault = window.app.pageOptions.shareLinkExpireDaysDefault;
-export const enableUpdateUserInfo = window.app.pageOptions.enableUpdateUserInfo;
-export const enableUserSetContactEmail = window.app.pageOptions.enableUserSetContactEmail;
-export const enableUserSetName = window.app.pageOptions.enableUserSetName;
-export const customNavItems = window.app.pageOptions.customNavItems;
-export const canRemoveBasePasswordViaPhone = window.app.pageOptions.canRemoveBasePasswordViaPhone;
-export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
-export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
-export const enableSeatableAI = window.app.pageOptions.enableSeatableAI;
-export const isOrgStaff = window.app.pageOptions?.isOrgStaff;
+export const name = window.app?.pageOptions?.name;
+export const contactEmail = window.app?.pageOptions?.contactEmail;
+export const username = window.app?.pageOptions?.username;
+export const avatarURL = window.app?.pageOptions?.avatarURL;
+export const canAddGroup = window.app?.pageOptions?.canAddGroup;
+export const canAddProject = window.app?.pageOptions?.canAddProject;
+export const canGenerateExternalLink = window.app?.pageOptions?.canGenerateExternalLink;
+export const canUseAdvancedPerms = window.app?.pageOptions?.canUseAdvancedPerms;
+export const canUseAdvancedCustomization = window.app?.pageOptions?.canUseAdvancedCustomization;
+export const enableAbuseReport = window.app?.pageOptions?.enableAbuseReport;
+export const canGenerateUploadLink = window.app?.pageOptions?.canGenerateUploadLink;
+export const canSendShareLinkEmail = window.app?.pageOptions?.canSendShareLinkEmail;
+export const canViewOrg = window.app?.pageOptions?.canViewOrg === 'True';
+export const fileAuditEnabled = window.app?.pageOptions?.fileAuditEnabled;
+export const enableFileComment = window.app?.pageOptions?.enableFileComment ? true : false;
+export const folderPermEnabled = window.app?.pageOptions?.folderPermEnabled;
+export const thumbnailSizeForOriginal = window.app?.pageOptions?.thumbnailSizeForOriginal;
+export const shareLinkPasswordMinLength = window.app?.pageOptions?.shareLinkPasswordMinLength;
+export const shareLinkExpireDaysMin = window.app?.pageOptions?.shareLinkExpireDaysMin;
+export const shareLinkExpireDaysMax = window.app?.pageOptions?.shareLinkExpireDaysMax;
+export const shareLinkExpireDaysDefault = window.app?.pageOptions?.shareLinkExpireDaysDefault;
+export const enableUpdateUserInfo = window.app?.pageOptions?.enableUpdateUserInfo;
+export const enableUserSetContactEmail = window.app?.pageOptions?.enableUserSetContactEmail;
+export const enableUserSetName = window.app?.pageOptions?.enableUserSetName;
+export const customNavItems = window.app?.pageOptions?.customNavItems;
+export const canRemoveBasePasswordViaPhone = window.app?.pageOptions?.canRemoveBasePasswordViaPhone;
+export const hasBoundPhone = window.app?.pageOptions?.hasBoundPhone;
+export const disableAddingPersonalProjects = window.app?.pageOptions?.disableAddingPersonalProjects;
+export const enableSeatableAI = window.app?.pageOptions?.enableSeatableAI;
+export const isOrgStaff = window.app?.pageOptions?.isOrgStaff;
 
-export const curNoteMsg = window.app.pageOptions.curNoteMsg;
-export const curNoteID = window.app.pageOptions.curNoteID;
-export const curNoteList = window.app.pageOptions.curNoteList;
+export const curNoteMsg = window.app?.pageOptions?.curNoteMsg;
+export const curNoteID = window.app?.pageOptions?.curNoteID;
+export const curNoteList = window.app?.pageOptions?.curNoteList;
 
-export const canRunPython = window.app.pageOptions.canRunPython;
-export const trashCleanExpireDays = window.app.pageOptions.trashCleanExpireDays;
+export const canRunPython = window.app?.pageOptions?.canRunPython;
+export const trashCleanExpireDays = window.app?.pageOptions?.trashCleanExpireDays;
 
-export const disableAddressBookV1 = window.app.pageOptions.disableAddressBookV1;
-export const enableAddressBookV2 = window.app.pageOptions.enableAddressBookV2;
-export const enableDepartmentAdminManageMemberBases = window.app.pageOptions.enableDepartmentAdminManageMemberBases;
-export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShowIDInOrgWhenSearchUser;
+export const disableAddressBookV1 = window.app?.pageOptions?.disableAddressBookV1;
+export const enableAddressBookV2 = window.app?.pageOptions?.enableAddressBookV2;
+export const enableDepartmentAdminManageMemberBases = window.app?.pageOptions?.enableDepartmentAdminManageMemberBases;
+export const enableShowIDInOrgWhenSearchUser = window.app?.pageOptions?.enableShowIDInOrgWhenSearchUser;
 
 
 // dtable
-export const workspaceID = window.app.pageOptions.workspaceID;
-export const showWechatSupportGroup = window.app.pageOptions.showWechatSupportGroup;
+export const workspaceID = window.app?.pageOptions?.workspaceID;
+export const showWechatSupportGroup = window.app?.pageOptions?.showWechatSupportGroup;
 
-export const helpLink = window.app.pageOptions.helpLink;
-export const cloudMode = window.app.pageOptions.cloudMode;
-export const isOrgContext = window.app.pageOptions.isOrgContext;
-export const orgName = window.app.pageOptions.orgName;
-export const enableSubscription = window.app.pageOptions.enableSubscription;
-export const enableSlideCaptcha = window.app.pageOptions.enableSlideCaptcha;
-export const videoTutorialsLink = window.app.pageOptions.videoTutorialsLink;
-export const enableUserGuide = window.app.pageOptions.enableUserGuide;
-export const traingingServicesLink = window.app.pageOptions.traingingServicesLink;
-export const gettingStartLink = window.app.pageOptions.gettingStartLink;
-export const useCaseLink = window.app.pageOptions.useCaseLink;
+export const helpLink = window.app?.pageOptions?.helpLink;
+export const cloudMode = window.app?.pageOptions?.cloudMode;
+export const isOrgContext = window.app?.pageOptions?.isOrgContext;
+export const orgName = window.app?.pageOptions?.orgName;
+export const enableSubscription = window.app?.pageOptions?.enableSubscription;
+export const enableSlideCaptcha = window.app?.pageOptions?.enableSlideCaptcha;
+export const videoTutorialsLink = window.app?.pageOptions?.videoTutorialsLink;
+export const enableUserGuide = window.app?.pageOptions?.enableUserGuide;
+export const traingingServicesLink = window.app?.pageOptions?.traingingServicesLink;
+export const gettingStartLink = window.app?.pageOptions?.gettingStartLink;
+export const useCaseLink = window.app?.pageOptions?.useCaseLink;
 
-export const enableTellAFriend = window.app.pageOptions.enableTellAFriend;
-export const enableInviteAFriend = window.app.pageOptions.enableInviteAFriend;
-export const friendInvitationLink = window.app.pageOptions.friendInvitationLink;
-export const useExternalTeamAdmin = window.app.pageOptions.useExternalTeamAdmin;
-export const orgSamlConnected = window.app.pageOptions.orgSamlConnected;
+export const enableTellAFriend = window.app?.pageOptions?.enableTellAFriend;
+export const enableInviteAFriend = window.app?.pageOptions?.enableInviteAFriend;
+export const friendInvitationLink = window.app?.pageOptions?.friendInvitationLink;
+export const useExternalTeamAdmin = window.app?.pageOptions?.useExternalTeamAdmin;
+export const orgSamlConnected = window.app?.pageOptions?.orgSamlConnected;
 
 // org admin
 export const orgID = window.org ? window.org.pageOptions.orgID : '';
@@ -100,7 +100,7 @@ export const enableMultiSAML = window.org ? window.org.pageOptions.enableMultiSA
 export const canUseSAML = window.org ? window.org.pageOptions.canUseSAML : false;
 
 // sys admin
-export const storages = window.app.pageOptions.storages; // storage backends
+export const storages = window.app?.pageOptions?.storages; // storage backends
 export const isShowUint = window.sysadmin ? window.sysadmin.pageOptions.is_show_unit : '';
 export const constanceEnabled = window.sysadmin ? window.sysadmin.pageOptions.constance_enabled : '';
 export const multiTenancy = window.sysadmin ? window.sysadmin.pageOptions.multi_tenancy : '';

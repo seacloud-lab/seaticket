@@ -35,7 +35,7 @@ class OrgProjects extends React.Component {
 
   getSearch = () => {
     return <Search
-      placeholder={gettext('Search bases')}
+      placeholder={gettext('Search projects')}
       submit={this.searchItems}
     />;
   };

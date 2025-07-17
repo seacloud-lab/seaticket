@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react';
 import axios from 'axios';
-import { IconButton, toaster, SearchInput, EmptyTip, Icon, CenteredLoading } from '../../../components';
+import { toaster, SearchInput, EmptyTip, Icon, CenteredLoading } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -82,18 +82,16 @@ const Search = () => {
 
   return (
     <div className="sea-qa-project-search">
-      <div className="sea-qa-project-search-input-wrapper mb-1">
-        <SearchInput
-          className="sea-qa-project-search-input"
-          autoFocus={true}
-          isClearable={true}
-          wait={0}
-          placeholder={gettext('Search')}
-          onChange={onChange}
-          onClear={onClear}
-        />
-        <IconButton icon="search" className="sea-qa-project-search-input-search" />
-      </div>
+      <SearchInput
+        className="mb-1"
+        autoFocus={true}
+        isClearable={true}
+        wait={0}
+        size={38}
+        placeholder={gettext('Search')}
+        onChange={onChange}
+        onClear={onClear}
+      />
       <div className="sea-qa-project-search-filter-wrapper">
         <div className="sea-qa-project-search-filter">
           <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '1'}</span>

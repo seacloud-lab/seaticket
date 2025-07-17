@@ -87,8 +87,8 @@ class Content extends Component {
             </tbody>
           </table>
           <Paginator
-            gotoPreviousPage={this.getPreviousPage}
-            gotoNextPage={this.getNextPage}
+            goPreviousPage={this.getPreviousPage}
+            goNextPage={this.getNextPage}
             currentPage={pageInfo.current_page}
             hasNextPage={pageInfo.has_next_page}
             resetPerPage={this.props.resetPerPage}

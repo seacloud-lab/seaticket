@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, canAddProject } from '../../../constants';
 import { UserInfoPopover } from '../../../components/popover';
-import ProjectIcon from './project-icon';
+import { CustomizeDropdownMoreToggle, Icon, ProjectIcon } from '../../../components';
 import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 
 class DTableItemGroupShared extends React.Component {
@@ -92,7 +92,7 @@ class DTableItemGroupShared extends React.Component {
     const { isUserDetailPopoverShow, dropdownOpen } = this.state;
     let { project, isAdmin, sharedItemKey, className = '', style = {}, workspace } = this.props;
     let { name, workspace_id, from_user, from_user_name, from_user_avatar, from_group_avatar, from_group_name,
-      color, icon, view_share_id, shared_name, is_encrypted, permission, uuid, id } = project;
+      color, icon, view_share_id, shared_name, permission, uuid, id } = project;
     let isFromGroup = from_user ? from_user.indexOf('@seafile_group') !== -1 : true;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(name) + '/';
     if (view_share_id !== undefined) {
@@ -134,16 +134,7 @@ class DTableItemGroupShared extends React.Component {
                 className="project-item-more-operation"
                 onClick={e => e.stopPropagation()}
               >
-                <DropdownToggle
-                  tag="i"
-                  role="button"
-                  className="dtable-font dtable-icon-more-level cursor-pointer attr-action-icon table-dropdown-menu-icon"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={dropdownOpen}
-                  aria-haspopup="true"
-                />
+                <CustomizeDropdownMoreToggle isOpen={dropdownOpen} className="project-dropdown-menu-icon" />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {isAdmin && <DropdownItem onClick={this.onLeaveShare}>{gettext('Leave share')}</DropdownItem>}
                   {canCopy && <DropdownItem onClick={this.onCopyProjectToggle}>{gettext('Copy')}</DropdownItem>}
@@ -156,13 +147,13 @@ class DTableItemGroupShared extends React.Component {
             <a className="table-href" href={projectHref}>{shared_name || name}</a>
           </div>
           <div
-            className="dtable-sharer-information"
+            className="sea-qa-sharer-information"
             onMouseEnter={this.onShareMouseEnter}
             onMouseLeave={this.onShareMouseLeave}
             id={`shared-item-group-${sharedItemKey}`}
           >
-            <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
-            <span className="dtable-sharer-name">{displayName}</span>
+            <img className="sea-qa-sharer-avatar" src={displayAvatar} alt={displayName} />
+            <span className="sea-qa-sharer-name">{displayName}</span>
             <UserInfoPopover
               target={iconSettingsId}
               isUserDetailPopoverShow={!isFromGroup && isUserDetailPopoverShow}
@@ -170,7 +161,7 @@ class DTableItemGroupShared extends React.Component {
             />
           </div>
           <div className="project-item-group text-truncate">
-            <i className="table-workspace-icon dtable-font dtable-icon-collaborator"></i>
+            <Icon symbol="collaborator" className="project-workspace-icon" />
             {workspace.name}
           </div>
         </div>
@@ -185,11 +176,10 @@ class DTableItemGroupShared extends React.Component {
         <ProjectIcon bgColor={color} icon={icon} className="table-mobile-icon"/>
         <div className="table-mobile-name d-flex align-items-center">
           <a className="table-href" href={projectHref}>{shared_name || name}</a>
-          <div className="dtable-sharer-information">
-            <img className="dtable-sharer-avatar" src={displayAvatar} alt={displayName} />
-            <span className="dtable-sharer-name">{displayName}</span>
+          <div className="sea-qa-sharer-information">
+            <img className="sea-qa-sharer-avatar" src={displayAvatar} alt={displayName} />
+            <span className="sea-qa-sharer-name">{displayName}</span>
           </div>
-          {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
         </div>
         <div className="table-mobile-dropdown-menu">
           <Dropdown
@@ -199,22 +189,13 @@ class DTableItemGroupShared extends React.Component {
             className="project-item-more-operation"
             onClick={(e) => {e.stopPropagation();}}
           >
-            <DropdownToggle
-              tag="i"
-              role="button"
-              className="dtable-font dtable-icon-more-vertical cursor-pointer attr-action-icon table-dropdown-menu-icon"
-              title={gettext('More operations')}
-              aria-label={gettext('More operations')}
-              data-toggle="dropdown"
-              aria-expanded={this.state.dropdownOpen}
-              aria-haspopup={true}
-            />
+            <CustomizeDropdownMoreToggle isOpen={dropdownOpen} className="project-dropdown-menu-icon" />
             <div className={this.state.dropdownOpen ? '' : 'd-none'} onClick={this.dropdownToggle}>
               <div className="mobile-operation-menu-bg-layer"></div>
               <div className="mobile-operation-menu">
                 {isAdmin &&
                   <DropdownItem onClick={this.onLeaveShare} className="mobile-dropdown-item">
-                    <span className="dtable-font dtable-icon-x"></span>
+                    <Icon symbol="x" />
                     <span className="mobile-dropdown-span">{gettext('Leave share')}</span>
                   </DropdownItem>
                 }

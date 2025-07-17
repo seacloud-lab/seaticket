@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input, InputGroup } from 'reactstrap';
 import { gettext } from '../../constants';
 import ModalHeader from '../modal-header';
+import IconButton from '../icon-button';
 
 const propTypes = {
   password: PropTypes.string.isRequired,
@@ -59,8 +60,8 @@ class UpdateWebdavPassword extends Component {
         <ModalBody>
           <InputGroup className="">
             <Input type={this.state.isPasswordVisible ? 'text' : 'password'} value={this.state.password} onChange={this.handleInputChange} />
-            <Button onClick={this.togglePasswordVisible}><i className={`dtable-font ${this.state.isPasswordVisible ? 'dtable-icon-eye' : 'dtable-icon-eye-slash'}`}></i></Button>
-            <Button onClick={this.generatePassword}><i className="dtable-font dtable-icon-random-generation"></i></Button>
+            <IconButton className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.togglePasswordVisible} icon={this.state.isPasswordVisible ? 'eye' : 'eye-slash'} />
+            <IconButton className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.generatePassword} icon="magic" />
           </InputGroup>
         </ModalBody>
         <ModalFooter>

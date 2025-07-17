@@ -4,8 +4,9 @@
   background-color: #fff;
 }
 
-.group-trash-view .mobile-common-view-header .dtable-icon-return {
-  font-size: 14px;
+.group-trash-view .mobile-common-view-header .sea-qa-icon-svg-return {
+  height: 14px;
+  width: 14px;
   color: #999;
 }
 
@@ -44,16 +45,6 @@
   padding-left: 100px;
   font-size: 0.8125rem;
   color: #666;
-}
-
-.base-item-icon .project-icon .project-icon-content {
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 6px;
-  height: 32px;
-  width: 32px;
 }
 
 .base-item-title {

@@ -197,10 +197,6 @@ export const Utils = {
     return isIE || isIE11;
   },
 
-  getDTableIconClass: function () {
-    return `dtable-font dtable-icon-table system-dtable-font ${Utils.isDesktop() ? 'project-icon-style' : ''}`;
-  },
-
   getDirentIcon: function (dirent, isBig) {
     let size = this.isHiDPI() ? 48 : 24;
     size = isBig ? 192 : size;

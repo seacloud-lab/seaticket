@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import SelectPermission from './select-permission';
+import { Icon } from '../../../components';
 
 const propTypes = {
   isShowImage: PropTypes.bool,
@@ -51,7 +52,7 @@ class ShareItem extends React.Component {
           </div>
           <div className="selected-permission-container" onClick={this.onShowSelectedPermission}>
             <span className="selected-permission-text">{optionItem.title || ''}</span>
-            <span className="dtable-font dtable-icon-down3 selected-permission-icon"></span>
+            <Icon symbol="down" className="selected-permission-icon" />
           </div>
         </div>
         {isSelectedPermission &&

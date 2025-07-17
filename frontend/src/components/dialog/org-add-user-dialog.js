@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Label, Form, InputGroup, FormGroup } from 'reactstrap';
 import { gettext } from '../../constants';
 import ModalHeader from '../modal-header';
+import IconButton from '../icon-button';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -147,12 +148,8 @@ class AddOrgUserDialog extends React.Component {
               <Label for="userPwd">{gettext('Password')}</Label>
               <InputGroup className="passwd">
                 <Input id="userPwd" innerRef={input => {this.passwdInput = input;}} value={this.state.password || ''} onChange={this.inputPassword} />
-                <Button onClick={this.togglePasswordVisible}>
-                  <i className={`link-operation-icon dtable-font ${this.state.isPasswordVisible ? 'dtable-icon-eye-slash' : 'dtable-icon-eye'}`}></i>
-                </Button>
-                <Button onClick={this.generatePassword}>
-                  <i className="link-operation-icon dtable-font dtable-icon-random-generation"></i>
-                </Button>
+                <IconButton icon={this.state.isPasswordVisible ? 'eye-slash' : 'eye'} className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.togglePasswordVisible} />
+                <IconButton icon="magic" className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.generatePassword} />
               </InputGroup>
             </FormGroup>
             <FormGroup>

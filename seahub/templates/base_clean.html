@@ -21,7 +21,6 @@
 {% block extra_ogp_tags %}{% endblock %}
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250409" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
 {% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
@@ -52,7 +51,7 @@ html, body, #wrapper {
   text-align: left;
 }
 
-.dtable-container-fluid {
+.sea-qa-container-fluid {
   padding-top: 70px;
   padding-bottom: 10px;
   overflow-y: auto;
@@ -64,29 +63,6 @@ html, body, #wrapper {
   align-items: center;
 }
 
-.universal-app-icon-container {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.app_name {
-  margin: 0 0.5rem;
-  font-size: 28px;
-  font-weight: 700;
-  color: rgb(33, 37, 41);
-}
-
-#universal-app-icon {
-  border: 0 !important;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
 {% block private_style %} {% endblock %}
 </style>
 {% endblock %}
@@ -95,7 +71,7 @@ html, body, #wrapper {
     <div id="header" class="hide">
       {# for non-logged-in user #}
       <div id="lang" class="pl-3">
-        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span class="dtable-font dtable-icon-down3"></span></a>
+        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }}</a>
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
             {% for LANG in LANGUAGES %}
@@ -105,20 +81,9 @@ html, body, #wrapper {
         </div>
       </div>
     </div>
-    <div id="main" class="container-fluid dtable-container-fluid">
+    <div id="main" class="container-fluid sea-qa-container-fluid">
       <div class="head-logo-container">
-        {% if app_icon or use_custom_icon %}
-        <div class="universal-app-icon-container">
-          {% if app_icon %}
-          <img id="universal-app-icon" src="{{ MEDIA_URL }}img/app-universal/{{ app_icon }}.png" height="40" width="40" />
-          {% elif use_custom_icon == True and custom_app_icon %}
-          <img class="universal-app-icon" src="{{ custom_app_icon }}" title="{{ site_title }}" alt="logo" height="40" />
-          {% endif %}
-        </div>
-        <p class="app_name"> {{ app_name }} </p>
-        {% else %}
         <img class="login-logo" src="{{ MEDIA_URL }}{{ logo_path }}" title="{{ site_title }}" alt="logo" height="40" />
-        {% endif %}
       </div>
       {% block main_content %}
       {% endblock %}

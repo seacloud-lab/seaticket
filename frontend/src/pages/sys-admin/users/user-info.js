@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Label, Input, Button } from 'reactstrap';
-import { toaster } from '../../../components';
+import { IconButton, toaster } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled, multiTenancy } from '../../../constants';
 import Loading from '../../../components/loading';
@@ -100,12 +100,13 @@ class Content extends Component {
 
   showEditIcon = (action) => {
     return (
-      <span
+      <IconButton
         title={gettext('Edit')}
         aria-label={gettext('Edit')}
-        className="dtable-font dtable-icon-rename attr-action-icon"
+        icon="rename"
+        className="attr-action-icon"
         onClick={action}>
-      </span>
+      </IconButton>
     );
   };
 

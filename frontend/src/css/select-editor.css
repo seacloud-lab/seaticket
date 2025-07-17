@@ -42,9 +42,9 @@
   cursor: pointer;
 }
 
-.btn-add-custom-permission .dtable-icon-add-table {
-  font-size: 13px;
-  line-height: 13px;
+.btn-add-custom-permission .sea-qa-icon-svg-add {
+  height: 13px;
+  width: 13px;
   margin-right: 0.25rem;
 }
 
@@ -58,7 +58,7 @@
   word-break: keep-all;
 }
 
-.permission-editor .dtable-icon-rename {
+.permission-editor .sea-qa-icon-svg-rename {
   cursor: pointer;
 }
 

@@ -13,13 +13,14 @@
   cursor: pointer;
 }
 
-.main-panel-project-header .main-panel-project-help .dtable-icon-use-help {
-  font-size: 20px;
+.main-panel-project-header .main-panel-project-help .sea-qa-icon-svg-help {
+  height: 20px;
+  width: 20px;
   line-height: 1;
   color: #bdbdbd;
 }
 
-.main-panel-project-header .main-panel-project-help:hover .dtable-icon-use-help {
+.main-panel-project-header .main-panel-project-help:hover .sea-qa-icon-svg-help {
   color: #666666;
 }
 
@@ -165,11 +166,11 @@
   justify-content: space-between;
 }
 
-.project-item .project-item-icon-more .dtable-icon-more-level {
+.project-item .project-item-icon-more .sea-qa-icon-svg-more-level {
   color: #999;
 }
 
-.project-item .project-item-icon-more .dtable-icon-more-level:hover {
+.project-item .project-item-icon-more .sea-qa-icon-svg-more-level:hover {
   color: #666;
 }
 
@@ -219,12 +220,12 @@
   font-size: 20px;
 }
 
-.project-access-permissions .multicolor-icon {
+.project-access-permissions .sea-qa-icon-svg {
   vertical-align: -0.1rem;
 }
 
-.project-item-more .dtable-icon-more-level,
-.project-item-more .dtable-icon-more-vertical {
+.project-item-more .sea-qa-icon-svg-more-level,
+.project-item-more .sea-qa-icon-svg-more-vertical {
   color: #999;
   line-height: 1;
 }
@@ -251,8 +252,9 @@
   color: #666666;
 }
 
-.project-item .project-item-group .table-workspace-icon {
-  font-size: 12px;
+.project-item .project-item-group .project-workspace-icon {
+  height: 12px;
+  width: 12px;
   margin-right: 4px;
 }
 
@@ -271,7 +273,7 @@
     margin: 10px 0 14px;
   }
 
-  .main-panel-project-header .main-panel-project-help:hover .dtable-icon-use-help {
+  .main-panel-project-header .main-panel-project-help:hover .sea-qa-icon-svg-use-help {
     color: #aaa;
   }
 

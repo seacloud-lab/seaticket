@@ -1,4 +1,4 @@
-.dtable-center .dtable-org-title {
+.project-center .project-org-title {
   width: 100%;
   min-height: 38px;
   display: flex;
@@ -7,15 +7,15 @@
   flex-direction: row;
 }
 
-.dtable-center .dtable-org-title.dtable-mobile-org-title {
+.project-center .project-org-title.project-mobile-org-title {
   padding: 0 16px;
 }
 
-.dtable-center .dtable-org-title .dtable-org-icon {
+.project-center .project-org-title .project-org-icon {
   color: #999;
 }
 
-.dtable-center .dtable-org-title .dtable-org-name {
+.project-center .project-org-title .project-org-name {
   max-width: calc(100% - 36px);
   margin: 0 8px;
   font-weight: 400;
@@ -23,4 +23,5 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   display: inline;
+  font-size: 20px;
 }

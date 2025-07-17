@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { toaster, List, InputItem, MobileCommonHeader } from '../../components';
+import { toaster, List, InputItem, MobileCommonHeader, Icon } from '../../components';
 import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
 import { gettext } from '../../constants';
 import { validateName } from '../../utils/utils';
@@ -71,13 +71,13 @@ class RenameProjectView extends React.Component {
     let { itemColor } = this.state;
     const iconColorList = PROJECT_ICON_COLORS;
     return (
-      <div className="row dtable-color-content">
+      <div className="row sea-qa-color-content">
         {iconColorList.map((color, index) => {
           return (
-            <div key={index} className="dtable-color-item" onClick={() => this.onColorChange(color)}>
+            <div key={index} className="sea-qa-color-item" onClick={() => this.onColorChange(color)}>
               <label className="colorinput">
                 <span className="colorinput-color" style={{ backgroundColor: color }}>
-                  {color === itemColor && <i className="dtable-icon-color-check dtable-font dtable-icon-check-mark"></i>}
+                  {color === itemColor && (<Icon symbol="check-mark" className="project-icon-color-check" />)}
                 </span>
               </label>
             </div>
@@ -92,12 +92,12 @@ class RenameProjectView extends React.Component {
     const iconList = PROJECT_ICON_LIST;
 
     return (
-      <div className="row dtable-icon-content mt-4">
+      <div className="row project-icon-content mt-4">
         {iconList.map((icon, index) => {
           let isSelected = icon === itemIcon;
           return (
-            <div key={index} className="dtable-icon-item" onClick={() => this.onIconChange(icon)} style={{ backgroundColor: isSelected ? itemColor : '' }}>
-              <label className="colorinput dtable-icon-input">
+            <div key={index} className="project-icon-item" onClick={() => this.onIconChange(icon)} style={{ backgroundColor: isSelected ? itemColor : '' }}>
+              <label className="colorinput project-icon-input">
                 <i className={classnames('project-icon project-icon-style', { [icon]: icon, 'icon-color-white': isSelected })}></i>
               </label>
             </div>
@@ -120,7 +120,7 @@ class RenameProjectView extends React.Component {
         <List>
           <InputItem className="create-table-input" clear value={this.state.itemName} onChange={this.handleChange} />
         </List>
-        <div className="selected-table-container dtable-icon-settings-popover">
+        <div className="selected-table-container project-icon-settings-popover">
           <span>{gettext('Choose icon and color')}</span>
           <div className="create-base-settings">
             {this.renderColorSettings()}

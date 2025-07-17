@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Label } from 'reactstrap';
-import { MobileCommonHeader } from '../../../components';
+import { Icon, MobileCommonHeader } from '../../../components';
 import RightAngle from './right-angle';
 import SelectMobileUser from './select-mobile-user';
 import SelectMobilePermission from './select-mobile-permission';
@@ -57,12 +57,12 @@ class AddShareUser extends React.Component {
     const optionsLength = selectedOptions.length;
     return (
       <Fragment>
-        <div className="mobile-share-table">
+        <div className="mobile-share-project">
           <MobileCommonHeader
             title={gettext('Share to user')}
             titleClass='mobile-share-header'
             onLeftClick={this.toggle}
-            leftName={<i className="dtable-font dtable-icon-return" />}
+            leftName={<Icon symbol="return" />}
             rightName={gettext('Done')}
             onRightClick={this.addShareUser}
             rightStyle={{ color: '#ED7109' }}

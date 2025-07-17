@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Account from '../../components/account';
 import { Utils } from '../../utils/utils';
+import { IconButton } from '../../components';
 
 const propTypes = {
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
@@ -39,10 +40,10 @@ class MainPanelTopbar extends Component {
               }
             </div>
           </div>
-          <span className="dtable-font dtable-icon-menu side-nav-toggle mobile-toolbar-icon" onClick={this.onCloseSidePanel}></span>
-          {children &&
-            <span className="dtable-font dtable-icon-add-table mobile-toolbar-icon" onClick={this.onShowOperationToggle}></span>
-          }
+          <IconButton icon="menu" className="mobile-toolbar-icon side-nav-toggle" onClick={this.onCloseSidePanel} />
+          {children && (
+            <IconButton icon="add" className="mobile-toolbar-icon" onClick={this.onShowOperationToggle} />
+          )}
         </div>
         <div className="common-toolbar" style={{ alignItems: 'center' }}>
           {this.props.search && this.props.search}

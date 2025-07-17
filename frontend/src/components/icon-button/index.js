@@ -3,16 +3,19 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Icon from '../icon';
 
-const IconButton = ({ disabled, className, icon, iconClassName, ...otherProperties }) => {
+import './index.css';
+
+const IconButton = React.forwardRef(({ disabled, className, icon, iconClassName, ...otherProperties }, ref) => {
   return (
     <div
       className={classnames('sea-qa-icon-btn', className, { 'disabled': disabled })}
       {...otherProperties}
+      ref={ref}
     >
-      <Icon symbol={icon} className={iconClassName} />
+      {icon && (<Icon symbol={icon} className={iconClassName} />)}
     </div>
   );
-};
+});
 
 IconButton.propTypes = {
   disabled: PropTypes.bool,

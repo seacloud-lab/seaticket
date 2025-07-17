@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { UncontrolledTooltip } from 'reactstrap';
-import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog } from '../../../components';
+import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog, ProjectIcon, IconButton } from '../../../components';
 import Search from '../search';
 import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -13,7 +13,7 @@ import MainPanelTopbar from '../main-panel-topbar';
 import ProjectOpMenu from './project-op-menu';
 import ProjectNav from './project-nav';
 import AllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
-import SysAdminShareTableDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-table-dialog';
+import SysAdminShareProjectDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-project-dialog';
 
 import '../../../css/system-dtable.css';
 
@@ -34,9 +34,9 @@ class Item extends Component {
       highlight: false,
       isDeleteDialogOpen: false,
       isExternalLinkDialogOpen: false,
-      isShowDTableIODialog: false,
-      isShowCopyDTable: false,
-      isShowShareDTableDialog: false,
+      isShowIODialog: false,
+      isShowCopy: false,
+      isShowShareDialog: false,
       taskId: '',
     };
   }
@@ -76,16 +76,13 @@ class Item extends Component {
         this.toggleExternalLinkDialog();
         break;
       case 'Export':
-        this.exportDTable();
+        this.exportProject();
         break;
       case 'Copy':
         this.onCopyProjectToggle();
         break;
       case 'Share':
-        this.onShareDTableToggle();
-        break;
-      case 'Repair':
-        this.onRepairDTableToggle();
+        this.onShareToggle();
         break;
       default:
         break;
@@ -97,7 +94,7 @@ class Item extends Component {
     let project_uuid = this.props.item.uuid;
     seaQAAPI.cancelProjectIOTask(this.state.taskId, project_uuid, 'export').then(res => {
       this.setState({
-        isShowDTableIODialog: false,
+        isShowIODialog: false,
         taskId: '',
       });
     }).catch(error => {
@@ -106,20 +103,20 @@ class Item extends Component {
     });
   };
 
-  exportDTable = () => {
+  exportProject = () => {
     let { item } = this.props;
     const dtableUuid = item.uuid;
     let task_id = '';
     sysAdminServiceApi.sysAdminExportProject(dtableUuid).then(res => {
       task_id = res.data.task_id;
       this.setState({
-        isShowDTableIODialog: true,
+        isShowIODialog: true,
         taskId: task_id
       });
       return seaQAAPI.queryProjectIOStatusByTaskId(task_id);
     }).then(res => {
       if (res.data.is_finished === true) {
-        this.setState({ isShowDTableIODialog: false });
+        this.setState({ isShowIODialog: false });
         location.href = siteRoot + 'sys/projectadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
       } else {
         this.timer = setInterval(() => {
@@ -127,13 +124,13 @@ class Item extends Component {
             if (res.data.is_finished === true) {
               this.setState({ isFinished: true });
               clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
+              this.setState({ isShowIODialog: false });
               location.href = siteRoot + 'sys/projectadmin/export-project/?task_id=' + task_id + '&project_uuid=' + dtableUuid;
             }
           }).catch(error => {
             if (this.state.isFinished === false) {
               clearInterval(this.timer);
-              this.setState({ isShowDTableIODialog: false });
+              this.setState({ isShowIODialog: false });
               toaster.danger(gettext('Failed to export. Please check whether the size of table attachments exceeds the limit.'));
             }
           });
@@ -141,7 +138,7 @@ class Item extends Component {
       }
       this.setState({ isFinished: false });
     }).catch(error => {
-      this.setState({ isShowDTableIODialog: false });
+      this.setState({ isShowIODialog: false });
       if (error.response && error.response.status === 500) {
         const error_msg = error.response.data ? error.response.data['error_msg'] : null;
         if (error_msg && error_msg !== 'Internal Server Error') {
@@ -173,28 +170,9 @@ class Item extends Component {
     this.toggleDeleteDialog();
   };
 
-  onRepairDTableToggle = () => {
-    const item = this.props.item;
-    const name = item.name;
-    const project_uuid = item.uuid;
-
-    sysAdminServiceApi.sysAdminRepairProject(project_uuid).then(() => {
-      const msg = gettext('Successfully repair {name}.').replace('{name}', name);
-      toaster.success(msg);
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-
-  };
-
-  onDTableIODialogToggle = () => {
-    this.setState({ isShowDTableIODialog: !this.state.isShowDTableIODialog });
-  };
-
   onCopyProjectToggle = () => {
     this.setState({
-      isShowCopyDTable: !this.state.isShowCopyDTable
+      isShowCopy: !this.state.isShowCopy
     });
     this.onUnfreezedItem();
   };
@@ -207,18 +185,15 @@ class Item extends Component {
     this.setState({ isExternalLinkDialogOpen: !this.state.isExternalLinkDialogOpen });
   };
 
-  onShareDTableToggle = () => {
-    this.setState({ isShowShareDTableDialog: !this.state.isShowShareDTableDialog });
+  onShareToggle = () => {
+    this.setState({ isShowShareDialog: !this.state.isShowShareDialog });
   };
 
   render() {
     const item = this.props.item;
-    let operations = ['External links', 'Delete', 'Export', 'Copy', 'Repair'];
+    let operations = ['External links', 'Delete', 'Export', 'Copy'];
     if (!multiTenancy){
       operations = operations.concat('Share');
-    }
-    if (item.is_encrypted) {
-      operations = operations.concat(['Unset password']);
     }
 
     const file_size = item.file_size ? Utils.bytesToSize(item.file_size) : '--';
@@ -226,11 +201,7 @@ class Item extends Component {
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
           <td className="org-project-icon">
-            <i
-              className={`dtable-font dtable-icon-table${item.is_encrypted ? '-encryption' : ''} system-dtable-font`}
-              aria-hidden="true"
-            >
-            </i>
+            <ProjectIcon size="small" bgColor={item.color} icon={item.icon} />
           </td>
           <td>
             {item.name}
@@ -279,10 +250,10 @@ class Item extends Component {
             />
           </ModalPortal>
         }
-        {this.state.isShowShareDTableDialog && (
-          <SysAdminShareTableDialog
+        {this.state.isShowShareDialog && (
+          <SysAdminShareProjectDialog
             currentProject={item}
-            shareCancel={this.onShareDTableToggle}
+            shareCancel={this.onShareToggle}
           />
         )}
       </Fragment>
@@ -354,14 +325,13 @@ class Content extends Component {
                 <th width="9%">
                   <div className="pl-4">
                     {gettext('Size')}
-                    <span className="dtable-font dtable-icon-use-help ml-1" id='dtable-icon-use-help-tip'>
-                      <UncontrolledTooltip
-                        placement="bottom"
-                        target='dtable-icon-use-help-tip'
-                      >
-                        {gettext('The size of the assets of the base is not included')}
-                      </UncontrolledTooltip>
-                    </span>
+                    <IconButton icon="help" className="ml-1" id="project-icon-use-help-tip" />
+                    <UncontrolledTooltip
+                      placement="bottom"
+                      target='project-icon-use-help-tip'
+                    >
+                      {gettext('The size of the assets of the project is not included')}
+                    </UncontrolledTooltip>
                   </div>
                 </th>
                 <th width="8%">{/* Operations*/}</th>
@@ -381,8 +351,8 @@ class Content extends Component {
             </tbody>
           </table>
           <Paginator
-            gotoPreviousPage={this.getPreviousPageList}
-            gotoNextPage={this.getNextPageList}
+            goPreviousPage={this.getPreviousPageList}
+            goNextPage={this.getNextPageList}
             currentPage={pageInfo.current_page}
             hasNextPage={pageInfo.has_next_page}
             curPerPage={this.props.curPerPage}

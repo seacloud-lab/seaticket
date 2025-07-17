@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Alert, Button } from 'reactstrap';
-import { List, toaster, MobileCommonHeader } from '../../../components';
+import { List, toaster, MobileCommonHeader, Icon } from '../../../components';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../utils/utils';
@@ -119,12 +119,12 @@ class AddInviteLink extends React.Component {
     let permissionTip = Utils.sharePerms(invitePermission);
     return (
       <Fragment>
-        <div className="mobile-share-table">
+        <div className="mobile-share-project">
           <MobileCommonHeader
             title={gettext('Invite link')}
             titleClass='mobile-share-header'
             onLeftClick={this.toggle}
-            leftName={<i className="dtable-font dtable-icon-return" />}
+            leftName={<Icon symbol="return" />}
             rightStyle={{ color: '#ED7109' }}
           />
           <div className="mt-4">

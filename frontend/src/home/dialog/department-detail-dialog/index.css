@@ -20,12 +20,12 @@
   border-right: 1px solid #eee;
 }
 
-.department-dialog-content .department-dialog-group .tr-highlight .dtable-icon-groups {
+.department-dialog-content .department-dialog-group .tr-highlight .sea-qa-icon-svg-groups {
   padding-right: 10px;
   color: #ffffff;
 }
 
-.department-dialog-content .department-dialog-group .dtable-icon-groups {
+.department-dialog-content .department-dialog-group .sea-qa-icon-svg-groups {
   padding-right: 10px;
   color: #999;
 }
@@ -38,15 +38,14 @@
   margin: 0 16px;
 }
 
-.department-dialog-content .department-dialog-group .members-search-container .dtable-search-input {
+.department-dialog-content .department-dialog-group .members-search-container .project-search-input {
   height: 30px;
   padding-left: 30px;
 }
 
-.department-dialog-content .department-dialog-group .members-search-container .dtable-search-icon {
+.department-dialog-content .department-dialog-group .members-search-container .project-search-icon {
   height: 30px;
-  line-height: 30px;
-  min-width: 2rem;
+  width: 30px;
 }
 
 .department-dialog-content .department-dialog-group .btn-close-searcher {
@@ -67,10 +66,6 @@
   border-radius: 3px;
 }
 
-.department-dialog-content .department-dialog-group .btn-close-searcher .dtable-font {
-  font-size: 14px !important;
-}
-
 .department-dialog-content .department-dialog-member {
   display: flex;
   flex: 0 0 35%;
@@ -89,7 +84,7 @@
   border-top: none;
 }
 
-.department-dialog-content .department-dialog-member-selected .dtable-icon-cancel {
+.department-dialog-content .department-dialog-member-selected .sea-qa-icon-svg-cancel {
   cursor: pointer;
   color: #959595;
 }
@@ -117,10 +112,6 @@
   height: 18px;
   position: relative;
   display: inline-block;
-}
-
-.department-dialog-content .department-dialog-group .group-item .group-item-fold-btn .dtable-font {
-  position: absolute;
 }
 
 .department-dialog-member-head {
@@ -185,13 +176,13 @@
   padding-bottom: 2px;
 }
 
-.department-dialog-member-table tr td .dtable-icon-use-help {
+.department-dialog-member-table tr td .sea-qa-icon-svg-use-help {
   color: #bdbdbd;
   padding-right: 16px;
   float: right;
 }
 
-.department-dialog-member-table tr td .dtable-icon-use-help:hover {
+.department-dialog-member-table tr td .sea-qa-icon-svg-use-help:hover {
   color: #888;
 }
 

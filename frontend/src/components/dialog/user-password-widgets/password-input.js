@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { FormGroup, Label, InputGroup, Input, Button } from 'reactstrap';
+import { FormGroup, Label, InputGroup, Input } from 'reactstrap';
 import classnames from 'classnames';
 import PasswordStrengthChecker from './password-strength-checker';
 import { isMobile } from '../../../utils/utils';
+import IconButton from '../../icon-button';
 
 import '../../../css/password-input.css';
 
@@ -68,9 +69,12 @@ const PasswordInput = ({ value, labelValue, shouldAutoFocus, enableCheckStrength
             passwordValue={passwordValue}
           />
         )}
-        <Button onClick={() => setIsShowPassword(!isShowPassword)}>
-          <i className={`password-icon dtable-font dtable-icon-eye${isShowPassword ? '' : '-slash'}`} />
-        </Button>
+        <IconButton
+          onClick={() => setIsShowPassword(!isShowPassword)}
+          icon={isShowPassword ? 'eye' : 'eye-slash'}
+          className="password-icon btn btn-secondary"
+          style={{ height: 38, width: 38 }}
+        />
       </InputGroup>
     </FormGroup>
   );

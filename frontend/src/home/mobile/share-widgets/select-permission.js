@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { MobileCommonHeader } from '../../../components';
+import { Icon, MobileCommonHeader } from '../../../components';
 import { gettext } from '../../../constants';
 
 const propTypes = {
@@ -45,7 +45,7 @@ class SelectPermission extends React.Component {
     const { isShowDeleteBtn, options } = this.props;
     const { permission } = this.state;
     return (
-      <div className="mobile-share-table">
+      <div className="mobile-share-project">
         <MobileCommonHeader
           title={gettext('Select permission')}
           titleClass='mobile-share-header'
@@ -67,7 +67,7 @@ class SelectPermission extends React.Component {
                     <div className="selected-permission-title">{optionItem.title}</div>
                     <div className="selected-permission-info">
                       <span className="selected-permission-brief">{optionItem.description}</span>
-                      {permission === optionItem.value && <span className="selected-permission-mark dtable-font dtable-icon-check-mark"></span>}
+                      {permission === optionItem.value && (<Icon className="selected-permission-mark" symbol="check-mark" />)}
                     </div>
                   </div>
                 );

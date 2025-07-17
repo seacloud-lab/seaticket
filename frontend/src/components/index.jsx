@@ -19,12 +19,14 @@ import ModalPortal from './modal-portal';
 import Radio from './radio';
 import CustomizeGroupSelect from './customize-group-select';
 import CustomizeReactSelect from './customize-react-select';
+import CustomizeDropdownMoreToggle from './customize-dropdown-toggle';
 import Progress from './mobile/progress';
 import List from './mobile/list';
 import InputItem from './mobile/input-item';
 import MobileCommonHeader from './mobile/mobile-common-header';
 import ActionSheet from './mobile/action-sheet';
 import TabBar from './mobile/tab-bar';
+import ProjectIcon from './project-icon';
 
 
 export {
@@ -45,10 +47,12 @@ export {
   Radio,
   CustomizeGroupSelect,
   CustomizeReactSelect,
+  CustomizeDropdownMoreToggle,
   Progress,
   List,
   InputItem,
   MobileCommonHeader,
   ActionSheet,
   TabBar,
+  ProjectIcon,
 };

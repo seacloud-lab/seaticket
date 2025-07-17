@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
 import { useDrag, useDrop } from 'react-dnd';
+import { Icon, IconButton } from '../../components';
 
 const siteRoot = window.app.config.siteRoot;
 
@@ -58,20 +59,15 @@ const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabC
         )}
         onClick={(event) => onGroupTabClick(event, `project/${item.id}`)}
       >
-        <span
+        <IconButton
           ref={dragRef}
           className={classnames('drop-button',
             { 'drop-button-active': getActiveClass(`project/${item.id}`) === 'active' }
           )}
-        >
-          <i className="dtable-font dtable-icon-drag"></i>
-        </span>
+          icon="drag"
+        />
         <Link tabIndex={tabIndex} to={siteRoot + 'project/' + item.id + '/'} className="workspace-nav-link ellipsis">
-          <span
-            className={`table-workspace-icon dtable-font dtable-icon-${isDepart ? 'department' : 'collaborator'}`}
-            aria-hidden="true"
-          >
-          </span>
+          <Icon symbol={isDepart ? 'department' : 'collaborator'} className="project-workspace-icon" />
           <span className="nav-text">{item.name}</span>
         </Link>
       </div>

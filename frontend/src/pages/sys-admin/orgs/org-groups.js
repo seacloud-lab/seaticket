@@ -1,12 +1,14 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
+import classnames from 'classnames';
+import { toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
+
 
 const contentTypes = {
   loading: PropTypes.bool,
@@ -121,7 +123,13 @@ class Item extends Component {
           <td>{`${Utils.bytesToSize(item.size)}`}</td>
           <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
-            <span className={`attr-action-icon dtable-font dtable-icon-delete ${isOpIconShown ? '' : 'invisible'}`} title={gettext('Delete')} aria-label={gettext('Delete')} onClick={this.toggleDeleteDialog}></span>
+            <IconButton
+              className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}
+              icon="delete"
+              title={gettext('Delete')}
+              aria-label={gettext('Delete')}
+              onClick={this.toggleDeleteDialog}
+            />
           </td>
         </tr>
         {isDeleteDialogOpen &&

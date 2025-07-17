@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import { SearchInput, toaster } from '../../components';
+import { IconButton, SearchInput, toaster, Icon } from '../../components';
 import { Utils } from '../../utils/utils';
 import { cloudMode, gettext, isOrgContext } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
@@ -148,12 +148,9 @@ class ListAndAddGroupMembers extends React.Component {
             isMulti={true}
             className={classnames('add-members-select', { 'org-add-members-select': isOrgContext }, { 'user-select-right-btn': showDeptBtn })}
           />
-          {showDeptBtn &&
-            <span
-              onClick={this.toggleDepartmentDetailDialog}
-              className="dtable-font dtable-icon-add_members toggle-detail-btn">
-            </span>
-          }
+          {showDeptBtn && (
+            <IconButton icon="add-members" className="toggle-detail-btn" onClick={this.toggleDepartmentDetailDialog} />
+          )}
           {selectedOption ?
             <Button color="secondary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
             <Button color="secondary" disabled>{gettext('Submit')}</Button>
@@ -166,7 +163,7 @@ class ListAndAddGroupMembers extends React.Component {
         }
         {(groupMembers.length > 10 || searchValue) &&
           <div className="search-input-container">
-            <i className="search-icon dtable-font dtable-icon-search"></i>
+            <Icon symbol="search" className="search-icon" />
             <SearchInput
               value={searchValue}
               autoFocus={false}

@@ -9,6 +9,8 @@ import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationL
 import { Utils } from '../../utils/utils';
 import { seaQAAPI } from '../../api/web-api';
 import GroupItem from './group-item';
+import { Icon, IconButton } from '../../components';
+import classNames from 'classnames';
 
 const propTypes = {
   isUpdateSidePanelGroups: PropTypes.bool,
@@ -159,7 +161,7 @@ class SidePanel extends React.Component {
             onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
-              <span className="table-workspace-icon dtable-font dtable-icon-creator" aria-hidden="true"></span>
+              <Icon className="project-workspace-icon" symbol="creator" />
               <span className="nav-text">{gettext('My projects')}</span>
             </Link>
           </div>
@@ -169,7 +171,7 @@ class SidePanel extends React.Component {
           onClick={(event) => this.onGroupTabClick(event, 'project/starred')}
         >
           <Link tabIndex={tabIndex} to={siteRoot + 'project/starred/'} className="workspace-nav-link ellipsis">
-            <span className="table-workspace-icon dtable-font dtable-icon-star" aria-hidden="true"></span>
+            <Icon className="project-workspace-icon" symbol="star" />
             <span className="nav-text">{gettext('Favorites')}</span>
           </Link>
         </div>
@@ -178,7 +180,7 @@ class SidePanel extends React.Component {
           onClick={(event) => this.onGroupTabClick(event, 'project/shared')}
         >
           <Link tabIndex={tabIndex} to={siteRoot + 'project/shared/'} className="workspace-nav-link ellipsis">
-            <span className="table-workspace-icon dtable-font dtable-icon-share-with-me" aria-hidden="true"></span>
+            <Icon className="project-workspace-icon" symbol="share-with-me" />
             <span className="nav-text">{gettext('Shared with me')}</span>
           </Link>
         </div>
@@ -214,8 +216,8 @@ class SidePanel extends React.Component {
           tabIndex={0}
         >
           {!this.props.isDesktop &&
-            <header className="side-panel-north dtable-header">
-              <a className="dtable-logo" href={siteRoot}>
+            <header className="side-panel-north sea-qa-home-header">
+              <a className="sea-qa-logo" href={siteRoot}>
                 <img
                   src={logoUrl}
                   height={logoHeight}
@@ -228,34 +230,32 @@ class SidePanel extends React.Component {
             </header>
           }
           <div className="side-panel-center">
-            <nav className="dtable-side-nav">
-              <span className="dtable-nav-title">{gettext('Workspace')}</span>
-              <div className="nav nav-pills flex-column dtable-nav-list">
+            <nav className="project-side-nav">
+              <span className="sea-qa-nav-title">{gettext('Workspace')}</span>
+              <div className="nav nav-pills flex-column sea-qa-nav-list">
                 <div
-                  className={`nav-item dtable-nav-item bases-nav ${this.getActiveClass('project')} ${this.getActiveClass('project') ? 'seatable-bg-orange' : ''}`}
-                  onClick={this.onTabClick.bind(this, 'project')}
+                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'seatable-bg-orange' : ''}`}
+                  onClick={this.onTabClick.bind(this, 'projects')}
                 >
                   <Link
                     to={siteRoot + 'projects/'}
                     aria-label={gettext('Projects')}
-                    className="nav-link dtable-nav-link"
+                    className="nav-link sea-qa-nav-link"
                   >
-                    <span className="dtable-font dtable-icon-dtable-logo nav-icon" aria-hidden="true"></span>
+                    <Icon symbol="home" className="nav-icon" />
                     <span className="nav-text">{gettext('Projects')}</span>
                   </Link>
-                  <div
-                    className="nav-toggle-container h-100"
+                  <IconButton
+                    className={classNames('nav-toggle-container h-100', { 'rotate-icon-90': !this.props.isOpenGroupExpanded })}
                     aria-label={gettext('Expand all workspaces')}
                     aria-expanded={this.props.isOpenGroupExpanded}
                     tabIndex={0}
                     role="button"
                     onKeyDown={this.onKeyDown}
                     onClick={this.onBasesListExtended}
-                  >
-                    {!this.state.isDataLoading && (
-                      <span className={`dtable-font dtable-icon-down3 nav-toggle-icon ${!this.props.isOpenGroupExpanded ? 'nav-toggle-icon-spin' : ''}`}></span>
-                    )}
-                  </div>
+                    icon={this.state.isDataLoading ? '' : 'down'}
+                    iconClassName="nav-toggle-icon"
+                  />
                 </div>
                 <div
                   className={`workspace-list flex-column ${this.props.isOpenGroupExpanded ? 'side-panel-slide' : 'side-panel-slide-up'}`}

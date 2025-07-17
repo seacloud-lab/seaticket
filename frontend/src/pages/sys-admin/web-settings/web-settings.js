@@ -93,7 +93,7 @@ class WebSettings extends Component {
               {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
               {(!loading && !errorMsg) && config_dict &&
               <Fragment>
-                <p className="seatable-tip-default my-4">{gettext('Note: Settings via web interface are saved in database table (dtable-db/constance_config). They have a higher priority over the settings in config files.')}</p>
+                <p className="seatable-tip-default my-4">{gettext('Note: Settings via web interface are saved in database table (sea-qa-db/constance_config). They have a higher priority over the settings in config files.')}</p>
 
                 <Section headingText={gettext('Branding')}>
                   <Fragment>

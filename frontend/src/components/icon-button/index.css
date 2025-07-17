@@ -1,0 +1,7 @@
+.sea-qa-icon-btn.rotate-icon-90 .sea-qa-icon-svg {
+  transform: rotate(90deg);
+}
+
+.sea-qa-icon-btn.rotate-icon-270 .sea-qa-icon-svg {
+  transform: rotate(270deg);
+}

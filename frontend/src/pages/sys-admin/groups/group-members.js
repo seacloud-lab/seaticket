@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
+import { RoleStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import SysAdminGroupAddMemberDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-group-add-member-dialog';
@@ -158,13 +158,14 @@ class Item extends Component {
           </td>
           <td>
             {item.role !== 'Owner' && !departmentId &&
-            <span
-              className={`dtable-font dtable-icon-x action-icon ${isOpIconShown ? '' : 'invisible'}`}
+            <IconButton
+              className={`action-icon ${isOpIconShown ? '' : 'invisible'}`}
+              icon="x"
               title={gettext('Remove')}
               aria-label={gettext('Remove')}
               onClick={this.toggleDeleteDialog}
             >
-            </span>
+            </IconButton>
             }
           </td>
         </tr>

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { RoleStatusEditor, toaster } from '../../../../components';
+import { IconButton, RoleStatusEditor, toaster } from '../../../../components';
 import { gettext, serviceURL } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { getRoleOptions } from '../../../../utils/role-status-utils';
@@ -75,8 +75,8 @@ class MemberItem extends React.Component {
           />
         </td>
         {!this.props.isItemFreezed ?
-          <td className="cursor-pointer text-center" onClick={this.props.showDeleteMemberDialog.bind(this, member)}>
-            <span className={`dtable-font dtable-icon-x action-icon ${highlight ? '' : 'vh'}`} title={gettext('Delete')} aria-label={gettext('Delete')}></span>
+          <td className="cursor-pointer text-center">
+            <IconButton className={`action-icon ${highlight ? '' : 'vh'}`} onClick={this.props.showDeleteMemberDialog.bind(this, member)} icon="x" title={gettext('Delete')} aria-label={gettext('Delete')} />
           </td> : <td></td>
         }
       </tr>

@@ -1,8 +1,10 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isFunction } from '../../utils/utils';
 import IconButton from '../icon-button';
+
+import './index.css';
 
 class SearchInput extends Component {
 
@@ -73,25 +75,31 @@ class SearchInput extends Component {
   };
 
   renderClear = () => {
-    const { onClear } = this.props;
+    const { onClear, size = 38 } = this.props;
     const { searchValue } = this.state;
     if (!isFunction(onClear) || !searchValue) return null;
     return (
-      <IconButton icon="x" className="sea-qa-search-input-clear" onClick={this.onClear} />
+      <IconButton icon="x" className="sea-qa-search-input-clear" onClick={this.onClear} style={{ height: 20, width: 20, top: (size - 20) / 2, right: (size - 20) / 2 }} />
     );
   };
 
   render() {
-    const { placeholder, autoFocus, className, onKeyDown, disabled, style } = this.props;
+    const { placeholder, autoFocus, className, inputClassName, onKeyDown, disabled, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
     const { searchValue } = this.state;
 
     return (
-      <Fragment>
+      <div
+        className={classnames('sea-qa-search-input-wrapper', className, { 'display-search-icon': isShowSearchIcon, 'display-clear-icon': isFunction(onClear) })}
+        style={{ ...style, height: size }}
+      >
+        {isShowSearchIcon && (
+          <IconButton icon="search" className="sea-qa-search-input-search" style={{ height: size, width: size }} />
+        )}
         <input
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control', className)}
+          className={classnames('form-control sea-qa-search-input', inputClassName)}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -99,10 +107,10 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={style}
+          style={{ height: size, paddingLeft: size + 2 }}
         />
         {this.renderClear()}
-      </Fragment>
+      </div>
     );
   }
 }
@@ -110,12 +118,14 @@ class SearchInput extends Component {
 SearchInput.propTypes = {
   placeholder: PropTypes.string,
   autoFocus: PropTypes.bool,
+  isShowSearchIcon: PropTypes.bool,
   className: PropTypes.string,
+  inputClassName: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   onKeyDown: PropTypes.func,
   wait: PropTypes.number,
   disabled: PropTypes.bool,
-  style: PropTypes.object,
+  size: PropTypes.string,
   onClear: PropTypes.func,
   value: PropTypes.string,
 };

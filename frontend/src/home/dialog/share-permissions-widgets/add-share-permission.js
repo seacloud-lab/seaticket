@@ -5,6 +5,7 @@ import { gettext } from '../../../../constants';
 import { seaQAAPI } from '../../../../api/web-api';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';
+import { IconButton } from '../../../components';
 
 class AddSharePermission extends Component {
 
@@ -51,9 +52,7 @@ class AddSharePermission extends Component {
       <div className="add-share-permission">
         <div className="add-share-permission-header d-flex align-items-center justify-content-between">
           <span>
-            <span className="back-btn d-inline-flex align-items-center justify-content-center" onClick={this.props.onChangeStatus}>
-              <i className="dtable-font dtable-icon-return project-icon-style"></i>
-            </span>
+            <IconButton icon="return" className="back-btn d-inline-flex" onClick={this.props.onChangeStatus} />
             <span className="add-share-permission-header-text">{gettext('Add permission')}</span>
           </span>
           <Button onClick={this.onAddSharePermission} type="button" color="outline-primary" size="sm" className="add-share-permission-btn">{gettext('Submit')}</Button>

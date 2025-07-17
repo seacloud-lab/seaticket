@@ -1,0 +1,28 @@
+.project-icon {
+  height: 32px;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.project-icon .project-icon-style {
+  font-size: 20px;
+}
+
+/* large */
+.project-icon.large {
+  height: 36px;
+  width: 36px;
+}
+
+/* small */
+.project-icon.small {
+  height: 24px;
+  width: 24px;
+}
+
+.project-icon.small .project-icon-style {
+  font-size: 16px;
+}

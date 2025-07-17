@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Alert } from 'reactstrap';
-import { List, InputItem, MobileCommonHeader } from '../../../components';
+import { List, InputItem, MobileCommonHeader, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext, shareLinkPasswordMinLength } from '../../../constants';
 
@@ -84,7 +84,7 @@ class PasswordProtection extends React.Component {
     let passwordLengthTip = gettext('(at least {passwordLength} characters)');
     passwordLengthTip = passwordLengthTip.replace('{passwordLength}', shareLinkPasswordMinLength);
     return (
-      <div className="mobile-share-table">
+      <div className="mobile-share-project">
         <MobileCommonHeader
           title={gettext('Add password protection')}
           titleClass='mobile-share-header'
@@ -106,9 +106,9 @@ class PasswordProtection extends React.Component {
             type={isPasswordVisible ? 'text' : 'password'}
           />
           <div className="extra-item-container">
-            <span className={`extra-item dtable-font dtable-icon-eye${isPasswordVisible ? '' : '-slash'}`} onClick={this.togglePasswordVisible}></span>
+            <IconButton icon={isPasswordVisible ? 'eye' : 'eye-slash'} className="extra-item" onClick={this.togglePasswordVisible} />
             <span className="extra-split-line"></span>
-            <span className="extra-item extra-item-random-icon dtable-font dtable-icon-random-generation" onClick={this.generatePassword}></span>
+            <IconButton icon="magic" className="extra-item extra-item-random-icon" onClick={this.generatePassword} />
           </div>
         </List>
         <List renderHeader={gettext('Password again')}>

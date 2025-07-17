@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
 import dayjs from 'dayjs';
-import { RoleStatusEditor, toaster, EmptyTip, Loading } from '../../../components';
+import classnames from 'classnames';
+import { RoleStatusEditor, toaster, EmptyTip, Loading, IconButton } from '../../../components';
 import SysAdminAddOrgDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-org-dialog';
 import ConfirmDeleteOrg from '../../../components/dialog/confirm-delete-org';
 import MainPanelTopbar from '../main-panel-topbar';
@@ -82,8 +83,8 @@ class Content extends Component {
             </tbody>
           </table>
           <Paginator
-            gotoPreviousPage={this.getPreviousPageList}
-            gotoNextPage={this.getNextPageList}
+            goPreviousPage={this.getPreviousPageList}
+            goNextPage={this.getNextPageList}
             currentPage={currentPage}
             hasNextPage={Utils.hasNextPage(currentPage, curPerPage, count)}
             curPerPage={curPerPage}
@@ -170,7 +171,13 @@ class Item extends Component {
           </td>
           <td>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
-            <span className={`attr-action-icon dtable-font dtable-icon-delete ${isOpIconShown ? '' : 'invisible'}`} title={gettext('Delete')} aria-label={gettext('Delete')} onClick={this.toggleDeleteDialog}></span>
+            <IconButton
+              className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}
+              title={gettext('Delete')}
+              aria-label={gettext('Delete')}
+              icon="delete"
+              onClick={this.toggleDeleteDialog}
+            />
           </td>
         </tr>
         {isDeleteDialogOpen &&

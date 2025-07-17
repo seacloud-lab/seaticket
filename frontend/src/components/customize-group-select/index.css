@@ -53,15 +53,15 @@
   background: #fff;
 }
 
-.group-select.dtable-ui-collaborator-selector .option-group .option-group-content {
+.group-select.sea-qa-ui-collaborator-selector .option-group .option-group-content {
   padding: 10px;
 }
 
-.group-select.custom-select.dtable-ui-collaborator-selector .option-group .option-group-content {
+.group-select.custom-select.sea-qa-ui-collaborator-selector .option-group .option-group-content {
   padding: 10px 0;
 }
 
-.group-select.custom-select.dtable-ui-collaborator-selector .option {
+.group-select.custom-select.sea-qa-ui-collaborator-selector .option {
   padding: 5px 0 5px 10px !important;
   line-height: 20px;
 }
@@ -90,7 +90,7 @@
   color: #212529;
 }
 
-.group-select .selected-option-show .selected-option-item .dtable-icon-x {
+.group-select .selected-option-show .selected-option-item .selected-option-item-delete-btn {
   cursor: pointer;
   color: rgb(103, 103, 103);
 }

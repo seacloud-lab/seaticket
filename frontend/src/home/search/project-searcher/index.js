@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import SearcherInput from './search-input';
 import SearchedList from './searched-list';
-import Loading from '../../../components/loading';
+import { Loading, SearchInput } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { getValueLength } from '../search-utils';
 import { gettext } from '../../../constants';
@@ -58,7 +57,17 @@ const ProjectSearcher = (props) => {
   };
 
   const startSearch = (searchStr) => {
+    if (getValueLength(searchStr) < 3) {
+      stopSearch();
+      return;
+    }
+    setSearchStr(searchStr);
     searchWithQueryData(searchStr, currQueryType);
+  };
+
+  const clearSearch = () => {
+    setSearchStr('');
+    props.onCloseSearcher && props.onCloseSearcher();
   };
 
   const onChangeQueryType = (queryType) => {
@@ -190,13 +199,14 @@ const ProjectSearcher = (props) => {
   let queryTypes = [QUERY_TYPE.PROJECT];
 
   return (
-    <div className='dtable-searcher' ref={searcherRef}>
-      <SearcherInput
-        stopSearch={stopSearch}
-        startSearch={startSearch}
-        onCloseSearcher={props.onCloseSearcher}
-        searchStr={searchStr}
-        setSearchStr={setSearchStr}
+    <div className='project-searcher' ref={searcherRef}>
+      <SearchInput
+        className="sea-qa-project-search-in-popover"
+        onChange={startSearch}
+        onClear={clearSearch}
+        value={searchStr}
+        autoFocus={true}
+        placeholder={gettext('Search')}
       />
       <div className='search-type-wrapper'>
         <div className='search-type-content'>
@@ -204,7 +214,7 @@ const ProjectSearcher = (props) => {
             return (
               <div
                 key={queryType}
-                className={classnames('dtable-search-type', `search-type-${queryType}`, {
+                className={classnames('sea-qa-search-type', `search-type-${queryType}`, {
                   active: queryType === currQueryType,
                 })}
                 onClick={() => onChangeQueryType(queryType)}
@@ -216,7 +226,7 @@ const ProjectSearcher = (props) => {
         </div>
       </div>
       <div
-        className='dtable-search-results'
+        className='sea-qa-search-results'
         ref={searchListContainerRef}
       >
         {showRecent && renderRecentUsedResults()}

@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import MediaQuery from 'react-responsive';
 import { seaQAAPI } from '../../api/web-api';
 import { gettext } from '../../constants';
 import SearchResultItem from './search-result-item';
 import { Utils } from '../../utils/utils';
 import getWorkspaceName from '../utils/get-workspace-name';
 import { getValueLength } from './search-utils';
+import { IconButton } from '../../components';
 
 const propTypes = {
   isPublic: PropTypes.bool,
@@ -230,68 +230,23 @@ class SearchProject extends Component {
   };
 
   render() {
-    let width = this.state.width !== 'default' ? this.state.width : '';
-    let style = { 'width': width };
 
     return (
-      <Fragment>
-        <MediaQuery query="(min-width: 768px)">
+      <>
+        <div className="search-icon-container">
+          <IconButton className="search-icon-left input-icon-addon" icon="search" />
+        </div>
+        {this.state.isSearchInputShow &&
           <div className="search">
             <div className={`search-mask ${this.state.isMaskShow ? '' : 'hide'}`} onClick={this.onCloseHandler}></div>
-            <div className="search-container" onClick={this.onFocusHandler}>
-              <div className="input-icon">
-                <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search"></i>
-                <input
-                  type="text"
-                  className="form-control search-input"
-                  name="query"
-                  placeholder={this.props.placeholder}
-                  style={style}
-                  value={this.state.value}
-                  onChange={this.onChangeHandler}
-                  autoComplete="off"
-                  ref={ref => this.inputRef = ref}
-                  aria-label={gettext('Search')}
-                />
-                {this.state.isCloseShow && <i className='search-icon-right input-icon-addon dtable-font dtable-icon-cancel' onClick={this.onCloseHandler}></i>}
-              </div>
-              <div className="search-result-container" ref={this.searchContainer}>
+            <div className="search-container">
+              <div className="search-result-container" ref={this.mobileSearchContainer}>
                 {this.renderSearchResult()}
               </div>
             </div>
           </div>
-        </MediaQuery>
-        <MediaQuery query="(max-width: 767.8px)">
-          <div className="search-icon-container">
-            <i className="search-icon dtable-font dtable-icon-search" onClick={this.onSearchToggle}></i>
-          </div>
-          {this.state.isSearchInputShow &&
-            <div className="search">
-              <div className={`search-mask ${this.state.isMaskShow ? '' : 'hide'}`} onClick={this.onCloseHandler}></div>
-              <div className="search-container">
-                <div className="input-icon">
-                  <input
-                    type="text"
-                    className="form-control search-input"
-                    name="query"
-                    placeholder={this.props.placeholder}
-                    style={style}
-                    value={this.state.value}
-                    onFocus={this.onFocusHandler}
-                    onChange={this.onChangeHandler}
-                    autoComplete="off"
-                    aria-label={gettext('Search')}
-                  />
-                  <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search" style={{ right: 0 }}></i>
-                </div>
-                <div className="search-result-container" ref={this.mobileSearchContainer}>
-                  {this.renderSearchResult()}
-                </div>
-              </div>
-            </div>
-          }
-        </MediaQuery>
-      </Fragment>
+        }
+      </>
     );
   }
 }

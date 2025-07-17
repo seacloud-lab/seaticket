@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import copy from 'copy-to-clipboard';
-import { List, ActionSheet, toaster, IconButton } from '../../../components';
+import { List, ActionSheet, toaster, IconButton, Icon } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import AddInviteLink from './add-invite-link';
 import ShareAddedBtn from './share-add-btn';
@@ -53,13 +53,13 @@ class InviteLink extends React.Component {
 
   showActionSheet = (inviteItem) => {
     let BUTTONS = [
-      (<div className="my-am-action"><i className="dtable-font dtable-icon-copy-link"></i>{gettext('Copy link')}</div>),
-      (<div className="my-am-action"><i className="dtable-font dtable-icon-delete"></i>{gettext('Delete link')}</div>),
+      (<div className="my-am-action"><Icon symbol="copy" />{gettext('Copy link')}</div>),
+      (<div className="my-am-action"><Icon symbol="delete" />{gettext('Delete link')}</div>),
     ];
     ActionSheet.showActionSheetWithOptions({
       options: BUTTONS,
       maskClosable: true,
-      className: 'dtable-antd-mobile-action-sheet'
+      className: 'sea-qa-antd-mobile-action-sheet'
     }, (buttonIndex) => {
       if (buttonIndex === 0) this.onCopyInviteLink(inviteItem.link);
       if (buttonIndex === 1) this.deleteInviteLink(inviteItem);

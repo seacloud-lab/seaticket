@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
-import { EmptyTip, Loading, MobileCommonHeader } from '../../../components';
+import { EmptyTip, Icon, Loading, MobileCommonHeader } from '../../../components';
 import DeletedGroupBaseItem from './deleted-group-base-item';
 
 import './index.css';
@@ -12,7 +12,7 @@ function GroupTrashView(props) {
     <div className="group-trash-view w-100 h-100 position-fixed" >
       <MobileCommonHeader
         title={gettext('Trash')}
-        leftName={<i className="dtable-font dtable-icon-return"></i>}
+        leftName={<Icon symbol="return" />}
         onLeftClick={toggle}
       />
       {trashList.length > 0 && (

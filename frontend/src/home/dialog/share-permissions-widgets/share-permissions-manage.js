@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
 import { gettext, siteRoot } from '../../../../constants';
+import { IconButton } from '../../../components';
 
 class SharePermissionsManage extends Component {
   constructor(props) {
@@ -63,22 +64,19 @@ class SharePermissionsManage extends Component {
                     <td width='27%' className="text-truncate" title={name}>{name}</td>
                     <td width='52%' className="text-truncate" title={description}>{description}</td>
                     <td width='21%'>
-                      <span
-                        className="permission-operation-btn edit"
+                      <IconButton
+                        icon="rename"
+                        className="mr-1"
                         onClick={() => this.props.onEditSharePermission(index)}
                         title={gettext('Edit')}
                         aria-label={gettext('Edit')}
-                      >
-                        <i className="dtable-font dtable-icon-rename" aria-hidden="true"></i>
-                      </span>
-                      <span
-                        className="permission-operation-btn delete"
+                      />
+                      <IconButton
+                        icon="delete"
                         onClick={() => this.toggleConfirmDeleteDialog(name, id)}
                         title={gettext('Delete')}
                         aria-label={gettext('Delete')}
-                      >
-                        <i className="dtable-font dtable-icon-delete" aria-hidden="true"></i>
-                      </span>
+                      />
                       {isConfirmDeleteOpen && (
                         <CommonOperationConfirmationDialog
                           title={gettext('Delete custom sharing permission')}

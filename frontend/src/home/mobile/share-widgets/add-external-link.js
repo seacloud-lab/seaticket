@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Alert, Button } from 'reactstrap';
-import { List, InputItem, toaster, Radio, MobileCommonHeader } from '../../../components';
+import { List, InputItem, toaster, Radio, MobileCommonHeader, Icon } from '../../../components';
 import PasswordProtection from './password-protection';
 import ExpireDays from './expire-days';
 import { Utils } from '../../../utils/utils';
@@ -129,12 +129,12 @@ class AddExternalLink extends React.Component {
     const { isSelectedPassword, password, isShowExpiredInput, expireDays, radioCheckName, customToken, errMessage } = this.state;
     return (
       <Fragment>
-        <div className="mobile-share-table">
+        <div className="mobile-share-project">
           <MobileCommonHeader
             title={gettext('External link')}
             titleClass='mobile-share-header'
             onLeftClick={this.toggle}
-            leftName={<i className="dtable-font dtable-icon-return" />}
+            leftName={<Icon symbol="return" />}
             rightStyle={{ color: '#ED7109' }}
           />
           <div>
