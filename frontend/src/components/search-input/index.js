@@ -125,7 +125,7 @@ SearchInput.propTypes = {
   onKeyDown: PropTypes.func,
   wait: PropTypes.number,
   disabled: PropTypes.bool,
-  size: PropTypes.string,
+  size: PropTypes.number,
   onClear: PropTypes.func,
   value: PropTypes.string,
 };

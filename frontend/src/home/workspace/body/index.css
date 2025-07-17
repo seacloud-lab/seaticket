@@ -166,15 +166,6 @@
   justify-content: space-between;
 }
 
-.project-item .project-item-icon-more .sea-qa-icon-svg-more-level {
-  color: #999;
-}
-
-.project-item .project-item-icon-more .sea-qa-icon-svg-more-level:hover {
-  color: #666;
-}
-
-.project-folder-item .project-folder-item-icon,
 .project-item .project-item-icon {
   height: 32px;
   width: 32px;
@@ -182,15 +173,12 @@
   overflow: hidden;
 }
 
-.project-folder-item .project-folder-item-more {
-  position: absolute;
-  right: 0;
-  line-height: 1;
+.project-item .project-item-icon-more-toggle-btn .sea-qa-icon-svg {
   color: #999;
 }
 
-.project-folder-item .project-folder-item-more:hover {
-  color: #666666;
+.project-item .project-item-icon-more-toggle-btn:hover .sea-qa-icon-svg {
+  color: #666;
 }
 
 .project-folder-dropdown {

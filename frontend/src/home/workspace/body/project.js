@@ -203,7 +203,7 @@ class Project extends React.Component {
             <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
           </div>
           {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) && (
-            <IconButton icon="more" onClick={this.toggleMoreOperation} title={gettext('More operations')} aria-label={gettext('More operations')} />
+            <IconButton className="no-hover-bg project-item-icon-more-toggle-btn" icon="more" onClick={this.toggleMoreOperation} title={gettext('More operations')} aria-label={gettext('More operations')} />
           )}
           {this.state.isMoreOperationPopoverShow && (
             <ProjectItemPopover

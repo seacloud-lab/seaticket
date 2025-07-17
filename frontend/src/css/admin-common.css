@@ -68,6 +68,9 @@
 .org-admin .text-secondary,
 .sys-admin .text-secondary {
   color: #999 !important;
+  width: 13px;
+  height: 13px;
+  margin-top: -2px;
 }
 
 .org-admin .side-nav-con .nav .nav-item,

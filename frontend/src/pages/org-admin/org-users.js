@@ -162,8 +162,7 @@ class OrgUsers extends Component {
     });
   };
 
-  onChangePerPage = (e) => {
-    const newPerPage = Number(e.target.value);
+  onChangePerPage = (newPerPage) => {
     const { perPage } = this.state;
     if (perPage === newPerPage) return;
     const newPage = 1;
