@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { toaster, Loading } from '../../components';
+import { toaster, Loading, IconButton } from '../../components';
 import { enableUserSetContactEmail, gettext, loginUrl } from '../../constants';
 import { Utils } from '../../utils/utils';
 import OrgAdminUserNav from '../../components/org-admin-user-nav';
@@ -199,15 +199,15 @@ class Content extends Component {
           <dt className="info-item-heading">{gettext('Name')}</dt>
           <dd>
             {name || '--'}
-            <span title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon dtable-font dtable-icon-rename" onClick={this.toggleSetNameDialog}></span>
+            <IconButton icon="rename" title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon" onClick={this.toggleSetNameDialog} />
           </dd>
 
           <dt className="info-item-heading">{gettext('Contact email')}</dt>
           <dd>
             {contact_email || '--'}
-            {enableUserSetContactEmail &&
-              <span title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon dtable-font dtable-icon-rename" onClick={this.toggleSetContactEmailDialog}></span>
-            }
+            {enableUserSetContactEmail && (
+              <IconButton icon="rename" title={gettext('Edit')} aria-label={gettext('Edit')} className="attr-action-icon" onClick={this.toggleSetContactEmailDialog} />
+            )}
           </dd>
 
           {twoFactorAuthEnabled &&

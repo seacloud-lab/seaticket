@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading } from '../../../components';
+import { toaster, Loading, Icon } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants/config';
@@ -92,7 +92,7 @@ class SelectUser extends React.Component {
   renderSearch = () => {
     return (
       <div className="mobile-search-selects">
-        <span className="mobile-search-user dtable-font dtable-icon-search"></span>
+        <Icon className="mobile-search-user" symbol="search" />
         <input
           className="form-control"
           type="text"
@@ -125,7 +125,7 @@ class SelectUser extends React.Component {
                 </span>
                 {isSelectedOption &&
                   <span className='select-check-icon'>
-                    <i className="dtable-font dtable-icon-check-mark"></i>
+                    <Icon symbol="check-mark" />
                   </span>
                 }
               </div>

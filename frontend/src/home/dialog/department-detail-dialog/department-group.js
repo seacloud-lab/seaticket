@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { SearchInput, Loading } from '../../../components';
+import classnames from 'classnames';
+import { SearchInput, Loading, IconButton } from '../../../components';
 import { gettext, isOrgContext } from '../../../constants/config';
 
 const ItemPropTypes = {
@@ -57,11 +58,15 @@ class Item extends Component {
     return (
       <>
         <div className={isCurrent ? 'tr-highlight group-item' : 'group-item'} onClick={this.getMembers}>
-          {hasChild &&
-            <div onClick={this.toggleExpanded} role="button" className='group-item-fold-btn'>
-              <i className={`dtable-font dtable-icon-down3 ${isExpanded ? '' : 'rotate-270'}`} style={{ color: isCurrent ? '#fff' : '#666666' }}></i>
-            </div>
-          }
+          {hasChild && (
+            <IconButton
+              icon="down"
+              onClick={this.toggleExpanded}
+              role="button"
+              className={classnames('group-item-fold-btn', { 'rotate-icon-270': !isExpanded })}
+              style={{ color: isCurrent ? '#fff' : '#666666' }}
+            />
+          )}
           <span style={hasChild ? {} : { paddingLeft: '20px' }}>
             {department.name}
           </span>
@@ -126,25 +131,20 @@ class DepartmentGroup extends Component {
     return (
       <div className="department-dialog-group">
         <div className="members-search-container">
-          <i className="dtable-search-icon input-icon-addon dtable-font dtable-icon-search"></i>
           <SearchInput
-            className="dtable-search-input mb-2"
+            className="project-search-input mb-2"
             onChange={onSearch}
             placeholder={gettext('Search users')}
             value={searchVal}
+            onClear={clearSearch}
           />
-          {searchVal.length > 0 &&
-            <span className="btn-close-searcher" onClick={clearSearch}>
-              <i aria-hidden="true" className="dtable-font dtable-icon-x"></i>
-            </span>
-          }
         </div>
         {searchVal.length === 0 &&
           <div>
             {isOrgContext &&
               <div className={allMembersClick ? 'tr-highlight group-item' : 'group-item'} onClick={this.getOrgMembers}>
                 <span
-                  className={'dtable-font pr-2'}
+                  className="pr-2"
                   style={{ color: allMembersClick ? '#fff' : '#666', fontSize: '12px' }}
                 />
                 <span>{gettext('All users')}</span>

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Icon } from '../../../components';
 
 const propTypes = {
   options: PropTypes.array.isRequired,
@@ -51,7 +52,7 @@ class SelectPermission extends React.Component {
                     <div className="selected-permission-title">{item.title}</div>
                     <div className="selected-permission-info">
                       <span className="selected-permission-brief">{item.description}</span>
-                      {permission === item.value && <span className="selected-permission-mark dtable-font dtable-icon-check-mark"></span>}
+                      {permission === item.value && (<Icon symbol="check-mark" className="selected-permission-mark" />)}
                     </div>
                   </div>
                 );

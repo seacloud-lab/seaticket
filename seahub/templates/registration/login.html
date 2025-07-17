@@ -1,4 +1,5 @@
 {% extends "base_clean.html" %}
+{% load render_bundle from webpack_loader %}
 {% load i18n %}
 
 {% block sub_title %}{% trans "Log in" %} - {% endblock %}
@@ -22,16 +23,8 @@
     background: #eb8025;
     height: 12px;
 }
-.show-password-toggle {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    cursor: pointer;
-    color: #999;
-}
-.show-password-toggle:hover {
-    color: #666;
-}
+
+{% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block main_content %}
@@ -46,7 +39,7 @@
         {% endif %}
         <div class="position-relative">
             <input type="password" name="password" placeholder="{% trans "Password" %}" aria-label="{% trans "Password" %}" title="{% trans "Password" %}" value="" class="input passwd-input" id="id_password1" autocomplete="off" />
-            <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+            <div class="password-toggle" id="eye-icon-wrapper"></div>
         </div>
 
         {% if form.captcha %}
@@ -236,14 +229,14 @@ $('#refresh-captcha').on('click', function() {
     return false;
 });
 
-$("body").on('click', '.show-password-toggle', function(){
+$("body").on('click', '.password-toggle', function(){
     var $pass1 = document.getElementById("id_password1");
     if ($pass1.type === "password") {
         $pass1.type = "text";
     } else {
         $pass1.type = "password";
     }
-    $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye")
+    $(this).toggleClass("password-show")
 });
 
 $('#login-form').on('submit', function(){
@@ -281,4 +274,6 @@ $(function() {
 
 
 </script>
+
+{% render_bundle 'eyeIcon' 'js' %}
 {% endblock %}

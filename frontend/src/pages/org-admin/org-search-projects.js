@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link } from '@gatsbyjs/reach-router';
-import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { toaster, EmptyTip, Loading, Paginator, ModalPortal, CommonOperationConfirmationDialog } from '../../components';
+import { Col, Form, FormGroup, Input, Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
+import { toaster, EmptyTip, Loading, Paginator, ModalPortal, CommonOperationConfirmationDialog, ProjectIcon, CustomizeDropdownMoreToggle } from '../../components';
 import { Utils } from '../../utils/utils';
 import { gettext, siteRoot, loginUrl, mediaUrl } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
@@ -94,7 +94,7 @@ class Item extends Component {
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver}
           onMouseLeave={this.handleMouseOut}>
           <td className="org-project-icon">
-            <span className="dtable-font dtable-icon-table system-dtable-font" aria-hidden="true"></span>
+            <ProjectIcon size="small" bgColor={item.color} icon={item.icon} />
           </td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
@@ -106,15 +106,7 @@ class Item extends Component {
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                />
+                <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
                 </DropdownMenu>
@@ -203,8 +195,8 @@ class Content extends Component {
               </tbody>
             </table>
             <Paginator
-              gotoPreviousPage={this.getPreviousPage}
-              gotoNextPage={this.getNextPage}
+              goPreviousPage={this.getPreviousPage}
+              goNextPage={this.getNextPage}
               currentPage={this.props.currentPage}
               hasNextPage={this.props.hasNextPage}
               curPerPage={this.props.curPerPage}
@@ -337,11 +329,11 @@ class OrgSearchProjects extends Component {
             <h2 className="heading">{gettext('Bases')}</h2>
             <div className="cur-view-content">
               <div className="mt-4 mb-6">
-                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search bases')}</h4>
+                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search projects')}</h4>
                 <Form>
                   <FormGroup row>
                     <Col sm={5}>
-                      <Input type="text" name="query" value={query} placeholder={gettext('Search bases')}
+                      <Input type="text" name="query" value={query} placeholder={gettext('Search projects')}
                         onChange={this.handleInputChange}/>
                     </Col>
                   </FormGroup>

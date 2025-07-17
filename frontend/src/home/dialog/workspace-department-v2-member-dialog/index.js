@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { toaster, ModalHeader, Loading } from '../../../components';
+import { toaster, ModalHeader, Loading, IconButton } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import User from '../../../models/user';
 import { gettext } from '../../../constants/config';
@@ -84,11 +84,7 @@ class DepartmentItem extends React.Component {
           style={{ paddingLeft }}
         >
           <div className='d-flex align-items-center'>
-            <span
-              className={`expand dtable-font dtable-icon-down3 ${isExpanded ? '' : 'rotate-270'}`}
-              onClick={this.onExpand}
-            >
-            </span>
+            <IconButton icon="down" className={classnames('toggle-expand-btn', { 'rotate-icon-270': !isExpanded })} onClick={this.onExpand} />
             <span className="pl-2">{groupMembersItem.department.name}</span>
           </div>
         </div>
@@ -183,7 +179,7 @@ export default class WorkspaceDepartmentV2MemberDialog extends React.Component {
     const { count, isLoading, groupMembers } = this.state;
     if (isLoading) {
       return (
-        <Modal isOpen={true} toggle={this.toggle} className="dtable-group-member-tree-content">
+        <Modal isOpen={true} toggle={this.toggle} className="sea-qa-group-member-tree-content">
           <ModalHeader toggle={this.toggle}>{gettext('Group members')}</ModalHeader>
           <ModalBody className='group-members'>
             <div className="my-4">
@@ -194,7 +190,7 @@ export default class WorkspaceDepartmentV2MemberDialog extends React.Component {
       );
     }
     return (
-      <Modal isOpen={true} toggle={this.toggle} className="dtable-group-member-tree-content">
+      <Modal isOpen={true} toggle={this.toggle} className="sea-qa-group-member-tree-content">
         <ModalHeader toggle={this.toggle}>{gettext('Group members') + ` (${count})`}</ModalHeader>
         <ModalBody className={classnames('group-members')}>
           <DepartmentItem

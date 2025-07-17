@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
+import Icon from '../icon';
 
 import './index.css';
 
@@ -32,7 +33,7 @@ const RoleStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onCh
       <DropdownToggle className="dropdown-toggle-button d-flex align-items-center" tag="div">
         {currentOption.label}
         <div className="dropdown-icon-container ml-1">
-          <span className={classnames('dtable-font dtable-icon-down3', { 'hide': !isShowDropdownIcon })} />
+          <Icon symbol="down" className={classnames('sea-qa-role-status-down-icon', { 'd-none': !isShowDropdownIcon })}/>
         </div>
       </DropdownToggle>
       <DropdownMenu
@@ -45,7 +46,7 @@ const RoleStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onCh
             <DropdownItem key={`item-${value}`} onClick={() => handleClickMenuOption(option)}>
               {label}
               {value === currentOption.value && (
-                <i className="dtable-font dtable-icon-check-mark ml-2" />
+                <Icon symbol="check" className="sea-qa-role-status-check ml-2" />
               )}
             </DropdownItem>
           );

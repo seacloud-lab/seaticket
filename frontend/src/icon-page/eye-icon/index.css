@@ -1,0 +1,27 @@
+.password-toggle {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  cursor: pointer;
+  color: #999;
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle:hover {
+  color: #666;
+}
+
+.password-toggle .sea-qa-icon-svg-eye {
+  display: none;
+}
+
+.password-toggle.password-show .sea-qa-icon-svg-eye-slash {
+  display: none;
+}
+
+.password-toggle.password-show .sea-qa-icon-svg-eye {
+  display: unset;
+}

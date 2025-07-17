@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RoleStatusEditor, toaster, CommonOperationConfirmationDialog } from '../../components';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
+import { RoleStatusEditor, toaster, CommonOperationConfirmationDialog, CustomizeDropdownMoreToggle } from '../../components';
 import { gettext, siteRoot, orgID, username } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
@@ -174,16 +174,7 @@ class UserItem extends React.Component {
           <td className="text-center cursor-pointer">
             {isOperationMenuShow && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                  onClick={this.onDropdownToggleClick}
-                />
+                <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {currentTab === 'users' && <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>}
                   {currentTab === 'users' && <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>}

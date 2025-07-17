@@ -6,6 +6,7 @@ import { seaQAAPI } from '../../../../api/web-api';
 import { PERMISSION_TYPES } from '../../../../constants';
 import BaseSharePermission from './base-share-permission';
 import Loading from '../../../../components/loading';
+import { IconButton } from '../../../components';
 
 class EditSharePermission extends Component {
 
@@ -70,9 +71,7 @@ class EditSharePermission extends Component {
       <div className="edit-share-permission">
         <div className="edit-share-permission-header d-flex align-items-center justify-content-between">
           <span>
-            <span className="back-btn d-inline-flex align-items-center justify-content-center" onClick={this.props.onChangeStatus}>
-              <i className="dtable-font dtable-icon-return project-icon-style"></i>
-            </span>
+            <IconButton icon="return" className="back-btn d-inline-flex" onClick={this.props.onChangeStatus} />
             <span className="edit-share-permission-header-text">{gettext('Edit permission')}</span>
           </span>
           <Button onClick={this.onUpdateSharePermission} color="outline-primary" size="sm" className="edit-share-permission-btn">{gettext('Submit')}</Button>

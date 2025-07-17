@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Col, Form, FormGroup, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, Paginator } from '../../components';
+import { Col, Form, FormGroup, Input, Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
+import { RoleStatusEditor, toaster, EmptyTip, Loading, Paginator, CustomizeDropdownMoreToggle } from '../../components';
 import MainPanelTopbar from './main-panel-topbar';
 import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';
 import OrgUserInfo from '../../models/org-user';
@@ -162,16 +162,7 @@ class Item extends Component {
           <td className="text-center cursor-pointer">
             {isOperationMenuShow && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                  onClick={this.onDropdownToggleClick}
-                />
+                <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
                   <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>
@@ -256,8 +247,8 @@ class Content extends Component {
               </tbody>
             </table>
             <Paginator
-              gotoPreviousPage={this.getPreviousPage}
-              gotoNextPage={this.getNextPage}
+              goPreviousPage={this.getPreviousPage}
+              goNextPage={this.getNextPage}
               currentPage={this.props.currentPage}
               hasNextPage={this.props.hasNextPage}
               curPerPage={this.props.curPerPage}

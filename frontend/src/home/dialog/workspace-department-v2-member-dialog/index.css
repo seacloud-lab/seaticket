@@ -1,43 +1,43 @@
-.dtable-group-member-tree-content .modal-content {
+.sea-qa-group-member-tree-content .modal-content {
   width: 500px;
   height: 560px;
 }
 
-.dtable-group-member-tree-content .modal-body {
+.sea-qa-group-member-tree-content .modal-body {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 2px 0;
 }
 
-.dtable-group-member-tree-content .group-members .member-details {
+.sea-qa-group-member-tree-content .group-members .member-details {
   display: flex;
   align-items: center;
   height: 40px;
   width: 100%;
 }
 
-.dtable-group-member-tree-content .group-members .member-details:hover {
+.sea-qa-group-member-tree-content .group-members .member-details:hover {
   background-color: #f5f5f5;
 }
 
-.dtable-group-member-tree-content .group-item .expand {
+.sea-qa-group-member-tree-content .group-item .expand {
   color: #999;
   font-size: 12px;
   cursor: pointer;
 }
 
-.dtable-group-member-tree-content .group-item .expand:hover {
+.sea-qa-group-member-tree-content .group-item .expand:hover {
   color: #666;
 }
 
-.dtable-group-member-tree-content .member-details .member-avatar {
+.sea-qa-group-member-tree-content .member-details .member-avatar {
   overflow: hidden;
   height: 24px;
   width: 24px;
   border-radius: 50%;
 }
 
-.dtable-group-member-tree-content .member-details .member-name {
+.sea-qa-group-member-tree-content .member-details .member-name {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

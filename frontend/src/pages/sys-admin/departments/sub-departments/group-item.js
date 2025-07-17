@@ -1,9 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
+import { Dropdown, DropdownItem, DropdownMenu } from 'reactstrap';
 import dayjs from '../../../../utils/dayjs';
 import { gettext, siteRoot } from '../../../../constants';
+import { CustomizeDropdownMoreToggle } from '../../../../components';
 
 const propTypes = {
   group: PropTypes.object.isRequired,
@@ -80,15 +81,7 @@ class GroupItem extends React.Component {
         <td className="text-center cursor-pointer">
           {isOpIconShown &&
             <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-              <DropdownToggle
-                tag="a"
-                role="button"
-                className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                title={gettext('More operations')}
-                aria-label={gettext('More operations')}
-                data-toggle="dropdown"
-                aria-expanded={this.state.isItemMenuShow}
-              />
+              <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} />
               <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mr-2">
                 <DropdownItem onClick={this.toggleRenameDialog}>{gettext('Rename')}</DropdownItem>
                 <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>

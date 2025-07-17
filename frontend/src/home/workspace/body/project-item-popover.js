@@ -5,6 +5,7 @@ import CustomizePopover from '../../../components/customize-popover';
 import { gettext } from '../../../constants';
 
 import './project-item-popover.css';
+import { Icon } from '../../../components';
 
 class ProjectItemPopover extends React.Component {
 
@@ -54,15 +55,15 @@ class ProjectItemPopover extends React.Component {
           {(
             <>
               <button className="dropdown-item project-item-operation" onClick={this.onShareProjectToggle}>
-                <i className="project-item-operation-icon dtable-font dtable-icon-share"></i>
+                <Icon symbol="share" className="project-item-operation-icon" />
                 {gettext('Share')}
               </button>
               <button className="dropdown-item project-item-operation" onClick={this.onProjectSettingsToggle}>
-                <i className="project-item-operation-icon dtable-font dtable-icon-edit"></i>
+                <Icon symbol="rename" className="project-item-operation-icon" />
                 {gettext('Edit name and icon')}
               </button>
               <button className="dropdown-item project-item-operation" onClick={this.onDeleteProjectToggle}>
-                <i className="project-item-operation-icon dtable-font dtable-icon-delete"></i>
+                <Icon symbol="delete" className="project-item-operation-icon" />
                 {gettext('Delete')}
               </button>
             </>

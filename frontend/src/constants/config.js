@@ -48,7 +48,7 @@ export const canRemoveBasePasswordViaPhone = window.app.pageOptions.canRemoveBas
 export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const enableSeatableAI = window.app.pageOptions.enableSeatableAI;
-export const isOrgStaff = window.app.pageOptions?.isOrgStaff;
+export const isOrgStaff = window.app.pageOptions.isOrgStaff;
 
 export const curNoteMsg = window.app.pageOptions.curNoteMsg;
 export const curNoteID = window.app.pageOptions.curNoteID;

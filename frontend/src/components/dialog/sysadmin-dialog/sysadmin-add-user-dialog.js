@@ -5,6 +5,8 @@ import SelectEditor from '../../select-editor/select-editor';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import ModalHeader from '../../modal-header';
+import Icon from '../../icon';
+import IconButton from '../../icon-button';
 
 import '../../../css/admin-common.css';
 
@@ -148,7 +150,11 @@ class SysAdminAddUserDialog extends React.Component {
               <FormGroup>
                 <Label>
                   {gettext('Role')}
-                  <span className="small ml-1 dtable-font dtable-icon-use-help" title={gettext('You can also add a user as a guest, who will not be allowed to create tables and groups.')}></span>
+                  <Icon
+                    className="ml-1 sea-qa-help-icon"
+                    symbol="help"
+                    title={gettext('You can also add a user as a guest, who will not be allowed to create tables and groups.')}
+                  />
                 </Label>
                 <SelectEditor
                   isTextMode={false}
@@ -164,8 +170,8 @@ class SysAdminAddUserDialog extends React.Component {
               <Label>{gettext('Password')}</Label>
               <InputGroup>
                 <Input autoComplete="new-password" type={isPasswordVisible ? 'text' : 'password'} value={password || ''} onChange={this.inputPassword} />
-                <Button className="mt-0" onClick={this.togglePasswordVisible}><i className={`link-operation-icon dtable-font ${this.state.isPasswordVisible ? 'dtable-icon-eye' : 'dtable-icon-eye-slash'}`}></i></Button>
-                <Button className="mt-0" onClick={this.generatePassword}><i className="link-operation-icon dtable-font dtable-icon-random-generation"></i></Button>
+                <IconButton icon={this.state.isPasswordVisible ? 'eye' : 'eye-slash'} className="mt-0 btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.togglePasswordVisible} />
+                <IconButton icon="magic" className="btn btn-secondary mt-0" style={{ height: 42, width: 42 }} onClick={this.generatePassword} />
               </InputGroup>
             </FormGroup>
             <FormGroup>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import { siteRoot } from '../../../constants';
-import Loading from '../../../components/loading';
+import { Icon, Loading } from '../../../components';
 
 const WorkWeixinDepartmentMembersListPropTypes = {
   isMembersListLoading: PropTypes.bool.isRequired,
@@ -42,7 +42,7 @@ class WorkWeixinDepartmentMembersList extends Component {
           <td>{member.name}</td>
           <td>{member.mobile}</td>
           <td>{member.contact_email}</td>
-          <td>{member.email && <i className="dtable-font dtable-icon-check-mark"></i>}</td>
+          <td>{member.email && (<Icon symbol="check-mark" />)}</td>
         </tr>
       );
     });

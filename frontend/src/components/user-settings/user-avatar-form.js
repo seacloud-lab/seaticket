@@ -1,8 +1,10 @@
 import React from 'react';
+import classnames from 'classnames';
 import toaster from '../toaster';
 import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
+import IconButton from '../icon-button';
 
 const { avatarURL, csrfToken } = window.app.pageOptions;
 
@@ -88,7 +90,7 @@ class UserAvatarForm extends React.Component {
         <div className="col-auto position-relative" onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}>
           <img src={this.state.avatarSrc} width="80" height="80" alt="" className="user-avatar" />
           <input type="file" name="avatar" className="d-none" onChange={this.fileInputChange} ref={this.fileInput} />
-          <span className={`avatar-edit dtable-font dtable-icon-rename ${!this.state.isEditShown && 'd-none'}`} onClick={this.openFileInput}></span>
+          <IconButton className={classnames('avatar-edit', { 'd-none': !this.state.isEditShown })} icon="rename" onClick={this.openFileInput} />
         </div>
       </div>
     );

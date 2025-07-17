@@ -313,7 +313,7 @@ class Workspace extends React.Component {
     });
   };
 
-  onDtableManageMembers = () => {
+  onProjectManageMembers = () => {
     seaQAAPI.getGroup(this.props.workspace.group_id).catch(error => {
       this.handleError(error);
     });
@@ -469,7 +469,7 @@ class Workspace extends React.Component {
             openGroupMember={this.openGroupMember}
             onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
-            onDtableManageMembers={this.onDtableManageMembers}
+            onProjectManageMembers={this.onProjectManageMembers}
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
@@ -504,7 +504,7 @@ class Workspace extends React.Component {
             openGroupMember={this.openGroupMember}
             onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
-            onDtableManageMembers={this.onDtableManageMembers}
+            onProjectManageMembers={this.onProjectManageMembers}
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
             toggleGroupInviteDialog={this.toggleGroupInviteDialog}

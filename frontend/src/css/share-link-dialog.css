@@ -62,18 +62,20 @@
   margin-bottom: 0;
 }
 
-.share-dialog-content .dtable-icon-x {
-  font-size: 16px;
+.share-dialog-content .sea-qa-icon-svg-x {
+  height: 16px;
+  width: 16px;
 }
 
-.share-dialog-content .dtable-icon-api,
-.share-dialog-content .dtable-icon-more-level,
-.share-dialog-content .dtable-icon-copy-link {
-  font-size: 14px;
+.share-dialog-content .sea-qa-icon-svg-api,
+.share-dialog-content .sea-qa-icon-svg-more,
+.share-dialog-content .sea-qa-icon-svg-copy {
+  height: 12px;
+  width: 12px;
 }
 
-.share-dialog-content .dtable-icon-confirm,
-.share-dialog-content .dtable-icon-x {
+.share-dialog-content .sea-qa-icon-svg-confirm,
+.share-dialog-content .sea-qa-icon-svg-x {
   color: #666666;
 }
 
@@ -157,7 +159,7 @@ input.expire-input {
   border-top-right-radius: 3px;
 }
 
-.dtable-share-link-list-container {
+.sea-qa-share-link-list-container {
   overflow: auto;
   margin-top: 1.25rem;
   height: calc(100% - 91px);
@@ -167,17 +169,11 @@ input.expire-input {
   background-color: #f5f5f5;
 }
 
-.invite-link-tr .dtable-icon-unlock {
-  font-size: 14px;
-  line-height: 1;
-  vertical-align: middle;
-}
-
-.invite-link-tr .dtable-icon-copy-link {
+.invite-link-tr .sea-qa-icon-svg-copy {
   margin-left: 15px;
 }
 
-.invite-link-tr .dtable-icon-x {
+.invite-link-tr .sea-qa-icon-svg-x {
   margin-left: 10px;
 }
 

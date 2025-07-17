@@ -59,12 +59,12 @@ class AllExternalLinksDialog extends React.Component {
     const { links, isLoading } = this.state;
     return (
       <ModalPortal>
-        <Modal isOpen={true} toggle={this.toggle} className="dtable-external-links-dialog">
+        <Modal isOpen={true} toggle={this.toggle} className="sea-qa-external-links-dialog">
           <ModalHeader toggle={this.toggle}>{currentProject.name}</ModalHeader>
-          <ModalBody className="dtable-external-links-body">
+          <ModalBody className="sea-qa-external-links-body">
             {isLoading ?
               <Loading /> :
-              <div className="dtable-external-links-content">
+              <div className="sea-qa-external-links-content">
                 <ExternalLinks
                   links={links}
                   emptyTip={gettext('No links')}

@@ -82,8 +82,8 @@ class Content extends Component {
           </table>
           {pageInfo &&
           <Paginator
-            gotoPreviousPage={this.getPreviousPage}
-            gotoNextPage={this.getNextPage}
+            goPreviousPage={this.getPreviousPage}
+            goNextPage={this.getNextPage}
             currentPage={pageInfo.current_page}
             hasNextPage={pageInfo.has_next_page}
           />

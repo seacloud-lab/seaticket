@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading } from '../../../components';
+import { toaster, Loading, Icon } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
@@ -119,7 +119,7 @@ class SelectGroup extends React.Component {
                 <span className="selected-item-name">{groupItem.label}</span>
                 {selectedGroupIndex > -1 &&
                   <span className='select-check-icon'>
-                    <i className="dtable-font dtable-icon-check-mark"></i>
+                    <Icon symbol="check-mark" />
                   </span>
                 }
               </div>

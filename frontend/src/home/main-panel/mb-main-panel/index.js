@@ -9,6 +9,7 @@ import Workspace from '../../models/workspace.js';
 import { gettext, siteRoot } from '../../../constants';
 import MobileMine from '../../mobile/mobile-mine';
 import MobileHeader from '../../mobile/mobile-header';
+import { Icon } from '../../../components';
 
 import './index.css';
 
@@ -22,14 +23,14 @@ const BAR_ITEMS = [
   {
     key: 'Projects',
     title: gettext('Projects'),
-    icon: <span className="dtable-font dtable-icon-dtable-logo tab-item"></span>,
-    selectedIcon: <span className="dtable-font dtable-icon-dtable-logo selected-tab-item"></span>
+    icon: <Icon symbol="home" className="tab-item" />,
+    selectedIcon: <Icon symbol="home" className="tab-item selected-tab-item" />
   },
   {
     key: 'Mine',
     title: gettext('Mine'),
-    icon: <span className="dtable-font dtable-icon-creator tab-item"></span>,
-    selectedIcon: <span className="dtable-font dtable-icon-creator selected-tab-item"></span>
+    icon: <Icon symbol="mine" className="tab-item" />,
+    selectedIcon: <Icon symbol="mine" className="tab-item selected-tab-item" />
   }
 ];
 

@@ -1,12 +1,11 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, ModalPortal } from '../../../components';
+import { toaster, ModalPortal, ProjectIcon } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import RestoreProjectDialog from '../restore-project-dialog';
-import ProjectIcon from '../../workspace/body/project-icon';
 
 const propTypes = {
   item: PropTypes.object.isRequired,

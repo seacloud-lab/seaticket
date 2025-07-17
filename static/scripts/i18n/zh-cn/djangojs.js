@@ -315,7 +315,7 @@
     "No tables": "\u6ca1\u6709\u8868\u683c",
     "No users": "\u6ca1\u6709\u7528\u6237",
     "Note": "\u6ce8\u91ca",
-    "Note: Settings via web interface are saved in database table (dtable-db/constance_config). They have a higher priority over the settings in config files.": "\u6ce8\u610f\uff1a\u901a\u8fc7\u7f51\u9875\u754c\u9762\u7684\u8bbe\u7f6e\u4fdd\u5b58\u5728\u6570\u636e\u5e93\u8868\uff08dtable-db/constance_config\uff09\u4e2d\u3002\u5b83\u4eec\u6bd4\u914d\u7f6e\u6587\u4ef6\u4e2d\u7684\u8bbe\u7f6e\u5177\u6709\u66f4\u9ad8\u7684\u4f18\u5148\u7ea7\u3002",
+    "Note: Settings via web interface are saved in database table (sea-qa-db/constance_config). They have a higher priority over the settings in config files.": "\u6ce8\u610f\uff1a\u901a\u8fc7\u7f51\u9875\u754c\u9762\u7684\u8bbe\u7f6e\u4fdd\u5b58\u5728\u6570\u636e\u5e93\u8868\uff08sea-qa-db/constance_config\uff09\u4e2d\u3002\u5b83\u4eec\u6bd4\u914d\u7f6e\u6587\u4ef6\u4e2d\u7684\u8bbe\u7f6e\u5177\u6709\u66f4\u9ad8\u7684\u4f18\u5148\u7ea7\u3002",
     "Notification Rule": "\u901a\u77e5\u89c4\u5219",
     "Notifications": "\u901a\u77e5",
     "Number of App Connections": "APP \u8fde\u63a5\u6570",

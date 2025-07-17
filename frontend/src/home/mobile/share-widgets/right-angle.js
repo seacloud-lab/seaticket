@@ -1,9 +1,10 @@
 import React from 'react';
+import { Icon } from '../../../components';
 
 export default function RightAngle() {
   return (
     <span className="mobile-item-angle-right">
-      <i className="dtable-font dtable-icon-right"></i>
+      <Icon symbol="right" />
     </span>
   );
 }

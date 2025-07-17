@@ -6,12 +6,12 @@ import { isEnter, isModF } from '../../utils/hotkey';
 import Account from '../../components/account';
 import ProjectSearcher from '../search/project-searcher';
 import { QUERY_TYPE } from '../search/project-searcher/constant';
+import { IconButton } from '../../components';
 
 const gettext = window.gettext;
 const controlKey = isMac() ? '⌘' : 'Ctrl';
 
-
-class AppDTableHeader extends React.Component {
+class Header extends React.Component {
 
   constructor(props) {
     super(props);
@@ -79,7 +79,7 @@ class AppDTableHeader extends React.Component {
         >
           {!isShowSearcher &&
             <div className="input-icon">
-              <i className="search-icon-left input-icon-addon dtable-font dtable-icon-search"></i>
+              <IconButton className="input-icon-addon h-100 sea-qa-search-icon-btn" icon="search" />
               <span
                 type="text"
                 className="form-control search-input"
@@ -106,9 +106,9 @@ class AppDTableHeader extends React.Component {
   render() {
     let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
-      <header id="header" className="dtable-header">
+      <header id="header" className="sea-qa-home-header">
         <div className="side-panel-north" style={{ flex: '0 0 22%' }}>
-          <a className="dtable-logo" href={siteRoot}>
+          <a className="sea-qa-logo" href={siteRoot}>
             <img
               src={logoUrl}
               height={logoHeight}
@@ -131,4 +131,4 @@ class AppDTableHeader extends React.Component {
 
 }
 
-export default AppDTableHeader;
+export default Header;

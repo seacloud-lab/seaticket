@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import HeaderDropdownMenu from '../dropdown-menu/header-dropdown-menu';
+import { Icon } from '../../components';
 
 const gettext = window.gettext;
 
@@ -12,7 +13,7 @@ const propTypes = {
   openGroupMember: PropTypes.func,
   onRenameGroupToggle: PropTypes.func,
   toggleManageMembersDialog: PropTypes.func,
-  onDtableManageMembers: PropTypes.func,
+  onProjectManageMembers: PropTypes.func,
   onDeleteGroupToggle: PropTypes.func,
   onLeaveGroupToggle: PropTypes.func,
   onTransferGroupToggle: PropTypes.func,
@@ -25,33 +26,31 @@ class WorkspaceHeader extends Component {
   renderName = () => {
     const { workspace } = this.props;
     const { type, group_owner, name } = workspace;
-    const preCls = 'table-workspace-icon dtable-font dtable-icon-';
     const isPersonal = type === 'personal';
     const isDepart = group_owner === 'system admin';
     if (isPersonal) {
       return (
         <>
-          <span className={`${preCls}creator`}></span>
-          <span>{gettext('My projects')}</span>
+          <Icon symbol="creator" className="project-workspace-icon" />
+          <span className="text-truncate flex-1" title={gettext('My projects')}>{gettext('My projects')}</span>
         </>
       );
-    } else {
-      if (isDepart) {
-        return (
-          <>
-            <span className={`${preCls}department`} title={gettext('This is a department')}></span>
-            <span>{name}</span>
-          </>
-        );
-      } else {
-        return (
-          <>
-            <span className={`${preCls}collaborator`}></span>
-            <span>{name}</span>
-          </>
-        );
-      }
     }
+    if (isDepart) {
+      return (
+        <>
+          <Icon symbol="department" className="project-workspace-icon" title={gettext('This is a department')}/>
+          <span className="text-truncate flex-1" title={name}>{name}</span>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Icon symbol="collaborator" className="project-workspace-icon"/>
+        <span className="text-truncate flex-1" title={name}>{name}</span>
+      </>
+    );
   };
 
   render() {
@@ -68,12 +67,12 @@ class WorkspaceHeader extends Component {
       }
     }
     return (
-      <div className={`${isDesktop ? '' : 'table-mobile-heading ' }table-heading`}>
-        <span>{this.renderName()}</span>
+      <div className={`${isDesktop ? '' : 'table-mobile-heading ' }workspace-header`}>
+        <span className="d-flex align-items-center o-hidden flex-1">{this.renderName()}</span>
         <HeaderDropdownMenu
           onRenameGroupToggle={this.props.onRenameGroupToggle}
           onManageMembersToggle={this.props.toggleManageMembersDialog}
-          onDtableManageMembers={this.props.onDtableManageMembers}
+          onProjectManageMembers={this.props.onProjectManageMembers}
           onDeleteGroupToggle={this.props.onDeleteGroupToggle}
           onLeaveGroupToggle={this.props.onLeaveGroupToggle}
           onTransferGroupToggle={this.props.onTransferGroupToggle}

@@ -1,11 +1,27 @@
-.paginator .btn {
-  min-width: 2.375rem;
-  font-weight: normal;
+.paginator .paginator-btn {
+  height: 38px;
+  min-width: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.paginator .paginator-disabled-btn {
+.paginator .paginator-btn.disabled {
+  background-color: var(--bs-btn-disabled-bg);
+  border-color: var(--bs-btn-disabled-border-color);
+  color: var(--bs-btn-disabled-color);
+  opacity: var(--bs-btn-disabled-opacity);
+  pointer-events: none;
+}
+
+.paginator .paginator-btn .sea-qa-icon-svg {
+  height: 12px;
+  width: 12px;
   color: #999;
-  font-size: 12px;
+}
+
+.paginator .paginator-dropdown .btn {
+  font-weight: 400;
 }
 
 .paginator .paginator-dropdown .btn:active,
@@ -32,13 +48,14 @@
   margin-right: 4px;
 }
 
-.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .dtable-font,
-.paginator-dropdown>.btn .dtable-font {
+.paginator-dropdown .dropdown-menu .dropdown-item .paginator-dropdown-tick .sea-qa-icon-svg,
+.paginator-dropdown>.btn .sea-qa-icon-svg {
   color: #999;
-  font-size: 12px;
+  height: 12px;
+  width: 12px;
   font-weight: 400;
 }
 
-.paginator-dropdown .dropdown-menu .dropdown-item:hover .paginator-dropdown-tick .dtable-font {
+.paginator-dropdown .dropdown-menu .dropdown-item:hover .paginator-dropdown-tick .sea-qa-icon-svg {
   color: #fff;
 }

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, ModalFooter } from 'reactstrap';
 import { gettext } from '../../../constants';
+import { IconButton } from '../../../components';
 
 const ItemPropTypes = {
   member: PropTypes.object,
@@ -39,11 +40,7 @@ class Item extends Component {
         <td width="17%"><img className="avatar" src={member.avatar_url} alt=""/></td>
         <td width="78%">{member.name}</td>
         <td width="10%">
-          <i
-            className="dtable-font dtable-icon-cancel"
-            name={member.email}
-            onClick={this.removeSelectedMember.bind(this, member.email)}>
-          </i>
+          <IconButton icon="x" name={member.email} onClick={this.removeSelectedMember.bind(this, member.email)} />
         </td>
       </tr>
     );

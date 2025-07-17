@@ -74,7 +74,7 @@ class AllWorkspace extends React.Component {
 
     return (
       <Fragment>
-        <div className="main-panel-center dtable-center">
+        <div className="main-panel-center project-center">
           <div className="cur-view-container d-flex flex-1 flex-column">
             <div
               className={`${isDesktop ? '' : 'p-0'} cur-view-content`}

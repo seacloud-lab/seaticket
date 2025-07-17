@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from '../../../components';
+import { Icon, toaster } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import Base from '../../models/base';
 import { Utils, validateName } from '../../../utils/utils';
@@ -128,7 +128,7 @@ class VirtualProject extends React.Component {
           {name}
         </div>
         <div className="project-item-group text-truncate">
-          <i className='table-workspace-icon dtable-font dtable-icon-collaborator'></i>
+          <Icon symbol="collaborator" className="project-workspace-icon" />
           {currentWorkspace.name}
         </div>
         {this.state.isDataLoaded && (

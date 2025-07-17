@@ -14,7 +14,7 @@ const propTypes = {
   customSharePermissions: PropTypes.array,
 };
 
-class ShareTableToGroup extends React.Component {
+class ShareProjectToGroup extends React.Component {
 
   constructor(props) {
     super(props);
@@ -135,6 +135,6 @@ class ShareTableToGroup extends React.Component {
   }
 }
 
-ShareTableToGroup.propTypes = propTypes;
+ShareProjectToGroup.propTypes = propTypes;
 
-export default ShareTableToGroup;
+export default ShareProjectToGroup;

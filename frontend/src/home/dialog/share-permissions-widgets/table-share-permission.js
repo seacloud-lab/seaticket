@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { PERMISSION_TYPES } from '../../../../constants';
 import ViewSharePermission from './view-share-permission';
+import { IconButton } from '../../../components';
 
 class TableSharePermission extends Component {
 
@@ -40,9 +42,7 @@ class TableSharePermission extends Component {
       <div className="table-share-permission">
         <div className="table d-flex">
           <div className="project-name d-flex align-items-center">
-            <span className="toggle-expand-btn" onClick={this.onToggleExpandTable}>
-              <i className={`icon-toggle-expand dtable-font dtable-icon-down3 ${this.state.expanded ? '' : 'rotate-270'}`}></i>
-            </span>
+            <IconButton icon="down" className={classnames('toggle-expand-btn', { 'rotate-icon-270': !this.state.expanded })} onClick={this.onToggleExpandTable} />
             <span className="name-text text-truncate" title={tableName}>{tableName}</span>
           </div>
           <div className="share-permission-operator read-write">

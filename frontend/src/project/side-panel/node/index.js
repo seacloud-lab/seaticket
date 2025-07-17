@@ -1,9 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
 import { gettext } from '../../../constants';
-import Icon from '../../../components/icon';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
+import { CustomizeDropdownMoreToggle, CommonOperationConfirmationDialog, Icon } from '../../../components';
 
 import './index.css';
 
@@ -51,18 +50,7 @@ const Node = ({ node, level, activeNode, onClick, onCreate, onDelete, onEdit }) 
             direction="down"
             className="sea-qa-project-navigation-node-more-operation"
           >
-            <DropdownToggle
-              tag="div"
-              role="button"
-              className="sea-qa-icon-btn sea-qa-project-navigation-node-more-btn"
-              title={gettext('More operations')}
-              aria-label={gettext('More operations')}
-              data-toggle="dropdown"
-              aria-expanded={isShowDropdown}
-              aria-haspopup={true}
-            >
-              <Icon symbol="more" />
-            </DropdownToggle>
+            <CustomizeDropdownMoreToggle isOpen={isShowDropdown} className="sea-qa-icon-btn sea-qa-project-navigation-node-more-btn" />
             <DropdownMenu
               className="sea-qa-dropdown-menu dropdown-menu drop-list position-fixed"
               modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}

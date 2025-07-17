@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
-import { RoleStatusEditor, toaster } from '../../components';
+import { IconButton, RoleStatusEditor, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
 import { gettext, username } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
@@ -162,13 +162,9 @@ class Member extends React.PureComponent {
           )}
         </td>
         <td>
-          {(deleteAuthority && !isItemFreezed) &&
-            <i
-              className="dtable-font dtable-icon-cancel delete-group-member-icon"
-              name={memberItem.email}
-              onClick={this.deleteMember.bind(this, memberItem.email)}>
-            </i>
-          }
+          {(deleteAuthority && !isItemFreezed) && (
+            <IconButton icon="x" className="delete-group-member-icon" name={memberItem.email} onClick={this.deleteMember.bind(this, memberItem.email)} />
+          )}
         </td>
       </tr>
     );

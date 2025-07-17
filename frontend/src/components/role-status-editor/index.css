@@ -1,22 +1,18 @@
-.role-status-editor .dropdown-toggle-button .dtable-icon-down3 {
-  color: #b5b5b5;
-  cursor: pointer;
-}
-
-.role-status-editor .dropdown-toggle-button .dtable-icon-down3.hide {
-  display: none;
-}
-
-.role-status-editor .dropdown-toggle-button .dtable-icon-down3:hover {
-  color: #555;
-}
-
 .role-status-editor .dropdown-toggle-button .dropdown-icon-container {
   display: flex;
   align-items: center;
   flex: 1 0 auto;
   width: 20px;
   height: 20px;
+}
+
+.role-status-editor .dropdown-toggle-button .sea-qa-role-status-down-icon {
+  color: #b5b5b5;
+  cursor: pointer;
+}
+
+.role-status-editor .dropdown-toggle-button .sea-qa-role-status-down-icon:hover {
+  color: #555;
 }
 
 .role-status-editor .dropdown-menu {
@@ -49,7 +45,8 @@
   background-color: unset;
 }
 
-.role-status-editor .dropdown-menu .dropdown-item .dtable-icon-check-mark {
-  font-size: 12px;
+.role-status-editor .dropdown-menu .dropdown-item .sea-qa-role-status-check {
+  height: 12px;
+  width: 12px;
   color: #798d99;
 }

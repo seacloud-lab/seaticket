@@ -126,7 +126,7 @@ class ExpireDays extends React.Component {
   render() {
     const { expireDays, errorMessage } = this.state;
     return (
-      <div className="mobile-share-table">
+      <div className="mobile-share-project">
         <MobileCommonHeader
           title={gettext('Add auto expiration')}
           titleClass='mobile-share-header'

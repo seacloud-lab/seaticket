@@ -14,7 +14,7 @@ const propTypes = {
   currentProject: PropTypes.object.isRequired,
 };
 
-class ShareTableToUser extends React.Component {
+class ShareProjectToUser extends React.Component {
 
   constructor(props) {
     super(props);
@@ -135,6 +135,6 @@ class ShareTableToUser extends React.Component {
   }
 }
 
-ShareTableToUser.propTypes = propTypes;
+ShareProjectToUser.propTypes = propTypes;
 
-export default ShareTableToUser;
+export default ShareProjectToUser;

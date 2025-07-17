@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import DtableMenuToolbar from './toolbar/dtable-menu-toolbar';
+import ProjectMenuToolbar from './toolbar/project-menu-toolbar';
 // import SearchProject from '../search/search-project';
 import { gettext } from '../../constants';
 import { MobileCommonHeader } from '../../components';
@@ -22,8 +22,8 @@ export default class MobileHeader extends Component {
 
   renderBasesHeader = () => {
     return (
-      <header className="main-panel-north dtable-header">
-        <DtableMenuToolbar
+      <header className="main-panel-north sea-qa-home-header">
+        <ProjectMenuToolbar
           onShowSidePanel={this.props.onShowSidePanel}
           loadWorkspaceList={this.props.loadWorkspaceList}
         />

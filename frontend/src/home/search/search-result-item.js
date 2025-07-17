@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ProjectIcon from '../workspace/body/project-icon';
+import { ProjectIcon } from '../../components';
 
 const gettext = window.gettext;
 
@@ -19,7 +19,7 @@ class SearchResultItem extends React.Component {
 
   render() {
     const { item, getClassName } = this.props;
-    const { color, icon, starred, name, shared_name, type, is_encrypted, group_name } = item;
+    const { color, icon, name, shared_name, type, group_name } = item;
     const pathName = group_name === 'personal' ? gettext('My projects') : group_name;
     return (
       <div className={getClassName} onClick={this.onClickHandler}>
@@ -28,8 +28,6 @@ class SearchResultItem extends React.Component {
           <span>{shared_name || name}</span>
           {type === 'shared' && <span className="share-tip">{gettext('Shared')}</span>}
           {pathName && <span className="share-tip text-truncate">{pathName}</span>}
-          {starred && <span className='dtable-font dtable-icon-star star'/>}
-          {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
         </div>
       </div>
     );

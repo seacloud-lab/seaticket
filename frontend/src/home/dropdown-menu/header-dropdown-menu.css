@@ -16,11 +16,13 @@
   text-decoration: none;
 }
 
-.header-more-operation .dtable-icon-new {
+.header-more-operation .sea-qa-icon-svg-add {
   margin-right: 2px;
-  font-size: 16px;
+  height: 16px;
+  width: 16px;
 }
 
-.header-more-operation .dtable-icon-down3 {
-  font-size: 12px;
+.header-more-operation .sea-qa-icon-svg-down {
+  height: 12px;
+  width: 12px;
 }

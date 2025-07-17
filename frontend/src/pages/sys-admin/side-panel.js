@@ -25,7 +25,7 @@ class SidePanel extends React.Component {
     this.props.onCloseSidePanel();
   };
 
-  renderItem = (activeClass, linkTo, iconClass, text, isSvgIcon = false) => {
+  renderItem = (activeClass, linkTo, iconClass, text) => {
     return (
       <li className="nav-item">
         <Link
@@ -33,11 +33,7 @@ class SidePanel extends React.Component {
           to={siteRoot + linkTo}
           onClick={() => this.tabItemClick(activeClass)}
         >
-          {isSvgIcon ? (
-            <Icon symbol={iconClass} />
-          ) : (
-            <span className={`dtable-font dtable-icon-${iconClass}`} aria-hidden="true"></span>
-          )}
+          <Icon symbol={iconClass} />
           <span className="nav-text align-middle">{text}</span>
         </Link>
       </li>
@@ -59,7 +55,7 @@ class SidePanel extends React.Component {
                   this.renderItem('info', 'sys/info/', 'info', gettext('Info'))
                 }
                 {isDefaultAdmin &&
-                  this.renderItem('projects', 'sys/all-projects/', 'dtable-logo', gettext('Projects'))
+                  this.renderItem('projects', 'sys/all-projects/', 'home', gettext('Projects'))
                 }
                 {canManageUser &&
                   this.renderItem('users', 'sys/users/', 'mine', gettext('Users'))
@@ -74,7 +70,7 @@ class SidePanel extends React.Component {
                       to={siteRoot + 'sys/organizations/'}
                       onClick={() => this.tabItemClick('organizations')}
                     >
-                      <span className="dtable-font dtable-icon-organization" aria-hidden="true"></span>
+                      <Icon symbol="organization" aria-hidden="true" />
                       <span className="nav-text align-middle">{gettext('Organizations')}</span>
                     </Link>
                   </li>

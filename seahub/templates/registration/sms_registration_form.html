@@ -1,5 +1,6 @@
 {% extends "base_clean.html" %}
 {% load i18n %}
+{% load render_bundle from webpack_loader %}
 {% block sub_title %}{% trans "Signup" %} - {% endblock %}
 
 {% block extra_style %}{{block.super}}
@@ -10,16 +11,6 @@
     width: 30%;
     border-bottom: 1px solid #a6a6a6;
 }
-.show-password-toggle {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    cursor: pointer;
-    color: #999;
-}
-.show-password-toggle:hover {
-    color: #666;
-}
 .sms-org-register {
     position: relative;
 }
@@ -28,6 +19,8 @@
     top: 230px;
     margin-right: 25px;
 }
+
+{% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block main_content %}
@@ -48,7 +41,7 @@
 
             <div class="position-relative" id="password-input1">
                 {{ form.password1 }}        {{ form.password1.errors }}
-                <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+                <div class="password-toggle" id="eye-icon-wrapper"></div>
             </div>
             <div class="position-relative" id="password-input2">
                 {{ form.password2 }}        {{ form.password2.errors }}
@@ -104,10 +97,10 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-$("body").on('click', '.show-password-toggle', function(){
+$("body").on('click', '.password-toggle', function(){
     var $pass1 = document.getElementById("id_password1");
     var $pass2 = document.getElementById("id_password2");
-    var toggle = $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye");
+    var toggle = $(this).toggleClass("password-show");
     [$pass1, $pass2].forEach(function($passwords) {
         if ($passwords.type === "password") {
             $passwords.type = "text";
@@ -238,4 +231,6 @@ if (window.history.replaceState) {
     window.history.replaceState( null, null, window.location.href );
 }
 </script>
+
+{% render_bundle 'eyeIcon' 'js' %}
 {% endblock %}

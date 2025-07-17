@@ -1,0 +1,39 @@
+.sea-qa-search-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input {
+  width: 100%;
+  padding-left: 2.5rem;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-search {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-search:hover {
+  background-color: inherit;
+  cursor: default;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-search .sea-qa-icon-svg {
+  color: #9aa0ac;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-clear {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+}
+
+.sea-qa-project-search-in-popover.sea-qa-search-input-wrapper {
+  margin: 0 16px;
+  width: calc(100% - 32px);
+}

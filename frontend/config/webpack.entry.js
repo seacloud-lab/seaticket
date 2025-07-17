@@ -6,6 +6,11 @@ const entryFiles = {
   sysAdmin: '/pages/sys-admin',
   home: '/home',
   project: '/project',
+  eyeIcon: '/icon-page/eye-icon',
+  checkCircleIcon: '/icon-page/check-circle',
+  exclamationCircleIcon: '/icon-page/exclamation-circle',
+  moreIcon: '/icon-page/more',
+  downIcon: '/icon-page/down',
 };
 
 const getEntries = (isEnvDevelopment) => {
@@ -15,12 +20,7 @@ const getEntries = (isEnvDevelopment) => {
     if (isEnvDevelopment) {
       entry.push(require.resolve('react-dev-utils/webpackHotDevClient'));
     }
-    if (key === 'baseStatistic') {
-      entry.push(paths.appNodeModules + entryFiles[key]);
-    } else {
-      entry.push(paths.appSrc + entryFiles[key]);
-    }
-
+    entry.push(paths.appSrc + entryFiles[key]);
     entries[key] = entry;
   });
   return entries;

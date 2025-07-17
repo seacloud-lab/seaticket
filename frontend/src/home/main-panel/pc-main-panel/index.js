@@ -6,7 +6,7 @@ import Workspace from '../../models/workspace';
 import AllWorkspaces from './all-workspaces';
 import WorkspaceInMainPanel from './workspace-in-main-panel';
 
-import '../../../css/dtable-search.css';
+import '../../../css/project-search.css';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
-import { EmptyTip, Loading, Paginator } from '../../../components';
+import { EmptyTip, IconButton, Loading, Paginator, ProjectIcon } from '../../../components';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -74,7 +74,9 @@ class Item extends Component {
     return (
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
-          <td className="org-project-icon"><span className="dtable-font dtable-icon-table system-dtable-font" aria-hidden="true"></span></td>
+          <td className="org-project-icon">
+            <ProjectIcon size="small" bgColor={item.color} icon={item.icon} />
+          </td>
           <td>
             {item.name}
           </td>
@@ -150,14 +152,13 @@ class Content extends Component {
                 <th width="15%">{gettext('Created at')}</th>
                 <th width="10%">
                   {gettext('Size')}
-                  <span className="dtable-font dtable-icon-use-help ml-1" id='dtable-icon-use-help-tip'>
-                    <UncontrolledTooltip
-                      placement="bottom"
-                      target='dtable-icon-use-help-tip'
-                    >
-                      {gettext('The size of the assets of the base is not included')}
-                    </UncontrolledTooltip>
-                  </span>
+                  <IconButton icon="help" className="ml-1" id="project-icon-use-help-tip" />
+                  <UncontrolledTooltip
+                    placement="bottom"
+                    target="project-icon-use-help-tip"
+                  >
+                    {gettext('The size of the assets of the project is not included')}
+                  </UncontrolledTooltip>
                 </th>
               </tr>
             </thead>
@@ -174,8 +175,8 @@ class Content extends Component {
             </tbody>
           </table>
           <Paginator
-            gotoPreviousPage={this.getPreviousPageList}
-            gotoNextPage={this.getNextPageList}
+            goPreviousPage={this.getPreviousPageList}
+            goNextPage={this.getNextPageList}
             currentPage={pageInfo.current_page}
             hasNextPage={pageInfo.has_next_page}
             canResetPerPage={true}

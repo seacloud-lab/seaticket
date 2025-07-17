@@ -1,11 +1,12 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import toaster from '../toaster';
 import { Utils } from '../../utils/utils';
 import { isEnter, isEsc } from '../../utils/hotkey';
 import { isWorkWeChat } from '../../utils/wechat-utils';
 import { seaQAAPI } from '../../api/web-api';
-import { siteRoot, gettext, avatarURL, isOrgContext, canRunPython, useExternalTeamAdmin, enableSeatableAI } from '../../constants';
+import { siteRoot, gettext, avatarURL, isOrgContext, useExternalTeamAdmin } from '../../constants';
+import IconBtn from '../icon-button';
 
 import './index.css';
 
@@ -26,7 +27,6 @@ class Account extends Component {
       contactEmail: '',
       isStaff: false,
       isOrgStaff: false,
-      isShowMoreInfo: false,
       quotaTotal: '',
       quotaUsage: '',
       usageRate: ''
@@ -93,10 +93,6 @@ class Account extends Component {
     });
   };
 
-  showMore = () => {
-    this.setState({ isShowMoreInfo: !this.state.isShowMoreInfo });
-  };
-
   onClickAccount = () => {
     if (this.isFirstMounted) {
       seaQAAPI.getAccountInfo().then(resp => {
@@ -138,7 +134,6 @@ class Account extends Component {
     } else {
       this.setState({
         showInfo: !this.state.showInfo,
-        isShowMoreInfo: false
       });
     }
   };
@@ -220,57 +215,11 @@ class Account extends Component {
               <span id="quota-usage" className="usage seatable-bg-orange" style={{ width: this.state.apiCallsUsageRate }}></span>
             </div>
           </div>
-          {canRunPython && <span className="account-resource-more" onClick={this.showMore}>{gettext('More')}</span>}
         </div>
         <a href={siteRoot + 'profile/'} className="item">{gettext('Personal settings')}</a>
         {(this.state.enableSubscription && !isOrgContext) && <a href={siteRoot + 'subscription/'} className="item">{'付费管理'}</a>}
         {this.renderMenu()}
         {!this.isWorkWX && <a href={siteRoot + 'accounts/logout/'} className="item">{gettext('Log out')}</a>}
-      </div>
-    );
-  };
-
-  renderMore = () => {
-    return (
-      <div className="account-popover-more">
-        <div className="item o-hidden">
-          <span>
-            <i className="dtable-font dtable-icon-return mr-2" onClick={this.showMore} aria-hidden="true"></i>
-            <span title={gettext('More')} aria-label={gettext('More')}>{gettext('More')}</span>
-          </span>
-        </div>
-        <div className="account-popover-more-item">
-          <div id="python-scripts-runs" className="account-info">
-            <p>{gettext('Python scripts runs')}{': '}{this.state.scriptsRunningCount} / {this.state.scriptsRunningTotal}</p>
-            <div id="quota-bar">
-              <span id="python-scripts-runs-usage" className="usage seatable-bg-orange" style={{ width: this.state.scriptsRunningUsageRate }}></span>
-            </div>
-          </div>
-          {isOrgContext &&
-            <Fragment>
-              <div id="big-data-rows" className="account-info">
-                <p>{gettext('Number of rows in big data storage')}{': '}{this.state.bigDataTotalRows} / {this.state.bigDataRowLimit}</p>
-                <div id="quota-bar">
-                  <span id="big-data-rows-usage" className="usage seatable-bg-orange" style={{ width: this.state.bigDataRowUsageRate }}></span>
-                </div>
-              </div>
-              <div id="big-data-storage" className="account-info">
-                <p>{gettext('Storage used by big data storage')}{': '}{this.state.bigDataTotalStorage} / {this.state.bigDataStorageQuota} </p>
-                <div id="quota-bar">
-                  <span id="big-data-storage-usage" className="usage seatable-bg-orange" style={{ width: this.state.bigDataStorageUsageRate }}></span>
-                </div>
-              </div>
-            </Fragment>
-          }
-          {enableSeatableAI &&
-            <div id="ai-credit" className="account-info">
-              <p>{gettext('AI credit used')}{': '}{this.state.aiCost} / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'}</p>
-              <div id="quota-bar">
-                <span id="ai-credit-usage" className="usage seatable-bg-orange" style={{ width: this.state.aiUsageRate }}></span>
-              </div>
-            </div>
-          }
-        </div>
       </div>
     );
   };
@@ -288,18 +237,18 @@ class Account extends Component {
         >
           <span>{this.renderAvatar()}</span>
         </span>
-        <span
-          className="account-toggle dtable-font dtable-icon-more-vertical mobile-icon d-md-none"
+        <IconBtn
+          icon="more-vertical"
+          className="account-toggle mobile-icon d-md-none"
           aria-label={gettext('View profile and more')}
           title={gettext('View profile and more')}
           onClick={this.onClickAccount}
-        >
-        </span>
+        />
         <div id="user-info-popup" className={`account-popup sf-popover ${this.state.showInfo ? '' : 'hide'}`}>
           <div className="outer-caret up-outer-caret">
             <div className="inner-caret"></div>
           </div>
-          {this.state.isShowMoreInfo ? this.renderMore() : this.renderDefaultAccount()}
+          {this.renderDefaultAccount()}
         </div>
       </div>
     );

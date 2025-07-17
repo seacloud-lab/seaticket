@@ -135,8 +135,8 @@ class Content extends Component {
           </table>
           {(!this.props.isAdmin) &&
           <Paginator
-            gotoPreviousPage={this.getPreviousPage}
-            gotoNextPage={this.getNextPage}
+            goPreviousPage={this.getPreviousPage}
+            goNextPage={this.getNextPage}
             currentPage={currentPage}
             hasNextPage={hasNextPage}
             curPerPage={curPerPage}

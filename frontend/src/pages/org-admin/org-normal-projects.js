@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
 import dayjs from 'dayjs';
-import { toaster, ModalPortal, CommonOperationConfirmationDialog, Paginator } from '../../components';
+import { toaster, ModalPortal, CommonOperationConfirmationDialog, Paginator, ProjectIcon, CustomizeDropdownMoreToggle } from '../../components';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
@@ -115,7 +115,7 @@ class Item extends React.Component {
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
           <td className="org-project-icon">
-            <span className="dtable-font dtable-icon-table system-dtable-font" aria-hidden="true"></span>
+            <ProjectIcon size="small" icon={item.icon} bgColor={item.color} />
           </td>
           <td>
             {item.name}
@@ -127,15 +127,7 @@ class Item extends React.Component {
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                />
+                <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
                 </DropdownMenu>
@@ -261,8 +253,8 @@ class OrgNormalProjects extends React.Component {
           </tbody>
         </table>
         <Paginator
-          gotoPreviousPage={this.getPreviousPageList}
-          gotoNextPage={this.getNextPageList}
+          goPreviousPage={this.getPreviousPageList}
+          goNextPage={this.getNextPageList}
           currentPage={page}
           hasNextPage={Utils.hasNextPage(page, per_page, count)}
           canResetPerPage={true}

@@ -4,8 +4,8 @@ import { Utils } from '../../../../utils/utils';
 import { gettext } from '../../../../constants';
 import dayjs from '../../../../utils/dayjs';
 import ProjectOpMenu from '../../projects/project-op-menu';
-import CommonOperationConfirmationDialog from '../../../../components/dialog/common-operation-confirmation-dialog';
 import DTableAllExternalLinksDialog from '../../../dtable/dialog/all-external-links-dialog';
+import { ProjectIcon, CommonOperationConfirmationDialog } from '../../../../components'
 
 const propTypes = {
   item: PropTypes.object.isRequired,
@@ -111,12 +111,13 @@ class BaseItem extends React.Component {
   render() {
     const { isOpIconShown } = this.state;
     const { item } = this.props;
-    const iconClass = 'dtable-font dtable-icon-table system-dtable-font';
 
     return (
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
-          <td className="org-project-icon"><span className={iconClass} /></td>
+          <td className="org-project-icon">
+            <ProjectIcon size="small" bgColor={item.color} icon={item.icon} />
+          </td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>

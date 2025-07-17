@@ -2,7 +2,8 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
-import { RoleStatusEditor, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
+import classnames from 'classnames';
+import { RoleStatusEditor, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import UserLink from '../user-link';
@@ -76,8 +77,8 @@ class Content extends Component {
             hasNextPage={this.props.hasNextPage}
             curPerPage={this.props.curPerPage}
             resetPerPage={this.props.resetPerPage}
-            gotoPreviousPage={this.getPreviousPage}
-            gotoNextPage={this.getNextPage}
+            goPreviousPage={this.getPreviousPage}
+            goNextPage={this.getNextPage}
           />
           }
         </Fragment>
@@ -159,7 +160,13 @@ class Item extends Component {
           </td>
           <td>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
-            <span className={`attr-action-icon dtable-font dtable-icon-delete ${isOpIconShown ? '' : 'invisible'}`} title={gettext('Delete')} aria-label={gettext('Delete')} onClick={this.toggleDeleteDialog}></span>
+            <IconButton
+              className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}
+              title={gettext('Delete')}
+              aria-label={gettext('Delete')}
+              icon="delete"
+              onClick={this.toggleDeleteDialog}
+            />
           </td>
         </tr>
         {isDeleteDialogOpen &&

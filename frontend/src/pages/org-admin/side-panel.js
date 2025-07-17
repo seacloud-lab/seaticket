@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import Logo from '../../components/logo';
 import { gettext, siteRoot } from '../../constants';
+import { Icon } from '../../components';
 
 
 const propTypes = {
@@ -36,31 +37,31 @@ class SidePanel extends React.Component {
               <ul className="nav nav-pills flex-column nav-container mt-2">
                 <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('orgmanage')}`} to={siteRoot + 'org/orgmanage/'} onClick={() => this.tabItemClick('orgmanage')} >
-                    <span className="dtable-font dtable-icon-info"></span>
+                    <Icon symbol="info" />
                     <span className="nav-text">{gettext('Info')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('settings')}`} to={siteRoot + 'org/settings/'} onClick={() => this.tabItemClick('settings')} >
-                    <span className="dtable-font dtable-icon-settings"></span>
+                    <Icon symbol="settings" />
                     <span className="nav-text">{gettext('Settings')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('users') || this.getActiveClass('admins')}`} to={siteRoot + 'org/useradmin/'} onClick={() => this.tabItemClick('users')} >
-                    <span className="dtable-font dtable-icon-mine"></span>
+                    <Icon symbol="mine" />
                     <span className="nav-text">{gettext('Users')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('projects') || this.getActiveClass('trash')}`} to={siteRoot + 'org/projectadmin/'} onClick={() => this.tabItemClick('projects')}>
-                    <span className="dtable-font dtable-icon-dtable-logo"></span>
+                    <Icon symbol="home" />
                     <span className="nav-text">{gettext('Projects')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('groupadmin')}`} to={siteRoot + 'org/groupadmin/'} onClick={() => this.tabItemClick('groupadmin')}>
-                    <span className="dtable-font dtable-icon-groups"></span>
+                    <Icon symbol="groups" />
                     <span className="nav-text">{gettext('Groups')}</span>
                   </Link>
                 </li>

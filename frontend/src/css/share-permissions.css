@@ -60,14 +60,19 @@
   cursor: pointer;
 }
 
-.share-permissions-manage .permission-operation-btn .dtable-icon-rename,
-.share-permissions-manage .permission-operation-btn .dtable-icon-delete {
-  font-size: 14px;
+.share-permissions-manage .permission-operation-btn .sea-qa-icon-svg-rename,
+.share-permissions-manage .permission-operation-btn .sea-qa-icon-svg-delete,
+.add-share-permission .back-btn .sea-qa-icon-svg-return,
+.edit-share-permission .back-btn .sea-qa-icon-svg-return {
+  height: 14px;
+  width: 14px;
   color: #999;
 }
 
-.share-permissions-manage .permission-operation-btn:hover .dtable-icon-rename,
-.share-permissions-manage .permission-operation-btn:hover .dtable-icon-delete {
+.share-permissions-manage .permission-operation-btn:hover .sea-qa-icon-svg-rename,
+.share-permissions-manage .permission-operation-btn:hover .sea-qa-icon-svg-delete,
+.add-share-permission .back-btn:hover .sea-qa-icon-svg-return,
+.edit-share-permission .back-btn:hover .sea-qa-icon-svg-return {
   color: #666666;
 }
 
@@ -82,17 +87,6 @@
   width: 18px;
   height: 18px;
   cursor: pointer;
-}
-
-.add-share-permission .back-btn .dtable-icon-return,
-.edit-share-permission .back-btn .dtable-icon-return {
-  font-size: 14px;
-  color: #999;
-}
-
-.add-share-permission .back-btn:hover .dtable-icon-return,
-.edit-share-permission .back-btn:hover .dtable-icon-return {
-  color: #666666;
 }
 
 .add-share-permission .add-share-permission-header-text,

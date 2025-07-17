@@ -56,16 +56,16 @@
   cursor: pointer;
 }
 
-.option:hover .header-icon .dtable-font,
+.option:hover .header-icon,
 .option.option-active .select-option-name {
   color: #fff;
 }
 
-.option.option-active .header-icon .dtable-font {
+.option.option-active .header-icon {
   color: #fff;
 }
 
-.option:not(.option-active):hover .header-icon .dtable-font {
+.option:not(.option-active):hover .header-icon {
   color: #aaa;
 }
 
@@ -77,28 +77,29 @@
   margin: 0;
 }
 
-.option-group-dtable-ui-single-select-selector .select-option-name,
-.option-group-dtable-ui-multiple-select-selector .multiple-option-name {
+.option-group-sea-qa-ui-single-select-selector .select-option-name,
+.option-group-sea-qa-ui-multiple-select-selector .multiple-option-name {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.option-group-dtable-ui-multiple-select-selector .multiple-check-icon {
+.option-group-sea-qa-ui-multiple-select-selector .multiple-check-icon {
   display: inline-flex;
   width: 20px;
   text-align: center;
 }
 
-.option-group-dtable-ui-multiple-select-selector .multiple-check-icon .dtable-icon-check-mark {
-  font-size: 12px;
+.option-group-sea-qa-ui-multiple-select-selector .multiple-check-icon .svg {
+  height: 12px;
+  width: 12px;
   color: #798d99;
 }
 
-.option-group-dtable-ui-single-select-selector .option:hover,
-.option-group-dtable-ui-single-select-selector .option.option-active,
-.option-group-dtable-ui-multiple-select-selector .option:hover,
-.option-group-dtable-ui-multiple-select-selector .option.option-active {
+.option-group-sea-qa-ui-single-select-selector .option:hover,
+.option-group-sea-qa-ui-single-select-selector .option.option-active,
+.option-group-sea-qa-ui-multiple-select-selector .option:hover,
+.option-group-sea-qa-ui-multiple-select-selector .option.option-active {
   background-color: #f5f5f5;
 }
 

@@ -14,7 +14,7 @@ const propTypes = {
   openGroupMember: PropTypes.func,
   onRenameGroupToggle: PropTypes.func,
   toggleManageMembersDialog: PropTypes.func,
-  onDtableManageMembers: PropTypes.func,
+  onProjectManageMembers: PropTypes.func,
   onDeleteGroupToggle: PropTypes.func,
   onTransferGroupToggle: PropTypes.func,
   toggleGroupInviteDialog: PropTypes.func,

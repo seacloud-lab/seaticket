@@ -350,10 +350,6 @@ input.short-input {
   margin-top: 12px;
 }
 
-#lang .dtable-icon-down3 {
-  display: inline-block;
-}
-
 #lang-context-selector {
   position: absolute;
   top: 23px;
@@ -432,8 +428,9 @@ input.short-input {
   color: #d6d6d6;
 }
 
-#my-info .dtable-icon-down3 {
-  font-size: 12px;
+#my-info .sea-qa-icon-svg-down {
+  height: 12px;
+  width: 12px;
 }
 
 @media (max-width: 767px) {

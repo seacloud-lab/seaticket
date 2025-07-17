@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Input, Button } from 'reactstrap';
+import { Input } from 'reactstrap';
 import { gettext } from '../../../constants';
 import SettingItemBase from './setting-item-base';
+import { IconButton } from '../../../components';
 
 const propTypes = {
   inputType: PropTypes.string,
@@ -62,8 +63,8 @@ class WebSettingInput extends Component {
         extraContent={
           isBtnsShown ?
             <Fragment>
-              <Button className="dtable-font dtable-icon-confirm web-setting-icon-btn-submit" onMouseDown={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')}></Button>
-              <Button className="dtable-font dtable-icon-cancel web-setting-icon-btn-cancel ml-2" title={gettext('Cancel')} aria-label={gettext('Cancel')}></Button>
+              <IconButton className="btn btn-secondary web-setting-icon-btn-submit" icon="check" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')} />
+              <IconButton className="btn btn-secondary web-setting-icon-btn-cancel ml-2" icon="x" title={gettext('Cancel')} aria-label={gettext('Cancel')} />
             </Fragment> : null
         }
       />

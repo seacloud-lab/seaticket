@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
 import OptionGroup from '../select-option-group';
+import IconButton from '../icon-button';
 
 import './index.css';
 
@@ -19,7 +20,7 @@ class GroupSelect extends Component {
     event.preventDefault();
     if (this.state.isShowSelectOptions) event.stopPropagation();
     let eventClassName = event.target.className;
-    if (eventClassName.indexOf('dtable-icon-x') > -1 || eventClassName === 'option-group-search') return;
+    if (eventClassName.indexOf('selected-option-item-delete-btn') > -1 || eventClassName === 'option-group-search') return;
     if (event.target.value === '') return;
     this.setState({
       isShowSelectOptions: !this.state.isShowSelectOptions
@@ -77,7 +78,7 @@ class GroupSelect extends Component {
               {selectedOptions.map(item =>
                 <span key={item.id} className="selected-option-item mr-1 pr-1 pl-2">
                   <span className='selected-option-item-name'>{item.name}</span>
-                  <i className="dtable-font dtable-icon-x ml-1" onClick={() => { this.props.onDeleteOption(item); }}></i>
+                  <IconButton icon="x" className="ml-1 selected-option-item-delete-btn" onClick={() => this.props.onDeleteOption(item)} />
                 </span>
               )}
             </span>

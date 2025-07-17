@@ -8,7 +8,7 @@ html:not([data-scale]) .mobile-main-panel .am-tab-bar-bar:before {
   background-color: #bfbfbf;
 }
 
-.mobile-main-panel .dtable-header {
+.mobile-main-panel .sea-qa-home-header {
   z-index: 101;
 }
 
@@ -17,11 +17,11 @@ html:not([data-scale]) .mobile-main-panel .am-tab-bar-bar:before {
 }
 
 .mobile-main-panel .tab-item {
-  font-size: 22px;
+  height: 22px;
+  width: 22px;
 }
 
 .mobile-main-panel .selected-tab-item {
-  font-size: 22px;
   color: #ED7109;
 }
 

@@ -20,20 +20,15 @@
   color: #fff;
 }
 
-.project-item-popover .project-item-operation .multicolor-icon,
 .project-item-popover .project-item-operation .project-item-operation-icon {
-  font-size: 14px;
+  height: 14px;
+  width: 14px;
   margin-right: 10px;
   color: #999;
+  margin-top: -2px;
 }
 
-.project-item-popover .project-item-operation .dtable-icon-down3 {
-  color: #999;
-}
-
-.project-item-popover .project-item-operation:hover .dtable-icon-down3,
-.project-item-popover .project-item-operation:hover .multicolor-icon,
-.project-item-popover .project-item-operation:hover .dtable-icon-right-slide,
+.project-item-popover .project-item-operation:hover .sea-qa-icon-svg,
 .project-item-popover .project-item-operation:hover .project-item-operation-icon {
   color: #fff;
 }
@@ -42,12 +37,6 @@
   display: inline-block;
   font-size: 14px;
   opacity: 0.5;
-}
-
-.project-item-popover .project-item-operation .dtable-icon-right-slide {
-  transform: scale(0.8);
-  font-size: 12px;
-  color: #999;
 }
 
 .project-item-popover-content .project-item-operation.position-relative .dropdown {

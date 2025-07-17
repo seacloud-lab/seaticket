@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
 import CustomizeReactSelect from '../customize-react-select';
 import '../../css/select-editor.css';
+import IconButton from '../icon-button';
 
 const propTypes = {
   isTextMode: PropTypes.bool.isRequired, // there will be two mode. first: text and select. second: just select
@@ -97,11 +98,7 @@ class SelectEditor extends React.Component {
           <div>
             {this.props.translateOption(currentOption)}
             {this.props.isEditIconShow && (
-              <span
-                title={gettext('Edit')}
-                className="dtable-font dtable-icon-rename attr-action-icon"
-                onClick={this.onEditPermission}>
-              </span>
+              <IconButton icon="rename" title={gettext('Edit')} className="attr-action-icon" onClick={this.onEditPermission} />
             )}
           </div>
         }

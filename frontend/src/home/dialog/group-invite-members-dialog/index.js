@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { toaster, ModalHeader } from '../../../components';
+import { toaster, ModalHeader, Icon } from '../../../components';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import { Utils } from '../../../utils/utils';
@@ -89,7 +89,7 @@ class GroupInviteMembersDialog extends React.Component {
                   <Button color="primary" onClick={this.copyLink} className="invite-link-copy-btn text-truncate">{gettext('Copy')}</Button>
                 </div>
                 <Button color="secondary" onClick={this.deleteLink.bind(this, link.token)} className="delete-link-btn ml-2">
-                  <i className="dtable-font dtable-icon-delete"></i>
+                  <Icon symbol="delete" />
                 </Button>
               </div>
             </>

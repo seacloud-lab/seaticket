@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
-import { toaster, ModalPortal } from '../../components';
+import { toaster, ModalPortal, Icon } from '../../components';
 import OrgUsersList from './org-users-list';
 import OrgAdminList from './org-admin-list';
 import MainPanelTopbar from './main-panel-topbar';
@@ -162,8 +162,7 @@ class OrgUsers extends Component {
     });
   };
 
-  onChangePerPage = (e) => {
-    const newPerPage = Number(e.target.value);
+  onChangePerPage = (newPerPage) => {
     const { perPage } = this.state;
     if (perPage === newPerPage) return;
     const newPage = 1;
@@ -193,7 +192,7 @@ class OrgUsers extends Component {
       topbarChildren = (
         <Fragment>
           <button className={topBtn} title={gettext('Add admin')} aria-label={gettext('Add admin')} onClick={this.toggleAddOrgAdmin}>
-            <i className="dtable-font dtable-icon-add-square text-secondary mr-1"></i>{gettext('Add admin')}
+            <Icon symbol="add-square" className="text-secondary mr-1" />{gettext('Add admin')}
           </button>
           {this.state.isShowAddOrgAdminDialog &&
             <ModalPortal>
@@ -206,11 +205,13 @@ class OrgUsers extends Component {
       topbarChildren = (
         <Fragment>
           <button className={topBtn} title={gettext('Add user')} aria-label={gettext('Add user')} onClick={this.toggleAddOrgUser}>
-            <i className="dtable-font dtable-icon-add-square text-secondary mr-1"></i>{gettext('Add user')}
+            <Icon symbol="add-square" className="text-secondary mr-1" />
+            {gettext('Add user')}
           </button>
           {invitationLink &&
             <button className={topBtn} title={gettext('Invite user')} aria-label={gettext('Invite user')} onClick={this.toggleInviteUserDialog}>
-              <i className="dtable-font dtable-icon-add-square text-secondary mr-1"></i>{gettext('Invite user')}
+              <Icon symbol="add-square" className="text-secondary mr-1" />
+              {gettext('Invite user')}
             </button>
           }
           {this.state.isShowAddOrgUserDialog &&

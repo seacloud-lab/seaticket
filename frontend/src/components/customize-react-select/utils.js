@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { components } from 'react-select';
+import Icon from '../icon';
 
 // DtableSelect is based on seatable-ui.css, so use the following content to override the default react-select style
 const DEFAULT_CONTROL_STYLE = {
@@ -109,9 +110,6 @@ const MenuSelectStyle = {
       ':active': {
         backgroundColor: '#f5f5f5',
       },
-      '.header-icon .dtable-font': {
-        color: '#aaa',
-      },
     });
   },
   control: controlCallback,
@@ -123,7 +121,7 @@ const DropdownIndicator = props => {
   return (
     components.DropdownIndicator && (
       <components.DropdownIndicator {...props}>
-        <span className="dtable-font dtable-icon-down3" style={{ fontSize: '12px', marginLeft: '-2px' }}></span>
+        <Icon symbol="down" style={{ height: 12, width: 12, marginLeft: -2 }} />
       </components.DropdownIndicator>
     )
   );
@@ -137,7 +135,7 @@ const ClearIndicator = ({ innerProps, ...props }) => {
   props.innerProps = { ...innerProps, onMouseDown };
   return (
     <components.ClearIndicator {...props} >
-      <span className="dtable-font dtable-icon-fork-number" style={{ fontSize: '12px', marginRight: '-2px' }}></span>
+      <Icon symbol="x" style={{ height: 12, width: 12, marginRight: -2 }} />
     </components.ClearIndicator>
   );
 };

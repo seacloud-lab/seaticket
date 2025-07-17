@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster } from '../../../components';
+import { Icon, IconButton, ProjectIcon, toaster } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { ProjectSettingPopover } from '../../popover';
 import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
@@ -166,7 +166,7 @@ class Project extends React.Component {
   render() {
     let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
     let { name: newName, bgColor, icon, active, isMoreOperationPopoverShow } = this.state;
-    let { workspace_id, id, is_encrypted } = project;
+    let { workspace_id, id } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
     const backgroundColorMap = (active || isMoreOperationPopoverShow) ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
@@ -175,78 +175,67 @@ class Project extends React.Component {
       return (
         <div className="project-mobile-item" onClick={(e) => this.onItemClick(e, projectHref)}>
           <div className="project-mobile-icon">
-            <span className="project-icon-content" style={{ backgroundColor: project.color || DEFAULT_COLOR }}>
-              <i className={`base-font ${project.icon || 'project-icon icon-color-white icon-worksheet project-icon-style'}`}></i>
-            </span>
+            <ProjectIcon icon={project.icon} bgColor={project.color} />
           </div>
           <div className="project-mobile-name d-flex align-items-center">
             {newName}
-            {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
           </div>
-          <div
-            className="project-item-more d-flex justify-content-center">
-            <i className="dtable-font dtable-icon-more-vertical" title={gettext('More operations')} aria-label={gettext('More operations')}></i>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div
-          id={`project-item-${id}`}
-          className={`project-item d-flex ${className}`}
-          onClick={(e) => this.onItemClick(e, projectHref)}
-          style={{
-            ...style,
-            backgroundColor: backgroundColorMap[project.color || DEFAULT_COLOR],
-          }}
-          onMouseEnter={this.onMouseEnter}
-          onMouseLeave={this.onMouseLeave}
-        >
-          <div className="project-item-icon-more d-flex">
-            <div
-              className="project-item-icon d-flex align-items-center justify-content-center"
-              style={{ backgroundColor: project.color || DEFAULT_COLOR }}
-            >
-              <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
-            </div>
-            {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) &&
-              <div className="d-flex justify-content-center" onClick={this.toggleMoreOperation}>
-                <i className="dtable-font dtable-icon-more-level" title={gettext('More operations')} aria-label={gettext('More operations')} />
-              </div>
-            }
-            {this.state.isMoreOperationPopoverShow && (
-              <ProjectItemPopover
-                target={`project-item-${id}`}
-                onToggle={this.toggleMoreOperation}
-                onProjectSettingsToggle={this.onProjectSettingsToggle}
-                onShareProjectToggle={this.onShareProjectToggle}
-                onDeleteProjectToggle={this.onDeleteProjectToggle}
-              />
-            )}
-          </div>
-          <div className="project-item-name" title={newName}>
-            {newName}
-            {is_encrypted && <i className='dtable-font dtable-icon-unlock star'></i>}
-          </div>
-          <div className="project-item-group text-truncate">
-            <i className='table-workspace-icon dtable-font dtable-icon-collaborator'></i>
-            {workspace.name}
-          </div>
-          {this.state.isShowSettings && (
-            <ProjectSettingPopover
-              target={`project-item-${id}`}
-              onToggle={this.onProjectSettingsToggle}
-              name={newName}
-              bgColor={bgColor}
-              icon={icon}
-              onColorChange={this.onColorChange}
-              onIconChange={this.onIconChange}
-              onNameChange={this.onNameChange}
-            />
-          )}
         </div>
       );
     }
+    return (
+      <div
+        id={`project-item-${id}`}
+        className={`project-item d-flex ${className}`}
+        onClick={(e) => this.onItemClick(e, projectHref)}
+        style={{
+          ...style,
+          backgroundColor: backgroundColorMap[project.color || DEFAULT_COLOR],
+        }}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
+      >
+        <div className="project-item-icon-more d-flex">
+          <div
+            className="project-item-icon d-flex align-items-center justify-content-center"
+            style={{ backgroundColor: project.color || DEFAULT_COLOR }}
+          >
+            <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
+          </div>
+          {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) && (
+            <IconButton className="no-hover-bg project-item-icon-more-toggle-btn" icon="more" onClick={this.toggleMoreOperation} title={gettext('More operations')} aria-label={gettext('More operations')} />
+          )}
+          {this.state.isMoreOperationPopoverShow && (
+            <ProjectItemPopover
+              target={`project-item-${id}`}
+              onToggle={this.toggleMoreOperation}
+              onProjectSettingsToggle={this.onProjectSettingsToggle}
+              onShareProjectToggle={this.onShareProjectToggle}
+              onDeleteProjectToggle={this.onDeleteProjectToggle}
+            />
+          )}
+        </div>
+        <div className="project-item-name" title={newName}>
+          {newName}
+        </div>
+        <div className="project-item-group text-truncate">
+          <Icon symbol="collaborator" className="project-workspace-icon" />
+          {workspace.name}
+        </div>
+        {this.state.isShowSettings && (
+          <ProjectSettingPopover
+            target={`project-item-${id}`}
+            onToggle={this.onProjectSettingsToggle}
+            name={newName}
+            bgColor={bgColor}
+            icon={icon}
+            onColorChange={this.onColorChange}
+            onIconChange={this.onIconChange}
+            onNameChange={this.onNameChange}
+          />
+        )}
+      </div>
+    );
   }
 }
 

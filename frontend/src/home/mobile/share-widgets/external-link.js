@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import copy from 'copy-to-clipboard';
-import { List, IconButton, ActionSheet, toaster } from '../../../components';
+import { List, IconButton, ActionSheet, toaster, Icon } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import AddExternalLink from './add-external-link';
 import ShareAddedBtn from './share-add-btn';
@@ -51,13 +51,13 @@ class ExternalLink extends React.Component {
 
   showActionSheet = (externalItem) => {
     let BUTTONS = [
-      (<div className="my-am-action"><i className="dtable-font dtable-icon-copy-link"></i>{gettext('Copy link')}</div>),
-      (<div className="my-am-action"><i className="dtable-font dtable-icon-delete"></i>{gettext('Delete link')}</div>),
+      (<div className="my-am-action"><Icon symbol="copy" />{gettext('Copy link')}</div>),
+      (<div className="my-am-action"><Icon symbol="delete" />{gettext('Delete link')}</div>),
     ];
     ActionSheet.showActionSheetWithOptions({
       options: BUTTONS,
       maskClosable: true,
-      className: 'dtable-antd-mobile-action-sheet'
+      className: 'sea-qa-antd-mobile-action-sheet'
     }, (buttonIndex) => {
       if (buttonIndex === 0) this.onCopyExternalLink(externalItem.url);
       if (buttonIndex === 1) this.deleteExternalLink(externalItem);

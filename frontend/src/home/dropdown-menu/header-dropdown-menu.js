@@ -4,6 +4,7 @@ import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap
 import { enableAddressBookV2 } from '../../constants/config';
 import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 import './header-dropdown-menu.css';
+import { Icon } from '../../components';
 
 const gettext = window.gettext;
 const { isOrgContext } = window.app.pageOptions;
@@ -28,7 +29,7 @@ class HeaderDropdownMenu extends React.Component {
 
   onManageMembersToggle = () => {
     this.props.onManageMembersToggle();
-    this.props.onDtableManageMembers();
+    this.props.onProjectManageMembers();
   };
 
   onTransferGroupToggle = () => {
@@ -71,9 +72,9 @@ class HeaderDropdownMenu extends React.Component {
         className="header-more-operation sea-qa-icon-btn"
       >
         <DropdownToggle
-          tag='i'
+          tag='div'
           role="button"
-          className='cursor-pointer'
+          className="cursor-pointer d-flex align-items-center"
           title={gettext('More operations')}
           aria-label={gettext('More operations')}
           data-toggle="dropdown"
@@ -81,8 +82,8 @@ class HeaderDropdownMenu extends React.Component {
           aria-haspopup={true}
           tabIndex={0}
         >
-          <i className="dtable-font dtable-icon-new"></i>
-          <i className="dtable-font dtable-icon-down3"></i>
+          <Icon symbol="add" />
+          <Icon symbol="down" />
         </DropdownToggle>
         <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list">
           {showAddProject &&
@@ -121,7 +122,7 @@ class HeaderDropdownMenu extends React.Component {
 HeaderDropdownMenu.propTypes = {
   onRenameGroupToggle: PropTypes.func.isRequired,
   onManageMembersToggle: PropTypes.func.isRequired,
-  onDtableManageMembers: PropTypes.func.isRequired,
+  onProjectManageMembers: PropTypes.func.isRequired,
   onDeleteGroupToggle: PropTypes.func,
   onLeaveGroupToggle: PropTypes.func,
   onTransferGroupToggle: PropTypes.func,

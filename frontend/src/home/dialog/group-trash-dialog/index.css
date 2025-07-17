@@ -19,15 +19,13 @@
   height: 56px;
 }
 
-.group-manage-trash-dialog .trash-projects .project-icon-content {
+.group-manage-trash-dialog .trash-projects .project-icon {
   height: 24px;
   width: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 6px;
-  overflow: hidden;
-  background-color: #eee;
+}
+
+.group-manage-trash-dialog .trash-projects .project-icon .project-icon-style {
+  font-size: 16px;
 }
 
 .group-manage-trash-dialog .trash-projects .trash-project-name {
@@ -39,10 +37,6 @@
 .group-manage-trash-dialog .trash-projects .trash-project-name:hover {
   text-decoration: underline;
   cursor: pointer;
-}
-
-.group-manage-trash-dialog .trash-projects .project-icon-content .project-icon-style {
-  font-size: 16px;
 }
 
 .group-manage-trash-dialog .trash-projects .trash-table-restore {

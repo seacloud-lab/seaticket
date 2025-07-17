@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Progress } from '../../components';
+import { IconButton, Progress } from '../../components';
 import { gettext, orgMemberQuotaEnabled, mediaUrl, enableSeatableAI } from '../../constants';
 import { Utils } from '../../utils/utils';
 import MainPanelTopbar from './main-panel-topbar';
@@ -53,12 +53,13 @@ class OrgInfo extends Component {
 
   showEditIcon = (action) => {
     return (
-      <span
+      <IconButton
         title={gettext('Edit')}
         aria-label={gettext('Edit')}
-        className="dtable-font dtable-icon-rename attr-action-icon"
-        onClick={action}>
-      </span>
+        className="attr-action-icon"
+        onClick={action}
+        icon="rename"
+      />
     );
   };
 

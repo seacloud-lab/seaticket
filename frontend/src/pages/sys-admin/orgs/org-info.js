@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Row, Col } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { toaster, Loading } from '../../../components';
+import { toaster, Loading, IconButton } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { loginUrl, gettext, serviceURL } from '../../../constants';
 import SysAdminSetOrgNameDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-set-org-name-dialog';
@@ -55,12 +55,13 @@ class Content extends Component {
 
   showEditIcon = (action) => {
     return (
-      <span
+      <IconButton
         title={gettext('Edit')}
         aria-label={gettext('Edit')}
-        className="dtable-font dtable-icon-rename attr-action-icon"
+        className="attr-action-icon"
+        icon="rename"
         onClick={action}>
-      </span>
+      </IconButton>
     );
   };
 

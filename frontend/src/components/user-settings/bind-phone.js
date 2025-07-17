@@ -5,6 +5,7 @@ import { gettext } from '../../constants';
 import toaster from '../toaster';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
+import Icon from '../icon';
 
 const {
   workWeixinConnected,
@@ -253,8 +254,8 @@ class BindPhone extends React.Component {
             {this.state.phoneNumberMessage && (
               <div className="col-sm-auto ml-1 bind-phone-message">
                 {this.state.isSendCodeError ?
-                  <i className="dtable-font dtable-icon-exclamation-circle error" /> :
-                  <i className="dtable-font dtable-icon-check-circle success" />
+                  (<Icon className="error" symbol="exclamation-circle" />) :
+                  (<Icon className="success" symbol="check-circle" />)
                 }
                 <span className={`ml-1 ${this.state.isSendCodeError ? 'error' : 'success'}`}>{phoneNumberMessage}</span>
               </div>

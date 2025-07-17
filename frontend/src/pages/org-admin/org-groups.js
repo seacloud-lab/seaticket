@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { toaster } from '../../components';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
+import { CustomizeDropdownMoreToggle, toaster, Paginator } from '../../components';
 import { siteRoot, gettext, orgID } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
@@ -9,7 +9,6 @@ import OrgGroupInfo from '../../models/org-group';
 import MainPanelTopbar from './main-panel-topbar';
 import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';
 import OrgAdminTransferGroupDialog from '../../components/dialog/orgadmin-dialog/orgadmin-group-transfer-dialog';
-import OrgPaginator from './org-paginator';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -106,8 +105,7 @@ class OrgGroups extends Component {
     });
   };
 
-  changePerPage = (e) => {
-    const newPerPage = Number(e.target.value);
+  changePerPage = (newPerPage) => {
     const { perPage } = this.state;
     if (perPage === newPerPage) return;
     const newPage = 1;
@@ -154,13 +152,13 @@ class OrgGroups extends Component {
                   })}
                 </tbody>
               </table>
-              <OrgPaginator
+              <Paginator
+                curPerPage={this.state.perPage}
                 currentPage={this.state.page}
                 hasNextPage={this.state.pageNext}
-                currentPerPage={this.state.perPage}
-                goToPreviousPage={() => this.onChangePageNum(-1)}
-                goToNextPage={() => this.onChangePageNum(1)}
-                changePerPage={this.changePerPage}
+                goNextPage={() => this.onChangePageNum(1)}
+                goPreviousPage={() => this.onChangePageNum(-1)}
+                resetPerPage={this.changePerPage}
               />
             </div>
           </div>
@@ -292,16 +290,7 @@ class GroupItem extends React.Component {
           <td className="text-center cursor-pointer">
             {isOperationMenuShow &&
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                <DropdownToggle
-                  tag="a"
-                  role="button"
-                  className="attr-action-icon dtable-font dtable-icon-more-vertical"
-                  title={gettext('More operations')}
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                  onClick={this.onDropdownToggleClick}
-                />
+                <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick}/>
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
                   <DropdownItem onClick={this.toggleTransferDialog}>{gettext('Transfer')}</DropdownItem>

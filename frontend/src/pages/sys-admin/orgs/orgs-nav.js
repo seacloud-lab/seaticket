@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import { siteRoot, gettext } from '../../../constants';
 import SysOrgFilterPopover from '../sys-popover/org-filter-popover';
+import { Icon } from '../../../components';
 
 const propTypes = {
   currentItem: PropTypes.string.isRequired,
@@ -50,9 +51,9 @@ class Nav extends React.Component {
         </ul>
         {currentItem === 'organizations' &&
           <div className="org-toolbar">
-            <div className={`org-toolbar-item mr-2 ${isShowActiveFilter ? 'toolbar-actived-filter' : ''}`} id="dtable-filter-popover" onClick={this.onFilterToggle}>
+            <div className={`org-toolbar-item mr-2 ${isShowActiveFilter ? 'toolbar-actived-filter' : ''}`} id="sea-qa-filter-popover" onClick={this.onFilterToggle}>
               <span className="toolbar-btn">
-                <i className="dtable-font dtable-icon-filter mr-1"></i>
+                <Icon symbol="filter" className="mr-1" />
                 <span>{gettext('Filter')}</span>
               </span>
             </div>

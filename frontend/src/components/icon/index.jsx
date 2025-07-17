@@ -11,9 +11,9 @@ requireContext.keys().forEach(path => {
   components[iconName] = requireContext(path).default;
 });
 
-function Icon({ className, symbol }) {
-  const iconClass = `sea-qa-icon-svg multicolor-icon multicolor-icon-${symbol} ${className || ''}`;
-  const props = { className: iconClass };
+function Icon({ className, symbol, ...otherProps }) {
+  const iconClass = `sea-qa-icon-svg sea-qa-icon-svg-${symbol} ${className || ''}`;
+  const props = { className: iconClass, ...otherProps };
   const Component = components[symbol];
   if (!Component) return null;
   return (<Component { ...props } />);

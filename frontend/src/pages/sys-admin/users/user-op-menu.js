@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
-import { gettext } from '../../../constants';
+import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
+import { CustomizeDropdownMoreToggle } from '../../../components';
 
 const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,
@@ -47,15 +47,7 @@ class OpMenu extends React.Component {
     const { operations, translateOperations } = this.props;
     return (
       <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-        <DropdownToggle
-          tag="a"
-          role="button"
-          className="attr-action-icon dtable-font dtable-icon-more-vertical"
-          title={gettext('More operations')}
-          aria-label={gettext('More operations')}
-          data-toggle="dropdown"
-          aria-expanded={this.state.isItemMenuShow}
-        />
+        <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} />
         <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu mt-2 mr-2">
           {operations.map((item, index ) => {
             return (<DropdownItem key={index} data-op={item} onClick={this.onMenuItemClick}>{translateOperations(item)}</DropdownItem>);

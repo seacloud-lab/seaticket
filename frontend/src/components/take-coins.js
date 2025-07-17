@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { InputGroup, InputGroupText, Input } from 'reactstrap';
 import { mediaUrl } from '../constants';
-
+import Icon from './icon';
 
 let setCoinsPropTypes = {
   coins: PropTypes.number,
@@ -33,11 +33,11 @@ class SetCoins extends React.Component {
     return (
       <InputGroup>
         <InputGroupText className={'cursor-pointer'} onClick={this.onSubtract}>
-          <span className='dtable-font dtable-icon-narrow' />
+          <Icon symbol="narrow"/>
         </InputGroupText>
         <Input value={coins} onChange={this.props.inputCoins} />
         <InputGroupText className='cursor-pointer' onClick={this.onAdd}>
-          <span className='dtable-font dtable-icon-enlarge' />
+          <Icon symbol="enlarge"/>
         </InputGroupText>
       </InputGroup>
     );

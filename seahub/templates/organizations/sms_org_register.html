@@ -1,22 +1,14 @@
 {% extends "base_clean.html" %}
 {% load i18n %}
+{% load render_bundle from webpack_loader %}
 {% block sub_title %}{% trans "Signup" %} - {% endblock %}
 
 {% block extra_style %}{{block.super}}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/dtable-font.css?v={{ version }}" />
+{% render_bundle 'eyeIcon' 'css' %}
+{% render_bundle 'checkCircleIcon' 'css' %}
 {% endblock %}
 
 {% block private_style %}
-.show-password-toggle {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    cursor: pointer;
-    color: #999;
-}
-.show-password-toggle:hover {
-    color: #666;
-}
 .sms-org-register {
     position: relative;
 }
@@ -123,8 +115,9 @@
     font-weight: 500;
 }
 
-#captcha-modal-mask-success .dtable-icon-check-circle {
-    font-size: 30px;
+#captcha-modal-mask-success .sea-qa-icon-svg {
+    height: 30px;
+    width: 30px;
 }
 
 .SlideCaptcha__refreshIcon--1SQk5 {
@@ -162,7 +155,7 @@
             <div class="position-relative" id="password-input1">
                 <input id="password1" type="password" placeholder="{% trans "Password" %}" name="password1" value="" class="input" />
                 {{ form.password1.errors }}
-                <span class="show-password-toggle dtable-font dtable-icon-eye-slash"></span>
+                <div class="password-toggle" id="eye-icon-wrapper"></div>
             </div>
             <div class="position-relative" id="password-input2">
                 <input id="password2" type="password" placeholder="{% trans "Confirm password" %}" name="password2" value="" class="input" />
@@ -199,7 +192,7 @@
             <div id="captcha-modal-inner" class="hide">
                 <span id="captcha-modal-mask-loading" class="loading-icon loading-tip"></span>
                 <span id="captcha-modal-mask-success" class="hide">
-                    <i class="dtable-font dtable-icon-check-circle"></i>
+                    <div id="check-circle-icon-wrapper"></div>
                     验证成功 !
                 </span>
             </div>
@@ -253,10 +246,10 @@ $('#sms-org-register-submit').on('click', function(event) {
     }
 });
 
-$("body").on('click', '.show-password-toggle', function(){
+$("body").on('click', '.password-toggle', function(){
     var $pass1 = document.getElementById("password1");
     var $pass2 = document.getElementById("password2");
-    var toggle = $(this).toggleClass("dtable-icon-eye-slash dtable-icon-eye");
+    var toggle = $(this).toggleClass("password-show");
     [$pass1, $pass2].forEach(function($passwords) {
         if ($passwords.type === "password") {
             $passwords.type = "text";
@@ -425,5 +418,8 @@ $("#slide-captcha").show();
     });
 </script>
 {% endif %}
+
+{% render_bundle 'eyeIcon' 'js' %}
+{% render_bundle 'checkCircleIcon' 'js' %}
 
 {% endblock %}
