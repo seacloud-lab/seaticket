@@ -191,7 +191,7 @@ class SessionLogManager(models.Manager):
             user_agent=user_agent,
             remote_address=remote_address,
             session_key=session_key,
-            op_time=datetime.datetime.now()
+            op_time=datetime.datetime.now(datetime.UTC)
         )
 
 

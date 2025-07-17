@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
@@ -344,7 +344,7 @@ class ProjectView(APIView):
 
         new_project_name = convert_project_trash_names(project)
         try:
-            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(), name=new_project_name)
+            Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(UTC), name=new_project_name)
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'

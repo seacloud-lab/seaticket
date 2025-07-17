@@ -74,7 +74,7 @@ def login(request, user, mobile_login=False):
     if user is None:
         user = request.user
     # TODO: It would be nice to support different login methods, like signed cookies.
-    user.last_login = datetime.datetime.now()
+    user.last_login = datetime.datetime.now(datetime.UTC)
 
     # After each ADFS/SAML single sign-on is completed, `_saml2_subject_id` will be recorded in the session,
     # so that to distinguish ADFS/SAML users and local users when logging out.
@@ -101,7 +101,7 @@ def login(request, user, mobile_login=False):
         request.session.set_expiry(MOBILE_SESSION_DAYS * 24 * 60 * 60)
     elif request.session.get('remember_me', False):
         request.session.set_expiry(LOGIN_REMEMBER_DAYS * 24 * 60 * 60)
-    
+
     if hasattr(request, 'user'):
         request.user = user
     user_logged_in.send(sender=user.__class__, request=request, user=user)

@@ -4,6 +4,7 @@ import datetime
 
 from django.db import models
 from django.dispatch import receiver
+from django.utils import timezone
 
 from seahub.admin_log.signals import admin_operation, org_admin_operation
 
@@ -81,7 +82,7 @@ class AdminLog(models.Model):
     email = models.EmailField(db_index=True)
     operation = models.CharField(max_length=255, db_index=True)
     detail = models.TextField()
-    datetime = models.DateTimeField(default=datetime.datetime.now)
+    datetime = models.DateTimeField(default=timezone.now)
     objects = AdminLogManager()
 
     class Meta:
@@ -117,7 +118,7 @@ class OrgAdminLog(models.Model):
     email = models.EmailField(db_index=True)
     operation = models.CharField(max_length=255, db_index=True)
     detail = models.TextField()
-    datetime = models.DateTimeField(default=datetime.datetime.now)
+    datetime = models.DateTimeField(default=timezone.now)
     org_id = models.IntegerField(default=-1, db_index=True)
     objects = OrgAdminLogManager()
 

@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from django.utils.encoding import smart_str
 from django.db.models import signals
+from django.utils import timezone
 
 try:
     from io import BytesIO
@@ -48,7 +49,7 @@ def avatar_file_path(instance=None, filename=None, size=None, ext=None):
         tmppath.append(instance.group_id)
     else:
         return ""
-    
+
     if not filename:
         # Filename already stored in database
         filename = instance.avatar.name
@@ -126,7 +127,7 @@ class AvatarBase(object):
     @abstractmethod
     def save(self, *args, **kwargs):
         pass
-    
+
     def avatar_name(self, size):
         ext = find_extension(AVATAR_THUMB_FORMAT)
         return avatar_file_path(
@@ -142,11 +143,11 @@ class Avatar(models.Model, AvatarBase):
                                upload_to=avatar_file_path,
                                storage=get_avatar_file_storage(),
                                blank=True)
-    date_uploaded = models.DateTimeField(default=datetime.datetime.now)
-    
+    date_uploaded = models.DateTimeField(default=timezone.now)
+
     def __unicode__(self):
         return _('Avatar for %s') % self.emailuser
-    
+
     def save(self, *args, **kwargs):
         avatars = Avatar.objects.filter(emailuser=self.emailuser)
         if not self.pk:
@@ -155,7 +156,7 @@ class Avatar(models.Model, AvatarBase):
             avatars.exclude(pk=self.pk).delete()
         invalidate_cache(self.emailuser)
         super(Avatar, self).save(*args, **kwargs)
-    
+
     def delete(self, *args, **kwargs):
         invalidate_cache(self.emailuser)
         super(Avatar, self).delete(*args, **kwargs)
@@ -166,8 +167,8 @@ class GroupAvatar(models.Model, AvatarBase):
                                upload_to=avatar_file_path,
                                storage=get_avatar_file_storage(),
                                blank=True)
-    date_uploaded = models.DateTimeField(default=datetime.datetime.now)
-    
+    date_uploaded = models.DateTimeField(default=timezone.now)
+
     def __unicode__(self):
         return _('Avatar for %s') % self.group_id
 

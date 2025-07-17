@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime
+
+from django.utils import timezone
 
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
@@ -120,7 +121,7 @@ class AdminOrgGroup(APIView):
 
         # mark group's workspace as deleted
         try:
-            Workspaces.objects.filter(owner=owner).update(deleted=True, delete_time=datetime.now())
+            Workspaces.objects.filter(owner=owner).update(deleted=True, delete_time=timezone.now())
         except Exception as e:
             logger.error('Failed to delete workspace, owner: %s, error: %s' % (owner, e))
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
