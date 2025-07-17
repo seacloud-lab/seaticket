@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
 import OptionGroup from '../select-option-group';
+import IconButton from '../icon-button';
 
 import './index.css';
-import Icon from '../icon';
-import IconButton from '../icon-button';
 
 class GroupSelect extends Component {
 

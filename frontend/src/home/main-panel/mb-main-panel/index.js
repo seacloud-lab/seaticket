@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
-import { IconButton, TabBar } from '../../../components';
+import { TabBar } from '../../../components';
 import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
 import { seaQAAPI } from '../../../api/web-api.js';
 import Workspace from '../../models/workspace.js';

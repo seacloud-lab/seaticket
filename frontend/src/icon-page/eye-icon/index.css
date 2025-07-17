@@ -1,9 +1,13 @@
 .password-toggle {
   position: absolute;
-  top: 8px;
+  top: 12px;
   right: 10px;
   cursor: pointer;
   color: #999;
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
 }
 
 .password-toggle:hover {

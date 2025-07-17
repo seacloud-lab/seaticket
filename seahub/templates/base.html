@@ -47,7 +47,7 @@
 
                 <div id="account">
                     <a id="my-info" href="#" class="account-toggle no-deco hidden-sm-down" aria-label="{% trans "View profile and more" %}">
-                        {% avatar request.user 32 %} <div id="down-icon-wrapper" class="vam"></div>
+                        {% avatar request.user 32 %} <span id="down-icon-wrapper" class="vam"></span>
                     </a>
                     <div id="more-icon-wrappe" class="mobile-icon account-toggle hidden-md-up" aria-label="{% trans "View profile and more" %}"></div>
                     <div id="user-info-popup" class="account-popup sf-popover hide">
@@ -79,7 +79,7 @@
             </div>
             {% else %} {# for non-logged-in user #}
             <div id="lang">
-                <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <div id="down-icon-wrapper" class="vam"></div></a>
+                <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span id="down-icon-wrapper" class="vam"></span></a>
                 <div id="lang-context-selector" class="sf-popover hide">
                     <ul class="sf-popover-con">
                         {% for LANG in LANGUAGES %}

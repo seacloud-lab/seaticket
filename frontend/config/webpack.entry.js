@@ -8,9 +8,9 @@ const entryFiles = {
   project: '/project',
   eyeIcon: '/icon-page/eye-icon',
   checkCircleIcon: '/icon-page/check-circle',
-  exclamationCircleIcon: 'icon-page/exclamation-circle',
-  moreIcon: 'icon-page/more',
-  downIcon: 'icon-page/down',
+  exclamationCircleIcon: '/icon-page/exclamation-circle',
+  moreIcon: '/icon-page/more',
+  downIcon: '/icon-page/down',
 };
 
 const getEntries = (isEnvDevelopment) => {
