@@ -233,7 +233,7 @@
 }
 
 .workspace-nav-item.active .workspace-nav-link .project-workspace-icon,
-nav-toggle-container {
+.nav-toggle-container {
   color: #fff;
 }
 

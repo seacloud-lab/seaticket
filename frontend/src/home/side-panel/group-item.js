@@ -61,7 +61,7 @@ const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabC
       >
         <IconButton
           ref={dragRef}
-          className={classnames('drop-button',
+          className={classnames('drop-button no-hover-bg',
             { 'drop-button-active': getActiveClass(`project/${item.id}`) === 'active' }
           )}
           icon="drag"

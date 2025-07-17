@@ -244,12 +244,13 @@
   height: 12px;
   width: 12px;
   margin-right: 4px;
+  margin-top: -1px;
 }
 
 .project-item .project-item-records {
   width: 100%;
   font-size: 12px;
-  color: #666666;
+  color: #666;
 }
 
 @media (max-width: 767px) {
