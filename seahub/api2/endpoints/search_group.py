@@ -12,17 +12,18 @@ from seahub.api2.utils import api_error
 
 from seahub.utils import is_org_context
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
+from seahub.group.models import Group, GroupUser
+from seahub.organizations.models import OrgGroup
 
 try:
     from seahub.settings import CLOUD_MODE
 except ImportError:
     CLOUD_MODE = False
 
-def get_group_info(group_id):
-    group = ccnet_api.get_group(group_id)
+def get_group_info(group):
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
     group_info = {
-        "id": group.id,
+        "id": group.group_id,
         "name": group.group_name,
         "owner": group.creator_name,
         "created_at": isoformat_timestr,
@@ -58,15 +59,10 @@ class SearchGroup(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if CLOUD_MODE:
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                groups = ccnet_api.get_org_groups(org_id, -1, -1)
-            else:
-                username = request.user.username
-                groups = seaserv.get_personal_groups_by_user(username)
-        else:
-            groups = ccnet_api.get_all_groups(-1, -1)
+        org_id = request.user.org.org_id
+        org_groups = OrgGroup.objects.filter(org_id=org_id)
+        groups = Group.objects.filter(
+            group_id__in=[g.group_id for g in org_groups])
 
         result = []
         for group in groups:
@@ -75,7 +71,7 @@ class SearchGroup(APIView):
                 continue
 
             if q.lower() in group_name.lower():
-                group_info = get_group_info(group.id)
+                group_info = get_group_info(group)
                 result.append(group_info)
 
         return Response(result)

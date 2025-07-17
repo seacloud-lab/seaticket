@@ -12,6 +12,7 @@ from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 from seahub.utils import is_pro_version, is_org_context
 from seahub.organizations.models import OrgUser, Organization
+from seahub.group.models import Group
 
 try:
     from seahub.settings import MULTI_TENANCY
@@ -27,8 +28,8 @@ def api_check_group(func):
     def _decorated(view, request, group_id, *args, **kwargs):
         group_id = int(group_id) # Checked by URL Conf
         try:
-            group = ccnet_api.get_group(int(group_id))
-        except SearpcError as e:
+            group = Group.objects.get_group(int(group_id))
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -112,7 +113,7 @@ def get_group_dict(group_id_list):
     for group_id in group_id_list:
         if group_id not in group_dict:
             group_dict[group_id] = ''
-            group = ccnet_api.get_group(int(group_id))
+            group = Group.objects.get_group(int(group_id))
             if group:
                 group_dict[group_id] = group
 

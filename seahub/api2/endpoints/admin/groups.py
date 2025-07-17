@@ -14,7 +14,7 @@ from seahub.project.models import Workspaces, Projects
 from seahub.signals import group_deleted
 from seahub.utils import is_valid_username, is_pro_version
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
-from seahub.group.utils import is_group_member, is_group_admin, \
+from seahub.group.utils import is_group_member, is_group_admin_or_owner, \
         validate_group_name
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER
@@ -149,7 +149,7 @@ class AdminGroups(APIView):
         # create group.
         try:
             group_id = ccnet_api.create_group(group_name, new_owner)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -224,12 +224,12 @@ class AdminGroup(APIView):
                 if not is_group_member(group_id, new_owner):
                     ccnet_api.group_add_member(group_id, old_owner, new_owner)
 
-                if not is_group_admin(group_id, new_owner):
+                if not is_group_admin_or_owner(group_id, new_owner):
                     ccnet_api.group_set_admin(group_id, new_owner)
 
                 ccnet_api.set_group_creator(group_id, new_owner)
                 ccnet_api.group_unset_admin(group_id, old_owner)
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)

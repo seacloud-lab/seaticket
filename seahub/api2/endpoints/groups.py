@@ -19,13 +19,13 @@ from seahub.signals import group_deleted
 from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
-    is_group_member, is_group_admin, is_group_owner, is_group_admin_or_owner_by_group
+    is_group_member, is_group_admin_or_owner, is_group_owner, is_group_admin_or_owner_by_group
 from seahub.project.models import Workspaces, ProjectGroupOrders, Projects
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
-from seahub.group.models import GroupUser
+from seahub.group.models import GroupUser, Group
 
 from .utils import api_check_group
 
@@ -42,7 +42,7 @@ def get_group_admins(group_id):
     return admins
 
 
-def get_group_info(request, group):
+def get_group_info(group):
     isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
     group_info = {
         "id": group.group_id,
@@ -56,7 +56,7 @@ def get_group_info(request, group):
     return group_info
 
 
-class Groups(APIView):
+class GroupsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -85,9 +85,10 @@ class Groups(APIView):
         username = request.user.username
         org_id = request.user.org.org_id
         user_groups = OrgGroup.objects.get_org_groups_by_user(org_id, username)
+        groups_query = Group.objects.filter(group_id__in=[g.group_id for g in user_groups])
 
-        for group in user_groups:
-            group_info = get_group_info(request, group)
+        for group in groups_query:
+            group_info = get_group_info(group)
             if can_admin and not is_group_admin_or_owner_by_group(group, username):
                 continue
             groups.append(group_info)
@@ -168,12 +169,12 @@ class Groups(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # get info of new group
-        group_info = get_group_info(request, org_group)
+        group_info = get_group_info(org_group)
 
         return Response(group_info, status=status.HTTP_201_CREATED)
 
 
-class Group(APIView):
+class GroupView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -184,16 +185,19 @@ class Group(APIView):
         """
 
         try:
+            group = Group.objects.get_group(int(group_id))
+            if not group:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Group not found')
             # only group member can get info of a group
             if not is_group_member(group_id, request.user.username):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        group_info = get_group_info(request, group_id)
+        group_info = get_group_info(group)
 
         return Response(group_info)
 
@@ -201,13 +205,16 @@ class Group(APIView):
     def put(self, request, group_id):
         """ Rename, transfer a specific group
         """
-
         username = request.user.username
         new_group_name = request.data.get('name', None)
 
         org_id = -1
         if is_org_context(request):
             org_id = request.user.org.org_id
+
+        group = Group.objects.get_group(int(group_id))
+        if not group:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Group not found')
 
         # rename a group
         # only group owner can rename a group
@@ -228,11 +235,10 @@ class Group(APIView):
                     error_msg = _('There is already a group with that name.')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-                group = ccnet_api.get_group(int(group_id))
-                old_group_name = group.group_name
-                seaserv.ccnet_threaded_rpc.set_group_name(group_id, new_group_name)
+                group.group_name = new_group_name
+                group.save()
 
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -259,45 +265,27 @@ class Group(APIView):
 
                 # transfer a group
                 if not is_group_member(group_id, new_owner):
-                    ccnet_api.group_add_member(group_id, username, new_owner)
+                    GroupUser.objects.create(
+                        group_id=group_id,
+                        user_name=username,
+                        is_staff=True,
+                    )
 
-                if not is_group_admin(group_id, new_owner):
-                    ccnet_api.group_set_admin(group_id, new_owner)
+                if not is_group_admin_or_owner(group_id, new_owner):
+                    GroupUser.objects.filter(
+                        group_id=group_id, user_name=new_owner).update(is_staff=True)
 
-                ccnet_api.set_group_creator(group_id, new_owner)
-                ccnet_api.group_unset_admin(group_id, username)
+                group.creator_name = new_owner
+                group.save()
+                GroupUser.objects.filter(
+                    group_id=group_id, user_name=username).update(is_staff=False)
 
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        wiki_enabled = request.data.get('wiki_enabled', None)
-        # turn on/off group wiki
-        if wiki_enabled:
-            try:
-                # only group owner/admin can turn on a group wiki
-                if not is_group_admin_or_owner(group_id, username):
-                    error_msg = 'Permission denied.'
-                    return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-                # augument check
-                if wiki_enabled != 'true' and wiki_enabled != 'false':
-                    error_msg = 'wiki_enabled invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-                # turn on/off group wiki
-                if wiki_enabled == 'true':
-                    enable_mod_for_group(group_id, MOD_GROUP_WIKI)
-                else:
-                    disable_mod_for_group(group_id, MOD_GROUP_WIKI)
-
-            except SearpcError as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        group_info = get_group_info(request, group_id)
+        group_info = get_group_info(group)
 
         return Response(group_info)
 
@@ -319,7 +307,7 @@ class Group(APIView):
             if not is_group_owner(group_id, username):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -339,11 +327,10 @@ class Group(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            group = ccnet_api.get_group(int(group_id))
-            group_name = group.group_name
+            group = Group.objects.get_group(int(group_id))
             if org_id and org_id > 0:
-                ccnet_api.remove_org_group(org_id, group_id)
-            ccnet_api.remove_group(group_id)
+                OrgGroup.objects.remove_org_group(org_id, group_id)
+            group.delete()
             group_deleted.send(sender=None, group_id=group_id)
         except Exception as e:
             logger.error(e)

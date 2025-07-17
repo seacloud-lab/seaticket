@@ -51,24 +51,13 @@ def check_group_name_conflict(request, new_group_name):
     return False
 
 def is_group_member(group_id, email):
-
-    group_id = int(group_id)
-
-    group = Group.objects.get(group_id=group_id)
+    group = Group.objects.get_group(group_id)
     if not group:
         return False
-
     return GroupUser.objects.is_group_user(group_id, email)
 
-def is_group_admin(group_id, email):
-    if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-        is_admin = is_department_v2_group_admin(group_id, email)
-    else:
-        is_admin = ccnet_api.check_group_staff(int(group_id), email)
-    return is_admin
-
 def is_group_owner(group_id, email):
-    group = ccnet_api.get_group(int(group_id))
+    group = Group.objects.get_group(group_id)
     if not group:
         return False
     if email == group.creator_name:
@@ -76,9 +65,10 @@ def is_group_owner(group_id, email):
     else:
         return False
 
-
 def is_group_admin_or_owner(group_id, email):
-    group = Group.objects.get(group_id=group_id)
+    group = Group.objects.get_group(group_id)
+    if not group:
+        return False
     if group.creator_name == email:
         return True
     group_user = GroupUser.objects.get(group_id=group_id, user_name=email)
@@ -86,11 +76,15 @@ def is_group_admin_or_owner(group_id, email):
         return True
     return False
 
-
 def is_group_admin_or_owner_by_group(group, email):
-    return group.is_staff or group.creator_name == email
+    if group.creator_name == email:
+        return True
+    group_user = GroupUser.objects.get(group_id=group.group_id, user_name=email)
+    if group_user.is_staff:
+        return True
+    return False
 
-def get_group_member_info(request, group_id, email):
+def get_group_member_info(group_id, email):
     p = Profile.objects.get_profile_by_user(email)
     if p:
         login_id = p.login_id if p.login_id else ''
@@ -98,21 +92,15 @@ def get_group_member_info(request, group_id, email):
         login_id = ''
 
     avatar_url, is_default, date_uploaded = api_avatar_url(email)
-
-    group = ccnet_api.get_group(int(group_id))
-
-    if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-        role = 'Member'
-        is_admin = is_department_v2_group_admin(group_id, email)
-        if is_admin:
-            role = 'Admin'
-    else:
-        role = 'Member'
-        is_admin = bool(ccnet_api.check_group_staff(int(group_id), email))
-        if email == group.creator_name:
-            role = 'Owner'
-        elif is_admin:
-            role = 'Admin'
+    group = Group.objects.get_group(group_id)
+    if not group:
+        return None
+    role = 'Member'
+    is_admin = is_group_admin_or_owner(group_id, email)
+    if email == group.creator_name:
+        role = 'Owner'
+    elif is_admin:
+        role = 'Admin'
 
     if p is not None and p.nickname and p.nickname.strip():
         nickname = p.nickname.strip()
@@ -136,15 +124,13 @@ GROUP_ID_CACHE_PREFIX = "GROUP_ID_"
 GROUP_ID_CACHE_TIMEOUT = 24 * 60 * 60
 
 def group_id_to_name(group_id):
-
     group_id = str(group_id)
-
     key = normalize_cache_key(group_id, GROUP_ID_CACHE_PREFIX)
     cached_group_name = cache.get(key)
     if cached_group_name:
         return cached_group_name
 
-    group = Group.objects.get(group_id=int(group_id))
+    group = Group.objects.get_group(group_id=int(group_id))
     if not group:
         return ''
 
@@ -172,24 +158,22 @@ def get_group_id_by_repo_owner(repo_owner):
 def get_group_members(group_id):
     """return [{username, is_staff}]
     """
-    if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-        members = get_department_v2_groups_members([group_id]).get(group_id, [])
-        return [{'username': member['username'], 'is_staff': member['is_staff']} for member in members]
-    else:
-        members = ccnet_api.get_group_members(group_id)
-        return [{'username': member.user_name, 'is_staff': member.is_staff} for member in members]
+    members = GroupUser.objects.filter(group_id=group_id)
+    return [{'username': member.user_name, 'is_staff': member.is_staff} for member in members]
 
 
 def get_groups_members(group_ids, only_staffs=False):
     """
     return: {group_id: [{username, is_staff}]}
     """
-    groups_members_dict = ccnet_get_groups_members(group_ids, only_staffs=only_staffs)
-    if settings.ENABLE_ADDRESSBOOK_V2:
-        department_groups_members_dict = get_department_v2_groups_members(group_ids, only_staffs=only_staffs)
-        for group_id, members in department_groups_members_dict.items():
-            if members:  # members not empty means the group is a department group and there are members in it
-                groups_members_dict[group_id] = [{'username': member['username'], 'is_staff': member['is_staff']} for member in members]
+    groups_members_dict = {}
+    members = GroupUser.objects.filter(group_id__in=group_ids)
+    for member in members:
+        member_info = {'username': member['username'], 'is_staff': member['is_staff']}
+        if member.group_id not in groups_members_dict:
+            groups_members_dict[member.group_id] = [member_info]
+        else:
+            groups_members_dict[member.group_id].append(member_info)
     return groups_members_dict
 
 
@@ -197,15 +181,31 @@ def get_user_groups(username, return_ancestors=False):
     """
     return: a list of Group objs
     """
-    groups = ccnet_api.get_groups(username, return_ancestors=return_ancestors)
-    if settings.ENABLE_ADDRESSBOOK_V2:
-        department_v2_group_ids = list(get_department_v2_groups_by_user(username).values_list('group_id', flat=True))
-        group_infos_dict = get_groups_info(department_v2_group_ids)
-        for group_id in department_v2_group_ids:
-            group_info = group_infos_dict.get(group_id)
-            if not group_info:
-                continue
-            groups.append(FakeGroup(group_info))
+    groups = []
+    user_groups = GroupUser.objects.filter(user_name=username)
+    for g in user_groups:
+        group = Group.objects.get_group(group_id=g.group_id)
+        if not group:
+            continue
+        if group not in groups:
+            groups.append(group)
+        if return_ancestors and group.parent_group_id > 0:
+            while True:
+                try:
+                    parent_group = Group.objects.get_group(
+                        group_id=group.parent_group_id)
+                    if not parent_group:
+                        break
+                    if parent_group not in groups:
+                        groups.append(parent_group)
+                    if parent_group.parent_group_id > 0:
+                        group = parent_group
+                        continue
+                    else:
+                        break
+                except Exception as e:
+                    logger.error(e)
+                    break
     return groups
 
 
@@ -213,8 +213,8 @@ def get_user_admin_group_ids(username):
     """
     return: group ids
     """
-    group_ids = ccnet_get_user_admin_group_ids(username)
-    if settings.ENABLE_ADDRESSBOOK_V2:
-        department_v2_group_ids = get_department_v2_groups_by_user(username, is_staff=True).values_list('group_id', flat=True)
-        group_ids.extend(department_v2_group_ids)
+    group_ids = []
+    user_groups = GroupUser.objects.filter(user_name=username, is_staff=True)
+    for g in user_groups:
+        group_ids.append(g.group_id)
     return group_ids
