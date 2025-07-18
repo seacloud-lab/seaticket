@@ -132,7 +132,7 @@ const Records = ({ type, title }) => {
     if (!hasMoreRef.current) return;
     setLoading(true);
     seaQAAPI.listConnections(workspaceID, projectUuid, type, pageRef.current, pageCountRef.current).then(res => {
-      const records = res.data.records.map(r => new Connection(r));
+      const moreRecords = res.data.records.map(r => new Connection(r));
       let newRecords = pageRef.current === 1 ? [] : records.slice(0);
       let recordsMap = newRecords.reduce((pre, cur) => {
         if (pre[cur.id]) return pre;
@@ -140,13 +140,13 @@ const Records = ({ type, title }) => {
         return pre;
       }, {});
 
-      if (records.length < pageCountRef.current) {
+      if (moreRecords.length < pageCountRef.current) {
         hasMoreRef.current = false;
       } else {
         pageRef.current = pageRef.current + 1;
       }
 
-      records.forEach(record => {
+      moreRecords.forEach(record => {
         if (!recordsMap[record.id]) {
           newRecords.push(record);
         }
@@ -154,7 +154,6 @@ const Records = ({ type, title }) => {
       setRecords(newRecords);
       setLoading(false);
     }).catch(error => {
-      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setLoading(false);

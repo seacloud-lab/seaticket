@@ -68,8 +68,13 @@
 .org-admin .text-secondary,
 .sys-admin .text-secondary {
   color: #999 !important;
-  width: 13px;
+  width: 100%;
   height: 13px;
+}
+
+.org-admin svg.text-secondary,
+.sys-admin svg.text-secondary {
+  width: 13px;
   margin-top: -2px;
 }
 
