@@ -8,7 +8,7 @@ from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
 from seahub.views.sso import *
 
-from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView
+from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView, GroupTrashProjectsView, GroupTrashProjectView
 
 from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember, GroupMembersBulk
 from seahub.api2.endpoints.search_group import SearchGroup
@@ -95,6 +95,8 @@ urlpatterns = [
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/search-member/$', GroupSearchMember.as_view(), name='api-v2.1-group-search-member'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/bulk/$', GroupMembersBulk.as_view(), name='api-v2.1-group-members-bulk'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v2.1-group-member'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v2.1-group-trash-projects'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v2.1-group-trash-project'),
     re_path(r'^api/v2.1/search-group/$', SearchGroup.as_view(), name='api-v2.1-search-group'),
 
     ## org

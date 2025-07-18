@@ -26,6 +26,7 @@ from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_O
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
 from seahub.group.models import GroupUser, Group
+from seahub.project.utils import restore_trash_project_name
 
 from .utils import api_check_group
 
@@ -380,5 +381,72 @@ class GroupMoveView(APIView):
             logger.error(e)
             err_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, err_msg)
+
+        return Response({'success': True})
+
+
+class GroupTrashProjectsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    @api_check_group
+    def get(self, request, group_id):
+        # only group owner/admin can get info of group trash projects
+        if not is_group_admin_or_owner(group_id, request.user.username):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        owner = str(group_id) + '@seafile_group'
+        try:
+            projects = Projects.objects.filter(deleted=True, workspace__owner=owner).select_related('workspace').order_by('-delete_time')
+        except Exception as e:
+            logger.error('get deleted projects error: %s', e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        results = [project.to_dict(include_deleted=True) for project in projects]
+
+        return Response({'trash_project_list': results})
+
+
+class GroupTrashProjectView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    @api_check_group
+    def put(self, request, group_id, project_uuid):
+        # argument check
+        username = request.user.username
+
+        # only group owner/admin can restore group trash project
+        if not is_group_admin_or_owner(group_id, username):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        owner = str(group_id) + '@seafile_group'
+
+        # resource check
+        project = Projects.objects.filter(
+            uuid=project_uuid, workspace__owner=owner, deleted=True).select_related('workspace').first()
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        new_project_name = restore_trash_project_name(project)
+        # check existed project
+        if Projects.objects.get_project(project.workspace, new_project_name):
+            error_msg = 'Project with name "%s" exists.' % new_project_name
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # restore project
+        try:
+            Projects.objects.filter(
+                uuid=project_uuid, deleted=True).update(deleted=False, delete_time=None, name=new_project_name)
+        except Exception as e:
+            logger.error('restore project: %s name: %s error: %s', project.id, project.name, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
