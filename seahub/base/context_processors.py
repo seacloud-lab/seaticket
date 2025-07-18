@@ -130,6 +130,7 @@ def base(request):
         'CSRF_COOKIE_NAME': dj_settings.CSRF_COOKIE_NAME,
         'constance_enabled': dj_settings.CONSTANCE_ENABLED,
         'LOGIN_URL': dj_settings.LOGIN_URL,
+        'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
         'enable_thumbnail': ENABLE_THUMBNAIL,
         'thumbnail_size_for_original': THUMBNAIL_SIZE_FOR_ORIGINAL,
         'enable_guest_invitation': ENABLE_GUEST_INVITATION,
