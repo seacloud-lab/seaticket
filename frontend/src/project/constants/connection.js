@@ -5,7 +5,8 @@ export const CONNECTION_TYPE = {
   EMAIL: 'email',
   GITHUB_ISSUE: 'github_issue',
   DISCOURSE_FORUM: 'discourse_forum',
-  SITE: 'site'
+  SITE: 'site',
+  SEAFILE: 'seafile',
 };
 
 export const CONNECTION_FIELDS = {
@@ -24,6 +25,10 @@ export const CONNECTION_FIELDS = {
     { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
     { key: 'sitemap_url', 'name': gettext('Sitemap URL'), type: TABLE_COLUMN_TYPE.URL },
   ],
+  [CONNECTION_TYPE.SEAFILE]: [
+    { key: 'server_url', name: gettext('Server_url'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
+    { key: 'api_token', 'name': gettext('Api_token'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true, is_display: true },
+  ]
 };
 
 export const CONNECTION_TYPES = [
@@ -47,5 +52,10 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.SITE,
     icon: 'site',
     name: gettext('Sites'),
+  }, {
+    key: CONNECTION_TYPE.SEAFILE,
+    type: CONNECTION_TYPE.SEAFILE,
+    icon: 'seafile',
+    name: gettext('Seafile'),
   }
 ];

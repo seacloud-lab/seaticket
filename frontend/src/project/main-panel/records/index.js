@@ -8,7 +8,7 @@ import { gettext } from '../../../constants';
 import ConnectionRecordDialog from '../../components/connection-record-dialog';
 import { Utils } from '../../../utils/utils';
 import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
-import { CONNECTION_FIELDS, TABLE_COLUMN_TYPE } from '../../constants';
+import { CONNECTION_FIELDS, TABLE_COLUMN_TYPE, CONNECTION_TYPE } from '../../constants';
 
 const {
   workspaceID, projectUuid
@@ -32,15 +32,18 @@ const Records = ({ type, title }) => {
         is_custom: true,
       };
     });
-
-    return [
+    let columnNames = [
       { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
       ...displayColumns, // 20%
-      { key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' },
-      { key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' },
-      { key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' },
-      { key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' },
     ];
+    if (type === CONNECTION_TYPE.SITE) {
+      columnNames.push({ key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
+      columnNames.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' })
+    }
+    columnNames.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' })
+    columnNames.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' })
+
+    return columnNames;
   }, [fields]);
   const btns = useMemo(() => {
     return [

@@ -15,7 +15,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections
-from seahub.project.utils import check_project_admin_permission, add_init_crawl_site_task
+from seahub.project.utils import check_project_admin_permission, add_init_crawl_site_task, add_index_seafile_task
 from seahub.project.constants import ConnectionType
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -92,7 +92,7 @@ class ProjectConnectionsView(APIView):
         if not config:
             error_msg = 'config invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         connection_type = request.POST.get('type')
         if not ConnectionType.is_valid(connection_type):
             error_msg = f'Type {connection_type} not support.'
@@ -131,6 +131,11 @@ class ProjectConnectionsView(APIView):
                 'site_id': record.get('id', '')
             }
             add_init_crawl_site_task(params)
+        elif connection_type == ConnectionType.SEAFILE.value:
+            params = {
+                'connection_id': record.get('id', '')
+            }
+            add_index_seafile_task(params)
 
         return Response({'record': record}, status=status.HTTP_201_CREATED)
 

@@ -119,6 +119,16 @@ def add_init_crawl_site_task(params):
     return json.loads(resp.content)
 
 
+def add_index_seafile_task(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, SEAQA_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(WEB_CRAWL_INDEX_SERVER_URL, '/add-index-seafile-task')
+    resp = requests.get(url, params=params, headers=headers)
+
+    return json.loads(resp.content)
+
+
 def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, SEAQA_PRIVATE_KEY, algorithm='HS256')
