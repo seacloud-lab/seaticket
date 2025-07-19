@@ -22,6 +22,7 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search
+from seahub.project.constants import ConnectionType
 
 
 logger = logging.getLogger(__name__)
@@ -378,6 +379,8 @@ class SearchView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        connection_type = request.data.get('connection_type', ConnectionType.SITE.value)
+
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
             error_msg = f'Workspace {workspace_id} not found.'
@@ -396,6 +399,7 @@ class SearchView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
+            'connection_type': connection_type,
         }
         results = search(params)
 
