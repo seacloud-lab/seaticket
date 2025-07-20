@@ -684,8 +684,6 @@ SEND_EMAIL_ON_ACTIVATING_ORG_USER = False # Whether to send email when org admin
 # Settings for seaqa    #
 ##########################
 
-SEAQA_PRIVATE_KEY = ''
-
 SEAQA_WEB_SERVICE_URL = ''
 
 SSO_SECRET_KEY = ''
@@ -781,6 +779,7 @@ d = os.path.dirname
 CUSTOM_NAV_ITEMS = []
 
 WEB_CRAWL_INDEX_SERVER_URL = 'http://127.0.0.1:8888'
+SEAQA_AI_SERVER_URL = 'http://127.0.0.1:8887'
 
 #####################
 # External settings #
@@ -829,7 +828,7 @@ else:
 
 # config in env
 # jwt private key
-SEAQA_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY') or SEAQA_PRIVATE_KEY
+JWT_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY')
 
 # For database conf., now only support mysql
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):

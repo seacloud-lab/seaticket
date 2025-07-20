@@ -19,7 +19,8 @@ from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
 from seahub.api2.endpoints.sessions import SessionsView, OnlineSessionView, SessionView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView
+from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView, \
+    QAView
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
 from seahub.api2.endpoints.admin.sysinfo import SysInfo
@@ -116,6 +117,9 @@ urlpatterns = [
 
     # search
     re_path(r'^api/v2.1/search/$', SearchView.as_view(), name='api-v2.1-search'),
+    
+    # ai
+    re_path(r'^api/v2.1/qa/$', QAView.as_view(), name='api-v2.1-qa'),
 
     ## user::avatar
     re_path(r'^api/v2.1/user-avatar/$', UserAvatarView.as_view(), name='api-v2.1-user-avatar'),
