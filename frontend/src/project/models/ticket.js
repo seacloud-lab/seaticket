@@ -73,6 +73,10 @@ class Ticket {
     this.updated_at = dayjs(new Date()).fromNow();
   };
 
+  toggle_status = (status = '') => {
+    this.status = status;
+  };
+
   create_reply = (reply) => {
     this.replies.push(new Reply(reply));
     this.reply_updated_at = dayjs(new Date()).fromNow();

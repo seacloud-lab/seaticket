@@ -31,7 +31,7 @@ const Ticket = ({ togglePage }) => {
   }, []);
   const ticket = useMemo(() => {
     return metadata.rows[0];
-  }, [metadata]);
+  }, [metadata.rows[0]]);
 
   const replyEditorRef = useRef(null);
 
@@ -48,6 +48,16 @@ const Ticket = ({ togglePage }) => {
     }
     setReply(value);
   }, []);
+
+  const toggleTicketStatus = useCallback((status = '') => {
+    seaQAAPI.modifyProjectTicket(projectUuid, ticket.id, { status }).then(res => {
+      ticket.toggle_status(status);
+      setReply('');
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket]);
 
   const onSubmitReply = useCallback(() => {
     seaQAAPI.createProjectTicketReply(projectUuid, ticket.id, reply ? reply.text : '').then(res => {
@@ -146,7 +156,10 @@ const Ticket = ({ togglePage }) => {
             </div>
           </div>
           <div className="sea-qa-project-ticket-comment-close">
-            <Button className="mr-4" disabled={!isOpen}>{gettext('Close')}</Button>
+            <Button className="sea-qa-project-ticket-status-toggle-btn mr-4" onClick={() => toggleTicketStatus(isOpen ? TICKET_STATUS.COMPLETE : TICKET_STATUS.OPEN)}>
+              <Icon symbol={isOpen ? 'circle-dot' : 'circle-check'} className="mr-2" />
+              <span>{isOpen ? gettext('Close') : gettext('Reopen ticket')}</span>
+            </Button>
             <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
           </div>
         </div>

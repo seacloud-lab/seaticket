@@ -54,13 +54,13 @@
   padding: 8px 12px;
   font-size: 14px;
   color: #fff;
-  background-color: #8250df;
+  background-color: var(--ticket-close-color);
   border-radius: 20px;
   gap: 8px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-status.open {
-  background-color: #1a7f37;;
+  background-color: var(--ticket-open-color);;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-content-wrapper {
@@ -171,9 +171,10 @@
   justify-content: flex-end;
 }
 
-/*  */
-.sea-qa-project-ticket .sea-qa-project-ticket-other-content-wrapper {
-  width: 30%;
-  display: flex;
-  flex-direction: column;
+.sea-qa-project-ticket .sea-qa-project-ticket-status-toggle-btn .sea-qa-icon-svg-circle-check {
+  color: var(--ticket-close-color);
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-status-toggle-btn .sea-qa-icon-svg-circle-dot {
+  color: var(--ticket-open-color);
 }

@@ -27,3 +27,8 @@
   display: inline-block;
   padding-left: 8px;
 }
+
+body {
+  --ticket-open-color: #1a7f37;
+  --ticket-close-color: #8250df;
+}

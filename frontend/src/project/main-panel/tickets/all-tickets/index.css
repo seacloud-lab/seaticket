@@ -97,6 +97,10 @@
   border-bottom: 1px solid #ddd;
 }
 
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record:hover {
+  background-color: #f5f5f5;
+}
+
 .sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-status {
   grid-area: status;
   min-width: 22px;
@@ -107,11 +111,11 @@
   padding-left: 12px;
   padding-right: 4px;
   margin-top: 12px;
-  color: #8250df;
+  color: var(--ticket-close-color);
 }
 
 .sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-status .sea-qa-icon-svg-circle-dot {
-  color: #1a7f37;
+  color: var(--ticket-open-color);
 }
 
 .sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-primary {
