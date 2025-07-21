@@ -9,7 +9,8 @@ from seahub.project.models import Projects
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
-from seahub.group.models import Group
+from seahub.group.models import Group, GroupUser
+from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import WEB_CRAWL_INDEX_SERVER_URL, SEAQA_PRIVATE_KEY
 from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
@@ -88,6 +89,15 @@ def get_project_owner(project):
     if not group:
         return '%s (deleted group)' % (group_id,), True
     return '%s (group)' % (group.group_name,), False
+
+
+def get_project_related_users(owner):
+    if '@seafile_group' in owner:
+        group_id = int(owner.split('@')[0])
+        group_users = GroupUser.objects.filter(group_id=group_id)
+        return [get_user_common_info(group_user.user_name) for group_user in group_users]
+    else:
+        return [get_user_common_info(owner)]
 
 
 def convert_project_trash_names(project):

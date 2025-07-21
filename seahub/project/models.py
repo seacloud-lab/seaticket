@@ -4,14 +4,17 @@ import datetime
 import logging
 import uuid
 import json
+import time
 
 from django.db import models
 from django.core.exceptions import ValidationError
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, CONNECTION_FIELDS
 from seahub.utils import get_no_duplicate_obj_name, \
     utf8_normalize, is_valid_uuid
+from seahub.api2.utils import get_user_common_info
 
 from seahub.utils import normalize_cache_key
+from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
 
@@ -454,3 +457,173 @@ class ProjectConnections(models.Model):
             'indexed_at': self.indexed_at,
             'status': self.status,
         }
+
+
+class TicketsManager(models.Manager):
+
+    def list_tickets(self, project_uuid, start, end):
+        return self.filter(
+            project_uuid=project_uuid, deleted=False).order_by('-number')[start: end]
+
+    def list_tickets_by_username(self, project_uuid, username, start, end):
+        return self.filter(
+            project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
+
+    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None):
+        for i in range(3):
+            try:
+                previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
+                number = previous_ticket.number + 1 if previous_ticket else 1
+                item = self.create(
+                    project_uuid=project_uuid,
+                    number=number,
+                    creator=username,
+                    title=title,
+                    content=content,
+                    status=status,
+                    type=ticket_type,
+                )
+                return item
+            except self.model.MultipleObjectsReturned:
+                time.sleep(0.2)
+                continue
+        return None
+
+    def get_ticket(self, project_uuid, number, deleted=False):
+        return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
+
+    def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
+        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
+
+
+class Tickets(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.UUIDField()
+    number = models.IntegerField()
+    creator = models.CharField(max_length=255, db_index=True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    status = models.CharField(max_length=50, null=True, db_index=True)
+    type = models.CharField(max_length=50, null=True)
+    reply_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    reply_updated_at = models.DateTimeField(null=True)
+    deleted = models.BooleanField(default=False, null=False, db_index=True)
+    delete_at = models.DateTimeField(null=True)
+
+    objects = TicketsManager()
+
+    class Meta:
+        unique_together = (('project_uuid', 'number'),)
+        db_table = 'tickets'
+
+    def to_dict(self, tags_dict={}, participants_dict={}, include_deleted=False):
+        result = {
+            'project_uuid': str(self.project_uuid),
+            'number': self.number,
+            'title': self.title,
+            'content': self.content,
+            'participants': [],
+            'tags': [],
+            'status': self.status,
+            'type': self.type,
+            'reply_count': self.reply_count,
+            'created_at': datetime_to_isoformat_timestr(self.created_at),
+            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'reply_updated_at': datetime_to_isoformat_timestr(self.reply_updated_at),
+            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {})
+        }
+        if self.id in tags_dict:
+            result['tags'] = tags_dict[self.id]
+        if self.id in participants_dict:
+            result['participants'] = [
+                get_user_common_info(participant) for participant in participants_dict[self.id]]
+        if include_deleted:
+            result.update({
+                'deleted': self.deleted,
+                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
+            })
+        return result
+
+class TicketRepliesManager(models.Manager):
+
+    def list_replies(self, ticket_id, start, end):
+        return self.filter(
+            ticket_id=ticket_id, deleted=False).order_by('number')[start: end]
+
+    def get_replies_count(self, ticket_id):
+        return self.filter(
+            ticket_id=ticket_id, deleted=False).count()
+
+    def create_reply(self, ticket_id, username, content):
+        for i in range(3):
+            try:
+                previous_reply = self.filter(ticket_id=ticket_id).order_by('-number').first()
+                number = previous_reply.number + 1 if previous_reply else 1
+                return self.create(
+                    ticket_id=ticket_id,
+                    number=number,
+                    creator=username,
+                    content=content,
+                )
+            except self.model.MultipleObjectsReturned:
+                time.sleep(0.2)
+                continue
+        return None
+
+    def get_reply(self, ticket_id, number, deleted=False):
+        return self.filter(ticket_id=ticket_id, number=number, deleted=deleted).first()
+
+    def get_previous_reply_by_username(self, ticket_id, username, deleted=False):
+        return self.filter(ticket_id=ticket_id, creator=username, deleted=deleted).order_by('-number').first()
+
+class TicketReplies(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField()
+    number = models.IntegerField()
+    creator = models.CharField(max_length=255, db_index=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    deleted = models.BooleanField(default=False, null=False, db_index=True)
+    delete_at= models.DateTimeField(null=True)
+
+    objects = TicketRepliesManager()
+
+    class Meta:
+        unique_together = (('ticket_id', 'number'),)
+        db_table = 'ticket_replies'
+
+    def to_dict(self, include_deleted=False):
+        result = {
+            'number': self.number,
+            'content': self.content,
+            'created_at': datetime_to_isoformat_timestr(self.created_at),
+            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {}),
+        }
+        if include_deleted:
+            result.update({
+                'deleted': self.deleted,
+                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
+            })
+        return result
+
+
+class TicketTags(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField(db_index=True)
+    tag = models.CharField(max_length=50, db_index=True)
+
+    class Meta:
+        db_table = 'ticket_tags'
+
+
+class TicketParticipants(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField(db_index=True)
+    participant = models.CharField(max_length=255, db_index=True)
+
+    class Meta:
+        db_table = 'ticket_participants'

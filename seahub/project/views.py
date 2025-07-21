@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Workspaces, Projects
+from seahub.project.utils import check_project_admin_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def project_view(request, workspace_id, project_name):
+def project_view(request, workspace_id, project_name, ticket_number = ''):
     # resource check
     workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
     if not workspace:
@@ -43,6 +44,8 @@ def project_view(request, workspace_id, project_name):
         'name': project.icon
     }
 
+    is_project_admin= check_project_admin_permission(request.user.username, workspace.owner)
+
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project_name,
@@ -51,7 +54,8 @@ def project_view(request, workspace_id, project_name):
         'current_group_id': int(group_id) if project.is_owned_by_group else None,
         'is_owned_by_group': project.is_owned_by_group,
         'media_url': MEDIA_URL,
-        'icon': json.dumps(icon)
+        'icon': json.dumps(icon),
+        'is_project_admin': is_project_admin,
     }
 
     return render(request, 'project_view_react.html', return_dict)

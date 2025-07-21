@@ -1,0 +1,57 @@
+import { LONG_TEXT_LENGTH_LIMIT } from '../constants';
+
+
+export const isLongTextValueExceedLimit = (value) => {
+  if (!value) return false;
+  if (typeof value === 'string') return value.length >= LONG_TEXT_LENGTH_LIMIT;
+  const { text } = value || {};
+  return text ? text.length >= LONG_TEXT_LENGTH_LIMIT : false;
+};
+
+export const getLongTextValueByNew = (longtext, images) => {
+  let validLongText = { ...longtext };
+  let _images = longtext.images?.slice(0) || [];
+  images.forEach(image => {
+    let url = new URL(image);
+    url = image.replace(url.search, '');
+    if (!_images.includes(image) && longtext.text.includes(url)) {
+      _images.push(image);
+    }
+  });
+  validLongText.images = _images;
+  return validLongText;
+};
+
+class LongTextEditorUtilities {
+
+  constructor({ key }) {
+    this.key = key;
+  }
+
+  getImageFileNameWithTimestamp = (file) => {
+    var d = Date.now();
+    return 'image-' + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
+  };
+
+  uploadLocalImage = (file) => {
+    // const newFile = new File([file], this.getImageFileNameWithTimestamp(file), { type: file.type });
+    // todo
+  };
+
+  isInternalDirLink = (url) => {
+    var re = new RegExp(`${this.server}/#[a-z-]*?/lib/[0-9a-f-]{36}.*`);
+    return re.test(url);
+  };
+
+  isInternalFileLink = (url) => {
+    var re = new RegExp(`${this.server}/lib/[0-9a-f-]{36}/file.*`);
+    return re.test(url);
+  };
+
+  _getImageURL = (filePath) => {
+    // todo
+  };
+
+}
+
+export default LongTextEditorUtilities;

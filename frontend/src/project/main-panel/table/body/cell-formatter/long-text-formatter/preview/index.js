@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import CustomizeMarkdownViewer from './markdown-viewer';
+import { CustomizeMarkdownViewer } from '../../../../../../../components';
 
 import './index.css';
 
@@ -63,7 +63,6 @@ class Preview extends React.PureComponent {
 
   render() {
     const { className, value } = this.props;
-    const markdownContent = value ? value.text : '';
     return (
       <div
         className={classnames('long-text-preview-popover', className)}
@@ -73,7 +72,7 @@ class Preview extends React.PureComponent {
         onMouseLeave={this.onMouseLeave}
       >
         <div className="long-text-container long-text-container-scroll">
-          <CustomizeMarkdownViewer markdownContent={markdownContent} showTOC={false} />
+          <CustomizeMarkdownViewer value={value ? value.text : ''} showTOC={false} />
         </div>
       </div>
     );

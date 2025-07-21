@@ -25,7 +25,7 @@ class SettingItemBase extends Component {
           </Col>
           <Col md="5">
             {mainContent}
-            {helpTip && <p className="seatable-tip-default mt-1">{helpTip}</p>}
+            {helpTip && <p className="tip-default mt-1">{helpTip}</p>}
           </Col>
           <Col md="4">
             {extraContent}

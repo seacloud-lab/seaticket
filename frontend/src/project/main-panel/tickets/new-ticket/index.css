@@ -1,0 +1,63 @@
+.sea-qa-project-new-ticket {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding: 16px;
+  display: flex;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-user {
+  width: 52px;
+  overflow: hidden;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-user img {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 16px;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-settings {
+  flex: 1;
+  padding-left: 8px;
+  padding-top: 4px;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-name {
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-settings-container {
+  display: flex;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-content-settings {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-content .sf-long-text-inline-editor-container {
+  min-height: 300px;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-content .longtext-preview-container {
+  padding: 0;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-content .longtext-preview-container .sf-slate-viewer-container  {
+  height: 100%;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-footer {
+  width: 100%;
+  padding: 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}

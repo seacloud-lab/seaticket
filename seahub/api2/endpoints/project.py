@@ -21,9 +21,8 @@ from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search
+    convert_project_trash_names, check_project_permission, search, get_project_related_users
 from seahub.project.constants import ConnectionType
-
 
 logger = logging.getLogger(__name__)
 

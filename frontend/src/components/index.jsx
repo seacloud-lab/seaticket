@@ -20,6 +20,8 @@ import Radio from './radio';
 import CustomizeGroupSelect from './customize-group-select';
 import CustomizeReactSelect from './customize-react-select';
 import CustomizeDropdownMoreToggle from './customize-dropdown-toggle';
+import CustomizePopover from './customize-popover';
+import CustomizeMarkdownViewer from './customize-markdown-viewer';
 import Progress from './mobile/progress';
 import List from './mobile/list';
 import InputItem from './mobile/input-item';
@@ -27,6 +29,10 @@ import MobileCommonHeader from './mobile/mobile-common-header';
 import ActionSheet from './mobile/action-sheet';
 import TabBar from './mobile/tab-bar';
 import ProjectIcon from './project-icon';
+import Collaborator from './collaborator';
+import CollaboratorEditor from './collaborator-editor';
+import Option from './option';
+import OptionEditor from './option-editor';
 
 
 export {
@@ -48,6 +54,8 @@ export {
   CustomizeGroupSelect,
   CustomizeReactSelect,
   CustomizeDropdownMoreToggle,
+  CustomizePopover,
+  CustomizeMarkdownViewer,
   Progress,
   List,
   InputItem,
@@ -55,4 +63,8 @@ export {
   ActionSheet,
   TabBar,
   ProjectIcon,
+  Collaborator,
+  CollaboratorEditor,
+  Option,
+  OptionEditor,
 };

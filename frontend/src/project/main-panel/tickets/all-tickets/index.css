@@ -1,0 +1,163 @@
+.sea-qa-project-all-tickets-wrapper {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+
+.sea-qa-project-all-tickets-wrapper-header {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+.sea-qa-project-all-tickets-wrapper-header .sea-qa-search-input-wrapper {
+  flex: 1;
+}
+
+.sea-qa-project-all-tickets-wrapper-header button {
+  flex-shrink: 0;
+}
+
+.sea-qa-project-all-tickets-wrapper-body {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-header {
+  background: #f5f5f5;
+  height: 49px;
+  flex-shrink: 0;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-op-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-op-wrapper .sea-qa-project-all-tickets-op-wrapper-left,
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-op-wrapper .sea-qa-project-all-tickets-op-wrapper-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-op-btn {
+  padding: 0 8px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s ease-out;
+  border-radius: 6px;
+  color: #59636e;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-op-btn:hover {
+  background: #818b981a;
+  cursor: pointer;
+  color: unset;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-body {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record {
+  min-height: 64px;
+  display: grid;
+  grid-template-areas:
+    "status primary reply"
+    "status main-content reply";
+  grid-template-rows: repeat(2, auto);
+  grid-template-columns: min-content minmax(30%, 1fr) minmax(0, max-content);
+  gap: 4px;
+  --core-grid-template-columns: min-content minmax(30%, 1fr) minmax(0, max-content);
+  --last-grid-template-column: min-content;
+  border-bottom: 1px solid #ddd;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record:hover {
+  background-color: #f5f5f5;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-status {
+  grid-area: status;
+  min-width: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  justify-content: flex-start;
+  padding-left: 12px;
+  padding-right: 4px;
+  margin-top: 12px;
+  color: var(--ticket-close-color);
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-status .sea-qa-icon-svg-circle-dot {
+  color: var(--ticket-open-color);
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-primary {
+  grid-area: primary;
+  padding-top: 8px;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record-primary .sea-qa-project-all-tickets-record-title {
+  font-weight: 600;
+  font-size: 16px;
+  max-width: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record-primary .sea-qa-project-all-tickets-record-title:hover {
+  color: #ed7109;
+  cursor: pointer;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-main-content {
+  grid-area: main-content;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-type {
+  margin-right: 6px;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-create {
+  color: #59636e;
+  font-size: 12px;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record .sea-qa-project-all-tickets-record-reply {
+  grid-area: reply;
+  min-width: 45px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  color: #59636e;
+}

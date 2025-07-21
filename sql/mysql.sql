@@ -442,3 +442,59 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `tickets`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `number` int(11) NOT NULL,
+  `creator` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `status` varchar(50) DEFAULT NULL,
+  `type` varchar(50) DEFAULT NULL,
+  `reply_count` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `reply_updated_at` datetime(6) NULL DEFAULT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `delete_at` datetime(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
+  KEY `tickets_creator`(`creator`),
+  KEY `tickets_status`(`status`),
+  KEY `tickets_deleted`(`deleted`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `ticket_replies`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint(20) NOT NULL,
+  `number` int(11) NOT NULL,
+  `creator` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `delete_at` datetime(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ticket_replies_ticket_id_number`(`ticket_id`, `number`),
+  KEY `ticket_replies_creator`(`creator`),
+  KEY `ticket_replies_deleted`(`deleted`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `ticket_tags`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint(20) NOT NULL,
+  `tag` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_tags_ticket_id`(`ticket_id`),
+  KEY `ticket_tags_tag`(`tag`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `ticket_participants`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint(20) NOT NULL,
+  `participant` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ticket_participants_ticket_id`(`ticket_id`),
+  KEY `ticket_participants_participant`(`participant`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;

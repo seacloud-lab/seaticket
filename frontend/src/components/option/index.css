@@ -1,0 +1,20 @@
+.option {
+  height: 20px;
+  border-width: 1px;
+  border-style: solid;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 10px;
+  max-width: 140px;
+  width: fit-content;
+  overflow: hidden;
+}
+
+.option .option-name {
+  font-size: 13px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
