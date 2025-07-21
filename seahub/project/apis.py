@@ -21,7 +21,7 @@ from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
     TicketTags, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    add_init_crawl_site_task, add_index_seafile_task
+    add_init_crawl_site_task, add_index_seafile_task, get_project_related_users
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TAG, TICKET_TYPE
 
 
@@ -31,12 +31,54 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 
+class ProjectRelatedUsersView(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        # argument check
+        # name
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            related_users = get_project_related_users(workspace.owner)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({"related_users": related_users})
+
+
 class ProjectConnectionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, workspace_id, project_uuid):
+    def get(self, request, project_uuid):
         """get project connection records
         """
 
@@ -61,11 +103,6 @@ class ProjectConnectionsView(APIView):
         end = start + per_page
 
         # resources check
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = f'Project {project_uuid} not found.'
@@ -76,7 +113,7 @@ class ProjectConnectionsView(APIView):
 
         return Response({'records': records}, status=status.HTTP_200_OK)
 
-    def post(self, request, workspace_id, project_uuid):
+    def post(self, request, project_uuid):
         """modify project connection
         """
 
@@ -106,20 +143,17 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # resources check
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         enable_create = ProjectConnections.objects.enable_create(project, connection_type, name, config)
         if not enable_create:
@@ -152,7 +186,7 @@ class ProjectConnectionView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def put(self, request, workspace_id, project_uuid, connection_id):
+    def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
         # role permission check
@@ -180,20 +214,17 @@ class ProjectConnectionView(APIView):
             error_msg = f'Type {connection_type} not support.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         enable_modify = ProjectConnections.objects.enable_modify(project, connection_type, connection_id, name, config)
         if not enable_modify:
@@ -209,7 +240,7 @@ class ProjectConnectionView(APIView):
 
         return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
 
-    def delete(self, request, workspace_id, project_uuid, connection_id):
+    def delete(self, request, project_uuid, connection_id):
         """delete connection
         """
         # role permission check
@@ -221,20 +252,19 @@ class ProjectConnectionView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
             ProjectConnections.objects.filter(project=project, id=connection_id).delete()

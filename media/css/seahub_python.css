@@ -612,11 +612,6 @@ input.short-input {
   border-color: #ED7109;
 }
 
-.external-app-tip {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
 /**** new-narrow-panel  ****/
 .new-narrow-panel {
   width: 388px;

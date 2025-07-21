@@ -97,7 +97,7 @@ def get_project_related_users(owner):
         group_users = GroupUser.objects.filter(group_id=group_id)
         return [get_user_common_info(group_user.user_name) for group_user in group_users]
     else:
-        return [owner]
+        return [get_user_common_info(owner)]
 
 
 def convert_project_trash_names(project):

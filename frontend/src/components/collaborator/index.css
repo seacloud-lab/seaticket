@@ -1,0 +1,34 @@
+.collaborator {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  padding: 0 8px 0 2px;
+  height: 20px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #eaeaea;
+}
+
+.collaborator .collaborator-avatar,
+.collaborator .collaborator-name {
+  height: 20px;
+  line-height: 18px;
+}
+
+.collaborator .collaborator-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0);
+  flex-shrink: 0;
+}
+
+.collaborator .collaborator-name {
+  margin-left: 5px;
+}
+
+.collaborator .collaborator-avatar img {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}

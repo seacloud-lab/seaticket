@@ -1,0 +1,31 @@
+.sea-qa-project-ticket-other-settings {
+  width: 30%;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-ticket-settings-item {
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+}
+
+.sea-qa-project-ticket-settings-item:last-child {
+  border-bottom: none;
+}
+
+.collaborators-formatter,
+.labels-formatter,
+.ticket-types-formatter {
+  min-height: 38px;
+  width: 100%;
+  padding: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.collaborators-formatter .collaborator,
+.ticket-types-formatter .option {
+  margin-bottom: 4px;
+  margin-top: 4px;
+}

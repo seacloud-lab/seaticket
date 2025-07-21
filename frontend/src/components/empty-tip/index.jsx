@@ -3,20 +3,16 @@ import PropTypes from 'prop-types';
 
 import './index.css';
 
-class EmptyTip extends React.Component {
-
-  render() {
-    const { text, title, type } = this.props;
-    return (
-      <div className="empty-tip">
-        <img src={this.props.src} alt="" width="100" height="100" className="no-items-img-tip" />
-        {title && <span className="empty-tip-title">{title}</span>}
-        {text && <span className="empty-tip-text" style={{ color: type === 'error' ? 'red' : '#666' }}>{text}</span>}
-        {this.props.children && this.props.children}
-      </div>
-    );
-  }
-}
+const EmptyTip = ({ text, title, type, src, children }) => {
+  return (
+    <div className="empty-tip">
+      <img src={src} alt="" width="100" height="100" className="no-items-img-tip" />
+      {title && <span className="empty-tip-title">{title}</span>}
+      {text && <span className="empty-tip-text" style={{ color: type === 'error' ? 'red' : '#666' }}>{text}</span>}
+      {children}
+    </div>
+  );
+};
 
 EmptyTip.propTypes = {
   src: PropTypes.string,

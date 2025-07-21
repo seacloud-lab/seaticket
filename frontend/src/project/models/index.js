@@ -1,11 +1,10 @@
 import Connection from './connection';
 import SearchResult from './search-result';
-import TicketObject from './ticket';
-import ReplyObject from './reply';
+import Ticket, { Reply as TicketReply } from './ticket';
 
 export {
   Connection,
   SearchResult,
-  TicketObject,
-  ReplyObject,
+  Ticket,
+  TicketReply,
 };

@@ -78,40 +78,6 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  // connections
-  listConnections(workspaceID, projectUuid, type, page, perPage) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/';
-    let params = {
-      page: page,
-      per_page: perPage,
-      type: type,
-    };
-    return this.req.get(url, { params: params });
-  }
-
-  createConnection(workspaceID, projectUuid, type, { name, config }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/';
-    let form = new FormData();
-    form.append('name', name);
-    form.append('type', type);
-    form.append('config', JSON.stringify(config));
-    return this._sendPostRequest(url, form);
-  }
-
-  modifyConnection(workspaceID, projectUuid, type, connectionID, { name, config }) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/' + connectionID + '/';
-    let form = new FormData();
-    form.append('name', name);
-    form.append('type', type);
-    form.append('config', JSON.stringify(config));
-    return this.req.put(url, form);
-  }
-
-  deleteConnection(workspaceID, projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + projectUuid + '/connections/' + connectionID + '/';
-    return this.req.delete(url);
-  }
-
   // ---- project api
   createProject(name, owner, icon, bgColor, textColor) {
     const url = this.server + '/api/v2.1/projects/';
@@ -153,23 +119,6 @@ class SeaQAAPI {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let params = { name: name };
     return this.req.delete(url, { data: params });
-  }
-
-  // search
-  getSource() {
-    let CancelToken = axios.CancelToken;
-    let source = CancelToken.source();
-    return source;
-  }
-
-  search(workspaceID, projectUuid, query, cancelToken) {
-    const url = `${this.server}/api/v2.1/search/`;
-    let params = {
-      query: query,
-      project_uuid: projectUuid,
-      workspace_id: workspaceID,
-    };
-    return this.req.post(url, params, { cancelToken: cancelToken });
   }
 
   listProjectShares(workspaceID, name) {
@@ -299,7 +248,7 @@ class SeaQAAPI {
     return this.req.delete(url, { params: params });
   }
 
-
+  // search
   searchItems(query_str, query_type) {
     let url = this.server + '/api/v2.1/project/items-search/';
     let params = {};
@@ -315,20 +264,64 @@ class SeaQAAPI {
   }
 
   // ---- project data api
-  getProjectRelatedUsers(workspaceID, name, reqParams) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/' + encodeURIComponent(name) + '/related-users/';
-    let params = {};
-    if (reqParams) {
-      if (reqParams.workflowToken) {
-        params.workflow_token = reqParams.workflowToken;
-      }
-      if (reqParams.taskId) {
-        params.task_id = reqParams.taskId;
-      }
-    }
-    return this.req.get(url, { params });
+  // connections
+  listConnections(projectUuid, type, page, perPage) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
+    let params = {
+      page: page,
+      per_page: perPage,
+      type: type,
+    };
+    return this.req.get(url, { params: params });
   }
 
+  createConnection(projectUuid, type, { name, config }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
+    let form = new FormData();
+    form.append('name', name);
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyConnection(projectUuid, type, connectionID, { name, config }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    let form = new FormData();
+    form.append('name', name);
+    form.append('type', type);
+    form.append('config', JSON.stringify(config));
+    return this.req.put(url, form);
+  }
+
+  deleteConnection(projectUuid, connectionID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    return this.req.delete(url);
+  }
+
+  // search
+  getSource() {
+    let CancelToken = axios.CancelToken;
+    let source = CancelToken.source();
+    return source;
+  }
+
+  search(workspaceID, projectUuid, query, cancelToken) {
+    const url = `${this.server}/api/v2.1/search/`;
+    let params = {
+      query: query,
+      project_uuid: projectUuid,
+      workspace_id: workspaceID,
+    };
+    return this.req.post(url, params, { cancelToken: cancelToken });
+  }
+
+  // related users
+  listProjectRelatedUsers(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
+    return this.req.get(url);
+  }
+
+  // tickets
   listProjectTickets(projectUuid, page, perPage, owned) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     let params = {};
@@ -344,35 +337,35 @@ class SeaQAAPI {
     return this.req.get(url, { params });
   }
 
-  createProjectTicket(projectUuid, title, content, type, participants, tags) {
+  createProjectTicket(projectUuid, { title, description, type, participants, tags } = {}) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     let form = new FormData();
     if (title) {
       form.append('title', title);
     }
-    if (content) {
-      form.append('content', content);
+    if (description) {
+      form.append('content', description);
     }
     if (type) {
       form.append('type', type);
     }
     if (participants) {
-      form.append('participants', participants);
+      form.append('participants', JSON.stringify(participants));
     }
     if (tags) {
-      form.append('tags', tags);
+      form.append('tags', JSON.stringify(tags));
     }
     return this._sendPostRequest(url, form);
   }
 
-  modifyProjectTicket(projectUuid, ticketNumber, title, content, status, type, participants, tags) {
+  modifyProjectTicket(projectUuid, ticketNumber, { title, description, status, type, participants, tags }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     let form = new FormData();
     if (title) {
       form.append('title', title);
     }
-    if (content) {
-      form.append('content', content);
+    if (description) {
+      form.append('content', description);
     }
     if (status) {
       form.append('status', status);
@@ -381,10 +374,10 @@ class SeaQAAPI {
       form.append('type', type);
     }
     if (participants) {
-      form.append('participants', participants);
+      form.append('participants', JSON.stringify(participants));
     }
     if (tags) {
-      form.append('tags', tags);
+      form.append('tags', JSON.stringify(tags));
     }
     return this.req.put(url, form);
   }
@@ -397,11 +390,6 @@ class SeaQAAPI {
   deleteProjectTicket(projectUuid, ticketNumber) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     return this.req.delete(url);
-  }
-
-  listProjectRelatedUsers(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
-    return this.req.get(url);
   }
 
   listProjectTicketReplies(projectUuid, ticketNumber, page, perPage) {

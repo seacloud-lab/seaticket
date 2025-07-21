@@ -11,11 +11,10 @@ import CommonOperationConfirmationDialog from '../../../components/dialog/common
 import { CONNECTION_FIELDS, TABLE_COLUMN_TYPE, CONNECTION_TYPE } from '../../constants';
 
 const {
-  workspaceID, projectUuid
+  projectUuid
 } = window.app.pageOptions;
 
 const Records = ({ type, title }) => {
-
   const [isLoading, setLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
@@ -65,7 +64,7 @@ const Records = ({ type, title }) => {
   }, []);
 
   const createConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    seaQAAPI.createConnection(workspaceID, projectUuid, type, { name, config }).then(res => {
+    seaQAAPI.createConnection(projectUuid, type, { name, config }).then(res => {
       const record = res.data.record;
       const newRecords = [...records, new Connection(record)];
       setRecords(newRecords);
@@ -79,7 +78,7 @@ const Records = ({ type, title }) => {
 
   const deleteConnectionRecord = useCallback(() => {
     console.log(activeRecordRef.current);
-    seaQAAPI.deleteConnection(workspaceID, projectUuid, activeRecordRef.current.id).then(res => {
+    seaQAAPI.deleteConnection(projectUuid, activeRecordRef.current.id).then(res => {
       const activeSiteIndex = records.findIndex(record => record.id === activeRecordRef.current.id);
       let newSites = records.slice(0);
       if (activeSiteIndex > -1) {
@@ -107,7 +106,7 @@ const Records = ({ type, title }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    seaQAAPI.modifyConnection(workspaceID, projectUuid, type, activeRecordRef.current.id, { name, config }).then(res => {
+    seaQAAPI.modifyConnection(projectUuid, type, activeRecordRef.current.id, { name, config }).then(res => {
       const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
@@ -134,7 +133,7 @@ const Records = ({ type, title }) => {
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
-    seaQAAPI.listConnections(workspaceID, projectUuid, type, pageRef.current, pageCountRef.current).then(res => {
+    seaQAAPI.listConnections(projectUuid, type, pageRef.current, pageCountRef.current).then(res => {
       const moreRecords = res.data.records.map(r => new Connection(r));
       let newRecords = pageRef.current === 1 ? [] : records.slice(0);
       let recordsMap = newRecords.reduce((pre, cur) => {

@@ -532,8 +532,8 @@ class Tickets(models.Model):
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
             'reply_updated_at': datetime_to_isoformat_timestr(self.reply_updated_at),
+            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {})
         }
-        result.update(get_user_common_info(self.creator))
         if self.id in tags_dict:
             result['tags'] = tags_dict[self.id]
         if self.id in participants_dict:
@@ -601,8 +601,8 @@ class TicketReplies(models.Model):
             'content': self.content,
             'created_at': datetime_to_isoformat_timestr(self.created_at),
             'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {}),
         }
-        result.update(get_user_common_info(self.creator))
         if include_deleted:
             result.update({
                 'deleted': self.deleted,

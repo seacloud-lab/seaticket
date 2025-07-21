@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { MarkdownViewer, processor } from '@seafile/seafile-editor';
 
 const propTypes = {
-  markdownContent: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
   showTOC: PropTypes.bool,
 };
 
@@ -30,7 +30,7 @@ class CustomizeMarkdownViewer extends React.PureComponent {
       let chromeVersion = appVersionList[index];
       chromeVersion = parseInt(chromeVersion.slice(chromeVersion.indexOf('/') + 1));
       if (chromeVersion === 53 && navigator.appVersion && navigator.appVersion.includes('WindowsWechat')) {
-        this.convertMarkdown(this.props.markdownContent);
+        this.convertMarkdown(this.props.value);
         this.isWindowsWechat = true;
       }
     }
@@ -47,8 +47,8 @@ class CustomizeMarkdownViewer extends React.PureComponent {
     if (this.isWindowsWechat) {
       return (<div className="long-text-container article" dangerouslySetInnerHTML={{ __html: this.state.innerHtml }}></div>);
     }
-    const { showTOC, markdownContent } = this.props;
-    return <MarkdownViewer value={markdownContent} isShowOutline={showTOC}/>;
+    const { showTOC, value } = this.props;
+    return <MarkdownViewer value={value} isShowOutline={showTOC}/>;
   }
 }
 

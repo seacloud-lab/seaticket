@@ -1,22 +1,20 @@
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
-import { BAR_TYPE, CONNECTION_TYPES, BAR_TYPES } from './constants';
+import { CONNECTION_TYPES, BAR_TYPES } from './constants';
 import { gettext } from '../constants';
-import { Utils } from '../utils/utils';
 import { CenteredLoading } from '../components';
-import LocalStorage from '../utils/local-storage';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
+const { projectName } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activeBar, setActiveBar] = useState({});
-
-  const localStorage = useRef(new LocalStorage(projectUuid));
+  const [activeBar, setActiveBar] = useState(BAR_TYPES[1]);
 
   const bars = useMemo(() => [
     {
@@ -36,8 +34,12 @@ const Project = () => {
   }, [activeBar]);
 
   useEffect(() => {
-    const searchParams = Utils.getUrlSearches();
-    const barKey = searchParams?.page || localStorage.current.getItem('page') || BAR_TYPE.SEARCH;
+    const { pathname } = location;
+    const decodePathname = decodeURIComponent(pathname);
+    const projectNameIndex = decodePathname.indexOf(projectName);
+    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const params = paramsString.split('/');
+    const [barKey] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey) || CONNECTION_TYPES.find(b => b.key === barKey);
     setActiveBar(bar || BAR_TYPES[1]);
     setLoading(false);
@@ -45,23 +47,27 @@ const Project = () => {
 
   useEffect(() => {
     if (!activeBar?.key) return;
-    const newSearch = `?page=${activeBar.key}`;
+    if (isLoading) return;
     const { pathname, origin } = location;
-    history.replaceState(null, null, origin + pathname + newSearch);
-    localStorage.current.setItem('page', activeBar.key);
-  }, [activeBar]);
+    const decodePathname = decodeURIComponent(pathname);
+    const projectNameIndex = decodePathname.indexOf(projectName);
+    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
+    history.replaceState(null, null, origin + newPathname + activeBar.key + '/');
+  }, [isLoading, activeBar]);
 
   return (
-    <div className="sea-qa-project">
-      {isLoading ? (
-        <CenteredLoading />
-      ) : (
-        <>
-          <SidePanel bars={bars} activeBar={activeBar} toggleBar={toggleBar} />
-          <MainPanel activeBar={activeBar} />
-        </>
-      )}
-    </div>
+    <I18nextProvider i18n={i18n}>
+      <div className="sea-qa-project">
+        {isLoading ? (
+          <CenteredLoading />
+        ) : (
+          <>
+            <SidePanel bars={bars} activeBar={activeBar} toggleBar={toggleBar} />
+            <MainPanel activeBar={activeBar} />
+          </>
+        )}
+      </div>
+    </I18nextProvider>
   );
 };
 
