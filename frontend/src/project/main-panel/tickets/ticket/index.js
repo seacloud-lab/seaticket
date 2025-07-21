@@ -122,7 +122,6 @@ const Ticket = ({ togglePage }) => {
                 <div className="sea-qa-project-ticket-main-content">
                   <div className="sea-qa-project-ticket-main-content-op">
                     <span className="sea-qa-project-ticket-main-content-user-name mr-1">{creator.name}</span>
-                    <span className="sea-qa-project-ticket-main-content-status mr-1">{gettext('Opened')}</span>
                     <span className="sea-qa-project-ticket-main-content-time">{created_at}</span>
                   </div>
                   <div className="sea-qa-project-ticket-main-content-content">
