@@ -3,9 +3,9 @@ import { Button } from 'reactstrap';
 import { gettext, mediaUrl } from '../../../../constants';
 import { useTickets } from '../../../hooks';
 import { CenteredLoading, EmptyTip, Icon, Option, SearchInput } from '../../../../components';
+import { TICKET_STATUS, TICKET_TYPES, TICKET_PAGE_TYPE } from '../../../constants';
 
 import './index.css';
-import { TICKET_STATUS, TICKET_TYPES } from '../../../constants';
 
 const AllTickets = ({ togglePage }) => {
   const { isLoading, metadata, loadMoreTickets } = useTickets();
@@ -27,7 +27,7 @@ const AllTickets = ({ togglePage }) => {
     <div className="sea-qa-project-all-tickets-wrapper">
       <div className="sea-qa-project-all-tickets-wrapper-header">
         <SearchInput placeholder={gettext('Search tickets')} />
-        <Button color="primary" className="ml-4" onClick={() => togglePage('new')}>{gettext('New ticket')}</Button>
+        <Button color="primary" className="ml-4" onClick={() => togglePage(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
       </div>
       <div className="sea-qa-project-all-tickets-wrapper-body sea-qa-project-all-tickets">
         <div className="sea-qa-project-all-tickets-header p-2 sea-qa-project-all-tickets-op-wrapper">

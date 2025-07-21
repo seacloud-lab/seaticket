@@ -25,3 +25,8 @@ export const TICKET_TYPES = [
   { id: 'request', name: gettext('Request'), color: '#212529', bgColor: '#FFFCB5', borderColor: '#E8E79D' },
   { id: 'support', name: gettext('Support'), color: '#212529', bgColor: '#DDFFE6', borderColor: '#BBEBCD' },
 ];
+
+export const TICKET_PAGE_TYPE = {
+  ALL: 'all',
+  NEW: 'new',
+};

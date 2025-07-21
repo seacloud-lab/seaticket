@@ -6,7 +6,7 @@ import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '../../../../utils/long-text';
 import { useTickets } from '../../../hooks';
 import { CenteredLoading, Icon, IconButton, CustomizeMarkdownViewer, toaster, Collaborator, Option } from '../../../../components';
-import { TICKET_STATUS } from '../../../constants';
+import { TICKET_PAGE_TYPE, TICKET_STATUS } from '../../../constants';
 import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../constants';
 import { seaQAAPI } from '../../../../api/web-api';
 import { Utils } from '../../../../utils/utils';
@@ -75,7 +75,7 @@ const Ticket = ({ togglePage }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-header-right">
-          <Button color="primary" onClick={() => togglePage('new')}>{gettext('New ticket')}</Button>
+          <Button color="primary" onClick={() => togglePage(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
           <IconButton icon="copy" className="sea-qa-project-ticket-copy ml-1" onClick={copyLink} />
         </div>
       </div>
