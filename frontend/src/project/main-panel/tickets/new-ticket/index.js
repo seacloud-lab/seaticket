@@ -183,6 +183,7 @@ const NewTicket = ({ togglePage }) => {
       {!isSubmitting && isShowTypeEditor && (
         <OptionEditor
           target={typeEditorRef}
+          isMultiple={false}
           value={type}
           placeholder={gettext('Select type')}
           emptyTip={gettext('No types')}
