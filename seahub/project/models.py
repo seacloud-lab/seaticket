@@ -14,7 +14,6 @@ from seahub.utils import get_no_duplicate_obj_name, \
 from seahub.api2.utils import get_user_common_info
 
 from seahub.utils import normalize_cache_key
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
 
@@ -529,9 +528,9 @@ class Tickets(models.Model):
             'status': self.status,
             'type': self.type,
             'reply_count': self.reply_count,
-            'created_at': datetime_to_isoformat_timestr(self.created_at),
-            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
-            'reply_updated_at': datetime_to_isoformat_timestr(self.reply_updated_at),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'reply_updated_at': self.reply_updated_at,
             'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {})
         }
         if self.id in tags_dict:
@@ -542,7 +541,7 @@ class Tickets(models.Model):
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
-                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
+                'delete_at': self.delete_at if self.delete_at else '',
             })
         return result
 
@@ -599,14 +598,14 @@ class TicketReplies(models.Model):
         result = {
             'number': self.number,
             'content': self.content,
-            'created_at': datetime_to_isoformat_timestr(self.created_at),
-            'updated_at': datetime_to_isoformat_timestr(self.updated_at),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {}),
         }
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
-                'delete_at': datetime_to_isoformat_timestr(self.delete_at) if self.delete_at else '',
+                'delete_at': self.delete_at if self.delete_at else '',
             })
         return result
 
