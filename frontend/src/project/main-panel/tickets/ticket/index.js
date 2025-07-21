@@ -5,9 +5,9 @@ import copy from 'copy-to-clipboard';
 import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '../../../../utils/long-text';
 import { useTickets } from '../../../hooks';
-import { CenteredLoading, Icon, IconButton, CustomizeMarkdownViewer, toaster, Collaborator, Option } from '../../../../components';
+import { CenteredLoading, Icon, IconButton, CustomizeMarkdownViewer, toaster, Collaborator, Option, EmptyTip } from '../../../../components';
 import { TICKET_PAGE_TYPE, TICKET_STATUS } from '../../../constants';
-import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../constants';
+import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '../../../../constants';
 import { seaQAAPI } from '../../../../api/web-api';
 import { Utils } from '../../../../utils/utils';
 import { TICKET_TYPES } from '../../../constants';
@@ -70,6 +70,7 @@ const Ticket = ({ togglePage }) => {
   }, [reply, ticket]);
 
   if (isLoading) return (<CenteredLoading />);
+  if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
   const { id, status, title, creator, created_at, content, replies, participants = [], type } = ticket;
   const isOpen = status === '' || status === TICKET_STATUS.OPEN;

@@ -6,18 +6,6 @@
   flex-direction: column;
 }
 
-/* for top bottom layout*/
-#header {
-  display: flex;
-}
-
-/* for left right layout */
-#main {
-  flex: 1;
-  display: flex;
-  min-height: 0;
-}
-
 .side-panel {
   flex: 0 0 22%;
   display: flex;

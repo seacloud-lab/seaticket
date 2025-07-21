@@ -41,7 +41,6 @@ const CollaboratorEditor = ({
   }, [value]);
 
   const toggleCollaborator = useCallback((email) => {
-    console.log(email);
     const newValue = value.includes(email) ? value.filter(i => i !== email) : [...value, email];
     setValue(newValue);
   }, [value]);

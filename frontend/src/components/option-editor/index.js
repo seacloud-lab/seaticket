@@ -9,6 +9,7 @@ import './index.css';
 
 const OptionsEditor = ({
   target,
+  isMultiple = false,
   placeholder,
   emptyTip,
   value: propsValue = '',
@@ -30,19 +31,25 @@ const OptionsEditor = ({
   const toggleOption = useCallback((optionID) => {
     const newValue = optionID === value ? '' : optionID;
     setValue(newValue);
-  }, [value]);
+    if (!isMultiple) {
+      onChange(newValue);
+      onClose();
+    }
+  }, [isMultiple, value, onChange, onClose]);
 
-  const handleSubmit = useCallback(() => {
-    onChange(value);
+  const handleClose = useCallback(() => {
+    if (isMultiple) {
+      onChange(value);
+    }
     onClose();
-  }, [value, onChange, onClose]);
+  }, [isMultiple, value, onChange, onClose]);
 
   return (
     <CustomizePopover
       target={target}
       popoverClassName="option-editor-popover"
-      hidePopover={handleSubmit}
-      hidePopoverWithEsc={handleSubmit}
+      hidePopover={handleClose}
+      hidePopoverWithEsc={handleClose}
     >
       <div className="option-editor-container">
         <div className="option-editor-search-wrapper">

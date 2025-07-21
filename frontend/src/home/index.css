@@ -10,6 +10,13 @@
 
 .sea-qa-home-header {
   height: 50px;
+  display: flex;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
 }
 
 .sea-qa-home-header .sea-qa-text {
