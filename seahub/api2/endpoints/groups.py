@@ -268,7 +268,7 @@ class GroupView(APIView):
                 if not is_group_member(group_id, new_owner):
                     GroupUser.objects.create(
                         group_id=group_id,
-                        user_name=username,
+                        user_name=new_owner,
                         is_staff=True,
                     )
 
