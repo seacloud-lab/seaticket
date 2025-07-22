@@ -7,8 +7,9 @@ import { Connection } from '../../models';
 import { gettext } from '../../../constants';
 import ConnectionRecordDialog from '../../components/connection-record-dialog';
 import { Utils } from '../../../utils/utils';
-import CommonOperationConfirmationDialog from '../../../components/dialog/common-operation-confirmation-dialog';
+import { CommonOperationConfirmationDialog } from '../../../components';
 import { CONNECTION_FIELDS, TABLE_COLUMN_TYPE, CONNECTION_TYPE } from '../../constants';
+import TopBar from '../top-bar';
 
 const {
   projectUuid
@@ -33,14 +34,14 @@ const Records = ({ type, title }) => {
     });
     let columnNames = [
       { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
-      ...displayColumns, // 20%
+      ...displayColumns, // 25%
     ];
     if (type === CONNECTION_TYPE.SITE) {
       columnNames.push({ key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
-      columnNames.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' })
+      columnNames.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' });
     }
-    columnNames.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' })
-    columnNames.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' })
+    columnNames.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
+    columnNames.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' });
 
     return columnNames;
   }, [fields]);
@@ -173,6 +174,9 @@ const Records = ({ type, title }) => {
 
   return (
     <>
+      <TopBar>
+        <div className="w-100 text-truncate">{title}</div>
+      </TopBar>
       <Table
         columns={columns}
         rows={records}

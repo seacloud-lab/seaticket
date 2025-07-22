@@ -1,0 +1,9 @@
+.labels-formatter {
+  min-height: 38px;
+  width: 100%;
+  padding: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  border-radius: 3px;
+}

@@ -7,25 +7,6 @@
   align-items: center;
 }
 
-.sea-qa-project-main-panel .sea-qa-project-main-panel-header {
-  justify-content: space-between;
-}
-
-.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-left {
-  flex: 1;
-  overflow: hidden;
-  font-size: 16px;
-  font-weight: 500;
-  margin-right: 16px;
-}
-
-.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-name {
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sea-qa-project-custom-table {
   height: 100%;
   width: 100%;

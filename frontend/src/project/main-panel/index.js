@@ -1,44 +1,24 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { BAR_TYPE } from '../constants';
 import Records from './records';
-import { name, avatarURL, username } from '../../constants';
-import Account from '../components/account';
 import Search from './search';
 import Tickets from './tickets';
+import TopBar from './top-bar';
 
 import './index.css';
 
-const MainPanelContainer = ({ activeBar }) => {
-  if (!activeBar) return null;
-  if (activeBar.key === BAR_TYPE.ASK) return null; // ask page
-  if (activeBar.key === BAR_TYPE.SEARCH) return (<Search/>); // search page
-  if (activeBar.key === BAR_TYPE.TICKET) return (<Tickets />); // tickets page
+const Container = ({ activeBar }) => {
+  if (!activeBar) return (<TopBar />);
+  if (activeBar.key === BAR_TYPE.ASK) return (<TopBar><div className="w-100 text-truncate">{activeBar.name}</div></TopBar>); // ask page
+  if (activeBar.key === BAR_TYPE.SEARCH) return (<Search title={activeBar.name}/>); // search page
+  if (activeBar.key === BAR_TYPE.TICKET) return (<Tickets title={activeBar.name} />); // tickets page
   return (<Records type={activeBar.type} title={activeBar.name} />); // connections page
-};
-
-const MainPanelTopBar = ({ activeBar }) => {
-  const user = useMemo(() => {
-    return {
-      name,
-      username,
-      avatar_url: avatarURL
-    };
-  }, []);
-  return (
-    <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
-      <div className="sea-qa-project-main-panel-header-left">
-        <div className="sea-qa-project-main-panel-header-name">{activeBar?.name}</div>
-      </div>
-      <Account user={user} />
-    </div>
-  );
 };
 
 const MainPanel = ({ activeBar }) => {
   return (
     <div className="sea-qa-project-main-panel">
-      <MainPanelTopBar activeBar={activeBar} />
-      <MainPanelContainer activeBar={activeBar} />
+      <Container activeBar={activeBar} />
     </div>
   );
 };

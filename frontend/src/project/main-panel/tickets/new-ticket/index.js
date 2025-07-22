@@ -3,33 +3,25 @@ import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../constants';
 import { isLongTextValueExceedLimit } from '../../../../utils/long-text';
-import { toaster, Collaborator, CollaboratorEditor, Option, OptionEditor, } from '../../../../components';
+import { toaster } from '../../../../components';
 import { useTickets } from '../../../hooks';
-import { seaQAAPI } from '../../../../api/web-api';
+import { TICKET_PAGE_TYPE } from '../../../constants';
+import { AssigneesSettings, LabelSettings, TypeSettings } from '../ticket-settings';
 import { Utils } from '../../../../utils/utils';
-import { TICKET_TYPES } from '../../../constants';
 
 import './index.css';
 
-const {
-  projectUuid,
-} = window.app.pageOptions;
-
-const NewTicket = ({ togglePage }) => {
+const NewTicket = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   const [assignees, setAssignees] = useState([]);
-  const [isShowAssigneesEditor, setIsShowAssigneesEditor] = useState(false);
 
   const [type, setType] = useState('');
-  const [isShowTypeEditor, setIsShowTypeEditor] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const descriptionEditorRef = useRef(null);
-  const assigneesRef = useRef(null);
-  const typeEditorRef = useRef(null);
 
   const user = useMemo(() => {
     return {
@@ -39,7 +31,7 @@ const NewTicket = ({ togglePage }) => {
     };
   }, []);
 
-  const { collaborators } = useTickets();
+  const { collaborators, createTicket, togglePageType } = useTickets();
 
   const onTitleChange = useCallback((event) => {
     const newTitle = event.target.value;
@@ -56,51 +48,18 @@ const NewTicket = ({ togglePage }) => {
     setDescription(value);
   }, []);
 
-  // assignees
-  const deleteAssignee = useCallback((email) => {
-    const newValue = assignees.filter(i => i !== email);
-    setAssignees(newValue);
-  }, [assignees]);
-
-  const onAssigneesChange = useCallback((assignees) => {
-    setAssignees(assignees);
-    setIsShowAssigneesEditor(false);
-  }, []);
-
-  const openAssigneesEditor = useCallback(() => {
-    setIsShowAssigneesEditor(true);
-  }, []);
-
-  const closeAssigneesEditor = useCallback(() => {
-    setIsShowAssigneesEditor(false);
-  }, []);
-
-  // type
-  const openTypeEditor = useCallback(() => {
-    setIsShowTypeEditor(true);
-  }, []);
-
-  const closeTypeEditor = useCallback(() => {
-    setIsShowTypeEditor(false);
-  }, []);
-
-  const onTypeChange = useCallback((type) => {
-    setType(type);
-  }, []);
-
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     const validDescription = description ? description.text : '';
-    seaQAAPI.createProjectTicket(projectUuid, { title: validTitle, description: validDescription, type, participants: assignees, tags: [] }).then(res => {
-      togglePage(res.data.ticket.number);
+    createTicket({ title: validTitle, description: validDescription, type, assignees, tags: [] }).then(res => {
+      // nothing
     }).catch(error => {
+      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, description, type, assignees, togglePage]);
-
-  const typeOption = TICKET_TYPES.find(o => o.id === type);
+  }, [title, description, type, assignees, createTicket]);
 
   return (
     <>
@@ -134,64 +93,18 @@ const NewTicket = ({ togglePage }) => {
                 />
               </div>
               <div className="sea-qa-project-ticket-footer">
-                <Button className="mr-4" onClick={() => togglePage('all')}>{gettext('Cancel')}</Button>
+                <Button className="mr-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.ALL)}>{gettext('Cancel')}</Button>
                 <Button onClick={onSubmit} color="primary" disabled={!title || !title.trim() || isSubmitting}>{gettext('Submit')}</Button>
               </div>
             </div>
             <div className="sea-qa-project-ticket-other-settings">
-              <div className="sea-qa-project-ticket-settings-item mb-4">
-                <Label>{gettext('Assignees')}</Label>
-                <div className="collaborators-formatter" onClick={openAssigneesEditor} ref={assigneesRef}>
-                  {assignees.length > 0 ? assignees.map(assignee => {
-                    if (!assignee) return null;
-                    const collaborator = collaborators.find(c => c.email === assignee);
-                    return (
-                      <Collaborator collaborator={collaborator} key={assignee}>
-                        {!isSubmitting && (<Collaborator.RemoveBtn callback={() => deleteAssignee(assignee)} />)}
-                      </Collaborator>
-                    );
-                  }) : (<div className="tip-default">{gettext('No one assigned')}</div>)}
-                </div>
-              </div>
-              <div className="sea-qa-project-ticket-settings-item mb-4">
-                <Label>{gettext('Labels')}</Label>
-                <div className="labels-formatter">
-                  <div className="tip-default">{gettext('Not support(todo)')}</div>
-                </div>
-              </div>
-              <div className="sea-qa-project-ticket-settings-item mb-4">
-                <Label>{gettext('Type')}</Label>
-                <div className="ticket-types-formatter" onClick={openTypeEditor} ref={typeEditorRef}>
-                  {typeOption ? (<Option option={typeOption} />) : (<div className="tip-default">{gettext('No type')}</div>)}
-                </div>
-              </div>
+              <AssigneesSettings isReadonly={isSubmitting} assignees={assignees} collaborators={collaborators} onChange={setAssignees} />
+              <LabelSettings />
+              <TypeSettings isReadonly={isSubmitting} type={type} onChange={setType} />
             </div>
           </div>
         </div>
       </div>
-      {!isSubmitting && isShowAssigneesEditor && (
-        <CollaboratorEditor
-          target={assigneesRef}
-          value={assignees}
-          placeholder={gettext('Select assignees')}
-          emptyTip={gettext('No assignees')}
-          collaborators={collaborators}
-          onChange={onAssigneesChange}
-          onClose={closeAssigneesEditor}
-        />
-      )}
-      {!isSubmitting && isShowTypeEditor && (
-        <OptionEditor
-          target={typeEditorRef}
-          isMultiple={false}
-          value={type}
-          placeholder={gettext('Select type')}
-          emptyTip={gettext('No types')}
-          options={TICKET_TYPES}
-          onChange={onTypeChange}
-          onClose={closeTypeEditor}
-        />
-      )}
     </>
 
   );

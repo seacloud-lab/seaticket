@@ -5,7 +5,7 @@
   "dependencies": {
     "@gatsbyjs/reach-router": "2.0.1",
     "@seafile/resumablejs": "^1.1.16",
-    "@seafile/seafile-editor": "2.0.18",
+    "@seafile/seafile-editor": "2.0.24",
     "@uiw/codemirror-extensions-langs": "^4.19.4",
     "@uiw/react-codemirror": "^4.19.4",
     "autoprefixer": "7.1.6",

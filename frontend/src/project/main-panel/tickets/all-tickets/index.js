@@ -7,8 +7,8 @@ import { TICKET_STATUS, TICKET_TYPES, TICKET_PAGE_TYPE } from '../../../constant
 
 import './index.css';
 
-const AllTickets = ({ togglePage }) => {
-  const { isLoading, metadata, loadMoreTickets } = useTickets();
+const AllTickets = () => {
+  const { isLoading, metadata, loadMoreTickets, togglePageType } = useTickets();
 
   const onScroll = useCallback((event) => {
     if (isLoading) return;
@@ -18,16 +18,17 @@ const AllTickets = ({ togglePage }) => {
     const scrollTop = event.target.scrollTop;
     const isBottom = (clientHeight + scrollTop + 1 >= scrollHeight);
     if (!isBottom) return;
-    loadMoreTickets();
-  }, [isLoading, loadMoreTickets]);
+    loadMoreTickets(metadata);
+  }, [isLoading, metadata, loadMoreTickets]);
 
   if (isLoading && metadata.rows.length === 0) return (<CenteredLoading />);
+  const { rows, id_row_map } = metadata;
 
   return (
     <div className="sea-qa-project-all-tickets-wrapper">
       <div className="sea-qa-project-all-tickets-wrapper-header">
         <SearchInput placeholder={gettext('Search tickets')} />
-        <Button color="primary" className="ml-4" onClick={() => togglePage(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
+        <Button color="primary" className="ml-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
       </div>
       <div className="sea-qa-project-all-tickets-wrapper-body sea-qa-project-all-tickets">
         <div className="sea-qa-project-all-tickets-header p-2 sea-qa-project-all-tickets-op-wrapper">
@@ -44,12 +45,12 @@ const AllTickets = ({ togglePage }) => {
           </div>
         </div>
         <div className="sea-qa-project-all-tickets-body">
-          {metadata.rows.length === 0 ? (
+          {rows.length === 0 ? (
             <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No tickets')} />
           ) : (
             <div className="sea-qa-project-all-tickets-records" onScroll={onScroll}>
-              {metadata.rows.map(row => {
-                const { id, title, status, type, creator, created_at, reply_count, tags } = row;
+              {rows.map(rowID => {
+                const { id, title, status, type, creator, created_at, reply_count, tags } = id_row_map[rowID];
                 const isOpen = status === '' || status === TICKET_STATUS.OPEN;
                 const typeOption = TICKET_TYPES.find(o => o.id === type);
                 return (
@@ -58,7 +59,9 @@ const AllTickets = ({ togglePage }) => {
                       <Icon symbol={isOpen ? 'circle-dot' : 'circle-check'} />
                     </div>
                     <div className="sea-qa-project-all-tickets-record-primary">
-                      <div className="sea-qa-project-all-tickets-record-title" onClick={() => togglePage(id)}>{title}</div>
+                      <div className="sea-qa-project-all-tickets-record-title" onClick={() => togglePageType(id)}>
+                        {title}
+                      </div>
                       {tags.map(tag => {
                         return (<div key={tag} className="sea-qa-project-all-tickets-record-tag">{tag}</div>);
                       })}

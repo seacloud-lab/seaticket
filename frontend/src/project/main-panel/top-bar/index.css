@@ -1,0 +1,17 @@
+.sea-qa-project-main-panel .sea-qa-project-main-panel-header {
+  justify-content: space-between;
+}
+
+.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-tip {
+  flex: 1;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 16px;
+}
+
+.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-name {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}

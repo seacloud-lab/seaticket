@@ -48,15 +48,20 @@
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-status {
+  height: 32px;
   display: flex;
   align-items: center;
   font-weight: 600;
-  padding: 8px 12px;
+  padding: 0 12px;
   font-size: 14px;
   color: #fff;
   background-color: var(--ticket-close-color);
   border-radius: 20px;
   gap: 8px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-status.option {
+  height: 32px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-status.open {
@@ -71,55 +76,10 @@
   overflow-y: scroll;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-wrapper {
+.sea-qa-project-ticket .sea-qa-project-ticket-reply-container-wrapper {
   width: 70%;
   display: flex;
   flex-direction: column;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item {
-  width: 100%;
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content-user-avatar,
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content-user-avatar img {
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  height: fit-content;
-  flex: 1;
-  overflow: hidden;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content-op {
-  border-bottom: 1px solid #ddd;
-  width: 100%;
-  height: 38px;
-  padding: 4px 4px 4px 16px;
-  line-height: 30px;
-  font-size: 14px;
-  color: #59636e;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content-user-name {
-  font-weight: 600;
-  color: #212529;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item .sea-qa-project-ticket-main-content-content {
-  width: 100%;
-  min-height: 100px;
-  display: flex;
 }
 
 .sea-qa-project-ticket .sf-slate-viewer-scroll-container {
@@ -146,12 +106,12 @@
   min-height: 100%;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item.sea-qa-project-ticket-add-comment-content .sea-qa-project-ticket-main-content {
+.sea-qa-project-ticket .sea-qa-project-ticket-reply.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-reply-container {
   border: none;
   border-radius: 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-main-content-item.sea-qa-project-ticket-add-comment-content .sea-qa-project-ticket-main-content-op {
+.sea-qa-project-ticket .sea-qa-project-ticket-reply.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-reply-op {
   border-bottom: none;
   color: inherit;
   font-weight: 600;
@@ -175,6 +135,7 @@
   color: var(--ticket-close-color);
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-status-toggle-btn .sea-qa-icon-svg-circle-dot {
+.sea-qa-project-ticket .sea-qa-project-ticket-status-toggle-btn .sea-qa-icon-svg-circle-dot,
+.sea-qa-project-ticket .sea-qa-project-ticket-status-toggle-btn .sea-qa-icon-svg-loop-dot {
   color: var(--ticket-open-color);
 }

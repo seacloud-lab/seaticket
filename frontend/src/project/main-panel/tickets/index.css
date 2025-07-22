@@ -14,18 +14,15 @@
   border-bottom: none;
 }
 
-.collaborators-formatter,
-.labels-formatter,
-.ticket-types-formatter {
-  min-height: 38px;
-  width: 100%;
-  padding: 6px 0;
-  display: flex;
-  flex-wrap: wrap;
+.longtext-preview-container {
+  padding: 0;
 }
 
-.collaborators-formatter .collaborator,
-.ticket-types-formatter .option {
-  margin-bottom: 4px;
-  margin-top: 4px;
+.longtext-preview-container .sf-slate-viewer-container  {
+  height: 100%;
 }
+
+.sf-long-text-inline-editor-container {
+  min-height: 300px;
+}
+

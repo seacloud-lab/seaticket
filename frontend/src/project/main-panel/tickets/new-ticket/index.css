@@ -42,18 +42,6 @@
   flex-direction: column;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-content .sf-long-text-inline-editor-container {
-  min-height: 300px;
-}
-
-.sea-qa-project-new-ticket .sea-qa-project-ticket-content .longtext-preview-container {
-  padding: 0;
-}
-
-.sea-qa-project-new-ticket .sea-qa-project-ticket-content .longtext-preview-container .sf-slate-viewer-container  {
-  height: 100%;
-}
-
 .sea-qa-project-new-ticket .sea-qa-project-ticket-footer {
   width: 100%;
   padding: 16px 0;
