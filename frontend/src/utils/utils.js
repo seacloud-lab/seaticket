@@ -505,8 +505,8 @@ export const Utils = {
         errorMsg = gettext('Error');
       }
     } else {
-      if (typeof error === 'object' && error.name) {
-        errorMsg = error.name;
+      if (typeof error === 'object' && error.message) {
+        errorMsg = error.message;
       } else {
         errorMsg = gettext('Please check the network.');
       }

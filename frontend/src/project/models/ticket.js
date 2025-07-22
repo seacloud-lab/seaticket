@@ -35,6 +35,8 @@ class Ticket {
     this.status = object.status || '';
     this.type = object.type || '';
     this.tags = object.tags || [];
+
+    this.assignees = object.participants || [];
     this.participants = object.participants || [];
 
     this.creator = object.creator ? JSON.parse(object.creator) : {};
@@ -61,9 +63,13 @@ class Ticket {
     if (this.creator) {
       this.creator = new User(this.creator);
     }
+
+    if (this.assignees.length > 0) {
+      this.assignees = this.assignees.map(u => u.email);
+    }
   }
 
-  update = (keyValue = {}) => {
+  _update = (keyValue = {}) => {
     Object.entries(keyValue).forEach(item => {
       const [key, value] = item;
       if (key !== 'replies') {
@@ -71,23 +77,21 @@ class Ticket {
       }
     });
     this.updated_at = dayjs(new Date()).fromNow();
+    return this;
   };
 
-  toggle_status = (status = '') => {
-    this.status = status;
-  };
-
-  create_reply = (reply) => {
+  _create_reply = (reply) => {
     this.replies.push(new Reply(reply));
     this.reply_updated_at = dayjs(new Date()).fromNow();
+    return this;
   };
 
-  delete_reply = (reply) => {
+  _delete_reply = (reply) => {
     // todo
     this.reply_updated_at = dayjs(new Date()).fromNow();
   };
 
-  modify_reply = (reply) => {
+  _modify_reply = (reply) => {
     // todo
     this.reply_updated_at = dayjs(new Date()).fromNow();
   };

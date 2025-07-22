@@ -337,7 +337,7 @@ class SeaQAAPI {
     return this.req.get(url, { params });
   }
 
-  createProjectTicket(projectUuid, { title, description, type, participants, tags } = {}) {
+  createProjectTicket(projectUuid, { title, description, type, assignees, tags } = {}) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     let form = new FormData();
     if (title) {
@@ -349,8 +349,8 @@ class SeaQAAPI {
     if (type) {
       form.append('type', type);
     }
-    if (participants) {
-      form.append('participants', JSON.stringify(participants));
+    if (assignees) {
+      form.append('participants', JSON.stringify(assignees));
     }
     if (tags) {
       form.append('tags', JSON.stringify(tags));

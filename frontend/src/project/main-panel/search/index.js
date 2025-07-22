@@ -7,6 +7,7 @@ import { Utils } from '../../../utils/utils';
 import Table from '../table';
 import { TABLE_COLUMN_TYPE } from '../../constants';
 import { SearchResult } from '../../models';
+import TopBar from '../top-bar';
 
 import './index.css';
 
@@ -14,7 +15,7 @@ const {
   workspaceID, projectUuid
 } = window.app.pageOptions;
 
-const Search = () => {
+const Search = ({ title }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -81,55 +82,58 @@ const Search = () => {
   }, []);
 
   return (
-    <div className="sea-qa-project-search">
-      <SearchInput
-        className="mb-1"
-        autoFocus={true}
-        isClearable={true}
-        wait={0}
-        size={38}
-        placeholder={gettext('Search')}
-        onChange={onChange}
-        onClear={onClear}
-      />
-      <div className="sea-qa-project-search-filter-wrapper">
-        <div className="sea-qa-project-search-filter">
-          <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '1'}</span>
-          <Icon symbol="down" />
+    <>
+      <TopBar><div className="w-100 text-truncate">{title}</div></TopBar>
+      <div className="sea-qa-project-search">
+        <SearchInput
+          className="mb-1"
+          autoFocus={true}
+          isClearable={true}
+          wait={0}
+          size={38}
+          placeholder={gettext('Search')}
+          onChange={onChange}
+          onClear={onClear}
+        />
+        <div className="sea-qa-project-search-filter-wrapper">
+          <div className="sea-qa-project-search-filter">
+            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '1'}</span>
+            <Icon symbol="down" />
+          </div>
+          <div className="sea-qa-project-search-filter">
+            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '2'}</span>
+            <Icon symbol="down" />
+          </div>
+          <div className="sea-qa-project-search-filter">
+            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '3'}</span>
+            <Icon symbol="down" />
+          </div>
         </div>
-        <div className="sea-qa-project-search-filter">
-          <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '2'}</span>
-          <Icon symbol="down" />
-        </div>
-        <div className="sea-qa-project-search-filter">
-          <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '3'}</span>
-          <Icon symbol="down" />
-        </div>
+        {searching ? (
+          <CenteredLoading className="sea-qa-project-search-loading-tip" />
+        ) : (
+          <>
+            {!value && (
+              <div className="sea-qa-project-search-value-empty-tip">
+                <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
+              </div>
+            )}
+            {value && results.length === 0 && (
+              <div className="sea-qa-project-search-result-empty-tip">
+                <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
+              </div>
+            )}
+            {results.length > 0 && (
+              <Table
+                columns={columns}
+                rows={results}
+                className="p-0"
+              />
+            )}
+          </>
+        )}
       </div>
-      {searching ? (
-        <CenteredLoading className="sea-qa-project-search-loading-tip" />
-      ) : (
-        <>
-          {!value && (
-            <div className="sea-qa-project-search-value-empty-tip">
-              <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
-            </div>
-          )}
-          {value && results.length === 0 && (
-            <div className="sea-qa-project-search-result-empty-tip">
-              <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
-            </div>
-          )}
-          {results.length > 0 && (
-            <Table
-              columns={columns}
-              rows={results}
-              className="p-0"
-            />
-          )}
-        </>
-      )}
-    </div>
+    </>
   );
 };
 

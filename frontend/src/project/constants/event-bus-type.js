@@ -1,3 +1,3 @@
 export const EVENT_BUS_TYPE = {
-  ALL: 'all'
+  TICKET_PAGE: 'ticket-page',
 };
