@@ -50,7 +50,6 @@ class SysAdminTransferGroupDialog extends React.Component {
         </ModalHeader>
         <ModalBody>
           <SysAdminUserSelect
-            ref="userSelect"
             isMulti={false}
             className="reviewer-select"
             placeholder={gettext('Select a user')}

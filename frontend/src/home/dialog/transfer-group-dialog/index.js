@@ -20,22 +20,18 @@ class TransferGroupDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: null,
+      selectedUsers: [],
       errMessage: '',
     };
-    this.options = [];
   }
 
-  handleSelectChange = (option) => {
-    this.setState({
-      selectedOption: option,
-      errMessage: '',
-    });
-    this.options = [];
+  handleSelectChange = (selectedUsers) => {
+    this.setState({ selectedUsers, errMessage: '' });
   };
 
   transferGroup = () => {
-    const email = this.state.selectedOption && this.state.selectedOption.email;
+    const [user] = this.state.selectedUsers;
+    const email = user?.email;
     if (email) {
       seaQAAPI.transferGroup(this.props.groupID, email).then((res) => {
         this.props.toggleTransferGroupDialog();
@@ -52,15 +48,16 @@ class TransferGroupDialog extends React.Component {
   };
 
   render() {
+    const { selectedUsers } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}>{gettext('Transfer group')}</ModalHeader>
         <ModalBody>
           <p>{gettext('Transfer group to')}</p>
           <UserSelect
-            ref="userSelect"
             isMulti={false}
             className="reviewer-select"
+            selectedUsers={selectedUsers}
             placeholder={gettext('Search users')}
             onSelectChange={this.handleSelectChange}
           />
@@ -68,7 +65,7 @@ class TransferGroupDialog extends React.Component {
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.toggle}>{gettext('Close')}</Button>
-          <Button color="primary" onClick={this.transferGroup}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.transferGroup} disabled={selectedUsers.length < 1}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

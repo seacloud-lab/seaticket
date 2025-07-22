@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
-import CustomizeReactSelect from '../customize-react-select';
+import CustomizeSelect from '../customize-select';
 import '../../css/select-editor.css';
 import IconButton from '../icon-button';
 
@@ -57,8 +57,8 @@ class SelectEditor extends React.Component {
     this.props.toggleItemFreezed && this.props.toggleItemFreezed(true);
   };
 
-  onOptionChanged = (e) => {
-    let permission = e.value;
+  onOptionChanged = (value) => {
+    let permission = value;
     if (permission !== this.props.currentOption) {
       this.props.onOptionChanged(permission);
     }
@@ -85,7 +85,7 @@ class SelectEditor extends React.Component {
     return (
       <div className="permission-editor" onClick={this.onSelectHandler}>
         {(!isTextMode || this.state.isEditing) &&
-          <CustomizeReactSelect
+          <CustomizeSelect
             options={this.state.options}
             className="permission-editor-select"
             classNamePrefix="permission-editor"

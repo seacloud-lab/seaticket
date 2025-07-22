@@ -18,7 +18,6 @@ import Paginator from './paginator';
 import ModalPortal from './modal-portal';
 import Radio from './radio';
 import CustomizeGroupSelect from './customize-group-select';
-import CustomizeReactSelect from './customize-react-select';
 import CustomizeDropdownMoreToggle from './customize-dropdown-toggle';
 import CustomizePopover from './customize-popover';
 import CustomizeMarkdownViewer from './customize-markdown-viewer';
@@ -52,7 +51,6 @@ export {
   ModalPortal,
   Radio,
   CustomizeGroupSelect,
-  CustomizeReactSelect,
   CustomizeDropdownMoreToggle,
   CustomizePopover,
   CustomizeMarkdownViewer,

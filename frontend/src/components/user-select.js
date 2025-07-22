@@ -9,6 +9,7 @@ import toaster from './toaster';
 import ClickOutside from './click-outside';
 import SearchInput from './search-input';
 import { Utils } from '../utils/utils';
+import IconButton from './icon-button';
 
 const propTypes = {
   placeholder: PropTypes.string.isRequired,
@@ -165,8 +166,8 @@ class UserSelect extends React.Component {
   };
 
   onUserClick = (user) => {
-    const { isMulti = true } = this.props;
-    let selectedUsers = this.props.selectedUsers.slice(0);
+    const { isMulti = true, selectedUsers: oldUsers = [] } = this.props;
+    let selectedUsers = oldUsers.slice(0);
     const index = selectedUsers.findIndex(item => item.email === user.email);
     if (isMulti) {
       if (index > -1) {
@@ -182,6 +183,14 @@ class UserSelect extends React.Component {
       }
     }
     this.props.onSelectChange(selectedUsers);
+    if (!isMulti) {
+      this.setState({
+        isPopoverOpen: false,
+        searchedUsers: [],
+        searchValue: '',
+        highlightIndex: -1,
+      });
+    }
   };
 
   onKeyDown = (e) => {
@@ -258,9 +267,7 @@ class UserSelect extends React.Component {
                       >
                         <UserItem key={user.email} user={user} enableDelete={false} />
                         {selectedUsers.find(u => u.email === user.email) && (
-                          <div className='collaborator-check-icon'>
-                            <i className="dtable-font dtable-icon-check-mark" aria-hidden="true"></i>
-                          </div>
+                          <IconButton icon="check-mark" className="collaborator-check-icon" />
                         )}
                       </div>
                     );

@@ -47,7 +47,6 @@ class OrgAdminTransferGroupDialog extends React.Component {
         </ModalHeader>
         <ModalBody>
           <UserSelect
-            ref="userSelect"
             isMulti={false}
             className="reviewer-select"
             placeholder={gettext('Select a user')}

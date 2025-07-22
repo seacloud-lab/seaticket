@@ -43,7 +43,6 @@ class SysAdminGroupAddMemberDialog extends React.Component {
         <ModalHeader toggle={this.props.toggle}>{gettext('Add member')}</ModalHeader>
         <ModalBody>
           <SysAdminUserSelect
-            ref="userSelect"
             isMulti={true}
             className="reviewer-select"
             placeholder={gettext('Search users')}

@@ -54,7 +54,6 @@ class AddOrgAdminDialog extends React.Component {
         <ModalHeader toggle={this.toggle}>{gettext('Add admins')}</ModalHeader>
         <ModalBody>
           <UserSelect
-            ref="userSelect"
             isMulti={false}
             className="reviewer-select"
             placeholder={gettext('Select a user as admin')}
