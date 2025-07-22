@@ -90,7 +90,7 @@ const Ticket = () => {
         <div className="sea-qa-project-ticket-header-left">
           <div className="sea-qa-project-ticket-title-number">
             <span className="sea-qa-project-ticket-title">{title}</span>
-            <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
+            <span className="sea-qa-project-ticket-number ml-1">{`#${id}`}</span>
           </div>
         </div>
         <div className="sea-qa-project-ticket-header-right">
