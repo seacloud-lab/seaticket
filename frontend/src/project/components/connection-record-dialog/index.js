@@ -47,6 +47,8 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
     onSubmit({ name: message, config: validConfig }, () => setSubmitting(false));
   }, [record, name, config, onSubmit, onToggle]);
 
+  const is_edit_page = !!record;
+
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false}>
       <CustomModalHeader toggle={onToggle}>{record ? gettext('Edit record') : gettext('New record')}</CustomModalHeader>
@@ -57,14 +59,20 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
         </FormGroup>
         {fields.map(c => {
           const { key } = c;
-          const value = config[key] || '';
+          let value = config[key] || '';
+          let disabled = isSubmitting;
+          if (is_edit_page && key === 'api_token') {
+            value = '********';
+            disabled = true;
+          }
+
           return (
             <FormGroup key={key}>
               <Label>
                 {c.name}
                 {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
               </Label>
-              <Input value={value} onChange={(event) => onConfigChange(key, event.target.value)} disabled={isSubmitting} />
+              <Input value={value} onChange={(event) => onConfigChange(key, event.target.value)} disabled={disabled} />
             </FormGroup>
           );
         })}

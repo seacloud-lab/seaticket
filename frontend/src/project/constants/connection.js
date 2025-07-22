@@ -27,7 +27,7 @@ export const CONNECTION_FIELDS = {
   ],
   [CONNECTION_TYPE.SEAFILE]: [
     { key: 'server_url', name: gettext('Server_url'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
-    { key: 'api_token', 'name': gettext('Api_token'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true, is_display: true },
+    { key: 'api_token', 'name': gettext('Api_token'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true },
   ]
 };
 

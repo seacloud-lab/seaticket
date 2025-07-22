@@ -21,7 +21,7 @@ from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
     TicketTags, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    add_init_crawl_site_task, add_index_seafile_task, get_project_related_users
+    add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TAG, TICKET_TYPE
 
 
@@ -155,6 +155,7 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        config = encrypt_config(json.loads(config))
         enable_create = ProjectConnections.objects.enable_create(project, connection_type, name, config)
         if not enable_create:
             error_msg = 'Name or config is not unique'
@@ -204,8 +205,8 @@ class ProjectConnectionView(APIView):
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        config = request.data.get('config', {})
-        if not config:
+        new_config = request.data.get('config', {})
+        if not new_config:
             error_msg = 'config invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -225,6 +226,13 @@ class ProjectConnectionView(APIView):
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get(id=connection_id)
+
+        config = decrypt_config(json.loads(project_connection.config))
+        new_config = decrypt_config(json.loads(new_config))
+        config.update(new_config)
+        config = encrypt_config(config)
 
         enable_modify = ProjectConnections.objects.enable_modify(project, connection_type, connection_id, name, config)
         if not enable_modify:
@@ -369,7 +377,7 @@ class TicketsAPIView(APIView):
                 participants = json.loads(participants)
             except:
                 error_msg = 'participants invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)     
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             if not isinstance(participants, list):
                 error_msg = 'participants invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -385,7 +393,7 @@ class TicketsAPIView(APIView):
                 tags = json.loads(tags)
             except:
                 error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg) 
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
