@@ -121,7 +121,6 @@ class Item extends React.Component {
             {item.name}
           </td>
           <td>{item.uuid}</td>
-          <td>{item.rows_count}</td>
           <td>{item.owner}</td>
           <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
@@ -229,9 +228,8 @@ class OrgNormalProjects extends React.Component {
           <thead>
             <tr>
               <th width="5%">{/* icon*/}</th>
-              <th width="15%">{gettext('Name')}</th>
+              <th width="25%">{gettext('Name')}</th>
               <th width="30%">ID</th>
-              <th width="10%">{gettext('Rows')}</th>
               <th width="20%">{gettext('Owner')}</th>
               <th width="15%">{gettext('Created at')}</th>
               <th width="5%">{/* Operations*/}</th>
