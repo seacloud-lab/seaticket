@@ -108,7 +108,7 @@ class UserSelect extends React.Component {
       this.onUpArrow(e);
     } else if (e.keyCode === Utils.keyCodes.down) {
       this.onDownArrow(e);
-    } else if (e.keyCode === Utils.keyCodes.escape) {
+    } else if (e.keyCode === Utils.keyCodes.esc) {
       this.onEsc(e);
     }
   };
