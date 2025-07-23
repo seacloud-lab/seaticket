@@ -88,7 +88,6 @@ class Item extends Component {
           </td>
           <td>{item.name}</td>
           <td>{item.uuid}</td>
-          <td>{item.rows_count}</td>
           <td>{item.owner}</td>
           <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
@@ -157,9 +156,8 @@ class Content extends Component {
             <thead>
               <tr>
                 <th width="5%">{/* icon */}</th>
-                <th width="15%">{gettext('Name')}</th>
+                <th width="25%">{gettext('Name')}</th>
                 <th width="30%">ID</th>
-                <th width="10%">{gettext('Rows')}</th>
                 <th width="15%">{gettext('Owner')}</th>
                 <th width="20%">{gettext('Created At')}</th>
                 <th width="5%">{/* Operations*/}</th>
