@@ -16,6 +16,7 @@ from seahub.api2.endpoints.user_avatar import UserAvatarView
 from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswordView, \
     UserResetPasswordByPhoneView, ResetPasswordView
 from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
+from seahub.api2.endpoints.sessions import SessionsView, OnlineSessionView, SessionView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
 from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView
@@ -86,6 +87,11 @@ urlpatterns = [
     # user:reset password by phone
     re_path(r'^api/v2.1/user/reset-password-by-phone/$', UserResetPasswordByPhoneView.as_view(), name="api-v2.1-user-reset-password-by-phone"),
     re_path(r'^api/v2.1/user/reset-password/$', ResetPasswordView.as_view(), name="api-v2.1-user-reset-password"),
+
+    ## sessions
+    re_path(r'^api/v2.1/sessions/$', SessionsView.as_view(), name='api-v2.1-sessions'),
+    re_path(r'^api/v2.1/sessions/(?P<session_id>\d+)/$', SessionView.as_view(), name='api-v2.1-session'),
+    re_path(r'^api/v2.1/online-sessions/(?P<session_id>\d+)/$', OnlineSessionView.as_view(), name='api-v2.1-online-session'),
 
     ## user::groups
     re_path(r'^api/v2.1/groups/$', GroupsView.as_view(), name='api-v2.1-groups'),

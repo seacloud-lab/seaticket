@@ -59,7 +59,6 @@ class Settings extends React.Component {
     super(props);
     this.sideNavItems = [
       { show: true, href: '#user-basic-info', text: gettext('Profile') },
-      { show: true, href: '#user-id-in-org', text: 'ID' },
       { show: true, href: '#bind-contact-email', text: gettext('Contact email') },
       { show: canUpdatePassword && !this.isWorkWX, href: '#update-user-passwd', text: gettext('Password') },
       { show: enableBindPhone && !this.isWorkWX, href: '#bind-phone', text: gettext('Bind phone number') },
@@ -171,10 +170,6 @@ class Settings extends React.Component {
                   <h3 className="setting-item-heading">{gettext('Profile setting')}</h3>
                   <UserAvatarForm />
                   {this.state.userInfo && <UserBasicInfoForm userInfo={this.state.userInfo} updateUserInfo={this.updateUserInfo} />}
-                </div>
-                <div id="user-id-in-org" className="setting-item">
-                  <h3 className="setting-item-heading">ID</h3>
-                  {this.state.userInfo ? (this.state.userInfo.id_in_org || '--') : ('--')}
                 </div>
                 <BindContactEmail contactEmail={this.state.contactEmail} />
                 {canUpdatePassword && !this.isWorkWX &&

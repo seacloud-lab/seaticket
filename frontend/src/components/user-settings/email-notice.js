@@ -58,30 +58,12 @@ class EmailNotice extends React.Component {
   };
 
   render() {
-    const { projectUpdatesEmailInterval, projectCollaborateEmailInterval } = this.state;
+    const { projectCollaborateEmailInterval } = this.state;
     return (
       <div className="setting-item" id="email-notice">
         <h3 className="setting-item-heading">{gettext('Email notification')}</h3>
-        <h6 className="">{gettext('Notifications of base changes')}</h6>
-        <p className="mb-1">{gettext('Do you want a summary of all notifications of base changes to be sent to you by email?')}</p>
-        <form method="post" action="" id="set-updates-email-interval-form">
-          {this.dtableUpdatesIntervalOptions.map((item, index) => {
-            return (
-              <React.Fragment key={index}>
-                <Radio
-                  name="set-updates-email-interval"
-                  value={item.interval}
-                  label={item.text}
-                  isChecked={projectUpdatesEmailInterval === item.interval}
-                  onCheckedChange={this.onEmailIntervalChange}
-                />
-                <br />
-              </React.Fragment>
-            );
-          })}
-        </form>
         <h6 className="mt-4">{gettext('Notifications of collaboration')}</h6>
-        <p className="mb-1">{gettext('Do you want a summary of all notifications of collaboration (i.e., notifications about shared bases, row comments) to be sent to you by email?')}</p>
+        <p className="mb-1">{gettext('Do you want a summary of all notifications of collaboration to be sent to you by email?')}</p>
         <form method="post" action="" id="set-collaborate-email-interval-form">
           {this.dtableCollaborateIntervalOptions.map((item, index) => {
             return (
