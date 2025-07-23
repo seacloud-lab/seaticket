@@ -6,7 +6,7 @@ import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import Table from '../table';
 import { TABLE_COLUMN_TYPE } from '../../constants';
-import { SearchResult } from '../../models';
+import { SearchResults } from '../../models';
 import TopBar from '../top-bar';
 
 import './index.css';
@@ -17,13 +17,14 @@ const {
 
 const Search = ({ title }) => {
   const [value, setValue] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(SearchResults({}));
   const [searching, setSearching] = useState(false);
 
   const source = useRef(null);
   const timer = useRef(null);
 
-  const columns = useMemo(() => {
+  const siteColumns = useMemo(() => {
+
     return [
       { key: 'title', name: gettext('Title'), type: TABLE_COLUMN_TYPE.TEXT, width: '30%' },
       { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, width: '30%' },
@@ -31,9 +32,18 @@ const Search = ({ title }) => {
     ];
   }, []);
 
+  const seafileColumns = useMemo(() => {
+    return [
+      { key: 'filename', name: gettext('Filename'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
+      { key: 'path', name: gettext('Path'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
+      { key: 'repo_id', name: gettext('Repo_id'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
+      { key: 'content', name: gettext('Content'), type: TABLE_COLUMN_TYPE.LONG_TEXT, width: '40%' },
+    ];
+  }, []);
+
   const onChange = useCallback((value = '') => {
     setValue(value);
-    setResults([]);
+    setResults(SearchResults({}));
     setSearching(true);
     const cancelError = 'The current request has been automatically canceled';
     if (source.current) {
@@ -49,8 +59,8 @@ const Search = ({ title }) => {
       timer.current = null;
       source.current = seaQAAPI.getSource();
       seaQAAPI.search(workspaceID, projectUuid, value, source.current.token).then(res => {
-        const results = res.data?.results || [];
-        setResults(results.map(r => new SearchResult(r)));
+        const results = res.data?.results || {};
+        setResults(SearchResults(results));
         setSearching(false);
       }).catch(error => {
         if (!axios.isCancel(error)) {
@@ -118,15 +128,28 @@ const Search = ({ title }) => {
                 <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('Please enter search keywords')} />
               </div>
             )}
-            {value && results.length === 0 && (
+            {value && results.site_list.length === 0 && (
               <div className="sea-qa-project-search-result-empty-tip">
                 <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
               </div>
             )}
-            {results.length > 0 && (
+            {results.site_list.length > 0 && (
               <Table
-                columns={columns}
-                rows={results}
+                columns={siteColumns}
+                rows={results.site_list}
+                className="p-0"
+              />
+            )}
+
+            {value && results.seafile_list.length === 0 && (
+              <div className="sea-qa-project-search-result-empty-tip">
+                <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
+              </div>
+            )}
+            {results.seafile_list.length > 0 && (
+              <Table
+                columns={seafileColumns}
+                rows={results.seafile_list}
                 className="p-0"
               />
             )}

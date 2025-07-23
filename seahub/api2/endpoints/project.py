@@ -378,7 +378,12 @@ class SearchView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        connection_type = request.data.get('connection_type', ConnectionType.SITE.value)
+        try:
+            count = int(request.GET.get('count', '20'))
+        except ValueError:
+            count = 20
+
+        connection_type = request.data.get('connection_type')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
@@ -399,6 +404,7 @@ class SearchView(APIView):
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
             'connection_type': connection_type,
+            'count': count,
         }
         results = search(params)
 
