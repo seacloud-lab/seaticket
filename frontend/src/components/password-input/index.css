@@ -1,0 +1,13 @@
+.password-op-icon .sea-qa-icon-svg {
+  color: #999;
+  height: 14px;
+  width: 14px;
+}
+
+.password-op-icon:hover .sea-qa-icon-svg {
+  color: #666;
+}
+
+.password-op-icon.disabled {
+  background-color: #f8f9fa !important;
+}

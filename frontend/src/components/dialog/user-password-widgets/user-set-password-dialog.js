@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
-import PasswordInput from './password-input';
+import { Modal, ModalBody, ModalFooter, Button, Form, Alert, FormGroup, Label } from 'reactstrap';
+import PasswordInput from '../../password-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -55,18 +55,14 @@ const UserSetPassword = ({ toggle }) => {
       <ModalHeader toggle={toggle}>{gettext('Set password')}</ModalHeader>
       <ModalBody>
         <Form>
-          <PasswordInput
-            shouldAutoFocus={true}
-            value={password}
-            labelValue={gettext('Password')}
-            onChangeValue={setPassword}
-          />
-          <PasswordInput
-            value={confirmedPassword}
-            labelValue={gettext('Confirm password')}
-            onChangeValue={setConfirmedPassword}
-            enableCheckStrength={false}
-          />
+          <FormGroup className="password-input-container position-relative">
+            <Label>{gettext('Password')}</Label>
+            <PasswordInput autoFocus={true} value={password} onChange={setPassword} />
+          </FormGroup>
+          <FormGroup className="password-input-container position-relative">
+            <Label>{gettext('Confirm password')}</Label>
+            <PasswordInput enableCheckStrength={false} value={confirmedPassword} onChange={setConfirmedPassword} />
+          </FormGroup>
         </Form>
         {errorMessage && (
           <Alert color='danger'>{errorMessage}</Alert>

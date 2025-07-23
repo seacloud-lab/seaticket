@@ -77,6 +77,7 @@ class Settings extends React.Component {
       curItemID: this.sideNavItems[0].href.substr(1),
       userInfo: null,
       contactEmail: '',
+      isSetPasswordDialogOpen: false,
       isUpdatePasswordDialogOpen: false,
       isRemovePasswordDialogOpen: false,
       isResetPasswordDialogOpen: false,
@@ -141,14 +142,14 @@ class Settings extends React.Component {
   };
 
   render() {
-    let canRemovePassword = (enableWorkWeixin && workWeixinConnected) ||
+    const canRemovePassword = (enableWorkWeixin && workWeixinConnected) ||
         (enableDingtalk && dingtalkConnected) ||
         (enableOrgWorkWeixin && orgWorkWeixinConnected) ||
         (enableWeixin && weixinConnected) || (enableOrgDingtalk && orgDingtalkConnected) ||
         (enableBindPhone && this.state.userInfo && this.state.userInfo.bind_phone);
 
-    let bindPhone = this.state.userInfo ? this.state.userInfo.bind_phone : '';
-    let logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
+    const bindPhone = this.state.userInfo ? this.state.userInfo.bind_phone : '';
+    const logoUrl = logoPath.startsWith('http') ? logoPath : mediaUrl + logoPath;
     return (
       <React.Fragment>
         <div className="sea-qa-web-settings h-100 d-flex flex-column">

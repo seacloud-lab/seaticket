@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, ModalBody, ModalFooter, Button, Form, Alert } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, Alert, FormGroup, Label } from 'reactstrap';
 import toaster from '../../toaster';
 import ModalHeader from '../../modal-header';
-import PasswordInput from './password-input';
+import PasswordInput from '../../password-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -61,24 +61,18 @@ const UserUpdatePassword = ({ toggle }) => {
       <ModalHeader toggle={toggle}>{gettext('Update password')}</ModalHeader>
       <ModalBody>
         <Form>
-          <PasswordInput
-            value={currentPassword}
-            labelValue={gettext('Current password')}
-            shouldAutoFocus={true}
-            enableCheckStrength={false}
-            onChangeValue={setCurrentPassword}
-          />
-          <PasswordInput
-            value={newPassword}
-            labelValue={gettext('New password')}
-            onChangeValue={setNewPassword}
-          />
-          <PasswordInput
-            value={confirmedNewPassword}
-            labelValue={gettext('Confirm password')}
-            onChangeValue={setConfirmedNewPassword}
-            enableCheckStrength={false}
-          />
+          <FormGroup className="password-input-container position-relative">
+            <Label>{gettext('Current password')}</Label>
+            <PasswordInput autoFocus={true} enableCheckStrength={false} value={currentPassword} onChange={setCurrentPassword} />
+          </FormGroup>
+          <FormGroup className="password-input-container position-relative">
+            <Label>{gettext('New password')}</Label>
+            <PasswordInput value={newPassword} onChange={setNewPassword} />
+          </FormGroup>
+          <FormGroup className="password-input-container position-relative">
+            <Label>{gettext('Confirm password')}</Label>
+            <PasswordInput enableCheckStrength={false} value={confirmedNewPassword} onChange={setConfirmedNewPassword} />
+          </FormGroup>
         </Form>
         {errorMessage && (
           <Alert color='danger'>{errorMessage}</Alert>

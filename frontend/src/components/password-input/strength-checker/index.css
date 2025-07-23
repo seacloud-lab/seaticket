@@ -1,0 +1,113 @@
+.strength-check-container {
+  position: absolute;
+  top: 50%;
+  right: 475px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  width: 250px;
+  background: #fff;
+  transform: translateY(-50%);
+}
+
+.strength-check-container.mobile {
+  top: -85px;
+  right: 0;
+  z-index: 2;
+}
+
+.strength-check-container .strength-check-box {
+  position: relative;
+  padding: 12px;
+}
+
+.strength-check-container .strength-check-box .strength-value {
+  margin-bottom: 4px;
+}
+
+.strength-check-container .strength-check-box .strength-value .too-short,
+.strength-check-container .strength-check-box .strength-value .weak {
+  color: #E43C44;
+}
+
+.strength-check-container .strength-check-box .strength-value .medium {
+  color: #FFA800;
+}
+
+.strength-check-container .strength-check-box .strength-value .strong,
+.strength-check-container .strength-check-box .strength-value .very-strong {
+  color: #26B20E;
+}
+
+
+.strength-check-container .progress {
+  border-radius: 0;
+  background-color: #fff;
+}
+
+.strength-check-container .progress .progress-bar {
+  margin-right: 2px;
+  height: 4px;
+}
+
+.strength-check-container .progress .default {
+  background-color: #DBDBDB;
+}
+
+.strength-check-container .progress .too-short,
+.strength-check-container .progress .weak {
+  background-color: #E43C44;
+}
+
+.strength-check-container .progress .medium {
+  background-color: #FFA800;
+}
+
+.strength-check-container .progress .strong,
+.strength-check-container .progress .very-strong {
+  background-color:#26B20E;
+}
+
+.strength-check-container .password-strength-description {
+  font-size: 12px;
+  color: #666;
+}
+
+.strength-check-container .strength-check-box::before,
+.strength-check-container .strength-check-box::after {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: -7px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  content: '';
+  transform: translateY(-50%);
+}
+
+.strength-check-container .strength-check-box::before {
+  border-left: 7px solid #ddd;
+}
+
+.strength-check-container .strength-check-box::after {
+  right: -5.6px;
+  border-left: 7px solid #fff;
+}
+
+.strength-check-container.mobile .strength-check-box::before,
+.strength-check-container.mobile .strength-check-box::after {
+  top: 100%;
+  right: 80%;
+  border-right: 7px solid transparent;
+  border-left: 7px solid transparent;
+  content: '';
+  transform: unset;
+}
+
+.strength-check-container.mobile .strength-check-box::before {
+  border-top: 7px solid #ddd;
+}
+
+.strength-check-container.mobile .strength-check-box::after {
+  top: calc(100% - 1.4px);
+  border-top: 7px solid #fff;
+}
