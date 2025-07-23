@@ -111,7 +111,7 @@ const propTypes = {
   onAddCustomSharePermission: PropTypes.func,
 };
 
-class SysAdminShareTableToUser extends React.Component {
+class SysAdminShareProjectToUser extends React.Component {
 
   constructor(props) {
     super(props);
@@ -165,8 +165,7 @@ class SysAdminShareTableToUser extends React.Component {
         }
       });
     }
-    this.setState({ selectedOption: null });
-    this.refs.userSelect.clearSelect();
+    this.setState({ selectedOption: [] });
   };
 
   deleteProjectShare = (email) => {
@@ -276,7 +275,6 @@ class SysAdminShareTableToUser extends React.Component {
               <td>
                 <div className='add-members'>
                   <UserSelect
-                    ref="userSelect"
                     isMulti={true}
                     className={classnames('reviewer-select', { 'user-select-right-btn': showDeptBtn })}
                     placeholder={gettext('Search users')}
@@ -322,6 +320,6 @@ class SysAdminShareTableToUser extends React.Component {
   }
 }
 
-SysAdminShareTableToUser.propTypes = propTypes;
+SysAdminShareProjectToUser.propTypes = propTypes;
 
-export default SysAdminShareTableToUser;
+export default SysAdminShareProjectToUser;

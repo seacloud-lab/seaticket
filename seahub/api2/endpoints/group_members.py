@@ -17,12 +17,14 @@ from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.group.signals import add_user_to_group
-from seahub.group.utils import is_group_member, is_group_admin, \
+from seahub.group.utils import is_group_member, \
     is_group_owner, is_group_admin_or_owner, get_group_member_info, \
     get_group_members
 from seahub.profile.models import Profile
 from seahub.settings import GROUP_MEMBER_LIMIT
 from seahub.utils import string2list, is_org_context
+from seahub.group.models import Group, GroupUser
+from seahub.organizations.models import OrgUser
 
 from .utils import api_check_group
 
@@ -48,8 +50,10 @@ class GroupMembers(APIView):
 
             members = get_group_members(group_id)
 
-            group = ccnet_api.get_group(int(group_id))
-        except SearpcError as e:
+            group = Group.objects.get_group(int(group_id))
+            if not group:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Group not found')
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -93,7 +97,7 @@ class GroupMembers(APIView):
                 "avatar_url": avatar_url,
                 "is_admin": is_admin,
                 "role": role,
-                "group_id": group.id,
+                "group_id": group.group_id,
             }
             group_member_list.append(member_info)
 
@@ -105,9 +109,6 @@ class GroupMembers(APIView):
         Add a group member.
         """
         username = request.user.username
-
-        if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to add member to department')
 
         # only group owner/admin can add a group member
         if not is_group_admin_or_owner(group_id, username):
@@ -129,15 +130,9 @@ class GroupMembers(APIView):
                 error_msg = _('User %s is already a group member.') % email2nickname(email)
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                if not ccnet_api.org_user_exists(org_id, email):
-                    error_msg = _('User %s not found in organization.') % email2nickname(email)
-                    return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             group_members = []
             try:
-                group_members = ccnet_api.get_group_members(group_id)
+                group_members = GroupUser.objects.filter(group_id=group_id)
             except Exception as e:
                 logger.error(f'get group members failed. {e}')
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -145,19 +140,21 @@ class GroupMembers(APIView):
             if group_members and len(group_members) >= GROUP_MEMBER_LIMIT:
                 return api_error(status.HTTP_400_BAD_REQUEST, _('Number of group members exceeds limit.'))
 
-            ccnet_api.group_add_member(group_id, username, email)
+            GroupUser.objects.create(
+                group_id=group_id,
+                user_name=username,
+                is_staff=False,
+            )
             add_user_to_group.send(sender=None,
                                    group_staff=username,
                                    group_id=group_id,
                                    added_user=email)
-
-            clean_related_users_cache_by_group(group_id)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        member_info = get_group_member_info(request, group_id, email)
+        member_info = get_group_member_info(group_id, email)
 
         return Response(member_info, status=status.HTTP_201_CREATED)
 
@@ -173,7 +170,7 @@ class GroupMember(APIView):
         Get info of a specific group member.
         """
         try:
-            group = ccnet_api.get_group(group_id)
+            group = Group.objects.get_group(int(group_id))
             if not group:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Group not found')
             # only group member can get info of a specific group member
@@ -185,12 +182,12 @@ class GroupMember(APIView):
                 error_msg = 'Email %s invalid.' % email
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        member_info = get_group_member_info(request, group_id, email)
+        member_info = get_group_member_info(group_id, email)
 
         return Response(member_info)
 
@@ -203,8 +200,6 @@ class GroupMember(APIView):
         username = request.user.username
         is_admin = request.data.get('is_admin', '')
         try:
-            if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-                return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to update department group member')
             if not is_group_admin_or_owner(group_id, username):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -215,18 +210,20 @@ class GroupMember(APIView):
 
             # set/unset a specific group member as admin
             if is_admin.lower() == 'true':
-                ccnet_api.group_set_admin(group_id, email)
+                GroupUser.objects.filter(
+                    group_id=group_id, user_name=email).update(is_staff=True)
             elif is_admin.lower() == 'false':
-                ccnet_api.group_unset_admin(group_id, email)
+                GroupUser.objects.filter(
+                    group_id=group_id, user_name=email).update(is_staff=False)
             else:
                 error_msg = 'is_admin invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        member_info = get_group_member_info(request, group_id, email)
+        member_info = get_group_member_info(group_id, email)
 
         return Response(member_info)
 
@@ -237,12 +234,10 @@ class GroupMember(APIView):
         """
 
         try:
-            if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-                return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to update department group member')
             if not is_group_member(group_id, email):
                 error_msg = 'Email %s invalid.' % email
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -254,16 +249,12 @@ class GroupMember(APIView):
                 if is_group_owner(group_id, username):
                     # group owner cannot leave group
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Group owner cannot leave group.')
-                elif is_group_admin(group_id, username):
-                    clean_related_users_cache_by_group(group_id)
-                    ccnet_api.group_remove_member(group_id, username, email)
                 else:
-                    clean_related_users_cache_by_group(group_id)
-                    ccnet_api.quit_group(group_id, username)
+                    GroupUser.objects.filter(
+                        group_id=group_id, user_name=email).delete()
                 # remove repo-group share info of all 'email' owned repos
-                seafile_api.remove_group_repos_by_owner(group_id, email)
                 return Response({'success': True})
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -272,29 +263,25 @@ class GroupMember(APIView):
         try:
             if is_group_owner(group_id, username):
                 # clean related-users of projects in group or ancestors' groups
-                clean_related_users_cache_by_group(group_id)
                 # group owner can delete all group member
-                ccnet_api.group_remove_member(group_id, username, email)
-                seafile_api.remove_group_repos_by_owner(group_id, email)
+                GroupUser.objects.filter(
+                    group_id=group_id, user_name=email).delete()
                 return Response({'success': True})
-
-            elif is_group_admin(group_id, username):
+            elif is_group_admin_or_owner(group_id, username):
                 # group admin can NOT delete group owner/admin
                 if not is_group_admin_or_owner(group_id, email):
                     # clean related-users of projects in group or ancestors' groups
-                    clean_related_users_cache_by_group(group_id)
-                    ccnet_api.group_remove_member(group_id, username, email)
-                    seafile_api.remove_group_repos_by_owner(group_id, email)
+                    GroupUser.objects.filter(
+                        group_id=group_id, user_name=email).delete()
                     return Response({'success': True})
                 else:
                     error_msg = 'Permission denied.'
                     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
             else:
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -312,12 +299,10 @@ class GroupMembersBulk(APIView):
         """
         username = request.user.username
         try:
-            if settings.ENABLE_ADDRESSBOOK_V2 and is_department_v2_group(group_id):
-                return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to add department group members')
             if not is_group_admin_or_owner(group_id, username):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -351,7 +336,7 @@ class GroupMembersBulk(APIView):
                     })
                 continue
 
-            if is_group_member(group_id, email, in_structure=False):
+            if is_group_member(group_id, email):
                 result['failed'].append({
                     'email': email,
                     'email_name': email_name,
@@ -361,7 +346,7 @@ class GroupMembersBulk(APIView):
 
             # Can only invite organization users to group
             if org_id and not \
-                seaserv.ccnet_threaded_rpc.org_user_exists(org_id, email):
+                OrgUser.objects.filter(org_id=org_id, email=email).exists():
                 result['failed'].append({
                     'email': email,
                     'email_name': email_name,
@@ -372,7 +357,7 @@ class GroupMembersBulk(APIView):
             emails_need_add.append(email)
 
         try:
-            group_members = ccnet_api.get_group_members(group_id)
+            group_members = get_group_members(group_id)
             old_members_count = len(group_members) if group_members else 0
         except Exception as e:
             logger.error(f'get group members failed. {e}')
@@ -392,11 +377,14 @@ class GroupMembersBulk(APIView):
         # Add user to group.
         for email in emails_need_add:
             try:
-                seaserv.ccnet_threaded_rpc.group_add_member(group_id,
-                    username, email)
-                member_info = get_group_member_info(request, group_id, email)
+                GroupUser.objects.create(
+                    group_id=group_id,
+                    user_name=email,
+                    is_staff=False,
+                )
+                member_info = get_group_member_info(group_id, email)
                 result['success'].append(member_info)
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 result['failed'].append({
                     'email': email,
@@ -407,8 +395,6 @@ class GroupMembersBulk(APIView):
                                    group_staff=username,
                                    group_id=group_id,
                                    added_user=email)
-
-        clean_related_users_cache_by_group(group_id)
 
         return Response(result)
 
@@ -442,7 +428,7 @@ class GroupSearchMember(APIView):
 
         group_members = []
         for member in members:
-            member_info = get_group_member_info(request, group_id, member['username'])
+            member_info = get_group_member_info(group_id, member['username'])
             if q in member_info.get('contact_email') or q in member_info.get('name'):
                 group_members.append(member_info)
 

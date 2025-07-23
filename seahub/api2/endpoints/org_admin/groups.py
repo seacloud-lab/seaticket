@@ -15,7 +15,7 @@ from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.project.models import Workspaces, Projects
-from seahub.group.utils import validate_group_name, is_group_member, is_group_admin, check_group_name_conflict, \
+from seahub.group.utils import validate_group_name, is_group_member, is_group_admin_or_owner, check_group_name_conflict, \
     refresh_group_name_cache
 from seahub.utils import is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
@@ -153,7 +153,7 @@ class OrgAdminGroups(APIView):
         # create group.
         try:
             group_id = ccnet_api.create_org_group(org_id, group_name, group_owner)
-        except SearpcError as e:
+        except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
@@ -226,12 +226,12 @@ class OrgAdminGroup(APIView):
 
         # recourse check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         if not group:
             error_msg = 'Group %d not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -250,7 +250,7 @@ class OrgAdminGroup(APIView):
                 error_msg = 'User %s not found.' % new_owner
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            # check if new_owner a memeber of org
+            # check if new_owner a member of org
             if not ccnet_api.org_user_exists(org_id, new_owner):
                 error_msg = 'User %s not found in organization.' % email2nickname(new_owner)
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -265,12 +265,12 @@ class OrgAdminGroup(APIView):
                 if not is_group_member(group_id, new_owner):
                     ccnet_api.group_add_member(group_id, old_owner, new_owner)
 
-                if not is_group_admin(group_id, new_owner):
+                if not is_group_admin_or_owner(group_id, new_owner):
                     ccnet_api.group_set_admin(group_id, new_owner)
 
                 ccnet_api.set_group_creator(group_id, new_owner)
                 ccnet_api.group_unset_admin(group_id, old_owner)
-            except SearpcError as e:
+            except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)

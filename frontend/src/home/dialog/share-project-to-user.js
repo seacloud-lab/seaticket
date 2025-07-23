@@ -167,8 +167,7 @@ class ShareProjectToUser extends React.Component {
         }
       });
     }
-    this.setState({ selectedOption: null });
-    this.refs.userSelect.clearSelect();
+    this.setState({ selectedOptions: [] });
   };
 
   deleteProjectShare = (email) => {
@@ -286,8 +285,8 @@ class ShareProjectToUser extends React.Component {
               <td>
                 <div className='add-members'>
                   <UserSelect
-                    ref="userSelect"
                     isMulti={true}
+                    selectedUsers={this.state.selectedOptions}
                     className={classnames('reviewer-select', { 'user-select-right-btn': showDeptBtn })}
                     placeholder={gettext('Search users')}
                     onSelectChange={this.handleSelectChange}

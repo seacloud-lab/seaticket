@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, SearchInput, toaster, Icon } from '../../components';
+import { IconButton, SearchInput, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
 import { cloudMode, gettext, isOrgContext } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
@@ -26,7 +26,7 @@ class ListAndAddGroupMembers extends React.Component {
     this.state = {
       groupMembers: [],
       searchMembers: [],
-      selectedOption: null,
+      selectedOption: [],
       errMessage: [],
       isItemFreezed: false,
       searchValue: ''
@@ -44,6 +44,10 @@ class ListAndAddGroupMembers extends React.Component {
     });
   };
 
+  clearSelect = () => {
+    this.onSelectChange([]);
+  };
+
   addGroupMember = () => {
     let emails = [];
     for (let i = 0; i < this.state.selectedOption.length; i++) {
@@ -54,9 +58,9 @@ class ListAndAddGroupMembers extends React.Component {
       const newMembers = res.data.success;
       this.setState({
         groupMembers: [].concat(newMembers, this.state.groupMembers),
-        selectedOption: null,
+        selectedOption: [],
       });
-      this.refs.userSelect.clearSelect();
+      this.clearSelect();
       if (res.data.failed.length > 0) {
         this.setState({
           errMessage: res.data.failed
@@ -144,12 +148,12 @@ class ListAndAddGroupMembers extends React.Component {
           <UserSelect
             placeholder={gettext('Search users')}
             onSelectChange={this.onSelectChange}
-            ref="userSelect"
             isMulti={true}
             className={classnames('add-members-select', { 'org-add-members-select': isOrgContext }, { 'user-select-right-btn': showDeptBtn })}
+            selectedUsers={selectedOption}
           />
           {showDeptBtn && (
-            <IconButton icon="add-members" className="toggle-detail-btn" onClick={this.toggleDepartmentDetailDialog} />
+            <IconButton icon="add-members" className="toggle-detail-btn no-hover-bg d-none" onClick={this.toggleDepartmentDetailDialog} />
           )}
           {selectedOption ?
             <Button color="secondary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
@@ -161,19 +165,17 @@ class ListAndAddGroupMembers extends React.Component {
             return (<div className="group-error error" key={index}>{item.error_msg}</div>);
           })
         }
-        {(groupMembers.length > 10 || searchValue) &&
-          <div className="search-input-container">
-            <Icon symbol="search" className="search-icon" />
-            <SearchInput
-              value={searchValue}
-              autoFocus={false}
-              onChange={this.onSearchGroupMembers}
-              className="search-group-members-input"
-              placeholder={gettext('Search group members')}
-              onClear={this.clearValue}
-            />
-          </div>
-        }
+        {(groupMembers.length > 10 || searchValue) && (
+          <SearchInput
+            value={searchValue}
+            autoFocus={false}
+            onChange={this.onSearchGroupMembers}
+            size={30}
+            className="search-group-members-input-wrapper"
+            placeholder={gettext('Search group members')}
+            onClear={this.clearValue}
+          />
+        )}
         <div className="manage-members">
           <GroupMembers
             groupMembers={searchValue ? searchMembers : groupMembers}

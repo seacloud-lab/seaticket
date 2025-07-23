@@ -17,29 +17,26 @@ class OrgAdminTransferGroupDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: null,
-      submitBtnDisabled: true
+      selectedUsers: [],
     };
   }
 
-  handleSelectChange = (option) => {
-    this.setState({
-      selectedOption: option,
-      submitBtnDisabled: option == null
-    });
+  handleSelectChange = (selectedUsers) => {
+    this.setState({ selectedUsers });
   };
 
   submit = () => {
-    const receiver = this.state.selectedOption.email;
+    const [user] = this.state.selectedUsers;
+    const receiver = user?.email;
     this.props.transferGroup(receiver);
     this.props.toggleDialog();
   };
 
   render() {
-    const { submitBtnDisabled } = this.state;
+    const { selectedUsers } = this.state;
     const groupName = Utils.HTMLescape(this.props.groupName);
     const innerSpan = '<span class="op-target" title=' + groupName + '>' + groupName + '</span>';
-    const msg = gettext('Transfer group {library_name} to').replace('{library_name}', innerSpan);
+    const msg = gettext('Transfer group {name} to').replace('{name}', innerSpan);
     return (
       <Modal isOpen={true} toggle={this.props.toggleDialog}>
         <ModalHeader toggle={this.props.toggleDialog}>
@@ -47,8 +44,8 @@ class OrgAdminTransferGroupDialog extends React.Component {
         </ModalHeader>
         <ModalBody>
           <UserSelect
-            ref="userSelect"
             isMulti={false}
+            selectedUsers={selectedUsers}
             className="reviewer-select"
             placeholder={gettext('Select a user')}
             onSelectChange={this.handleSelectChange}
@@ -56,7 +53,7 @@ class OrgAdminTransferGroupDialog extends React.Component {
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.props.toggleDialog}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.submit} disabled={submitBtnDisabled}>{gettext('Submit')}</Button>
+          <Button color="primary" disabled={selectedUsers.length < 1} onClick={this.submit}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

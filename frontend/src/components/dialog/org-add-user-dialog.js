@@ -148,8 +148,8 @@ class AddOrgUserDialog extends React.Component {
               <Label for="userPwd">{gettext('Password')}</Label>
               <InputGroup className="passwd">
                 <Input id="userPwd" innerRef={input => {this.passwdInput = input;}} value={this.state.password || ''} onChange={this.inputPassword} />
-                <IconButton icon={this.state.isPasswordVisible ? 'eye-slash' : 'eye'} className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.togglePasswordVisible} />
-                <IconButton icon="magic" className="btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.generatePassword} />
+                <IconButton icon={this.state.isPasswordVisible ? 'eye-slash' : 'eye'} className="btn btn-secondary" style={{ height: 36.4, width: 36.4 }} onClick={this.togglePasswordVisible} />
+                <IconButton icon="magic" className="btn btn-secondary" style={{ height: 36.4, width: 36.4 }} onClick={this.generatePassword} />
               </InputGroup>
             </FormGroup>
             <FormGroup>

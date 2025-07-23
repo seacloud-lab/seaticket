@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import CustomizeReactSelect from '../customize-react-select';
+import CustomizeSelect from '../customize-select';
 import { Utils } from '../../utils/utils';
 import { gettext, canUseAdvancedPerms } from '../../constants/config';
 import Icon from '../icon';
@@ -107,9 +107,9 @@ class ProjectSharePermissionEditor extends React.Component {
     this.setState({ isEditing: true });
   };
 
-  onPermissionChanged = (e) => {
-    if (e.value !== this.props.currentPermission) {
-      this.props.onPermissionChanged(e.value);
+  onPermissionChanged = (value) => {
+    if (value !== this.props.currentPermission) {
+      this.props.onPermissionChanged(value);
     }
     this.setState({ isEditing: false });
   };
@@ -144,14 +144,12 @@ class ProjectSharePermissionEditor extends React.Component {
             }
           </Fragment>
           :
-          <CustomizeReactSelect
+          <CustomizeSelect
             className="permission-editor-select"
-            classNamePrefix="permission-editor"
             options={options}
             placeholder={optionTranslation}
             onChange={this.onPermissionChanged}
             value={options.find(option => option.value === currentPermission) || {}}
-            menuPortalTarget="#wrapper"
           />
         }
       </div>

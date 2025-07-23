@@ -86,6 +86,7 @@
             canRemoveBasePasswordViaPhone: {% if can_remove_base_password_via_phone %} true {% else %} false {% endif %},
             hasBoundPhone: {% if has_bound_phone %} true {% else %} false {% endif %},
             disableAddingPersonalProjects: {% if disable_adding_personal_projects %} true {% else %} false {% endif %},
+            trashCleanExpireDays: '{{trash_clean_expire_days}}',
         }
      };
     var performance = window.performance;

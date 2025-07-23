@@ -19,7 +19,7 @@ function GroupTrashDialog(props) {
   useEffect(() => {
     seaQAAPI.listGroupTrashProjects(groupID).then(res => {
       setLoading(false);
-      setTrashList(res.data.trash_dtable_list);
+      setTrashList(res.data.trash_project_list);
     }).catch(error => {
       setLoading(false);
       const errMessage = Utils.getErrorMsg(error, true);
@@ -27,7 +27,7 @@ function GroupTrashDialog(props) {
         toaster.danger(errMessage);
       }
     });
-  });
+  }, [groupID]);
 
   function restoreProject(project) {
     const storedList = trashList.filter(t => t.uuid !== project.uuid);

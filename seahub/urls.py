@@ -8,9 +8,9 @@ from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
 from seahub.views.sso import *
 
-from seahub.api2.endpoints.groups import Groups, Group, GroupMoveView
+from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView, GroupTrashProjectsView, GroupTrashProjectView
 
-from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember
+from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember, GroupMembersBulk
 from seahub.api2.endpoints.search_group import SearchGroup
 from seahub.api2.endpoints.user_avatar import UserAvatarView
 from seahub.api2.endpoints.user import User, UserContactEmailView, RemovePasswordView, \
@@ -88,12 +88,15 @@ urlpatterns = [
     re_path(r'^api/v2.1/user/reset-password/$', ResetPasswordView.as_view(), name="api-v2.1-user-reset-password"),
 
     ## user::groups
-    re_path(r'^api/v2.1/groups/$', Groups.as_view(), name='api-v2.1-groups'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/$', Group.as_view(), name='api-v2.1-group'),
+    re_path(r'^api/v2.1/groups/$', GroupsView.as_view(), name='api-v2.1-groups'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/$', GroupView.as_view(), name='api-v2.1-group'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/$', GroupMembers.as_view(), name='api-v2.1-group-members'),
     re_path(r'^api/v2.1/groups/move-group/$', GroupMoveView.as_view(), name='api-v2.1-group-move'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/search-member/$', GroupSearchMember.as_view(), name='api-v2.1-group-search-member'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/bulk/$', GroupMembersBulk.as_view(), name='api-v2.1-group-members-bulk'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v2.1-group-member'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v2.1-group-trash-projects'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v2.1-group-trash-project'),
     re_path(r'^api/v2.1/search-group/$', SearchGroup.as_view(), name='api-v2.1-search-group'),
 
     ## org
