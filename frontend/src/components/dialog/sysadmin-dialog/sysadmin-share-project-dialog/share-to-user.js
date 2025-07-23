@@ -165,8 +165,7 @@ class SysAdminShareProjectToUser extends React.Component {
         }
       });
     }
-    this.setState({ selectedOption: null });
-    this.refs.userSelect.clearSelect();
+    this.setState({ selectedOption: [] });
   };
 
   deleteProjectShare = (email) => {
@@ -276,7 +275,6 @@ class SysAdminShareProjectToUser extends React.Component {
               <td>
                 <div className='add-members'>
                   <UserSelect
-                    ref="userSelect"
                     isMulti={true}
                     className={classnames('reviewer-select', { 'user-select-right-btn': showDeptBtn })}
                     placeholder={gettext('Search users')}

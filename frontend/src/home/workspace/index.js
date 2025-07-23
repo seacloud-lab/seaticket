@@ -356,7 +356,7 @@ class Workspace extends React.Component {
   onDeleteGroup = () => {
     let groupID = this.props.workspace.group_id;
     if (groupID && this.state.projectList.length > 0) {
-      toaster.danger(gettext('Cannot delete group with bases'));
+      toaster.danger(gettext('Cannot delete group with projects'));
       return;
     }
     seaQAAPI.deleteGroup(groupID).then(() => {

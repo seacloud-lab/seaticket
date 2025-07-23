@@ -670,7 +670,7 @@ msgstr ""
 
 #: frontend/src/components/dialog/orgadmin-dialog/orgadmin-group-transfer-dialog.js:42
 #: frontend/src/components/dialog/sysadmin-dialog/sysadmin-group-transfer-dialog.js:45
-msgid "Transfer group {library_name} to"
+msgid "Transfer group {name} to"
 msgstr ""
 
 #: frontend/src/components/dialog/orgadmin-dialog/orgadmin-group-transfer-dialog.js:53

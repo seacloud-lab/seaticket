@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants';
-import SysAdminUserSelect from '../../select-editor/sysadmin-user-select';
 import ModalHeader from '../../modal-header';
+import UserSelect from '../../user-select';
+import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 
 const propTypes = {
   transferGroup: PropTypes.func.isRequired,
@@ -17,49 +18,48 @@ class SysAdminTransferGroupDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: null,
-      submitBtnDisabled: true
+      selectedUsers: [],
     };
   }
 
-  handleSelectChange = (option) => {
-    this.setState({
-      selectedOption: option,
-      submitBtnDisabled: option == null
-    });
+  handleSelectChange = (selectedUsers) => {
+    this.setState({ selectedUsers });
   };
 
   submit = () => {
-    const receiver = this.state.selectedOption.email;
+    const [user] = this.state.selectedUsers;
+    const receiver = user?.email;
+    if (!receiver) return;
     this.props.transferGroup(receiver);
     this.props.toggleDialog();
   };
 
   render() {
-    const { submitBtnDisabled } = this.state;
+    const { selectedUsers } = this.state;
     let { item } = this.props;
     let orgID = item.org_id ? item.org_id : -1;
     let groupName = Utils.HTMLescape(item.name);
 
     const innerSpan = '<span class="op-target" title=' + groupName + '>' + groupName + '</span>';
-    const msg = gettext('Transfer group {library_name} to').replace('{library_name}', innerSpan);
+    const msg = gettext('Transfer group {name} to').replace('{name}', innerSpan);
     return (
       <Modal isOpen={true} toggle={this.props.toggleDialog}>
         <ModalHeader toggle={this.props.toggleDialog}>
           <span dangerouslySetInnerHTML={{ __html: msg }}></span>
         </ModalHeader>
         <ModalBody>
-          <SysAdminUserSelect
+          <UserSelect
+            api={(value) => sysAdminServiceApi.sysAdminSearchUserByOrgID(value, orgID)}
             isMulti={false}
+            selectedUsers={selectedUsers}
             className="reviewer-select"
             placeholder={gettext('Select a user')}
             onSelectChange={this.handleSelectChange}
-            orgID={orgID}
           />
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.props.toggleDialog}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={this.submit} disabled={submitBtnDisabled}>{gettext('Submit')}</Button>
+          <Button color="primary" onClick={this.submit} disabled={selectedUsers.length < 1}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>
     );

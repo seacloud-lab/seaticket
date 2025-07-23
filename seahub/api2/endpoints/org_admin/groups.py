@@ -226,12 +226,12 @@ class OrgAdminGroup(APIView):
 
         # recourse check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         if not group:
             error_msg = 'Group %d not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -250,7 +250,7 @@ class OrgAdminGroup(APIView):
                 error_msg = 'User %s not found.' % new_owner
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            # check if new_owner a memeber of org
+            # check if new_owner a member of org
             if not ccnet_api.org_user_exists(org_id, new_owner):
                 error_msg = 'User %s not found in organization.' % email2nickname(new_owner)
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)

@@ -553,7 +553,7 @@ class SysAdminServiceApi {
     return this.req.get(url, { params: params });
   }
 
-  sysAdminSearchUserByOrgID(queryStr, orgID, limit) {
+  sysAdminSearchUserByOrgID(queryStr, orgID, limit = 10) {
     const url = this.server + '/api/v2.1/admin/search-user-by-org-id/?query=' + encodeURIComponent(queryStr) + '&org_id=' + orgID + '&limit=' + limit;
     return this.req.get(url);
   }

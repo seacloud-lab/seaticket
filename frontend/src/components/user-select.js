@@ -46,7 +46,8 @@ class UserSelect extends React.Component {
         highlightIndex: -1,
       });
     } else {
-      seaQAAPI.searchUsers(searchValue).then((res) => {
+      const api = this.props.api || ((searchValue) => seaQAAPI.searchUsers(searchValue));
+      api(searchValue).then((res) => {
         let users = res.data.users;
         if (this.props.excludeCurrentUser) {
           users = users.filter(user => user.email !== username);
