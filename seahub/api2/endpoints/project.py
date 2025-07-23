@@ -382,6 +382,7 @@ class SearchView(APIView):
             count = int(request.GET.get('count', '20'))
         except ValueError:
             count = 20
+
         connection_type = request.data.get('connection_type')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
