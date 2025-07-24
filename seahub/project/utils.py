@@ -4,6 +4,7 @@ import time
 import requests
 import json
 from urllib.parse import urljoin
+from copy import deepcopy
 
 from seahub.project.models import Projects
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
@@ -14,9 +15,12 @@ from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import WEB_CRAWL_INDEX_SERVER_URL, SEAQA_PRIVATE_KEY
 from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_READ
+from seahub.utils.hasher import AESPasswordHasher
 
 
 logger = logging.getLogger(__name__)
+
+ENCRYPT_KEYS = ['api_token']
 
 
 def check_project_limit(workspace, request):
@@ -109,6 +113,7 @@ def convert_project_trash_names(project):
 
     return new_project_name
 
+
 def restore_trash_project_name(project):
     """
     get trash project's original name and generate old and new .project names
@@ -117,6 +122,28 @@ def restore_trash_project_name(project):
     new_project_name = project.name[project.name.find(' ')+1:]
 
     return new_project_name
+
+
+def encrypt_config(config):
+    config_clone = deepcopy(config)
+    cryptor = AESPasswordHasher()
+    encrypted_details = {
+        key: cryptor.encode(config_clone[key])
+        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
+    }
+    config_clone.update(encrypted_details)
+    return json.dumps(config_clone)
+
+
+def decrypt_config(config):
+    config_clone = deepcopy(config)
+    cryptor = AESPasswordHasher()
+    decrypted_details = {
+        key: cryptor.decode(config_clone[key])
+        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
+    }
+    config_clone.update(decrypted_details)
+    return config_clone
 
 
 def add_init_crawl_site_task(params):

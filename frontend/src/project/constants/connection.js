@@ -11,23 +11,28 @@ export const CONNECTION_TYPE = {
 
 export const CONNECTION_FIELDS = {
   [CONNECTION_TYPE.EMAIL]: [
-    { key: 'host', name: gettext('Host'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true, is_display: true },
-    { key: 'username', name: gettext('Username'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true },
-    { key: 'password', name: gettext('Password'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true },
+    { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%', is_required: true, is_unique: true, is_display: true },
+    { key: 'host', name: gettext('Host'), type: TABLE_COLUMN_TYPE.TEXT, width: '25%', is_required: true, is_unique: true, is_display: true, is_custom: true },
+    { key: 'username', name: gettext('Username'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_custom: true },
+    { key: 'password', name: gettext('Password'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_custom: true },
   ],
   [CONNECTION_TYPE.GITHUB_ISSUE]: [
-    { key: 'repository', name: gettext('Repository'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
+    { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%', is_required: true, is_unique: true, is_display: true },
+    { key: 'repository', name: gettext('Repository'), type: TABLE_COLUMN_TYPE.URL, width: '25%', is_required: true, is_unique: true, is_display: true, is_custom: true },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
-    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
+    { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%', is_required: true, is_unique: true, is_display: true },
+    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, width: '25%', is_required: true, is_unique: true, is_display: true, is_custom: true },
   ],
   [CONNECTION_TYPE.SITE]: [
-    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
-    { key: 'sitemap_url', 'name': gettext('Sitemap URL'), type: TABLE_COLUMN_TYPE.URL },
+    { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%', is_required: true, is_unique: true, is_display: true },
+    { key: 'url', name: gettext('URL'), type: TABLE_COLUMN_TYPE.URL, width: '25%', is_required: true, is_unique: true, is_display: true, is_custom: true },
+    { key: 'sitemap_url', 'name': gettext('Sitemap URL'), type: TABLE_COLUMN_TYPE.URL, is_custom: true },
   ],
   [CONNECTION_TYPE.SEAFILE]: [
-    { key: 'server_url', name: gettext('Server_url'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_unique: true, is_display: true },
-    { key: 'api_token', 'name': gettext('Api_token'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_unique: true, is_display: true },
+    { key: 'name', name: gettext('Library name'), placeholder: gettext('Please input library name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%', is_required: true, is_unique: true, is_display: true },
+    { key: 'server_url', name: gettext('Server URL'), type: TABLE_COLUMN_TYPE.URL, width: '25%', is_required: true, is_unique: true, is_display: true, is_custom: true },
+    { key: 'api_token', 'name': gettext('Library API token'), type: TABLE_COLUMN_TYPE.PASSWORD, is_required: true, is_unique: true, can_edit_multiple_times: false, is_custom: true },
   ]
 };
 

@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { Progress } from 'reactstrap';
 import { gettext } from '../../../constants';
 import { evaluatePasswordStrength } from '../../../utils/validate';
+import { isMobile } from '../../../utils/utils';
 
-const propTypes = {
-  passwordValue: PropTypes.string.isRequired,
-};
+import './index.css';
+import classNames from 'classnames';
 
 const PASSWORD_STRENGTH_VALUES = {
   empty: { classNames: ['default', 'default', 'default', 'default'], textValue: '' },
@@ -16,14 +16,14 @@ const PASSWORD_STRENGTH_VALUES = {
   very_strong: { classNames: ['very-strong', 'very-strong', 'very-strong', 'very-strong'], textValue: 'very strong' },
 };
 
-const PasswordStrengthChecker = ({ passwordValue }) => {
-  const { classNames: progressClassNames = [], textValue = '' } = useMemo(() => PASSWORD_STRENGTH_VALUES[evaluatePasswordStrength(passwordValue)] || {}, [passwordValue]);
+const StrengthChecker = ({ value }) => {
+  const { classNames: progressClassNames = [], textValue = '' } = useMemo(() => PASSWORD_STRENGTH_VALUES[evaluatePasswordStrength(value)] || {}, [value]);
   const labelClassName = Array.isArray(progressClassNames) && progressClassNames.length > 0 ? progressClassNames[0] : '';
 
   return (
-    <div className="password-strength-check-container">
-      <div className='password-strength-check-box'>
-        <div className="password-strength-value">
+    <div className={classNames('strength-check-container', { 'mobile': isMobile })}>
+      <div className="strength-check-box">
+        <div className="strength-value">
           <span>{gettext('Password strength')}: </span>
           <span className={labelClassName}>{gettext(textValue)}</span>
         </div>
@@ -37,7 +37,7 @@ const PasswordStrengthChecker = ({ passwordValue }) => {
             />
           ))}
         </Progress>
-        <div className='password-strength-description'>
+        <div className="password-strength-description">
           <span>{gettext('The password should contain different types of characters to make it strong: uppercase letters, lowercase letters, numbers and special characters.')}</span>
         </div>
       </div>
@@ -45,6 +45,8 @@ const PasswordStrengthChecker = ({ passwordValue }) => {
   );
 };
 
-PasswordStrengthChecker.propTypes = propTypes;
+StrengthChecker.propTypes = {
+  value: PropTypes.string.isRequired,
+};
 
-export default PasswordStrengthChecker;
+export default StrengthChecker;

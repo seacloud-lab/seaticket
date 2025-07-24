@@ -21,29 +21,23 @@ const Records = ({ type, title }) => {
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
+  const pageRef = useRef(1);
+  const pageCountRef = useRef(Math.max(parseInt(window.innerHeight / 41) + 1, 100));
+  const hasMoreRef = useRef(true);
+
+  const activeRecordRef = useRef(null);
+
   const fields = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const columns = useMemo(() => {
     let displayColumns = fields.filter(key => key.is_display);
-    displayColumns = displayColumns.map(c => {
-      const width = 0.25 / displayColumns.length;
-      return {
-        ...c,
-        width: `${width * 100}%`,
-        is_custom: true,
-      };
-    });
-    let columnNames = [
-      { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, width: '20%' },
-      ...displayColumns, // 25%
-    ];
     if (type === CONNECTION_TYPE.SITE) {
-      columnNames.push({ key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
-      columnNames.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' });
+      displayColumns.push({ key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
+      displayColumns.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' });
     }
-    columnNames.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
-    columnNames.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' });
+    displayColumns.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
+    displayColumns.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' });
 
-    return columnNames;
+    return displayColumns;
   }, [fields]);
   const btns = useMemo(() => {
     return [
@@ -53,12 +47,6 @@ const Records = ({ type, title }) => {
       } }
     ];
   }, []);
-
-  const pageRef = useRef(1);
-  const pageCountRef = useRef(Math.max(parseInt(window.innerHeight / 41) + 1, 100));
-  const hasMoreRef = useRef(true);
-
-  const activeRecordRef = useRef(null);
 
   const closeConnectionDialog = useCallback(() => {
     setIsShowRecordDialog(false);

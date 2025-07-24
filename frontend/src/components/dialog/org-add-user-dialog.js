@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, Label, Form, InputGroup, FormGroup } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, Label, Form, FormGroup } from 'reactstrap';
 import { gettext } from '../../constants';
 import ModalHeader from '../modal-header';
-import IconButton from '../icon-button';
+import PasswordInput from '../password-input';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,
@@ -15,7 +15,7 @@ class AddOrgUserDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isPasswordVisible: true,
+      isShowPassword: true,
       email: '',
       name: '',
       password: '',
@@ -23,8 +23,6 @@ class AddOrgUserDialog extends React.Component {
       errMessage: '',
       isAddingUser: false,
     };
-    this.passwdInput = React.createRef();
-    this.passwdNewInput = React.createRef();
   }
 
   handleSubmit = () => {
@@ -37,28 +35,8 @@ class AddOrgUserDialog extends React.Component {
     }
   };
 
-  togglePasswordVisible = () => {
-    this.setState({ isPasswordVisible: !this.state.isPasswordVisible }, () => {
-      if (this.state.isPasswordVisible) {
-        this.passwdInput.type = 'password';
-        this.passwdNewInput.type = 'password';
-      } else {
-        this.passwdInput.type = 'text';
-        this.passwdNewInput.type = 'text';
-      }
-    });
-  };
-
-  generatePassword = () => {
-    let val = Math.random().toString(36).substr(5);
-    this.setState({
-      password: val,
-      passwdnew: val,
-      isPasswordVisible: false
-    }, () => {
-      this.passwdInput.type = 'text';
-      this.passwdNewInput.type = 'text';
-    });
+  togglePasswordVisible = (isShowPassword) => {
+    this.setState({ isShowPassword });
   };
 
   inputEmail = (e) => {
@@ -71,24 +49,15 @@ class AddOrgUserDialog extends React.Component {
     this.setState({ name: name });
   };
 
-  inputPassword = (e) => {
-    let passwd = e.target.value.trim();
-    this.setState({ password: passwd }, () => {
-      if (this.state.isPasswordVisible) {
-        this.passwdInput.type = 'password';
-        this.passwdNewInput.type = 'password';
-      }
-    });
+  inputPassword = (password, isRandomGeneration) => {
+    this.setState({ password });
+    if (!isRandomGeneration) return;
+    this.setState({ passwdnew: password });
   };
 
   inputPasswordNew = (e) => {
     let passwd = e.target.value.trim();
-    this.setState({ passwdnew: passwd }, () => {
-      if (this.state.isPasswordVisible) {
-        this.passwdInput.type = 'password';
-        this.passwdNewInput.type = 'password';
-      }
-    });
+    this.setState({ passwdnew: passwd });
   };
 
   toggle = () => {
@@ -131,6 +100,7 @@ class AddOrgUserDialog extends React.Component {
   }
 
   render() {
+    const { isShowPassword, password, passwdnew } = this.state;
     return (
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}>{gettext('Add user')}</ModalHeader>
@@ -146,15 +116,17 @@ class AddOrgUserDialog extends React.Component {
             </FormGroup>
             <FormGroup>
               <Label for="userPwd">{gettext('Password')}</Label>
-              <InputGroup className="passwd">
-                <Input id="userPwd" innerRef={input => {this.passwdInput = input;}} value={this.state.password || ''} onChange={this.inputPassword} />
-                <IconButton icon={this.state.isPasswordVisible ? 'eye-slash' : 'eye'} className="btn btn-secondary" style={{ height: 36.4, width: 36.4 }} onClick={this.togglePasswordVisible} />
-                <IconButton icon="magic" className="btn btn-secondary" style={{ height: 36.4, width: 36.4 }} onClick={this.generatePassword} />
-              </InputGroup>
+              <PasswordInput
+                enableCheckStrength={false}
+                enableRandomGeneration={true}
+                value={password || ''}
+                onChange={this.inputPassword}
+                onShowChange={this.togglePasswordVisible}
+              />
             </FormGroup>
             <FormGroup>
               <Label for="userPwdNew">{gettext('Confirm password')}</Label>
-              <Input id="userPwdNew" innerRef={input => {this.passwdNewInput = input;}} className="passwd" value={this.state.passwdnew || ''} onChange={this.inputPasswordNew} />
+              <Input id="userPwdNew" type={isShowPassword ? 'text' : 'password'} className="passwd" value={passwdnew || ''} onChange={this.inputPasswordNew} />
             </FormGroup>
           </Form>
           {this.state.errMessage && <Label className="err-message">{this.state.errMessage}</Label>}

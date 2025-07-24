@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, InputGroup } from 'reactstrap';
+import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import SelectEditor from '../../select-editor/select-editor';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import ModalHeader from '../../modal-header';
 import Icon from '../../icon';
-import IconButton from '../../icon-button';
+import PasswordInput from '../../password-input';
 
 import '../../../css/admin-common.css';
 
@@ -24,7 +24,7 @@ class SysAdminAddUserDialog extends React.Component {
     super(props);
     this.state = {
       errorMsg: '',
-      isPasswordVisible: false,
+      isShowPassword: false,
       password: '',
       passwordAgain: '',
       email: '',
@@ -53,16 +53,14 @@ class SysAdminAddUserDialog extends React.Component {
     this.props.toggleDialog();
   };
 
-  togglePasswordVisible = () => {
-    this.setState({ isPasswordVisible: !this.state.isPasswordVisible });
+  togglePasswordVisible = (isShowPassword) => {
+    this.setState({ isShowPassword });
   };
 
-  inputPassword = (e) => {
-    let passwd = e.target.value.trim();
-    this.setState({
-      password: passwd,
-      errorMsg: ''
-    }, this.checkSubmitBtnActive);
+  inputPassword = (password, isRandomGeneration) => {
+    this.setState({ password });
+    if (!isRandomGeneration) return;
+    this.setState({ passwordAgain: password });
   };
 
   inputPasswordAgain = (e) => {
@@ -131,7 +129,7 @@ class SysAdminAddUserDialog extends React.Component {
 
   render() {
     const { dialogTitle, showRole, availableRoles } = this.props;
-    const { errorMsg, isPasswordVisible, email, name, role, password, passwordAgain, isSubmitBtnActive } = this.state;
+    const { errorMsg, isShowPassword, email, name, role, password, passwordAgain, isSubmitBtnActive } = this.state;
 
     return (
       <Modal isOpen={true} toggle={this.toggle}>
@@ -168,15 +166,17 @@ class SysAdminAddUserDialog extends React.Component {
             }
             <FormGroup>
               <Label>{gettext('Password')}</Label>
-              <InputGroup>
-                <Input autoComplete="new-password" type={isPasswordVisible ? 'text' : 'password'} value={password || ''} onChange={this.inputPassword} />
-                <IconButton icon={this.state.isPasswordVisible ? 'eye' : 'eye-slash'} className="mt-0 btn btn-secondary" style={{ height: 42, width: 42 }} onClick={this.togglePasswordVisible} />
-                <IconButton icon="magic" className="btn btn-secondary mt-0" style={{ height: 42, width: 42 }} onClick={this.generatePassword} />
-              </InputGroup>
+              <PasswordInput
+                enableCheckStrength={false}
+                enableRandomGeneration={true}
+                value={password || ''}
+                onChange={this.inputPassword}
+                onShowChange={this.togglePasswordVisible}
+              />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Password again')}</Label>
-              <Input type={isPasswordVisible ? 'text' : 'password'} value={passwordAgain || ''} onChange={this.inputPasswordAgain} />
+              <Input type={isShowPassword ? 'text' : 'password'} value={passwordAgain || ''} onChange={this.inputPasswordAgain} />
             </FormGroup>
           </Form>
           {errorMsg && <Alert color="danger">{errorMsg}</Alert>}

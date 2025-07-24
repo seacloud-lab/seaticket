@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Input, Label, Button, Form, FormGroup, Alert } from 'reactstrap';
-import PasswordInput from './password-input';
+import PasswordInput from '../../password-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, loginUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -153,17 +153,14 @@ class UserResetPassword extends React.Component {
                 <button className={`ml-2 btn operation-item ${isSendCodeAvailable ? 'btn-outline-secondary' : 'btn-outline-secondary disabled' } ${isVerifyCodeRequired ? 'ml-1' : ''}`} onClick={this.onSendCode} disabled={!isSendCodeAvailable}>{verifyCodeMessage}</button>
               </div>
             </FormGroup>
-            <PasswordInput
-              value={newPassword}
-              labelValue={gettext('New password')}
-              onChangeValue={this.onNewPasswordChange}
-            />
-            <PasswordInput
-              value={confirmPassword}
-              labelValue={gettext('Confirm password')}
-              onChangeValue={this.onConfirmPasswordChange}
-              enableCheckStrength={false}
-            />
+            <FormGroup className="password-input-container position-relative">
+              <Label>{gettext('New password')}</Label>
+              <PasswordInput value={newPassword} onChange={this.onNewPasswordChange} />
+            </FormGroup>
+            <FormGroup className="password-input-container position-relative">
+              <Label>{gettext('Confirm password')}</Label>
+              <PasswordInput value={confirmPassword} enableCheckStrength={false} onChange={this.false} />
+            </FormGroup>
           </Form>
           {errorMessage && <Alert color='danger'>{errorMessage}</Alert>}
         </ModalBody>

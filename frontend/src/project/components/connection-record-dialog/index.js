@@ -4,6 +4,9 @@ import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert }
 import { gettext } from '../../../constants';
 import CustomModalHeader from '../../../components/modal-header';
 import { validateName } from '../../../utils/utils';
+import { TABLE_COLUMN_TYPE } from '../../constants/table-column';
+import PasswordInput from '../../../components/password-input';
+import TextInput from './text-input';
 
 const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
@@ -12,13 +15,16 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const customFields = useMemo(() => fields.slice(1), [fields]);
+  const nameColumn = useMemo(() => fields[0], [fields]);
+
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
-    return fields.length > 0 ? fields.every(c => {
+    return customFields.length > 0 ? customFields.every(c => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, fields]);
+  }, [name, config, customFields]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -52,19 +58,30 @@ const ConnectionRecordDialog = ({ fields, record, onSubmit, onToggle }) => {
       <CustomModalHeader toggle={onToggle}>{record ? gettext('Edit record') : gettext('New record')}</CustomModalHeader>
       <ModalBody>
         <FormGroup>
-          <Label>{gettext('Name')}</Label>
-          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} placeholder={gettext('Please input name')} />
+          <Label>{nameColumn.name}</Label>
+          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} placeholder={nameColumn.placeholder || gettext('Please input name')} />
         </FormGroup>
-        {fields.map(c => {
-          const { key } = c;
+        {customFields.map(c => {
+          const { key, type, can_edit_multiple_times = true } = c;
           const value = config[key] || '';
+
           return (
             <FormGroup key={key}>
               <Label>
                 {c.name}
                 {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
               </Label>
-              <Input value={value} onChange={(event) => onConfigChange(key, event.target.value)} disabled={isSubmitting} />
+              {type === TABLE_COLUMN_TYPE.PASSWORD ? (
+                <>
+                  {record && !can_edit_multiple_times ? (
+                    <Input value="********" disabled={true} />
+                  ) : (
+                    <PasswordInput value={value} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
+                  )}
+                </>
+              ) : (
+                <TextInput value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
+              )}
             </FormGroup>
           );
         })}

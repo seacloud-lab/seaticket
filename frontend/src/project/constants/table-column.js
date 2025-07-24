@@ -3,5 +3,6 @@ export const TABLE_COLUMN_TYPE = {
   TEXT: 'text',
   OP: 'op',
   LONG_TEXT: 'long_text',
-  DATE: 'date'
+  DATE: 'date',
+  PASSWORD: 'password'
 };

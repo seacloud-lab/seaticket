@@ -17,6 +17,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/github_issue/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/discourse_forum/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/site/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/seafile/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
     # user: related users
