@@ -1,29 +1,20 @@
-class SiteResult {
-  constructor(object) {
-    this.id = object._id || '';
-    this.connection_id = object.connection_id || '';
-    this.title = object.title || '';
-    this.score = object.score || 0;
-    this.url = object.url || '';
-    this.content = object.content || '';
+class Result {
+  constructor(data = {}) {
+    this._id = data._id || '';
+    this.type = data.type || '';
+    this.connection_id = data.connection_id || '';
+    this.content = data.content || '';
+    this.filename = data.filename || '';
+    this.title = data.title || '';
+    this.url = data.url || '/';
+    this.path = data.path || '/';
+    this.repo_id = data.repo_id || '';
+    this.score = data.score >= 0 ? data.score : 0;
   }
 }
 
-class SeafileResult {
-  constructor(object) {
-    this.id = object._id || '';
-    this.connection_id = object.connection_id || '';
-    this.filename = object.filename || '';
-    this.path = object.path || 0;
-    this.repo_id = object.repo_id || '';
-    this.content = object.content || '';
-  }
-}
-
-const SearchResults = (results) => {
-  const siteResults = results.site_list ? results.site_list.map(r => new SiteResult(r)) : [];
-  const seafileResults = results.seafile_list ? results.seafile_list.map(r => new SeafileResult(r)) : [];
-  return { 'site_list': siteResults, 'seafile_list': seafileResults };
+const getSearchResults = (results) => {
+  return results.map(r => new Result(r));
 };
 
-export { SiteResult, SeafileResult, SearchResults };
+export { getSearchResults };
