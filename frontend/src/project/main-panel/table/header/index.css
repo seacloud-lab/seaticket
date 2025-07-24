@@ -16,9 +16,6 @@
 }
 
 .sea-qa-project-table-header .sea-qa-project-table-btn {
-  font-size: 12px;
-  font-weight: 400;
-  height: 26px;
-  padding-bottom: 0;
-  padding-top: 0;
+  display: inline-flex;
+  align-items: center;
 }

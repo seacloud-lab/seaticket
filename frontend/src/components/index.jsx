@@ -32,6 +32,9 @@ import Collaborator from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
 import OptionEditor from './option-editor';
+import PasswordInput from './password-input';
+import TextInput from './text-input';
+import StepsNavigation from './steps-navigation';
 
 
 export {
@@ -65,4 +68,7 @@ export {
   CollaboratorEditor,
   Option,
   OptionEditor,
+  PasswordInput,
+  TextInput,
+  StepsNavigation,
 };

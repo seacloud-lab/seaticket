@@ -3,10 +3,14 @@ import PropTypes from 'prop-types';
 
 import './index.css';
 
+const {
+  mediaUrl
+} = window.app.config;
+
 const EmptyTip = ({ text, title, type, src, children }) => {
   return (
     <div className="empty-tip">
-      <img src={src} alt="" width="100" height="100" className="no-items-img-tip" />
+      <img src={src || `${mediaUrl}img/no-items-tip.png`} alt="" width="100" height="100" className="no-items-img-tip" />
       {title && <span className="empty-tip-title">{title}</span>}
       {text && <span className="empty-tip-text" style={{ color: type === 'error' ? 'red' : '#666' }}>{text}</span>}
       {children}

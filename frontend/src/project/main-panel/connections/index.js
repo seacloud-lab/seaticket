@@ -1,21 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Table from '../table';
-import CenteredLoading from '../../../components/centered-loading';
-import toaster from '../../../components/toaster';
 import { seaQAAPI } from '../../../api/web-api';
 import { Connection } from '../../models';
 import { gettext } from '../../../constants';
-import ConnectionRecordDialog from '../../components/connection-record-dialog';
+import ModifyConnectionDialog from '../../components/modify-connection-dialog';
 import { Utils } from '../../../utils/utils';
-import { CommonOperationConfirmationDialog } from '../../../components';
-import { CONNECTION_FIELDS, TABLE_COLUMN_TYPE, CONNECTION_TYPE } from '../../constants';
+import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, EmptyTip } from '../../../components';
+import { TABLE_COLUMN_TYPE } from '../../constants';
 import TopBar from '../top-bar';
+import NewConnectionDialog from '../../components/new-connection-dialog';
+
+import './index.css';
+import { Button } from 'reactstrap';
 
 const {
   projectUuid
 } = window.app.pageOptions;
 
-const Records = ({ type, title }) => {
+const Connections = ({ type, title }) => {
   const [isLoading, setLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
@@ -27,21 +29,21 @@ const Records = ({ type, title }) => {
 
   const activeRecordRef = useRef(null);
 
-  const fields = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
-  const columns = useMemo(() => {
-    let displayColumns = fields.filter(key => key.is_display);
-    if (type === CONNECTION_TYPE.SITE) {
-      displayColumns.push({ key: 'updated_at', name: gettext('Last crawled'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
-      displayColumns.push({ key: 'status', name: gettext('Status'), type: TABLE_COLUMN_TYPE.TEXT, width: '15%' });
-    }
-    displayColumns.push({ key: 'indexed_at', name: gettext('Indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '15%' });
-    displayColumns.push({ key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' });
-
-    return displayColumns;
-  }, [fields]);
+  const columns = useMemo(() => [
+    { key: 'name', name: gettext('Connection'), type: TABLE_COLUMN_TYPE.CONNECTION_NAME, width: '40%' },
+    { key: 'updated_at', name: gettext('Last updated at'), type: TABLE_COLUMN_TYPE.DATE, width: '20%' },
+    { key: '', name: '', type: TABLE_COLUMN_TYPE.EMPTY, width: '30%' },
+    { key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' }
+  ], []);
   const btns = useMemo(() => {
     return [
-      { name: gettext('Add'), func: () => {
+      { name: (
+        <>
+          <Icon symbol="add" className="mr-1" />
+          {gettext('Add connection')}
+        </>
+      ),
+      func: () => {
         activeRecordRef.current = null;
         setIsShowRecordDialog(true);
       } }
@@ -52,8 +54,8 @@ const Records = ({ type, title }) => {
     setIsShowRecordDialog(false);
   }, []);
 
-  const createConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    seaQAAPI.createConnection(projectUuid, type, { name, config }).then(res => {
+  const createConnection = useCallback(({ type, name, config }, resetSubmittingState) => {
+    seaQAAPI.createConnection(projectUuid, { type, name, config }).then(res => {
       const record = res.data.record;
       const newRecords = [...records, new Connection(record)];
       setRecords(newRecords);
@@ -63,7 +65,7 @@ const Records = ({ type, title }) => {
       toaster.danger(errorMessage);
       resetSubmittingState && resetSubmittingState();
     });
-  }, [type, records]);
+  }, [records]);
 
   const deleteConnectionRecord = useCallback(() => {
     console.log(activeRecordRef.current);
@@ -95,7 +97,7 @@ const Records = ({ type, title }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    seaQAAPI.modifyConnection(projectUuid, type, activeRecordRef.current.id, { name, config }).then(res => {
+    seaQAAPI.modifyConnection(projectUuid, activeRecordRef.current.id, { name, config }).then(res => {
       const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
@@ -112,9 +114,10 @@ const Records = ({ type, title }) => {
       toaster.danger(errorMessage);
       resetSubmittingState && resetSubmittingState();
     });
-  }, [type, records]);
+  }, [records]);
 
   const openModifyDialog = useCallback((record) => {
+    console.log(record);
     activeRecordRef.current = record;
     setIsShowRecordDialog(true);
   }, []);
@@ -122,7 +125,7 @@ const Records = ({ type, title }) => {
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
-    seaQAAPI.listConnections(projectUuid, type, pageRef.current, pageCountRef.current).then(res => {
+    seaQAAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreRecords = res.data.records.map(r => new Connection(r));
       let newRecords = pageRef.current === 1 ? [] : records.slice(0);
       let recordsMap = newRecords.reduce((pre, cur) => {
@@ -166,22 +169,39 @@ const Records = ({ type, title }) => {
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
       <Table
+        className="sea-qa-project-connections-table p-4"
         columns={columns}
         rows={records}
-        emptyTip={gettext('There are no connections yet')}
+        emptyTip={
+          (
+            <>
+              <EmptyTip
+                title={gettext('No connections')}
+                text={gettext('You can click "Add connection" button below to add a new connection')}
+              >
+                <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => openModifyDialog()}>
+                  <Icon symbol="add" className="mr-1" />
+                  {gettext('Add connection')}
+                </Button>
+              </EmptyTip>
+            </>
+          )
+        }
         isLoading={isLoading}
         loadMore={loadMore}
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
       >
-        <Table.Header title={title} btns={btns} />
+        {records.length !== 0 && (<Table.Header btns={btns} />)}
       </Table>
       {isShowRecordDialog && (
-        <ConnectionRecordDialog
-          record={activeRecordRef.current}
-          fields={fields}
-          onToggle={closeConnectionDialog}
-          onSubmit={activeRecordRef.current ? modifyConnection : createConnection} />
+        <>
+          {activeRecordRef.current ? (
+            <ModifyConnectionDialog record={activeRecordRef.current} onToggle={closeConnectionDialog} onSubmit={modifyConnection} />
+          ) : (
+            <NewConnectionDialog onToggle={closeConnectionDialog} onSubmit={createConnection} />
+          )}
+        </>
       )}
       {isShowConfirmDialog && (
         <CommonOperationConfirmationDialog
@@ -196,4 +216,4 @@ const Records = ({ type, title }) => {
   );
 };
 
-export default Records;
+export default Connections;

@@ -94,11 +94,6 @@ class ProjectConnectionsView(APIView):
             current_page = 1
             per_page = 100
 
-        connection_type = request.GET.get('type', '')
-        if not connection_type or not ConnectionType.is_valid(connection_type):
-            error_msg = f'Type {connection_type} not support.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         start = (current_page - 1) * per_page
         end = start + per_page
 
@@ -108,7 +103,7 @@ class ProjectConnectionsView(APIView):
             error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        records = ProjectConnections.objects.filter(project=project, type=connection_type)[start:end]
+        records = ProjectConnections.objects.filter(project=project)[start:end]
         records = [record.to_dict() for record in records]
 
         return Response({'records': records}, status=status.HTTP_200_OK)

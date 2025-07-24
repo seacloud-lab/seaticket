@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import EmptyTip from '../../../../components/empty-tip';
-import EmptyImage from '../../../../assets/image/empty.png';
 import IconButton from '../../../../components/icon-button';
 import Loading from '../../../../components/loading';
 import { gettext } from '../../../../constants';
@@ -23,7 +22,10 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
     loadMore();
   }, [isLoading, loadMore]);
 
-  if (!Array.isArray(rows) || rows.length === 0) return (<EmptyTip src={EmptyImage} text={emptyTip} />);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    if (typeof(emptyTip) === 'string') return (<EmptyTip text={emptyTip} />);
+    return (emptyTip);
+  }
 
   return (
     <div className="sea-qa-project-custom-table" onScroll={onScroll}>
@@ -48,11 +50,21 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
                   </div>
                 );
               }
+              if (type === TABLE_COLUMN_TYPE.EMPTY) {
+                return (<div className="sea-qa-project-custom-table-cell" style={{ width }}></div>);
+              }
               const value = is_custom ? row['config']?.[key] : row[key];
               if (type === TABLE_COLUMN_TYPE.URL || type === TABLE_COLUMN_TYPE.LONG_TEXT) {
                 return (
                   <div className={`sea-qa-project-custom-table-cell sea-qa-project-custom-table-${type}-cell`} key={key} style={{ width }}>
                     <Formatter type={type} value={value} />
+                  </div>
+                );
+              }
+              if (type === TABLE_COLUMN_TYPE.CONNECTION_NAME) {
+                return (
+                  <div className={`sea-qa-project-custom-table-cell sea-qa-project-custom-table-${type}-cell`} key={key} style={{ width }} title={value}>
+                    <Formatter type={type} value={value} connectionType={row['type']} />
                   </div>
                 );
               }
@@ -72,7 +84,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
 };
 
 Body.propTypes = {
-  emptyTip: PropTypes.string,
+  emptyTip: PropTypes.any,
   columns: PropTypes.array,
   rows: PropTypes.array,
 };
