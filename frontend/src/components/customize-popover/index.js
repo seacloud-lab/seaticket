@@ -1,7 +1,7 @@
 import React from 'react';
 import { Popover } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { getEventClassName } from '../../utils/utils';
+import { getEventClassName, Utils } from '../../utils/utils';
 
 class CustomizePopover extends React.Component {
 
@@ -26,10 +26,11 @@ class CustomizePopover extends React.Component {
 
   onKeyDown = (e) => {
     const { canHidePopover, hidePopoverWithEsc } = this.props;
-    if (e.keyCode === 27 && typeof hidePopoverWithEsc === 'function') {
+    if (e.keyCode === Utils.keyCodes.esc && typeof hidePopoverWithEsc === 'function') {
       e.preventDefault();
       hidePopoverWithEsc();
-    } else if (e.keyCode === 13) {
+    } else if (e.keyCode === Utils.keyCodes.enter) {
+      this.props.onEnter && this.props.onEnter(e);
       // Resolve the default behavior of the enter key when entering formulas is blocked
       if (canHidePopover) return;
       e.stopImmediatePropagation();

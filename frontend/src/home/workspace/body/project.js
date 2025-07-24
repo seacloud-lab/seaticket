@@ -102,12 +102,12 @@ class Project extends React.Component {
     this.setState({ isShowSettings: !this.state.isShowSettings }, () => {
       if (!this.state.isShowSettings) {
         this.setState({ active: false });
-        this.saveBaseProperty();
+        this.saveProjectProperty();
       }
     });
   };
 
-  saveBaseProperty = () => {
+  saveProjectProperty = () => {
     const { color, name, icon } = this.props.project;
     const { bgColor, icon: newIcon } = this.state;
     let newName = this.state.name.trim();
@@ -215,8 +215,8 @@ class Project extends React.Component {
             />
           )}
         </div>
-        <div className="project-item-name" title={newName}>
-          {newName}
+        <div className="project-item-name" title={project.name}>
+          {project.name}
         </div>
         <div className="project-item-group text-truncate">
           <Icon symbol="collaborator" className="project-workspace-icon" />

@@ -42,7 +42,7 @@ class ProjectSettingPopover extends React.Component {
     this.props.onToggle();
   };
 
-  renderBaseName = () => {
+  renderName = () => {
     return (
       <div className="project-icon-settings-name">
         <input
@@ -129,7 +129,7 @@ class ProjectSettingPopover extends React.Component {
         popoverClassName={`project-icon-settings-popover ${this.props.popoverClassName || ''}`}
       >
         <PopoverBody className="project-icon-settings-content">
-          {this.renderBaseName()}
+          {this.renderName()}
           {this.renderColorSettings()}
           {this.renderIconSettings()}
         </PopoverBody>
