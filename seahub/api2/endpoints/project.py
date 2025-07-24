@@ -21,7 +21,8 @@ from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search, get_project_related_users
+    convert_project_trash_names, check_project_permission, search, get_project_related_users, \
+    ask_ai_question
 from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
@@ -410,3 +411,63 @@ class SearchView(APIView):
 
         return Response({'results': results})
 
+
+class QAView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace_id = request.data.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        query = request.data.get('query')
+        if not query:
+            error_msg = 'query invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        connection_type = request.data.get('connection_type', ConnectionType.SITE.value)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        params = {
+            'project_uuid': uuid_str_to_32_chars(project_uuid),
+            'query': query,
+            'connection_type': connection_type,
+            'username': username,
+        }
+
+        try:
+            ai_answer, sources = ask_ai_question(params)
+        except Exception as e:
+            logger.error(f'AI service error: {e}')
+            ai_answer = 'Sorry, the AI service is temporarily unavailable, please try again later.'
+
+        return Response({
+            'answer': ai_answer,
+            'sources': sources
+        })
