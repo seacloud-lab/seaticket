@@ -35,7 +35,7 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
 
   const applyCreateRows = useCallback((metadata, newRows = []) => {
     if (!Array.isArray(newRows) || newRows.length === 0) return;
-    const newMetadata = metadata;
+    const newMetadata = deepCopy(metadata);
     newRows.forEach(row => {
       const newRow = row instanceof Ticket ? row : new Ticket(row);
       if (!newMetadata.id_row_map[newRow.id]) {
@@ -45,7 +45,7 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
         newMetadata.id_row_map[newRow.id] = newRow;
       }
     });
-    setMetadata(deepCopy(newMetadata));
+    setMetadata(newMetadata);
   }, []);
 
   const applyDeleteRows = useCallback((deletedRowIds = []) => {

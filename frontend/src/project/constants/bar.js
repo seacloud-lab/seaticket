@@ -3,8 +3,8 @@ import { gettext } from '../../constants';
 export const BAR_TYPE = {
   ASK: 'ask',
   SEARCH: 'search',
-  TICKET: 'ticket',
-  CONNECTION: 'connection'
+  TICKET: 'tickets',
+  CONNECTION: 'connections'
 };
 
 export const BAR_TYPES = [
