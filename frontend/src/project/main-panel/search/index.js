@@ -115,7 +115,11 @@ const Search = ({ title }) => {
                 <EmptyTip src={`${mediaUrl}img/no-search-results-tip.png`} text={gettext('No results')} />
               </div>
             )}
-            {value && results.length > 0 && results.map(result => <ListItem {...result} />)}
+            {value && results.length > 0 &&
+              <div className="sea-qa-project-search-result-list">
+                {results.map(result => <ListItem {...result} />)}
+              </div>
+            }
           </>
         )}
       </div>
