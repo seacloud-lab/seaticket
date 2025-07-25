@@ -483,10 +483,20 @@ CREATE TABLE `ticket_replies`  (
 CREATE TABLE `ticket_tags`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `ticket_id` bigint(20) NOT NULL,
-  `tag` varchar(50) NOT NULL,
+  `tag_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `ticket_tags_ticket_id`(`ticket_id`),
-  KEY `ticket_tags_tag`(`tag`)
+  UNIQUE KEY `ticket_tags_ticket_id_tag_id`(`ticket_id`, `tag_id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `project_tags`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `color` varchar(50) NOT NULL,
+  `can_modify` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_tags_project_uuid_name`(`project_uuid`, `name`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `ticket_participants`  (
@@ -494,6 +504,5 @@ CREATE TABLE `ticket_participants`  (
   `ticket_id` bigint(20) NOT NULL,
   `participant` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `ticket_participants_ticket_id`(`ticket_id`),
-  KEY `ticket_participants_participant`(`participant`)
+  UNIQUE KEY `ticket_participants_ticket_id_participant`(`ticket_id`, `participant`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;

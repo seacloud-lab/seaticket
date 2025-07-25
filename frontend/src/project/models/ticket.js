@@ -1,6 +1,18 @@
 import dayjs from '../../utils/dayjs';
 import User from '../../models/user';
 
+class Tag {
+  constructor(object) {
+    this.id = object.id || '';
+    this.name = object.name || '';
+
+    this.description = object.description;
+    this.color = object.color || '';
+    this.can_modify = object.can_modify || false;
+
+  }
+}
+
 class Reply {
   constructor(object) {
     this.id = object.number || '';
@@ -55,6 +67,14 @@ class Ticket {
 
     this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
     this.reply_updated_at = this.reply_updated_at ? dayjs(this.reply_updated_at).fromNow() : '--';
+
+    if (this.tags) {
+      this.tags = this.tags.map(tag => new Tag(tag));
+    }
+
+    if (this.participants) {
+      this.participants = this.participants.map(participant => new Tag(participant));
+    }
 
     if (this.replies) {
       this.replies = this.replies.map(reply => new Reply(reply));

@@ -3,7 +3,8 @@ from django.urls import re_path
 
 from .views import project_view
 from .apis import ProjectConnectionsView, ProjectConnectionView, TicketsAPIView, TicketAPIView, \
-    TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView
+    TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView, ProjectTagsAPIView, ProjectTagAPIView
+
 
 
 urlpatterns = [
@@ -29,5 +30,8 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/(?P<reply_number>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
 
+    # tags
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
 ]
 

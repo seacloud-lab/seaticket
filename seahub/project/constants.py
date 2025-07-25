@@ -67,14 +67,14 @@ TICKET_TYPE =  (
     'support',
 )
 
-TICKET_TAG =  (
-    'bug',
-    'documentation',
-    'duplicate',
-    'enhancement',
-    'good first issue',
-    'help wanted',
-    'invalid',
-    'question',
-    'wontfix',
-)
+TICKET_TAG = {
+    'bug': {'description': 'Something isn\'t working', 'color': '#d73a4a'},
+    'documentation': {'description': 'Improvements or additions to documentation', 'color': '#0075ca'},
+    'duplicate': {'description': 'This issue or pull request already exists', 'color': '#cfd3d7'},
+    'enhancement': {'description': 'New feature or request', 'color': '#a2eeef'},
+    'good first issue': {'description': 'Good for newcomers', 'color': '#7057ff'},
+    'help wanted': {'description': 'Extra attention is needed', 'color': '#008672'},
+    'invalid': {'description': 'This doesn\'t seem right', 'color': '#e4e669'},
+    'question': {'description': 'Further information is requested', 'color': '#d876e3'},
+    'wontfix': {'description': 'This will not be worked on', 'color': '#ffffff'},
+}
