@@ -13,7 +13,7 @@ const ListItem = ({ id, title, filename, url, path }) => {
         <div className="list-item-path">{url || path || ''}</div>
       </div>
     </div>
-  )
+  );
 };
 
 export default ListItem;
