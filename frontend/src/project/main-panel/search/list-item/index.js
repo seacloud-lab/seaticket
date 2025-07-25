@@ -9,7 +9,7 @@ const ListItem = ({ type, id, title, filename, url, path }) => {
   return (
     <div className="list-item" key={id}>
       <div className="list-item-icon">
-        <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-navigation-node-icon" />
+        <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
         <div className="list-item-title">{title || filename || ''}</div>
