@@ -1,4 +1,4 @@
-class Result {
+class SearchResult {
   constructor(data = {}) {
     this._id = data._id || '';
     this.type = data.type || '';
@@ -13,8 +13,4 @@ class Result {
   }
 }
 
-const getSearchResults = (results) => {
-  return results.map(r => new Result(r));
-};
-
-export { getSearchResults };
+export default SearchResult;

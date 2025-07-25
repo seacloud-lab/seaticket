@@ -51,7 +51,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
                 );
               }
               if (type === TABLE_COLUMN_TYPE.EMPTY) {
-                return (<div className="sea-qa-project-custom-table-cell" style={{ width }}></div>);
+                return (<div className="sea-qa-project-custom-table-cell" key={key} style={{ width }}></div>);
               }
               const value = is_custom ? row['config']?.[key] : row[key];
               if (type === TABLE_COLUMN_TYPE.URL || type === TABLE_COLUMN_TYPE.LONG_TEXT) {

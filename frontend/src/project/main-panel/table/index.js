@@ -30,7 +30,7 @@ const Table = ({
 Table.propTypes = {
   isLoading: PropTypes.bool,
   title: PropTypes.any,
-  emptyTip: PropTypes.string,
+  emptyTip: PropTypes.any,
   btns: PropTypes.array,
   columns: PropTypes.array,
   rows: PropTypes.array,
