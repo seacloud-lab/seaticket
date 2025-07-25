@@ -11,7 +11,11 @@ const TicketTopBar = ({ title }) => {
   const { metadata, pageType, togglePageType } = useTickets();
 
   const renderChildren = useCallback(() => {
-    if (pageType === TICKET_PAGE_TYPE.ALL) return (<div className="w-100 text-truncate">{title}</div>);
+    if (pageType === TICKET_PAGE_TYPE.ALL) {
+      return (
+        <div className="w-100 text-truncate">{title}</div>
+      );
+    }
     if (pageType === TICKET_PAGE_TYPE.NEW) {
       return (
         <>
