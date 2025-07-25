@@ -778,7 +778,7 @@ d = os.path.dirname
 # custom navigation settings
 CUSTOM_NAV_ITEMS = []
 
-SEAQA_INDEX_SERVER_URL = 'http://127.0.0.1:8888'
+SEAQA_INDEXER_SERVER_URL = 'http://127.0.0.1:8888'
 SEAQA_AI_SERVER_URL = 'http://127.0.0.1:8887'
 
 #####################

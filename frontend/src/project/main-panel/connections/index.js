@@ -68,7 +68,6 @@ const Connections = ({ type, title }) => {
   }, [records]);
 
   const deleteConnectionRecord = useCallback(() => {
-    console.log(activeRecordRef.current);
     seaQAAPI.deleteConnection(projectUuid, activeRecordRef.current.id).then(res => {
       const activeSiteIndex = records.findIndex(record => record.id === activeRecordRef.current.id);
       let newSites = records.slice(0);
@@ -117,7 +116,6 @@ const Connections = ({ type, title }) => {
   }, [records]);
 
   const openModifyDialog = useCallback((record) => {
-    console.log(record);
     activeRecordRef.current = record;
     setIsShowRecordDialog(true);
   }, []);

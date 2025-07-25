@@ -13,7 +13,7 @@ from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
 from seahub.api2.utils import get_user_common_info
 
-from seahub.settings import SEAQA_INDEX_SERVER_URL, JWT_PRIVATE_KEY,\
+from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils.hasher import AESPasswordHasher
@@ -151,7 +151,7 @@ def add_init_crawl_site_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEX_SERVER_URL, '/add-init-crawl-site-task')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-init-crawl-site-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)
@@ -161,7 +161,7 @@ def add_index_seafile_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEX_SERVER_URL, '/add-index-seafile-task')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-index-seafile-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)
@@ -171,7 +171,7 @@ def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_INDEX_SERVER_URL, '/search')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/search')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'search error status: {resp.status_code} body: {resp.text}')
