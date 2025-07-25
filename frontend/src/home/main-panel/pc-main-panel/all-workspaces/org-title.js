@@ -15,7 +15,7 @@ function OrgTitle(props) {
       <div className="project-org-title-right">
         {isDesktop && canAddGroup &&
           <button
-            className="btn btn-primary"
+            className="btn btn-primary d-flex align-items-center"
             onClick={onCreateGroupToggle}
             title={gettext('New group')}
             aria-label={gettext('New group')}

@@ -35,18 +35,18 @@ class ConnectionField(object):
 
 CONNECTION_FIELDS = {
     ConnectionType.EMAIL: [
-        ConnectionField('host', True, True).to_dict(),
+        ConnectionField('host', True, False).to_dict(),
         ConnectionField('username', True, False).to_dict(),
         ConnectionField('password', True, False).to_dict()
     ],
     ConnectionType.GITHUB_ISSUE: [
-        ConnectionField('repository', True, True).to_dict()
+        ConnectionField('repository', True, False).to_dict()
     ],
     ConnectionType.DISCOURSE_FORUM: [
-        ConnectionField('url', True, True).to_dict()
+        ConnectionField('url', True, False).to_dict()
     ],
     ConnectionType.SITE: [
-        ConnectionField('url', True, True).to_dict(),
+        ConnectionField('url', True, False).to_dict(),
         ConnectionField('sitemap_url', False, False).to_dict()
     ]
 }

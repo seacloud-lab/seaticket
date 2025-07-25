@@ -1,0 +1,35 @@
+.steps-navigation {
+  margin: 10px 0 26px;
+  display: flex;
+  align-items: center;
+}
+
+.steps-navigation .step-item {
+  margin-right: 10px;
+  display: inline-flex;
+  min-width: 160px;
+  padding-bottom: 10px;
+  align-items: center;
+  border-bottom: 2px solid #dedede;
+  color: #999;
+}
+
+.steps-navigation .step-item:last-child {
+  margin-right: 0;
+}
+
+.steps-navigation .step-item.active {
+  border-color: #ed7109;
+  color: #ed7109;
+}
+
+.steps-navigation .step-item .sea-qa-icon-svg {
+  margin-right: 5px;
+  height: 12px;
+  width: 12px;
+}
+
+.steps-navigation .step-item span:first-child {
+  margin-right: 10px;
+}
+

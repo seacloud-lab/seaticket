@@ -1,8 +1,8 @@
 import React from 'react';
 import { BAR_TYPE } from '../constants';
-import Records from './records';
 import Search from './search';
 import Tickets from './tickets';
+import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
 
@@ -13,7 +13,7 @@ const Container = ({ activeBar }) => {
   if (activeBar.key === BAR_TYPE.ASK) return (<Ask/>); // Question answering page
   if (activeBar.key === BAR_TYPE.SEARCH) return (<Search title={activeBar.name}/>); // search page
   if (activeBar.key === BAR_TYPE.TICKET) return (<Tickets title={activeBar.name} />); // tickets page
-  return (<Records type={activeBar.type} title={activeBar.name} />); // connections page
+  return (<Connections title={activeBar.name} />); // connections page
 };
 
 const MainPanel = ({ activeBar }) => {

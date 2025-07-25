@@ -4,5 +4,7 @@ export const TABLE_COLUMN_TYPE = {
   OP: 'op',
   LONG_TEXT: 'long_text',
   DATE: 'date',
-  PASSWORD: 'password'
+  PASSWORD: 'password',
+  CONNECTION_NAME: 'connection_name',
+  EMPTY: 'empty',
 };

@@ -4,7 +4,7 @@ import { toaster, SearchInput, EmptyTip, Icon, CenteredLoading } from '../../../
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import { getSearchResults } from '../../models';
+import { SearchResult } from '../../models';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 
@@ -24,7 +24,7 @@ const Search = ({ title }) => {
 
   const onChange = useCallback((value = '') => {
     setValue(value);
-    setResults(getSearchResults([]));
+    setResults([]);
     setSearching(true);
     const cancelError = 'The current request has been automatically canceled';
     if (source.current) {
@@ -40,7 +40,8 @@ const Search = ({ title }) => {
       timer.current = null;
       source.current = seaQAAPI.getSource();
       seaQAAPI.search(workspaceID, projectUuid, value, source.current.token).then(res => {
-        setResults(getSearchResults(res.data?.results || []));
+        const results = res.data?.results || [];
+        setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
       }).catch(error => {
         if (!axios.isCancel(error)) {

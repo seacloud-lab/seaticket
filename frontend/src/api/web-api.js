@@ -265,17 +265,16 @@ class SeaQAAPI {
 
   // ---- project data api
   // connections
-  listConnections(projectUuid, type, page, perPage) {
+  listConnections(projectUuid, page, perPage) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
     let params = {
       page: page,
       per_page: perPage,
-      type: type,
     };
     return this.req.get(url, { params: params });
   }
 
-  createConnection(projectUuid, type, { name, config }) {
+  createConnection(projectUuid, { type, name, config }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
     let form = new FormData();
     form.append('name', name);
@@ -284,11 +283,10 @@ class SeaQAAPI {
     return this._sendPostRequest(url, form);
   }
 
-  modifyConnection(projectUuid, type, connectionID, { name, config }) {
+  modifyConnection(projectUuid, connectionID, { name, config }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('name', name);
-    form.append('type', type);
     form.append('config', JSON.stringify(config));
     return this.req.put(url, form);
   }

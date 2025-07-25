@@ -373,32 +373,16 @@ class ProjectConnectionsManager(models.Manager):
             return True
 
         fields = CONNECTION_FIELDS.get(connection_type, [])
-        unique_fields = [f for f in fields if f.get('is_unique')]
         required_fields = [f for f in fields if f.get('is_required')]
 
         flag = True
-        for record in records:
-            if record.name == name:
-                flag = False
+        if required_fields:
+            for field in required_fields:
+                key = field.get('key', '')
+                if not config.get(key, ''):
+                    flag = False
                 break
-            record_config = json.loads(record.config or '{}')
-            if unique_fields:
-                for field in unique_fields:
-                    key = field.get('key', '')
-                    if record_config.get(key, '') == config.get(key, ''):
-                        flag = False
-                    break
-                if not flag:
-                    break
 
-            if required_fields:
-                for field in required_fields:
-                    key = field.get('key', '')
-                    if not config.get(key, ''):
-                        flag = False
-                    break
-                if not flag:
-                    break
         return flag
 
     def enable_create(self, project, connection_type, name, config):
@@ -442,7 +426,6 @@ class ProjectConnections(models.Model):
 
     class Meta:
         db_table = 'project_connection'
-        unique_together = [('name', 'type', 'project')]
 
     def to_dict(self):
         return {

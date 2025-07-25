@@ -438,7 +438,6 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `project_id` int(11) NOT NULL,
   `status` varchar(20) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `project_project_id_type_name_0b89d91b_uniq`(`project_id`, `type`, `name`),
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

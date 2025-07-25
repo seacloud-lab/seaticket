@@ -170,11 +170,11 @@ def add_index_seafile_task(params):
 def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
+    headers = {"Authorization": f'Token {token}'}
     url = urljoin(SEAQA_INDEX_SERVER_URL, '/search')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
-        raise Exception('search error status: %s body: %s', resp.status_code, resp.text)
+        raise Exception(f'search error status: {resp.status_code} body: {resp.text}')
     resp_json = resp.json()
     results = resp_json.get('results')
     return results

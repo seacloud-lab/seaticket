@@ -4,8 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
-import { CONNECTION_TYPES, BAR_TYPES, BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE } from './constants';
-import { gettext } from '../constants';
+import { BAR_TYPES, BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE } from './constants';
 import { CenteredLoading } from '../components';
 import eventBus from '../utils/event-bus';
 
@@ -22,10 +21,6 @@ const Project = () => {
       key: '_',
       name: '',
       children: BAR_TYPES
-    }, {
-      key: 'connections',
-      name: gettext('Connections'),
-      children: CONNECTION_TYPES
     }
   ], []);
 
@@ -46,7 +41,7 @@ const Project = () => {
     const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
     const params = paramsString.split('/');
     const [barKey] = params;
-    const bar = BAR_TYPES.find(b => b.key === barKey) || CONNECTION_TYPES.find(b => b.key === barKey);
+    const bar = BAR_TYPES.find(b => b.key === barKey);
     setActiveBar(bar || BAR_TYPES[1]);
     setLoading(false);
   }, []);
