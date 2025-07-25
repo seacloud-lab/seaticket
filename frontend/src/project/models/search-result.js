@@ -9,6 +9,8 @@ class SearchResult {
     this.url = data.url || '';
     this.path = data.path || '';
     this.repo_id = data.repo_id || '';
+    this.repo_name = data.repo_name || '';
+    this.server_url = data.server_url || '';
     this.score = data.score >= 0 ? data.score : 0;
   }
 }
