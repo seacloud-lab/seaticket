@@ -6,8 +6,8 @@ class Result {
     this.content = data.content || '';
     this.filename = data.filename || '';
     this.title = data.title || '';
-    this.url = data.url || '/';
-    this.path = data.path || '/';
+    this.url = data.url || '';
+    this.path = data.path || '';
     this.repo_id = data.repo_id || '';
     this.score = data.score >= 0 ? data.score : 0;
   }
