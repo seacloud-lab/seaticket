@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from 'reactstrap';
 import Table from '../table';
 import { seaQAAPI } from '../../../api/web-api';
 import { Connection } from '../../models';
@@ -11,11 +12,8 @@ import TopBar from '../top-bar';
 import NewConnectionDialog from '../../components/new-connection-dialog';
 
 import './index.css';
-import { Button } from 'reactstrap';
 
-const {
-  projectUuid
-} = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 
 const Connections = ({ type, title }) => {
   const [isLoading, setLoading] = useState(true);
@@ -175,7 +173,7 @@ const Connections = ({ type, title }) => {
             <>
               <EmptyTip
                 title={gettext('No connections')}
-                text={gettext('You can click "Add connection" button below to add a new connection')}
+                text={gettext('Connections enable you to sync contents from third party applications and search them')}
               >
                 <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => openModifyDialog()}>
                   <Icon symbol="add" className="mr-1" />
