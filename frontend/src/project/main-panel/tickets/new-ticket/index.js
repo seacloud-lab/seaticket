@@ -54,7 +54,6 @@ const NewTicket = () => {
     createTicket({ title: validTitle, description: validDescription, type, assignees, tags: [] }).then(res => {
       // nothing
     }).catch(error => {
-      console.log(error);
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
