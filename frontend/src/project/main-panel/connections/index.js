@@ -29,7 +29,7 @@ const Connections = ({ type, title }) => {
 
   const columns = useMemo(() => [
     { key: 'name', name: gettext('Connection'), type: TABLE_COLUMN_TYPE.CONNECTION_NAME, width: '40%' },
-    { key: 'updated_at', name: gettext('Last updated at'), type: TABLE_COLUMN_TYPE.DATE, width: '20%' },
+    { key: 'indexed_at', name: gettext('Last indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '20%' },
     { key: '', name: '', type: TABLE_COLUMN_TYPE.EMPTY, width: '30%' },
     { key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' }
   ], []);
