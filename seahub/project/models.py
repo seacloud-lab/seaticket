@@ -595,11 +595,35 @@ class TicketReplies(models.Model):
 
 class TicketTags(models.Model):
     id = models.BigAutoField(primary_key=True)
-    ticket_id = models.BigIntegerField(db_index=True)
-    tag = models.CharField(max_length=50, db_index=True)
+    ticket_id = models.BigIntegerField()
+    tag_id = models.IntegerField()
 
     class Meta:
+        unique_together = (('ticket_id', 'tag_id'),)
         db_table = 'ticket_tags'
+
+
+class ProjectTags(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.UUIDField()
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    color = models.CharField(max_length=50)
+    can_modify = models.BooleanField()
+
+    class Meta:
+        unique_together = (('project_uuid', 'name'),)
+        db_table = 'project_tags'
+
+    def to_dict(self):
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'color': self.color,
+            'can_modify': self.can_modify,
+        }
+        return result
 
 
 class TicketParticipants(models.Model):
@@ -608,4 +632,5 @@ class TicketParticipants(models.Model):
     participant = models.CharField(max_length=255, db_index=True)
 
     class Meta:
+        unique_together = (('ticket_id', 'participant'),)
         db_table = 'ticket_participants'

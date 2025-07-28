@@ -63,7 +63,7 @@ const AllTickets = () => {
                         {title}
                       </div>
                       {tags.map(tag => {
-                        return (<div key={tag} className="sea-qa-project-all-tickets-record-tag">{tag}</div>);
+                        return (<div key={tag.id} className="sea-qa-project-all-tickets-record-tag">{tag.name}</div>);
                       })}
                     </div>
                     <div className="sea-qa-project-all-tickets-record-main-content">

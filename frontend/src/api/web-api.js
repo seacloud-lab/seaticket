@@ -425,6 +425,46 @@ class SeaQAAPI {
     return this.req.delete(url);
   }
 
+  listProjectTags(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
+    return this.req.get(url);
+  }
+
+  createProjectTag(projectUuid, name, description, color) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (description) {
+      form.append('description', description);
+    }
+    if (color) {
+      form.append('color', color);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyProjectTag(projectUuid, tagId, name, description, color) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (description) {
+      form.append('description', description);
+    }
+    if (color) {
+      form.append('color', color);
+    }
+    return this.req.put(url, form);
+  }
+
+  deleteProjectTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
+    return this.req.delete(url);
+  }
+
   // other not-admin APIs
   getUserInfo() {
     const url = this.server + '/api/v2.1/user/';
