@@ -16,7 +16,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const type = useMemo(() => record.type, [record]);
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
-  const nameColumn = useMemo(() => columns[0], [columns]);
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
@@ -58,8 +57,11 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       <ModalHeader toggle={onToggle}>{gettext('Edit connection')}</ModalHeader>
       <ModalBody>
         <FormGroup>
-          <Label>{nameColumn.name}</Label>
-          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} placeholder={nameColumn.placeholder || gettext('Please input name')} />
+          <Label>
+            {gettext('Connection name')}
+            <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+          </Label>
+          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} placeholder={gettext('Please input connection name')} />
         </FormGroup>
         {customColumns.map(c => {
           const { key, type, can_edit_multiple_times = true } = c;

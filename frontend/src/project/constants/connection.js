@@ -30,7 +30,7 @@ export const CONNECTION_FIELDS = {
     { key: 'sitemap_url', 'name': gettext('Sitemap URL'), type: TABLE_COLUMN_TYPE.URL, is_custom: true },
   ],
   [CONNECTION_TYPE.SEAFILE]: [
-    { key: 'name', name: gettext('Library name'), placeholder: gettext('Please input library name'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_display: true },
+    { key: 'name', name: gettext('Name'), type: TABLE_COLUMN_TYPE.TEXT, is_required: true, is_display: true },
     { key: 'server_url', name: gettext('Server URL'), type: TABLE_COLUMN_TYPE.URL, is_required: true, is_display: true, is_custom: true },
     { key: 'api_token', 'name': gettext('Library API token'), type: TABLE_COLUMN_TYPE.PASSWORD, is_required: true, can_edit_multiple_times: false, is_custom: true },
   ]
@@ -56,6 +56,6 @@ export const CONNECTION_TYPES = [
   }, {
     type: CONNECTION_TYPE.SEAFILE,
     icon: 'seafile',
-    name: gettext('Seafile'),
+    name: gettext('Seafile libraries'),
   }
 ];

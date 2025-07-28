@@ -27,7 +27,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
-  const nameColumn = useMemo(() => columns[0], [columns]);
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
@@ -90,8 +89,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               <Input value={typeOption.name} disabled />
             </FormGroup>
             <FormGroup>
-              <Label>{nameColumn.name}</Label>
-              <Input value={name} onChange={onNameChange} disabled={isSubmitting} placeholder={nameColumn.placeholder || gettext('Please input name')} />
+              <Label>
+                {gettext('Connection name')}
+                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+              </Label>
+              <Input value={name} onChange={onNameChange} disabled={isSubmitting} placeholder={gettext('Please input connection name')} />
             </FormGroup>
             {customColumns.map(c => {
               const { key, type } = c;
