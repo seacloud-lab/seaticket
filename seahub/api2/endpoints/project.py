@@ -437,7 +437,7 @@ class QAView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        connection_type = request.data.get('connection_type', ConnectionType.SITE.value)
+        connection_type = request.data.get('connection_type')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
