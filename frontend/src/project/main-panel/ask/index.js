@@ -115,8 +115,8 @@ const Ask = () => {
               <div className="sea-qa-project-ask-message-sources">
                 <div className="sea-qa-project-ask-sources-title">{gettext('Sources')}:</div>
                 {message.sources.map((source, index) => (
-                  <a key={index} href={source} target="_blank" rel="noopener noreferrer" className="sea-qa-project-ask-source-link">
-                    {source}
+                  <a key={index} href={source.url} target="_blank" rel="noopener noreferrer" className="sea-qa-project-ask-source-link">
+                    {source.title}
                   </a>
                 ))}
               </div>
