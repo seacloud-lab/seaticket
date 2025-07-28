@@ -16,7 +16,7 @@ const StepsNavigation = ({
         const active = index <= currentIndex;
         const isFinished = index < currentIndex;
         return (
-          <div className={classnames('step-item', { 'active': active })}>
+          <div className={classnames('step-item', { 'active': active })} key={index}>
             {isFinished ? (<Icon symbol="check-circle" />) : <span>{index + 1}</span>}
             <span>{stepItem.name}</span>
           </div>

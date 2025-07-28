@@ -71,6 +71,7 @@ const PasswordInput = ({
         innerRef={ref}
         autoFocus={autoFocus}
         disabled={disabled}
+        autoComplete="new-password"
         type={isShowPassword ? 'text' : 'password'}
         value={value}
         onChange={onChangePassword}
