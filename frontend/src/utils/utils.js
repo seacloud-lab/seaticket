@@ -822,6 +822,10 @@ export const isFunction = (functionToCheck) => {
   return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 };
 
+export const getType = (value) => {
+  return Object.prototype.toString.call(value).slice(8, -1);
+};
+
 export const getEventClassName = (e) => {
   // svg mouseEvent event.target.className is an object
   if (!e || !e.target) return '';
