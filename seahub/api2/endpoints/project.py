@@ -97,7 +97,7 @@ class WorkspacesView(APIView):
                     res['name'] = group_id_to_name(group_id)
                     res['type'] = 'group'
                     res['group_id'] = group_id
-                    res['group_owner'] = [g.creator_name for g in groups if g.id == group_id][0]
+                    res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
                     res['is_admin'] = group_id in admin_group_ids
                     workspace_list_for_group.append(res)
                 else:
@@ -138,7 +138,7 @@ class WorkspacesView(APIView):
                 res['name'] = group_id_to_name(group_id)
                 res['type'] = 'group'
                 res['group_id'] = group_id
-                res['group_owner'] = [g.creator_name for g in groups if g.id == group_id][0]
+                res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
                 res['is_admin'] = group_id in admin_group_ids
                 res['project_list'] = workspace_id2project_list.get(workspace.id, [])
                 workspace_list_for_group.append(res)

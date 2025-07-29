@@ -30,6 +30,7 @@ from seahub.api2.endpoints.utils import is_org_user
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_ACTIVATE, USER_DEACTIVATE, USER_SET_ORG_ADMIN, USER_UNSET_ORG_ADMIN
 from seahub.settings import FORCE_PASSWORD_CHANGE
+from seahub.organizations.models import Organization, OrgUser
 
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
@@ -50,12 +51,6 @@ def get_org_user_info(org_id, user_obj):
     user_info['contact_email'] = email2contact_email(email)
     user_info['is_org_admin'] = True if is_org_staff(org_id, email) == 1 else False
 
-    org_user_quota = seafile_api.get_org_user_quota(org_id, email)
-    user_info['quota_total'] = org_user_quota
-
-    org_user_quota_usage = seafile_api.get_org_user_quota_usage(org_id, email)
-    user_info['quota_usage'] = org_user_quota_usage
-
     user_info['create_time'] = timestamp_to_isoformat_timestr(user_obj.ctime)
     user_info['last_login'] = UserLastLogin.objects.get_by_username(
         email).last_login if UserLastLogin.objects.get_by_username(email) else ''
@@ -75,7 +70,7 @@ def check_org_user(func):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            org = ccnet_api.get_org_by_id(org_id)
+            org = Organization.objects.get_org_by_id(org_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -125,13 +120,13 @@ class AdminOrgUsers(APIView):
             error_msg = 'is_staff invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %d not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         result = []
-        org_users = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
+        org_users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
         for org_user in org_users:
             user_info = get_org_user_info(org_id, org_user)
             user_info['active'] = org_user.is_active
@@ -158,7 +153,7 @@ class AdminOrgUsers(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %d not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -199,7 +194,7 @@ class AdminOrgUsers(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # check user number limit by org member quota
-        org_members = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
+        org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
         org_active_members = len([m for m in org_members if m.is_active])
         if ORG_MEMBER_QUOTA_ENABLED:
             from seahub.organizations.models import OrgMemberQuota
@@ -220,7 +215,7 @@ class AdminOrgUsers(APIView):
         # add user to org
         # set `is_staff` parameter as `0`
         try:
-            ccnet_api.add_org_user(org_id, user.email, 0)
+            OrgUser.objects.add_org_user(org_id, user.email, 0)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -270,7 +265,7 @@ class AdminOrgUser(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %d not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -299,7 +294,7 @@ class AdminOrgUser(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            org = ccnet_api.get_org_by_id(org_id)
+            org = Organization.objects.get_org_by_id(org_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -381,38 +376,15 @@ class AdminOrgUser(APIView):
             profile.contact_email = contact_email
             profile.save()
 
-        # update user quota
-        user_quota_mb = request.data.get("quota_total", None)
-        if user_quota_mb:
-            try:
-                user_quota_mb = int(user_quota_mb)
-            except Exception as e:
-                logger.error(e)
-                error_msg = "quota_total invalid."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            user_quota = int(user_quota_mb) * get_file_size_unit('MB')
-
-            org_quota = seafile_api.get_org_quota(org_id)
-
-            # -1 means org has unlimited quota
-            if org_quota > 0:
-                org_quota_mb = org_quota / get_file_size_unit('MB')
-                if user_quota_mb > org_quota_mb:
-                    error_msg = 'Failed to set quota: maximum quota is %d MB' % org_quota_mb
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            seafile_api.set_org_user_quota(org_id, email, user_quota)
-
         # update admin
         try:
             is_admin = to_python_boolean(request.data.get('is_admin'))
         except:
             is_admin = None
         if is_admin is True:
-            ccnet_api.set_org_staff(org_id, user.username)
+            OrgUser.objects.set_org_staff(org_id, user.username)
         elif is_admin is False:
-            ccnet_api.unset_org_staff(org_id, user.username)
+            OrgUser.objects.unset_org_staff(org_id, user.username)
 
         if is_admin is not None:
             detail = {
@@ -436,13 +408,13 @@ class AdminOrgUser(APIView):
         if not request.user.admin_permissions.can_manage_organization():
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if org.creator == email:
             error_msg = 'Failed to delete: %s is an organization creator.' % email
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            ccnet_api.remove_org_user(org_id, email)
+            OrgUser.objects.remove_org_user(org_id, email)
             User.objects.get(email=email).delete()
         except Exception as e:
             logger.error(e)

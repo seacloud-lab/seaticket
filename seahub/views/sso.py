@@ -20,7 +20,7 @@ from seahub.settings import SSO_SECRET_KEY, SITE_ROOT
 from seahub.base.accounts import User
 from seahub.base.accounts import AuthBackend
 from seahub.profile.models import Profile
-from seahub.organizations.models import OrgSAMLConfig
+from seahub.organizations.models import OrgSAMLConfig, Organization
 
 
 def sso(request):
@@ -178,7 +178,7 @@ def multi_saml_sso(request):
                 return render(request, template_name, render_data)
 
             org_id = org_saml_config.org_id
-            org = ccnet_api.get_org_by_id(org_id)
+            org = Organization.objects.get_org_by_id(org_id)
             if not org:
                 render_data['error_msg'] = 'Cannot find a SAML config for the team related to domain %s.' % domain
                 return render(request, template_name, render_data)

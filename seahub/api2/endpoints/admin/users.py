@@ -52,6 +52,8 @@ from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.organizations.models import Organization
 from seahub.auth.models import EmailUser
 from seahub.project.models import IdInOrgTuple
+from seahub.group.utils import is_group_admin_or_owner_by_group
+from seahub.group.models import Group, GroupUser
 
 try:
     from seahub.settings import LDAP_PROVIDER
@@ -83,14 +85,6 @@ def create_user_info(request, email, role, nickname, contact_email, quota_total_
         Profile.objects.add_or_update(email, contact_email=contact_email)
         key = normalize_cache_key(email, CONTACT_CACHE_PREFIX)
         cache.set(key, contact_email, CONTACT_CACHE_TIMEOUT)
-
-    if quota_total_mb:
-        quota_total = int(quota_total_mb) * get_file_size_unit('MB')
-        if is_org_context(request):
-            org_id = request.user.org.org_id
-            seafile_api.set_org_user_quota(org_id, email, quota_total)
-        else:
-            seafile_api.set_user_quota(email, quota_total)
 
 
 def update_user_info(request, user, password, is_active, is_staff, role,
@@ -145,7 +139,7 @@ def update_user_info(request, user, password, is_active, is_staff, role,
     if unit is not None:
         Profile.objects.add_or_update(email, unit=unit)
 
-    orgs = ccnet_api.get_orgs_by_user(email)
+    orgs = Organization.objects.get_orgs_by_user(email)
     org_id = -1
     if orgs:
         org_id = orgs[0].org_id
@@ -173,7 +167,7 @@ def get_user_info(email):
 
     info = {}
 
-    orgs = ccnet_api.get_orgs_by_user(email)
+    orgs = Organization.objects.get_orgs_by_user(email)
     try:
         if orgs:
             org_id = orgs[0].org_id
@@ -343,27 +337,6 @@ class AdminUsers(APIView):
         else:
             name = email.split('@')[0]
 
-        quota_total_mb = request.data.get("quota_total", None)
-        if quota_total_mb:
-            try:
-                quota_total_mb = int(quota_total_mb)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if quota_total_mb < 0:
-                error_msg = "Space quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                org_quota_mb = seafile_api.get_org_quota(org_id) / \
-                        get_file_size_unit('MB')
-
-                if quota_total_mb > org_quota_mb:
-                    error_msg = 'Failed to set quota: maximum quota is %d MB' % org_quota_mb
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         user_exist = Profile.objects.filter(contact_email=email).exists()
 
         if user_exist:
@@ -529,7 +502,7 @@ class AdminUser(APIView):
 
         org_id = -1
         try:
-            orgs = ccnet_api.get_orgs_by_user(email)
+            orgs = Organization.objects.get_orgs_by_user(email)
             if orgs:
                 org_id = orgs[0].org_id
         except Exception as e:
@@ -650,7 +623,7 @@ class AdminUser(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # org user check
-        orgs = ccnet_api.get_orgs_by_user(email)
+        orgs = Organization.objects.get_orgs_by_user(email)
         if orgs:
             error_msg = 'Failed to delete: %s is an organization user' % email
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -703,11 +676,11 @@ class AdminSearchUser(APIView):
         has_next_page = 'true'
 
         # search user from ccnet db
-        users += ccnet_api.search_emailusers('DB', query_str, start, per_page)
+        users += User.objects.search_emailusers(query_str, start, per_page)
         db_user_count = len(users)
         if db_user_count < per_page:
             profile_flag = 1
-            total_db_users = ccnet_api.search_emailusers('DB', query_str, 0, start + per_page)
+            total_db_users = User.objects.search_emailusers(query_str, 0, start + per_page)
             total_db_user_count = len(total_db_users)
 
         ccnet_user_emails = [u.email for u in users]
@@ -772,7 +745,7 @@ class AdminSearchUser(APIView):
 
             info['source'] = user.source.lower()
 
-            orgs = ccnet_api.get_orgs_by_user(user.email)
+            orgs = Organization.objects.get_orgs_by_user(user.email)
             if orgs:
                 org_id = orgs[0].org_id
                 info['org_id'] = org_id
@@ -913,7 +886,7 @@ class AdminUserGroups(APIView):
 
         groups_info = []
         try:
-            groups = get_personal_groups_by_user(email)
+            groups = Group.objects.get_personal_groups_by_user(email)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -929,7 +902,7 @@ class AdminUserGroups(APIView):
         for group in groups:
             isoformat_timestr = timestamp_to_isoformat_timestr(group.timestamp)
             group_info = {
-                "id": group.id,
+                "id": group.group_id,
                 "name": group.group_name,
                 "owner_email": group.creator_name,
                 "owner_name": nickname_dict.get(group.creator_name, ''),
@@ -939,7 +912,7 @@ class AdminUserGroups(APIView):
             groups_info.append(group_info)
 
             try:
-                is_group_staff = ccnet_api.check_group_staff(group.id, email)
+                is_group_staff = is_group_admin_or_owner_by_group(group, email)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -998,7 +971,7 @@ class AdminUserGroups(APIView):
                     'error_msg': 'User has been in group %s' % group_info['group_name']
                 })
                 continue
-            ccnet_api.group_add_member(group_id, group_info['group_owner'], email)
+            GroupUser.objects.group_add_member(group_id, email)
             result['success'].append({
                 "id": group_info['group_id'],
                 "name": group_info['group_name'],
@@ -1020,7 +993,6 @@ class AdminAdminUsers(APIView):
         """List all admins from database and ldap imported
         """
         try:
-            # admin_users = ccnet_api.get_superusers()
             # EmailUser
             admin_users = User.objects.get_superusers()
         except Exception as e:
@@ -1040,10 +1012,7 @@ class AdminAdminUsers(APIView):
 
             user_info['is_staff'] = user.is_staff
             user_info['is_active'] = user.is_active
-            # user_info['storage_usage'] = Workspaces.objects.get_owner_total_storage(owner=user.email)
-            # user_info['rows_count'] = rows_count_dict.get(user.email, 0)
 
-            # orgs = ccnet_api.get_orgs_by_user(user.email)
             org = Organization.objects.get_org_by_username(user.email)
             try:
                 if org:

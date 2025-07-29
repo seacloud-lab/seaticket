@@ -10,6 +10,7 @@ from seahub.utils.file_size import get_quota_from_string
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.registration.models import notify_admins_on_activate_request, \
         notify_admins_on_register_complete
+from seahub.role_permissions.models import UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -249,13 +250,8 @@ class SeafileRemoteUserBackend(AuthBackend):
                 continue
 
             # update user role
-            ccnet_api.update_role_emailuser(user_info['email'], role)
+            UserRole.objects.update_user_role(user_info['email'], role)
 
-            # update user role quota
-            role_quota = get_enabled_role_permissions_by_role(role)['role_quota']
-            if role_quota:
-                quota = get_quota_from_string(role_quota)
-                seafile_api.set_role_quota(role, quota)
 
     def _get_role_by_affiliation(self, affiliation):
         """ Specific for Shibboleth

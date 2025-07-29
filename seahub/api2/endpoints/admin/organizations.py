@@ -86,14 +86,14 @@ def get_org_detailed_info(org):
 
     # users
 
-    users = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
+    users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
     org_info['users_count'] = len(users)
 
     active_users_count = len([m for m in users if m.is_active])
     org_info['active_users_count'] = active_users_count
 
     # groups
-    groups = ccnet_api.get_org_groups(org_id, -1, -1)
+    groups = OrgGroup.objects.get_org_groups(org_id)
     org_info['groups_count'] = len(groups)
 
     # saml config
@@ -161,7 +161,6 @@ def get_orgs_info_by_role(role, page, per_page):
                 org_info['creator_name'] = email2nickname(creator)
                 org_info['creator_contact_email'] = email2contact_email(creator)
 
-                org_info['quota'] = seafile_api.get_org_quota(org_id)
                 if ORG_MEMBER_QUOTA_ENABLED:
                     org_info['max_user_number'] = OrgMemberQuota.objects.get_quota(org_id)
 
@@ -351,7 +350,7 @@ class AdminOrganization(APIView):
         if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+        org_info = get_org_detailed_info(org)
         try:
             org_info = get_org_detailed_info(org)
         except Exception as e:
@@ -381,7 +380,7 @@ class AdminOrganization(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -390,7 +389,8 @@ class AdminOrganization(APIView):
         new_name = request.data.get('org_name', None)
         if new_name:
             try:
-                ccnet_api.set_org_name(org_id, new_name)
+                org.org_name = new_name
+                org.save()
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -412,28 +412,6 @@ class AdminOrganization(APIView):
 
             try:
                 OrgMemberQuota.objects.set_quota(org_id, max_user_number)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        quota_mb = request.data.get('quota', None)
-        if quota_mb:
-
-            try:
-                quota_mb = int(quota_mb)
-            except ValueError:
-                error_msg = 'quota invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if quota_mb < 0:
-                error_msg = 'quota invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-
-            quota = quota_mb * get_file_size_unit('MB')
-            try:
-                seafile_api.set_org_quota(org_id, quota)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -530,7 +508,7 @@ class AdminOrganization(APIView):
         except Exception as e:
             logger.exception('check org_id: %s exceed api quota error: %s', org_id, e)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         org_info = get_org_info(org)
         return Response(org_info)
 
@@ -613,7 +591,7 @@ class AdminSearchOrganization(APIView):
         if search_by_id:
             try:
                 query_str = int(query_str)
-                org = ccnet_threaded_rpc.get_org_by_id(query_str)
+                org = Organization.objects.get_org_by_id(query_str)
                 orgs = org and [org, ] or []
             except ValueError:
                 orgs = []
@@ -623,7 +601,7 @@ class AdminSearchOrganization(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         else:
             try:
-                orgs = ccnet_threaded_rpc.search_orgs(query_str)
+                orgs = Organization.objects.search_orgs(query_str)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -654,7 +632,7 @@ class AdminOrganizationsBaseInfo(APIView):
         orgs = []
         for org_id in org_ids:
             try:
-                org = ccnet_threaded_rpc.get_org_by_id(int(org_id))
+                org = Organization.objects.get_org_by_id(int(org_id))
                 if not org:
                     continue
             except:

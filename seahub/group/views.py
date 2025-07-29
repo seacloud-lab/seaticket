@@ -1,6 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # -*- coding: utf-8 -*-
 import logging
+import time
 import os
 import json
 import re
@@ -19,6 +20,9 @@ from seahub.group.utils import validate_group_name, BadGroupNameError, \
     ConflictGroupNameError, is_group_member
 from seahub.utils import send_html_email, is_org_context, \
     get_site_name
+from seahub.group.models import Group
+from seahub.organizations.models import OrgUser, OrgGroup
+from seahub.group.utils import is_group_admin_or_owner_by_group
 
 
 # Get an instance of a logger
@@ -26,23 +30,19 @@ logger = logging.getLogger(__name__)
 
 ########## ccnet rpc wrapper
 def create_group(group_name, username):
-    return seaserv.ccnet_threaded_rpc.create_group(group_name, username)
+    ctime = int(time.time_ns() / 1000)
+    return Group.objects.create(group_name=group_name, creator_name=username, parent_group_id=0, timestamp=ctime)
 
 def create_org_group(org_id, group_name, username):
-    return seaserv.ccnet_threaded_rpc.create_org_group(org_id, group_name,
-                                                       username)
+    return OrgGroup.objects.create_org_group(org_id, group_name, username)
 
 def get_all_groups(start, limit):
-    return seaserv.ccnet_threaded_rpc.get_all_groups(start, limit)
+    return Group.objects.all()[start, limit]
 
 def org_user_exists(org_id, username):
-    return seaserv.ccnet_threaded_rpc.org_user_exists(org_id, username)
+    return OrgUser.objects.org_user_exists(org_id, username)
 
 ########## helper functions
-def is_group_staff(group, user):
-    if user.is_anonymous:
-        return False
-    return seaserv.check_group_staff(group.id, user.username)
 
 def remove_group_common(group_id, username, org_id=None):
     """Common function to remove a group, and it's repos,
@@ -51,10 +51,9 @@ def remove_group_common(group_id, username, org_id=None):
     Arguments:
     - `group_id`:
     """
-    seaserv.ccnet_threaded_rpc.remove_group(group_id, username)
-    seaserv.seafserv_threaded_rpc.remove_repo_group(group_id)
+    Group.objects.remove_group(group_id)
     if org_id and org_id > 0:
-        seaserv.ccnet_threaded_rpc.remove_org_group(org_id, group_id)
+        OrgGroup.objects.remove_org_group(org_id, group_id)
 
 def group_check(func):
     """
@@ -69,15 +68,11 @@ def group_check(func):
     """
     def _decorated(request, group_id, *args, **kwargs):
         group_id_int = int(group_id) # Checked by URL Conf
-        group = get_group(group_id_int)
+        group = Group.objects.get_group(group_id_int)
         if not group:
             group_list_url = reverse('groups')
             return HttpResponseRedirect(group_list_url)
         group.is_staff = False
-        if PublicGroup.objects.filter(group_id=group.id):
-            group.is_pub = True
-        else:
-            group.is_pub = False
 
         if not request.user.is_authenticated:
             if not group.is_pub:
@@ -92,7 +87,7 @@ def group_check(func):
         joined = is_group_member(group_id_int, request.user.username)
         if joined:
             group.view_perm = "joined"
-            group.is_staff = is_group_staff(group, request.user)
+            group.is_staff = is_group_admin_or_owner_by_group(group, request.user)
             return func(request, group, *args, **kwargs)
 
         if group.is_pub:
@@ -104,39 +99,6 @@ def group_check(func):
                 })
 
     return _decorated
-
-def rename_group_with_new_name(request, group_id, new_group_name):
-    """Rename a group with new name.
-
-    Arguments:
-    - `request`:
-    - `group_id`:
-    - `new_group_name`:
-
-    Raises:
-        BadGroupNameError: New group name format is not valid.
-        ConflictGroupNameError: New group name confilicts with existing name.
-    """
-    if not validate_group_name(new_group_name):
-        raise BadGroupNameError
-
-    # Check whether group name is duplicated.
-    username = request.user.username
-    org_id = -1
-    if is_org_context(request):
-        org_id = request.user.org.org_id
-        checked_groups = seaserv.get_org_groups_by_user(org_id, username)
-    else:
-        if request.cloud_mode:
-            checked_groups = seaserv.get_personal_groups_by_user(username)
-        else:
-            checked_groups = get_all_groups(-1, -1)
-
-    for g in checked_groups:
-        if g.group_name == new_group_name:
-            raise ConflictGroupNameError
-
-    ccnet_threaded_rpc.set_group_name(group_id, new_group_name)
 
 def send_group_member_add_mail(request, group, from_user, to_user):
     c = {

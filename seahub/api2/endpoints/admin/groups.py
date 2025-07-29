@@ -22,8 +22,8 @@ from seahub.api2.utils import api_error
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.endpoints.utils import is_org_user
-
-from seahub.group.models import Group
+from seahub.organizations.models import Organization
+from seahub.group.models import Group, GroupUser
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class AdminGroups(APIView):
         if group_name:
             groups_all = Group.objects.filter(name__icontains=group_name)
             for group in groups_all:
-                group_info = get_group_info(group.id)
+                group_info = get_group_info(group.group_id)
                 return_results.append(group_info)
 
             return Response({"name": group_name, "groups": return_results})
@@ -129,7 +129,7 @@ class AdminGroups(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # Check whether group name is duplicated.
-        pattern_matched_groups = ccnet_api.search_groups(group_name, -1, -1)
+        pattern_matched_groups = Group.objects.search_groups(group_name)
         for group in pattern_matched_groups:
             if group.group_name == group_name:
                 error_msg = _('There is already a group with that name.')
@@ -148,7 +148,7 @@ class AdminGroups(APIView):
 
         # create group.
         try:
-            group_id = ccnet_api.create_group(group_name, new_owner)
+            group_id = Group.objects.create_group(group_name, new_owner)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -190,14 +190,14 @@ class AdminGroup(APIView):
 
         # recourse check
         group_id = int(group_id) # Checked by URL Conf
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         if not group:
             error_msg = 'Group %d not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         new_owner = request.data.get('new_owner', '')
         if new_owner:
-            org_id = ccnet_api.get_org_id_by_group(group_id)
+            org_id = Organization.objects.get_org_id_by_group(group_id)
             if org_id != -1 and not is_org_user(new_owner, org_id):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -222,13 +222,13 @@ class AdminGroup(APIView):
             # transfer a group
             try:
                 if not is_group_member(group_id, new_owner):
-                    ccnet_api.group_add_member(group_id, old_owner, new_owner)
+                    GroupUser.objects.group_add_member(group_id, old_owner, new_owner)
 
                 if not is_group_admin_or_owner(group_id, new_owner):
-                    ccnet_api.group_set_admin(group_id, new_owner)
+                    GroupUser.objects.group_set_admin(group_id, new_owner)
 
-                ccnet_api.set_group_creator(group_id, new_owner)
-                ccnet_api.group_unset_admin(group_id, old_owner)
+                Group.objects.set_group_creator(group_id, new_owner)
+                GroupUser.objects.group_unset_admin(group_id, old_owner)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -242,32 +242,12 @@ class AdminGroup(APIView):
                 "to": new_owner,
             }
             if org_id != -1:
-                org = ccnet_api.get_org_by_id(org_id)
+                org = Organization.objects.get_org_by_id(org_id)
                 if org:
                     admin_op_detail['org_name'] = org.org_name
                     admin_op_detail['org_id'] = org.org_id
             admin_operation.send(sender=None, admin_name=request.user.username,
                     operation=GROUP_TRANSFER, detail=admin_op_detail)
-
-        # set group quota
-        group_quota = request.data.get('quota', '')
-        if group_quota:
-            try:
-                group_quota = int(group_quota)
-            except ValueError:
-                error_msg = 'quota invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if not (group_quota > 0 or group_quota == -2):
-                error_msg = 'quota invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            try:
-                seafile_api.set_group_quota(group_id, group_quota)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         group_info = get_group_info(group_id, show_size=True)
         return Response(group_info)
@@ -280,11 +260,11 @@ class AdminGroup(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         group_id = int(group_id)
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         if not group:
             return Response({'success': True})
 
-        if ccnet_api.get_org_id_by_group(group_id) > 0:
+        if Organization.objects.get_org_id_by_group(group_id) > 0:
             error_msg = 'Can not delete an organization group'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -306,7 +286,7 @@ class AdminGroup(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            ccnet_api.remove_group(group_id)
+            Group.objects.remove_group(group_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -343,15 +323,15 @@ class AdminSearchGroup(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         result = []
-        groups = ccnet_api.search_groups(query_str, 0, 25)
-        group_id_list = [group.id for group in groups]
+        groups = Group.objects.search_groups(query_str, 0, 25)
+        group_id_list = [group.group_id for group in groups]
         owner_list = ['%s@seafile_group' % group_id for group_id in group_id_list]
         workspaces = Workspaces.objects.filter(owner__in=owner_list)
         group_workspace_dict = {workspace.owner.strip('@seafile_group'): workspace.id for workspace in workspaces}
 
         for group in groups:
-            group_info = get_group_info(group.id, show_size=True)
-            group_info['workspace_id'] = group_workspace_dict.get(str(group.id))
+            group_info = get_group_info(group.group_id, show_size=True)
+            group_info['workspace_id'] = group_workspace_dict.get(str(group.group_id))
             result.append(group_info)
 
         return Response({"group_list": result})

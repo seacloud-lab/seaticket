@@ -9,8 +9,6 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from seahub.base.accounts import User
-
 from seahub.avatar.settings import (AVATAR_GRAVATAR_BACKUP, AVATAR_GRAVATAR_DEFAULT,
                              AVATAR_DEFAULT_SIZE)
 from seahub.avatar.util import get_primary_avatar, get_default_avatar_url, \
@@ -100,6 +98,7 @@ def api_app_avatar_url():
 @cache_result
 @register.simple_tag
 def avatar(user, size=AVATAR_DEFAULT_SIZE):
+    from seahub.base.accounts import User
     if not isinstance(user, User):
         try:
             user = User.objects.get(email=user)

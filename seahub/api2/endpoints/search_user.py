@@ -141,13 +141,10 @@ def search_user_from_ccnet(q):
 
     users = []
 
-    db_users = ccnet_api.search_emailusers('DB', q, 0, 10)
+    db_users = User.objects.search_emailusers(q, 0, 10)
     users.extend(db_users)
 
     count = len(users)
-    if count < 10:
-        ldap_imported_users = ccnet_api.search_emailusers('LDAP', q, 0, 10 - count)
-        users.extend(ldap_imported_users)
 
     # `users` is already search result, no need search more
     email_list = []
@@ -208,7 +205,6 @@ def search_user_in_org(request, q):
     url_prefix = request.user.org.url_prefix
     try:
         all_org_users = Organization.objects.get_org_users_by_url_prefix(url_prefix)
-        # all_org_users = ccnet_api.get_org_emailusers(url_prefix, -1, -1)
     except Exception as e:
         logger.error(e)
         error_msg = 'Internal Server Error'

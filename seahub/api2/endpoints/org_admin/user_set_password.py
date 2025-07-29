@@ -16,6 +16,7 @@ from seahub.settings import INIT_PASSWD, SEND_EMAIL_ON_RESETTING_USER_PASSWD
 from seahub.utils import IS_EMAIL_CONFIGURED
 from seahub.views.sysadmin import send_user_reset_email
 from seahub.profile.models import Profile
+from seahub.organizations.models import Organization
 
 from seahub.organizations.views import org_user_exists
 
@@ -34,7 +35,7 @@ class OrgAdminUserSetPassword(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

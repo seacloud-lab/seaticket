@@ -15,6 +15,7 @@ from constance import config
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 import logging
 from seahub.settings import ENABLE_TWO_FACTOR_AUTH
+from seahub.organizations.models import Organization, OrgUser
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class OrgAdminTwoFactorAuthView(APIView):
 
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -48,7 +49,7 @@ class OrgAdminTwoFactorAuthView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # permission check
-        if not ccnet_api.org_user_exists(org_id, email):
+        if not OrgUser.objects.org_user_exists(org_id, email):
             err_msg = _('User %s not found in organization.') % email
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
 
@@ -72,7 +73,7 @@ class OrgAdminTwoFactorAuthView(APIView):
 
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -87,7 +88,7 @@ class OrgAdminTwoFactorAuthView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # permission check
-        if not ccnet_api.org_user_exists(org_id, email):
+        if not OrgUser.objects.org_user_exists(org_id, email):
             err_msg = _('User %s not found in organization.') % email
             return api_error(status.HTTP_404_NOT_FOUND, err_msg)
         try:

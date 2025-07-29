@@ -541,6 +541,15 @@ class OrganizationManager(models.Manager):
         except Organization.DoesNotExist:
             return None
 
+    def get_org_id_by_group(self, group_id):
+        try:
+            org_group = OrgGroup.objects.get(group_id=group_id)
+            if not org_group:
+                return None
+            return self.get_org_by_id(org_group.org_id)
+        except Organization.DoesNotExist:
+            return None
+
     def create_org(self, org_name, url_prefix, creator):
         try:
             return super(OrganizationManager, self).get(url_prefix=url_prefix)
@@ -562,6 +571,16 @@ class OrganizationManager(models.Manager):
 
     def remove_org(self, org_id):
         self.filter(org_id=org_id).delete()
+
+    def search_orgs(self, query_string):
+        return self.filter(org_name__icontains=query_string)
+
+    def get_orgs_by_user(self, username):
+        org_users = OrgUser.objects.filter(email=username)
+        return self.filter(org_id__in=[o.org_id for o in org_users])
+
+    def count_orgs(self):
+        return self.count()
 
 
 class Organization(models.Model):
@@ -642,6 +661,9 @@ class OrgUserManager(models.Manager):
 
         return org_users
 
+    def add_org_user(self, org_id, email, is_staff=False):
+        return self.create(org_id=org_id, email=email, is_staff=is_staff)
+
 
 class OrgUser(models.Model):
     org_id = models.IntegerField()
@@ -706,6 +728,9 @@ class OrgGroupManager(models.Manager):
         org_groups = self.raw(sql, (org_id, username))
         return org_groups
 
+    def get_org_groups(self, org_id):
+        org_groups = self.filter(org_id=org_id)
+        return Group.objects.filter(group_id__in=[o.group_id for o in org_groups])
 
 class OrgGroup(models.Model):
     org_id = models.IntegerField()

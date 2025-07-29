@@ -20,6 +20,8 @@ from seahub.project.models import Workspaces, Projects
 from seahub.organizations.views import get_org_id_by_group
 from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_DELETE
+from seahub.organizations.models import Organization, OrgGroup
+from seahub.group.models import Group
 
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
@@ -40,7 +42,7 @@ def get_org_group_info(group):
         group_info['creator_name'] = 'system admin'
         group_info['creator_email'] = 'system admin'
     group_info['created_at'] = timestamp_to_isoformat_timestr(group.timestamp)
-    group_info['group_id'] = group.id
+    group_info['group_id'] = group.group_id
 
     return group_info
 
@@ -61,13 +63,13 @@ class AdminOrgGroups(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %d not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            groups = ccnet_api.get_org_groups(org_id, -1, -1)
+            groups = OrgGroup.objects.get_org_groups(org_id)
         except Exception as e:
             logger.error(e)
             error_msg = "Internal Server Error"
@@ -99,13 +101,13 @@ class AdminOrgGroup(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         # resource check
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             error_msg = 'Organization %d not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         if not group or get_org_id_by_group(group_id) != org_id:
             error_msg = 'Group %s not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -127,8 +129,7 @@ class AdminOrgGroup(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            ccnet_api.remove_org_group(org_id, group_id)
-            ccnet_api.remove_group(group_id)
+            OrgGroup.objects.remove_org_group(org_id, group_id)
             group_deleted.send(sender=None, group_id=group_id)
         except Exception as e:
             logger.error(e)

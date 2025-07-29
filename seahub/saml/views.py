@@ -34,6 +34,8 @@ from seahub.utils.licenseparse import user_number_over_limit
 from seahub.organizations.utils import can_org_use_saml
 from seahub.settings import LOGIN_REDIRECT_URL
 from seahub.saml.signals import saml_sso_failed
+from seahub.organizations.models import Organization, OrgUser
+
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
 except ImportError:
@@ -51,12 +53,7 @@ def _set_subject_id(session, subject_id):
 
 
 def get_org_admins(org):
-    org_admins = list()
-    org_users = ccnet_api.get_org_emailusers(org.url_prefix, -1, -1)
-    for user in org_users:
-        if ccnet_api.is_org_staff(org.org_id, user.email):
-            org_admins.append(user)
-    return org_admins
+    return OrgUser.objects.filter(org_id=org.org_id, is_staff=True)
 
 
 def parse_user_identity(user_identity):
@@ -101,7 +98,7 @@ def metadata(request, org_id=None):
     org = None
     if org_id and int(org_id) > 0:
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             logger.error('Cannot find an organization related to org_id %s.' % org_id)
             return render_error(request, _('Internal server error. Please contact system administrator.'))
@@ -143,7 +140,7 @@ def acs(request, org_id=None):
     org = None
     if org_id and int(org_id) > 0:
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             logger.error('Cannot find an organization related to org_id %s.' % org_id)
             return render_error(request, _('Internal server error. Please contact system administrator.'))
@@ -359,7 +356,7 @@ def acs(request, org_id=None):
 
         # check user number limit by org member quota
         if org:
-            org_members = len(ccnet_api.get_org_emailusers(org.url_prefix, -1, -1))
+            org_members = len(Organization.objects.get_org_users_by_url_prefix(org.url_prefix))
             if ORG_MEMBER_QUOTA_ENABLED:
                 from seahub.organizations.models import OrgMemberQuota
                 org_members_quota = OrgMemberQuota.objects.get_quota(org_id)
@@ -430,7 +427,7 @@ def login(request, org_id=None):
     org = None
     if org_id and int(org_id) > 0:
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             logger.error('Cannot find an organization related to org_id %s.' % org_id)
             return render_error(request, _('Internal server error. Please contact system administrator.'))
@@ -487,7 +484,7 @@ def saml_connect(request, org_id=None):
     org = None
     if org_id and int(org_id) > 0:
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             logger.error('Cannot find an organization related to org_id %s.' % org_id)
             return render_error(request, _('Internal server error. Please contact system administrator.'))
@@ -543,7 +540,7 @@ def saml_connect(request, org_id=None):
 def saml_disconnect(request, org_id=None):
     if org_id and int(org_id) > 0:
         org_id = int(org_id)
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             logger.error('Cannot find an organization related to org_id %s.' % org_id)
             return render_error(request, _('Internal server error. Please contact system administrator.'))

@@ -75,7 +75,8 @@ class OrgAdminInfo(APIView):
         new_org_name = request.data.get('new_org_name')
         if new_org_name:
             try:
-                ccnet_api.set_org_name(org_id, new_org_name)
+                org.org_name = new_org_name
+                org.save()
             except Exception as e:
                 logger.error('set org_id: %s new_org_name: %s error: %s', org_id, new_org_name, e)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
