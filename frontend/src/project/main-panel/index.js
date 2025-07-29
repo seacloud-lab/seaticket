@@ -10,7 +10,7 @@ import './index.css';
 
 const Container = ({ activeBar }) => {
   if (!activeBar) return (<TopBar />);
-  if (activeBar.key === BAR_TYPE.ASK) return (<Ask/>); // Question answering page
+  if (activeBar.key === BAR_TYPE.ASK) return (<Ask title={activeBar.name}/>); // Question answering page
   if (activeBar.key === BAR_TYPE.SEARCH) return (<Search title={activeBar.name}/>); // search page
   if (activeBar.key === BAR_TYPE.TICKET) return (<Tickets title={activeBar.name} />); // tickets page
   return (<Connections title={activeBar.name} />); // connections page

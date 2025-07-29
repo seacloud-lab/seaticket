@@ -35,6 +35,7 @@ import OptionEditor from './option-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
 import StepsNavigation from './steps-navigation';
+import UploadFile from './upload-file';
 
 
 export {
@@ -71,4 +72,5 @@ export {
   PasswordInput,
   TextInput,
   StepsNavigation,
+  UploadFile,
 };

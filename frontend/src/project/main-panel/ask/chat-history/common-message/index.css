@@ -1,0 +1,51 @@
+.sea-qa-ai-ask-message-content img:hover {
+  cursor: pointer;
+}
+
+.sea-qa-ai-ask-message-answer.text * {
+  margin: 0;
+  padding: 0;
+}
+
+.sea-qa-ai-ask-message-answer .sf-slate-viewer-scroll-container {
+  padding-top: 0;
+  padding-bottom: 0;
+  background-color: inherit;
+}
+
+.sea-qa-ai-ask-message-answer .article {
+  padding: 0;
+  border: unset;
+  height: auto;
+  width: 100%;
+}
+
+.sea-qa-ai-ask-message-answer .article h2 {
+  border-bottom: none;
+}
+
+.sea-qa-ai-ask-message-sources {
+  padding-bottom: 15px;
+}
+
+.sea-qa-ai-ask-message-sources,
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-sources-container {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-sources-title {
+  margin: 1.2em 0 .4em;
+  font-weight: 700;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-source {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.sea-qa-ai-ask-message-sources .sea-qa-ai-ask-message-source a {
+  color: #007bff;
+}
