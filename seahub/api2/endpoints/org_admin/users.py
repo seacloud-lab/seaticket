@@ -67,7 +67,6 @@ class OrgAdminUsers(APIView):
         user_list_info = {}
 
         if is_staff:
-            # org_users = ccnet_api.get_org_users_by_url_prefix(org.url_prefix, -1, -1)
             org_users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
             users = []
             if is_staff:
@@ -475,7 +474,7 @@ class OrgAdminSearchUsers(APIView):
         """
         # resource check
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -494,7 +493,7 @@ class OrgAdminSearchUsers(APIView):
 
         start = (page - 1) * per_page
         end = page * per_page
-        org_all_users = ccnet_api.get_org_users_by_url_prefix(
+        org_all_users = Organization.objects.get_org_users_by_url_prefix(
             org.url_prefix, -1, -1)
 
         query_str = request.GET.get('query', '').strip()

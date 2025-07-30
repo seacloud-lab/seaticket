@@ -11,6 +11,7 @@ from seahub.api2.utils import api_error
 
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
+from seahub.organizations.models import Organization
 
 
 class OrganizationView(APIView):
@@ -24,7 +25,7 @@ class OrganizationView(APIView):
         org_id = int(org_id)
         if org_id == 0:
             return api_error(status.HTTP_400_BAD_REQUEST, 'org_id invalid.')
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             return api_error(status.HTTP_404_NOT_FOUND, 'Organization not found.')
         return Response({
@@ -43,7 +44,7 @@ class OrganizationMembersView(APIView):
         org_id = int(org_id)
         if org_id == 0:
             return api_error(status.HTTP_400_BAD_REQUEST, 'org_id invalid.')
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             return api_error(status.HTTP_404_NOT_FOUND, 'Organization not found.')
 
@@ -54,7 +55,7 @@ class OrganizationMembersView(APIView):
             page = 1
             per_page = 20
         start = (page - 1) * per_page
-        org_members = ccnet_api.get_org_users_by_url_prefix(org.url_prefix, start, per_page)
+        org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix, start, per_page)
         member_list = []
         for member in org_members:
             member_info = get_user_info(member.email)

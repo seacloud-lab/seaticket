@@ -5,6 +5,7 @@ from seahub.auth.backends import RemoteUserBackend
 from seahub.base.accounts import User
 from seahub.registration.models import notify_admins_on_register_complete,\
      notify_admins_on_activate_request
+from seahub.organizations.models import OrgUser
 
 
 class SAMLRemoteUserBackend(RemoteUserBackend):
@@ -41,7 +42,7 @@ class SAMLRemoteUserBackend(RemoteUserBackend):
             user = User.objects.create_saml_user(is_active=self.activate_after_creation)
             # add org user
             if org_id and org_id > 0:
-                ccnet_api.add_org_user(org_id, user.username, 0)
+                OrgUser.objects.add_org_user(org_id, user.username, 0)
 
             if not self.activate_after_creation:
                 notify_admins_on_activate_request(user.username)

@@ -26,7 +26,7 @@ from seahub.organizations.views import get_org_groups
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER
 from seahub.organizations.models import Organization, OrgUser, OrgGroup
-from seahub.group.models import Group
+from seahub.group.models import Group, GroupUser
 
 
 logger = logging.getLogger(__name__)
@@ -126,7 +126,7 @@ class OrgAdminGroups(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # Check whether group name is duplicated.
-        pattern_matched_groups = ccnet_api.get_org_groups(org_id, -1, -1)
+        pattern_matched_groups = OrgGroup.objects.get_org_groups(org_id)
         for group in pattern_matched_groups:
             if group.group_name == group_name:
                 error_msg = _('There is already a group with that name.')
@@ -145,14 +145,15 @@ class OrgAdminGroups(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # personal group limit
-        user_groups = ccnet_api.get_org_groups_by_user(org_id, group_owner)
+        user_groups = OrgGroup.objects.get_org_groups_by_user(org_id, group_owner)
         if len(user_groups) >= PERSONAL_GROUP_LIMIT:
             error_msg = _('Number of groups exceeds the %s limit.') % PERSONAL_GROUP_LIMIT
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # create group.
         try:
-            group_id = ccnet_api.create_org_group(org_id, group_name, group_owner)
+            group = OrgGroup.objects.create_org_group(org_id, group_name, username)
+            group_id = group.group_id
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -172,9 +173,8 @@ class OrgAdminGroups(APIView):
                              operation=GROUP_CREATE, detail=admin_op_detail, org_id=org_id)
 
         # get info of new group
-        group = ccnet_api.get_group(group_id)
         group_info = {
-            "id": group.id,
+            "id": group_id,
             "group_name": group.group_name,
             "ctime": timestamp_to_isoformat_timestr(group.timestamp),
             "creator_email": group.creator_name,
@@ -251,7 +251,7 @@ class OrgAdminGroup(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
             # check if new_owner a member of org
-            if not ccnet_api.org_user_exists(org_id, new_owner):
+            if not OrgUser.objects.org_user_exists(org_id, new_owner):
                 error_msg = 'User %s not found in organization.' % email2nickname(new_owner)
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -263,13 +263,13 @@ class OrgAdminGroup(APIView):
             # transfer a group
             try:
                 if not is_group_member(group_id, new_owner):
-                    ccnet_api.group_add_member(group_id, old_owner, new_owner)
+                    GroupUser.objects.group_add_member(group_id, old_owner, new_owner)
 
                 if not is_group_admin_or_owner(group_id, new_owner):
-                    ccnet_api.group_set_admin(group_id, new_owner)
+                    GroupUser.objects.group_set_admin(group_id, new_owner)
 
-                ccnet_api.set_group_creator(group_id, new_owner)
-                ccnet_api.group_unset_admin(group_id, old_owner)
+                Group.objects.set_group_creator(group_id, new_owner)
+                GroupUser.objects.group_unset_admin(group_id, old_owner)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -299,7 +299,7 @@ class OrgAdminGroup(APIView):
                     error_msg = _('There is already a group with that name.')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-                ccnet_api.set_group_name(group_id, new_group_name)
+                Group.objects.set_group_name(group_id, new_group_name)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -307,21 +307,15 @@ class OrgAdminGroup(APIView):
 
             refresh_group_name_cache(group_id, new_group_name)
 
-        group = ccnet_api.get_group(group_id)
+        group = Group.objects.get_group(group_id)
         group_info = {
-            "id": group.id,
+            "id": group.group_id,
             "group_name": group.group_name,
             "ctime": timestamp_to_isoformat_timestr(group.timestamp),
             "creator_email": group.creator_name,
             "creator_name": email2nickname(group.creator_name),
             'creator_contact_email': email2contact_email(group.creator_name),
         }
-
-        owner = '%s@seafile_group' % group_id
-        workspace = Workspaces.objects.get_workspace_by_owner(owner)
-        if workspace:
-            repo = seafile_api.get_repo(workspace.repo_id)
-            group_info['size'] = repo.size if repo else -1
 
         return Response(group_info)
 
@@ -395,7 +389,7 @@ class OrgAdminSearchGroups(APIView):
             error_msg = 'org_id invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             error_msg = 'Organization %s not found.' % org_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

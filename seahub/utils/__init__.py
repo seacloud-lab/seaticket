@@ -268,7 +268,7 @@ def calc_file_path_hash(path, bits=12):
     return path_hash
 
 def get_service_url():
-    """Get service url from seaserv.
+    """Get service url.
     """
     return seahub.settings.SEAQA_WEB_SERVICE_URL
 
@@ -509,15 +509,8 @@ def within_time_range(d1, d2, maxdiff_seconds):
     return diff < maxdiff_seconds
 
 def get_system_admins():
-    db_users = seaserv.get_emailusers('DB', -1, -1)
-    ldpa_imported_users = seaserv.get_emailusers('LDAPImport', -1, -1)
-
-    admins = []
-    for user in db_users + ldpa_imported_users:
-        if user.is_staff:
-            admins.append(user)
-
-    return admins
+    from seahub.base.accounts import User
+    return User.objects.get_superusers()
 
 
 def get_file_type_and_ext(filename):

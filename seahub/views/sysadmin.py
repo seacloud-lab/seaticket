@@ -41,11 +41,7 @@ FILE_TYPE = '.project'
 @sys_staff_required
 def sysadmin_react_fake_view(request, **kwargs):
 
-    try:
-        expire_days = seafile_api.get_server_config_int('library_trash', 'expire_days')
-    except Exception as e:
-        logger.error(e)
-        expire_days = -1
+    expire_days = -1
 
     return render(request, 'sysadmin/sysadmin_react_app.html', {
         'constance_enabled': dj_settings.CONSTANCE_ENABLED,

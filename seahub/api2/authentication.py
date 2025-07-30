@@ -14,6 +14,8 @@ from seahub.profile.settings import ROLE_CACHE_PREFIX, ROLE_CACHE_TIMEOUT
 from seahub.utils import within_time_range, normalize_cache_key
 from seahub.utils.auth import AUTHORIZATION_PREFIX
 from django.core.cache import cache
+from seahub.organizations.models import Organization
+
 try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
@@ -89,7 +91,7 @@ class TokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed('User inactive or deleted')
 
         if MULTI_TENANCY:
-            orgs = ccnet_api.get_orgs_by_user(token.user)
+            orgs = Organization.objects.get_orgs_by_user(token.user)
             if orgs:
                 user.org = orgs[0]
                 user.role = self.user_role(user)

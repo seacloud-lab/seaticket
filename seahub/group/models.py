@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import time
 
 from django.db import models
 
@@ -12,6 +13,15 @@ class GroupUserManager(models.Manager):
 
     def is_group_user(self, group_id, username):
         return self.filter(group_id=group_id, user_name=username).exists()
+    
+    def group_add_member(self, group_id, username, is_staff=False):
+        return self.create(group_id=group_id, user_name=username, is_staff=is_staff)
+
+    def group_set_admin(self, group_id, username):
+        self.filter(group_id=group_id, user_name=username).update(is_staff=True)
+
+    def group_unset_admin(self, group_id, username):
+        self.filter(group_id=group_id, user_name=username).update(is_staff=False)
 
 
 class GroupUser(models.Model):
@@ -34,6 +44,23 @@ class GroupManager(models.Manager):
             return super(GroupManager, self).get(group_id=group_id)
         except Group.DoesNotExist:
             return None
+
+    def create_group(self, group_name, username, parent_group_id=0):
+        ctime = int(time.time_ns() / 1000)
+        return self.create(group_name=group_name, creator_name=username, parent_group_id=parent_group_id, timestamp=ctime)
+
+    def search_groups(self, query_string):
+        return self.filter(group_name__icontains=query_string)
+
+    def set_group_creator(self, group_id, username):
+        self.filter(group_id=group_id).update(creator_name=username)
+    
+    def set_group_name(self, group_id, group_name):
+        self.filter(group_id=group_id).update(group_name=group_name)
+
+    def get_personal_groups_by_user(self, username):
+        user_groups = GroupUser.objects.filter(user_name=username)
+        return self.filter(group_id__in=[g.group_id for g in user_groups])
 
 
 class Group(models.Model):

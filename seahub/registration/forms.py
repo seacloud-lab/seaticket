@@ -73,7 +73,7 @@ class RegistrationForm(forms.Form):
         if Profile.objects.filter(contact_email=email).exists():
             raise forms.ValidationError(_("User %s already exists.") % email)
 
-        emailuser = ccnet_api.get_emailuser(email)
+        emailuser = User.objects.filter(email=email).first()
         if not emailuser:
             return self.cleaned_data['email']
         else:

@@ -16,11 +16,11 @@ from rest_framework.response import Response
 from rest_framework import status, serializers
 
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.group.views import is_group_staff
-from seahub.group.utils import is_group_member
+from seahub.group.utils import is_group_member, is_group_admin_or_owner_by_group
 from seahub.api2.models import Token, TokenV2, DESKTOP_PLATFORMS
 from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
+from seahub.group.models import Group
 
 from seahub.settings import INSTALLED_APPS
 
@@ -36,10 +36,10 @@ def api_error(code, msg):
 def get_groups(email):
     group_json = []
 
-    joined_groups = get_personal_groups_by_user(email)
+    joined_groups = Group.objects.get_personal_groups_by_user(email)
     grpmsgs = {}
     for g in joined_groups:
-        grpmsgs[g.id] = 0
+        grpmsgs[g.group_id] = 0
 
     replynum = 0
 
@@ -64,27 +64,19 @@ def api_group_check(func):
     """
     def _decorated(view, request, group_id, *args, **kwargs):
         group_id_int = int(group_id) # Checked by URL Conf
-        group = get_group(group_id_int)
+        group = Group.objects.get_group(group_id_int)
         if not group:
             return api_error(status.HTTP_404_NOT_FOUND, 'Group not found.')
         group.is_staff = False
-        if PublicGroup.objects.filter(group_id=group.id):
-            group.is_pub = True
-        else:
-            group.is_pub = False
 
         joined = is_group_member(group_id_int, request.user.username)
         if joined:
             group.view_perm = "joined"
-            group.is_staff = is_group_staff(group, request.user)
+            group.is_staff = is_group_admin_or_owner_by_group(group, request.user)
             return func(view, request, group, *args, **kwargs)
         if request.user.is_staff:
             # viewed by system admin
             group.view_perm = "sys_admin"
-            return func(view, request, group, *args, **kwargs)
-
-        if group.is_pub:
-            group.view_perm = "pub"
             return func(view, request, group, *args, **kwargs)
 
         # Return group public info page.

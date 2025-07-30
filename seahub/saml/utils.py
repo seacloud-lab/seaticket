@@ -12,7 +12,7 @@ from saml2.config import SPConfig
 from django.utils.translation import gettext as _
 
 from seahub.utils import get_service_url
-from seahub.organizations.models import OrgSAMLConfig
+from seahub.organizations.models import OrgSAMLConfig, Organization
 from seahub import settings
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ def config_settings_loader(request):
         org_id = int(reg.group(1))
 
     if org_id and org_id > 0:
-        org = ccnet_api.get_org_by_id(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
         if not org:
             raise Exception('Cannot find an organization related to org_id %s.' % org_id)
 

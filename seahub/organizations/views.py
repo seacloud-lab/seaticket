@@ -30,7 +30,7 @@ from seahub.organizations.forms import OrgRegistrationForm, SmsOrgRegistrationFo
 from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO
 from seahub.organizations.utils import get_or_create_invitation_link, \
     transfer_user_to_org, get_org_corp_bind_type, can_org_use_saml
-from seahub.organizations.models import OrgSettings
+from seahub.organizations.models import OrgSettings, Organization
 from seahub.org_work_weixin.utils import org_work_weixin_check
 from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.utils.two_factor_auth import has_two_factor_auth
@@ -51,15 +51,15 @@ logger = logging.getLogger(__name__)
 
 # ccnet rpc wrapper
 def create_org(org_name, url_prefix, creator):
-    return ccnet_api.create_org(org_name, url_prefix, creator)
+    return Organization.objects.create_org(org_name, url_prefix, creator)
 
 
 def count_orgs():
-    return ccnet_api.count_orgs()
+    return Organization.objects.count_orgs()
 
 
 def get_org_by_url_prefix(url_prefix):
-    return ccnet_api.get_org_by_url_prefix(url_prefix)
+    return Organization.objects.get_org_by_url_prefix(url_prefix)
 
 
 def set_org_user(org_id, username, is_staff=False):
@@ -87,12 +87,11 @@ def get_org_groups(org_id, start, limit):
 
 
 def get_org_id_by_group(group_id):
-    return ccnet_api.get_org_id_by_group(group_id)
+    return Organization.objects.get_org_id_by_group(group_id)
 
 
 def remove_org_group(org_id, group_id, username):
-    remove_group_common(group_id, username)
-    ccnet_api.remove_org_group(org_id, group_id)
+    remove_group_common(group_id, username, org_id=org_id)
 
 
 def is_org_staff(org_id, username):
@@ -529,13 +528,13 @@ def org_transfer(request, **kwargs):
         logger.warning(e)
 
     # check
-    if ccnet_api.get_orgs_by_user(username):
+    if Organization.objects.get_orgs_by_user(username):
         return render_error(request, '您的账号已经加入过 SeaTable 团队')
 
     if not org_id:
         return render_error(request, 'org_id invalid.')
 
-    org = ccnet_api.get_org_by_id(org_id)
+    org = Organization.objects.get_org_by_id(org_id)
     if not org:
         return render_error(request, 'Organization %s not found.' % org_id)
 

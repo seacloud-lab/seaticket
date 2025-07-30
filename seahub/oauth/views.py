@@ -16,6 +16,7 @@ import seahub.settings as settings
 from seahub.api2.utils import get_api_token
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import render
+from seahub.organizations.models import Organization
 
 logger = logging.getLogger(__name__)
 #### OAuth Global Settings
@@ -227,7 +228,7 @@ def oauth_callback(request):
     # assign id_in_org
     id_in_org = oauth_user_info.get('id_in_org', '')
     org_id = -1
-    orgs = ccnet_api.get_orgs_by_user(username)
+    orgs = Organization.objects.get_orgs_by_user(username)
     if orgs:
         org_id = orgs[0].org_id
     if id_in_org:

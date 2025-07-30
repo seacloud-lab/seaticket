@@ -24,6 +24,7 @@ from seahub.profile.models import Profile
 from seahub.registration.forms import SmsRegistrationForm
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.utils import get_api_token
+from seahub.organizations.models import Organization, OrgUser
 from seahub.settings import USER_STRONG_PASSWORD_REQUIRED, USER_PASSWORD_MIN_LENGTH, \
     USER_PASSWORD_STRENGTH_LEVEL
 SESSION_KEY_SMS_REGISTRATION_PHONE = 'sms-registration-phone'
@@ -281,7 +282,7 @@ def org_register(request, org_id, backend, success_url=None, form_class=None,
 
     try:
         org_id = int(org_id)
-        if not ccnet_api.get_org_by_id(org_id):
+        if not Organization.objects.get_org_by_id(org_id):
             return render_error(request, 'organization %s not found.' % org_id)
     except Exception as e:
         logger.error(e)
@@ -292,7 +293,7 @@ def org_register(request, org_id, backend, success_url=None, form_class=None,
         form = form_class(data=request.POST, files=request.FILES)
         if form.is_valid():
             new_user = backend.register(request, **form.cleaned_data)
-            ccnet_api.add_org_user(org_id, new_user.username, 0)
+            OrgUser.objects.add_org_user(org_id, new_user.username, 0)
             if success_url is None:
                 to, args, kwargs = backend.post_registration_redirect(request, new_user)
                 return redirect(to, *args, **kwargs)

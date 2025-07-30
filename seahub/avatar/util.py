@@ -4,7 +4,6 @@ from django.core.cache import cache
 from django.core.files.storage import default_storage, get_storage_class
 from urllib.parse import quote
 
-from seahub.base.accounts import User
 from seahub.avatar.settings import AVATAR_DEFAULT_URL, AVATAR_CACHE_TIMEOUT,\
     AVATAR_DEFAULT_SIZE, \
     AVATAR_DEFAULT_NON_REGISTERED_URL, AUTO_GENERATE_GROUP_AVATAR_SIZES, \
@@ -16,6 +15,7 @@ def get_cache_key(user_or_username, size, prefix):
     """
     Returns a cache key consisten of a username and image size.
     """
+    from seahub.base.accounts import User
     if isinstance(user_or_username, User):
         user_or_username = user_or_username.username
     return '%s_%s_%s' % (prefix, quote(user_or_username), size)
@@ -109,6 +109,7 @@ def get_default_avatar_non_registered_url():
     
     
 def get_primary_avatar(user, size=AVATAR_DEFAULT_SIZE):
+    from seahub.base.accounts import User
     if not isinstance(user, User):
         try:
             user = User.objects.get(email=user)

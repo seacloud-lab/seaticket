@@ -7,7 +7,6 @@ from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 from django.http import HttpResponseRedirect
-from seaserv import seafile_api, ccnet_api
 
 from shibboleth.app_settings import SHIB_ATTRIBUTE_MAP, LOGOUT_SESSION_KEY, SHIB_USER_HEADER
 

@@ -8,7 +8,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import gen_token, get_site_scheme_and_netloc
 from seahub.weixin.utils import weixin_check
 from seahub.project.models import Workspaces
-from seahub.organizations.models import OrgSettings
+from seahub.organizations.models import OrgSettings, Organization
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from django.utils.crypto import get_random_string
 
@@ -81,7 +81,7 @@ def transfer_user_to_org(username, org_id):
     from seahub.constants import DEFAULT_USER
     try:
         # transfer user to org
-        ccnet_api.add_org_user(org_id, username, int(False))
+        Organization.objects.add_org_user(org_id, username, int(False))
 
         # reset role
         User.objects.update_role(username, DEFAULT_USER)
@@ -126,7 +126,7 @@ def gen_org_url_prefix(max_trial=None):
     def _gen_prefix():
         url_prefix = 'org-' + get_random_string(
             6, allowed_chars='abcdefghijklmnopqrstuvwxyz0123456789')
-        if ccnet_api.get_org_by_url_prefix(url_prefix) is not None:
+        if Organization.objects.get_org_by_url_prefix(url_prefix) is not None:
             logger.info("org url prefix, %s is duplicated" % url_prefix)
             return None
         else:

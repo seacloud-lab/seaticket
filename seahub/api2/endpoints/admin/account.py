@@ -41,8 +41,6 @@ def get_account_info(user):
     info['create_time'] = user.ctime
     info['login_id'] = profile.login_id if profile else ''
     info['list_in_address_book'] = profile.list_in_address_book if profile else False
-    info['total'] = seafile_api.get_user_quota(email)
-    info['usage'] = seafile_api.get_user_self_usage(email)
 
     return info
 
@@ -66,41 +64,6 @@ class Account(APIView):
 
         info = get_account_info(user)
         return Response(info)
-
-    def post(self, request, email, format=None):
-        # migrate an account's repos and groups to an exist account
-        if not is_valid_username(email):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Email %s invalid.' % email)
-
-        op = request.data.get('op', '').lower()
-        if op == 'migrate':
-            from_user = email
-            to_user = request.data.get('to_user', '')
-            if not is_valid_username(to_user):
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Email %s invalid.' % to_user)
-
-            try:
-                user2 = User.objects.get(email=to_user)
-            except User.DoesNotExist:
-                return api_error(status.HTTP_404_NOT_FOUND, 'User %s not found.' % to_user)
-
-            # transfer owned repos to new user
-            for r in seafile_api.get_owned_repo_list(from_user):
-                seafile_api.set_repo_owner(r.id, user2.username)
-
-            # transfer joined groups to new user
-            for g in seaserv.get_personal_groups_by_user(from_user):
-                if not is_group_member(g.id, user2.username):
-                    # add new user to the group on behalf of the group creator
-                    ccnet_threaded_rpc.group_add_member(g.id, g.creator_name,
-                                                        to_user)
-
-                if from_user == g.creator_name:
-                    ccnet_threaded_rpc.set_group_creator(g.id, to_user)
-
-            return Response({'success': True})
-        else:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'op can only be migrate.')
 
     def _update_account_additional_info(self, request, email):
 
@@ -131,17 +94,6 @@ class Account(APIView):
                 profile = Profile(user=email)
             profile.login_id = loginid
             profile.save()
-
-        # update user quota
-        space_quota_mb = request.data.get("storage", None)
-        if space_quota_mb is not None:
-            space_quota = int(space_quota_mb) * get_file_size_unit('MB')
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                seaserv.seafserv_threaded_rpc.set_org_user_quota(org_id,
-                        email, space_quota)
-            else:
-                seafile_api.set_user_quota(email, space_quota)
 
         # update user institution
         institution = request.data.get("institution", None)
@@ -209,31 +161,6 @@ class Account(APIView):
             if len(department) > 512:
                 return api_error(status.HTTP_400_BAD_REQUEST,
                         _('Department is too long (maximum is 512 characters)'))
-
-        # argument check for storage
-        space_quota_mb = request.data.get("storage", None)
-        if space_quota_mb is not None:
-            if space_quota_mb == '':
-                return api_error(status.HTTP_400_BAD_REQUEST,
-                        _('Space quota can\'t be empty'))
-
-            try:
-                space_quota_mb = int(space_quota_mb)
-            except ValueError:
-                return api_error(status.HTTP_400_BAD_REQUEST,
-                        _('Must be an integer that is greater than or equal to 0.'))
-
-            if space_quota_mb < 0:
-                return api_error(status.HTTP_400_BAD_REQUEST,
-                        _('Space quota is too low (minimum value is 0)'))
-
-            if is_org_context(request):
-                org_id = request.user.org.org_id
-                org_quota_mb = seaserv.seafserv_threaded_rpc.get_org_quota(org_id) / \
-                        get_file_size_unit('MB')
-                if space_quota_mb > org_quota_mb:
-                    return api_error(status.HTTP_400_BAD_REQUEST, \
-                            _('Failed to set quota: maximum quota is %d MB' % org_quota_mb))
 
         # argument check for is_trial
         is_trial = request.data.get("is_trial", None)

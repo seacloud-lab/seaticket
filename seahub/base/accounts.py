@@ -25,6 +25,8 @@ from seahub.auth.models import SocialAuthUser, UserQuota
 from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, \
     SASL_AUTHC_ID_ATTR, ENABLE_USER_CREATE_ORG_REPO
 from seahub.auth.models import EmailUser
+from seahub.organizations.models import Organization
+from seahub.role_permissions.models import UserRole
 
 try:
     from seahub.settings import CLOUD_MODE
@@ -179,7 +181,7 @@ class UserManager(object):
         """
         If user has a role, update it; or create a role for user.
         """
-        ccnet_api.update_role_emailuser(email, role)
+        UserRole.objects.update_user_role(email, role)
         return self.get(email=email)
 
     def create_superuser(self, email, password):
@@ -190,7 +192,6 @@ class UserManager(object):
     def get_superusers(self):
         """Return a list of admins.
         """
-        # emailusers = ccnet_threaded_rpc.get_superusers()
         emailusers = EmailUser.objects.get_superusers()
 
         user_list = []
@@ -247,6 +248,16 @@ class UserManager(object):
             user.admin_role = ''
 
         return user
+
+    def search_emailusers(self, query_str, start, limit):
+        return EmailUser.objects.filter(email__icontains=query_str)[start: limit]
+
+    def count_emailusers(self):
+        return EmailUser.objects.filter(is_active=True)
+
+    def count_inactive_emailusers(self):
+        return EmailUser.objects.filter(is_active=False)
+
 
 class UserPermissions(object):
     def __init__(self, user):
@@ -817,7 +828,7 @@ class CustomLDAPBackend(object):
         username = user.username
         # update user's id_in_org
         org_id = -1
-        orgs = ccnet_api.get_orgs_by_user(username)
+        orgs = Organization.objects.get_orgs_by_user(username)
         if orgs:
             org_id = orgs[0].org_id
         if id_in_org:
