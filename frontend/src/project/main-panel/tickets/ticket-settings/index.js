@@ -1,9 +1,9 @@
 import AssigneesSettings from './assignees-settings';
-import LabelSettings from './label-settings';
+import TagsSettings from './tags-settings';
 import TypeSettings from './type-settings';
 
 export {
   AssigneesSettings,
-  LabelSettings,
+  TagsSettings,
   TypeSettings,
 };

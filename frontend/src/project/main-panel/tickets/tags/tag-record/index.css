@@ -1,0 +1,64 @@
+.sea-qa-project-tag-record {
+  min-height: 57px;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #ddd;
+  padding: 16px;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-name {
+  width: calc((100% - 140px) * 0.3);
+  height: 24px;
+  padding: 2px 0;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-name .sea-qa-tag {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-description {
+  width: calc((100% - 140px) * 0.7);
+  color: #59636e;
+  padding: 2px 8px;
+  line-height: 20px;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-tickets-count {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 50px;
+  color: #59636e;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-tickets-count:hover {
+  cursor: pointer;
+  color: #0969da;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-op {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-dropdown.show .sea-qa-icon-btn {
+  background-color: #efefef;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-dropdown .dropdown-item .sea-qa-icon-svg {
+  color: #8c8c8c;
+  height: 14px;
+  width: 14px;
+  margin-right: 10px;
+  margin-top: -3px;
+}
+
+.sea-qa-project-tag-record .sea-qa-project-tag-record-dropdown .dropdown-item:hover .sea-qa-icon-svg {
+  color: #FFF;
+}

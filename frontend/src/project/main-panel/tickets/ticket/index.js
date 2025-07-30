@@ -10,13 +10,13 @@ import { TICKET_PAGE_TYPE, TICKET_STATUS } from '../../../constants';
 import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { TICKET_TYPES } from '../../../constants';
-import { AssigneesSettings, LabelSettings, TypeSettings } from '../ticket-settings';
+import { AssigneesSettings, TagsSettings, TypeSettings } from '../ticket-settings';
 import Reply from '../reply';
 
 import './index.css';
 
 const Ticket = () => {
-  const { isLoading, metadata, createReply, collaborators, modifyTicket, getRowById, togglePageType } = useTickets();
+  const { isLoading, metadata, createReply, collaborators, modifyTicket, modifyTicketTags, getRowById, togglePageType } = useTickets();
   const [reply, setReply] = useState('');
 
   const user = useMemo(() => {
@@ -58,12 +58,21 @@ const Ticket = () => {
 
   const onTypeChange = useCallback((type = '') => {
     modifyTicket(ticket.id, { type }).then(res => {
-      setReply('');
+      // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
   }, [ticket, modifyTicket]);
+
+  const onTagsChange = useCallback((tags) => {
+    modifyTicketTags(ticket.id, tags).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicketTags]);
 
   const onSubmitReply = useCallback(() => {
     createReply(ticket.id, reply ? reply.text : '').then(() => {
@@ -79,7 +88,7 @@ const Ticket = () => {
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
-  const { id, status, title, creator, replies, participants = [], type } = ticket;
+  const { id, status, title, creator, replies, participants = [], type, tags } = ticket;
   const isOpen = status === '' || status === TICKET_STATUS.OPEN;
   const typeOption = TICKET_TYPES.find(o => o.id === type);
   const enableEditOtherSettings = creator?.email === user.email;
@@ -136,7 +145,7 @@ const Ticket = () => {
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <AssigneesSettings isReadonly={true} assignees={participants.map(p => replies.email)} collaborators={collaborators} />
-          <LabelSettings />
+          <TagsSettings isReadonly={!enableEditOtherSettings} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!enableEditOtherSettings} type={type} onChange={onTypeChange} />
         </div>
       </div>

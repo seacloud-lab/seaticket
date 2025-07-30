@@ -1,3 +1,7 @@
+.sea-qa-icon-btn {
+  flex-shrink: 0;
+}
+
 .sea-qa-icon-btn.rotate-icon-90 .sea-qa-icon-svg {
   transform: rotate(90deg);
 }

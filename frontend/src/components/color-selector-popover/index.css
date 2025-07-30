@@ -1,0 +1,22 @@
+.sea-qa-color-selector-popover .popover {
+  max-width: 425px;
+  padding-top: 5px;
+  padding-left: 5px;
+}
+
+.sea-qa-color-selector-popover .colorinput-input:checked ~ .colorinput-color:before {
+  display: none;
+}
+
+.sea-qa-color-selector-popover .col-auto {
+  padding-left: 3px;
+}
+
+.sea-qa-color-selector-popover .colorinput-color {
+  display: flex;
+}
+
+.sea-qa-color-selector-popover .colorinput-color .sea-qa-icon-svg,
+.sea-qa-color-selector-popover .colorinput-color:hover .sea-qa-icon-svg {
+  color: inherit;
+}

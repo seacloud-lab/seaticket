@@ -12,7 +12,7 @@ class ProjectSettingPopover extends React.Component {
 
   static propTypes = {
     placement: PropTypes.string,
-    popoverClassName: PropTypes.string,
+    className: PropTypes.string,
     target: PropTypes.string.isRequired,
     onToggle: PropTypes.func.isRequired,
     name: PropTypes.string.isRequired,
@@ -126,7 +126,7 @@ class ProjectSettingPopover extends React.Component {
         hidePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}
         hideArrow={true}
-        popoverClassName={`project-icon-settings-popover ${this.props.popoverClassName || ''}`}
+        className={`project-icon-settings-popover ${this.props.className || ''}`}
       >
         <PopoverBody className="project-icon-settings-content">
           {this.renderName()}

@@ -23,7 +23,7 @@ from seahub.project.models import Workspaces, Projects, ProjectConnections, Tick
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict
-from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TAG, TICKET_TYPE
+from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -401,8 +401,9 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             if not project_tags:  # init default tags
                 project_tags = create_default_project_tags(project_uuid)
+            project_tag_ids = [project_tag.id for project_tag in project_tags]
             for tag in tags:
-                if tag not in [project_tag.name for project_tag in project_tags]:
+                if tag not in project_tag_ids:
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
@@ -450,14 +451,14 @@ class TicketsAPIView(APIView):
         participants_dict = {}
         if tags:
             try:
-                project_tags_dict = gen_project_tags_dict(project_uuid, key='name')
+                project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 ticket_tags = [TicketTags(
                     ticket_id=ticket.id,
                     tag_id=project_tags_dict.get(tag, {}).get('id'),
                 ) for tag in tags]
                 TicketTags.objects.bulk_create(ticket_tags)
                 for tag in ticket_tags:
-                    tag_info = project_tags_dict.get(tag, {})
+                    tag_info = project_tags_dict.get(tag.tag_id, {})
                     if tag.ticket_id not in tags_dict:
                         tags_dict[tag.ticket_id] = [tag_info]
                     else:
@@ -601,8 +602,9 @@ class TicketAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             if not project_tags:  # init default tags
                 project_tags = create_default_project_tags(project_uuid)
+            project_tag_ids = [project_tag.id for project_tag in project_tags]
             for tag in tags:
-                if tag not in [project_tag.name for project_tag in project_tags]:
+                if tag not in project_tag_ids:
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
@@ -630,7 +632,7 @@ class TicketAPIView(APIView):
             error_msg = 'Ticket not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if ticket.updated_at > timezone.now() - relativedelta(seconds=10):
+        if content and ticket.updated_at > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -668,11 +670,11 @@ class TicketAPIView(APIView):
             try:
                 project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 exist_ticket_tags = TicketTags.objects.filter(ticket_id=ticket.id)
-                exist_tags = [project_tags_dict.get(tag.tag_id, {}).get('name') for tag in exist_ticket_tags]
+                exist_tags = [project_tags_dict.get(tag.tag_id, {}).get('id') for tag in exist_ticket_tags]
                 tags_to_create = list(set(tags) - set(exist_tags))
                 tags_to_delete = list(set(exist_tags) - set(tags))
                 if tags_to_create:
-                    project_tags_dict = gen_project_tags_dict(project_uuid, key='name')
+                    project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                     ticket_tags = [TicketTags(
                         ticket_id=ticket.id,
                         tag_id=project_tags_dict.get(tag, {}).get('id'),
@@ -1015,6 +1017,9 @@ class ProjectTagsAPIView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        # argument check
+        tickets_count = request.GET.get('tickets_count', '0')
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1040,8 +1045,18 @@ class ProjectTagsAPIView(APIView):
         if not project_tags:  # init default tags
             project_tags = create_default_project_tags(project_uuid)
 
+        tickets_count_dict = {}
+        if tickets_count == '1':
+            ticket_tags = TicketTags.objects.filter(
+                tag_id__in=[project_tag.id for project_tag in project_tags])
+            for ticket_tag in ticket_tags:
+                if ticket_tag.tag_id not in tickets_count_dict:
+                    tickets_count_dict[ticket_tag.tag_id] = 1
+                else:
+                    tickets_count_dict[ticket_tag.tag_id] += 1
+
         return Response({
-            'project_tags': [project_tag.to_dict() for project_tag in project_tags],
+            'project_tags': [project_tag.to_dict(tickets_count_dict) for project_tag in project_tags],
         })
 
     def post(self, request, project_uuid):
@@ -1066,6 +1081,11 @@ class ProjectTagsAPIView(APIView):
         color = request.POST.get('color')
         if not color:
             error_msg = 'color invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        text_color = request.POST.get('text_color')
+        if not text_color:
+            error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
@@ -1103,7 +1123,8 @@ class ProjectTagsAPIView(APIView):
                 name=name,
                 description=description,
                 color=color,
-                can_modify=True,
+                text_color=text_color,
+                is_predefined=False,
             )
         except Exception as e:
             logger.error(e)
@@ -1132,7 +1153,8 @@ class ProjectTagAPIView(APIView):
         name = request.data.get('name')
         description = request.POST.get('description')
         color = request.POST.get('color')
-        if not name and not description and not color:
+        text_color = request.POST.get('text_color')
+        if not name and not description and not color and not text_color:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1150,11 +1172,12 @@ class ProjectTagAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid)
+            id=tag_id, project_uuid=project_uuid).first()
         if not project_tag:
             error_msg = 'Project tag not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        if not project_tag.can_modify:
+
+        if project_tag.is_predefined:
             error_msg = 'Default tag cannot be modified.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -1166,6 +1189,8 @@ class ProjectTagAPIView(APIView):
                 project_tag.description = description
             if color:
                 project_tag.color = color
+            if text_color:
+                project_tag.text_color = text_color
             project_tag.save()
         except Exception as e:
             logger.error(e)
@@ -1197,11 +1222,11 @@ class ProjectTagAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid)
+            id=tag_id, project_uuid=project_uuid).first()
         if not project_tag:
             error_msg = 'Project tag not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        if not project_tag.can_modify:
+        if project_tag.is_predefined:
             error_msg = 'Default tag cannot be modified.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 

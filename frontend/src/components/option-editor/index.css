@@ -22,6 +22,7 @@
 }
 
 .option-editor-popover .option-editor-content {
+  min-height: 100px;
   max-height: 200px;
   overflow: auto;
   padding: 10px 0;
@@ -52,4 +53,19 @@
   height: 12px;
   width: 12px;
   color: #798d99;
+}
+
+.option-editor-popover .option-editor-add-search-result {
+  height: 30px;
+  overflow: hidden;
+  padding: 0 10px;
+  border-top: 1px solid #dedede;
+  color: var(--bs-body-color);
+}
+
+.option-editor-popover .option-editor-add-search-result .sea-qa-icon-svg {
+  height: 12px;
+  width: 12px;
+  margin-right: 10px;
+  flex-shrink: 0;
 }

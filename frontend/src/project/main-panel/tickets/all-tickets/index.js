@@ -4,6 +4,7 @@ import { gettext, mediaUrl } from '../../../../constants';
 import { useTickets } from '../../../hooks';
 import { CenteredLoading, EmptyTip, Icon, Option, SearchInput } from '../../../../components';
 import { TICKET_STATUS, TICKET_TYPES, TICKET_PAGE_TYPE } from '../../../constants';
+import Tag from '../tags/tag';
 
 import './index.css';
 
@@ -28,6 +29,10 @@ const AllTickets = () => {
     <div className="sea-qa-project-all-tickets-wrapper">
       <div className="sea-qa-project-all-tickets-wrapper-header">
         <SearchInput placeholder={gettext('Search tickets')} />
+        <Button className="ml-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}>
+          <Icon symbol="tag" className="mr-2" style={{ color: '#666' }} />
+          {gettext('Tags')}
+        </Button>
         <Button color="primary" className="ml-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
       </div>
       <div className="sea-qa-project-all-tickets-wrapper-body sea-qa-project-all-tickets">
@@ -59,12 +64,10 @@ const AllTickets = () => {
                       <Icon symbol={isOpen ? 'circle-dot' : 'circle-check'} />
                     </div>
                     <div className="sea-qa-project-all-tickets-record-primary">
-                      <div className="sea-qa-project-all-tickets-record-title" onClick={() => togglePageType(id)}>
+                      <span className="sea-qa-project-all-tickets-record-title" onClick={() => togglePageType(id)}>
                         {title}
-                      </div>
-                      {tags.map(tag => {
-                        return (<div key={tag.id} className="sea-qa-project-all-tickets-record-tag">{tag.name}</div>);
-                      })}
+                      </span>
+                      {tags.map(tag => (<Tag key={tag.id} className="sea-qa-project-all-tickets-record-tag" tag={tag} />))}
                     </div>
                     <div className="sea-qa-project-all-tickets-record-main-content">
                       {typeOption && (<Option option={typeOption} className="sea-qa-project-all-tickets-record-type" /> )}

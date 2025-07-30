@@ -36,6 +36,7 @@ import PasswordInput from './password-input';
 import TextInput from './text-input';
 import StepsNavigation from './steps-navigation';
 import UploadFile from './upload-file';
+import ColorSelectorPopover from './color-selector-popover';
 
 
 export {
@@ -73,4 +74,5 @@ export {
   TextInput,
   StepsNavigation,
   UploadFile,
+  ColorSelectorPopover,
 };

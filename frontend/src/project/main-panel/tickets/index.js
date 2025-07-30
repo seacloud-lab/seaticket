@@ -1,5 +1,6 @@
 import React from 'react';
-import { TicketsProvider, useTickets } from '../../hooks';
+import { TagsProvider, TicketsProvider, useTickets } from '../../hooks';
+import Tags from './tags';
 import AllTickets from './all-tickets';
 import NewTicket from './new-ticket';
 import Ticket from './ticket';
@@ -16,9 +17,17 @@ const {
 const Page = () => {
   const { isLoading, pageType } = useTickets();
   if (isLoading) return (<CenteredLoading />);
+  console.log(projectUuid, pageType);
   if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets />);
-  if (pageType === TICKET_PAGE_TYPE.NEW) return (<NewTicket />);
-  return (<Ticket />);
+  const tagsCount = pageType === TICKET_PAGE_TYPE.TAGS ? 1 : 0;
+  let ChildrenComponent = Ticket;
+  if (pageType === TICKET_PAGE_TYPE.TAGS) ChildrenComponent = Tags;
+  if (pageType === TICKET_PAGE_TYPE.NEW) ChildrenComponent = NewTicket;
+  return (
+    <TagsProvider projectUuid={projectUuid} tagsCount={tagsCount}>
+      <ChildrenComponent />
+    </TagsProvider>
+  );
 };
 
 const Index = ({ title }) => {

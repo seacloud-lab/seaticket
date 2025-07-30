@@ -609,20 +609,24 @@ class ProjectTags(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     color = models.CharField(max_length=50)
-    can_modify = models.BooleanField()
+    text_color = models.CharField(max_length=50)
+    is_predefined = models.BooleanField()
 
     class Meta:
         unique_together = (('project_uuid', 'name'),)
         db_table = 'project_tags'
 
-    def to_dict(self):
+    def to_dict(self, tickets_count_dict={}):
         result = {
             'id': self.id,
             'name': self.name,
             'description': self.description,
             'color': self.color,
-            'can_modify': self.can_modify,
+            'text_color': self.text_color,
+            'is_predefined': self.is_predefined,
         }
+        if self.id in tickets_count_dict:
+            result['tickets_count'] = tickets_count_dict[self.id]
         return result
 
 

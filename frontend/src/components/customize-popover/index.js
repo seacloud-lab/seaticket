@@ -50,7 +50,7 @@ class CustomizePopover extends React.Component {
   };
 
   render() {
-    const { target, innerClassName, popoverClassName, hideArrow, modifiers, placement } = this.props;
+    const { target, innerClassName, className, hideArrow, modifiers, placement } = this.props;
     return (
       <Popover
         placement={placement}
@@ -59,7 +59,7 @@ class CustomizePopover extends React.Component {
         fade={false}
         hideArrow={hideArrow}
         innerClassName={innerClassName}
-        className={popoverClassName}
+        className={className}
         modifiers={modifiers}
       >
         <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick}>
@@ -73,7 +73,7 @@ class CustomizePopover extends React.Component {
 CustomizePopover.propTypes = {
   target: PropTypes.any.isRequired,
   innerClassName: PropTypes.string,
-  popoverClassName: PropTypes.string,
+  className: PropTypes.string,
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   hidePopover: PropTypes.func.isRequired,
   hidePopoverWithEsc: PropTypes.func,
