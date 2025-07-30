@@ -6,6 +6,11 @@
   padding: 16px;
 }
 
+.sea-qa-project-tag-record:last-child {
+  min-height: 56px;
+  border-bottom: none;
+}
+
 .sea-qa-project-tag-record .sea-qa-project-tag-record-name {
   width: calc((100% - 140px) * 0.3);
   height: 24px;

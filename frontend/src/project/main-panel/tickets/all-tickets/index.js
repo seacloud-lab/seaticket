@@ -86,6 +86,11 @@ const AllTickets = () => {
                   </div>
                 );
               })}
+              {isLoading && (
+                <div className="sea-qa-project-all-tickets-loading-record">
+                  <CenteredLoading />
+                </div>
+              )}
             </div>
           )}
         </div>

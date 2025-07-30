@@ -338,11 +338,12 @@ class TicketsAPIView(APIView):
         ticket_tags = TicketTags.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
         project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
         for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, {})
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag_info]
-            else:
-                tags_dict[tag.ticket_id].append(tag_info)
+            tag_info = project_tags_dict.get(tag.tag_id, None)
+            if tag_info:
+                if tag.ticket_id not in tags_dict:
+                    tags_dict[tag.ticket_id] = [tag_info]
+                else:
+                    tags_dict[tag.ticket_id].append(tag_info)
 
         return Response({
             'tickets': [ticket.to_dict(tags_dict=tags_dict) for ticket in tickets],
@@ -455,14 +456,15 @@ class TicketsAPIView(APIView):
                 ticket_tags = [TicketTags(
                     ticket_id=ticket.id,
                     tag_id=project_tags_dict.get(tag, {}).get('id'),
-                ) for tag in tags]
+                ) for tag in tags if project_tags_dict.get(tag, None)]
                 TicketTags.objects.bulk_create(ticket_tags)
                 for tag in ticket_tags:
-                    tag_info = project_tags_dict.get(tag.tag_id, {})
-                    if tag.ticket_id not in tags_dict:
-                        tags_dict[tag.ticket_id] = [tag_info]
-                    else:
-                        tags_dict[tag.ticket_id].append(tag_info)
+                    tag_info = project_tags_dict.get(tag.tag_id, None)
+                    if tag_info:
+                        if tag.ticket_id not in tags_dict:
+                            tags_dict[tag.ticket_id] = [tag_info]
+                        else:
+                            tags_dict[tag.ticket_id].append(tag_info)
             except Exception as e:
                 logger.error(e)
         if participants:
@@ -533,11 +535,12 @@ class TicketAPIView(APIView):
 
         tags_dict = {}
         for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, {})
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag_info]
-            else:
-                tags_dict[tag.ticket_id].append(tag_info)
+            tag_info = project_tags_dict.get(tag.tag_id, None)
+            if tag_info:
+                if tag.ticket_id not in tags_dict:
+                    tags_dict[tag.ticket_id] = [tag_info]
+                else:
+                    tags_dict[tag.ticket_id].append(tag_info)
         ticket = ticket.to_dict(
             tags_dict=tags_dict,
             participants_dict={ticket.id: [participant.participant for participant in ticket_participants]},
@@ -670,7 +673,7 @@ class TicketAPIView(APIView):
             try:
                 project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 exist_ticket_tags = TicketTags.objects.filter(ticket_id=ticket.id)
-                exist_tags = [project_tags_dict.get(tag.tag_id, {}).get('id') for tag in exist_ticket_tags]
+                exist_tags = [project_tags_dict.get(tag.tag_id, {}).get('id') for tag in exist_ticket_tags if project_tags_dict.get(tag.tag_id, None)]
                 tags_to_create = list(set(tags) - set(exist_tags))
                 tags_to_delete = list(set(exist_tags) - set(tags))
                 if tags_to_create:
@@ -678,7 +681,7 @@ class TicketAPIView(APIView):
                     ticket_tags = [TicketTags(
                         ticket_id=ticket.id,
                         tag_id=project_tags_dict.get(tag, {}).get('id'),
-                    ) for tag in tags_to_create]
+                    ) for tag in tags_to_create if project_tags_dict.get(tag, None)]
                     TicketTags.objects.bulk_create(ticket_tags)
                 if tags_to_delete:
                     TicketTags.objects.filter(
@@ -721,11 +724,12 @@ class TicketAPIView(APIView):
 
         tags_dict = {}
         for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, {})
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag_info]
-            else:
-                tags_dict[tag.ticket_id].append(tag_info)
+            tag_info = project_tags_dict.get(tag.tag_id, None)
+            if tag_info:
+                if tag.ticket_id not in tags_dict:
+                    tags_dict[tag.ticket_id] = [tag_info]
+                else:
+                    tags_dict[tag.ticket_id].append(tag_info)
         ticket = ticket.to_dict(
             tags_dict=tags_dict,
             participants_dict={ticket.id: [participant.participant for participant in ticket_participants]},
