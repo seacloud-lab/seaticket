@@ -59,7 +59,6 @@ def sysadmin_react_fake_view(request, **kwargs):
         'trash_repos_expire_days': expire_days if expire_days > 0 else 30,
         'available_roles': get_available_roles(),
         'available_admin_roles': get_available_admin_roles(),
-        'enable_abuse_report': dj_settings.ENABLE_ABUSE_REPORT,
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
         'disable_addressbook_v1': DISABLE_ADDRESSBOOK_V1,
