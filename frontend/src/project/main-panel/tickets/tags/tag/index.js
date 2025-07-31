@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import './index.css';
 
 const Tag = ({ tag, className }) => {
-  if (!tag || !tag.id) return null;
+  if (!tag) return null;
   const { name, color, text_color } = tag;
   return (
     <div
