@@ -17,7 +17,6 @@ const {
 const Page = () => {
   const { isLoading, pageType } = useTickets();
   if (isLoading) return (<CenteredLoading />);
-  console.log(projectUuid, pageType);
   if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets />);
   const tagsCount = pageType === TICKET_PAGE_TYPE.TAGS ? 1 : 0;
   let ChildrenComponent = Ticket;

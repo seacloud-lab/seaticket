@@ -2,9 +2,63 @@ import { gettext } from '../../constants';
 
 export const TICKET_STATUS = {
   OPEN: 'open',
-  COMPLETE: 'completed',
-  NOT_PLANNED: 'not planned',
+  REOPEN: 're_open',
+  COMPLETED: 'completed',
+  NOT_PLANNED: 'not_planned',
   DUPLICATE: 'duplicate',
+};
+
+export const TICKET_OPENED_STATUS = [
+  '',
+  TICKET_STATUS.REOPEN,
+  TICKET_STATUS.OPEN,
+];
+
+export const TICKET_CLOSED_STATUS = [
+  TICKET_STATUS.COMPLETED,
+  TICKET_STATUS.NOT_PLANNED,
+  TICKET_STATUS.DUPLICATE,
+];
+
+export const TICKET_STATUS_CONFIG = {
+  [TICKET_STATUS.OPEN]: {
+    value: TICKET_STATUS.OPEN,
+    icon: 'circle-dot',
+    statusName: gettext('Open'), // Applied to ticket status display
+    shortName: gettext('Open'), // Applied to status toggle btn
+    name: gettext('Open'), // Applied to status editor
+  },
+  [TICKET_STATUS.REOPEN]: {
+    value: TICKET_STATUS.REOPEN,
+    icon: 'loop-dot',
+    statusName: gettext('Reopen'),
+    shortName: gettext('Reopen ticket'),
+    name: gettext('Reopen ticket'),
+  },
+  [TICKET_STATUS.COMPLETED]: {
+    value: TICKET_STATUS.COMPLETED,
+    icon: 'circle-check',
+    statusName: gettext('Close'),
+    shortName: gettext('Close ticket'),
+    name: gettext('Close as completed'),
+    description: gettext('Done, closed, fixed, resolved'),
+  },
+  [TICKET_STATUS.NOT_PLANNED]: {
+    value: TICKET_STATUS.NOT_PLANNED,
+    icon: 'circle-invalid',
+    statusName: gettext('Not planned'),
+    shortName: gettext('Close ticket'),
+    name: gettext('Close as not planned'),
+    description: gettext('Won\'t fix, can\'t repro, stale'),
+  },
+  [TICKET_STATUS.DUPLICATE]: {
+    value: TICKET_STATUS.DUPLICATE,
+    icon: 'circle-invalid',
+    statusName: gettext('Duplicate'),
+    shortName: gettext('Close as duplicate'),
+    name: gettext('Close as duplicate'),
+    description: gettext('Duplicate of another ticket'),
+  }
 };
 
 export const PREDEFINED_TICKET_TAG_NAME = {

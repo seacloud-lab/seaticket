@@ -56,7 +56,7 @@ TICKET_STATUS = (
     '',
     'open',
     'completed',
-    'not planned',
+    'not_planned',
     'duplicate',
 )
 
