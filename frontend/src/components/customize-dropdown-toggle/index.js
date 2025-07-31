@@ -8,9 +8,9 @@ const CustomizeDropdownMoreToggle = ({ isOpen, title, className, ...props }) => 
 
   return (
     <DropdownToggle
-      tag="a"
+      tag="div"
       role="button"
-      className={classnames('cursor-pointer attr-action-icon', className)}
+      className={classnames('cursor-pointer attr-action-icon sea-qa-icon-btn', className)}
       title={title || gettext('More operations')}
       aria-label={title || gettext('More operations')}
       data-toggle="dropdown"

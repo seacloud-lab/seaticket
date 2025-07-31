@@ -1,6 +1,6 @@
 import Connection from './connection';
 import SearchResult from './search-result';
-import Ticket, { Reply as TicketReply } from './ticket';
+import Ticket, { Reply as TicketReply, Tag as TicketTag } from './ticket';
 import ChatMessage from './chat-message';
 
 export {
@@ -8,5 +8,6 @@ export {
   SearchResult,
   Ticket,
   TicketReply,
+  TicketTag,
   ChatMessage,
 };

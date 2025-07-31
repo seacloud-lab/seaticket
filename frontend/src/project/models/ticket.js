@@ -1,5 +1,6 @@
 import dayjs from '../../utils/dayjs';
 import User from '../../models/user';
+import { PREDEFINED_TICKET_TAG } from '../constants';
 
 class Tag {
   constructor(object) {
@@ -8,9 +9,26 @@ class Tag {
 
     this.description = object.description;
     this.color = object.color || '';
-    this.can_modify = object.can_modify || false;
+    this.text_color = object.text_color || '';
+    this.is_predefined = object.is_predefined || false;
+    this.tickets_count = object.tickets_count || 0;
 
+    if (this.is_predefined) {
+      const { description, color, text_color, name } = PREDEFINED_TICKET_TAG[this.name];
+      this.name = name;
+      this.description = description;
+      this.color = color;
+      this.text_color = text_color;
+    }
   }
+
+  _update = (keyValue = {}) => {
+    Object.entries(keyValue).forEach(item => {
+      const [key, value] = item;
+      this[key] = value;
+    });
+    return this;
+  };
 }
 
 class Reply {
@@ -68,12 +86,12 @@ class Ticket {
     this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
     this.reply_updated_at = this.reply_updated_at ? dayjs(this.reply_updated_at).fromNow() : '--';
 
-    if (this.tags) {
+    if (this.tags.length) {
       this.tags = this.tags.map(tag => new Tag(tag));
     }
 
     if (this.participants) {
-      this.participants = this.participants.map(participant => new Tag(participant));
+      this.participants = this.participants.map(participant => new User(participant));
     }
 
     if (this.replies) {
@@ -120,4 +138,5 @@ class Ticket {
 export default Ticket;
 export {
   Reply,
+  Tag,
 };

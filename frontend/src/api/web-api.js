@@ -425,12 +425,15 @@ class SeaQAAPI {
     return this.req.delete(url);
   }
 
-  listProjectTags(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
+  listProjectTags(projectUuid, tickets_count = 0) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
+    if (tickets_count) {
+      url += '?tickets_count=1';
+    }
     return this.req.get(url);
   }
 
-  createProjectTag(projectUuid, name, description, color) {
+  createProjectTag(projectUuid, { name, description, color, text_color }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
     let form = new FormData();
     if (name) {
@@ -442,10 +445,13 @@ class SeaQAAPI {
     if (color) {
       form.append('color', color);
     }
+    if (text_color) {
+      form.append('text_color', text_color);
+    }
     return this._sendPostRequest(url, form);
   }
 
-  modifyProjectTag(projectUuid, tagId, name, description, color) {
+  modifyProjectTag(projectUuid, tagId, { name, description, color, text_color }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
     let form = new FormData();
     if (name) {
@@ -456,6 +462,9 @@ class SeaQAAPI {
     }
     if (color) {
       form.append('color', color);
+    }
+    if (text_color) {
+      form.append('text_color', text_color);
     }
     return this.req.put(url, form);
   }

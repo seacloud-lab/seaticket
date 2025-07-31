@@ -549,12 +549,46 @@ export const Utils = {
     return mode;
   },
 
-  generatePassword: function (passwordLength) {
-    let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
-    for (let i = 0; i < passwordLength; i++) {
-      password += possible.charAt(Math.floor(Math.random() * possible.length));
+  generateSecureRandomInRange: function (min, max) {
+    const start = Math.min(min, max);
+    const end = Math.max(min, max);
+    const range = end - start + 1;
+    const byteSize = Math.ceil(Math.log2(range) / 8);
+
+    const randomBytes = new Uint8Array(byteSize);
+    window.crypto.getRandomValues(randomBytes);
+
+    const randomValue = Array.from(randomBytes).reduce((pre, byte) => (pre << 8) | byte, 0);
+    return start + (randomValue % range);
+  },
+
+  generatePassword: function (length = 8) {
+
+    var password = '';
+
+    // 65~90：A~Z
+    password += String.fromCharCode(this.generateSecureRandomInRange(65, 90));
+
+    // 97~122：a~z
+    password += String.fromCharCode(this.generateSecureRandomInRange(97, 122));
+
+    // 48~57：0~9
+    password += String.fromCharCode(this.generateSecureRandomInRange(48, 57));
+
+    // 33~47：!~/
+    password += String.fromCharCode(this.generateSecureRandomInRange(33, 47));
+
+    // 33~47：!~/
+    // 48~57：0~9
+    // 58~64：:~@
+    // 65~90：A~Z
+    // 91~96：[~`
+    // 97~122：a~z
+    // 123~127：{~
+    for (var i = 0; i < length - 4; i++) {
+      password += String.fromCharCode(this.generateSecureRandomInRange(33, 127));
     }
+
     return password;
   },
 
@@ -849,3 +883,41 @@ export const getFirstDayOfWeek = () => {
   }
   return firstDayOfWeek;
 };
+
+export const isHexColor = (color = '') => {
+  if (!color) return false;
+  const reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
+  return reg.test(color);
+};
+
+export const parseColorToRGB = (color) => {
+  let r;
+  let g;
+  let b;
+  if (isHexColor(color)) {
+    color = color.substring(1);
+    if (color.length === 3) {
+      color = color.split('').map(c => c + c).join('');
+    }
+    r = parseInt(color.substring(0, 2), 16);
+    g = parseInt(color.substring(2, 4), 16);
+    b = parseInt(color.substring(4, 6), 16);
+  }
+  if (color.startsWith('rgb')) {
+    const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (match) {
+      r = parseInt(match[1]);
+      g = parseInt(match[2]);
+      b = parseInt(match[3]);
+    }
+  }
+  return [r, g, b];
+};
+
+export const isDarkColor = (color) => {
+  if (!color) return false;
+  const [r, g, b] = parseColorToRGB(color);
+  if (r === undefined || g === undefined || b === undefined) return false;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+};
+

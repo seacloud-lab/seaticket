@@ -96,6 +96,14 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
     });
   }, [applyModifyRow]);
 
+  const modifyTicketTags = useCallback((ticketID, tags = []) => {
+    const tagIds = tags.map(tag => tag.id);
+    return seaQAAPI.modifyProjectTicket(projectUuid, ticketID, { tags: tagIds }).then(res => {
+      applyModifyRow(ticketID, { tags });
+      return tags;
+    });
+  }, [applyModifyRow]);
+
   // reply api
   const createReply = useCallback((ticketID, reply) => {
     return seaQAAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
@@ -167,6 +175,11 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
   }, [loadMoreTickets]);
 
   const reLoadData = useCallback((pageType) => {
+    if (pageType === TICKET_PAGE_TYPE.TAGS) {
+      setMetadata(INIT_METADATA);
+      setLoading(false);
+      return;
+    }
     if (pageType === TICKET_PAGE_TYPE.NEW) {
       setMetadata(INIT_METADATA);
       setLoading(false);
@@ -205,8 +218,10 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
     const params = paramsString.split('/');
     const [, ticketType = ''] = params;
     let pageType = TICKET_PAGE_TYPE.ALL;
-    if (ticketType === 'new') {
+    if (ticketType === TICKET_PAGE_TYPE.NEW) {
       pageType = TICKET_PAGE_TYPE.NEW;
+    } else if (ticketType === TICKET_PAGE_TYPE.TAGS) {
+      pageType = TICKET_PAGE_TYPE.TAGS;
     } else {
       const ticketNumber = Number(ticketType);
       pageType = ticketType && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_TYPE.ALL;
@@ -236,6 +251,7 @@ export const TicketsProvider = ({ projectUuid, projectName, children }) => {
       createTicket,
       deleteTicket,
       modifyTicket,
+      modifyTicketTags,
       createReply,
       deleteReply,
       modifyReply,

@@ -41,7 +41,7 @@ class ProjectItemPopover extends React.Component {
       <CustomizePopover
         target={target}
         placement="right-start"
-        popoverClassName="project-item-popover"
+        className="project-item-popover"
         hidePopover={this.props.onToggle}
         hidePopoverWithEsc={this.props.onToggle}
         onEnter={this.onEnter}

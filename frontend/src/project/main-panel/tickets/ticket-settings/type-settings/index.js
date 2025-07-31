@@ -9,47 +9,47 @@ import './index.css';
 
 const TypeSettings = ({
   isReadonly,
-  type,
+  value,
   className = 'mb-4',
   onChange,
 }) => {
-  const [isShowTypeEditor, setIsShowTypeEditor] = useState(false);
+  const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const typeEditorRef = useRef(null);
+  const editorRef = useRef(null);
 
-  const openTypeEditor = useCallback(() => {
+  const openEditor = useCallback(() => {
     if (isReadonly) return;
-    setIsShowTypeEditor(true);
+    setIsShowEditor(true);
   }, [isReadonly]);
 
-  const closeTypeEditor = useCallback(() => {
-    setIsShowTypeEditor(false);
+  const closeEditor = useCallback(() => {
+    setIsShowEditor(false);
   }, []);
 
   const onTypeChange = useCallback((type) => {
     onChange(type);
   }, [onChange]);
 
-  const typeOption = TICKET_TYPES.find(o => o.id === type);
+  const typeOption = TICKET_TYPES.find(o => o.id === value);
 
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
         <Label>{gettext('Type')}</Label>
-        <div className="ticket-types-formatter" onClick={openTypeEditor} ref={typeEditorRef}>
+        <div className="ticket-types-formatter" onClick={openEditor} ref={editorRef}>
           {typeOption ? (<Option option={typeOption} />) : (<div className="tip-default">{gettext('No type')}</div>)}
         </div>
       </div>
-      {!isReadonly && isShowTypeEditor && (
+      {!isReadonly && isShowEditor && (
         <OptionEditor
-          target={typeEditorRef}
+          target={editorRef}
           isMultiple={false}
-          value={type}
+          value={value}
           placeholder={gettext('Select type')}
           emptyTip={gettext('No types')}
           options={TICKET_TYPES}
           onChange={onTypeChange}
-          onClose={closeTypeEditor}
+          onToggle={closeEditor}
         />
       )}
     </>

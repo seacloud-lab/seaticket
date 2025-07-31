@@ -17,7 +17,7 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils.hasher import AESPasswordHasher
-from seahub.project.constants import TICKET_TAG
+from seahub.project.constants import PREDEFINED_TICKET_TAGS
 
 
 logger = logging.getLogger(__name__)
@@ -197,16 +197,14 @@ def ask_ai_question(params):
 
 def create_default_project_tags(project_uuid):
     project_tags = []
-    for k, v in TICKET_TAG.items():
-        name = k
-        description = v.get('description')
-        color = v.get('color')
+    for name in PREDEFINED_TICKET_TAGS:
         project_tag = ProjectTags(
             project_uuid=project_uuid,
             name=name,
-            description=description,
-            color=color,
-            can_modify=False,
+            description='',
+            color='',
+            text_color='',
+            is_predefined=True,
         )
         project_tags.append(project_tag)
     ProjectTags.objects.bulk_create(project_tags)
@@ -220,12 +218,7 @@ def gen_project_tags_dict(project_uuid, key='id'):
 
     project_tags_dict = {}
     for project_tag in project_tags:
-        tag_info =  {
-            'id': project_tag.id,
-            'name': project_tag.name,
-            'description': project_tag.description,
-            'color': project_tag.color,
-        }
+        tag_info = project_tag.to_dict()
         if key == 'id':
             project_tags_dict[project_tag.id] = tag_info
         else:

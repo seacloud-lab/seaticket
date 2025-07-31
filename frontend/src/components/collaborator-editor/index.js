@@ -53,7 +53,7 @@ const CollaboratorEditor = ({
   return (
     <CustomizePopover
       target={target}
-      popoverClassName="collaborator-editor-popover"
+      className="collaborator-editor-popover"
       hidePopover={handleSubmit}
       hidePopoverWithEsc={handleSubmit}
     >

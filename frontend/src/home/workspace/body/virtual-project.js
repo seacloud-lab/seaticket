@@ -133,7 +133,7 @@ class VirtualProject extends React.Component {
         </div>
         {this.state.isDataLoaded && (
           <ProjectSettingPopover
-            popoverClassName="virtual-project-settings"
+            className="virtual-project-settings"
             placement="bottom-start"
             target="create-project"
             onToggle={this.onCreate}

@@ -27,7 +27,7 @@
 }
 
 .sea-qa-project-all-tickets-wrapper-body {
-  flex: 1;
+  height: fit-content;
   width: 100%;
   overflow: hidden;
   border: 1px solid #ddd;
@@ -97,6 +97,19 @@
   border-bottom: 1px solid #ddd;
 }
 
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record:last-child {
+  border-bottom: none;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-loading-record {
+  height: 64px;
+  width: 100%;
+  border-top: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sea-qa-project-all-tickets .sea-qa-project-all-tickets-record:hover {
   background-color: #f5f5f5;
 }
@@ -127,9 +140,8 @@
   font-weight: 600;
   font-size: 16px;
   max-width: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
+  word-break: break-word;
+  margin-right: 10px;
 }
 
 .sea-qa-project-all-tickets .sea-qa-project-all-tickets-record-primary .sea-qa-project-all-tickets-record-title:hover {
@@ -160,4 +172,9 @@
   display: flex;
   align-items: center;
   color: #59636e;
+}
+
+.sea-qa-project-all-tickets .sea-qa-project-all-tickets-record-tag {
+  margin: 2px 10px 2px 0;
+  display: inline-flex;
 }

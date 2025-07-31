@@ -1,4 +1,4 @@
-.common-add-tool {
+.customize-add-tool {
   color: #666666;
   display: flex;
   align-items: center;
@@ -12,21 +12,21 @@
   border-top: none;
 }
 
-.common-add-tool.disabled {
+.customize-add-tool.disabled {
   color: #c2c2c2;
 }
 
-.common-add-tool:hover {
+.customize-add-tool:hover {
   cursor: pointer;
   background: #f5f5f5;
 }
 
-.common-add-tool.disabled:hover {
+.customize-add-tool.disabled:hover {
   cursor: not-allowed;
   background: #fff;
 }
 
-.common-add-tool .common-add-tool-icon {
+.customize-add-tool .customize-add-tool-icon {
   margin-right: 14px;
   font-size: 12px;
   font-weight: 600;
