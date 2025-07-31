@@ -85,7 +85,7 @@ const TagsSettings = ({
       <div className="tags-formatter" onClick={openEditor} ref={editorRef}>
         {value.length > 0 ? (
           <>
-            {value.map(tag => (<Tag tag={tag} />))}
+            {value.map(tag => (<Tag key={tag.id} tag={tag} />))}
           </>
         ) : (
           <div className="tip-default">{gettext('No tags')}</div>

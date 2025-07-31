@@ -77,7 +77,7 @@ export const PREDEFINED_TICKET_TAG = {
 };
 
 export const TICKET_TYPES = [
-  { id: 'bug', value: 'bug', name: gettext('bug'), color: '#FFF', bgColor: '#F4667C', borderColor: '#DC556A' },
+  { id: 'bug', value: 'bug', name: gettext('Bug'), color: '#FFF', bgColor: '#F4667C', borderColor: '#DC556A' },
   { id: 'feature', value: 'feature', name: gettext('Feature'), color: '#FFF', bgColor: '#46A1FD', borderColor: '#3C8FE4' },
   { id: 'request', value: 'request', name: gettext('Request'), color: '#212529', bgColor: '#FFFCB5', borderColor: '#E8E79D' },
   { id: 'support', value: 'support', name: gettext('Support'), color: '#212529', bgColor: '#DDFFE6', borderColor: '#BBEBCD' },
