@@ -96,7 +96,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} placeholder={gettext('Please input connection name')} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type } = c;
+              const { key, type, placeholder } = c;
               const value = config[key] || '';
               return (
                 <FormGroup key={key}>
@@ -105,9 +105,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
                   </Label>
                   {type === TABLE_COLUMN_TYPE.PASSWORD ? (
-                    <PasswordInput value={value} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
+                    <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
                   ) : (
-                    <TextInput value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
+                    <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
                   )}
                 </FormGroup>
               );
