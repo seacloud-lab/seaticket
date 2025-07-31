@@ -4,6 +4,7 @@ import { Input } from 'reactstrap';
 const TextInput = ({
   disabled,
   value,
+  placeholder,
   onChange: onValueCHange
 }) => {
   const onChange = useCallback((event) => {
@@ -13,7 +14,7 @@ const TextInput = ({
   }, [value, onValueCHange]);
 
   return (
-    <Input value={value} onChange={onChange} disabled={disabled} />
+    <Input value={value} placeholder={placeholder} onChange={onChange} disabled={disabled} />
   );
 };
 

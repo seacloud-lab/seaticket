@@ -16,6 +16,7 @@ const PasswordInput = ({
   enableRandomGeneration = false,
   autoFocus = false,
   enableCheckStrength = true,
+  placeholder = '',
   onChange: onChangeValue,
   onShowChange,
 }) => {
@@ -74,6 +75,7 @@ const PasswordInput = ({
         autoComplete="new-password"
         type={isShowPassword ? 'text' : 'password'}
         value={value}
+        placeholder={placeholder}
         onChange={onChangePassword}
         onFocus={onFocus}
         onBlur={onBlur}
