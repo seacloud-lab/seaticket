@@ -124,7 +124,7 @@ export const CONNECTION_FIELDS = {
       key: 'api_token',
       name: gettext('Library API token'),
       type: TABLE_COLUMN_TYPE.PASSWORD,
-      placeholder: gettext('Please input server URL'),
+      placeholder: gettext('Please input token'),
       is_required: true,
       can_edit_multiple_times: false,
       is_custom: true
