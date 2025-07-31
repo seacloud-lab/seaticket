@@ -1,9 +1,10 @@
 import React, { useCallback } from 'react';
 import { Button } from 'reactstrap';
+import classnames from 'classnames';
 import { gettext, mediaUrl } from '../../../../constants';
 import { useTickets } from '../../../hooks';
 import { CenteredLoading, EmptyTip, Icon, Option, SearchInput } from '../../../../components';
-import { TICKET_STATUS, TICKET_TYPES, TICKET_PAGE_TYPE } from '../../../constants';
+import { TICKET_TYPES, TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG, TICKET_OPENED_STATUS } from '../../../constants';
 import Tag from '../tags/tag';
 
 import './index.css';
@@ -35,7 +36,7 @@ const AllTickets = () => {
         </Button>
         <Button color="primary" className="ml-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
       </div>
-      <div className="sea-qa-project-all-tickets-wrapper-body sea-qa-project-all-tickets">
+      <div className={classnames('sea-qa-project-all-tickets-wrapper-body sea-qa-project-all-tickets', { 'empty': rows.length === 0 })}>
         <div className="sea-qa-project-all-tickets-header p-2 sea-qa-project-all-tickets-op-wrapper">
           <div className="sea-qa-project-all-tickets-op-wrapper-left">
             <div className="sea-qa-project-all-tickets-op-btn">{gettext('Open')}</div>
@@ -56,12 +57,12 @@ const AllTickets = () => {
             <div className="sea-qa-project-all-tickets-records" onScroll={onScroll}>
               {rows.map(rowID => {
                 const { id, title, status, type, creator, created_at, reply_count, tags } = id_row_map[rowID];
-                const isOpen = status === '' || status === TICKET_STATUS.OPEN;
+                const statusOption = TICKET_STATUS_CONFIG[status];
                 const typeOption = TICKET_TYPES.find(o => o.id === type);
                 return (
                   <div key={id} className="sea-qa-project-all-tickets-record">
                     <div className="sea-qa-project-all-tickets-record-status">
-                      <Icon symbol={isOpen ? 'circle-dot' : 'circle-check'} />
+                      <Icon symbol={statusOption?.icon} className={`sea-qa-project-ticket-status-${statusOption?.icon}-icon`} />
                     </div>
                     <div className="sea-qa-project-all-tickets-record-primary">
                       <span className="sea-qa-project-all-tickets-record-title" onClick={() => togglePageType(id)}>
@@ -72,7 +73,7 @@ const AllTickets = () => {
                     <div className="sea-qa-project-all-tickets-record-main-content">
                       {typeOption && (<Option option={typeOption} className="sea-qa-project-all-tickets-record-type" /> )}
                       <div className="sea-qa-project-all-tickets-record-create">
-                        {isOpen ? `#${id} · ${creator.name || ''} opened ${created_at}` : `#${id} · by ${creator.name} was closed ${created_at}`}
+                        {TICKET_OPENED_STATUS.includes(status) ? `#${id} · ${creator.name || ''} opened ${created_at}` : `#${id} · by ${creator.name} was closed ${created_at}`}
                       </div>
                     </div>
                     <div className="sea-qa-project-all-tickets-record-reply">

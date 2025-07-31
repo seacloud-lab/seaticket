@@ -6,12 +6,13 @@ import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafil
 import { isLongTextValueExceedLimit } from '../../../../utils/long-text';
 import { useTickets } from '../../../hooks';
 import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '../../../../components';
-import { TICKET_PAGE_TYPE, TICKET_STATUS } from '../../../constants';
+import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG } from '../../../constants';
 import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { TICKET_TYPES } from '../../../constants';
 import { AssigneesSettings, TagsSettings, TypeSettings } from '../ticket-settings';
 import Reply from '../reply';
+import StatusToggleButton from './status-toggle-btn';
 
 import './index.css';
 
@@ -89,9 +90,9 @@ const Ticket = () => {
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
   const { id, status, title, creator, replies, participants = [], type, tags } = ticket;
-  const isOpen = status === '' || status === TICKET_STATUS.OPEN;
   const typeOption = TICKET_TYPES.find(o => o.id === type);
   const enableEditOtherSettings = creator?.email === user.email;
+  const statusOption = TICKET_STATUS_CONFIG[status];
 
   return (
     <div className="sea-qa-project-ticket">
@@ -108,9 +109,9 @@ const Ticket = () => {
         </div>
       </div>
       <div className="sea-qa-project-ticket-status-wrapper">
-        <div className={classnames('sea-qa-project-ticket-status', { 'open': isOpen })}>
-          <Icon symbol={isOpen ? 'circle-dot' : 'circle-check'} />
-          <span>{isOpen ? gettext('Open') : gettext('Close')}</span>
+        <div className={classnames('sea-qa-project-ticket-status', status)}>
+          <Icon symbol={statusOption?.icon} />
+          <span>{statusOption?.statusName}</span>
         </div>
         {typeOption && (<Option className="sea-qa-project-ticket-status ml-3" option={typeOption} />)}
       </div>
@@ -135,11 +136,8 @@ const Ticket = () => {
               onSaveEditorValue={onReplyChange}
             />
           </Reply>
-          <div className="sea-qa-project-ticket-comment-close">
-            <Button className="sea-qa-project-ticket-status-toggle-btn mr-4" onClick={() => toggleStatus(isOpen ? TICKET_STATUS.COMPLETE : TICKET_STATUS.OPEN)}>
-              <Icon symbol={isOpen ? 'circle-check' : 'loop-dot'} className="mr-2" />
-              <span>{isOpen ? gettext('Close') : gettext('Reopen ticket')}</span>
-            </Button>
+          <div className="sea-qa-project-ticket-footer-btns">
+            <StatusToggleButton status={status} onChange={toggleStatus} />
             <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
           </div>
         </div>

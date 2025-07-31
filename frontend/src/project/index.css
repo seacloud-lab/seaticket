@@ -31,4 +31,19 @@
 body {
   --ticket-open-color: #1a7f37;
   --ticket-close-color: #8250df;
+  --ticket-invalid-color: #59636e;
+}
+
+/* icon color */
+.sea-qa-project-ticket-status-circle-check-icon {
+  color: var(--ticket-close-color);
+}
+
+.sea-qa-project-ticket-status-circle-dot-icon,
+.sea-qa-project-ticket-status-loop-dot-icon {
+  color: var(--ticket-open-color);
+}
+
+.sea-qa-project-ticket-status-circle-invalid-icon {
+  color: var(--ticket-invalid-color);
 }

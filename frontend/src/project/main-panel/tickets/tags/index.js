@@ -7,6 +7,7 @@ import TagRecord from './tag-record';
 import TagDialog from './tag-dialog';
 
 import './index.css';
+import classNames from 'classnames';
 
 const Tags = () => {
   const [isShowTagDialog, setIsShowTagDialog] = useState(false);
@@ -42,7 +43,7 @@ const Tags = () => {
           <SearchInput placeholder={gettext('Search tags')} value={searchValue} onChange={onSearchValueChange} />
           <Button color="primary" className="ml-4" onClick={() => openTagDialog()}>{gettext('New tag')}</Button>
         </div>
-        <div className="sea-qa-project-tags-wrapper-body">
+        <div className={classNames('sea-qa-project-tags-wrapper-body', { 'empty': displayTags.length === 0 })}>
           <div className="sea-qa-project-tags-op-wrapper p-2 ">
             <div className="sea-qa-project-tags-op-wrapper-left">
               <div className="sea-qa-project-tags-op-btn disabled">{displayTags.length && gettext('{count} tags').replace('{count}', displayTags.length)}</div>

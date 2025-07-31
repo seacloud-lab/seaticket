@@ -1,6 +1,6 @@
 import dayjs from '../../utils/dayjs';
 import User from '../../models/user';
-import { PREDEFINED_TICKET_TAG } from '../constants';
+import { PREDEFINED_TICKET_TAG, TICKET_STATUS } from '../constants';
 
 class Tag {
   constructor(object) {
@@ -54,7 +54,6 @@ class Reply {
   }
 }
 
-
 class Ticket {
   constructor(object) {
     this.id = object.number || '';
@@ -62,7 +61,7 @@ class Ticket {
 
     this.title = object.title || '';
     this.content = object.content || '';
-    this.status = object.status || '';
+    this.status = object.status || TICKET_STATUS.OPEN;
     this.type = object.type || '';
     this.tags = object.tags || [];
 
