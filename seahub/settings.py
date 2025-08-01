@@ -225,12 +225,6 @@ INSTALLED_APPS = [
     'seahub.sysadmin_extra',
 ]
 
-# Enable or disable multiple storage backends.
-ENABLE_STORAGE_CLASSES = False
-
-# `USER_SELECT` or `ROLE_BASED` or `REPO_ID_MAPPING`
-STORAGE_CLASS_MAPPING_POLICY = 'USER_SELECT'
-
 # Enable or disable constance(web settings).
 ENABLE_SETTINGS_VIA_WEB = True
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
@@ -334,9 +328,6 @@ ENABLE_UPDATE_USER_INFO = True
 
 ENABLE_CONVERT_TO_TEAM_ACCOUNT = False
 
-# Enable or disable org repo creation by user
-ENABLE_USER_CREATE_ORG_REPO = True
-
 # Enable or disable org department
 ENABLE_ORG_DEPARTMENT = True
 
@@ -345,10 +336,6 @@ ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL = False
 # Enable or disable sharing to all groups
 ENABLE_SHARE_TO_ALL_GROUPS = False
 
-ENABLE_USER_TO_SET_NUMBER_SEPARATOR = True
-
-ENABLE_ABUSE_REPORT = True
-
 # File preview
 FILE_PREVIEW_MAX_SIZE = 30 * 1024 * 1024
 FILE_ENCODING_LIST = ['auto', 'utf-8', 'gbk', 'ISO-8859-1', 'ISO-8859-5']
@@ -356,10 +343,6 @@ FILE_ENCODING_TRY_LIST = ['utf-8', 'gbk']
 
 # extensions of previewed files
 TEXT_PREVIEW_EXT = """ac, am, bat, c, cc, cmake, cpp, cs, css, diff, el, h, html, htm, java, js, json, less, make, org, php, pl, properties, py, rb, scala, script, sh, sql, txt, text, tex, vi, vim, xhtml, xml, log, csv, groovy, rst, patch, go, yml"""
-
-# document file preview
-HAS_OFFICE_CONVERTER = False
-OFFICE_CONVERTOR_ROOT = ''
 
 # Common settings(file extension, storage) for avatar and group avatar.
 AVATAR_FILE_STORAGE = '' # Replace with 'seahub.base.database_storage.DatabaseStorage' if save avatar files to database
@@ -493,13 +476,8 @@ USE_PHONE_REGISTRATION_BY_DEFAULT = False
 # show 'log out' icon in top-bar or not.
 SHOW_LOGOUT_ICON = False
 
-# powered by link
-POWERED_BY_LINK = 'https://seatable.cn/'
-
 # Enable or disable login with phone
 ENABLE_BIND_PHONE = False
-
-CAN_REMOVE_BASE_PASSWORD_VIA_PHONE = False
 
 # aliyun sms config
 ALIYUN_SMS_CONFIG = {}
@@ -514,23 +492,9 @@ REJECT_REGISTRATION_ORG_PREFIX = []
 # reject registration org re str
 REJECT_REGISTRATION_ORG_RE_STR = []
 
-# org common dataset
-ENABLE_ORG_COMMON_DATASET = True
-
-# enable invite a friend
-ENABLE_INVITE_A_FRIEND = False
-
-# enable tell a friend for cloud.seatable.io
-ENABLE_TELL_A_FRIEND = False
-
-# friend notification link for cloud.seatable.io
-FRIEND_INVITATION_LINK = ''
-
 # slide captcha
 ENABLE_SLIDE_CAPTCHA = False
 SLIDE_CAPTCHA_IMAGE_URL = ''
-
-DISABLE_ADDRESSBOOK_V1 = False
 
 # addressbook_v2
 ENABLE_ADDRESSBOOK_V2 = False
@@ -609,38 +573,10 @@ LOGIN_REMEMBER_DAYS = 7
 # Need to check user agreement before logging in and registering(Domestic cloud services)
 CN_FORCE_USER_AGREE_TERMS = False
 
-SEAFILE_VERSION = '6.3.3'
-
 CAPTCHA_IMAGE_SIZE = (90, 42)
-
-###################
-# Image Thumbnail #
-###################
-
-# Enable or disable thumbnail
-ENABLE_THUMBNAIL = True
 
 # Absolute filesystem path to the directory that will hold thumbnail files.
 SEAHUB_DATA_ROOT = os.path.join(PROJECT_ROOT, '../../seahub-data')
-if os.path.exists(SEAHUB_DATA_ROOT):
-    THUMBNAIL_ROOT = os.path.join(SEAHUB_DATA_ROOT, 'thumbnail')
-else:
-    THUMBNAIL_ROOT = os.path.join(PROJECT_ROOT, 'seahub/thumbnail/thumb')
-
-THUMBNAIL_EXTENSION = 'png'
-
-# for thumbnail: height(px) and width(px)
-THUMBNAIL_DEFAULT_SIZE = 48
-THUMBNAIL_SIZE_FOR_GRID = 192
-THUMBNAIL_SIZE_FOR_ORIGINAL = 1024
-
-# size(MB) limit for generate thumbnail
-THUMBNAIL_IMAGE_SIZE_LIMIT = 30
-THUMBNAIL_IMAGE_ORIGINAL_SIZE_LIMIT = 256
-
-# video thumbnails
-ENABLE_VIDEO_THUMBNAIL = False
-THUMBNAIL_VIDEO_FRAME_TIME = 5  # use the frame at 5 second as thumbnail
 
 ENABLE_WEBDAV_SECRET = False
 ENABLE_USER_SET_CONTACT_EMAIL = False
@@ -692,15 +628,6 @@ USE_EXTERNAL_TEAM_ADMIN = False
 EXTERNAL_TEAM_ADMIN_SECRET_KEY = ''
 EXTERNAL_TEAM_ADMIN_URL = ''
 
-# enable show department column for all languages
-ENABLE_DEPARTMENT_COLUMN_FOR_ALL = False
-
-# enable show wechat support
-SHOW_WECHAT_SUPPORT_GROUP = False
-
-ENABLE_DEMO_USER = False
-CLOUD_DEMO_USER = 'demo@seafile.com'
-
 ENABLE_TWO_FACTOR_AUTH = False
 OTP_LOGIN_URL = '/profile/two_factor_authentication/setup/'
 TWO_FACTOR_DEVICE_REMEMBER_DAYS = 90
@@ -713,36 +640,17 @@ ENABLE_SMS_LOGIN = False
 SEND_SMS_ATTEMPT_LIMIT = 5
 SEND_SMS_ATTEMPT_TIMEOUT = 60 * 60  # 1h
 
-# Opearation Log DB
-ENABLE_OPERATION_LOG_DB = False
-
 GROUP_MEMBER_LIMIT = 500
-
-ARCHIVE_VIEW_EXPORT_ROW_LIMIT = 250000
-BIG_DATA_ROW_IMPORT_LIMIT = 500000
-BIG_DATA_ROW_UPDATE_LIMIT = 500000
 
 PERSONAL_GROUP_LIMIT = 500
 
-PERSONAL_BASE_LIMIT = 500
+PERSONAL_PROJECT_LIMIT = 500
 
 DISABLE_ADDING_PERSONAL_PROJECTS = False
 
-FREE_ORG_BASE_LIMIT = 500
+FREE_ORG_PROJECT_LIMIT = 500
 
-GROUP_BASE_LIMIT = 500
-
-DEFAULT_DTABLE_FORMAT_VERSION = 9
-
-# base rows total count limit
-BASE_WRITABLE_LIMIT = 100000
-
-DEFAULT_SEAFILE_SERVER = ''
-
-INIT_BASE_CONF = {
-    'TEMPLATES_WORKSPACE_ID': 0,
-    'BASES': ['']
-}
+GROUP_PROJECT_LIMIT = 500
 
 # PWA
 PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
@@ -851,42 +759,6 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
         except:
             raise ValueError(f"Invalid database port: {DATABASES['default']['PORT']}")
 
-## For operation logs DB (optional)
-ENABLE_OPERATION_LOG_DB = os.environ.get('SEAQA_ENABLE_OPERATION_LOG_DB') or ENABLE_OPERATION_LOG_DB
-
-if ENABLE_OPERATION_LOG_DB:
-    _rewrite_oplog_db_env_key_map = {
-        'HOST': 'SEAQA_OPERATION_LOG_DB_HOST',
-        'PORT': 'SEAQA_OPERATION_LOG_DB_PORT',
-        'USER': 'SEAQA_OPERATION_LOG_DB_USER',
-        'PASSWORD': 'SEAQA_OPERATION_LOG_DB_PASSWORD',
-        'NAME': 'SEAQA_OPERATION_LOG_DB_NAME'
-    }
-
-    if 'operation_log' not in DATABASES:
-        DATABASES['operation_log'] = {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sea_qa',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        }
-    for db_key, env_key in _rewrite_oplog_db_env_key_map.items():
-        if env_value := os.environ.get(env_key):
-            DATABASES['operation_log'][db_key] = env_value
-
-    if DATABASES['operation_log'].get('PORT'):
-        try:
-            int(DATABASES['operation_log']['PORT'])
-        except:
-            raise ValueError(f"Invalid operation log database port: {DATABASES['operation_log']['PORT']}")
-elif not ENABLE_OPERATION_LOG_DB:
-    try:
-        del DATABASES['operation_log']
-    except:
-        pass
-
 ## For cache
 if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default'].get('BACKEND'):
     redis_cache = 'RedisCache' in CACHES['default'].get('BACKEND')
@@ -933,8 +805,6 @@ CONSTANCE_CONFIG = {
     'LOGIN_REMEMBER_DAYS': (LOGIN_REMEMBER_DAYS, ''),
     'LOGIN_ATTEMPT_LIMIT': (LOGIN_ATTEMPT_LIMIT, ''),
     'FREEZE_USER_ON_LOGIN_FAILED': (FREEZE_USER_ON_LOGIN_FAILED, ''),
-
-    'ENABLE_USER_CREATE_ORG_REPO': (ENABLE_USER_CREATE_ORG_REPO, ''),
 
     'FORCE_PASSWORD_CHANGE': (FORCE_PASSWORD_CHANGE, ''),
 

@@ -574,7 +574,6 @@ def react_fake_view(request, **kwargs):
         'org_corp_bind_type': get_org_corp_bind_type(org.org_id),
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,
-        'disable_addressbook_v1': settings.DISABLE_ADDRESSBOOK_V1,
         'enable_addressbook_v2': settings.ENABLE_ADDRESSBOOK_V2
         })
 

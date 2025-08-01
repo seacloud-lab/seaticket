@@ -83,7 +83,6 @@
             orgID: {% if org is not None %} '{{ org.org_id|escapejs }}' {% else %} -1 {% endif %},
             langCode: "{{LANGUAGE_CODE|escapejs}}",
             customNavItems: {% if custom_nav_items %} JSON.parse('{{ custom_nav_items | escapejs }}') {% else %} {{'[]'}} {% endif %},
-            canRemoveBasePasswordViaPhone: {% if can_remove_base_password_via_phone %} true {% else %} false {% endif %},
             hasBoundPhone: {% if has_bound_phone %} true {% else %} false {% endif %},
             disableAddingPersonalProjects: {% if disable_adding_personal_projects %} true {% else %} false {% endif %},
             trashCleanExpireDays: '{{trash_clean_expire_days}}',

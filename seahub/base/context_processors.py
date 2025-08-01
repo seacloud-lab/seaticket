@@ -16,11 +16,10 @@ from django.utils import translation
 from django.utils.functional import lazy
 from constance import config
 
-from seahub.settings import SEAFILE_VERSION, SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
+from seahub.settings import SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
     LOGO_PATH, BRANDING_CSS, LOGO_WIDTH, LOGO_HEIGHT,\
     SITE_ROOT, ENABLE_GUEST_INVITATION, \
     FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
-    ENABLE_THUMBNAIL, THUMBNAIL_SIZE_FOR_ORIGINAL, \
     MEDIA_ROOT, SHOW_LOGOUT_ICON, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
     LOGIN_BG_IMAGE_PATH, SHARE_LINK_PASSWORD_MIN_LENGTH, \
     CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
@@ -105,7 +104,6 @@ def base(request):
 
     result = {
         'version': SEAQA_VERSION,
-        'seafile_version': SEAFILE_VERSION,
         'site_title': SITE_TITLE,
         'branding_css': BRANDING_CSS,
         'enable_branding_css': ENABLE_BRANDING_CSS,
@@ -131,8 +129,6 @@ def base(request):
         'constance_enabled': dj_settings.CONSTANCE_ENABLED,
         'LOGIN_URL': dj_settings.LOGIN_URL,
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
-        'enable_thumbnail': ENABLE_THUMBNAIL,
-        'thumbnail_size_for_original': THUMBNAIL_SIZE_FOR_ORIGINAL,
         'enable_guest_invitation': ENABLE_GUEST_INVITATION,
         'show_logout_icon': SHOW_LOGOUT_ICON,
         'is_pro': True if is_pro_version() else False,

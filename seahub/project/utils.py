@@ -26,11 +26,11 @@ ENCRYPT_KEYS = ['api_token']
 
 
 def check_project_limit(workspace, request):
-    from seahub.settings import PERSONAL_BASE_LIMIT, GROUP_BASE_LIMIT, FREE_ORG_BASE_LIMIT
+    from seahub.settings import PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
     org_id = workspace.org_id
     if org_id != -1 and not request.user.permissions.can_use_advanced_permissions():
         org_project_count = Projects.objects.filter(deleted=False, workspace__org_id=org_id).select_related('workspace').count()
-        if org_project_count >= FREE_ORG_BASE_LIMIT:
+        if org_project_count >= FREE_ORG_PROJECT_LIMIT:
             return False
 
     try:
@@ -41,9 +41,9 @@ def check_project_limit(workspace, request):
 
     owner = workspace.owner
     if '@seafile_group' in owner:
-        return project_count < GROUP_BASE_LIMIT
+        return project_count < GROUP_PROJECT_LIMIT
 
-    return project_count < PERSONAL_BASE_LIMIT
+    return project_count < PERSONAL_PROJECT_LIMIT
 
 
 def check_project_admin_permission(username, owner):

@@ -23,7 +23,7 @@ from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.models import SocialAuthUser, UserQuota
 from seahub.settings import LDAP_SAML_USE_SAME_UID, ENABLE_SASL, SASL_MECHANISM, \
-    SASL_AUTHC_ID_ATTR, ENABLE_USER_CREATE_ORG_REPO
+    SASL_AUTHC_ID_ATTR
 from seahub.auth.models import EmailUser
 from seahub.organizations.models import Organization
 from seahub.role_permissions.models import UserRole
@@ -275,25 +275,6 @@ class UserPermissions(object):
 
     def can_use_global_address_book(self):
         return self._get_perm_by_roles('can_use_global_address_book')
-
-    def can_add_public_repo(self):
-        """ Check if user can create public repo or share existed repo to public.
-
-        Used when MULTI_TENANCY feature is NOT enabled.
-        """
-
-        if CLOUD_MODE:
-            if MULTI_TENANCY:
-                return True
-            else:
-                return False
-        elif self.user.is_staff:
-            return True
-        elif self._get_perm_by_roles('can_add_public_repo') and \
-                bool(ENABLE_USER_CREATE_ORG_REPO):
-            return True
-        else:
-            return False
 
     def can_drag_drop_folder_to_sync(self):
         return self._get_perm_by_roles('can_drag_drop_folder_to_sync')

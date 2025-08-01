@@ -46,28 +46,6 @@ def is_registered_user(email):
     return True if user else False
 
 
-def demo(request):
-    """
-    Login as demo account.
-    """
-    if not dj_settings.ENABLE_DEMO_USER:
-        raise Http404
-
-    try:
-        user = User.objects.get(email=settings.CLOUD_DEMO_USER)
-    except User.DoesNotExist:
-        logger.warning('CLOUD_DEMO_USER: %s does not exist.' % settings.CLOUD_DEMO_USER)
-        raise Http404
-
-    for backend in get_backends():
-        user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
-
-    auth_login(request, user)
-
-    redirect_to = settings.SITE_ROOT
-    return HttpResponseRedirect(redirect_to)
-
-
 def i18n(request):
     """
     Set client language preference, lasts for one month
@@ -180,7 +158,7 @@ def seaqa_fake_view(request, **kwargs):
     if request.user.is_staff:
         return HttpResponseRedirect(reverse('sys_info'))
 
-    if settings.ENABLE_BIND_PHONE and settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE:
+    if settings.ENABLE_BIND_PHONE:
         try:
             if not profile:
                 profile = Profile.objects.filter(user=username).first()
@@ -191,7 +169,6 @@ def seaqa_fake_view(request, **kwargs):
     return render(request, 'home.html', {
         'version': SEAQA_VERSION,
         'custom_nav_items': json.dumps(CUSTOM_NAV_ITEMS),
-        'can_remove_base_password_via_phone': settings.CAN_REMOVE_BASE_PASSWORD_VIA_PHONE if settings.ENABLE_BIND_PHONE else False,
         'has_bound_phone': True if phone else False,
         'disable_adding_personal_projects': True if settings.DISABLE_ADDING_PERSONAL_PROJECTS else False,
     })
