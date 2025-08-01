@@ -9,7 +9,7 @@ function Thinking() {
     <div className="sea-qa-ai-ask-chat sea-qa-ai-ask-chat-thinking">
       <div className="sea-qa-ai-ask-message-content p-0">
         <Loading />
-        <span className="sea-qa-tip-default">{gettext('Thinking')}</span>
+        <span className="sea-qa-tip-default">{gettext('Thinking...')}</span>
       </div>
     </div>
   );
