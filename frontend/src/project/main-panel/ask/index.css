@@ -4,7 +4,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
 }
 
 .sea-qa-ai-ask-chats-wrapper {
@@ -59,7 +58,7 @@
   justify-content: flex-start;
   width: calc(100% - 18px);
   height: fit-content;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .sea-qa-ai-ask-chat:first-child {
@@ -69,49 +68,7 @@
 .sea-qa-ai-ask-chat.user-input-chat {
   justify-content: flex-end;
   margin-left: 18px;
-}
-
-.sea-qa-ai-ask-chat-assistant-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin-right: 8px;
-  flex-shrink: 0;
-}
-
-.sea-qa-ai-ask-chat-time {
-  flex-shrink: 0;
-}
-
-.sea-qa-ai-ask-chat-main {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1;
-  width: 100%;
-}
-
-.user-input-chat .sea-qa-ai-ask-chat-main {
   align-items: flex-end;
-}
-
-.sea-qa-ai-ask-chat-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 12px;
-  color: #212529;
-}
-
-.sea-qa-ai-ask-chat.user-input-chat .sea-qa-ai-ask-chat-header {
-  justify-content: flex-end;
-}
-
-.sea-qa-ai-ask-chat-assistant-name {
-  margin-right: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sea-qa-ai-ask-message-content {
@@ -123,18 +80,19 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   height: auto;
-  margin-top: 8px;
   padding: 10px;
   font-size: 14px;
   border-radius: 0 6px 6px 6px;
   color: #212529;
   background-color: #fff;
+  border: 1px solid #EEE;
+  border-radius: 0 6px 6px 6px;
 }
 
 .user-input-chat .sea-qa-ai-ask-message-content {
-  background-color: #ED7109;
-  color: #fafafa;
+  background-color: rgb(237, 113, 9, .15);
   border-radius: 6px 0 6px 6px;
+  border: unset;
 }
 
 .sea-qa-ai-ask .send-chat-btn {

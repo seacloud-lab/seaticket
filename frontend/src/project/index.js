@@ -14,7 +14,7 @@ const { projectName } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activeBar, setActiveBar] = useState(BAR_TYPES[1]);
+  const [activeBar, setActiveBar] = useState(BAR_TYPES[0]);
 
   const bars = useMemo(() => [
     {
@@ -42,7 +42,7 @@ const Project = () => {
     const params = paramsString.split('/');
     const [barKey] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey);
-    setActiveBar(bar || BAR_TYPES[1]);
+    setActiveBar(bar || BAR_TYPES[0]);
     setLoading(false);
   }, []);
 
