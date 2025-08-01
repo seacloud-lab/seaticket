@@ -16,7 +16,7 @@ import StatusToggleButton from './status-toggle-btn';
 
 import './index.css';
 
-const Ticket = () => {
+const Ticket = ({ editorAPI }) => {
   const { isLoading, metadata, createReply, collaborators, modifyTicket, modifyTicketTags, getRowById, togglePageType } = useTickets();
   const [reply, setReply] = useState('');
 
@@ -133,6 +133,7 @@ const Ticket = () => {
               autoSave={false}
               saveDelay={20 * 1000}
               isCheckBrowser={true}
+              editorApi={editorAPI}
               onSaveEditorValue={onReplyChange}
             />
           </Reply>

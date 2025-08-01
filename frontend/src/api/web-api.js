@@ -59,17 +59,6 @@ class SeaQAAPI {
     }
   }
 
-  uploadImage(uploadLink, formData, onUploadProgress = null) {
-    return (
-      axios.create()({
-        method: 'post',
-        data: formData,
-        url: uploadLink,
-        onUploadProgress: onUploadProgress
-      })
-    );
-  }
-
   listWorkspaces(detail) {
     let url = this.server + '/api/v2.1/workspaces/';
     if (detail !== undefined) {
@@ -428,6 +417,7 @@ class SeaQAAPI {
     return this.req.delete(url);
   }
 
+  // tags
   listProjectTags(projectUuid, tickets_count = 0) {
     let url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/';
     if (tickets_count) {
@@ -475,6 +465,14 @@ class SeaQAAPI {
   deleteProjectTag(projectUuid, tagId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
     return this.req.delete(url);
+  }
+
+  // upload file
+  uploadFile(projectUuid, file, onUploadProgress = null) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this._sendPostRequest(url, formData, { onUploadProgress });
   }
 
   // other not-admin APIs
