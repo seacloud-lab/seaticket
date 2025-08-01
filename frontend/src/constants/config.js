@@ -41,7 +41,6 @@ export const enableUpdateUserInfo = window.app.pageOptions.enableUpdateUserInfo;
 export const enableUserSetContactEmail = window.app.pageOptions.enableUserSetContactEmail;
 export const enableUserSetName = window.app.pageOptions.enableUserSetName;
 export const customNavItems = window.app.pageOptions.customNavItems;
-export const canRemoveBasePasswordViaPhone = window.app.pageOptions.canRemoveBasePasswordViaPhone;
 export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const enableSeatableAI = window.app.pageOptions.enableSeatableAI;
@@ -54,7 +53,6 @@ export const curNoteList = window.app.pageOptions.curNoteList;
 export const canRunPython = window.app.pageOptions.canRunPython;
 export const trashCleanExpireDays = window.app.pageOptions.trashCleanExpireDays;
 
-export const disableAddressBookV1 = window.app.pageOptions.disableAddressBookV1;
 export const enableAddressBookV2 = window.app.pageOptions.enableAddressBookV2;
 export const enableDepartmentAdminManageMemberBases = window.app.pageOptions.enableDepartmentAdminManageMemberBases;
 export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShowIDInOrgWhenSearchUser;

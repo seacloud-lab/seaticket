@@ -31,7 +31,6 @@
         enableSubscription: {% if enable_subscription %} true {% else %} false {% endif %},
         enableSlideCaptcha: {% if enable_slide_captcha %} true {% else %} false {% endif %},
         trashCleanExpireDays: '{{trash_clean_expire_days}}',
-        disableAddressBookV1: {% if disable_addressbook_v1 %} true {% else %} false {% endif %},
         enableAddressBookV2: {% if enable_addressbook_v2 %} true {% else %} false {% endif %},
         canUseAdvancedCustomization: {% if user.permissions.can_use_advanced_customization %} true {% else %} false {% endif %},
         enableSeatableAI: {% if enable_seatable_ai %} true {% else %} false {% endif %},

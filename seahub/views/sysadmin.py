@@ -20,7 +20,7 @@ from seahub.utils.ip import get_remote_ip
 from seahub.utils.auth import get_login_bg_image_path
 import seahub.settings as settings
 from seahub.settings import IS_SHOW_UNIT, SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, \
-    ENABLE_GUEST_INVITATION, DISABLE_ADDRESSBOOK_V1, LOGIN_ATTEMPT_LIMIT
+    ENABLE_GUEST_INVITATION, LOGIN_ATTEMPT_LIMIT
 try:
     from seahub.settings import MULTI_TENANCY
     from seahub.organizations.models import OrgSettings
@@ -61,7 +61,6 @@ def sysadmin_react_fake_view(request, **kwargs):
         'available_admin_roles': get_available_admin_roles(),
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
-        'disable_addressbook_v1': DISABLE_ADDRESSBOOK_V1,
         'enable_address_book_v2': dj_settings.ENABLE_ADDRESSBOOK_V2
     })
 

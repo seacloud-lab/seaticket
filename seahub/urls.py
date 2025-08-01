@@ -205,10 +205,6 @@ if settings.SERVE_STATIC:
             {'document_root': settings.MEDIA_ROOT}),
     ]
 
-urlpatterns += [
-    re_path(r'^demo/', demo),
-]
-
 
 if getattr(settings, 'MULTI_TENANCY', False):
     urlpatterns += [
