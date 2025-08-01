@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { CHAT_MESSAGE_TYPE } from '../../../../constants';
@@ -7,8 +7,8 @@ import { gettext } from '../../../../../constants';
 
 import './index.css';
 
-const CommonMessage = ({ messages }) => {
-  const ref = useRef(null);
+const CommonMessage = forwardRef(({ messages }, ref) => {
+  const contentRef = useRef(null);
 
   const [answerType, setAnswerType] = useState('rich-text');
 
@@ -18,9 +18,18 @@ const CommonMessage = ({ messages }) => {
     }
   }, []);
 
+  useImperativeHandle(ref, () => ({
+
+    getHTML: () => {
+      if (!Array.isArray(messages) || messages.length === 0) return '';
+      return contentRef.current.innerHTML;
+    },
+
+  }), [messages, contentRef]);
+
   if (!Array.isArray(messages) || messages.length === 0) return null;
   return (
-    <div className="sea-qa-ai-ask-message-content" ref={ref}>
+    <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
       {messages.map((message, messageIndex) => {
         const messageType = Object.prototype.toString.call(message).slice(8, -1);
         if (messageType === 'String') return (<Fragment key={`sea-qa-ai-ask-message-${messageIndex}`}>{message}</Fragment>);
@@ -41,10 +50,10 @@ const CommonMessage = ({ messages }) => {
                 <div className="sea-qa-ai-ask-message-sources-container w-100">
                   {value.map((v, index) => {
                     return (
-                      <div className="sea-qa-ai-ask-message-source" key={index} title={v.title}>
-                        <div className="mr-2">{`[${index}]`}</div>
+                      <p className="sea-qa-ai-ask-message-source" key={index} title={v.title}>
+                        <span className="">{`[${index}]`}&ensp;</span>
                         <a href={v.url}>{v.title}</a>
-                      </div>
+                      </p>
                     );
                   })}
                 </div>
@@ -58,7 +67,7 @@ const CommonMessage = ({ messages }) => {
     </div>
   );
 
-};
+});
 
 CommonMessage.propTypes = {
   messages: PropTypes.array,
