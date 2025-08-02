@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.utils import api_error
-from seahub.project.models import Projects, Workspaces
+from seahub.project.models import Projects, Workspaces, DeletedProjects
 from seahub.project.utils import get_project_owner, convert_project_trash_names, restore_trash_project_name
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
@@ -127,6 +127,7 @@ class OrgAdminTrashProjectsView(APIView):
 
     def _delete_project(self, project):
         try:
+            DeletedProjects(project_uuid=project.uuid).save()
             Projects.objects.delete_project(project.workspace, project.name)
         except Exception as e:
             logger.error('delete project: %s error: %s', str(project.uuid), e)

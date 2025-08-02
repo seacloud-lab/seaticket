@@ -266,6 +266,14 @@ class Projects(models.Model):
     def is_encrypted(self):
         return False
 
+
+class DeletedProjects(models.Model):
+    project_uuid = models.UUIDField(unique=True, default=uuid.uuid4)
+
+    class Meta:
+        db_table = 'deleted_projects'
+
+
 class ProjectGroupOrdersManager(models.Manager):
     def get_group_order_by_username(self, username):
         try:
@@ -421,6 +429,7 @@ class ProjectConnections(models.Model):
     updated_at = models.DateTimeField(null=True)
     status = models.CharField(max_length=20)
     indexed_at = models.DateTimeField(null=True)
+    deleted = models.BooleanField(default=False, null=False, db_index=True)
 
     objects = ProjectConnectionsManager()
 

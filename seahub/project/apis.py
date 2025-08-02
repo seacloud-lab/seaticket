@@ -104,7 +104,7 @@ class ProjectConnectionsView(APIView):
             error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        records = ProjectConnections.objects.filter(project=project)[start:end]
+        records = ProjectConnections.objects.filter(project=project, deleted=False)[start:end]
         records = [record.to_dict() for record in records]
 
         return Response({'records': records}, status=status.HTTP_200_OK)
@@ -271,7 +271,7 @@ class ProjectConnectionView(APIView):
 
 
         try:
-            ProjectConnections.objects.filter(project=project, id=connection_id).delete()
+            ProjectConnections.objects.filter(project=project, id=connection_id).update(deleted=True)
         except Exception as e:
             logger.error(f'delete {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
