@@ -9,6 +9,7 @@ import { SearchResult } from '../../models';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
+import { CONNECTION_TYPES } from '../../constants';
 
 import './index.css';
 import './search-filters.css';
@@ -21,12 +22,12 @@ const Search = ({ title }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [connectionTypes, setConnectionTypes] = useState([]);
+  const [hiddenConnectionTypes, setConnectionTypes] = useState([]);
 
   const source = useRef(null);
   const timer = useRef(null);
 
-  const onChange = useCallback((value = '', connectionTypes) => {
+  const onChange = useCallback((value = '', hiddenConnectionTypes) => {
     const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
     if (!oldSearch.includes(value)) {
       oldSearch.push(value);
@@ -48,7 +49,8 @@ const Search = ({ title }) => {
     timer.current = setTimeout(() => {
       timer.current = null;
       source.current = seaQAAPI.getSource();
-      seaQAAPI.search(workspaceID, projectUuid, value, connectionTypes.join(','), source.current.token).then(res => {
+      const showConnnectionTypes = CONNECTION_TYPES.map(item => item.type).filter(i => !hiddenConnectionTypes.includes(i)).join(',');
+      seaQAAPI.search(workspaceID, projectUuid, value, showConnnectionTypes, source.current.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -81,8 +83,8 @@ const Search = ({ title }) => {
     };
   }, []);
 
-  const handleConnectionTypesChange = useCallback((newConnectionTypes) => {
-    setConnectionTypes(newConnectionTypes);
+  const handleConnectionTypesChange = useCallback((hiddenConnectionTypes) => {
+    setConnectionTypes(hiddenConnectionTypes);
   }, []);
 
   return (
@@ -97,7 +99,7 @@ const Search = ({ title }) => {
           isClearable={true}
           size={38}
           placeholder={gettext('Search')}
-          onChange={(value) => onChange(value, connectionTypes)}
+          onChange={(value) => onChange(value, hiddenConnectionTypes)}
           onClear={onClear}
           storeKey={SEARCH_STORE_KEY}
         />

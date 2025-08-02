@@ -12,11 +12,11 @@ const HideConnectionSetter = ({ onConnectionTypesChange }) => {
 
   const [hiddenConnectionTypes, setConnectionTypes] = useState(() => {
     const cachedValue = localStorage.getItem('seaqa-hidden-connection-types');
-    const setConnectionTypes = cachedValue ? JSON.parse(cachedValue) : [];
+    const hiddenConnectionTypes = cachedValue ? JSON.parse(cachedValue) : [];
     if (onConnectionTypesChange) {
-      onConnectionTypesChange(setConnectionTypes);
+      onConnectionTypesChange(hiddenConnectionTypes);
     }
-    return setConnectionTypes;
+    return hiddenConnectionTypes;
   });
 
   const modifyHiddenConnections = useCallback((newHiddenConnectionTypes) => {
