@@ -1,0 +1,19 @@
+.sea-qa-search-input-wrapper .sea-qa-search-input-old-search {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  border-top: 0;
+  z-index: 1000;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-old-search-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.sea-qa-search-input-wrapper .sea-qa-search-input-old-search-item:hover {
+  background-color: #f5f5f5;
+}

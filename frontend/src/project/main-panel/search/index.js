@@ -1,28 +1,38 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { toaster, SearchInput, EmptyTip, Icon, CenteredLoading } from '../../../components';
+import { toaster, EmptyTip, CenteredLoading } from '../../../components';
+import GlobalSearchInput from '../../../components/search-input/global-search-input';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { SearchResult } from '../../models';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
+import HideConnectionSetter from './hide-connection-setter';
+import { CONNECTION_TYPES } from '../../constants';
 
 import './index.css';
+import './search-filters.css';
 
-const {
-  workspaceID, projectUuid
-} = window.app.pageOptions;
+const { workspaceID, projectUuid } = window.app.pageOptions;
+
+const SEARCH_STORE_KEY = 'search-project';
 
 const Search = ({ title }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [hiddenConnectionTypes, setConnectionTypes] = useState([]);
 
   const source = useRef(null);
   const timer = useRef(null);
 
-  const onChange = useCallback((value = '') => {
+  const onChange = useCallback((value = '', hiddenConnectionTypes) => {
+    const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
+    if (!oldSearch.includes(value)) {
+      oldSearch.push(value);
+      window.localStorage.setItem(SEARCH_STORE_KEY, JSON.stringify(oldSearch));
+    }
     setValue(value);
     setResults([]);
     setSearching(true);
@@ -39,7 +49,8 @@ const Search = ({ title }) => {
     timer.current = setTimeout(() => {
       timer.current = null;
       source.current = seaQAAPI.getSource();
-      seaQAAPI.search(workspaceID, projectUuid, value, source.current.token).then(res => {
+      const showConnnectionTypes = CONNECTION_TYPES.map(item => item.type).filter(i => !hiddenConnectionTypes.includes(i)).join(',');
+      seaQAAPI.search(workspaceID, projectUuid, value, showConnnectionTypes, source.current.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -72,39 +83,32 @@ const Search = ({ title }) => {
     };
   }, []);
 
+  const handleConnectionTypesChange = useCallback((hiddenConnectionTypes) => {
+    setConnectionTypes(hiddenConnectionTypes);
+  }, []);
+
   return (
     <>
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
       <div className="sea-qa-project-search">
-        <SearchInput
+        <GlobalSearchInput
           className="mb-1"
           autoFocus={true}
           isClearable={true}
-          wait={0}
           size={38}
           placeholder={gettext('Search')}
-          onChange={onChange}
+          onChange={(value) => onChange(value, hiddenConnectionTypes)}
           onClear={onClear}
+          storeKey={SEARCH_STORE_KEY}
         />
-        <div className="sea-qa-project-search-filter-wrapper">
-          <div className="sea-qa-project-search-filter">
-            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '1'}</span>
-            <Icon symbol="down" />
-          </div>
-          <div className="sea-qa-project-search-filter">
-            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '2'}</span>
-            <Icon symbol="down" />
-          </div>
-          <div className="sea-qa-project-search-filter">
-            <span className="sea-qa-project-search-filter-value">{gettext('Filter') + '3'}</span>
-            <Icon symbol="down" />
-          </div>
+        <div className="search-filters-container">
+          <HideConnectionSetter onConnectionTypesChange={handleConnectionTypesChange} />
         </div>
-        {searching ? (
+        {searching ?
           <CenteredLoading className="sea-qa-project-search-loading-tip" />
-        ) : (
+          :
           <>
             {!value && (
               <div className="sea-qa-project-search-value-empty-tip">
@@ -122,7 +126,7 @@ const Search = ({ title }) => {
               </div>
             }
           </>
-        )}
+        }
       </div>
     </>
   );
