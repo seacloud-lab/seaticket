@@ -63,7 +63,13 @@ export const CONNECTION_FIELDS = {
       placeholder: gettext('Please input token'),
       is_required: true,
       is_custom: true
-    },
+    }, {
+      key: 'webhook_secret',
+      name: gettext('Webhook secret'),
+      type: TABLE_COLUMN_TYPE.TEXT,
+      placeholder: gettext('Please input webhook secret'),
+      is_custom: true
+    }
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
     {
