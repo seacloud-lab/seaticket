@@ -384,7 +384,7 @@ class SearchView(APIView):
         except ValueError:
             count = 20
 
-        connection_type = request.data.get('connection_type')
+        connection_types = request.data.get('connection_types')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
@@ -404,7 +404,7 @@ class SearchView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
-            'connection_type': connection_type,
+            'connection_types': connection_types,
             'count': count,
         }
         results = search(params)
