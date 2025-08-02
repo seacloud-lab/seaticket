@@ -42,6 +42,7 @@ CONNECTION_FIELDS = {
     ConnectionType.GITHUB_ISSUE: [
         ConnectionField('repository', True, False).to_dict(),
         ConnectionField('token', True, False).to_dict(),
+        ConnectionField('webhook_secret', False, False).to_dict(),
     ],
     ConnectionType.DISCOURSE_FORUM: [
         ConnectionField('url', True, False).to_dict(),
