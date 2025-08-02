@@ -437,8 +437,10 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `indexed_at` datetime(6) NULL,
   `project_id` int(11) NOT NULL,
   `status` varchar(20) NOT NULL,
+  `deleted` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
+  KEY `project_connection_deleted_5n3d6`(`deleted`),
   CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -516,4 +518,11 @@ CREATE TABLE `options_useroptions`  (
   PRIMARY KEY (`id`),
   KEY `options_useroptions_email_77d5726a`(`email`),
   KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `deleted_projects`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
