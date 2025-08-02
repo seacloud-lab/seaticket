@@ -9,28 +9,27 @@ import './index.css';
 const MessageOperations = ({ messages, getMessageHTML }) => {
 
   const onCopy = useCallback(() => {
-    let context = '';
+    let context = [];
     messages.forEach(message => {
-      if (context) {
-        context = `${context}\n\n`;
-      }
       const messageType = Object.prototype.toString.call(message).slice(8, -1);
       if (messageType === 'String') {
-        context = `${context}${message}`;
+        context.push(message);
       } else {
         const { type, value } = message;
         if (type === CHAT_MESSAGE_TYPE.SOURCES) {
           if (value.length > 0) {
-            context = `${context}## ${gettext('Sources')}`;
+            let valueString = `## ${gettext('Sources')}`;
             value.forEach((link, index) => {
-              context = `${context}\n[${index + 1}] [${link.title}](${link.url} "${link.title}")`;
+              valueString = `${valueString}\n[${index + 1}] [${link.title}](${link.url} "${link.title}")`;
             });
+            context.push(valueString);
           }
         } else {
-          context = `${context}${value}`;
+          context.push(value);
         }
       }
     });
+    context = context.join('\n\n');
     const messageHTML = getMessageHTML();
 
     navigator.clipboard.write([

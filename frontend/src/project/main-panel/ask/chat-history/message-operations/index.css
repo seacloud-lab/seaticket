@@ -6,4 +6,11 @@
   height: 24px;
 }
 
+.sea-qa-ai-ask-chat .sea-qa-icon-btn {
+  display: none;
+}
 
+.sea-qa-ai-ask-chat:last-child .sea-qa-icon-btn,
+.sea-qa-ai-ask-chat:hover .sea-qa-icon-btn {
+  display: flex;
+}

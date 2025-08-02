@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import MessageBox from './message-box';
 import CommonMessage from './common-message';
 import MessageOperations from './message-operations';
+import { CHAT_MESSAGE_TYPE } from '../../../constants';
 
 import './index.css';
 
 const ChatHistory = ({ chat }) => {
-  const { messages, isUserSpeak } = chat;
+  const { messages, isUserSpeak, type } = chat;
   const ref = useRef(null);
 
   const getMessageHTML = useCallback(() => {
@@ -19,7 +20,7 @@ const ChatHistory = ({ chat }) => {
   return (
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage messages={messages} ref={ref} />
-      {!isUserSpeak && (<MessageOperations messages={messages} getMessageHTML={getMessageHTML} />)}
+      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations messages={messages} getMessageHTML={getMessageHTML} />)}
     </MessageBox>
   );
 };
