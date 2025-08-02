@@ -109,46 +109,6 @@
   fill: #aaa;
 }
 
-.seaqa-hide-popover .seaqa-hide-operations {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 17px;
-  width: 100%;
-}
-
-.seaqa-hide-popover .seaqa-hide-operations .seaqa-hide-operation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  border-radius: 3px;
-  color: #212529;
-  height: 28px;
-}
-
-.seaqa-hide-popover .seaqa-hide-operations .seaqa-hide-operation:hover {
-  background: #efefef;
-  color: #212529;
-  cursor: pointer;
-}
-
-.seaqa-hide-popover .hide-column-item .drag-hide-column-handle {
-  width: 14px;
-  margin-right: 10px;
-}
-
-.seaqa-hide-popover .hide-column-item .drag-hide-column-handle .seafile-multicolor-icon {
-  margin-right: 0px;
-}
-
-.seaqa-hide-popover .hide-list .hide-column-item.disabled .drag-hide-column-handle {
-  display: none;
-}
-
-.seaqa-hide-popover .hide-column-item.dragging {
-  background-color: #f5f5f5;
-}
-
 .seaqa-hide-popover .hide-column-item.hide-column-can-drop::after,
 .seaqa-hide-popover .hide-column-item.hide-column-can-drop-top::before {
   content: '';

@@ -12,7 +12,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionTypes, onCha
 
   return (
     <div className={classnames('hide-list', { 'empty-hide-container': isEmpty })}>
-      {isEmpty && <div className="empty-hide-list">{window.gettext('No connections available to be hidden')}</div>}
+      {isEmpty && <div className="empty-hide-list">{window.gettext('No connections available')}</div>}
       {!isEmpty && connections.map((column, columnIndex) => {
         return (
           <HideConnection
