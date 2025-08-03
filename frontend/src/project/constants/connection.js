@@ -89,6 +89,18 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true
+    }, {
+      key: 'api_key',
+      name: gettext('API Key'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      is_custom: true
+    }, {
+      key: 'api_username',
+      name: gettext('API Username'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_custom: true
     },
   ],
   [CONNECTION_TYPE.SITE]: [
