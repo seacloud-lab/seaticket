@@ -4,7 +4,7 @@ import { ChatMessage } from '../../models';
 import { STORAGE_CHAT_HISTORY_RECORDS_COUNT, CHAT_MESSAGE_TYPE } from '../../constants';
 import MessageInput from './message-input';
 import IndexedDB from '../../../utils/indexed-db';
-import { gettext } from '../../../constants';
+import { gettext, SEAQA } from '../../../constants';
 import { seaQAAPI } from '../../../api/web-api';
 import ChatHistory from './chat-history';
 import Thinking from './thinking';
@@ -27,8 +27,8 @@ const Ask = ({ title }) => {
   const chatHistoryContentRef = useRef(null);
   const messageInputRef = useRef(null);
 
-  const indexedDB = useMemo(() => new IndexedDB(), []);
-  const chatHistoryKey = useMemo(() => 'chat-history', []);
+  const indexedDB = useMemo(() => new IndexedDB({ historyStorageBaseName: SEAQA, historyStorageTableName: 'ai-history' }), []);
+  const chatHistoryKey = useMemo(() => projectUuid, []);
 
   const readOnly = useMemo(() => false, []);
 
