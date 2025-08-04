@@ -15,7 +15,7 @@ class IndexedDB {
   };
 
   _createStore = (dbName, storeName) => {
-    const request = indexedDB.open(dbName);
+    const request = indexedDB.open(dbName, 2);
     request.onupgradeneeded = () => request.result.createObjectStore(storeName);
     const dbp = this._promisifyRequest(request);
 
