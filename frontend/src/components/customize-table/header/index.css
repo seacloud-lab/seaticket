@@ -1,4 +1,4 @@
-.sea-qa-project-table-header {
+.sea-customize-table-wrapper-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -6,7 +6,7 @@
   padding-top: 2px;
 }
 
-.sea-qa-project-table-header .sea-qa-project-table-header-right {
+.sea-customize-table-wrapper-header .sea-customize-table-wrapper-header-right {
   align-items: center;
   color: #ed7109;
   cursor: pointer;
@@ -15,7 +15,7 @@
   user-select: none;
 }
 
-.sea-qa-project-table-header .sea-qa-project-table-btn {
+.sea-customize-table-wrapper-header .sea-customize-table-wrapper-btn {
   display: inline-flex;
   align-items: center;
 }

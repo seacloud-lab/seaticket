@@ -7,7 +7,7 @@
   align-items: center;
 }
 
-.sea-qa-project-custom-table {
+.sea-custom-table {
   height: 100%;
   width: 100%;
   overflow-y: auto;
@@ -16,7 +16,7 @@
   align-items: center;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row {
+.sea-custom-table .sea-custom-table-row {
   height: 40px;
   width: 100%;
   display: flex;
@@ -25,7 +25,7 @@
   border-bottom: 1px solid #eaeaea;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row.sea-qa-project-custom-table-row-title {
+.sea-custom-table .sea-custom-table-row.sea-custom-table-row-title {
   background-color: #fff;
   height: 37px;
   position: sticky;
@@ -33,12 +33,12 @@
   z-index: 1;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row:not(.sea-qa-project-custom-table-row-title):hover {
+.sea-custom-table .sea-custom-table-row:not(.sea-custom-table-row-title):hover {
   background-color: #f5f5f5;
   cursor: default;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell {
+.sea-custom-table .sea-custom-table-row .sea-custom-table-cell {
   font-size: 14px;
   height: 100%;
   line-height: 39px;
@@ -48,29 +48,17 @@
   padding-right: 16px;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row.sea-qa-project-custom-table-row-title .sea-qa-project-custom-table-cell {
+.sea-custom-table .sea-custom-table-row.sea-custom-table-row-title .sea-custom-table-cell {
   color: #666;
   font-size: 13px;
   line-height: 20px;
   padding: 10px 0 6px;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:first-child {
+.sea-custom-table .sea-custom-table-row .sea-custom-table-cell:first-child {
   padding-left: 8px;
 }
 
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell:last-child {
+.sea-custom-table .sea-custom-table-row .sea-custom-table-cell:last-child {
   padding-right: 8px;
-}
-
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row .sea-qa-project-custom-table-cell .sea-qa-project-custom-table-op-cell-content {
-  display: none;
-  height: 100%;
-  width: 100%;
-}
-
-.sea-qa-project-custom-table .sea-qa-project-custom-table-row:hover .sea-qa-project-custom-table-cell .sea-qa-project-custom-table-op-cell-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

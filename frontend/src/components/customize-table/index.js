@@ -6,7 +6,7 @@ import Body from './body';
 
 import './index.css';
 
-const Table = ({
+const CustomizeTable = ({
   isLoading,
   className = 'p-4',
   emptyTip,
@@ -19,15 +19,15 @@ const Table = ({
 }) => {
 
   return (
-    <div className={classnames('sea-qa-project-table', className)}>
+    <div className={classnames('sea-customize-table-wrapper', className)}>
       {children}
-      {children && (<div className="sea-qa-project-table-divider"></div>)}
+      {children && (<div className="sea-customize-table-wrapper-divider"></div>)}
       <Body isLoading={isLoading} emptyTip={emptyTip} columns={columns} rows={rows} loadMore={loadMore} onDelete={onDelete} onModify={onModify} />
     </div>
   );
 };
 
-Table.propTypes = {
+CustomizeTable.propTypes = {
   isLoading: PropTypes.bool,
   title: PropTypes.any,
   emptyTip: PropTypes.any,
@@ -39,6 +39,6 @@ Table.propTypes = {
   onModify: PropTypes.func,
 };
 
-Table.Header = Header;
+CustomizeTable.Header = Header;
 
-export default Table;
+export default CustomizeTable;

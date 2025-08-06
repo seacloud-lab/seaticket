@@ -411,7 +411,30 @@ module.exports = function (webpackEnv) {
             {
               test: /\.svg$/,
               use: [
-                '@svgr/webpack'
+                {
+                  loader: require.resolve('@svgr/webpack'),
+                  options: {
+                    prettier: true,
+                    svgo: false,
+                    svgoConfig: {
+                      plugins: [{ removeViewBox: false }],
+                    },
+                    titleProp: true,
+                    ref: true,
+                  },
+                },
+                { loader: 'svgo-loader',
+                  options: {
+                    plugins: [
+                      'removeTitle',
+                      'removeXMLNS',
+                      'removeStyleElement',
+                      'cleanupIDs',
+                      'inlineStyles',
+                      'removeXMLProcInst',
+                    ]
+                  }
+                }
               ],
             },
             {

@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
-import { gettext } from '../../../constants';
-import { validateName } from '../../../utils/utils';
-import { TABLE_COLUMN_TYPE, CONNECTION_FIELDS } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader } from '../../../components';
+import { gettext } from '../../../../constants';
+import { validateName } from '../../../../utils/utils';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
+import { TextInput, PasswordInput, ModalHeader } from '../../../../components';
 
 const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
@@ -61,7 +61,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
             {gettext('Connection name')}
             <span className="required-tip" title={gettext('Required')}>{'*'}</span>
           </Label>
-          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} placeholder={gettext('Please input connection name')} />
+          <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
         {customColumns.map(c => {
           const { key, type, can_edit_multiple_times = true } = c;
@@ -73,7 +73,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
                 {c.name}
                 {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
               </Label>
-              {type === TABLE_COLUMN_TYPE.PASSWORD ? (
+              {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                 <>
                   {!can_edit_multiple_times ? (
                     <Input value="********" disabled={true} />

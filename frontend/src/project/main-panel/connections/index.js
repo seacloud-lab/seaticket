@@ -1,21 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
-import Table from '../table';
 import { seaQAAPI } from '../../../api/web-api';
 import { Connection } from '../../models';
 import { gettext } from '../../../constants';
-import ModifyConnectionDialog from '../../components/modify-connection-dialog';
 import { Utils } from '../../../utils/utils';
-import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, EmptyTip } from '../../../components';
-import { TABLE_COLUMN_TYPE } from '../../constants';
+import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '../../../components';
 import TopBar from '../top-bar';
-import NewConnectionDialog from '../../components/new-connection-dialog';
+import NewConnectionDialog from './new-connection-dialog';
+import ModifyConnectionDialog from './modify-connection-dialog';
+import createFormatter from './cell-formatter';
+import { CONNECTION_FIELD_TYPE } from '../../constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const Connections = ({ type, title }) => {
+const Connections = ({ title }) => {
   const [isLoading, setLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
@@ -27,12 +27,19 @@ const Connections = ({ type, title }) => {
 
   const activeRecordRef = useRef(null);
 
-  const columns = useMemo(() => [
-    { key: 'name', name: gettext('Connection'), type: TABLE_COLUMN_TYPE.CONNECTION_NAME, width: '40%' },
-    { key: 'indexed_at', name: gettext('Last indexed at'), type: TABLE_COLUMN_TYPE.DATE, width: '20%' },
-    { key: '', name: '', type: TABLE_COLUMN_TYPE.EMPTY, width: '30%' },
-    { key: 'op', name: '', type: TABLE_COLUMN_TYPE.OP, width: '10%' }
-  ], []);
+  const columns = useMemo(() => {
+    return [
+      { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '40%' },
+      { key: 'indexed_at', name: gettext('Last indexed at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
+      { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '30%' },
+      { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
+    ].map(column => (
+      {
+        ...column,
+        formatter: createFormatter(column.type)
+      }
+    ));
+  }, []);
   const btns = useMemo(() => {
     return [
       { name: (
@@ -148,14 +155,14 @@ const Connections = ({ type, title }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [records, type, isLoading]);
+  }, [records, isLoading]);
 
   useEffect(() => {
     pageRef.current = 1;
     hasMoreRef.current = true;
     setRecords([]);
     loadMore();
-  }, [type]);
+  }, []);
 
   if (isLoading && records.length === 0) return (<CenteredLoading />);
 
@@ -164,7 +171,7 @@ const Connections = ({ type, title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
-      <Table
+      <CustomizeTable
         className="sea-qa-project-connections-table p-4"
         columns={columns}
         rows={records}
@@ -188,8 +195,8 @@ const Connections = ({ type, title }) => {
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
       >
-        {records.length !== 0 && (<Table.Header btns={btns} />)}
-      </Table>
+        {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
+      </CustomizeTable>
       {isShowRecordDialog && (
         <>
           {activeRecordRef.current ? (
