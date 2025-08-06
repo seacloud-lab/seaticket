@@ -76,7 +76,7 @@ const Ticket = ({ editorAPI }) => {
   }, [ticket, modifyTicketTags]);
 
   const onSubmitReply = useCallback(() => {
-    createReply(ticket.id, reply ? reply.text : '').then(() => {
+    createReply(ticket.id, reply).then(() => {
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE);
       setTimeout(() => containerRef.current.scrollTop = 10000000, 1);

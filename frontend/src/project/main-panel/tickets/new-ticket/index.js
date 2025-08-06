@@ -49,9 +49,8 @@ const NewTicket = ({ editorAPI }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const validDescription = description ? description.text : '';
     const validTags = tags.map(tag => tag.id);
-    createTicket({ title: validTitle, description: validDescription, type, assignees, tags: validTags }).then(res => {
+    createTicket({ title: validTitle, description, type, assignees, tags: validTags }).then(res => {
       // nothing
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

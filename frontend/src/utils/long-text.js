@@ -38,7 +38,7 @@ class LongTextEditorUtilities {
   uploadLocalImage = (file) => {
     const newFile = new File([file], this.getImageNameWithTimestamp(file), { type: file.type });
     return this.api.uploadFile(this.projectUuid, newFile).then((res) => {
-      return this._getImageURL(res.url);
+      return this._getImageURL(res.data.url);
     });
   };
 
@@ -52,12 +52,10 @@ class LongTextEditorUtilities {
     return re.test(url);
   };
 
-  _getImageURL = (path) => {
-    if (!path) return '';
-    if (path.startsWith('data:image')) return path;
-    let validPath = path.indexOf(this.projectUuid) > -1 ? path.split(this.projectUuid)[1] : path;
-    validPath = validPath.startsWith('/') ? validPath.slice(1) : validPath;
-    return `${this.server.endsWith('/') ? this.server : this.server + '/'}api/v2.1/asset/${this.projectUuid}/${validPath}`;
+  _getImageURL = (url) => {
+    if (!url) return '';
+    if (url.startsWith('data:image')) return url;
+    return url;
   };
 
 }

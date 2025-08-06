@@ -334,7 +334,7 @@ class SeaQAAPI {
       form.append('title', title);
     }
     if (description) {
-      form.append('content', description);
+      form.append('content', JSON.stringify(description));
     }
     if (type) {
       form.append('type', type);
@@ -355,7 +355,7 @@ class SeaQAAPI {
       form.append('title', title);
     }
     if (description) {
-      form.append('content', description);
+      form.append('content', JSON.stringify(description));
     }
     if (status) {
       form.append('status', status);
@@ -398,7 +398,7 @@ class SeaQAAPI {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
     let form = new FormData();
     if (content) {
-      form.append('content', content);
+      form.append('content', JSON.stringify(content));
     }
     return this._sendPostRequest(url, form);
   }
@@ -407,7 +407,7 @@ class SeaQAAPI {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/' + replyNumber + '/';
     let form = new FormData();
     if (content) {
-      form.append('content', content);
+      form.append('content', JSON.stringify(content));
     }
     return this.req.put(url, form);
   }
