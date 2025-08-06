@@ -3,7 +3,8 @@ from django.urls import re_path
 
 from .views import project_view
 from .apis import ProjectConnectionsView, ProjectConnectionView, TicketsAPIView, TicketAPIView, \
-    TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView, ProjectTagsAPIView, ProjectTagAPIView
+    TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView, ProjectTagsAPIView, ProjectTagAPIView, \
+    ProjectUploadFileAPIView, GetProjectUploadFileView, ProjectFileAPIView, GetProjectFileView
 
 
 
@@ -34,5 +35,13 @@ urlpatterns = [
     # tags
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
+
+    # files
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/upload-file/$', ProjectUploadFileAPIView.as_view(), name='api-v2.1-project-upload-file'),
+    re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v2.1-get-project-upload-file'),
+
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', ProjectFileAPIView.as_view(), name='api-v2.1-project-file'),
+    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectFileView.as_view(), name='api-v2.1-get-project-file'),
+
 ]
 

@@ -5,6 +5,7 @@ import logging
 import uuid
 import json
 import time
+import hashlib
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -647,3 +648,40 @@ class TicketParticipants(models.Model):
     class Meta:
         unique_together = (('ticket_id', 'participant'),)
         db_table = 'ticket_participants'
+
+
+class ProjectFilesManager(models.Manager):
+    def save_file(self, project_uuid, file_name, file_size, username):
+        file_path = f'/file/project/{project_uuid}/{datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m')}/{file_name}'
+        file_path_md5 = hashlib.md5(file_path.encode('utf-8')).hexdigest()
+        return self.create(
+            project_uuid=project_uuid,
+            file_path_md5=file_path_md5,
+            file_name=file_name,
+            file_size=file_size,
+            creator=username,
+        )
+
+    def get_file(self, project_uuid, file_path):
+        file_path = f'/file/project/{project_uuid}/{file_path}'
+        file_path_md5 = hashlib.md5(file_path.encode('utf-8')).hexdigest()
+        return self.filter(file_path_md5=file_path_md5).first()
+
+
+class ProjectFiles(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.UUIDField(db_index=True)
+    file_path_md5 = models.CharField(max_length=32, unique=True)
+    file_name = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    creator = models.CharField(max_length=255, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = ProjectFilesManager()
+
+    class Meta:
+        db_table = 'project_files'
+
+    def file_path(self):
+        # /file/project/<project_uuid>/<year-month>/file_name
+        return f'/file/project/{self.project_uuid}/{self.created_at.strftime("%Y-%m")}/{self.file_name}'

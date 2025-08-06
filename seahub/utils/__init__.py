@@ -14,6 +14,7 @@ import configparser
 import unicodedata
 from datetime import datetime
 from urllib.parse import urlparse
+import boto3
 
 from constance import config
 from django.utils import translation
@@ -33,7 +34,8 @@ from seahub.api2.models import Token, TokenV2
 import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
     MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
-    USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL
+    USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
+    S3_ENDPOINT_URL, S3_ACCESS_KEY, S3_SECRET_KEY
 
 try:
     from seahub.settings import EMAIL_HOST
@@ -46,6 +48,16 @@ except ImportError:
     CLOUD_MODE = False
 
 logger = logging.getLogger(__name__)
+
+
+s3_client = boto3.client(
+    's3',
+    endpoint_url=S3_ENDPOINT_URL,
+    aws_access_key_id=S3_ACCESS_KEY,
+    aws_secret_access_key=S3_SECRET_KEY,
+)
+TMP_UPLOAD_PROJECT_FILES_DIR = '/tmp/project_upload_files/'
+TMP_DOWNLOAD_PROJECT_FILES_DIR = '/tmp/project_download_files/'
 
 
 def is_pro_version():
