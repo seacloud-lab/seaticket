@@ -2,9 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext, mediaUrl } from '../../../constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, TABLE_COLUMN_TYPE } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader, StepsNavigation } from '../../../components';
+import { gettext, mediaUrl } from '../../../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
+import { TextInput, PasswordInput, ModalHeader, StepsNavigation } from '../../../../components';
 
 import './index.css';
 
@@ -93,7 +93,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 {gettext('Connection name')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
-              <Input value={name} onChange={onNameChange} disabled={isSubmitting} placeholder={gettext('Please input connection name')} />
+              <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
               const { key, type, placeholder } = c;
@@ -104,7 +104,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {c.name}
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
                   </Label>
-                  {type === TABLE_COLUMN_TYPE.PASSWORD ? (
+                  {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                     <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
                   ) : (
                     <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import Preview from './preview';
-import { Icon, ModalPortal } from '../../../../../../components';
+import { Icon, ModalPortal } from '../../../../../components';
 
 import './index.css';
 

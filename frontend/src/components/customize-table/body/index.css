@@ -1,0 +1,11 @@
+.sea-customize-table-wrapper .empty-tip {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* cell formatter */
+.sea-customize-table-wrapper .sea-custom-table-long_text-cell {
+  display: flex;
+  align-items: center;
+}
+

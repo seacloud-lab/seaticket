@@ -1,0 +1,11 @@
+.sea-custom-table .sea-custom-table-row .sea-custom-table-cell .sea-custom-table-op-formatter {
+  display: none;
+  height: 100%;
+  width: 100%;
+}
+
+.sea-custom-table .sea-custom-table-row:hover .sea-custom-table-cell .sea-custom-table-op-formatter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

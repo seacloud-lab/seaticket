@@ -1,5 +1,4 @@
 import { gettext } from '../../constants';
-import { TABLE_COLUMN_TYPE } from './table-column';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -9,34 +8,42 @@ export const CONNECTION_TYPE = {
   SEAFILE: 'seafile',
 };
 
+export const CONNECTION_FIELD_TYPE = {
+  TEXT: 'text',
+  URL: 'url',
+  OP: 'op',
+  DATE: 'date',
+  LONG_TEXT: 'long_text',
+  PASSWORD: 'password',
+  CONNECTION_NAME: 'connection_name',
+  EMPTY: 'empty',
+};
+
 export const CONNECTION_FIELDS = {
   [CONNECTION_TYPE.EMAIL]: [
     {
       key: 'name',
       name: gettext('Name'),
-      type: TABLE_COLUMN_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true
     }, {
       key: 'host',
       name: gettext('Host'),
-      type: TABLE_COLUMN_TYPE.TEXT,
-      placeholder: gettext('Please input host'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true,
       is_custom: true
     }, {
       key: 'username',
       name: gettext('Username'),
-      type: TABLE_COLUMN_TYPE.TEXT,
-      placeholder: gettext('Please input username'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true
     }, {
       key: 'password',
       name: gettext('Password'),
-      type: TABLE_COLUMN_TYPE.TEXT,
-      placeholder: gettext('Please input password'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true
     },
@@ -45,29 +52,26 @@ export const CONNECTION_FIELDS = {
     {
       key: 'name',
       name: gettext('Name'),
-      type: TABLE_COLUMN_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true
     }, {
       key: 'repository',
       name: gettext('Repository'),
-      type: TABLE_COLUMN_TYPE.URL,
-      placeholder: gettext('Please input repository'),
+      type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
       is_custom: true
     }, {
       key: 'token',
       name: gettext('Token'),
-      type: TABLE_COLUMN_TYPE.PASSWORD,
-      placeholder: gettext('Please input token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true
     }, {
       key: 'webhook_secret',
       name: gettext('Webhook secret'),
-      type: TABLE_COLUMN_TYPE.TEXT,
-      placeholder: gettext('Please input webhook secret'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_custom: true
     }
   ],
@@ -75,14 +79,13 @@ export const CONNECTION_FIELDS = {
     {
       key: 'name',
       name: gettext('Name'),
-      type: TABLE_COLUMN_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true
     }, {
       key: 'url',
       name: gettext('URL'),
-      type: TABLE_COLUMN_TYPE.URL,
-      placeholder: gettext('Please input URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
       is_custom: true
@@ -92,22 +95,20 @@ export const CONNECTION_FIELDS = {
     {
       key: 'name',
       name: gettext('Name'),
-      type: TABLE_COLUMN_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true
     }, {
       key: 'url',
       name: gettext('URL'),
-      type: TABLE_COLUMN_TYPE.URL,
-      placeholder: gettext('Please input URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
       is_custom: true
     }, {
       key: 'sitemap_url',
       name: gettext('Sitemap URL'),
-      placeholder: gettext('Please input sitemap URL'),
-      type: TABLE_COLUMN_TYPE.URL,
+      type: CONNECTION_FIELD_TYPE.URL,
       is_custom: true
     },
   ],
@@ -115,22 +116,20 @@ export const CONNECTION_FIELDS = {
     {
       key: 'name',
       name: gettext('Name'),
-      type: TABLE_COLUMN_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true
     }, {
       key: 'server_url',
       name: gettext('Server URL'),
-      type: TABLE_COLUMN_TYPE.URL,
-      placeholder: gettext('Please input server URL'),
+      type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
       is_custom: true
     }, {
       key: 'api_token',
       name: gettext('Library API token'),
-      type: TABLE_COLUMN_TYPE.PASSWORD,
-      placeholder: gettext('Please input token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       can_edit_multiple_times: false,
       is_custom: true
