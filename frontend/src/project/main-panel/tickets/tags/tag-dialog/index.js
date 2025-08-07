@@ -113,8 +113,11 @@ const TagDialog = ({ tag: oldTag, onSubmit, onToggle }) => {
           />
         </FormGroup>
         <FormGroup>
-          <Label>{gettext('Name')}</Label>
-          <Input autoFocus={true} value={name} placeholder={gettext('Tag name')} onChange={onNameChange} />
+          <Label>
+            {gettext('Name')}
+            <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+          </Label>
+          <Input autoFocus={true} value={name} onChange={onNameChange} />
         </FormGroup>
         {error && error.type === 'name' && (<Alert color="danger">{error.msg}</Alert>)}
         <FormGroup>
@@ -124,7 +127,6 @@ const TagDialog = ({ tag: oldTag, onSubmit, onToggle }) => {
             rows={3}
             className="sea-qa-tag-description-editor"
             value={description}
-            placeholder={gettext('Optionally add a description')}
             onChange={onDescriptionChange}
           />
         </FormGroup>

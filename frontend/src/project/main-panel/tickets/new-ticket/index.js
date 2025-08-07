@@ -74,7 +74,7 @@ const NewTicket = () => {
                 {gettext('Add a title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
-              <Input disabled={isSubmitting} value={title} placeholder={gettext('Title')} onChange={onTitleChange} />
+              <Input disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
             <div className="sea-qa-project-ticket-content mb-0">
               <Label>{gettext('Add a description')}</Label>
