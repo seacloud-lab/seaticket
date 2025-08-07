@@ -56,7 +56,7 @@ const AssigneesSettings = ({
         <CollaboratorEditor
           target={assigneesRef}
           value={assignees}
-          placeholder={gettext('Select assignees')}
+          placeholder={gettext('Search assignees')}
           emptyTip={gettext('No assignees')}
           collaborators={collaborators}
           onChange={onAssigneesChange}
