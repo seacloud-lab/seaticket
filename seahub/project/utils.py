@@ -253,6 +253,8 @@ def upload_files_to_s3(project_uuid, file_urls, username):
     from seahub.project.models import ProjectFiles
     new_file_urls_dict = {}
     for file_url in file_urls:
+        if '/upload-file/' not in file_url:
+            continue
         file_name = os.path.basename(file_url)
         tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_name)
         if not os.path.exists(tmp_upload_file_path):

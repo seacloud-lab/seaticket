@@ -368,20 +368,26 @@ class TicketsAPIView(APIView):
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        content = request.POST.get('content')
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
         if not content:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        file_urls = request.POST.get('images')
-        if file_urls is not None:
-            try:
-                file_urls = json.loads(file_urls)
-            except:
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(file_urls, list):
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         participants = request.POST.get('participants')
         if participants is not None:
             try:
@@ -585,17 +591,25 @@ class TicketAPIView(APIView):
         # argument check
         title = request.data.get('title')
 
-        content = request.data.get('content')
-
-        file_urls = request.data.get('images')
-        if file_urls is not None:
+        content = None
+        file_urls = None
+        content_dict = request.data.get('content')
+        if content_dict:
             try:
-                file_urls = json.loads(file_urls)
+                content_dict = json.loads(content_dict)
             except:
-                error_msg = 'file_urls invalid.'
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(file_urls, list):
-                error_msg = 'file_urls invalid.'
+            if not isinstance(content_dict, dict):
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            content = content_dict.get('text')
+            if not content:
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            file_urls = content_dict.get('images')
+            if file_urls and not isinstance(file_urls, list):
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         ticket_status = request.data.get('status')
@@ -730,7 +744,7 @@ class TicketAPIView(APIView):
                     TicketTags.objects.bulk_create(ticket_tags)
                 if tags_to_delete:
                     TicketTags.objects.filter(
-                        ticket_id=ticket.id, tag__in=tags_to_delete).delete()
+                        ticket_id=ticket.id, tag_id__in=tags_to_delete).delete()
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -887,21 +901,26 @@ class TicketRepliesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        content = request.POST.get('content')
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
         if not content:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        file_urls = request.POST.get('images')
-        if file_urls is not None:
-            try:
-                file_urls = json.loads(file_urls)
-            except:
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(file_urls, list):
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -978,21 +997,26 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        content = request.data.get('content')
+        content_dict = request.data.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
         if not content:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        file_urls = request.data.get('images')
-        if file_urls is not None:
-            try:
-                file_urls = json.loads(file_urls)
-            except:
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(file_urls, list):
-                error_msg = 'file_urls invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
