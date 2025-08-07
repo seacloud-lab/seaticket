@@ -231,15 +231,16 @@ def gen_project_tags_dict(project_uuid, key='id'):
     return project_tags_dict
 
 
-def gen_tmp_upload_file_path(project_uuid, file_name):
-    tmp_dir = os.path.join(TMP_UPLOAD_PROJECT_FILES_DIR, project_uuid)
+def gen_tmp_upload_file_path(project_uuid, month, file_name):
+    tmp_dir = os.path.join(TMP_UPLOAD_PROJECT_FILES_DIR, project_uuid, month)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    return os.path.join(TMP_UPLOAD_PROJECT_FILES_DIR, project_uuid, file_name)
+    return os.path.join(tmp_dir, file_name)
 
 
 def upload_file_to_tmp_dir(project_uuid, file):
-    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file.name)
+    month = datetime.now(timezone.utc).strftime('%Y-%m')
+    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file.name)
     with open(tmp_upload_file_path, 'wb') as fd:
         fd.write(file.read())
     return tmp_upload_file_path
@@ -256,7 +257,8 @@ def upload_files_to_s3(project_uuid, file_urls, username):
         if '/upload-file/' not in file_url:
             continue
         file_name = os.path.basename(file_url)
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_name)
+        month = file_url.split('/')[-2]
+        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file_name)
         if not os.path.exists(tmp_upload_file_path):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
@@ -274,16 +276,17 @@ def upload_files_to_s3(project_uuid, file_urls, username):
     return new_file_urls_dict
 
 
-def gen_tmp_download_file_path(project_uuid, file_name):
-    tmp_dir = os.path.join(TMP_DOWNLOAD_PROJECT_FILES_DIR, project_uuid)
+def gen_tmp_download_file_path(project_uuid, month, file_name):
+    tmp_dir = os.path.join(TMP_DOWNLOAD_PROJECT_FILES_DIR, project_uuid, month)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    return os.path.join(TMP_DOWNLOAD_PROJECT_FILES_DIR, project_uuid, file_name)
+    return os.path.join(tmp_dir, file_name)
 
 
 def get_file_from_s3(file_info):
     s3_file_path = file_info.file_path()
-    tmp_download_file_path = gen_tmp_download_file_path(str(file_info.project_uuid), file_info.file_name)
+    month = file_info.created_at.strftime('%Y-%m')
+    tmp_download_file_path = gen_tmp_download_file_path(str(file_info.project_uuid), month, file_info.file_name)
     if not os.path.exists(tmp_download_file_path):
         s3_client.download_file(S3_BUCKET_NAME, s3_file_path, tmp_download_file_path)
     return tmp_download_file_path
@@ -297,5 +300,6 @@ def delete_file_from_s3(file_info):
 
 def replace_file_url_in_content(content, new_file_urls_dict):
     for new_file_url in new_file_urls_dict:
-        content = content.replace(new_file_urls_dict[new_file_url], new_file_url)
+        old_file_url = new_file_urls_dict[new_file_url]
+        content = content.replace(new_file_url, old_file_url)
     return content

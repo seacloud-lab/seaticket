@@ -2,7 +2,7 @@
 import os
 import logging
 import json
-from datetime import datetime
+import datetime
 from dateutil.relativedelta import relativedelta
 from email.utils import formatdate
 
@@ -824,7 +824,7 @@ class TicketAPIView(APIView):
 
         try:
             ticket.deleted = True
-            ticket.delete_time = datetime.now()
+            ticket.delete_time = timezone.now()
             ticket.save()
         except Exception as e:
             logger.error(e)
@@ -1109,7 +1109,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             ticket_reply.deleted = True
-            ticket_reply.delete_time = datetime.now()
+            ticket_reply.delete_time = timezone.now()
             ticket_reply.save()
         except Exception as e:
             logger.error(e)
@@ -1398,7 +1398,8 @@ class ProjectUploadFileAPIView(APIView):
         # main
         try:
             tmp_upload_file_path = upload_file_to_tmp_dir(project_uuid, file)
-            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/upload-file/project/{project_uuid}/{file.name}'
+            month = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m')
+            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/upload-file/project/{project_uuid}/{month}/{file.name}'
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1437,18 +1438,19 @@ class GetProjectUploadFileView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
+        file_name = os.path.basename(file_path)
         try:
-            file_name = os.path.basename(file_path)
-            tmp_download_file_path = gen_tmp_upload_file_path(project_uuid, file_name)
+            month = file_path.split('/')[-2]
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file_name)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(open(tmp_download_file_path, 'rb'))
+        response = FileResponse(open(tmp_upload_file_path, 'rb'))
         response['Cache-Control'] = 'max-age=604800, public'
         response['ETag'] = '"' + file_name + '"'
-        response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_download_file_path)), usegmt=True)
+        response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_upload_file_path)), usegmt=True)
         return response
 
 
