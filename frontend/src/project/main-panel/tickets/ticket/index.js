@@ -142,7 +142,7 @@ const Ticket = () => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <AssigneesSettings isReadonly={true} assignees={participants.map(p => replies.email)} collaborators={collaborators} />
+          <AssigneesSettings isReadonly={true} assignees={participants} collaborators={collaborators} />
           <TagsSettings isReadonly={!enableEditOtherSettings} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!enableEditOtherSettings} value={type} onChange={onTypeChange} />
         </div>
