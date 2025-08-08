@@ -73,7 +73,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteProject(project_uuid) {
-    const url = this.server + '/api/v2.1/admin/project/' + project_uuid + '/';
+    const url = this.server + '/api/v2.1/admin/projects/' + project_uuid + '/';
     return this.req.delete(url);
   }
 

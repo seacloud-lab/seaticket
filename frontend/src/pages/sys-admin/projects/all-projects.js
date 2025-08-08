@@ -2,8 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Link, navigate } from '@gatsbyjs/reach-router';
-import { UncontrolledTooltip } from 'reactstrap';
-import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog, ProjectIcon, IconButton } from '../../../components';
+import { toaster, EmptyTip, Loading, ModalPortal, Paginator, CommonOperationConfirmationDialog, ProjectIcon } from '../../../components';
 import Search from '../search';
 import { seaQAAPI } from '../../../api/web-api';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
@@ -191,12 +190,11 @@ class Item extends Component {
 
   render() {
     const item = this.props.item;
-    let operations = ['External links', 'Delete', 'Export', 'Copy'];
+    let operations = ['Delete',];
     if (!multiTenancy){
       operations = operations.concat('Share');
     }
 
-    const file_size = item.file_size ? Utils.bytesToSize(item.file_size) : '--';
     return (
       <Fragment>
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseOver} onMouseLeave={this.handleMouseOut}>
@@ -215,11 +213,9 @@ class Item extends Component {
             </Fragment>
           </td>
           <td>{item.uuid}</td>
-          <td><span className="ml-2">{item.rows_count}</span></td>
           <td>{item.owner}</td>
           <td><span className="pl-2 d-block">{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</span></td>
           <td><span className="pl-2 d-block">{dayjs(item.updated_at).format('YYYY-MM-DD HH:mm:ss')}</span></td>
-          <td><span className="pl-4">{file_size}</span></td>
           <td>
             {this.state.isOpIconShown &&
               <ProjectOpMenu
@@ -315,26 +311,13 @@ class Content extends Component {
           <table>
             <thead>
               <tr>
-                <th width="4%">{/* icon*/}</th>
+                <th width="5%">{/* icon*/}</th>
                 <th width="15%">{gettext('Name')}</th>
-                <th width="17%">ID</th>
-                <th width="7%"><span className="ml-2">{gettext('Rows')}</span></th>
-                <th width="10%">{gettext('Owner')}</th>
+                <th width="30%">ID</th>
+                <th width="15%">{gettext('Owner')}</th>
                 <th width="15%"><span className="pl-2">{gettext('Created at')}</span></th>
                 <th width="15%"><span className="pl-2">{gettext('Updated at')}</span></th>
-                <th width="9%">
-                  <div className="pl-4">
-                    {gettext('Size')}
-                    <IconButton icon="help" className="ml-1" id="project-icon-use-help-tip" />
-                    <UncontrolledTooltip
-                      placement="bottom"
-                      target='project-icon-use-help-tip'
-                    >
-                      {gettext('The size of the assets of the project is not included')}
-                    </UncontrolledTooltip>
-                  </div>
-                </th>
-                <th width="8%">{/* Operations*/}</th>
+                <th width="5%">{/* Operations*/}</th>
               </tr>
             </thead>
             <tbody>
