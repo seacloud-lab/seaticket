@@ -26,7 +26,7 @@ from seahub.project.models import Workspaces, Projects, ProjectConnections, Tick
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
-    replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path
+    replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE
 
 
@@ -178,6 +178,11 @@ class ProjectConnectionsView(APIView):
                 'connection_id': record.get('id', '')
             }
             add_index_seafile_task(params)
+        elif connection_type == ConnectionType.GITHUB_ISSUE.value:
+            params = {
+                'issues_sync_id': record.get('id', '')
+            }
+            add_github_issues_index_task(params)
 
         return Response({'record': record}, status=status.HTTP_201_CREATED)
 
@@ -1132,7 +1137,7 @@ class ProjectTagsAPIView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         # argument check
         tickets_count = request.GET.get('tickets_count', '0')
 
@@ -1197,7 +1202,7 @@ class ProjectTagsAPIView(APIView):
         if not color:
             error_msg = 'color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         text_color = request.POST.get('text_color')
         if not text_color:
             error_msg = 'text_color invalid.'
