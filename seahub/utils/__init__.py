@@ -56,8 +56,6 @@ s3_client = boto3.client(
     aws_access_key_id=S3_ACCESS_KEY_ID,
     aws_secret_access_key=S3_SECRET_ACCESS_KEY,
 )
-TMP_UPLOAD_PROJECT_FILES_DIR = '/tmp/project_upload_files/'
-TMP_DOWNLOAD_PROJECT_FILES_DIR = '/tmp/project_download_files/'
 
 
 def is_pro_version():

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import logging
 import json
 import datetime
@@ -22,7 +23,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
-    TicketTags, TicketParticipants, ProjectTags, ProjectFiles
+    TicketTags, TicketParticipants, ProjectTags
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
@@ -1362,7 +1363,7 @@ class ProjectUploadFileAPIView(APIView):
 
     def post(self, request, project_uuid):
         """
-        Upload a file to TMP_UPLOAD_PROJECT_FILES_DIR.
+        Upload a file to /tmp.
         TicketsAPIView and TicketRepliesAPIView upload files to S3.
 
         Permission:
@@ -1398,8 +1399,7 @@ class ProjectUploadFileAPIView(APIView):
         # main
         try:
             tmp_upload_file_path = upload_file_to_tmp_dir(project_uuid, file)
-            month = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m')
-            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/upload-file/project/{project_uuid}/{month}/{file.name}'
+            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/{tmp_upload_file_path.replace("/tmp/projects/", "upload-file/project/")}'
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1415,7 +1415,7 @@ class GetProjectUploadFileView(APIView):
 
     def get(self, request, project_uuid, file_path):
         """
-        Get a file from TMP_UPLOAD_PROJECT_FILES_DIR.
+        Get a file from /tmp.
 
         Permission:
         1. group member
@@ -1438,10 +1438,8 @@ class GetProjectUploadFileView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        file_name = os.path.basename(file_path)
         try:
-            month = file_path.split('/')[-2]
-            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file_name)
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1449,7 +1447,7 @@ class GetProjectUploadFileView(APIView):
 
         response = FileResponse(open(tmp_upload_file_path, 'rb'))
         response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + file_name + '"'
+        response['ETag'] = '"' + str(os.path.getsize(tmp_upload_file_path)) + '"'
         response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_upload_file_path)), usegmt=True)
         return response
 
@@ -1483,11 +1481,7 @@ class ProjectFileAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            file_info = ProjectFiles.objects.get_file(project_uuid, file_path)
-            if not file_info:
-                return Response({'success': True})
-            delete_file_from_s3(file_info)
-            file_info.delete()
+            delete_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1525,20 +1519,15 @@ class GetProjectFileView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        file_info = ProjectFiles.objects.get_file(project_uuid, file_path)
-        if not file_info:
-            error_msg = 'File not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         try:
-            tmp_download_file_path = get_file_from_s3(file_info)
+            file = get_file_from_s3(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(open(tmp_download_file_path, 'rb'))
+        response = FileResponse(file)
         response['Cache-Control'] = 'max-age=604800, public'
-        response['ETag'] = '"' + file_info.file_path_md5 + '"'
-        response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_download_file_path)), usegmt=True)
+        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
+        response['Last-Modified'] = formatdate(int(datetime.datetime.now().timestamp()), usegmt=True)
         return response

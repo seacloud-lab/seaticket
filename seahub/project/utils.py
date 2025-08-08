@@ -5,7 +5,7 @@ import jwt
 import time
 import requests
 import json
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote_plus
 from copy import deepcopy
 from datetime import datetime, timezone
 
@@ -21,7 +21,7 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.constants import PREDEFINED_TICKET_TAGS
-from seahub.utils import s3_client, TMP_UPLOAD_PROJECT_FILES_DIR, TMP_DOWNLOAD_PROJECT_FILES_DIR
+from seahub.utils import s3_client
 from seahub.settings import S3_BUCKET_NAME
 
 
@@ -231,44 +231,42 @@ def gen_project_tags_dict(project_uuid, key='id'):
     return project_tags_dict
 
 
-def gen_tmp_upload_file_path(project_uuid, month, file_name):
-    tmp_dir = os.path.join(TMP_UPLOAD_PROJECT_FILES_DIR, project_uuid, month)
+def gen_s3_file_path(project_uuid, file_path):
+    return f'/projects/{project_uuid}/{file_path}'
+
+
+def gen_tmp_upload_file_path(project_uuid, file_path):
+    s3_file_path = gen_s3_file_path(project_uuid, file_path)
+    file_name = os.path.basename(file_path)
+    tmp_dir = f'/tmp{s3_file_path.replace(file_name, '')}'
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
     return os.path.join(tmp_dir, file_name)
 
 
 def upload_file_to_tmp_dir(project_uuid, file):
-    month = datetime.now(timezone.utc).strftime('%Y-%m')
-    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file.name)
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
+    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     with open(tmp_upload_file_path, 'wb') as fd:
         fd.write(file.read())
     return tmp_upload_file_path
 
 
-def gen_s3_file_path(project_uuid, file_name):
-    return f'/file/project/{project_uuid}/{datetime.now(timezone.utc).strftime('%Y-%m')}/{file_name}'
-
-
 def upload_files_to_s3(project_uuid, file_urls, username):
-    from seahub.project.models import ProjectFiles
     new_file_urls_dict = {}
     for file_url in file_urls:
-        if '/upload-file/' not in file_url:
+        if '/upload-file/project/' not in file_url:
             continue
         file_name = os.path.basename(file_url)
-        month = file_url.split('/')[-2]
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, month, file_name)
+        file_path = file_url.split('/')[-2] + '/' + file_name
+        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
         if not os.path.exists(tmp_upload_file_path):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
-        s3_file_path = gen_s3_file_path(project_uuid, file_name)
-        s3_client.upload_file(tmp_upload_file_path, S3_BUCKET_NAME, s3_file_path)
-        file_size = os.path.getsize(tmp_upload_file_path)
-        file_info = ProjectFiles.objects.save_file(project_uuid, file_name, file_size, username)
-        file_info.save()
-        new_file_url = SEAQA_WEB_SERVICE_URL.rstrip('/') + file_info.file_path()
-        new_file_urls_dict[file_url] = new_file_url
+        s3_file_path = gen_s3_file_path(project_uuid, file_path)
+        s3_client.upload_file(tmp_upload_file_path, S3_BUCKET_NAME, s3_file_path, ExtraArgs={'Metadata':{'username':username}})
+        new_file_url = file_url.replace('/upload-file/', '/file/')
+        new_file_urls_dict[new_file_url] = file_url
         try:
             os.remove(tmp_upload_file_path)
         except Exception as e:
@@ -276,24 +274,15 @@ def upload_files_to_s3(project_uuid, file_urls, username):
     return new_file_urls_dict
 
 
-def gen_tmp_download_file_path(project_uuid, month, file_name):
-    tmp_dir = os.path.join(TMP_DOWNLOAD_PROJECT_FILES_DIR, project_uuid, month)
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir, exist_ok=True)
-    return os.path.join(tmp_dir, file_name)
+def get_file_from_s3(project_uuid, file_path):
+    s3_file_path = gen_s3_file_path(project_uuid, file_path)
+    response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=s3_file_path)
+    file = response['Body']
+    return file
 
 
-def get_file_from_s3(file_info):
-    s3_file_path = file_info.file_path()
-    month = file_info.created_at.strftime('%Y-%m')
-    tmp_download_file_path = gen_tmp_download_file_path(str(file_info.project_uuid), month, file_info.file_name)
-    if not os.path.exists(tmp_download_file_path):
-        s3_client.download_file(S3_BUCKET_NAME, s3_file_path, tmp_download_file_path)
-    return tmp_download_file_path
-
-
-def delete_file_from_s3(file_info):
-    s3_file_path = file_info.file_path()
+def delete_file_from_s3(project_uuid, file_path):
+    s3_file_path = gen_s3_file_path(project_uuid, file_path)
     s3_client.delete_object(S3_BUCKET_NAME, s3_file_path)
     return s3_file_path
 
@@ -301,5 +290,5 @@ def delete_file_from_s3(file_info):
 def replace_file_url_in_content(content, new_file_urls_dict):
     for new_file_url in new_file_urls_dict:
         old_file_url = new_file_urls_dict[new_file_url]
-        content = content.replace(new_file_url, old_file_url)
+        content = content.replace(old_file_url, new_file_url)
     return content

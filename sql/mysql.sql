@@ -526,17 +526,3 @@ CREATE TABLE `deleted_projects`  (
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `project_files`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `project_uuid` varchar(32) NOT NULL,
-  `file_path_md5` varchar(32) NOT NULL,
-  `file_name` varchar(255) NOT NULL,
-  `creator` varchar(255) NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `file_size` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `project_files_file_path_md5`(`file_path_md5`),
-  KEY `project_files_project_uuid`(`project_uuid`),
-  KEY `project_files_creator`(`creator`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
