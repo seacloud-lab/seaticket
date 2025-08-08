@@ -1,11 +1,10 @@
 import os
-import hashlib
 import logging
 import jwt
 import time
 import requests
 import json
-from urllib.parse import urljoin, unquote_plus
+from urllib.parse import urljoin
 from copy import deepcopy
 from datetime import datetime, timezone
 
@@ -22,7 +21,7 @@ from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.constants import PREDEFINED_TICKET_TAGS
 from seahub.utils import s3_client
-from seahub.settings import S3_BUCKET_NAME
+from seahub.settings import S3_FILE_BUCKET
 
 
 logger = logging.getLogger(__name__)
@@ -264,7 +263,7 @@ def upload_files_to_s3(project_uuid, file_urls, username):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
         s3_file_path = gen_s3_file_path(project_uuid, file_path)
-        s3_client.upload_file(tmp_upload_file_path, S3_BUCKET_NAME, s3_file_path, ExtraArgs={'Metadata':{'username':username}})
+        s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata':{'username':username}})
         new_file_url = file_url.replace('/upload-file/', '/file/')
         new_file_urls_dict[new_file_url] = file_url
         try:
@@ -276,14 +275,14 @@ def upload_files_to_s3(project_uuid, file_urls, username):
 
 def get_file_from_s3(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=s3_file_path)
+    response = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
     file = response['Body']
     return file
 
 
 def delete_file_from_s3(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
-    s3_client.delete_object(S3_BUCKET_NAME, s3_file_path)
+    s3_client.delete_object(S3_FILE_BUCKET, s3_file_path)
     return s3_file_path
 
 

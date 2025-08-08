@@ -3,7 +3,6 @@ import os
 import sys
 import logging
 import json
-import datetime
 from dateutil.relativedelta import relativedelta
 from email.utils import formatdate
 
@@ -1529,5 +1528,5 @@ class GetProjectFileView(APIView):
         response = FileResponse(file)
         response['Cache-Control'] = 'max-age=604800, public'
         response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
-        response['Last-Modified'] = formatdate(int(datetime.datetime.now().timestamp()), usegmt=True)
+        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response

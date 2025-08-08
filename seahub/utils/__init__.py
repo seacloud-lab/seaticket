@@ -35,7 +35,7 @@ import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
     MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
     USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
-    S3_ENDPOINT_URL, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
+    S3_HOST, S3_KEY_ID, S3_SECRET_KEY
 
 try:
     from seahub.settings import EMAIL_HOST
@@ -52,9 +52,9 @@ logger = logging.getLogger(__name__)
 
 s3_client = boto3.client(
     's3',
-    endpoint_url=S3_ENDPOINT_URL,
-    aws_access_key_id=S3_ACCESS_KEY_ID,
-    aws_secret_access_key=S3_SECRET_ACCESS_KEY,
+    endpoint_url=S3_HOST,
+    aws_access_key_id=S3_KEY_ID,
+    aws_secret_access_key=S3_SECRET_KEY,
 )
 
 

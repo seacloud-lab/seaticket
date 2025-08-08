@@ -5,7 +5,6 @@ import logging
 import uuid
 import json
 import time
-import hashlib
 
 from django.db import models
 from django.core.exceptions import ValidationError
