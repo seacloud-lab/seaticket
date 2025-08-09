@@ -180,7 +180,7 @@ class ProjectConnectionsView(APIView):
             add_index_seafile_task(params)
         elif connection_type == ConnectionType.GITHUB_ISSUE.value:
             params = {
-                'issues_sync_id': record.get('id', '')
+                'connection_id': record.get('id', '')
             }
             add_github_issues_index_task(params)
 
