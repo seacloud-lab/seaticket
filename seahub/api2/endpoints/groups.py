@@ -20,7 +20,7 @@ from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin_or_owner, is_group_owner, is_group_admin_or_owner_by_group
-from seahub.project.models import Workspaces, ProjectGroupOrders, Projects
+from seahub.project.models import Workspaces, ProjectGroupOrders, Projects, DeletedProjects
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
@@ -389,6 +389,13 @@ class GroupTrashProjectsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle, )
+
+    def _delete_project(self, project):
+        try:
+            DeletedProjects(project_uuid=project.uuid).save()
+            Projects.objects.delete_project(project.workspace, project.name)
+        except Exception as e:
+            logger.error('delete project: %s error: %s', str(project.uuid), e)
 
     @api_check_group
     def get(self, request, group_id):

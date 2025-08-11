@@ -38,6 +38,7 @@ from seahub.api2.endpoints.admin.license import AdminLicense
 from seahub.api2.endpoints.admin.login_bg_image import AdminLoginBgImage
 from seahub.api2.endpoints.admin.admin_role import AdminAdminRole
 from seahub.api2.endpoints.admin.two_factor_auth import TwoFactorAuthView
+from seahub.api2.endpoints.admin.projects import AdminProjects, AdminProject, AdminTrashProjectsView, AdminTrashProjectView
 
 urlpatterns = [
     re_path(r'^accounts/', include('seahub.registration.urls')),
@@ -169,6 +170,12 @@ urlpatterns = [
     re_path(r'^profile/', include('seahub.profile.urls')),
     re_path(r'^captcha/', include('captcha.urls')),
 
+    ## admin::projects
+    re_path(r'^api/v2.1/admin/projects/$', AdminProjects.as_view(), name='api-v2.1-admin-projects'),
+    re_path(r'^api/v2.1/admin/projects/(?P<project_uuid>[-0-9a-f]+)/$', AdminProject.as_view(), name='api-v2.1-admin-project'),
+    re_path(r'^api/v2.1/admin/trash-projects/$', AdminTrashProjectsView.as_view(), name='api-v2.1-admin-trash-projects'),
+    re_path(r'^api/v2.1/admin/trash-projects/(?P<project_id>\d+)/$', AdminTrashProjectView.as_view(), name='api-v2.1-admin-trash-project'),
+
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 
     ### system admin ###
@@ -184,6 +191,7 @@ urlpatterns = [
     re_path(r'^sys/search-users/$', sysadmin_react_fake_view, name="sys_search_users"),
     re_path(r'^sys/search-projects/$', sysadmin_react_fake_view, name="sys_search_projects"),
     re_path(r'^sys/all-projects/$', sysadmin_react_fake_view, name="sys_all_projects"),
+    re_path(r'^sys/trash-projects/$', sysadmin_react_fake_view, name="sys_trash_projects"),
     re_path(r'^sys/organizations/$', sysadmin_react_fake_view, name="sys_organizations"),
     re_path(r'^sys/organizations/(?P<org_id>\d+)/info/$', sysadmin_react_fake_view, name="sys_organization_info"),
     re_path(r'^sys/organizations/(?P<org_id>\d+)/users/$', sysadmin_react_fake_view, name="sys_organization_users"),

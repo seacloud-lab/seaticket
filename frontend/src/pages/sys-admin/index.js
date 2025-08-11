@@ -23,6 +23,7 @@ import OrgGroups from './orgs/org-groups';
 import OrgProjects from './orgs/org-projects';
 import SearchOrgs from './orgs/search-orgs';
 import AllProjects from './projects/all-projects';
+import TrashProjects from './projects/trash-projects';
 
 import Groups from './groups/groups';
 import GroupMembers from './groups/group-members';
@@ -109,6 +110,7 @@ class SysAdmin extends React.Component {
           <Router className="reach-router" role='group'>
             <Info path={siteRoot + 'sys/info'} onCloseSidePanel={this.onCloseSidePanel} />
             <AllProjects path={siteRoot + 'sys/all-projects'} onCloseSidePanel={this.onCloseSidePanel} />
+            <TrashProjects path={siteRoot + 'sys/trash-projects'}></TrashProjects>
             <Orgs path={siteRoot + 'sys/organizations'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgInfo path={siteRoot + 'sys/organizations/:orgID/info'} onCloseSidePanel={this.onCloseSidePanel} />
             <OrgUsers path={siteRoot + 'sys/organizations/:orgID/users'} onCloseSidePanel={this.onCloseSidePanel} />

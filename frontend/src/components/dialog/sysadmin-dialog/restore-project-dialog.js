@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import isHotkey from 'is-hotkey';
-import { gettext } from '../../constants/config';
-import { ModalHeader } from '../../components';
+import { gettext } from '../../../constants';
 
 const propTypes = {
   currentProject: PropTypes.object.isRequired,
