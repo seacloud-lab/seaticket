@@ -292,7 +292,7 @@ class SeaQAAPI {
     return source;
   }
 
-  search(workspaceID, projectUuid, query, connectionTypes, cancelToken) {
+  search(workspaceID, projectUuid, query, connectionTypes, connectionIds, cancelToken) {
     const url = `${this.server}/api/v2.1/search/`;
     let params = {
       query: query,
@@ -301,6 +301,9 @@ class SeaQAAPI {
     };
     if (connectionTypes) {
       params.connection_types = connectionTypes;
+    }
+    if (connectionIds) {
+      params.connection_ids = connectionIds;
     }
     return this.req.post(url, params, { cancelToken: cancelToken });
   }

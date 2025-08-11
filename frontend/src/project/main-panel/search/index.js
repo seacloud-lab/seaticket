@@ -5,11 +5,10 @@ import GlobalSearchInput from '../../../components/search-input/global-search-in
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import { SearchResult } from '../../models';
+import { SearchResult, Connection } from '../../models';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
-import { CONNECTION_TYPES } from '../../constants';
 
 import './index.css';
 import './search-filters.css';
@@ -22,12 +21,13 @@ const Search = ({ title }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [hiddenConnectionTypes, setConnectionTypes] = useState([]);
+  const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState([]);
+  const [connections, setConnections] = useState([]);
 
   const source = useRef(null);
   const timer = useRef(null);
 
-  const onChange = useCallback((value = '', hiddenConnectionTypes) => {
+  const onChange = useCallback((value = '', hiddenConnectionIDs, connections) => {
     const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
     if (!oldSearch.includes(value)) {
       oldSearch.push(value);
@@ -49,8 +49,8 @@ const Search = ({ title }) => {
     timer.current = setTimeout(() => {
       timer.current = null;
       source.current = seaQAAPI.getSource();
-      const showConnnectionTypes = CONNECTION_TYPES.map(item => item.type).filter(i => !hiddenConnectionTypes.includes(i)).join(',');
-      seaQAAPI.search(workspaceID, projectUuid, value, showConnnectionTypes, source.current.token).then(res => {
+      const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
+      seaQAAPI.search(workspaceID, projectUuid, value, null, showConnnectionIds, source.current.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -78,13 +78,19 @@ const Search = ({ title }) => {
   }, []);
 
   useEffect(() => {
+    seaQAAPI.listConnections(projectUuid, 1, 100).then(res => {
+      setConnections(res.data.records.map(r => new Connection(r)));
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
     return () => {
       timer.current && clearTimeout(timer.current);
     };
   }, []);
 
-  const handleConnectionTypesChange = useCallback((hiddenConnectionTypes) => {
-    setConnectionTypes(hiddenConnectionTypes);
+  const handleConnectionIDsChange = useCallback((hiddenConnectionIDs) => {
+    setHiddenConnectionIDs(hiddenConnectionIDs);
   }, []);
 
   return (
@@ -99,12 +105,12 @@ const Search = ({ title }) => {
           isClearable={true}
           size={38}
           placeholder={gettext('Search')}
-          onChange={(value) => onChange(value, hiddenConnectionTypes)}
+          onChange={(value) => onChange(value, hiddenConnectionIDs, connections)}
           onClear={onClear}
           storeKey={SEARCH_STORE_KEY}
         />
         <div className="search-filters-container">
-          <HideConnectionSetter onConnectionTypesChange={handleConnectionTypesChange} />
+          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
         </div>
         {searching ?
           <CenteredLoading className="sea-qa-project-search-loading-tip" />

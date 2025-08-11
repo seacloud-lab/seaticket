@@ -385,6 +385,7 @@ class SearchView(APIView):
             count = 20
 
         connection_types = request.data.get('connection_types')
+        connection_ids = request.data.get('connection_ids')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
@@ -405,6 +406,7 @@ class SearchView(APIView):
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
             'connection_types': connection_types,
+            'connection_ids': connection_ids,
             'count': count,
         }
         results = search(params)

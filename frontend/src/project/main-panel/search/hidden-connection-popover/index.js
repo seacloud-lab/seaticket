@@ -10,9 +10,9 @@ import { getEventClassName } from '../../../../utils/utils';
 
 import './index.css';
 
-const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, hiddenConnectionTypes: oldHiddenConnections }) => {
+const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, hiddenConnectionIDs: oldHiddenConnections }) => {
   const [searchValue, setSearchValue] = useState('');
-  const [hiddenConnectionTypes, setHiddenConnections] = useState(oldHiddenConnections);
+  const [hiddenConnectionIDs, setHiddenConnections] = useState(oldHiddenConnections);
   const displayItems = useMemo(() => {
     if (!searchValue) return Array.isArray(connections) ? connections : [];
     const validSearchValueValue = searchValue.trim().toLocaleLowerCase();
@@ -67,22 +67,22 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
     setSearchValue(newSearchValue);
   }, [searchValue]);
 
-  const update = useCallback((hiddenConnectionTypes) => {
-    setHiddenConnections(hiddenConnectionTypes);
-    onChange(hiddenConnectionTypes);
+  const update = useCallback((hiddenConnectionIDs) => {
+    setHiddenConnections(hiddenConnectionIDs);
+    onChange(hiddenConnectionIDs);
   }, [onChange]);
 
   const hideConnection = useCallback((connection) => {
-    const type = connection.type;
-    const newHiddenConnections = hiddenConnectionTypes.slice(0);
-    const columnIndex = newHiddenConnections.indexOf(type);
+    const id = connection.id;
+    const newHiddenConnections = hiddenConnectionIDs.slice(0);
+    const columnIndex = newHiddenConnections.indexOf(id);
     if (columnIndex > -1) {
       newHiddenConnections.splice(columnIndex, 1);
     } else {
-      newHiddenConnections.push(type);
+      newHiddenConnections.push(id);
     }
     update(newHiddenConnections);
-  }, [hiddenConnectionTypes, update]);
+  }, [hiddenConnectionIDs, update]);
 
   return (
     <UncontrolledPopover
@@ -101,20 +101,19 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
         <HiddenConnections
           readOnly={readOnly}
           connections={displayItems}
-          hiddenConnectionTypes={hiddenConnectionTypes}
+          hiddenConnectionIDs={hiddenConnectionIDs}
           onChange={hideConnection}
         />
       </div>
     </UncontrolledPopover>
   );
-
 };
 
 HideConnectionPopover.propTypes = {
   readOnly: PropTypes.bool,
   placement: PropTypes.string.isRequired,
   target: PropTypes.string.isRequired,
-  hiddenConnectionTypes: PropTypes.array.isRequired,
+  hiddenConnectionIDs: PropTypes.array.isRequired,
   connections: PropTypes.array.isRequired,
   onChange: PropTypes.func.isRequired,
   hidePopover: PropTypes.func.isRequired,
