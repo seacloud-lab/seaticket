@@ -193,10 +193,10 @@ class OrgAdminTrashProjectView(APIView):
 
     def _delete_project(self, project):
         try:
-            Projects.objects.delete_dtable(project.workspace, project.name)
+            DeletedProjects(project_uuid=project.uuid).save()
+            Projects.objects.delete_project(project.workspace, project.name)
         except Exception as e:
             logger.error('delete project: %s error: %s', str(project.uuid), e)
-
 
     def put(self, request, org_id, project_id):
         error, _ = _check_org(org_id)

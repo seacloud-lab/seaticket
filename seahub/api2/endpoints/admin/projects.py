@@ -10,8 +10,9 @@ from rest_framework import status
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.project.models import Projects
-from seahub.project.utils import get_project_owner, convert_project_trash_names, restore_trash_project_name
+from seahub.project.models import Projects, DeletedProjects
+from seahub.project.utils import get_project_owner, convert_project_trash_names, \
+    restore_trash_project_name, delete_project_dir_from_s3
 from seahub.organizations.models import Organization
 from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.admin_log.signals import admin_operation
@@ -132,6 +133,13 @@ class AdminTrashProjectsView(APIView):
     throttle_classes = (UserRateThrottle,)
     permission_classes = (IsAdminUser,)
 
+    def _delete_project(self, project):
+        try:
+            DeletedProjects(project_uuid=project.uuid).save()
+            Projects.objects.delete_project(project.workspace, project.name)
+        except Exception as e:
+            logger.error('delete project: %s error: %s', str(project.uuid), e)
+
     def get(self, request):
         # argument check
         try:
@@ -158,6 +166,25 @@ class AdminTrashProjectsView(APIView):
                    for project in projects_queryset]
 
         return Response({'count': projects_count, 'trash_project_list': results})
+
+    def delete(self, request):
+        try:
+            projects = Projects.objects.filter(deleted=True).select_related('workspace')
+            for project in projects:
+                project_uuid = str(project.uuid)
+                self._delete_project(project)
+                try:
+                    delete_project_dir_from_s3(project_uuid)
+                except Exception as e:
+                    logger.error(e)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'success': True
+        })
 
 
 class AdminTrashProjectView(APIView):

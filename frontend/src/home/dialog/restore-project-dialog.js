@@ -38,7 +38,7 @@ class RestoreProjectDialog extends React.Component {
     let name = currentProject.name;
     if (owner_deleted) {
       return (
-        <p aria-label={gettext('The owner of this project has been deleted. Do you want to restore the project to your account?')}>{gettext('The owner of this base has been deleted. Do you want to restore the base to your account?')}</p>
+        <p aria-label={gettext('The owner of this project has been deleted. Do you want to restore the project to your account?')}>{gettext('The owner of this project has been deleted. Do you want to restore the project to your account?')}</p>
       );
     } else {
       return (

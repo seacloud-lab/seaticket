@@ -188,11 +188,11 @@ class Content extends Component { // todo: check all-projects page delete functi
       return <p className="error text-center">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No trash bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No trash projects')} />
       );
       const table = (
         <Fragment>
-          <p className="mt-4 seatable-tip-default">{gettext('Note: Bases are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', this.state.expireDays)}</p>
+          <p className="mt-4 seatable-tip-default">{gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', this.state.expireDays)}</p>
           <table>
             <thead>
               <tr>
