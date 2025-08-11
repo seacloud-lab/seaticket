@@ -26,7 +26,7 @@ from seahub.settings import S3_FILE_BUCKET
 
 logger = logging.getLogger(__name__)
 
-ENCRYPT_KEYS = ['api_token']
+ENCRYPT_KEYS = ['api_token', 'token', 'webhook_secret']
 
 
 def check_project_limit(workspace, request):
@@ -167,6 +167,16 @@ def add_index_seafile_task(params):
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
     url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-index-seafile-task')
+    resp = requests.get(url, params=params, headers=headers)
+
+    return json.loads(resp.content)
+
+
+def add_github_issues_index_task(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-github-issues-index-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)
