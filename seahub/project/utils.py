@@ -286,6 +286,19 @@ def delete_file_from_s3(project_uuid, file_path):
     return s3_file_path
 
 
+def delete_project_dir_from_s3(project_uuid):
+    s3_dir_path = gen_s3_file_path(project_uuid, '')
+    response = s3_client.list_objects_v2(Bucket=S3_FILE_BUCKET, Prefix=s3_dir_path)
+    objects_to_delete = []
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            objects_to_delete.append({'Key': obj['Key']})
+        s3_client.delete_objects(
+            Bucket=S3_FILE_BUCKET, Delete={'Objects': objects_to_delete})
+        logger.info(f'Deleted {project_uuid} s3 files.')
+    return s3_dir_path
+
+
 def replace_file_url_in_content(content, new_file_urls_dict):
     for new_file_url in new_file_urls_dict:
         old_file_url = new_file_urls_dict[new_file_url]

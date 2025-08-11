@@ -13,7 +13,8 @@ from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects, Workspaces, DeletedProjects
-from seahub.project.utils import get_project_owner, convert_project_trash_names, restore_trash_project_name
+from seahub.project.utils import get_project_owner, convert_project_trash_names, \
+    restore_trash_project_name, delete_project_dir_from_s3
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.organizations.models import Organization
@@ -169,7 +170,12 @@ class OrgAdminTrashProjectsView(APIView):
         try:
             projects = Projects.objects.filter(deleted=True, workspace__org_id=org_id).select_related('workspace')
             for project in projects:
+                project_uuid = str(project.uuid)
                 self._delete_project(project)
+                try:
+                    delete_project_dir_from_s3(project_uuid)
+                except Exception as e:
+                    logger.error(e)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
