@@ -49,13 +49,16 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
-s3_client = boto3.client(
-    's3',
-    endpoint_url=S3_HOST,
-    aws_access_key_id=S3_KEY_ID,
-    aws_secret_access_key=S3_SECRET_KEY,
-)
+try:
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=S3_HOST,
+        aws_access_key_id=S3_KEY_ID,
+        aws_secret_access_key=S3_SECRET_KEY,
+    )
+except Exception as e:
+    logger.warning(e)
+    s3_client = None
 
 
 def is_pro_version():
