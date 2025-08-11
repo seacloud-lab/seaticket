@@ -26,7 +26,7 @@ from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_O
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
 from seahub.group.models import GroupUser, Group
-from seahub.project.utils import restore_trash_project_name
+from seahub.project.utils import restore_trash_project_name, delete_project_dir_from_s3
 
 from .utils import api_check_group
 
@@ -408,6 +408,30 @@ class GroupTrashProjectsView(APIView):
         results = [project.to_dict(include_deleted=True) for project in projects]
 
         return Response({'trash_project_list': results})
+
+    def delete(self, request, group_id):
+        if not is_group_admin_or_owner(group_id, request.user.username):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        owner = str(group_id) + '@seafile_group'
+        try:
+            projects = Projects.objects.filter(deleted=True, workspace__owner=owner).select_related('workspace')
+            for project in projects:
+                project_uuid = str(project.uuid)
+                self._delete_project(project)
+                try:
+                    delete_project_dir_from_s3(project_uuid)
+                except Exception as e:
+                    logger.error(e)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'success': True
+        })
 
 
 class GroupTrashProjectView(APIView):

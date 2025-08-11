@@ -11,7 +11,7 @@ import { Utils } from '../../../../utils/utils';
 
 import './index.css';
 
-const NewTicket = () => {
+const NewTicket = ({ editorAPI }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assignees, setAssignees] = useState([]);
@@ -49,9 +49,8 @@ const NewTicket = () => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const validDescription = description ? description.text : '';
     const validTags = tags.map(tag => tag.id);
-    createTicket({ title: validTitle, description: validDescription, type, assignees, tags: validTags }).then(res => {
+    createTicket({ title: validTitle, description, type, assignees, tags: validTags }).then(res => {
       // nothing
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -87,6 +86,7 @@ const NewTicket = () => {
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
+                editorApi={editorAPI}
                 onSaveEditorValue={onDescriptionChange}
               />
             </div>

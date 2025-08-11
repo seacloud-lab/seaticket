@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TagsProvider, TicketsProvider, useTickets } from '../../hooks';
 import Tags from './tags';
 import AllTickets from './all-tickets';
@@ -7,6 +7,9 @@ import Ticket from './ticket';
 import { TICKET_PAGE_TYPE } from '../../constants';
 import { CenteredLoading } from '../../../components';
 import TicketTopBar from './ticket-top-bar';
+import { server } from '../../../constants';
+import LongTextEditorUtilities from '../../../utils/long-text';
+import { seaQAAPI } from '../../../api/web-api';
 
 import './index.css';
 
@@ -16,6 +19,7 @@ const {
 
 const Page = () => {
   const { isLoading, pageType } = useTickets();
+  const editorAPI = useMemo(() => new LongTextEditorUtilities({ server, projectUuid, api: seaQAAPI }), []);
   if (isLoading) return (<CenteredLoading />);
   if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets />);
   const tagsCount = pageType === TICKET_PAGE_TYPE.TAGS ? 1 : 0;
@@ -24,7 +28,7 @@ const Page = () => {
   if (pageType === TICKET_PAGE_TYPE.NEW) ChildrenComponent = NewTicket;
   return (
     <TagsProvider projectUuid={projectUuid} tagsCount={tagsCount}>
-      <ChildrenComponent />
+      <ChildrenComponent editorAPI={editorAPI} />
     </TagsProvider>
   );
 };

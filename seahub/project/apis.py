@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
 import logging
 import json
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from email.utils import formatdate
 
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.http import HttpResponse, FileResponse
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -22,7 +25,8 @@ from seahub.project.models import Workspaces, Projects, ProjectConnections, Tick
     TicketTags, TicketParticipants, ProjectTags
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
-    create_default_project_tags, gen_project_tags_dict
+    create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
+    replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE
 
 
@@ -364,8 +368,24 @@ class TicketsAPIView(APIView):
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        content = request.POST.get('content')
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
         if not content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         participants = request.POST.get('participants')
@@ -434,6 +454,16 @@ class TicketsAPIView(APIView):
                 previous_ticket.created_at > timezone.now() - relativedelta(seconds=30):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
+
+        # upload files
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # main
         try:
@@ -561,7 +591,26 @@ class TicketAPIView(APIView):
         # argument check
         title = request.data.get('title')
 
-        content = request.data.get('content')
+        content = None
+        file_urls = None
+        content_dict = request.data.get('content')
+        if content_dict:
+            try:
+                content_dict = json.loads(content_dict)
+            except:
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            if not isinstance(content_dict, dict):
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            content = content_dict.get('text')
+            if not content:
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            file_urls = content_dict.get('images')
+            if file_urls and not isinstance(file_urls, list):
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         ticket_status = request.data.get('status')
         if ticket_status is not None:
@@ -652,6 +701,16 @@ class TicketAPIView(APIView):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        # upload files
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         # main
         try:
             if title:
@@ -685,7 +744,7 @@ class TicketAPIView(APIView):
                     TicketTags.objects.bulk_create(ticket_tags)
                 if tags_to_delete:
                     TicketTags.objects.filter(
-                        ticket_id=ticket.id, tag__in=tags_to_delete).delete()
+                        ticket_id=ticket.id, tag_id__in=tags_to_delete).delete()
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
@@ -765,7 +824,7 @@ class TicketAPIView(APIView):
 
         try:
             ticket.deleted = True
-            ticket.delete_time = datetime.now()
+            ticket.delete_time = timezone.now()
             ticket.save()
         except Exception as e:
             logger.error(e)
@@ -842,8 +901,24 @@ class TicketRepliesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        content = request.POST.get('content')
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
         if not content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -871,6 +946,16 @@ class TicketRepliesAPIView(APIView):
                 previous_ticket_reply.created_at > timezone.now() - relativedelta(seconds=30):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
+
+        # upload files
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # main
         try:
@@ -912,8 +997,24 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        content = request.data.get('content')
-        if content:
+        content_dict = request.data.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            content_dict = json.loads(content_dict)
+        except:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content = content_dict.get('text')
+        if not content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        file_urls = content_dict.get('images')
+        if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -944,6 +1045,16 @@ class TicketReplyAPIView(APIView):
         if ticket_reply.updated_at > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
+
+        # upload files
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # main
         try:
@@ -998,7 +1109,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             ticket_reply.deleted = True
-            ticket_reply.delete_time = datetime.now()
+            ticket_reply.delete_time = timezone.now()
             ticket_reply.save()
         except Exception as e:
             logger.error(e)
@@ -1242,3 +1353,180 @@ class ProjectTagAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
+
+
+class ProjectUploadFileAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request, project_uuid):
+        """
+        Upload a file to /tmp.
+        TicketsAPIView and TicketRepliesAPIView upload files to S3.
+
+        Permission:
+        1. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        file = request.FILES.get('file', None)
+        if not file:
+            error_msg = 'file not found.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if file.size > 1024 * 1024 * settings.PROJECT_FILE_SIZE_MAX:
+            error_msg = 'file too large.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            tmp_upload_file_path = upload_file_to_tmp_dir(project_uuid, file)
+            file_url = f'{settings.SEAQA_WEB_SERVICE_URL.rstrip("/")}/{tmp_upload_file_path.replace("/tmp/projects/", "upload-file/project/")}'
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'url': file_url}, status=status.HTTP_201_CREATED)
+
+
+class GetProjectUploadFileView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, file_path):
+        """
+        Get a file from /tmp.
+
+        Permission:
+        1. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response = FileResponse(open(tmp_upload_file_path, 'rb'))
+        response['Cache-Control'] = 'max-age=604800, public'
+        response['ETag'] = '"' + str(os.path.getsize(tmp_upload_file_path)) + '"'
+        response['Last-Modified'] = formatdate(int(os.path.getmtime(tmp_upload_file_path)), usegmt=True)
+        return response
+
+
+class ProjectFileAPIView(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def delete(self, request, project_uuid, file_path):
+        """
+        Permission:
+        1. group admin
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            delete_file_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class GetProjectFileView(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, file_path):
+        """
+        Permission:
+        1. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            file = get_file_from_s3(project_uuid, file_path)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response = FileResponse(file)
+        response['Cache-Control'] = 'max-age=604800, public'
+        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
+        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        return response

@@ -24,18 +24,22 @@ export const getLongTextValueByNew = (longtext, images) => {
 
 class LongTextEditorUtilities {
 
-  constructor({ key }) {
-    this.key = key;
+  constructor({ projectUuid, server, api }) {
+    this.projectUuid = projectUuid;
+    this.server = server;
+    this.api = api;
   }
 
-  getImageFileNameWithTimestamp = (file) => {
+  getImageNameWithTimestamp = (file) => {
     var d = Date.now();
     return 'image-' + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
   };
 
   uploadLocalImage = (file) => {
-    // const newFile = new File([file], this.getImageFileNameWithTimestamp(file), { type: file.type });
-    // todo
+    const newFile = new File([file], this.getImageNameWithTimestamp(file), { type: file.type });
+    return this.api.uploadFile(this.projectUuid, newFile).then((res) => {
+      return this._getImageURL(res.data.url);
+    });
   };
 
   isInternalDirLink = (url) => {
@@ -48,8 +52,10 @@ class LongTextEditorUtilities {
     return re.test(url);
   };
 
-  _getImageURL = (filePath) => {
-    // todo
+  _getImageURL = (url) => {
+    if (!url) return '';
+    if (url.startsWith('data:image')) return url;
+    return url;
   };
 
 }

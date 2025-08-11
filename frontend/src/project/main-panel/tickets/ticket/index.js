@@ -16,7 +16,7 @@ import StatusToggleButton from './status-toggle-btn';
 
 import './index.css';
 
-const Ticket = () => {
+const Ticket = ({ editorAPI }) => {
   const { isLoading, metadata, createReply, collaborators, modifyTicket, modifyTicketTags, getRowById, togglePageType } = useTickets();
   const [reply, setReply] = useState('');
 
@@ -76,7 +76,7 @@ const Ticket = () => {
   }, [ticket, modifyTicketTags]);
 
   const onSubmitReply = useCallback(() => {
-    createReply(ticket.id, reply ? reply.text : '').then(() => {
+    createReply(ticket.id, reply).then(() => {
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE);
       setTimeout(() => containerRef.current.scrollTop = 10000000, 1);
@@ -133,6 +133,7 @@ const Ticket = () => {
               autoSave={false}
               saveDelay={20 * 1000}
               isCheckBrowser={true}
+              editorApi={editorAPI}
               onSaveEditorValue={onReplyChange}
             />
           </Reply>
