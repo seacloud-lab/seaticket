@@ -61,13 +61,15 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.URL,
       is_required: true,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      helpText: gettext('Your The URL of the repository, like https://github.com/haiwen/seafile')
     }, {
-      key: 'token',
-      name: gettext('Token'),
+      key: 'access_token',
+      name: gettext('Access token'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
-      is_custom: true
+      is_custom: true,
+      helpText: gettext('Your personal access token in GitHub Developer Settings')
     }, {
       key: 'webhook_secret',
       name: gettext('Webhook secret'),
@@ -145,7 +147,7 @@ export const CONNECTION_TYPES = [
   }, {
     type: CONNECTION_TYPE.GITHUB_ISSUE,
     icon: 'github-issues',
-    name: gettext('Github issues'),
+    name: gettext('Github'),
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-forums',

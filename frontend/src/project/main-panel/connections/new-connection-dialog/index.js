@@ -4,7 +4,8 @@ import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from '
 import classnames from 'classnames';
 import { gettext, mediaUrl } from '../../../../constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
-import { TextInput, PasswordInput, ModalHeader, StepsNavigation } from '../../../../components';
+import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '../../../../components';
+import { Tooltip } from 'reactstrap';
 
 import './index.css';
 
@@ -24,6 +25,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [name, setName] = useState('');
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState({});
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
@@ -96,13 +98,37 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type, placeholder } = c;
+              const { key, type, placeholder, helpText } = c;
               const value = config[key] || '';
+              const toggleTooltip = () => {
+                setTooltipOpen(prev => ({
+                  ...prev,
+                  [key]: !prev[key]
+                }));
+              };
               return (
                 <FormGroup key={key}>
                   <Label>
                     {c.name}
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
+                    {helpText ? (
+                      <>
+                        <Icon
+                          symbol="help"
+                          id={`help-icon-${key}`}
+                          className="mr-1 help-icon"
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <Tooltip
+                          placement="top"
+                          isOpen={tooltipOpen[key]}
+                          target={`help-icon-${key}`}
+                          toggle={toggleTooltip}
+                        >
+                          {helpText}
+                        </Tooltip>
+                      </>
+                    ) : null}
                   </Label>
                   {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                     <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
