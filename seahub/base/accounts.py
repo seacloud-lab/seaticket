@@ -291,9 +291,6 @@ class UserPermissions(object):
     def can_invite_guest(self):
         return self._get_perm_by_roles('can_invite_guest')
 
-    def can_create_common_dataset(self):
-        return self._get_perm_by_roles('can_create_common_dataset')
-
     def can_export_files_via_mobile_client(self):
         return self._get_perm_by_roles('can_export_files_via_mobile_client')
 
@@ -306,29 +303,11 @@ class UserPermissions(object):
     def can_generate_external_link(self):
         return self._get_perm_by_roles('can_generate_external_link')
 
-    def can_run_python_script(self):
-        return self._get_perm_by_roles('can_run_python_script')
-
     def can_use_advanced_permissions(self):
         return self._get_perm_by_roles('can_use_advanced_permissions')
 
     def can_use_advanced_customization(self):
         return self._get_perm_by_roles('can_use_advanced_customization')
-
-    def can_use_external_app(self):
-        return self._get_perm_by_roles('can_use_external_app')
-
-    def can_use_automation_rules(self):
-        return self._get_perm_by_roles('can_use_automation_rules')
-
-    def can_archive_rows(self):
-        return self._get_perm_by_roles('can_archive_rows')
-
-    def storage_ids(self):
-        return self._get_perm_by_roles('storage_ids')
-
-    def row_limit(self):
-        return self._get_perm_by_roles('row_limit', default=-1)
 
     def share_limit(self):
         return self._get_perm_by_roles('share_limit', default=100)
@@ -496,7 +475,6 @@ class User(object):
         EmailUser.objects.remove_emailuser(username)
 
         SocialAuthUser.objects.filter(username=username).delete()
-        # UserQuota.objects.filter(username=username).delete()
 
         from seahub.registration.signals import user_deleted
 

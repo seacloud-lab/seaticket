@@ -426,16 +426,6 @@ class AdminOrganization(APIView):
             OrgSettings.objects.add_or_update(org, role=role)
             org_role_updated.send(None, org_id=org_id)
 
-        # row limit and asset quota and big data row limit
-        row_limit = request.data.get('row_limit')
-        if row_limit:
-            try:
-                row_limit = int(row_limit)
-            except:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Must be an integer that is greater than or equal to 0.')
-            if row_limit < 0:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Row limit is too low (minimum value is 0).')
-
         # api-calls-count
         monthly_api_call_limit_per_user = request.data.get('monthly_api_call_limit_per_user')
         if monthly_api_call_limit_per_user:
@@ -446,50 +436,8 @@ class AdminOrganization(APIView):
             if monthly_api_call_limit_per_user < 0:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Limit of API calls is too low (minimum value is 0).')
 
-        asset_quota_mb, asset_quota = request.data.get('asset_quota_mb'), None
-        if asset_quota_mb:
-            try:
-                asset_quota_mb = int(asset_quota_mb)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if asset_quota_mb < 0:
-                error_msg = "Space quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            asset_quota = asset_quota_mb * get_file_size_unit('MB')
-
-        big_data_storage_quota_mb, big_data_storage_quota = request.data.get('big_data_storage_quota_mb'), None
-        if big_data_storage_quota_mb:
-            try:
-                big_data_storage_quota_mb = int(big_data_storage_quota_mb)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if big_data_storage_quota_mb < 0:
-                error_msg = "Space quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            big_data_storage_quota = big_data_storage_quota_mb * get_file_size_unit('MB')
-        big_data_row_limit = request.data.get('big_data_row_limit')
-        if big_data_row_limit:
-            try:
-                big_data_row_limit = int(big_data_row_limit)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if big_data_row_limit < 0:
-                error_msg = "Big data storage quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if (row_limit is not None or
-            asset_quota_mb is not None or
-            big_data_row_limit is not None or
-            big_data_storage_quota_mb is not None or
-            monthly_api_call_limit_per_user is not None):
-            OrgQuota.objects.add_or_update(org,
-                                           row_limit=row_limit,
-                                           asset_quota=asset_quota,
-                                           big_data_row_limit=big_data_row_limit,
-                                           big_data_storage_quota=big_data_storage_quota,
-                                           monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
+        if (monthly_api_call_limit_per_user is not None):
+            OrgQuota.objects.add_or_update(org, monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
 
         # perhaps need to update exceed api calls status
         try:

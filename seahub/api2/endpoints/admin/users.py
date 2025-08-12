@@ -89,7 +89,7 @@ def create_user_info(request, email, role, nickname, contact_email, quota_total_
 
 def update_user_info(request, user, password, is_active, is_staff, role,
                      nickname, login_id, contact_email, institution_name,
-                     row_limit, asset_quota_mb, id_in_org, unit, phone, monthly_api_call_limit_per_user):
+                     id_in_org, unit, phone, monthly_api_call_limit_per_user):
 
     email = user.username
 
@@ -147,10 +147,8 @@ def update_user_info(request, user, password, is_active, is_staff, role,
     if id_in_org:
         IdInOrgTuple.objects.add_or_update(virtual_id=email, id_in_org=id_in_org, org_id=org_id)
 
-    if org_id == -1 and (row_limit is not None or asset_quota_mb is not None or monthly_api_call_limit_per_user is not None):
+    if org_id == -1 and (monthly_api_call_limit_per_user is not None):
         uq = UserQuota.objects.get_or_create(user.username)
-        uq.row_limit = row_limit if row_limit is not None else uq.row_limit
-        uq.asset_quota = asset_quota_mb * get_file_size_unit('MB') if asset_quota_mb is not None else uq.asset_quota
         uq.monthly_api_call_limit_per_user = monthly_api_call_limit_per_user if monthly_api_call_limit_per_user is not None else uq.monthly_api_call_limit_per_user
         uq.save()
 
@@ -523,27 +521,6 @@ class AdminUser(APIView):
 
         institution = request.data.get("institution", None)
 
-        # row_limit and asset_quota
-        row_limit = request.data.get('row_limit')
-        if row_limit:
-            try:
-                row_limit = int(row_limit)
-            except:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Must be an integer that is greater than or equal to 0.')
-            if row_limit < 0:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Row limit is too low (minimum value is 0).')
-        asset_quota_mb = request.data.get('asset_quota_mb')
-        if asset_quota_mb:
-            try:
-                asset_quota_mb = int(asset_quota_mb)
-            except ValueError:
-                error_msg = "Must be an integer that is greater than or equal to 0."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if asset_quota_mb < 0:
-                error_msg = "Space quota is too low (minimum value is 0)."
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         # api calls limit per user
         monthly_api_call_limit_per_user = request.data.get('monthly_api_call_limit_per_user')
         if monthly_api_call_limit_per_user:
@@ -566,8 +543,7 @@ class AdminUser(APIView):
         try:
             update_user_info(request, user=user_obj, password=password, is_active=is_active, is_staff=is_staff,
                              role=role, nickname=name, login_id=login_id, contact_email=contact_email,
-                             institution_name=institution, row_limit=row_limit,
-                             asset_quota_mb=asset_quota_mb, id_in_org=id_in_org, unit=unit, phone=phone,
+                             institution_name=institution, id_in_org=id_in_org, unit=unit, phone=phone,
                              monthly_api_call_limit_per_user=monthly_api_call_limit_per_user)
         except Exception as e:
             logger.error(e)

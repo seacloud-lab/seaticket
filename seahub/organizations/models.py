@@ -227,97 +227,21 @@ class OrgAdminSettings(models.Model):
 
 class OrgQuotaManager(models.Manager):
 
-    def add_or_update(self, org, row_limit=None, asset_quota=None, big_data_row_limit=None, big_data_storage_quota=None, monthly_api_call_limit_per_user=None):
+    def add_or_update(self, org, monthly_api_call_limit_per_user=None):
         try:
             oq = super(OrgQuotaManager, self).get(org_id=org.org_id)
         except OrgQuota.DoesNotExist:
             oq = self.model(org_id=org.org_id)
 
-        if row_limit is not None:
-            oq.row_limit = row_limit
-        if asset_quota is not None:
-            oq.asset_quota = asset_quota
-        if big_data_row_limit is not None:
-            oq.big_data_row_limit = big_data_row_limit
-        if big_data_storage_quota is not None:
-            oq.big_data_storage_quota = big_data_storage_quota
         if monthly_api_call_limit_per_user is not None:
             oq.monthly_api_call_limit_per_user = monthly_api_call_limit_per_user
 
         oq.save(using=self._db)
 
-    def get_big_data_row_limit(self, org_id):
-        """
-        return:
-        big_data_row_limit: number of big_data_row_limit
-        """
-        oq = super(OrgQuotaManager, self).filter(org_id=org_id).first()
-        if oq:
-            if oq.big_data_row_limit is not None and oq.big_data_row_limit != 0:
-                return oq.big_data_row_limit
-
-        role = ORG_DEFAULT
-        os = OrgSettings.objects.filter(org_id=org_id).first()
-        if os and os.role:
-            role = os.role
-        big_data_row_limit = get_enabled_role_permissions_by_role(role).get('big_data_row_limit', -1)
-        return big_data_row_limit
-
-    def get_row_limit(self, org_id):
-        """
-        return:
-        row_limit: number of row_limit
-        """
-        oq = super(OrgQuotaManager, self).filter(org_id=org_id).first()
-        if oq:
-            if oq.row_limit is not None and oq.row_limit != 0:
-                return oq.row_limit
-
-        role = ORG_DEFAULT
-        os = OrgSettings.objects.filter(org_id=org_id).first()
-        if os and os.role:
-            role = os.role
-        row_limit = get_enabled_role_permissions_by_role(role).get('row_limit', -1)
-        return row_limit
-
-    def get_asset_quota(self, org_id):
-        """
-        return:
-        asset_quota: number of asset_quota in bytes
-        """
-        oq = super(OrgQuotaManager, self).filter(org_id=org_id).first()
-        if oq:
-            if oq.asset_quota is not None and oq.asset_quota != 0:
-                return oq.asset_quota
-
-        role = ORG_DEFAULT
-        os = OrgSettings.objects.filter(org_id=org_id).first()
-        if os and os.role:
-            role = os.role
-        asset_quota = get_enabled_role_permissions_by_role(role).get('role_asset_quota', '')
-        return get_quota_from_string(asset_quota) if asset_quota else -2
-
-    def get_big_data_storage_quota(self, org_id):
-        """
-        return:
-        asset_quota: number of asset_quota in bytes
-        """
-        oq = super(OrgQuotaManager, self).filter(org_id=org_id).first()
-        if oq:
-            if oq.big_data_storage_quota is not None and oq.big_data_storage_quota != 0:
-                return oq.big_data_storage_quota
-
-        role = ORG_DEFAULT
-        os = OrgSettings.objects.filter(org_id=org_id).first()
-        if os and os.role:
-            role = os.role
-        big_data_storage_quota = get_enabled_role_permissions_by_role(role).get('big_data_storage_quota', '')
-        return get_quota_from_string(big_data_storage_quota) if big_data_storage_quota else -2
-
     def get_monthly_api_call_limit_per_user(self, org_id):
         """
         return:
-        row_limit: number of api_call_limit per user
+        number of api_call_limit per user
         """
         oq = super(OrgQuotaManager, self).filter(org_id=org_id).first()
         if oq:
@@ -401,17 +325,6 @@ class OrgQuotaManager(models.Manager):
             results[org_id] = limit_per_user * user_limit
 
         return results
-
-    def get_scripts_running_limit(self, org_id):
-        """
-        return: scripts_running_limit of org, a number, int
-        """
-        role = ORG_DEFAULT
-        os = OrgSettings.objects.filter(org_id=org_id).first()
-        if os and os.role:
-            role = os.role
-        scripts_running_limit = get_enabled_role_permissions_by_role(role).get('scripts_running_limit', -1)
-        return scripts_running_limit
 
 
 class OrgQuota(models.Model):
