@@ -16,6 +16,10 @@ GROUP_CREATE = 'group_create'
 GROUP_TRANSFER = 'group_transfer'
 # 'group_delete': {'id': group_id, 'name': group_name, 'owner': group_owner}
 GROUP_DELETE = 'group_delete'
+# 'group_member_add': {'id': group_id, 'name': group_name, 'user': added_user}
+GROUP_MEMBER_ADD = 'group_member_add'
+# 'group_member_delete': {'id': group_id, 'name': group_name, 'user': user}
+GROUP_MEMBER_DELETE = 'group_member_delete'
 # 'department_create': {'id': department_id, 'name': department_name}
 DEPARTMENT_CREATE = 'department_create'
 # 'department_rename': {'id': department_id, 'old_name': old_department_name, 'new_name': new_department_name}

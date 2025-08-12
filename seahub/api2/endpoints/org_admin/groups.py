@@ -16,17 +16,21 @@ from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.project.models import Workspaces, Projects
 from seahub.group.utils import validate_group_name, is_group_member, is_group_admin_or_owner, check_group_name_conflict, \
-    refresh_group_name_cache
+    refresh_group_name_cache, get_group_members, get_group_member_info
 from seahub.utils import is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-from seahub.settings import PERSONAL_GROUP_LIMIT
+from seahub.settings import PERSONAL_GROUP_LIMIT, GROUP_MEMBER_LIMIT
 
 from seahub.organizations.views import get_org_groups
 from seahub.admin_log.signals import org_admin_operation
-from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER
+from seahub.admin_log.models import GROUP_CREATE, GROUP_DELETE, GROUP_TRANSFER, GROUP_MEMBER_DELETE, BASE_DELETE
 from seahub.organizations.models import Organization, OrgUser, OrgGroup
 from seahub.group.models import Group, GroupUser
+from seahub.profile.models import Profile
+from seahub.avatar.templatetags.avatar_tags import api_avatar_url
+from seahub.group.signals import add_user_to_group
+from seahub.project.utils import convert_project_trash_names, get_project_owner
 
 
 logger = logging.getLogger(__name__)
@@ -343,7 +347,7 @@ class OrgAdminGroup(APIView):
         owner = '%s@seafile_group' % (group_id)
         workspace = Workspaces.objects.filter(owner=owner).first()
         if workspace and Projects.objects.filter(workspace=workspace, deleted=False).exists():
-            return api_error(status.HTTP_400_BAD_REQUEST, _('Cannot delete group with bases'))
+            return api_error(status.HTTP_400_BAD_REQUEST, _('Cannot delete group with projects'))
 
         # mark group's workspace as deleted
         try:
@@ -412,3 +416,381 @@ class OrgAdminSearchGroups(APIView):
         }
 
         return Response(results)
+
+
+class AdminGroupMembers(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+
+    def get(self, request, org_id, group_id, format=None):
+        """ List all group members
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        # resource check
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        group_id = int(group_id)
+        group = Group.objects.get_group(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        members = get_group_members(group_id)
+
+        usernames = [m['username'] for m in members]
+        try:
+            profiles = Profile.objects.filter(user__in=usernames)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        users_info = {p.user: [p.contact_email, p.nickname] for p in profiles}
+        group_member_list = []
+        for m in members:
+            email = m['username']
+            avatar_url, is_default, date_uploaded = api_avatar_url(email)
+            role = 'Member'
+            is_admin = m['is_staff']
+            if email == group.creator_name:
+                role = 'Owner'
+            elif is_admin:
+                role = 'Admin'
+
+            # filter empty-user from bug that made an empty-group-owner when creating department
+            if role == 'Owner' and email == '':
+                continue
+
+            if email in users_info:
+                nickname = users_info.get(email)[1]
+                contact_email = users_info.get(email)[0]
+            else:
+                nickname = ''
+                contact_email = email
+            member_info = {
+                "name": nickname.strip() if nickname else email.split('@')[0],
+                'email': email,
+                "contact_email": contact_email,
+                "avatar_url": avatar_url,
+                "is_admin": is_admin,
+                "role": role
+            }
+            group_member_list.append(member_info)
+
+        group_members = {
+            'group_id': group_id,
+            'group_name': group.group_name,
+            'org_id': org_id,
+            'members': group_member_list
+        }
+
+        return Response(group_members)
+
+    def post(self, request, org_id, group_id):
+        """
+        Bulk add group members.
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        # resource check
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        group_id = int(group_id)
+        group = Group.objects.get_group(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        emails = request.POST.getlist('email', '')
+        if not emails:
+            error_msg = 'Email invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        result = {}
+        result['failed'] = []
+        result['success'] = []
+        emails_need_add = []
+
+        for email in emails:
+            try:
+                User.objects.get(email=email)
+            except User.DoesNotExist:
+                result['failed'].append({
+                    'email': email,
+                    'error_msg': 'User %s not found.' % email
+                })
+                continue
+
+            if is_group_member(group_id, email, in_structure=False):
+                result['failed'].append({
+                    'email': email,
+                    'error_msg': 'User %s is already a group member.' % email2nickname(email)
+                })
+                continue
+
+            #check the consistency for user and organization
+            if not OrgUser.objects.org_user_exists(org_id, email):
+                result['failed'].append({
+                    'email': email,
+                    'error_msg': 'User %s not found in organization.' % email2nickname(email)
+                })
+                continue
+
+            emails_need_add.append(email)
+
+        try:
+            group_members = get_group_members(group_id)
+            old_members_count = len(group_members) if group_members else 0
+        except Exception as e:
+            logger.error(f'get group members failed. {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        over_limit_count = len(emails_need_add) + old_members_count - GROUP_MEMBER_LIMIT
+        if over_limit_count > 0:
+            emails_over_limit = emails_need_add[:over_limit_count]
+            emails_need_add = emails_need_add[over_limit_count:]
+
+            for email in emails_over_limit:
+                result['failed'].append({
+                        'email': email,
+                        'error_msg': _('Number of group members exceeds limit.')
+                        })
+
+        # Add user to group.
+        for email in emails_need_add:
+            try:
+                GroupUser.objects.group_add_member(group_id, group.creator_name, email)
+                member_info = get_group_member_info(group_id, email)
+                result['success'].append(member_info)
+            except Exception as e:
+                logger.error(e)
+                result['failed'].append({
+                    'email': email,
+                    'error_msg': 'Internal Server Error'
+                })
+
+            add_user_to_group.send(sender=None,
+                                   group_staff=request.user.username,
+                                   group_id=group_id,
+                                   added_user=email)
+
+        return Response(result)
+
+class AdminGroupMember(APIView):
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+
+    def put(self, request, org_id, group_id, email, format=None):
+        """ update role of a group member
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        # resource check
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        group_id = int(group_id)
+        group = Group.objects.get_group(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            User.objects.get(email=email)
+        except User.DoesNotExist:
+            error_msg = 'User %s not found.' % email
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            if not is_group_member(group_id, email):
+                error_msg = 'Email %s invalid.' % email
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        is_admin = request.data.get('is_admin', '')
+        try:
+            # set/unset a specific group member as admin
+            if is_admin.lower() == 'true':
+                GroupUser.objects.group_set_admin(group_id, email)
+            elif is_admin.lower() == 'false':
+                GroupUser.objects.group_unset_admin(group_id, email)
+            else:
+                error_msg = 'is_admin invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        member_info = get_group_member_info(request, group_id, email)
+        return Response(member_info)
+
+    def delete(self, request, org_id, group_id, email, format=None):
+        """ Delete an user from group
+
+        Permission checking:
+        1. only admin can perform this action.
+        """
+        # resource check
+        org_id = int(org_id)
+        if not Organization.objects.get_org_by_id(org_id):
+            error_msg = 'Organization %s not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        group_id = int(group_id)
+        group = Group.objects.get_group(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # delete member from group
+        try:
+            if not is_group_member(group_id, email):
+                return Response({'success': True})
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        try:
+            # remove member logic
+            GroupUser.objects.filter(
+                    group_id=group_id, user_name=email).delete()
+            admin_op_detail = {
+                'group_id': group_id,
+                'group_name': group.group_name,
+                'username': email
+            }
+            org_admin_operation.send(
+                sender=None, admin_name=request.user.username, operation=GROUP_MEMBER_DELETE, detail=admin_op_detail, org_id=org_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+class OrgAdminGroupProjects(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, org_id, group_id):
+        """
+        list org group projects
+        """
+        # resource check
+        org_id = int(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
+        if not org:
+            error_msg = 'Organization %d not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        group_id = int(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        owner = '%s@seafile_group' % group_id
+        workspace = Workspaces.objects.get_workspace_by_owner(owner)
+        if not workspace:
+            error_msg = _('Workspace not found')
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project_list = []
+        projects = Projects.objects.filter(workspace=workspace, deleted=False)
+        for project in projects:
+            owner_name, is_deleted = get_project_owner(project)
+            project_dict = dict()
+            project_dict['id'] = project.pk
+            project_dict['workspace_id'] = project.workspace_id
+            project_dict['uuid'] = project.uuid
+            project_dict['name'] = project.name
+            project_dict['creator'] = email2nickname(project.creator)
+            project_dict['owner'] = owner_name
+            project_dict['creator_email'] = project.creator
+            project_dict['modifier'] = email2nickname(project.modifier)
+            project_dict['created_at'] = project.created_at
+            project_dict['updated_at'] = project.updated_at
+            project_list.append(project_dict)
+
+        return Response({'projects': project_list})
+
+
+class OrgAdminGroupProject(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
+
+    def delete(self, request, org_id, group_id, project_uuid):
+        """
+        delete a project from a group
+        """
+        # resource check
+        org_id = int(org_id)
+        org = Organization.objects.get_org_by_id(org_id)
+        if not org:
+            error_msg = 'Organization %d not found.' % org_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        group_id = int(group_id)
+        if Organization.objects.get_org_id_by_group(group_id) != org_id:
+            error_msg = 'Group %s not found.' % group_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        owner = '%s@seafile_group' % group_id
+        workspace = Workspaces.objects.get_workspace_by_owner(owner)
+        if not workspace:
+            error_msg = _('Workspace not found')
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project = Projects.objects.filter(workspace=workspace, uuid=project_uuid).first()
+        if not project:
+            error_msg = _('Project not found.')
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        new_project_name = convert_project_trash_names(project)
+
+        try:
+            Projects.objects.filter(id=project.id).update(
+                deleted=True, delete_time=datetime.now(), name=new_project_name)
+        except Exception as e:
+            logger.error('delete project: %s error: %s', project.id, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        detail = {
+            'name': project.name,
+            'project_uuid': str(project.uuid),
+            'group_id': group_id,
+            'group_name': Group.objects.get_group(group_id).group_name
+        }
+
+        org_admin_operation.send(
+            sender=None, admin_name=request.user.username, operation=BASE_DELETE, detail=detail, org_id=org_id)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
