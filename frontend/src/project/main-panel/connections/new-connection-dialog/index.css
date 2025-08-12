@@ -55,3 +55,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.help-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.help-icon:focus,
+.help-icon:active {
+  outline: none;
+  box-shadow: none;
+}
