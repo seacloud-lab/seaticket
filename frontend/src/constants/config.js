@@ -119,5 +119,4 @@ export const canViewAdminLog = window.sysadmin ? window.sysadmin.pageOptions.adm
 export const enableWorkWeixin = window.sysadmin ? window.sysadmin.pageOptions.enable_work_weixin : '';
 export const canManageOrganization = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.can_manage_organization : '';
 export const canUpdateOrganization = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.can_update_organization : '';
-export const canManageApp = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.can_manage_app : '';
 export const otherPermission = window.sysadmin ? window.sysadmin.pageOptions.admin_permissions.other_permission : '';

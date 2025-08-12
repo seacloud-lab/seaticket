@@ -276,9 +276,6 @@ class UserPermissions(object):
     def can_use_global_address_book(self):
         return self._get_perm_by_roles('can_use_global_address_book')
 
-    def can_drag_drop_folder_to_sync(self):
-        return self._get_perm_by_roles('can_drag_drop_folder_to_sync')
-
     def can_connect_with_android_clients(self):
         return self._get_perm_by_roles('can_connect_with_android_clients')
 
@@ -290,9 +287,6 @@ class UserPermissions(object):
 
     def can_invite_guest(self):
         return self._get_perm_by_roles('can_invite_guest')
-
-    def can_export_files_via_mobile_client(self):
-        return self._get_perm_by_roles('can_export_files_via_mobile_client')
 
     def can_send_share_link_mail(self):
         if not IS_EMAIL_CONFIGURED:
@@ -350,14 +344,8 @@ class AdminPermissions(object):
     def can_update_user(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_update_user']
 
-    def can_manage_app(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_app']
-
-    def can_manage_base(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_base']
-
-    def can_manage_form(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_form']
+    def can_manage_project(self):
+        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_project']
 
     def can_manage_organization(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_organization']
@@ -367,9 +355,6 @@ class AdminPermissions(object):
 
     def can_manage_sys_notification(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_sys_notification']
-
-    def can_manage_plugin(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_plugin']
 
     def other_permission(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['other_permission']
