@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import { getCellValueByColumn, isCellValueChanged } from '../../../utils/cell';
+import { getPreviewContent } from '@seafile/seafile-editor';
+import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../utils/cell';
 import { getColumnByIndex, getColumnOriginName } from '../../../utils/column';
 import { CellType, NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES, TRANSFER_TYPES,
   REG_NUMBER_DIGIT, REG_STRING_NUMBER_PARTS, RATE_MAX_NUMBER, PASTE_SOURCE,
@@ -75,7 +76,7 @@ class GridUtils {
       if (canModify) {
         updateRowIds.push(cutRowId);
         copiedColumns.forEach((copiedColumn, index) => {
-          if (copiedColumn.editable) {
+          if (copiedColumn.editable && !copiedColumn.is_required) {
             const cellValue = getCellValueByColumn(cutRow, copiedColumn);
             const copiedColumnName = getColumnOriginName(copiedColumn);
             idRowUpdates[cutRowId] = Object.assign({}, idRowUpdates[cutRowId], { [copiedColumnName]: null });
@@ -108,7 +109,7 @@ class GridUtils {
       const urlParams = new URLSearchParams(search);
       const currentViewId = urlParams.has('view') && urlParams.get('view');
       if (currentViewId === viewId) {
-        this.clearCutData(cutPosition, copied, isGroupView);
+        // this.clearCutData(cutPosition, copied, isGroupView);
       }
     }
 
@@ -142,7 +143,7 @@ class GridUtils {
 
       for (let j = 0; j < pasteColumnsLen; j++) {
         const pasteColumn = getColumnByIndex(j + startColumnIndex, columns);
-        if (!pasteColumn || !(context.canModifyRow(pasteRow) && context.canModifyColumn(pasteColumn))) {
+        if (!pasteColumn || !context.canModifyRow(pasteRow)) {
           continue;
         }
         const copiedColumnIndex = j % copiedColumnsLen;
@@ -151,8 +152,13 @@ class GridUtils {
         const copiedColumnName = getColumnOriginName(copiedColumn);
         const pasteCellValue = Object.prototype.hasOwnProperty.call(pasteRow, pasteColumnName) ? getCellValueByColumn(pasteRow, pasteColumn) : null;
         const copiedCellValue = Object.prototype.hasOwnProperty.call(copiedRow, copiedColumnName) ? getCellValueByColumn(copiedRow, copiedColumn) : null;
-        const update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData });
+        let update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData });
         if (!isCellValueChanged(pasteCellValue, update, pasteColumn.type)) continue;
+        if (!isValidCellValue(update, pasteColumn) && pasteColumn.is_required) continue;
+        if (pasteColumn.type === CellType.LONG_TEXT && typeof update === 'string') {
+          const { previewText, images, links, checklist } = getPreviewContent(update);
+          update = { text: update, preview: previewText, images: images, links: links, checklist };
+        }
         originalUpdate[pasteColumnName] = update;
         originalKeyUpdate[pasteColumn.key] = update;
         originalOldRowData[pasteColumnName] = pasteCellValue;

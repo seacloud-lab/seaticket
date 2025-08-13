@@ -101,7 +101,7 @@ class Context {
 
   canModifyRows = () => {
     if (!this.canModify()) return false;
-    if (!this.api?.modifyRows) return false;
+    if (!this.api?.modifyRows && !this.api?.modifyRow) return false;
     return true;
   };
 

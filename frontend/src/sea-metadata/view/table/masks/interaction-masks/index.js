@@ -58,6 +58,7 @@ class InteractionMasks extends React.Component {
     this.pasteSource = PASTE_SOURCE.COPY;
     this.cutPosition = null;
     this.selectionMask = null;
+    this.canModifyRows = context.canModifyRows();
   }
 
   componentDidMount() {
@@ -549,7 +550,9 @@ class InteractionMasks extends React.Component {
 
   onPaste = (e) => {
     // when activeElement is not cellMask or has no permission, can't paste cell
-    if (!this.isCellMaskActive() || !this.props.canModifyRows) return;
+    if (!this.isCellMaskActive() || !this.canModifyRows) return;
+    if (!isFunction(this.props.paste)) return;
+
     const { columns, isGroupView = false } = this.props;
     const { selectedPosition, selectedRange } = this.state;
     const { idx, rowIdx } = selectedPosition;
@@ -559,6 +562,7 @@ class InteractionMasks extends React.Component {
 
     const cliperDataType = cliperData.type;
     const copied = cliperData[TRANSFER_TYPES.METADATA_FRAGMENT];
+    const copiedViewId = copied.copiedViewId;
     let copiedRowsCount = 0;
     let copiedColumnsCount = 0;
     if (cliperDataType === TRANSFER_TYPES.METADATA_FRAGMENT) {
@@ -581,26 +585,25 @@ class InteractionMasks extends React.Component {
       copiedColumnsCount = copiedColumns.length;
     }
     const multiplePaste = this.isMultiplePaste(copiedRowsCount, copiedColumnsCount);
-    if (this.props.paste) {
-      this.props.paste({
-        copied,
-        multiplePaste,
-        type: cliperDataType,
-        pasteRange: selectedRange,
-        columns,
-        isGroupView,
-        pasteSource: this.pasteSource,
-        cutPosition: this.cutPosition,
-      });
-      if (!multiplePaste) {
-        this.setPasteRange(copiedRowsCount, copiedColumnsCount);
-      }
+    this.props.paste({
+      copied,
+      multiplePaste,
+      type: cliperDataType,
+      pasteRange: selectedRange,
+      columns,
+      isGroupView,
+      pasteSource: this.pasteSource,
+      cutPosition: this.cutPosition,
+      viewId: copiedViewId
+    });
+    if (!multiplePaste) {
+      this.setPasteRange(copiedRowsCount, copiedColumnsCount);
     }
   };
 
   onCut = (event) => {
     // when activeElement is not cellMask or has no permission, can't paste cell
-    if (!this.isCellMaskActive() || !this.props.canModifyRows) return;
+    if (!this.isCellMaskActive() || !this.canModifyRows) return;
     const { selectedPosition, selectedRange } = this.state;
     const { idx, rowIdx } = selectedPosition;
     if (idx === -1 || rowIdx === -1) return; // prevent paste when no cell selected
@@ -608,9 +611,10 @@ class InteractionMasks extends React.Component {
     const { tableId: copiedTableId, columns, isGroupView = false, rowGetterByIndex, getCopiedRowsAndColumnsFromRange,
       getClientCellValueDisplayString, collaborators, tagsData,
     } = this.props;
-    if (rowIdx < 0 || idx < 0) {
-      return; // can not copy when no cell select
-    }
+    if (rowIdx < 0 || idx < 0) return; // can not copy when no cell select
+    const { search } = window.location;
+    const urlParams = new URLSearchParams(search);
+    const copiedViewId = urlParams.has('view') ? urlParams.get('view') : '';
     const { topLeft, bottomRight } = selectedRange;
     const copiedCellsCount = (bottomRight.rowIdx - topLeft.rowIdx + 1) * (bottomRight.idx - topLeft.idx + 1);
     const type = copiedCellsCount <= 0 ? 'text' : TRANSFER_TYPES.METADATA_FRAGMENT;
@@ -625,6 +629,7 @@ class InteractionMasks extends React.Component {
       copiedRows,
       copiedColumns,
       copiedTableId,
+      copiedViewId,
       tableData: {
         columns,
       },
@@ -1145,7 +1150,6 @@ InteractionMasks.propTypes = {
   showRowAsTree: PropTypes.bool,
   treeNodeKeyRowIdMap: PropTypes.object,
   enableCellSelect: PropTypes.bool,
-  canModifyRows: PropTypes.bool,
   getRowTop: PropTypes.func,
   scrollTop: PropTypes.number,
   getScrollLeft: PropTypes.func,

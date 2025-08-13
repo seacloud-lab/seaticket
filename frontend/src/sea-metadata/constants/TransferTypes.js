@@ -1,8 +1,8 @@
-const FRAGMENT = 'application/x-sea-table-fragment';
+const FRAGMENT = 'application/x-sea-metadata-table-fragment';
 const HTML = 'text/html';
 const TEXT = 'text/plain';
 const FILES = 'files';
-const METADATA_FRAGMENT = 'sea-table-fragment';
+const METADATA_FRAGMENT = 'sea-metadata-table-fragment';
 
 const transferTypes = {
   FRAGMENT,

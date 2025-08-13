@@ -339,7 +339,7 @@ const convert2Tags = (cellValue, oldCellValue, fromColumn, targetColumn, api) =>
   const { key: copiedColumnKey } = fromColumn;
   const { key: pasteColumnKey } = targetColumn;
   if (copiedColumnKey === pasteColumnKey) return cellValue;
-  return;
+  return null;
 };
 
 function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { collaborators, tagsData, api }) {

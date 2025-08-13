@@ -6,7 +6,7 @@ import { toggleSelection } from './toggle-selection';
 const { TEXT, FRAGMENT } = TRANSFER_TYPES;
 
 function setEventTransfer({
-  type, selectedRowIds, copiedRange, copiedColumns, copiedRows, copiedTableId, tableData, copiedText,
+  type, selectedRowIds, copiedRange, copiedColumns, copiedRows, copiedTableId, copiedViewId, tableData, copiedText,
   rowGetterById, isGroupView, rowGetterByIndex, event = {}, collaborators, tagsData,
 }) {
   const transfer = event.dataTransfer || event.clipboardData;
@@ -20,6 +20,7 @@ function setEventTransfer({
       copiedColumns,
       copiedRows,
       copiedTableId,
+      copiedViewId,
     };
     const serializeCopiedGrid = JSON.stringify(copiedGrid);
     if (transfer) {

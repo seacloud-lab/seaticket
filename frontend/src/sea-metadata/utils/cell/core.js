@@ -11,7 +11,7 @@ export const isValidCellValue = (value, column) => {
   if (value === '') return false;
   if (JSON.stringify(value) === '{}') return false;
   if (JSON.stringify(value) === '[]') return false;
-  if (column.type === CellType.LONG_TEXT) return Boolean(value?.text);
+  if (column.type === CellType.LONG_TEXT) return typeof value === 'string' ? Boolean(value) : Boolean(value?.text);
   return true;
 };
 

@@ -4,14 +4,14 @@ const { FRAGMENT, HTML, TEXT } = TRANSFER_TYPES;
 
 function getEventTransfer(event) {
   const transfer = event.dataTransfer || event.clipboardData;
-  let dtableFragment = getType(transfer, FRAGMENT);
+  let seaMetadataFragment = getType(transfer, FRAGMENT);
   let html = getType(transfer, HTML);
   let text = getType(transfer, TEXT);
   let files = getFiles(transfer);
 
   // paste sea-metadata
-  if (dtableFragment) {
-    return { [TRANSFER_TYPES.METADATA_FRAGMENT]: JSON.parse(dtableFragment), type: TRANSFER_TYPES.METADATA_FRAGMENT };
+  if (seaMetadataFragment) {
+    return { [TRANSFER_TYPES.METADATA_FRAGMENT]: JSON.parse(seaMetadataFragment), type: TRANSFER_TYPES.METADATA_FRAGMENT };
   }
 
   // paste html
