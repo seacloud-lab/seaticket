@@ -1,0 +1,18 @@
+/* cell formatter */
+.sea-metadata-row-cell .sea-metadata-ui.cell-formatter-container {
+  height: 100%;
+  width: 100%;
+  line-height: 32px;
+}
+
+.sea-metadata-row-cell .sea-metadata-text-formatter {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-metadata-row-cell .sea-metadata-creator-formatter,
+.sea-metadata-row-cell .sea-metadata-last-modifier-formatter {
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,111 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import classnames from 'classnames';
+import { Tooltip } from 'reactstrap';
+import { gettext } from '@/constants';
+import { isMobile } from '@utils/utils';
+import { SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import IconBtn from '@components/icon-button';
+
+import './index.css';
+
+class ActionsCell extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLockedRowTooltipShow: false,
+    };
+  }
+
+  onCellMouseEnter = () => {
+    const { isLocked } = this.props;
+    if (!isLocked || isMobile) return;
+    this.timer = setTimeout(() => {
+      this.setState({ isLockedRowTooltipShow: true });
+    }, 500);
+  };
+
+  onCellMouseLeave = () => {
+    const { isLocked } = this.props;
+    if (!isLocked || isMobile) return;
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    this.setState({ isLockedRowTooltipShow: false });
+  };
+
+  getLockedRowTooltip = () => {
+    const { rowId } = this.props;
+    return (
+      <Tooltip
+        target={`action-cell-${rowId}`}
+        placement='bottom'
+        isOpen={this.state.isLockedRowTooltipShow}
+        fade={false}
+        hideArrow={true}
+        className="readonly-cell-tooltip"
+      >
+        {gettext('The row is locked and cannot be modified')}
+      </Tooltip>
+    );
+  };
+
+  handleShowExpandedProps = () => {
+    this.props.onShowExpandedRowDialog(this.props.rowId);
+  };
+
+  render() {
+    const { isSelected, isLastFrozenCell, index, height, rowId } = this.props;
+    const cellStyle = {
+      height,
+      width: SEQUENCE_COLUMN_WIDTH,
+      minWidth: SEQUENCE_COLUMN_WIDTH,
+    };
+    return (
+      <div
+        className={classnames('sea-metadata-table-cell column actions-cell', { 'table-last--frozen': isLastFrozenCell })}
+        id={`action-cell-${rowId}`}
+        style={{ ...cellStyle }}
+        onMouseEnter={this.onCellMouseEnter}
+        onMouseLeave={this.onCellMouseLeave}
+      >
+        {!isSelected && <div className="sea-metadata-table-column-content row-index text-truncate">{index + 1}</div>}
+        <div className='sea-metadata-table-column-content actions-checkbox'>
+          <div className='select-cell-checkbox-container' onClick={this.props.onSelectRow}>
+            <input
+              id={`select-cell-checkbox-${rowId}`}
+              className='select-cell-checkbox'
+              type='checkbox'
+              name='row-selection'
+              checked={isSelected || false}
+              readOnly
+            />
+            <label
+              htmlFor={`select-cell-checkbox-${rowId}`}
+              name={gettext('Select')}
+              title={gettext('Select')}
+              aria-label={gettext('Select')}
+            >
+            </label>
+          </div>
+        </div>
+        <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
+      </div>
+    );
+  }
+}
+
+ActionsCell.propTypes = {
+  isLocked: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  isLastFrozenCell: PropTypes.bool,
+  rowId: PropTypes.string,
+  index: PropTypes.number,
+  height: PropTypes.number,
+  onSelectRow: PropTypes.func,
+  onShowExpandedRowDialog: PropTypes.func,
+};
+
+export default ActionsCell;

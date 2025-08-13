@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { toaster, EmptyTip, CenteredLoading } from '../../../components';
 import GlobalSearchInput from '../../../components/search-input/global-search-input';
-import { seaQAAPI } from '../../../api/web-api';
+import { searchAPI, connectionsAPI } from '../../api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { SearchResult, Connection } from '../../models';
@@ -48,9 +48,9 @@ const Search = ({ title }) => {
 
     timer.current = setTimeout(() => {
       timer.current = null;
-      source.current = seaQAAPI.getSource();
+      source.current = searchAPI.getSource();
       const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      seaQAAPI.search(workspaceID, projectUuid, value, null, showConnnectionIds, source.current.token).then(res => {
+      searchAPI.search(workspaceID, projectUuid, value, null, showConnnectionIds, source.current.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -78,7 +78,7 @@ const Search = ({ title }) => {
   }, []);
 
   useEffect(() => {
-    seaQAAPI.listConnections(projectUuid, 1, 100).then(res => {
+    connectionsAPI.listConnections(projectUuid, 1, 100).then(res => {
       setConnections(res.data.records.map(r => new Connection(r)));
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

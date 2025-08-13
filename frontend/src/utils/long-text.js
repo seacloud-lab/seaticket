@@ -24,8 +24,7 @@ export const getLongTextValueByNew = (longtext, images) => {
 
 class LongTextEditorUtilities {
 
-  constructor({ projectUuid, server, api }) {
-    this.projectUuid = projectUuid;
+  constructor({ server, api }) {
     this.server = server;
     this.api = api;
   }
@@ -37,7 +36,7 @@ class LongTextEditorUtilities {
 
   uploadLocalImage = (file) => {
     const newFile = new File([file], this.getImageNameWithTimestamp(file), { type: file.type });
-    return this.api.uploadFile(this.projectUuid, newFile).then((res) => {
+    return this.api.uploadFile(newFile).then((res) => {
       return this._getImageURL(res.data.url);
     });
   };

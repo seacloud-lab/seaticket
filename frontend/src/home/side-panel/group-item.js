@@ -53,7 +53,7 @@ const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabC
       <div
         ref={dragPreview}
         className={classnames('nav-item workspace-nav-item',
-          { 'seatable-bg-orange active': getActiveClass(`project/${item.id}`) === 'active' },
+          { 'sea-qa-bg-orange active': getActiveClass(`project/${item.id}`) === 'active' },
           { 'group-can-drop': isOver && canDrop && !isDragging },
           { 'group-can-drop-top': isOver && canDrop && isDragging }
         )}

@@ -22,7 +22,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
-    TicketTags, TicketParticipants, ProjectTags
+    TicketTags, TicketAssignees, ProjectTags
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
@@ -69,13 +69,13 @@ class ProjectRelatedUsersView(APIView):
 
         # main
         try:
-            related_users = get_project_related_users(workspace.owner)
+            user_list = get_project_related_users(workspace.owner)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({"related_users": related_users})
+        return Response({"user_list": user_list})
 
 
 class ProjectConnectionsView(APIView):
@@ -305,15 +305,29 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        try:
-            current_page = int(request.GET.get('page', '1'))
-            per_page = int(request.GET.get('per_page', '25'))
-        except ValueError:
-            current_page = 1
-            per_page = 25
+        view_id = request.GET.get('view_id', '')
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
 
-        start = (current_page - 1) * per_page
-        end = start + per_page
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+        end = start + limit
+
+        if start < 0:
+            error_msg = 'start invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if limit < 0:
+            error_msg = 'limit invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not view_id:
+            error_msg = 'view_id is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -336,7 +350,7 @@ class TicketsAPIView(APIView):
                     project_uuid, username, start, end)
             else:
                 tickets = Tickets.objects.list_tickets(
-                    project_uuid, start, end)
+                    project_uuid, start, end, view_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -350,12 +364,20 @@ class TicketsAPIView(APIView):
             tag_info = project_tags_dict.get(tag.tag_id, None)
             if tag_info:
                 if tag.ticket_id not in tags_dict:
-                    tags_dict[tag.ticket_id] = [tag_info]
+                    tags_dict[tag.ticket_id] = [tag.tag_id]
                 else:
-                    tags_dict[tag.ticket_id].append(tag_info)
+                    tags_dict[tag.ticket_id].append(tag.tag_id)
+
+        assignees_dict = {}
+        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        for ticket_assignee in ticket_assignees:
+            if ticket_assignee.ticket_id not in assignees_dict:
+                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
+            else:
+                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
 
         return Response({
-            'tickets': [ticket.to_dict(tags_dict=tags_dict) for ticket in tickets],
+            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict) for ticket in tickets],
         })
 
     def post(self, request, project_uuid):
@@ -393,22 +415,24 @@ class TicketsAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        participants = request.POST.get('participants')
-        if participants is not None:
+        assignees = request.POST.get('assignees')
+        if assignees is not None:
             try:
-                participants = json.loads(participants)
+                assignees = json.loads(assignees)
             except:
-                error_msg = 'participants invalid.'
+                error_msg = 'assignees invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(participants, list):
-                error_msg = 'participants invalid.'
+            if not isinstance(assignees, list):
+                error_msg = 'assignees invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            participants = list(set(participants))
+            assignees = list(set(assignees))
+
         ticket_type = request.data.get('type')
         if ticket_type is not None:
             if ticket_type not in TICKET_TYPE:
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         tags = request.POST.get('tags')
         if tags is not None:
             try:
@@ -441,10 +465,10 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        if participants:
-            for participant in participants:
-                if not check_project_permission(participant, workspace.owner):
-                    error_msg = 'participants invalid.'
+        if assignees:
+            for assignee in assignees:
+                if not check_project_permission(assignee, workspace.owner):
+                    error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # permission check
@@ -484,7 +508,6 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
         tags_dict = {}
-        participants_dict = {}
         if tags:
             try:
                 project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
@@ -502,20 +525,22 @@ class TicketsAPIView(APIView):
                             tags_dict[tag.ticket_id].append(tag_info)
             except Exception as e:
                 logger.error(e)
-        if participants:
+
+        assignees_dict = {}
+        if assignees:
             try:
-                ticket_participants = [TicketParticipants(
+                ticket_assignees = [TicketAssignees(
                     ticket_id=ticket.id,
-                    participant=participant,
-                ) for participant in participants]
-                TicketParticipants.objects.bulk_create(ticket_participants)
-                participants_dict[ticket.id] = participants
+                    assignee=assignee,
+                ) for assignee in assignees]
+                TicketAssignees.objects.bulk_create(ticket_assignees)
+                assignees_dict[ticket.id] = assignees
             except Exception as e:
                 logger.error(e)
 
         return Response({'ticket': ticket.to_dict(
             tags_dict=tags_dict,
-            participants_dict=participants_dict,
+            assignees_dict=assignees_dict,
         )},status=status.HTTP_201_CREATED)
 
 
@@ -561,7 +586,7 @@ class TicketAPIView(APIView):
             ticket_tags = TicketTags.objects.filter(
                 ticket_id=ticket.id)
             project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
-            ticket_participants = TicketParticipants.objects.filter(
+            ticket_assignees = TicketAssignees.objects.filter(
                 ticket_id=ticket.id)
         except Exception as e:
             logger.error(e)
@@ -573,12 +598,20 @@ class TicketAPIView(APIView):
             tag_info = project_tags_dict.get(tag.tag_id, None)
             if tag_info:
                 if tag.ticket_id not in tags_dict:
-                    tags_dict[tag.ticket_id] = [tag_info]
+                    tags_dict[tag.ticket_id] = [tag.tag_id]
                 else:
-                    tags_dict[tag.ticket_id].append(tag_info)
+                    tags_dict[tag.ticket_id].append(tag.tag_id)
+
+        assignees_dict = {}
+        for ticket_assignee in ticket_assignees:
+            if ticket_assignee.ticket_id not in assignees_dict:
+                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
+            else:
+                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
+
         ticket = ticket.to_dict(
             tags_dict=tags_dict,
-            participants_dict={ticket.id: [participant.participant for participant in ticket_participants]},
+            assignees_dict=assignees_dict
         )
         ticket['replies'] = [ticket_reply.to_dict() for ticket_reply in ticket_replies]
         return Response({'ticket': ticket})
@@ -629,20 +662,25 @@ class TicketAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        participants = request.data.get('participants')
-        if participants is not None:
+        is_update_assignees = 'assignees' in request.data
+        assignees = request.data.get('assignees')
+        if is_update_assignees and assignees is not None:
+            assignees = assignees if assignees else '[]'
             try:
-                participants = json.loads(participants)
+                assignees = json.loads(assignees)
             except:
-                error_msg = 'participants invalid.'
+                error_msg = 'assignees invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(participants, list):
-                error_msg = 'participants invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            participants = list(set(participants))
 
+            if not isinstance(assignees, list):
+                error_msg = 'assignees invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            assignees = list(set(assignees))
+
+        is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
-        if tags is not None:
+        if is_update_tags and tags is not None:
+            tags = tags if tags else '[]'
             try:
                 tags = json.loads(tags)
             except:
@@ -666,10 +704,6 @@ class TicketAPIView(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
 
-        if not any([title, content, ticket_status, ticket_type]) \
-                and participants is None and tags is None:
-            error_msg = 'argument invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -678,20 +712,16 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        if participants:
-            for participant in participants:
-                if not check_project_permission(participant, workspace.owner):
-                    error_msg = 'participants invalid.'
+        if assignees:
+            for assignee in assignees:
+                if not check_project_permission(assignee, workspace.owner):
+                    error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:
             error_msg = 'Ticket not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if content and ticket.updated_at > timezone.now() - relativedelta(seconds=10):
-            error_msg = 'Cannot be updated again within 10 seconds.'
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
         # permission check
         username = request.user.username
@@ -733,7 +763,7 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if tags:
+        if is_update_tags:
             try:
                 project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 exist_ticket_tags = TicketTags.objects.filter(ticket_id=ticket.id)
@@ -755,50 +785,27 @@ class TicketAPIView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if participants:
+        if is_update_assignees:
             try:
-                exist_ticket_participants = TicketParticipants.objects.filter(ticket_id=ticket.id)
-                exist_participants = [participant.participant for participant in exist_ticket_participants]
-                participants_to_create = list(set(participants) - set(exist_participants))
-                participants_to_delete = list(set(exist_participants) - set(participants))
-                if participants_to_create:
-                    ticket_participants = [TicketParticipants(
+                exist_ticket_assignees = TicketAssignees.objects.filter(ticket_id=ticket.id)
+                exist_assignees = [ticket_assignee.assignee for ticket_assignee in exist_ticket_assignees]
+                assignees_to_create = list(set(assignees) - set(exist_assignees))
+                assignees_to_delete = list(set(exist_assignees) - set(assignees))
+                if assignees_to_create:
+                    ticket_assignees = [TicketAssignees(
                         ticket_id=ticket.id,
-                        participant=participant,
-                    ) for participant in participants_to_create]
-                    TicketParticipants.objects.bulk_create(ticket_participants)
-                if participants_to_delete:
-                    TicketParticipants.objects.filter(
-                        ticket_id=ticket.id, participant__in=participants_to_delete).delete()
+                        assignee=assignee,
+                    ) for assignee in assignees_to_create]
+                    TicketAssignees.objects.bulk_create(ticket_assignees)
+                if assignees_to_delete:
+                    TicketAssignees.objects.filter(
+                        ticket_id=ticket.id, assignee__in=assignees_to_delete).delete()
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        try:
-            ticket_tags = TicketTags.objects.filter(
-                ticket_id=ticket.id)
-            project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
-            ticket_participants = TicketParticipants.objects.filter(
-                ticket_id=ticket.id)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        tags_dict = {}
-        for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, None)
-            if tag_info:
-                if tag.ticket_id not in tags_dict:
-                    tags_dict[tag.ticket_id] = [tag_info]
-                else:
-                    tags_dict[tag.ticket_id].append(tag_info)
-        ticket = ticket.to_dict(
-            tags_dict=tags_dict,
-            participants_dict={ticket.id: [participant.participant for participant in ticket_participants]},
-        )
-        return Response({'ticket': ticket})
+        return Response({'success': True})
 
     def delete(self, request, project_uuid, ticket_number):
         """
@@ -1028,7 +1035,6 @@ class TicketReplyAPIView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
 
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:

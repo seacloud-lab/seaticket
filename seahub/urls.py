@@ -39,6 +39,7 @@ from seahub.api2.endpoints.admin.login_bg_image import AdminLoginBgImage
 from seahub.api2.endpoints.admin.admin_role import AdminAdminRole
 from seahub.api2.endpoints.admin.two_factor_auth import TwoFactorAuthView
 from seahub.api2.endpoints.admin.projects import AdminProjects, AdminProject, AdminTrashProjectsView, AdminTrashProjectView
+from seahub.api2.endpoints.user_list import UserListView
 
 urlpatterns = [
     re_path(r'^accounts/', include('seahub.registration.urls')),
@@ -77,6 +78,9 @@ urlpatterns = [
 
     ## user: update contact email
     re_path(r'^api/v2.1/user/contact-email/$', UserContactEmailView.as_view(), name="api-v2.1-user-contact-email"),
+
+    # user list
+    re_path(r'^api/v2.1/user-list/$', UserListView.as_view(), name='api-v2.1-user-list'),
 
     ## user:phone
     re_path(r'^api/v2.1/user/sms-verify/$', SmsVerifyCodeView.as_view(), name="api-v2.1-user-sms-verify"),

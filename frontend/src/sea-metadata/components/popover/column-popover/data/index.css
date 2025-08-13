@@ -1,0 +1,8 @@
+.sea-metadata-column-popover .sea-metadata-column-data-settings {
+  background-color: #f5f5f5;
+  margin: 0 -1rem -1rem;
+}
+
+.sea-metadata-column-popover .sea-metadata-column-data-settings .selected-option {
+  background: transparent;
+}

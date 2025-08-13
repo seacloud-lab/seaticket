@@ -6,6 +6,7 @@ import OptionGroup from '../select-option-group';
 import IconButton from '../icon-button';
 
 import './index.css';
+import { Icon } from '..';
 
 class GroupSelect extends Component {
 
@@ -85,7 +86,7 @@ class GroupSelect extends Component {
             :
             <span className="select-placeholder">{placeholder}</span>
           }
-          <i className="sf3-font-down sf3-font"></i>
+          <Icon symbol="down" />
         </div>
         {this.state.isShowSelectOptions && !isInModal && (
           <OptionGroup

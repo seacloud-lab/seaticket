@@ -49,11 +49,11 @@ const Project = () => {
   useEffect(() => {
     if (!activeBar?.key) return;
     if (isLoading) return;
-    const { pathname, origin } = location;
+    const { pathname, origin, search } = location;
     const decodePathname = decodeURIComponent(pathname);
     const projectNameIndex = decodePathname.indexOf(projectName);
     const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
-    history.replaceState(null, null, origin + newPathname + activeBar.key + '/');
+    history.replaceState(null, null, origin + newPathname + activeBar.key + '/' + (search || ''));
   }, [isLoading, activeBar]);
 
   return (

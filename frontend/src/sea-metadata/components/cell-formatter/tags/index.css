@@ -1,0 +1,58 @@
+.sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-container {
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-container .sea-metadata-tags-operation-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  background: #eceff4;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-container .sea-metadata-tags-operation-add-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-add-btn .sea-qa-icon-svg-add-table {
+  height: 12px;
+  width: 12px;
+  color: #212519;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-ui-tags-container {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  min-height: 1rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-ui-tags-container .sea-metadata-tag {
+  height: 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background: var(--bs-body-bg);
+  font-size: 13px;
+  border: 1px solid #dbdbdb;
+  border-radius: 10px;
+  margin-right: 6px;
+  padding: 0 6px 0 2px;
+}
+
+.sea-metadata-ui.tags-formatter .sea-metadata-ui-tags-container .sea-metadata-tag-color {
+  position: relative;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: -6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+}

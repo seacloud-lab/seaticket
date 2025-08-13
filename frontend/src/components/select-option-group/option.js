@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
 class Option extends Component {
 
@@ -25,7 +26,7 @@ class Option extends Component {
   render() {
     return (
       <div
-        className={this.props.isActive ? 'option option-active' : 'option'}
+        className={classnames('sea-qa-select-option option', { 'active': this.props.isActive })}
         onClick={this.onChange.bind(this, this.props.value)}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}

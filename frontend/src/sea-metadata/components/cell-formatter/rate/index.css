@@ -1,0 +1,20 @@
+.sea-metadata-ui.rate-formatter {
+  line-height: 1;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-ui.rate-formatter .sea-metadata-rate-item {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sea-metadata-ui.rate-formatter .sea-metadata-rate-item .sea-qa-icon-svg {
+  fill: inherit;
+  font-size: 16px;
+}

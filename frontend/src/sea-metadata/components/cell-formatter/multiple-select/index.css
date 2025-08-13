@@ -1,0 +1,10 @@
+.sea-metadata-ui.multiple-select-formatter {
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-ui.multiple-select-formatter .sea-metadata-ui-select-option {
+  margin-right: 10px !important;
+  flex-shrink: 0;
+}

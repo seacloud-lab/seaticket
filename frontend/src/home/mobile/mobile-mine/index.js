@@ -130,7 +130,7 @@ class MobileMine extends React.Component {
             <div className="account-info">
               <p>{gettext('Storage used')}{': '}{quotaUsage} / {quotaTotal}</p>
               <div id="quota-bar">
-                <span id="quota-usage" className="usage seatable-bg-orange" style={{ width: usageRate }}></span>
+                <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: usageRate }}></span>
               </div>
             </div>
           </Item>
@@ -138,7 +138,7 @@ class MobileMine extends React.Component {
             <div className="account-info row-used">
               <p>{gettext('Rows used')}{': '}{rowUsage} / {rowTotal}</p>
               <div id="quota-bar">
-                <span id="quota-usage" className="usage seatable-bg-orange" style={{ width: rowUsageRate }}></span>
+                <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: rowUsageRate }}></span>
               </div>
             </div>
           </Item>

@@ -28,7 +28,7 @@ import MobileCommonHeader from './mobile/mobile-common-header';
 import ActionSheet from './mobile/action-sheet';
 import TabBar from './mobile/tab-bar';
 import ProjectIcon from './project-icon';
-import Collaborator from './collaborator';
+import { Collaborator, AsyncCollaborator } from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
 import OptionEditor from './option-editor';
@@ -67,6 +67,7 @@ export {
   ActionSheet,
   TabBar,
   ProjectIcon,
+  AsyncCollaborator,
   Collaborator,
   CollaboratorEditor,
   Option,

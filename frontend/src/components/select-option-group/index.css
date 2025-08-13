@@ -50,22 +50,22 @@
   white-space: nowrap;
 }
 
-.option-group .option.option-active {
+.option-group .option.active {
   background-color: #20a0ff;
   color: #fff;
   cursor: pointer;
 }
 
 .option-group .option:hover .header-icon,
-.option-group .option.option-active .select-option-name {
+.option-group .option.active .select-option-name {
   color: #fff;
 }
 
-.option-group .option.option-active .header-icon {
+.option-group .option.active .header-icon {
   color: #fff;
 }
 
-.option-group .option:not(.option-active):hover .header-icon {
+.option-group .option:not(.active):hover .header-icon {
   color: #aaa;
 }
 

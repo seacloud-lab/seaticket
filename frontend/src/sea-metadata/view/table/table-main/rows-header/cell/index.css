@@ -1,0 +1,49 @@
+.sea-metadata-row-header-cell .sea-metadata-column-icon {
+  color: #aaa;
+  height: 14px;
+  width: 14px;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-table-cell.column.name-column {
+  cursor: default;
+}
+
+.sea-metadata-row-header-cell .rdg-can-drop > .sea-metadata-table-cell.column {
+  cursor: move;
+}
+
+.sea-metadata-row-header-cell .rdg-dropping > .sea-metadata-table-cell.column {
+  background: #ececec;
+  position: relative;
+}
+
+.sea-metadata-row-header-cell .rdg-dropping-position > .sea-metadata-table-cell.column::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  height: 80%;
+  width: 2px;
+  background-color: rgb(200, 220, 240);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.sea-metadata-row-header-cell .rdg-dropping-position-left > .sea-metadata-table-cell.column::before {
+  left: -2px;
+}
+
+.sea-metadata-row-header-cell .rdg-dropping-position-right > .sea-metadata-table-cell.column::before {
+  right: -2px;
+}
+
+.sea-metadata-row-header-cell .rdg-dropping-position-none > .sea-metadata-table-cell.column::before {
+  display: none;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg {
+  color: #aaa;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-dropdown-menu .sea-qa-icon-svg:hover {
+  color: #555;
+}

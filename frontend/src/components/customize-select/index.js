@@ -71,7 +71,7 @@ class CustomizeSelect extends Component {
     return (
       <div
         ref={(node) => this.selector = node}
-        className={classnames('sea-qa-select custom-select',
+        className={classnames('sea-qa-select custom-select sea-qa-customize-select',
           { 'focus': this.state.isShowSelectOptions },
           { 'disabled': disabled },
           className

@@ -1,0 +1,19 @@
+const CellType = {
+  DEFAULT: 'default',
+  TEXT: 'text',
+  CREATOR: 'creator',
+  CTIME: 'ctime',
+  LAST_MODIFIER: 'last-modifier',
+  MTIME: 'mtime',
+  CHECKBOX: 'checkbox',
+  COLLABORATOR: 'collaborator',
+  DATE: 'date',
+  LONG_TEXT: 'long-text',
+  SINGLE_SELECT: 'single-select',
+  MULTIPLE_SELECT: 'multiple-select',
+  NUMBER: 'number',
+  RATE: 'rate',
+  TAGS: 'tags'
+};
+
+export default CellType;

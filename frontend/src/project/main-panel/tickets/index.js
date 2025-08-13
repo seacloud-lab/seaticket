@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
-import { TagsProvider, TicketsProvider, useTickets } from '../../hooks';
-import Tags from './tags';
-import AllTickets from './all-tickets';
-import NewTicket from './new-ticket';
-import Ticket from './ticket';
+import { TagsProvider, TicketsPageProvider, useTicketsPage } from './hooks';
+import Tags from './view/tags';
+import AllTickets from './view/all-tickets';
+import NewTicket from './view/new-ticket';
+import Ticket from './view/ticket';
 import { TICKET_PAGE_TYPE } from '../../constants';
-import { CenteredLoading } from '../../../components';
-import TicketTopBar from './ticket-top-bar';
-import { server } from '../../../constants';
-import LongTextEditorUtilities from '../../../utils/long-text';
-import { seaQAAPI } from '../../../api/web-api';
+import TicketTopBar from './components/ticket-top-bar';
+import { CollaboratorsProvider } from '@/sea-metadata';
+import { ticketsAPI } from '../../api';
+import LongTextEditorUtilities from '@/utils/long-text';
+import { server } from '@/constants';
+import { seaQAAPI } from '@/api/web-api';
 
 import './index.css';
 
@@ -18,27 +19,31 @@ const {
 } = window.app.pageOptions;
 
 const Page = () => {
-  const { isLoading, pageType } = useTickets();
-  const editorAPI = useMemo(() => new LongTextEditorUtilities({ server, projectUuid, api: seaQAAPI }), []);
-  if (isLoading) return (<CenteredLoading />);
-  if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets />);
-  const tagsCount = pageType === TICKET_PAGE_TYPE.TAGS ? 1 : 0;
-  let ChildrenComponent = Ticket;
-  if (pageType === TICKET_PAGE_TYPE.TAGS) ChildrenComponent = Tags;
-  if (pageType === TICKET_PAGE_TYPE.NEW) ChildrenComponent = NewTicket;
-  return (
-    <TagsProvider projectUuid={projectUuid} tagsCount={tagsCount}>
-      <ChildrenComponent editorAPI={editorAPI} />
-    </TagsProvider>
-  );
+  const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
+    uploadFile: (...params) => seaQAAPI.uploadFile(projectUuid, ...params)
+  } }), []);
+
+  const { isLoading, pageType } = useTicketsPage();
+  if (isLoading) return null;
+  if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets projectUuid={projectUuid} projectName={projectName} />);
+  if (pageType === TICKET_PAGE_TYPE.TAGS) return (<Tags />);
+  if (pageType === TICKET_PAGE_TYPE.NEW) return (<NewTicket editorAPI={longtextAPI} />);
+  return (<Ticket projectUuid={projectUuid} ticketID={pageType} editorAPI={longtextAPI} />);
 };
 
 const Index = ({ title }) => {
   return (
-    <TicketsProvider projectUuid={projectUuid} projectName={projectName}>
-      <TicketTopBar title={title} />
-      <Page />
-    </TicketsProvider>
+    <CollaboratorsProvider
+      listUserInfo={(...params) => ticketsAPI.listUserInfo(...params)}
+      getCollaborators={() => ticketsAPI.listProjectRelatedUsers(projectUuid)}
+    >
+      <TagsProvider projectUuid={projectUuid}>
+        <TicketsPageProvider projectName={projectName}>
+          <TicketTopBar title={title} />
+          <Page />
+        </TicketsPageProvider>
+      </TagsProvider>
+    </CollaboratorsProvider>
   );
 };
 

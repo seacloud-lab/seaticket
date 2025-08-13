@@ -61,6 +61,13 @@ export const TICKET_STATUS_CONFIG = {
   }
 };
 
+export const TICKET_STATUS_OPTIONS = [
+  { id: TICKET_STATUS.OPEN, value: TICKET_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
+  { id: TICKET_STATUS.COMPLETED, value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
+  { id: TICKET_STATUS.NOT_PLANNED, value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+  { id: TICKET_STATUS.DUPLICATE, value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+];
+
 export const PREDEFINED_TICKET_TAG_NAME = {
   BUG: '_bug',
   DOCUMENTATION: '_documentation',
@@ -131,10 +138,10 @@ export const PREDEFINED_TICKET_TAG = {
 };
 
 export const TICKET_TYPES = [
-  { id: 'bug', value: 'bug', name: gettext('Bug'), color: '#FFF', bgColor: '#F4667C', borderColor: '#DC556A' },
-  { id: 'feature', value: 'feature', name: gettext('Feature'), color: '#FFF', bgColor: '#46A1FD', borderColor: '#3C8FE4' },
-  { id: 'request', value: 'request', name: gettext('Request'), color: '#212529', bgColor: '#FFFCB5', borderColor: '#E8E79D' },
-  { id: 'support', value: 'support', name: gettext('Support'), color: '#212529', bgColor: '#DDFFE6', borderColor: '#BBEBCD' },
+  { id: 'bug', value: 'bug', name: gettext('Bug'), textColor: '#FFF', color: '#F4667C', borderColor: '#DC556A' },
+  { id: 'feature', value: 'feature', name: gettext('Feature'), textColor: '#FFF', color: '#46A1FD', borderColor: '#3C8FE4' },
+  { id: 'request', value: 'request', name: gettext('Request'), textColor: '#212529', color: '#FFFCB5', borderColor: '#E8E79D' },
+  { id: 'support', value: 'support', name: gettext('Support'), textColor: '#212529', color: '#DDFFE6', borderColor: '#BBEBCD' },
 ];
 
 export const TICKET_PAGE_TYPE = {

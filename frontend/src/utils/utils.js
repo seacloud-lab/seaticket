@@ -4,7 +4,7 @@ import { mediaUrl, gettext, serviceURL, lang, avatarURL } from '../constants/con
 import { strChineseFirstPY } from './pinyin-by-unicode';
 import { NOTIFICATION_TYPE } from '../constants/notification-constants';
 import PermissionDeniedTip from '../components/permission-denied-tip';
-import { canUseDOM } from './dom-operations';
+import { canUseDOM } from './dom';
 
 export const Utils = {
 

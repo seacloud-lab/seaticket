@@ -1,0 +1,27 @@
+.sea-metadata-contextmenu {
+  display: block;
+  opacity: 1;
+  box-shadow: 0 0 5px #ccc;
+  position: fixed;
+}
+
+.sea-metadata-contextmenu .dropdown-item {
+  cursor: pointer;
+  height: 32px;
+  line-height: 1.5;
+  min-width: 200px;
+  padding: .25rem 1rem;
+  pointer-events: unset;
+  border: 0;
+  color: #373a3c;
+  font-weight: 400;
+  text-align: inherit;
+  white-space: nowrap;
+}
+
+.sea-metadata-contextmenu .dropdown-item:hover {
+  background-color: #20a0ff;
+  border-color: #20a0ff;
+  color: #fff;
+  text-decoration: none;
+}

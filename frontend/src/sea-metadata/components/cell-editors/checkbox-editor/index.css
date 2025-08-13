@@ -1,0 +1,28 @@
+.sea-metadata-checkbox-editor {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sea-metadata-checkbox-editor .sea-metadata-checkbox-editor-content {
+  height: 22px;
+  width: 22px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sea-metadata-checkbox-editor .sea-metadata-checkbox-editor-content .sea-qa-icon-svg-check-mark {
+  fill: #20c933;
+}
+
+.sea-metadata-table-row:hover .sea-metadata-checkbox-editor-content,
+.sea-metadata-table-data-checkbox-cell.cell-selected .sea-metadata-checkbox-editor-content {
+  border-color: #e0e0e0;
+}

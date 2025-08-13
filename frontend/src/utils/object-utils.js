@@ -12,41 +12,65 @@ class ObjectUtils {
     return ['Object', 'Array'].includes(this.getDataType(data));
   }
 
-  static isObjectHasKey(obj, key) {
-    return Object.keys(obj).includes(key);
-  }
-
-  static isObjectChanged(source, comparison) {
+  static isObjectChanged(source, comparison, notIncludeKeys = []) {
     if (!this.iterable(source)) {
       throw new Error(`source should be a Object or Array , but got ${this.getDataType(source)}`);
     }
     if (this.getDataType(source) !== this.getDataType(comparison)) {
       return true;
     }
-    const sourceKeys = Object.keys(source);
-    const comparisonKeys = Object.keys({ ...source, ...comparison });
+    const sourceKeys = Object.keys(source).filter(key => !notIncludeKeys.includes(key));
+    const comparisonKeys = Object.keys({ ...source, ...comparison }).filter(key => !notIncludeKeys.includes(key));
     if (sourceKeys.length !== comparisonKeys.length) {
       return true;
     }
     return comparisonKeys.some(key => {
       if (this.iterable(source[key])) {
-        return this.isObjectChanged(source[key], comparison[key]);
+        return this.isObjectChanged(source[key], comparison[key], notIncludeKeys);
       } else {
         return source[key] !== comparison[key];
       }
     });
   }
 
-  static isSameObject(source, comparison) {
+  static isSameObject(source, comparison, notIncludeKeys = []) {
+    if (!source && !comparison) return true;
     if (!source || !comparison) return false;
-    return !this.isObjectChanged(source, comparison);
+    return !this.isObjectChanged(source, comparison, notIncludeKeys);
   }
 
-  static getArraysIntersection = (arr1, arr2) => {
-    const set1 = new Set(arr1);
-    const set2 = new Set(arr2);
-    return [...set1].filter(item => set2.has(item));
+  static isEmpty = (target) => {
+    return target && target.constructor === Object && Object.keys(target).length === 0;
   };
 }
+
+export const hasOwnProperty = (obj, propertyKey) => {
+  if (!obj || !propertyKey) return false;
+  return Object.prototype.hasOwnProperty.call(obj, propertyKey);
+};
+
+/**
+ * Check whether the object is empty.
+ * The true will be returned if the "obj" is invalid.
+ * @param {object} obj
+ * @returns bool
+ */
+export const isEmptyObject = (obj) => {
+  let name;
+  // eslint-disable-next-line
+  for (name in obj) return false;
+  return true;
+};
+
+export const shallowCloneObject = (obj) => {
+  const result = {};
+  // eslint-disable-next-line no-unused-vars
+  for (const k in obj) {
+    if (obj.hasOwnProperty(k)) {
+      result[k] = obj[k];
+    }
+  }
+  return result;
+};
 
 export default ObjectUtils;

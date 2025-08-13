@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
-import { seaQAAPI } from '../../../api/web-api';
+import { connectionsAPI } from '../../api';
 import { Connection } from '../../models';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
@@ -60,7 +60,7 @@ const Connections = ({ title }) => {
   }, []);
 
   const createConnection = useCallback(({ type, name, config }, resetSubmittingState) => {
-    seaQAAPI.createConnection(projectUuid, { type, name, config }).then(res => {
+    connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
       const record = res.data.record;
       const newRecords = [...records, new Connection(record)];
       setRecords(newRecords);
@@ -73,7 +73,7 @@ const Connections = ({ title }) => {
   }, [records]);
 
   const deleteConnectionRecord = useCallback(() => {
-    seaQAAPI.deleteConnection(projectUuid, activeRecordRef.current.id).then(res => {
+    connectionsAPI.deleteConnection(projectUuid, activeRecordRef.current.id).then(res => {
       const activeSiteIndex = records.findIndex(record => record.id === activeRecordRef.current.id);
       let newSites = records.slice(0);
       if (activeSiteIndex > -1) {
@@ -101,7 +101,7 @@ const Connections = ({ title }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    seaQAAPI.modifyConnection(projectUuid, activeRecordRef.current.id, { name, config }).then(res => {
+    connectionsAPI.modifyConnection(projectUuid, activeRecordRef.current.id, { name, config }).then(res => {
       const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
@@ -128,7 +128,7 @@ const Connections = ({ title }) => {
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
-    seaQAAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
+    connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreRecords = res.data.records.map(r => new Connection(r));
       let newRecords = pageRef.current === 1 ? [] : records.slice(0);
       let recordsMap = newRecords.reduce((pre, cur) => {

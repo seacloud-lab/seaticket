@@ -5,7 +5,7 @@ import { STORAGE_CHAT_HISTORY_RECORDS_COUNT, CHAT_MESSAGE_TYPE } from '../../con
 import MessageInput from './message-input';
 import IndexedDB from '../../../utils/indexed-db';
 import { gettext, SEAQA } from '../../../constants';
-import { seaQAAPI } from '../../../api/web-api';
+import { askAPI } from '../../api';
 import ChatHistory from './chat-history';
 import Thinking from './thinking';
 import TopBar from '../top-bar';
@@ -81,7 +81,7 @@ const Ask = ({ title }) => {
     }));
     handelChatHistories(newChatHistories, true, messageInputRef.current.clearInput);
 
-    seaQAAPI.askQuestion({
+    askAPI.askQuestion({
       project_uuid: projectUuid,
       workspace_id: workspaceID,
       query: validMessage,

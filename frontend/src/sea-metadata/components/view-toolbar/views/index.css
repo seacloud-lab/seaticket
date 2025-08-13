@@ -1,0 +1,32 @@
+.sea-metadata-view-views { 
+  height: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 0 8px 0 16px;
+  cursor: pointer;
+}
+
+.sea-metadata-view-views .sea-metadata-view-item { 
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sea-metadata-view-views .sea-metadata-view-item.active { 
+  color: #ED7109;
+  position: relative;
+  transition: color .3;
+}
+
+.sea-metadata-view-views .sea-metadata-view-item.active::before { 
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ED7109;
+}

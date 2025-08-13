@@ -1,4 +1,4 @@
-.option {
+.sea-qa-ui-option {
   height: 20px;
   border-width: 1px;
   border-style: solid;
@@ -11,7 +11,7 @@
   overflow: hidden;
 }
 
-.option .option-name {
+.sea-qa-ui-option .sea-qa-ui-option-name {
   font-size: 13px;
   flex: 1;
   overflow: hidden;

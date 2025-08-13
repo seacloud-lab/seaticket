@@ -5,13 +5,13 @@ import './index.css';
 
 const Option = ({ option, className, children }) => {
 
-  const { color, bgColor, borderColor, name } = option;
+  const { color, textColor, borderColor, name } = option;
   return (
     <div
-      style={{ color, borderColor, backgroundColor: bgColor }}
-      className={classnames('option', className)}
+      style={{ color: textColor, borderColor, backgroundColor: color }}
+      className={classnames('sea-qa-ui-option', className)}
     >
-      <span className="option-name">{name}</span>
+      <span className="sea-qa-ui-option-name">{name}</span>
       {children}
     </div>
   );

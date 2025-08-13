@@ -1,0 +1,18 @@
+.sea-metadata-rate-editor {
+  height: 100%;
+  width: 100%;
+  align-items: center;
+}
+
+.sea-metadata-rate-item {
+  cursor: pointer;
+}
+
+.sea-metadata-rate-item.active {
+  opacity: 1 !important;
+}
+
+.sea-metadata-rate-item .sea-qa-icon-svg {
+  fill: inherit;
+  font-size: 16px;
+}
