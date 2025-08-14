@@ -546,7 +546,7 @@ class OrganizationManager(models.Manager):
             org_group = OrgGroup.objects.get(group_id=group_id)
             if not org_group:
                 return None
-            return self.get_org_by_id(org_group.org_id)
+            return org_group.org_id
         except Organization.DoesNotExist:
             return None
 

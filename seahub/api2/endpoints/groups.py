@@ -20,13 +20,13 @@ from seahub.utils import is_org_context, is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin_or_owner, is_group_owner, is_group_admin_or_owner_by_group
-from seahub.project.models import Workspaces, ProjectGroupOrders, Projects, DeletedProjects
+from seahub.project.models import Workspaces, ProjectGroupOrders, Projects
 from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
     ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
 from seahub.group.models import GroupUser, Group
-from seahub.project.utils import restore_trash_project_name, delete_project_dir_from_s3
+from seahub.project.utils import restore_trash_project_name, delete_project
 
 from .utils import api_check_group
 
@@ -390,13 +390,6 @@ class GroupTrashProjectsView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle, )
 
-    def _delete_project(self, project):
-        try:
-            DeletedProjects(project_uuid=project.uuid).save()
-            Projects.objects.delete_project(project.workspace, project.name)
-        except Exception as e:
-            logger.error('delete project: %s error: %s', str(project.uuid), e)
-
     @api_check_group
     def get(self, request, group_id):
         # only group owner/admin can get info of group trash projects
@@ -425,12 +418,7 @@ class GroupTrashProjectsView(APIView):
         try:
             projects = Projects.objects.filter(deleted=True, workspace__owner=owner).select_related('workspace')
             for project in projects:
-                project_uuid = str(project.uuid)
-                self._delete_project(project)
-                try:
-                    delete_project_dir_from_s3(project_uuid)
-                except Exception as e:
-                    logger.error(e)
+                delete_project(project)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

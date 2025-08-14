@@ -8,7 +8,8 @@ from urllib.parse import urljoin
 from copy import deepcopy
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, ProjectTags
+from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
+    Tickets, TicketReplies, TicketTags, TicketParticipants
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -314,3 +315,28 @@ def replace_file_url_in_content(content, new_file_urls_dict):
         old_file_url = new_file_urls_dict[new_file_url]
         content = content.replace(old_file_url, new_file_url)
     return content
+
+
+def delete_project(project):
+    project_uuid = str(project.uuid)
+    try:
+        DeletedProjects(project_uuid=project_uuid).save()
+        Projects.objects.delete_project(project.workspace, project.name)
+    except Exception as e:
+        logger.error('delete project: %s error: %s', str(project_uuid), e)
+
+    try:
+        ProjectTags.objects.filter(project_uuid=project_uuid).delete()
+        tickets = Tickets.objects.filter(project_uuid=project_uuid)
+        ticket_id_list = [ticket.id for ticket in tickets]
+        tickets.delete()
+        TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()
+        TicketTags.objects.filter(ticket_id__in=ticket_id_list).delete()
+        TicketParticipants.objects.filter(ticket_id__in=ticket_id_list).delete()
+    except Exception as e:
+        logger.error(e)
+
+    try:
+        delete_project_dir_from_s3(project_uuid)
+    except Exception as e:
+        logger.error(e)

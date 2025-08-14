@@ -27,7 +27,7 @@ class Item extends Component {
     this.state = {
       isOpIconShown: false,
       isItemMenuShow: false,
-      isDeleteDTableDialogOpen: false
+      isDeleteProjectDialogOpen: false
     };
   }
 
@@ -47,18 +47,18 @@ class Item extends Component {
     this.setState({ isOpIconShown: false });
   };
 
-  toggleDeleteDTableDialog = (e) => {
+  toggleDeleteProjectDialog = (e) => {
     if (e) {
       e.preventDefault();
     }
-    this.setState({ isDeleteDTableDialogOpen: !this.state.isDeleteDTableDialogOpen });
+    this.setState({ isDeleteProjectDialogOpen: !this.state.isDeleteProjectDialogOpen });
     this.props.onUnfreezedItem();
   };
 
   deleteProject = () => {
     const { item } = this.props;
     this.props.deleteProject(item);
-    this.toggleDeleteDTableDialog();
+    this.toggleDeleteProjectDialog();
   };
 
   toggleOperationMenu = () => {
@@ -74,10 +74,10 @@ class Item extends Component {
   };
 
   render() {
-    let { isOpIconShown, isDeleteDTableDialogOpen, isItemMenuShow } = this.state;
+    let { isOpIconShown, isDeleteProjectDialogOpen, isItemMenuShow } = this.state;
     let { item } = this.props;
-    let tableName = '<span class="op-target">' + Utils.HTMLescape(item.name) + '</span>';
-    let dialogMsg = gettext('Are you sure you want to delete {placeholder} ?').replace('{placeholder}', tableName);
+    let projectName = '<span class="op-target">' + Utils.HTMLescape(item.name) + '</span>';
+    let dialogMsg = gettext('Are you sure you want to delete {placeholder} ?').replace('{placeholder}', projectName);
 
     const style = isOpIconShown ? { backgroundColor: 'rgba(0,0,0,.04)' } : { backgroundColor: 'rgba(0,0,0,0)' };
     return (
@@ -95,19 +95,19 @@ class Item extends Component {
               <Dropdown isOpen={isItemMenuShow} toggle={this.toggleOperationMenu}>
                 <CustomizeDropdownMoreToggle isOpen={isItemMenuShow} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
-                  <DropdownItem onClick={this.toggleDeleteDTableDialog}>{gettext('Delete')}</DropdownItem>
+                  <DropdownItem onClick={this.toggleDeleteProjectDialog}>{gettext('Delete')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             )}
           </td>
         </tr>
-        {isDeleteDTableDialogOpen &&
+        {isDeleteProjectDialogOpen &&
           <CommonOperationConfirmationDialog
             title={gettext('Delete project')}
             message={dialogMsg}
             executeOperation={this.deleteProject}
             confirmBtnText={gettext('Delete')}
-            toggleDialog={this.toggleDeleteDTableDialog}
+            toggleDialog={this.toggleDeleteProjectDialog}
           />
         }
       </Fragment>
@@ -148,9 +148,9 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const emptyTip = (
-        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No bases')} />
+        <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No projects')} />
       );
-      const table = (
+      const project = (
         <Fragment>
           <table className="table-hover">
             <thead>
@@ -178,7 +178,7 @@ class Content extends Component {
           </table>
         </Fragment>
       );
-      return items.length ? table : emptyTip;
+      return items.length ? project : emptyTip;
     }
   }
 }
@@ -192,19 +192,19 @@ class GroupProjects extends Component {
     this.state = {
       loading: true,
       errorMsg: '',
-      tableList: []
+      projectList: []
     };
   }
 
   deleteProject = (project) => {
     orgAdminServiceApi.orgAdminDeleteProjectFromGroup(orgID, this.props.groupID, project.uuid).then(res => {
-      let newTableList = this.state.tableList.filter(item => {
+      let newProjectList = this.state.projectList.filter(item => {
         return item.id !== project.id;
       });
       this.setState({
-        tableList: newTableList
+        projectList: newProjectList
       });
-      const msg = gettext('Successfully delete base {placeholder}')
+      const msg = gettext('Successfully delete project {placeholder}')
         .replace('{placeholder}', project.name);
       toaster.success(msg);
     }).catch((error) => {
@@ -217,7 +217,7 @@ class GroupProjects extends Component {
     orgAdminServiceApi.orgAdminListGroupProjects(orgID, this.props.groupID).then((res) => {
       this.setState({
         loading: false,
-        tableList: res.data.tables,
+        projectList: res.data.projects,
       });
     }).catch((error) => {
       if (error.response) {
@@ -258,7 +258,7 @@ class GroupProjects extends Component {
               <Content
                 loading={this.state.loading}
                 errorMsg={this.state.errorMsg}
-                items={this.state.tableList}
+                items={this.state.projectList}
                 deleteProject={this.deleteProject}
               />
             </div>

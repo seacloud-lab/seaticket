@@ -12,9 +12,9 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.utils import api_error
-from seahub.project.models import Projects, Workspaces, DeletedProjects
+from seahub.project.models import Projects
 from seahub.project.utils import get_project_owner, convert_project_trash_names, \
-    restore_trash_project_name, delete_project_dir_from_s3
+    restore_trash_project_name, delete_project
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.organizations.models import Organization
@@ -126,13 +126,6 @@ class OrgAdminTrashProjectsView(APIView):
     throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
     permission_classes = (IsProVersion, IsOrgAdminUser)
 
-    def _delete_project(self, project):
-        try:
-            DeletedProjects(project_uuid=project.uuid).save()
-            Projects.objects.delete_project(project.workspace, project.name)
-        except Exception as e:
-            logger.error('delete project: %s error: %s', str(project.uuid), e)
-
     def get(self, request, org_id):
         error, _ = _check_org(org_id)
         if error:
@@ -170,12 +163,7 @@ class OrgAdminTrashProjectsView(APIView):
         try:
             projects = Projects.objects.filter(deleted=True, workspace__org_id=org_id).select_related('workspace')
             for project in projects:
-                project_uuid = str(project.uuid)
-                self._delete_project(project)
-                try:
-                    delete_project_dir_from_s3(project_uuid)
-                except Exception as e:
-                    logger.error(e)
+                delete_project(project)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -190,13 +178,6 @@ class OrgAdminTrashProjectView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     throttle_classes = (UserRateThrottle,)
     permission_classes = (IsProVersion, IsOrgAdminUser)
-
-    def _delete_project(self, project):
-        try:
-            DeletedProjects(project_uuid=project.uuid).save()
-            Projects.objects.delete_project(project.workspace, project.name)
-        except Exception as e:
-            logger.error('delete project: %s error: %s', str(project.uuid), e)
 
     def put(self, request, org_id, project_id):
         error, _ = _check_org(org_id)
