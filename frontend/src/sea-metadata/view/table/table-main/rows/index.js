@@ -660,7 +660,7 @@ class Rows extends Component {
       cacheScrollTop: this.storeScrollTop,
       onCellContextMenu: this.onCellContextMenu,
       getTableCanvasContainerRect: this.getTableCanvasContainerRect,
-      onShowExpandedRowDialog: this.toggleExpandedRowDialog,
+      openExpandedRow: this.toggleExpandedRowDialog,
     };
     if (this.props.isGroupView) {
       return (

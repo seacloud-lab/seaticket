@@ -75,9 +75,10 @@ class SearchInput extends Component {
   };
 
   renderClear = () => {
-    const { onClear, size = 38 } = this.props;
+    const { onClear, size = 38, isShowClearIcon = false } = this.props;
     const { searchValue } = this.state;
-    if (!isFunction(onClear) || !searchValue) return null;
+    if (!isFunction(onClear)) return null;
+    if (!isShowClearIcon && !searchValue) return null;
     return (
       <IconButton icon="x" className="sea-qa-search-input-clear" onClick={this.onClear} style={{ height: 20, width: 20, top: (size - 20) / 2, right: (size - 20) / 2 }} />
     );

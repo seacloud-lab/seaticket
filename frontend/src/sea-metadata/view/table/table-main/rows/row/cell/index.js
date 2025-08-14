@@ -26,6 +26,7 @@ const Cell = React.memo(({
   bgColor,
   frozen,
   height,
+  openExpandedRow,
 }) => {
   const canEditable = useMemo(() => {
     if (!context.canModifyCell(column, row)) return false;
@@ -158,7 +159,7 @@ const Cell = React.memo(({
   };
   return (
     <div key={`${row._id}-${column.key}`} {...containerProps}>
-      <Formatter isCellSelected={isCellSelected} value={cellValue} column={column} row={row} onChange={modifyRow} />
+      <Formatter isCellSelected={isCellSelected} value={cellValue} column={column} row={row} onChange={modifyRow} openExpandedRow={isCellSelected ? openExpandedRow : null} />
       {isCellSelected && (<CellOperationBtn row={row} column={column}/>)}
     </div>
   );

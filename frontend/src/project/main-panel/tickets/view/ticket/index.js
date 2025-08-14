@@ -23,7 +23,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState({});
 
-  const { togglePageType, updatePageTitle } = useTicketsPage();
+  const { togglePageType } = useTicketsPage();
 
   const user = useMemo(() => {
     return {
@@ -112,7 +112,6 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
-      updatePageTitle(ticket.title);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

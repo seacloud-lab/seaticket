@@ -2,7 +2,7 @@
   justify-content: space-between;
 }
 
-.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-tip {
+.sea-qa-project-main-panel .sea-qa-project-main-panel-header .sea-qa-project-main-panel-header-left {
   flex: 1;
   overflow: hidden;
   font-size: 16px;

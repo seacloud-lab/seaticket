@@ -16,3 +16,7 @@
   display: flex;
   align-items: center;
 }
+
+.hover-decoration:hover {
+  text-decoration: underline;
+}
