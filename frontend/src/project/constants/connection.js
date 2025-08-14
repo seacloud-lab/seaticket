@@ -70,11 +70,6 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_custom: true,
       helpText: gettext('Your personal access token in GitHub Developer Settings')
-    }, {
-      key: 'webhook_secret',
-      name: gettext('Webhook secret'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_custom: true
     }
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
@@ -147,7 +142,7 @@ export const CONNECTION_TYPES = [
   }, {
     type: CONNECTION_TYPE.GITHUB_ISSUE,
     icon: 'github-issues',
-    name: gettext('Github'),
+    name: gettext('GitHub'),
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-forums',
