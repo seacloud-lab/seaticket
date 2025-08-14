@@ -22,7 +22,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
-    TicketTags, TicketAssignees, ProjectTags
+    TicketTags, TicketAssignees, ProjectTags, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
@@ -357,7 +357,6 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         tags_dict = {}
-
         ticket_tags = TicketTags.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
         project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
         for tag in ticket_tags:
@@ -376,8 +375,16 @@ class TicketsAPIView(APIView):
             else:
                 assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
 
+        participants_dict = {}
+        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        for ticket_participant in ticket_participants:
+            if ticket_participant.ticket_id not in participants_dict:
+                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
+            else:
+                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
+
         return Response({
-            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict) for ticket in tickets],
+            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict, participants_dict=participants_dict) for ticket in tickets],
         })
 
     def post(self, request, project_uuid):
@@ -507,6 +514,11 @@ class TicketsAPIView(APIView):
             error_msg = 'Too many requests'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
+        try:
+            TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
+        except Exception as e:
+            logger.error(e)
+
         tags_dict = {}
         if tags:
             try:
@@ -588,6 +600,8 @@ class TicketAPIView(APIView):
             project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
             ticket_assignees = TicketAssignees.objects.filter(
                 ticket_id=ticket.id)
+            ticket_participants = TicketParticipants.objects.filter(
+                ticket_id=ticket.id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -609,9 +623,17 @@ class TicketAPIView(APIView):
             else:
                 assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
 
+        participants_dict = {}
+        for ticket_participant in ticket_participants:
+            if ticket_participant.ticket_id not in participants_dict:
+                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
+            else:
+                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
+
         ticket = ticket.to_dict(
             tags_dict=tags_dict,
-            assignees_dict=assignees_dict
+            assignees_dict=assignees_dict,
+            participants_dict=participants_dict,
         )
         ticket['replies'] = [ticket_reply.to_dict() for ticket_reply in ticket_replies]
         return Response({'ticket': ticket})
@@ -703,7 +725,6 @@ class TicketAPIView(APIView):
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
-
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -987,6 +1008,8 @@ class TicketRepliesAPIView(APIView):
             ticket.reply_count = ticket_replies_count
             ticket.reply_updated_at = timezone.now()
             ticket.save()
+            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
+                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
         except Exception as e:
             logger.error(e)
 
