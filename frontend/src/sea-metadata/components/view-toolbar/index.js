@@ -10,7 +10,7 @@ import './index.css';
 const ViewToolBar = ({ toggleView }) => {
 
   const { collaborators } = useCollaborators();
-  const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder } = useMetadata();
+  const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
 
   const onHeaderClick = useCallback(() => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
@@ -36,6 +36,7 @@ const ViewToolBar = ({ toggleView }) => {
                 modifyGroupbys={modifyGroupbys}
                 modifyHiddenColumns={modifyHiddenColumns}
                 modifyColumnOrder={modifyColumnOrder}
+                searchRows={searchRows}
               />
             )}
           </>

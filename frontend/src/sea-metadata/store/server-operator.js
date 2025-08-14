@@ -177,23 +177,6 @@ class ServerOperator {
         break;
       }
 
-      // tags
-      case OPERATION_TYPE.MODIFY_TICKET_TAGS: {
-        const { tags_data } = operation;
-        let valid_tags_data = [];
-        tags_data.forEach(item => {
-          const { row_id, tags } = item;
-          valid_tags_data.push({ row_id, tags });
-        });
-        context.modifyTicketTags(valid_tags_data).then(res => {
-          const { success: success_row_ids, fail: fail_row_ids } = res.data;
-          callback({ operation, success_row_ids, fail_row_ids });
-        }).catch(error => {
-          callback({ error: gettext('Failed to modify tags') });
-        });
-        break;
-      }
-
       default: {
         break;
       }

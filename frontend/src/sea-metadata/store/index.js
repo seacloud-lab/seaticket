@@ -26,6 +26,7 @@ class Store {
     this.serverOperator = new ServerOperator();
     this.localOperator = new LocalOperator();
     this.collaborators = props.collaborators || [];
+    this.tagsData = {};
   }
 
   destroy = () => {
@@ -36,6 +37,7 @@ class Store {
     this.undo = [];
     this.pendingOperations = [];
     this.isSendingOperation = false;
+    this.tagsData = {};
   };
 
   initStartIndex = () => {
@@ -190,7 +192,7 @@ class Store {
   };
 
   syncOperationOnData(operation) {
-    DataProcessor.syncOperationOnData(this.data, operation, { collaborators: this.collaborators });
+    DataProcessor.syncOperationOnData(this.data, operation, { collaborators: this.collaborators, tagsData: this.tagsData });
   }
 
   // redo/undo
@@ -498,12 +500,14 @@ class Store {
     this.applyOperation(operation);
   }
 
-  // tag
-  modifyTicketTags = (tags) => {
-    const type = OPERATION_TYPE.MODIFY_TICKET_TAGS;
-    const operation = this.createOperation({ type, tags });
+  searchRows(value) {
+    const type = OPERATION_TYPE.SEARCH_ROWS;
+    const operation = this.createOperation({
+      type,
+      value,
+    });
     this.applyOperation(operation);
-  };
+  }
 
 }
 

@@ -4,16 +4,14 @@ const escapeRegExp = (value) => {
 };
 
 export const getSearchRule = (value) => {
-  if (typeof value !== 'string') {
+  if (!value || typeof value !== 'string') {
     return false;
   }
-  let searchRule = value;
-  searchRule = searchRule.trim();
-  if (searchRule.length === 0) {
-    return false;
-  }
-  // i: search value uppercase and lowercase are not sensitive
-  return new RegExp(escapeRegExp(searchRule), 'i');
+  const searchContents = value.split(/ +/g);
+  return searchContents.map((content) => {
+    const reg = new RegExp(escapeRegExp(content), 'i');
+    return { reg, content, isMatched: false };
+  });
 };
 
 export const checkHasSearchResult = (searchResult) => {

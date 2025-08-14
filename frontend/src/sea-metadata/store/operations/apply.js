@@ -263,29 +263,6 @@ export default function apply(data, operation) {
       return data;
     }
 
-    // tags
-    case OPERATION_TYPE.MODIFY_TICKET_TAGS: {
-      const { file_tags_data: filesTagsData } = operation;
-      const { rows } = data;
-      let updateMap = {};
-      Array.isArray(filesTagsData) && filesTagsData.forEach(fileTags => {
-        const { row_id, tags } = fileTags;
-        const value = tags ? tags.map(tagId => ({ row_id: tagId })) : [];
-        updateMap[row_id] = value;
-      });
-      let updatedRows = [...rows];
-      rows.forEach((row, index) => {
-        const { _id: rowId } = row;
-        if (updateMap[rowId]) {
-          const updatedRow = Object.assign({}, row, { tags: updateMap[rowId] });
-          updatedRows[index] = updatedRow;
-          data.id_row_map[rowId] = updatedRow;
-        }
-      });
-      data.rows = updatedRows;
-      return data;
-    }
-
     default: {
       return data;
     }

@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter } from '../../data-process-setter';
+import Searcher from '../../searcher';
 
 const TableViewToolbar = ({
   readOnly, view, collaborators,
-  modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder
+  modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
   const viewColumns = useMemo(() => {
@@ -18,6 +19,7 @@ const TableViewToolbar = ({
 
   return (
     <>
+      <Searcher onChange={searchRows} />
       <FilterSetter
         wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-filter"
         filtersClassName="sea-metadata-filters"

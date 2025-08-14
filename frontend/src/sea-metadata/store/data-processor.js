@@ -1,21 +1,21 @@
 import { isTableRows, getRowIdFromRow, getRowsByIds } from '../utils/row';
 import { getColumnByKey, getColumnOriginName, getOption, checkIsPredefinedOption, getColumnOptionIdsByNames,
   getColumnOptionNamesByIds } from '../utils/column';
-import { isValidCellValue, getCellValueByColumn } from '../utils/cell';
+import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } from '../utils/cell';
 import { getFilteredRows } from '../utils/filter';
 import { getGroupRows } from '../utils/group';
 import { sortTableRows } from '../utils/sort';
 import { isGroupView } from '../utils/view';
+import { getSearchRule } from '../utils/search';
 import { username } from '@/constants';
 import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
-import { CellType } from '../constants';
+import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
 
 // const DEFAULT_COMPUTER_PROPERTIES_CONTROLLER = {
 //   isUpdateSummaries: true,
 //   isUpdateColumnColors: true,
 // };
 
-// generate formula_rows
 // get rendered rows depend on filters/sorts etc.
 class DataProcessor {
 
@@ -184,7 +184,7 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators }) {
+  static syncOperationOnData(table, operation, { collaborators, tagsData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.MODIFY_ROW: {
         const { available_columns } = table.view;
@@ -297,6 +297,44 @@ class DataProcessor {
       case OPERATION_TYPE.MODIFY_SETTINGS: {
         const { settings } = operation;
         table.view.settings = settings;
+        break;
+      }
+      case OPERATION_TYPE.SEARCH_ROWS: {
+        const { value } = operation;
+        if (!value) {
+          table.view.rows = table.rows.map(r => r._id);
+        } else {
+          const regValue = getSearchRule(value);
+          const copyRegValue = regValue.map(item => ({ ...item }));
+          const columns = table.view.columns.filter(c => SUPPORT_SEARCH_COLUMNS.includes(c.type));
+          let viewRows = [];
+
+          for (let i = 0; i < table.rows.length; i++) {
+            const row = table.rows[i];
+            for (let j = 0; j < columns.length; j++) {
+              const column = columns[j];
+              const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData });
+              let flag = false;
+              for (let k = 0; k < copyRegValue.length; k++) {
+                const reg = copyRegValue[k].reg;
+                const isMatched = reg.test(cellValue);
+                if (isMatched) {
+                  viewRows.push(row._id);
+                  flag = true;
+                  break;
+                }
+              }
+              if (flag) break;
+            }
+          }
+          table.view.rows = viewRows;
+        }
+        const { available_columns, groupbys, rows } = table.view;
+        if (!isGroupView({ groupbys }, available_columns)) {
+          table.view.groups = [];
+          break;
+        }
+        table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators });
         break;
       }
       default: {

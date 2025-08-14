@@ -28,7 +28,7 @@ export const MetadataProvider = ({
 
   const storeRef = useRef(null);
 
-  const { collaborators } = useCollaborators();
+  const { collaborators, collaboratorsCache } = useCollaborators();
 
   const tableChanged = useCallback(() => {
     setMetadata(storeRef.current.data);
@@ -153,6 +153,20 @@ export const MetadataProvider = ({
     storeRef.current.insertColumn(name, type, { key, data });
   }, [storeRef]);
 
+  const searchRows = useCallback((searchValue = '') => {
+    storeRef.current.searchRows(searchValue);
+  }, [storeRef]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    storeRef.current.tagsData = tagsData;
+  }, [isLoading, tagsData]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
+  }, [isLoading, collaborators, collaboratorsCache]);
+
   // init
   useEffect(() => {
     setLoading(true);
@@ -163,7 +177,7 @@ export const MetadataProvider = ({
       api,
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, collaborators });
+    storeRef.current = new Store({ viewId: viewID });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       setMetadata(storeRef.current.data);
@@ -218,6 +232,7 @@ export const MetadataProvider = ({
         modifyRow,
         moveRow,
         duplicateRow,
+        searchRows,
         renameColumn,
         deleteColumn,
         modifyColumnOrder,

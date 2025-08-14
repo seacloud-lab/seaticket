@@ -28,6 +28,7 @@ export const OPERATION_TYPE = {
   MODIFY_LOCAL_ROW: 'modify_local_row',
   MOVE_ROW: 'move_row',
   DUPLICATE_ROW: 'duplicate_row',
+  SEARCH_ROWS: 'search_rows',
 };
 
 export const COLUMN_DATA_OPERATION_TYPE = {
@@ -64,6 +65,8 @@ export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.MODIFY_COLUMN_ORDER]: ['view_id', 'new_columns_keys', 'old_columns_keys'],
 
   [OPERATION_TYPE.MODIFY_SETTINGS]: ['view_id', 'settings'],
+
+  [OPERATION_TYPE.SEARCH_ROWS]: ['value'],
 };
 
 export const UNDO_OPERATION_TYPE = [
