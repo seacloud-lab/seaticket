@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import HideConnectionPopover from './hidden-connection-popover';
 import { gettext } from '../../../constants';
@@ -25,6 +25,13 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
       onConnectionIDsChange(newHiddenConnectionIDs);
     }
   }, []);
+
+  useEffect(() => {
+    if (connections.length === 0) return;
+    const validConnectionIds = connections.map((c) => c.id);
+    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id));
+    modifyHiddenConnections(newHiddenConnectionIDs);
+  }, [connections]);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);
