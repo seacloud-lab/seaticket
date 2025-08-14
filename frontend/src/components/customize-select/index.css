@@ -43,7 +43,7 @@
   transition: all 0.1s;
 }
 
-.sea-qa-select .sea-qa-icon-svg:hover {
+.sea-qa-select .sea-qa-icon-svg-down:hover {
   color: #555;
 }
 

@@ -1,0 +1,105 @@
+.sea-metadata-table-footer {
+  position: relative;
+  height: 32px;
+  width: 100%;
+  overflow: hidden;
+  line-height: 32px;
+  background: var(--bs-body-bg);
+  border-top: 1px solid var(--bs-border-secondary-color);
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.sea-metadata-table-footer.at-border {
+  border-bottom: none;
+}
+
+.sea-metadata-table-footer .rows-row {
+  width: 80px;
+  padding-left: 8px;
+}
+
+.load-all-tip {
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-table-footer .summaries-pane {
+  position: relative;
+  display: flex;
+  flex: 1 1;
+  overflow: hidden;
+}
+
+.sea-metadata-table-footer .summaries-scroll {
+  position: relative;
+  overflow: hidden;
+}
+
+.sea-metadata-table-footer .summaries-scroll > div {
+  display: inline-flex;
+}
+
+.sea-metadata-table-footer .summary-item,
+.canvas-groups-rows .summary-item {
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+  padding: 0 8px;
+  height: 30px;
+}
+
+.sea-metadata-table-footer .summary-item .summary-value,
+.canvas-groups-rows .summary-item .summary-value {
+  display: flex;
+  justify-content: flex-end;
+  max-width: calc(100% - 18px);
+  overflow: hidden;
+}
+
+.sea-metadata-table-footer .summary-value .summary-value-title,
+.canvas-groups-rows .summary-value .summary-value-title {
+  color: #666666;
+  flex: none;
+}
+
+.sea-metadata-table-footer .summary-value .summary-value-text,
+.canvas-groups-rows .summary-value .summary-value-text {
+  max-width: 100%;
+  padding-left: 3px;
+  flex: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.load-all-tip .load-all,
+.sea-metadata-table-footer .load-all {
+  height: 16px;
+  line-height: 16px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 1px solid #666;
+}
+
+.sea-metadata-table-footer .load-all {
+  margin: auto;
+}
+
+.load-all-tip .load-all:hover,
+.sea-metadata-table-footer .load-all:hover {
+  color: var(--bs-body-color);
+  border-bottom: 1px solid #212529;
+}
+
+.sea-metadata-table-footer .loading-message {
+  display: inline-flex;
+  align-items: center;
+  color: #666;
+}
+
+.sea-metadata-table-footer .loading-message .loading-icon {
+  width: 16px;
+  height: 16px;
+}

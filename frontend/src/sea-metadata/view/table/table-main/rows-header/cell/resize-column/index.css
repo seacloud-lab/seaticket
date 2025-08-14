@@ -1,0 +1,15 @@
+.sea-metadata-resize-column__draggable {
+  position: absolute;
+  top: 0px;
+  right: -3px;
+  width: 5px;
+  border-radius: 3px;
+  margin: 3px 0px;
+  height: 80%;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.sea-metadata-resize-column__draggable:hover {
+  background-color: #2d7ff9;
+}

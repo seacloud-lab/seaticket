@@ -1,0 +1,10 @@
+.sea-metadata-row-header-cell .sea-metadata-table-cell.insert-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sea-metadata-row-header-cell .sea-metadata-table-cell.insert-column:hover .sea-qa-icon-svg {
+  fill: #666;
+}

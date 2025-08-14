@@ -1,0 +1,65 @@
+.sea-metadata-ui.long-text-formatter {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* links */
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-links,
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list {
+  display: inline-block;
+  background-color: #f0f0f0;
+  color: #666;
+  height: 20px;
+  line-height: 20px;
+  margin: 0 4px;
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-links .sea-qa-icon-svg,
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list .sea-qa-icon-svg {
+  height: 12px;
+  width: 12px;
+  margin-right: 4px;
+  color: #666;
+  vertical-align: -0.1rem;
+}
+
+/* check list */
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list.completed .sea-qa-icon-svg {
+  color: #61bd4f;
+}
+
+/* images */
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-images {
+  margin-right: -10px;
+}
+
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-images img {
+  border: 1px solid #f0f0f0;
+  border-radius: 3px;
+  box-sizing: border-box;
+  margin-top: -3px;
+  max-height: 28px;
+  max-width: 28px;
+}
+
+.sea-metadata-ui.long-text-formatter .sea-metadata-long-text-images .sea-metadata-image-number {
+  background-color: #999;
+  border-radius: 6px;
+  color: #fff;
+  display: inline-block;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 14px;
+  min-width: 14px;
+  padding: 0 3px;
+  transform: translate(-50%, 6px) scale(.8);
+}

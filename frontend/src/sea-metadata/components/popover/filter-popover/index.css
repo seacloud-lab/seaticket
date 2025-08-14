@@ -1,0 +1,57 @@
+.sea-metadata-filter-popover .popover {
+  max-width: none;
+  min-width: 300px;
+}
+
+.sea-metadata-filter-popover .sea-metadata-filters {
+  display: flex;
+  flex-direction: column;
+  min-width: 400px;
+}
+
+.sea-metadata-filter-popover .filter-group-name {
+  margin-bottom: 10px;
+}
+
+.sea-metadata-filter-popover .filter-group-advanced {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-metadata-filter-popover .filter-group-advanced .filter-group-name {
+  padding: 0 16px;
+}
+
+.sea-metadata-filter-popover .filter-group-advanced .filter-group-container {
+  flex: 1;
+  padding: 0 16px 16px;
+}
+
+.sea-metadata-filter-popover .sea-metadata-filter-popover-add-btns {
+  display: flex;
+  align-items: center;
+  background: inherit;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  height: 40px;
+  padding: 0 1rem;
+}
+
+.sea-metadata-filter-popover .customize-add-tool.popover-add-tool {
+  height: 28px;
+  padding: 0 6px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 3px;
+  font-weight: 400;
+  margin-left: -6px;
+}
+
+.sea-metadata-filter-popover .customize-add-tool .sea-qa-icon-svg {
+  color: #666;
+  height: 14px;
+  width: 14px;
+  margin-right: 10px;
+  transform: none;
+}

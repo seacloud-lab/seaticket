@@ -9,7 +9,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
-    Tickets, TicketReplies, TicketTags, TicketParticipants
+    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -343,6 +343,7 @@ def delete_project(project):
         tickets.delete()
         TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()
         TicketTags.objects.filter(ticket_id__in=ticket_id_list).delete()
+        TicketAssignees.objects.filter(ticket_id__in=ticket_id_list).delete()
         TicketParticipants.objects.filter(ticket_id__in=ticket_id_list).delete()
     except Exception as e:
         logger.error(e)

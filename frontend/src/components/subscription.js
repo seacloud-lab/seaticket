@@ -270,7 +270,7 @@ class Plans extends Component {
     }
     return (
       <div className='d-flex flex-column subscription-container price-version-container-header subscription-add-user'>
-        <div className="price-version-container-top seatable-bg-orange"></div>
+        <div className="price-version-container-top sea-qa-bg-orange"></div>
         <h3 className='user-quota-plan-name py-5'>{currentPlan.name}</h3>
         <span className='py-2 mb-0 text-orange font-500 text-center'>
           {'¥ '}<span className="price-version-plan-price">{currentPlan.price}</span>{' ' + currentPlan.description}
@@ -321,7 +321,7 @@ class Plans extends Component {
     }
     return (
       <div className='d-flex flex-column subscription-container price-version-container-header subscription-add-space'>
-        <div className="price-version-container-top seatable-bg-orange"></div>
+        <div className="price-version-container-top sea-qa-bg-orange"></div>
         <h3 className='user-quota-plan-name py-5'>{currentPlan.name}</h3>
         <span className='py-2 mb-0 text-orange font-500 text-center'>
           {'¥ '}<span className="price-version-plan-price">{currentPlan.asset_quota_price}</span>{' ' + currentPlan.asset_quota_description}

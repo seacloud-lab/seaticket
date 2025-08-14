@@ -1,0 +1,13 @@
+.sea-metadata-tags-selector-popover {
+  min-width: 200px;
+  padding: 0;
+  min-height: 160px;
+  overflow: hidden;
+  opacity: 1;
+  background: var(--bs-body-bg);
+  border: 1px solid #dedede;
+  border-radius: 4px;
+  box-shadow: 0px 2px 10px 0 #dedede;
+  position: absolute;
+  left: 0;
+}

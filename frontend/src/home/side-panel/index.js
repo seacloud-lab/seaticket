@@ -157,7 +157,7 @@ class SidePanel extends React.Component {
       <div id="workspace-items">
         {personalWorkspace && (
           <div
-            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'seatable-bg-orange active' : ''}`}
+            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'sea-qa-bg-orange active' : ''}`}
             onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
@@ -167,7 +167,7 @@ class SidePanel extends React.Component {
           </div>
         )}
         <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('project/starred') ? 'seatable-bg-orange active' : ''}`}
+          className={`nav-item workspace-nav-item ${this.getActiveClass('project/starred') ? 'sea-qa-bg-orange active' : ''}`}
           onClick={(event) => this.onGroupTabClick(event, 'project/starred')}
         >
           <Link tabIndex={tabIndex} to={siteRoot + 'project/starred/'} className="workspace-nav-link ellipsis">
@@ -176,7 +176,7 @@ class SidePanel extends React.Component {
           </Link>
         </div>
         <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('project/shared') ? 'seatable-bg-orange active' : ''}`}
+          className={`nav-item workspace-nav-item ${this.getActiveClass('project/shared') ? 'sea-qa-bg-orange active' : ''}`}
           onClick={(event) => this.onGroupTabClick(event, 'project/shared')}
         >
           <Link tabIndex={tabIndex} to={siteRoot + 'project/shared/'} className="workspace-nav-link ellipsis">
@@ -234,7 +234,7 @@ class SidePanel extends React.Component {
               <span className="sea-qa-nav-title">{gettext('Workspace')}</span>
               <div className="nav nav-pills flex-column sea-qa-nav-list">
                 <div
-                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'seatable-bg-orange' : ''}`}
+                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'sea-qa-bg-orange' : ''}`}
                   onClick={this.onTabClick.bind(this, 'projects')}
                 >
                   <Link

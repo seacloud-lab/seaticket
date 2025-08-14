@@ -1,0 +1,13 @@
+.sea-metadata-selector-collaborator.sea-qa-customize-select .sea-qa-select-option {
+  line-height: 20px;
+  padding: 5px 10px 5px 10px !important;
+}
+
+.sea-metadata-selector-collaborator.sea-qa-customize-select .sea-qa-select-option:hover {
+  background-color: #f7f7f7;
+  color: var(--bs-body-color);
+}
+
+.sea-metadata-selector-collaborator.sea-qa-customize-select .selected-option-show {
+  text-overflow: clip;
+}

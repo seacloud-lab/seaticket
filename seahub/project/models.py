@@ -452,8 +452,10 @@ class ProjectConnections(models.Model):
 
 class TicketsManager(models.Manager):
 
-    def list_tickets(self, project_uuid, start, end):
-        return self.filter(
+    def list_tickets(self, project_uuid, start, end, status):
+        status_list = ['', 'open'] if status == 'open' else ['completed', 'not_planned', 'duplicate']
+
+        return self.filter(status__in=status_list,
             project_uuid=project_uuid, deleted=False).order_by('-number')[start: end]
 
     def list_tickets_by_username(self, project_uuid, username, start, end):
@@ -509,7 +511,7 @@ class Tickets(models.Model):
         unique_together = (('project_uuid', 'number'),)
         db_table = 'tickets'
 
-    def to_dict(self, tags_dict={}, participants_dict={}, include_deleted=False):
+    def to_dict(self, tags_dict={}, assignees_dict={}, participants_dict={}, include_deleted=False):
         result = {
             'project_uuid': str(self.project_uuid),
             'number': self.number,
@@ -523,13 +525,14 @@ class Tickets(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'reply_updated_at': self.reply_updated_at,
-            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {})
+            'creator': self.creator,
         }
         if self.id in tags_dict:
             result['tags'] = tags_dict[self.id]
+        if self.id in assignees_dict:
+            result['assignees'] = assignees_dict[self.id]
         if self.id in participants_dict:
-            result['participants'] = [
-                get_user_common_info(participant) for participant in participants_dict[self.id]]
+            result['participants'] = participants_dict[self.id]
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
@@ -592,7 +595,7 @@ class TicketReplies(models.Model):
             'content': self.content,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'creator': json.dumps(get_user_common_info(self.creator) if self.creator else {}),
+            'creator': self.creator,
         }
         if include_deleted:
             result.update({
@@ -647,3 +650,14 @@ class TicketParticipants(models.Model):
     class Meta:
         unique_together = (('ticket_id', 'participant'),)
         db_table = 'ticket_participants'
+
+
+class TicketAssignees(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    ticket_id = models.BigIntegerField(db_index=True)
+    assignee = models.CharField(max_length=255, db_index=True)
+
+    class Meta:
+        unique_together = (('ticket_id', 'assignee'),)
+        db_table = 'ticket_assignees'
+

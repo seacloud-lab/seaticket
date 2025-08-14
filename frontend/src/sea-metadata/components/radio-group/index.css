@@ -1,0 +1,91 @@
+.sea-metadata-radio-group {
+  position: relative;
+  width: fit-content;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 8px;
+}
+
+.sea-metadata-radio-group .sea-metadata-radio-group-option {
+  min-width: 66px;
+  width: fit-content;
+  height: 28px;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  border: 0;
+  border-radius: 2px;
+}
+
+.sea-metadata-radio-group .sea-metadata-radio-group-option:hover {
+  background-color: var(--bs-nav-hover-bg);
+  cursor: pointer;
+}
+
+.sea-metadata-radio-group .sea-metadata-radio-group-option.active {
+  background-color: var(--bs-nav-active-bg);
+}
+
+.sea-metadata-radio-group .sea-metadata-radio-group-option:not(:first-child)::before {
+  content: '';
+  width: 1px;
+  height: 22px;
+  background-color: var(--bs-border-secondary-color);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: opacity 0.3s;
+  left: -1px;
+}
+
+.sea-metadata-radio-group .sea-metadata-radio-group-option:hover::before,
+.sea-metadata-radio-group .sea-metadata-radio-group-option.active::before,
+.sea-metadata-radio-group .sea-metadata-radio-group-option:hover + .sea-metadata-radio-group-option::before,
+.sea-metadata-radio-group .sea-metadata-radio-group-option.active + .sea-metadata-radio-group-option::before {
+  opacity: 0;
+}
+
+.sea-metadata-radio-group::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  width: 66px;
+  height: 28px;
+  background-color: #f5f5f5;
+  border-radius: 2px;
+  transition: transform 0.3s ease;
+  z-index: 0;
+}
+
+.sea-metadata-radio-group.sea-metadata-gallery-groupby-setter[data-active="year"]::before {
+  transform: translateX(0);
+}
+
+.sea-metadata-radio-group.sea-metadata-gallery-groupby-setter[data-active="month"]::before {
+  transform: translateX(65px);
+}
+
+.sea-metadata-radio-group.sea-metadata-gallery-groupby-setter[data-active="day"]::before {
+  transform: translateX(131px);
+}
+
+.sea-metadata-radio-group.sea-metadata-gallery-groupby-setter[data-active="all"]::before {
+  transform: translateX(197px);
+}
+
+.sea-metadata-radio-group.sea-metadata-map-type-setter[data-active="map"]::before {
+  transform: translateX(0);
+}
+
+.sea-metadata-radio-group.sea-metadata-map-type-setter[data-active="satellite"]::before {
+  transform: translateX(65px);
+}

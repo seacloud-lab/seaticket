@@ -510,6 +510,14 @@ CREATE TABLE `ticket_participants`  (
   UNIQUE KEY `ticket_participants_ticket_id_participant`(`ticket_id`, `participant`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
+CREATE TABLE `ticket_assignees`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint(20) NOT NULL,
+  `assignee` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ticket_assignees_ticket_id_assignee`(`ticket_id`, `assignee`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
 CREATE TABLE `options_useroptions`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,

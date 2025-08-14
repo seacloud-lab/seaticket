@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+          "@/*": ["src/*"],
+          "@components/*": ["src/components/*"],
+          "@constants": ["src/constants/index"],
+          "@constants/*": ["src/constants/*"],
+          "@utils/*": ["src/utils/*"]
+      },
+      "module": "ES6",
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
