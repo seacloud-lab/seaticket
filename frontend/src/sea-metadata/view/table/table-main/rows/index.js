@@ -695,7 +695,7 @@ class Rows extends Component {
     const isSelectedAll = RowMetrics.isSelectedAll(rowIds, rowMetrics);
 
     if (rowsCount === 0 && !this.props.hasMore) {
-      return (<EmptyTip text={gettext('No row')} />);
+      return (<EmptyTip text={gettext('No rows')} />);
     }
 
     return (
