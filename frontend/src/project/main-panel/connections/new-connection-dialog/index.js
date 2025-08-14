@@ -1,31 +1,23 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Tooltip } from 'reactstrap';
 import { gettext, mediaUrl } from '../../../../constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '../../../../components';
-import { Tooltip } from 'reactstrap';
+import CopyInput from '../../../../components/copy-input';
+import { STEP, STEPS } from './constants';
 
 import './index.css';
 
-const STEP = {
-  TYPE: 'type',
-  CONFIG: 'config',
-};
-
-const STEPS = [
-  { key: STEP.TYPE, name: gettext('Select connection type') },
-  { key: STEP.CONFIG, name: gettext('Fill in connection details') },
-];
-
-const NewConnectionDialog = ({ onSubmit, onToggle }) => {
+const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [type, setType] = useState(CONNECTION_TYPES[0].type);
   const [name, setName] = useState('');
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState({});
+  const [newRecord, setNewRecord] = useState(null);
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
@@ -56,20 +48,47 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [config]);
 
   const handleSubmit = useCallback(() => {
+    if (type === 'github_issue') {
+      modifyConnection({ name: name.trim(), config }, () => {
+        setSubmitting(false);
+      },
+      newRecord.id
+      );
+    } else {
+      setSubmitting(true);
+      onSubmit({ type, name: name.trim(), config }, () => {
+        setSubmitting(false);
+      });
+    }
+  }, [name, type, config, onSubmit, onToggle]);
+
+  const handleSubmitGithub = useCallback(() => {
     setSubmitting(true);
     onSubmit({ type, name: name.trim(), config }, () => {
       setSubmitting(false);
-    });
+    },
+    true,
+    (newRecord) => {
+      setStepIndex(stepIndex + 1);
+      setNewRecord(newRecord);
+    }
+    );
   }, [name, type, config, onSubmit, onToggle]);
 
   const step = STEPS[stepIndex];
   const typeOption = CONNECTION_TYPES.find(i => i.type === type);
+  const isGithub = type === 'github_issue';
+  const customSteps = isGithub ? STEPS : [STEPS[0], STEPS[1]];
 
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-new-connection-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Add connection')}</ModalHeader>
       <ModalBody className="sea-qa-project-new-connection-body">
-        <StepsNavigation className="sea-qa-project-new-connection-steps" steps={STEPS} currentIndex={stepIndex} />
+        <StepsNavigation
+          className="sea-qa-project-new-connection-steps"
+          steps={customSteps}
+          currentIndex={stepIndex}
+        />
         {step.key === STEP.TYPE && (
           <div className="sea-qa-project-new-connection-types">
             {CONNECTION_TYPES.map(connection => {
@@ -140,13 +159,37 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             })}
           </div>
         )}
+        {isGithub && step.key === STEP.GITHUB && (
+          <div className="sea-qa-project-new-connection-config">
+            <FormGroup>
+              <Label>{gettext('Connection URL')}</Label>
+              {/* 127.0.0.1 use as test */}
+              <CopyInput value={`https://127.0.0.1/webhook/github/connection-id=${newRecord.id}`} />
+            </FormGroup>
+            <FormGroup>
+              <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
+              <TextInput value={config['webhook_secret']} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
+            </FormGroup>
+          </div>
+        )}
       </ModalBody>
+      {isGithub &&
       <ModalFooter>
         {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= STEPS.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex < STEPS.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
-        {stepIndex === STEPS.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
+        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>}
+        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
       </ModalFooter>
+      }
+      {!isGithub &&
+      <ModalFooter>
+        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+        {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
+        {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
+      </ModalFooter>
+      }
     </Modal>
   );
 };
@@ -155,6 +198,7 @@ NewConnectionDialog.propTypes = {
   connection: PropTypes.object,
   connections: PropTypes.array,
   onSubmit: PropTypes.func.isRequired,
+  modifyConnection: PropTypes.func,
   onToggle: PropTypes.func.isRequired
 };
 

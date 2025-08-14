@@ -1,6 +1,7 @@
 .sea-qa-project-new-connection-dialog {
   height: fit-content;
   max-height: calc(100% - 56px);
+  max-width: 600px;
 }
 
 .sea-qa-project-new-connection-dialog .modal-content {

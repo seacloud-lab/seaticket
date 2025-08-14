@@ -59,12 +59,13 @@ const Connections = ({ title }) => {
     setIsShowRecordDialog(false);
   }, []);
 
-  const createConnection = useCallback(({ type, name, config }, resetSubmittingState) => {
+  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowRecordDialog = false, callback) => {
     connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
       const record = res.data.record;
       const newRecords = [...records, new Connection(record)];
       setRecords(newRecords);
-      setIsShowRecordDialog(false);
+      setIsShowRecordDialog(isShowRecordDialog);
+      callback && callback(new Connection(record));
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -100,8 +101,8 @@ const Connections = ({ title }) => {
     setIsShowConfirmDialog(true);
   }, []);
 
-  const modifyConnection = useCallback(({ name, config }, resetSubmittingState) => {
-    connectionsAPI.modifyConnection(projectUuid, activeRecordRef.current.id, { name, config }).then(res => {
+  const modifyConnection = useCallback(({ name, config }, resetSubmittingState, recordId) => {
+    connectionsAPI.modifyConnection(projectUuid, recordId || activeRecordRef.current.id, { name, config }).then(res => {
       const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
@@ -199,11 +200,19 @@ const Connections = ({ title }) => {
       </CustomizeTable>
       {isShowRecordDialog && (
         <>
-          {activeRecordRef.current ? (
-            <ModifyConnectionDialog record={activeRecordRef.current} onToggle={closeConnectionDialog} onSubmit={modifyConnection} />
-          ) : (
-            <NewConnectionDialog onToggle={closeConnectionDialog} onSubmit={createConnection} />
-          )}
+          {activeRecordRef.current ?
+            <ModifyConnectionDialog
+              record={activeRecordRef.current}
+              onToggle={closeConnectionDialog}
+              onSubmit={modifyConnection}
+            />
+            :
+            <NewConnectionDialog
+              onToggle={closeConnectionDialog}
+              onSubmit={createConnection}
+              modifyConnection={modifyConnection}
+            />
+          }
         </>
       )}
       {isShowConfirmDialog && (
