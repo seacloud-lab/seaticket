@@ -27,7 +27,7 @@ const Page = () => {
   if (isLoading) return null;
   if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets projectUuid={projectUuid} projectName={projectName} />);
   if (pageType === TICKET_PAGE_TYPE.TAGS) return (<Tags />);
-  if (pageType === TICKET_PAGE_TYPE.NEW) return (<NewTicket editorAPI={longtextAPI} />);
+  if (pageType === TICKET_PAGE_TYPE.NEW) return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
   return (<Ticket projectUuid={projectUuid} ticketID={pageType} editorAPI={longtextAPI} />);
 };
 
