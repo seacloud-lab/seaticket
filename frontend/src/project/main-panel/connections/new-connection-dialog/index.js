@@ -1,25 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Tooltip } from 'reactstrap';
-import classnames from 'classnames';
 import { gettext, mediaUrl } from '../../../../constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '../../../../components';
 import CopyInput from '../../../../components/copy-input';
+import { STEP, STEPS } from './constants';
 
 import './index.css';
-
-const STEP = {
-  TYPE: 'type',
-  CONFIG: 'config',
-  GITHUB: 'github',
-};
-
-const STEPS = [
-  { key: STEP.TYPE, name: gettext('Select connection type') },
-  { key: STEP.CONFIG, name: gettext('Fill in connection details') },
-  { key: STEP.GITHUB, name: gettext('Link to GitHub webhook') },
-];
 
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
