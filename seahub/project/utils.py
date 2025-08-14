@@ -274,6 +274,9 @@ def upload_files_to_s3(project_uuid, file_urls, username):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
         s3_file_path = gen_s3_file_path(project_uuid, file_path)
+        if check_file_exists_from_s3(s3_file_path):
+            logger.warning(s3_file_path + ' already exists.')
+            continue
         s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata':{'username':username}})
         new_file_url = file_url.replace('/upload-file/', '/file/')
         new_file_urls_dict[new_file_url] = file_url
@@ -282,6 +285,14 @@ def upload_files_to_s3(project_uuid, file_urls, username):
         except Exception as e:
             logger.error(e)
     return new_file_urls_dict
+
+
+def check_file_exists_from_s3(s3_file_path):
+    try:
+        s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+        return True
+    except Exception as e:
+        return False
 
 
 def get_file_from_s3(project_uuid, file_path):
