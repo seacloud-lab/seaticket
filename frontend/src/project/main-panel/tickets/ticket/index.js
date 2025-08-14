@@ -143,7 +143,7 @@ const Ticket = ({ editorAPI }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <AssigneesSettings isReadonly={true} assignees={participants} collaborators={collaborators} />
+          <AssigneesSettings isReadonly={true} value={participants} collaborators={collaborators} />
           <TagsSettings isReadonly={!enableEditOtherSettings} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!enableEditOtherSettings} value={type} onChange={onTypeChange} />
         </div>
