@@ -1,29 +1,28 @@
 import React, { useState, useCallback } from 'react';
 import classNames from 'classnames';
 import HideConnectionPopover from './hidden-connection-popover';
-import { CONNECTION_TYPES } from '../../constants';
 import { gettext } from '../../../constants';
 import Icon from '../../../components/icon';
 
-const HideConnectionSetter = ({ onConnectionTypesChange }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
   const [isShowSetter, setShowSetter] = useState(false);
 
-  const [hiddenConnectionTypes, setConnectionTypes] = useState(() => {
-    const cachedValue = localStorage.getItem('seaqa-hidden-connection-types');
-    const hiddenConnectionTypes = cachedValue ? JSON.parse(cachedValue) : [];
-    if (onConnectionTypesChange) {
-      onConnectionTypesChange(hiddenConnectionTypes);
+  const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState(() => {
+    const cachedValue = localStorage.getItem('seaqa-hidden-connection-ids');
+    const hiddenConnectionIDs = cachedValue ? JSON.parse(cachedValue) : [];
+    if (onConnectionIDsChange) {
+      onConnectionIDsChange(hiddenConnectionIDs);
     }
-    return hiddenConnectionTypes;
+    return hiddenConnectionIDs;
   });
 
-  const modifyHiddenConnections = useCallback((newHiddenConnectionTypes) => {
-    setConnectionTypes(newHiddenConnectionTypes);
-    localStorage.setItem('seaqa-hidden-connection-types', JSON.stringify(newHiddenConnectionTypes));
-    if (onConnectionTypesChange) {
-      onConnectionTypesChange(newHiddenConnectionTypes);
+  const modifyHiddenConnections = useCallback((newHiddenConnectionIDs) => {
+    setHiddenConnectionIDs(newHiddenConnectionIDs);
+    localStorage.setItem('seaqa-hidden-connection-ids', JSON.stringify(newHiddenConnectionIDs));
+    if (onConnectionIDsChange) {
+      onConnectionIDsChange(newHiddenConnectionIDs);
     }
   }, []);
 
@@ -39,8 +38,8 @@ const HideConnectionSetter = ({ onConnectionTypesChange }) => {
     <>
       <div className="search-filter filter-by-suffix-container" id={target} onClick={onSetterToggle} onKeyDown={onKeyDown} tabIndex={0} role="button">
         <div className={classNames('search-filter-toggle', {
-          'active': isShowSetter && CONNECTION_TYPES.length !== hiddenConnectionTypes.length,
-          'highlighted': CONNECTION_TYPES.length !== hiddenConnectionTypes.length,
+          'active': isShowSetter && connections.length !== hiddenConnectionIDs.length,
+          'highlighted': connections.length !== hiddenConnectionIDs.length,
         })} >
           <div className="filter-label" title={gettext('Connections')}>{gettext('Connections')}</div>
           <Icon symbol="down"/>
@@ -49,8 +48,8 @@ const HideConnectionSetter = ({ onConnectionTypesChange }) => {
       {isShowSetter && (
         <HideConnectionPopover
           readOnly={readOnly}
-          hiddenConnectionTypes={hiddenConnectionTypes}
-          connections={CONNECTION_TYPES}
+          hiddenConnectionIDs={hiddenConnectionIDs}
+          connections={connections}
           target={target}
           placement="bottom-start"
           hidePopover={onSetterToggle}

@@ -6,7 +6,7 @@ import Switch from '../../../../../components/switch/index';
 const HideConnection = ({
   readOnly,
   isHidden,
-  column,
+  connection,
   onChange,
 }) => {
   return (
@@ -19,8 +19,8 @@ const HideConnection = ({
         className="hide-column-item-switch"
         disabled={readOnly}
         checked={isHidden}
-        placeholder={<span className="text-truncate">{column.name}</span>}
-        onChange={() => onChange(column)}
+        placeholder={<span className="text-truncate">{connection.name}</span>}
+        onChange={() => onChange(connection)}
       />
     </div>
   );
@@ -29,7 +29,7 @@ const HideConnection = ({
 HideConnection.propTypes = {
   readOnly: PropTypes.bool,
   isHidden: PropTypes.bool,
-  column: PropTypes.object.isRequired,
+  connection: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
 };
 

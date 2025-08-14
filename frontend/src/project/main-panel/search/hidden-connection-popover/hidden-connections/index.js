@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideConnection from './hide-connection';
 
-const HiddenConnections = ({ readOnly, connections, hiddenConnectionTypes, onChange }) => {
+const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChange }) => {
 
   const isEmpty = useMemo(() => {
     if (!Array.isArray(connections) || connections.length === 0) return true;
@@ -13,14 +13,13 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionTypes, onCha
   return (
     <div className={classnames('hide-list', { 'empty-hide-container': isEmpty })}>
       {isEmpty && <div className="empty-hide-list">{window.gettext('No connections available')}</div>}
-      {!isEmpty && connections.map((column, columnIndex) => {
+      {!isEmpty && connections.map((connection) => {
         return (
           <HideConnection
-            key={column.key}
+            key={connection.key}
             readOnly={readOnly}
-            columnIndex={columnIndex}
-            isHidden={!hiddenConnectionTypes.includes(column.type)}
-            column={column}
+            isHidden={!hiddenConnectionIDs.includes(connection.id)}
+            connection={connection}
             onChange={onChange}
           />
         );
@@ -31,7 +30,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionTypes, onCha
 
 HiddenConnections.propTypes = {
   readOnly: PropTypes.bool,
-  hiddenConnectionTypes: PropTypes.array,
+  hiddenConnectionIDs: PropTypes.array,
   connections: PropTypes.array,
   onChange: PropTypes.func,
 };
