@@ -550,9 +550,12 @@ class TicketsAPIView(APIView):
             except Exception as e:
                 logger.error(e)
 
+        participants_dict = {ticket.id: [username]}
+
         return Response({'ticket': ticket.to_dict(
             tags_dict=tags_dict,
             assignees_dict=assignees_dict,
+            participants_dict=participants_dict,
         )},status=status.HTTP_201_CREATED)
 
 
