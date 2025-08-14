@@ -5,6 +5,7 @@ import RemoveBtn from './remove-btn';
 import './index.css';
 
 const Collaborator = ({ collaborator, className, children }) => {
+  if (!collaborator) return null;
 
   return (
     <div className={classnames('collaborator', className)} title={collaborator.name}>

@@ -8,7 +8,7 @@ import './index.css';
 
 const AssigneesSettings = ({
   isReadonly,
-  assignees,
+  value,
   collaborators,
   className = 'mb-4',
   onChange,
@@ -18,9 +18,9 @@ const AssigneesSettings = ({
   const assigneesRef = useRef(null);
 
   const deleteAssignee = useCallback((email) => {
-    const newValue = assignees.filter(i => i !== email);
+    const newValue = value.filter(i => i !== email);
     onChange(newValue);
-  }, [assignees, onChange]);
+  }, [value, onChange]);
 
   const onAssigneesChange = useCallback((assignees) => {
     onChange(assignees);
@@ -41,9 +41,10 @@ const AssigneesSettings = ({
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
         <Label>{gettext('Assignees')}</Label>
         <div className="collaborators-formatter" onClick={openAssigneesEditor} ref={assigneesRef}>
-          {assignees.length > 0 ? assignees.map(assignee => {
+          {value.length > 0 ? value.map(assignee => {
             if (!assignee) return null;
-            const collaborator = collaborators.find(c => c.email === assignee);
+            const collaborator = typeof assignee === 'string' ? collaborators.find(c => c.email === assignee) : assignee;
+            if (!collaborator) return null;
             return (
               <Collaborator collaborator={collaborator} key={assignee}>
                 {!isReadonly && (<Collaborator.RemoveBtn callback={() => deleteAssignee(assignee)} />)}
@@ -55,7 +56,7 @@ const AssigneesSettings = ({
       {!isReadonly && isShowAssigneesEditor && (
         <CollaboratorEditor
           target={assigneesRef}
-          value={assignees}
+          value={value}
           placeholder={gettext('Search assignees')}
           emptyTip={gettext('No assignees')}
           collaborators={collaborators}
