@@ -556,6 +556,7 @@ CREATE TABLE `discourse_replies` (
    KEY `discourse_replies_topic_id_idx` (`topic_id`),
    KEY `discourse_replies_connection_id_idx` (`connection_id`),
    KEY `discourse_replies_topic_id_connection_id_post_number_idx` (`topic_id`, `connection_id`, `post_number`),
+   UNIQUE KEY `uniq_topic_connection` (`topic_id`, `connection_id`),
    CONSTRAINT `discourse_replies_topic_id_fk_discourse_topics_topic_id`
      FOREIGN KEY (`topic_id`) REFERENCES `discourse_topics` (`topic_id`)
      ON DELETE CASCADE,
