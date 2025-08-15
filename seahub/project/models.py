@@ -385,13 +385,15 @@ class ProjectConnectionsManager(models.Manager):
         record.save()
         return record.to_dict()
 
-    def modify(self, username, project, connection_type, connection_id, name, config):
+    def modify(self, username, project, connection_type, connection_id, name, config, connection_status):
         """ modify record: if not record, create it
         """
 
         record = self.filter(project=project, id=connection_id).first()
         if not record:
             record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username)
+        elif connection_status is not None:
+            record.connection_status = connection_status
         else:
             record.name = name
             record.config = config
@@ -475,6 +477,7 @@ class ProjectConnections(models.Model):
     status = models.TextField()
     indexed_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
+    is_active = models.BooleanField(default=True, null=False, db_index=True)
 
     objects = ProjectConnectionsManager()
 
@@ -492,6 +495,7 @@ class ProjectConnections(models.Model):
             'updated_at': self.updated_at,
             'indexed_at': self.indexed_at,
             'status': self.status,
+            'is_active': self.is_active,
         }
 
 

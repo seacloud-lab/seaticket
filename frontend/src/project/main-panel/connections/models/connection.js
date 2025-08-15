@@ -12,6 +12,8 @@ class Connection {
     this.indexed_at = object.indexed_at || '';
     this.project_id = object.project_id || '';
     this.status = JSON.parse(object.status || '{}') || {};
+    this.is_active = object.is_active || '';
+
     // update
     if (this.ctime) {
       this.ctime = dayjs(this.ctime).format('YYYY-MM-DD HH:mm:ss');

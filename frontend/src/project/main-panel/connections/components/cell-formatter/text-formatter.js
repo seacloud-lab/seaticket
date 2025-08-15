@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 
 const TextFormatter = ({ value }) => {
+  console.log(value)
   if (!value) return null;
   return (<>{value}</>);
 };
