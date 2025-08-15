@@ -17,7 +17,7 @@ const AllTickets = ({ projectUuid, projectName }) => {
   const { tagsData, createTag } = useTags();
 
   const columns = useMemo(() => [
-    { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: true, is_name_column: true, frozen: true, is_required: true },
+    { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: true, is_name_column: true, frozen: true, is_required: true, expand_able: true },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), editable: true, data: { options: TICKET_STATUS_OPTIONS }, is_required: true },
     { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), editable: true, data: { options: TICKET_TYPES } },
     { type: CellType.LONG_TEXT, key: 'content', name: gettext('Content'), editable: true, is_required: true },
@@ -182,13 +182,6 @@ const AllTickets = ({ projectUuid, projectName }) => {
     });
 
     list.push('Divider');
-
-    if (context.canInsertRow()) {
-      list.push({
-        label: gettext('New ticket'),
-        callback: () => togglePageType(TICKET_PAGE_TYPE.NEW),
-      });
-    }
 
     if (context.checkCanDeleteRow()) {
       list.push({

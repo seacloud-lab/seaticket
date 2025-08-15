@@ -16,13 +16,13 @@ import Empty from './empty';
 import { CellType } from '../../constants';
 import './index.css';
 
-const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, ...params }) => {
+const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, openExpandedRow, row, ...params }) => {
   const { type: columnType } = column || {};
   const className = `sea-metadata-${columnType}-formatter`;
   switch (columnType) {
     case CellType.TEXT: {
       return (
-        <TextFormatter value={value} className={className}>
+        <TextFormatter value={value} column={column} className={className} openExpandedRow={() => openExpandedRow(row._id)} >
           <Empty columnType={columnType} placeholder={emptyTip} />
         </TextFormatter>
       );
@@ -108,7 +108,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, ...params 
     }
     default: {
       return (
-        <TextFormatter value={value} className={className}>
+        <TextFormatter value={value} column={column} className={className} openExpandedRow={openExpandedRow}>
           <Empty columnType={columnType} placeholder={emptyTip} />
         </TextFormatter>
       );

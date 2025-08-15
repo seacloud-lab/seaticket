@@ -53,7 +53,7 @@ class ActionsCell extends Component {
   };
 
   handleShowExpandedProps = () => {
-    this.props.onShowExpandedRowDialog(this.props.rowId);
+    this.props.openExpandedRow(this.props.rowId);
   };
 
   render() {
@@ -105,7 +105,7 @@ ActionsCell.propTypes = {
   index: PropTypes.number,
   height: PropTypes.number,
   onSelectRow: PropTypes.func,
-  onShowExpandedRowDialog: PropTypes.func,
+  openExpandedRow: PropTypes.func,
 };
 
 export default ActionsCell;

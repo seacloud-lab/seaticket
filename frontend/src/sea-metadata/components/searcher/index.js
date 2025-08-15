@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { KeyCodes } from '@/constants';
+import { gettext, KeyCodes } from '@/constants';
 import { IconButton } from '@/components';
 import { SearchInput } from '@/components';
 
@@ -32,7 +32,9 @@ const Searcher = ({ onChange }) => {
       {isSearchActive && (
         <SearchInput
           autoFocus={true}
+          isShowClearIcon={true}
           size={30}
+          placeholder={gettext('Search')}
           onKeyDown={onKeyDown}
           onClear={onClear}
           onChange={onChange}

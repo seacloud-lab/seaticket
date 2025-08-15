@@ -499,7 +499,7 @@ class RowsBody extends Component {
           modifyRow={this.props.modifyRow}
           searchResult={this.props.searchResult}
           columnColor={columnColor}
-          onShowExpandedRowDialog={this.props.onShowExpandedRowDialog}
+          openExpandedRow={this.props.openExpandedRow}
         />
       );
     });

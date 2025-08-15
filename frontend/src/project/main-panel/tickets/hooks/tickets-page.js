@@ -9,7 +9,6 @@ const TicketsPageContext = React.createContext(null);
 export const TicketsPageProvider = ({ projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(TICKET_PAGE_TYPE.ALL);
-  const [pageTitle, setPageTitle] = useState('');
   const [viewID, setViewID] = useState('open');
 
   const resetURL = useCallback((pageType, viewID) => {
@@ -62,7 +61,6 @@ export const TicketsPageProvider = ({ projectName, children }) => {
   }, []);
 
   useEffect(() => {
-    setPageTitle('');
     resetURL(pageType, viewID);
   }, [pageType, viewID]);
 
@@ -70,9 +68,7 @@ export const TicketsPageProvider = ({ projectName, children }) => {
     <TicketsPageContext.Provider value={{
       pageType,
       viewID,
-      pageTitle,
       isLoading,
-      updatePageTitle: setPageTitle,
       togglePageType,
       updateViewID: setViewID,
     }}>

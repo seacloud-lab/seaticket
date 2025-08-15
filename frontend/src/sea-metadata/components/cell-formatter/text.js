@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { getType } from '../../../utils/utils';
 
-const TextFormatter = ({ value, className, children: emptyFormatter }) => {
+const TextFormatter = ({ value, className, column, openExpandedRow, children: emptyFormatter }) => {
   const validValue = useMemo(() => {
     if (typeof value === 'number') return value + '';
     if (typeof value === 'object') return null;
@@ -14,8 +14,9 @@ const TextFormatter = ({ value, className, children: emptyFormatter }) => {
   if (!validValue) return emptyFormatter || null;
   return (
     <div
-      className={classnames('sea-metadata-ui cell-formatter-container text-formatter', className)}
+      className={classnames('sea-metadata-ui cell-formatter-container text-formatter', className, { 'hover-decoration': column?.expand_able } )}
       title={validValue}
+      onClick={column?.expand_able && openExpandedRow ? openExpandedRow : () => {}}
     >
       {validValue}
     </div>
