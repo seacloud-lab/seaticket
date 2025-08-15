@@ -53,7 +53,11 @@ const Project = () => {
     const decodePathname = decodeURIComponent(pathname);
     const projectNameIndex = decodePathname.indexOf(projectName);
     const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
-    history.replaceState(null, null, origin + newPathname + activeBar.key + '/' + (search || ''));
+    let url = origin + newPathname + activeBar.key + '/';
+    if (activeBar.key === BAR_TYPE.TICKET) {
+      url = url + (search || '');
+    }
+    history.replaceState(null, null, url);
   }, [isLoading, activeBar]);
 
   return (
