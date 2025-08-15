@@ -93,7 +93,7 @@ class AdminProject(APIView):
         """
         # argument check
         username = request.user.username
-        if not request.user.admin_permissions.can_manage_base():
+        if not request.user.admin_permissions.can_manage_project():
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         project = Projects.objects.get_project_by_uuid(

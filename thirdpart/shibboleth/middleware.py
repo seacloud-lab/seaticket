@@ -90,8 +90,7 @@ class ShibbolethRemoteUserMiddleware(RemoteUserMiddleware):
             # call make profile.
             self.make_profile(user, shib_meta)
             user_role = self.update_user_role(user, shib_meta)
-            if user_role:
-                self.update_user_quota(user, user_role)
+
             #setup session.
             self.setup_session(request)
             request.shib_login = True
@@ -191,14 +190,6 @@ class ShibbolethRemoteUserMiddleware(RemoteUserMiddleware):
             if role:
                 User.objects.update_role(user.email, role)
                 return role
-
-    def update_user_quota(self, user, user_role):
-        if user.permissions.role_quota():
-            quota = get_quota_from_string(user.permissions.role_quota())
-            logger.info('Set quota[%d] for user: %s, role[%s]' % (quota, user.username, user_role))
-            seafile_api.set_role_quota(user_role, quota)
-        else:
-            return
 
     def setup_session(self, request):
         """

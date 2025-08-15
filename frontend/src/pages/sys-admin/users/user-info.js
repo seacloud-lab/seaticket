@@ -174,26 +174,6 @@ class Content extends Component {
               </Fragment>
             )}
 
-            {!user.org_id && (
-              <Fragment>
-                <dt className="info-item-heading">{gettext('Storage Usage')}</dt>
-                <dd className="info-item-content">
-                  {Utils.bytesToSize(user.storage_usage)}
-                  {' / '}
-                  {Utils.bytesToSize(user.storage_quota)}
-                  {this.showEditIcon(this.toggleSetQuotaDialog)}
-                </dd>
-
-                <dt className="info-item-heading">{gettext('Row Usage')}</dt>
-                <dd className="info-item-content">
-                  {user.row_usage}
-                  {' / '}
-                  {user.row_limit > 0 ? user.row_limit : '--'}
-                  {this.showEditIcon(this.toggleSetRowLimitDialog)}
-                </dd>
-              </Fragment>
-            )}
-
             <dt className="info-item-heading">{gettext('API calls count')}</dt>
             <dd className="info-item-content">
               {user.api_calls_count || 0}
