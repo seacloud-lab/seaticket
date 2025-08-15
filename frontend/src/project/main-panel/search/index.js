@@ -24,7 +24,7 @@ const Search = ({ title }) => {
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState([]);
   const [connections, setConnections] = useState([]);
 
-  const source = useRef(null);
+  const sourceRef = useRef(null);
   const timer = useRef(null);
 
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections) => {
@@ -37,8 +37,8 @@ const Search = ({ title }) => {
     setResults([]);
     setSearching(true);
     const cancelError = 'The current request has been automatically canceled';
-    if (source.current) {
-      source.current.cancel(cancelError);
+    if (sourceRef.current) {
+      sourceRef.current.cancel(cancelError);
     }
     timer.current && clearTimeout(timer.current);
     if (!value) {
@@ -48,9 +48,11 @@ const Search = ({ title }) => {
 
     timer.current = setTimeout(() => {
       timer.current = null;
-      source.current = searchAPI.getSource();
+      const CancelToken = axios.CancelToken;
+      const source = CancelToken.source();
+      sourceRef.current = source;
       const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      searchAPI.search(workspaceID, projectUuid, value, null, showConnnectionIds, source.current.token).then(res => {
+      searchAPI.search(workspaceID, projectUuid, value, showConnnectionIds, source.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -70,8 +72,8 @@ const Search = ({ title }) => {
     setValue('');
     setResults([]);
     setSearching(false);
-    if (source.current) {
-      source.current.cancel('The current request has been manually canceled');
+    if (sourceRef.current) {
+      sourceRef.current.cancel('The current request has been manually canceled');
     }
     timer.current && clearTimeout(timer.current);
     timer.current = null;
@@ -128,7 +130,7 @@ const Search = ({ title }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result => <ListItem {...result} />)}
+                {results.map(result => <ListItem key={result.id || result.uuid} {...result} />)}
               </div>
             }
           </>

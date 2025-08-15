@@ -285,23 +285,13 @@ class SeaQAAPI {
     return this.req.delete(url);
   }
 
-  // search
-  getSource() {
-    let CancelToken = axios.CancelToken;
-    let source = CancelToken.source();
-    return source;
-  }
-
-  search(workspaceID, projectUuid, query, connectionTypes, connectionIds, cancelToken) {
+  search(workspaceID, projectUuid, query, connectionIds, cancelToken) {
     const url = `${this.server}/api/v2.1/search/`;
     let params = {
       query: query,
       project_uuid: projectUuid,
       workspace_id: workspaceID,
     };
-    if (connectionTypes) {
-      params.connection_types = connectionTypes;
-    }
     if (connectionIds) {
       params.connection_ids = connectionIds;
     }

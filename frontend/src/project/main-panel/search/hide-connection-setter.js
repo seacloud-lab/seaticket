@@ -12,11 +12,14 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState(() => {
     const cachedValue = localStorage.getItem('seaqa-hidden-connection-ids');
     const hiddenConnectionIDs = cachedValue ? JSON.parse(cachedValue) : [];
+    return hiddenConnectionIDs;
+  });
+
+  useEffect(() => {
     if (onConnectionIDsChange) {
       onConnectionIDsChange(hiddenConnectionIDs);
     }
-    return hiddenConnectionIDs;
-  });
+  }, []);
 
   const modifyHiddenConnections = useCallback((newHiddenConnectionIDs) => {
     setHiddenConnectionIDs(newHiddenConnectionIDs);
@@ -24,7 +27,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
     if (onConnectionIDsChange) {
       onConnectionIDsChange(newHiddenConnectionIDs);
     }
-  }, []);
+  }, [onConnectionIDsChange]);
 
   useEffect(() => {
     if (connections.length === 0) return;
