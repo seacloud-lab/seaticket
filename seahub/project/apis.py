@@ -215,11 +215,6 @@ class ProjectConnectionView(APIView):
             error_msg = 'config invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        connection_type = request.data.get('type', '')
-        if not ConnectionType.is_valid(connection_type):
-            error_msg = f'Type {connection_type} not support.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -239,13 +234,13 @@ class ProjectConnectionView(APIView):
         config.update(new_config)
         config = encrypt_config(config)
 
-        enable_modify = ProjectConnections.objects.enable_modify(project, connection_type, connection_id, name, config)
+        enable_modify = ProjectConnections.objects.enable_modify(project, project_connection.type, connection_id, name, config)
         if not enable_modify:
             error_msg = 'Please check input'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            record = ProjectConnections.objects.modify(username, project, connection_type, connection_id, name, config)
+            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name, config)
         except Exception as e:
             logger.error(f'modify {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
