@@ -156,7 +156,7 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         config = encrypt_config(json.loads(config))
-        enable_create = ProjectConnections.objects.enable_create(project, connection_type, name, config)
+        enable_create = ProjectConnections.objects.enable_create(project, connection_type, config)
         if not enable_create:
             error_msg = 'Name or config is not unique'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
