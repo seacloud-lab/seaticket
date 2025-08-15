@@ -24,7 +24,7 @@ from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
     TicketTags, TicketAssignees, ProjectTags, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    add_init_crawl_site_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
+    add_init_crawl_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
     replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE
@@ -168,12 +168,7 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if connection_type == ConnectionType.SITE.value:
-            params = {
-                'site_id': record.get('id', '')
-            }
-            add_init_crawl_site_task(params)
-        elif connection_type == ConnectionType.SEAFILE.value:
+        if connection_type == ConnectionType.SEAFILE.value:
             params = {
                 'connection_id': record.get('id', '')
             }
@@ -184,6 +179,12 @@ class ProjectConnectionsView(APIView):
             }
             add_github_issues_index_task(params)
 
+        else:
+            params = {
+                'connection_id': record.get('id', ''),
+                'type': connection_type,
+            }
+            add_init_crawl_task(params)
         return Response({'record': record}, status=status.HTTP_201_CREATED)
 
 

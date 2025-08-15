@@ -27,7 +27,7 @@ from seahub.settings import S3_FILE_BUCKET
 
 logger = logging.getLogger(__name__)
 
-ENCRYPT_KEYS = ['api_token', 'token', 'webhook_secret']
+ENCRYPT_KEYS = ['api_token', 'token', 'webhook_secret', 'api_key']
 
 
 def check_project_limit(workspace, request):
@@ -153,11 +153,11 @@ def decrypt_config(config):
     return config_clone
 
 
-def add_init_crawl_site_task(params):
+def add_init_crawl_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-init-crawl-site-task')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-init-crawl-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)

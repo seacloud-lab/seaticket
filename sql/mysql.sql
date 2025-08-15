@@ -534,3 +534,40 @@ CREATE TABLE `deleted_projects`  (
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `discourse_topics` (
+   `id` BIGINT NOT NULL AUTO_INCREMENT,
+   `topic_id` BIGINT NOT NULL,
+   `title` VARCHAR(255) NOT NULL,
+   `slug` VARCHAR(255),
+   `views` INT DEFAULT 0,
+   `category_id` INT,
+   `connection_id` INT NOT NULL,
+   `bumped_at` datetime(6) NOT NULL,
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `discourse_topics_topic_id_connection_id_unique` (`topic_id`, `connection_id`),
+   KEY `discourse_topics_connection_id_idx` (`connection_id`),
+   KEY `discourse_topics_topic_id_idx` (`topic_id`),
+   CONSTRAINT `discourse_topics_connection_id_fk_project_connection_id`
+     FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`)
+     ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `discourse_replies` (
+   `id` BIGINT NOT NULL AUTO_INCREMENT,
+   `topic_id` BIGINT NOT NULL,
+   `post_number` INT NOT NULL,
+   `content` TEXT NOT NULL,
+   `author` VARCHAR(255),
+   `connection_id` INT NOT NULL,
+   PRIMARY KEY (`id`),
+   KEY `discourse_replies_topic_id_idx` (`topic_id`),
+   KEY `discourse_replies_connection_id_idx` (`connection_id`),
+   UNIQUE KEY `discourse_replies_topic_id_connection_id_post_number_idx` (`topic_id`, `connection_id`, `post_number`),
+   CONSTRAINT `discourse_replies_topic_id_fk_discourse_topics_topic_id`
+     FOREIGN KEY (`topic_id`) REFERENCES `discourse_topics` (`topic_id`)
+     ON DELETE CASCADE,
+   CONSTRAINT `discourse_replies_connection_id_fk_project_connection_id`
+     FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`)
+     ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
