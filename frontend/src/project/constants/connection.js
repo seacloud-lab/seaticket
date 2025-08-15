@@ -17,7 +17,7 @@ export const CONNECTION_FIELD_TYPE = {
   PASSWORD: 'password',
   CONNECTION_NAME: 'connection_name',
   EMPTY: 'empty',
-  IS_ACTIVE: 'is_active',
+  ACTIVE_STATUS: 'active_status',
 };
 
 export const CONNECTION_FIELDS = {

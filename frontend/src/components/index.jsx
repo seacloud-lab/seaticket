@@ -11,7 +11,7 @@ import IconButton from './icon-button';
 import Loading from './loading';
 import ModalHeader from './modal-header';
 import ResizeBar from './resize-bar';
-import RoleStatusEditor from './role-status-editor';
+import ActiveStatusEditor from './active-status-editor';
 import SearchInput from './search-input';
 import toaster from './toaster';
 import Paginator from './paginator';
@@ -50,7 +50,7 @@ export {
   Loading,
   ModalHeader,
   ResizeBar,
-  RoleStatusEditor,
+  ActiveStatusEditor,
   SearchInput,
   toaster,
   Paginator,

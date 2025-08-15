@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RoleStatusEditor, toaster, CommonOperationConfirmationDialog, CustomizeDropdownMoreToggle } from '../../components';
+import { ActiveStatusEditor, toaster, CommonOperationConfirmationDialog, CustomizeDropdownMoreToggle } from '../../components';
 import { gettext, siteRoot, orgID, username } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { Utils } from '../../utils/utils';
@@ -161,7 +161,7 @@ class UserItem extends React.Component {
           </td>
           <td>
             {user.email === username ? translateStatus(currentStatus) : (
-              <RoleStatusEditor
+              <ActiveStatusEditor
                 isShowDropdownIcon={isOperationMenuShow}
                 currentOption={statusOption}
                 menuOptions={statusOptions}

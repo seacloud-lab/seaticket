@@ -4,7 +4,7 @@ import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, IconButton } from '../../../components';
+import { ActiveStatusEditor, toaster, EmptyTip, Loading, IconButton } from '../../../components';
 import SysAdminAddOrgDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-org-dialog';
 import ConfirmDeleteOrg from '../../../components/dialog/confirm-delete-org';
 import MainPanelTopbar from '../main-panel-topbar';
@@ -158,7 +158,7 @@ class Item extends Component {
           </td>
           <td><a href={`${siteRoot}sys/users/${encodeURIComponent(item.creator_email)}/`}>{item.creator_name}</a></td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={option}
               menuOptions={options}

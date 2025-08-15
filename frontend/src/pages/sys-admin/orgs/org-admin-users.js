@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
+import { ActiveStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '../../../components';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import OpMenu from './user-op-menu';
@@ -195,7 +195,7 @@ class Item extends Component {
           onMouseLeave={this.handleMouseLeave}>
           <td><a href={`${siteRoot}sys/users/${encodeURIComponent(item.email)}/`}>{item.name}</a></td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={currentOption}
               menuOptions={statusOptions}

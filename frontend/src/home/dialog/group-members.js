@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
-import { IconButton, RoleStatusEditor, toaster } from '../../components';
+import { IconButton, ActiveStatusEditor, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
 import { gettext, username } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
@@ -152,7 +152,7 @@ class Member extends React.PureComponent {
             <span className="group-admin">{this.translateRole(memberItem.role)}</span>
           )}
           {showRoleEditor && (
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={highlight}
               currentOption={option}
               menuOptions={options}

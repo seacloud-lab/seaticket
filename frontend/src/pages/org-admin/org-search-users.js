@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Col, Form, FormGroup, Input, Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, Paginator, CustomizeDropdownMoreToggle } from '../../components';
+import { ActiveStatusEditor, toaster, EmptyTip, Loading, Paginator, CustomizeDropdownMoreToggle } from '../../components';
 import MainPanelTopbar from './main-panel-topbar';
 import DeleteConfirmDialog from '../../components/dialog/orgadmin-dialog/delete-item-confirm-dialog';
 import OrgUserInfo from '../../models/org-user';
@@ -149,7 +149,7 @@ class Item extends Component {
             <a href={href} className="font-weight-normal">{user.name}</a>
           </td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOperationMenuShow}
               currentOption={statusOption}
               menuOptions={statusOptions}

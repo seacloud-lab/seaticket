@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
-import { RoleStatusEditor, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog, IconButton } from '../../../components';
+import { ActiveStatusEditor, EmptyTip, Loading, Paginator, CommonOperationConfirmationDialog, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import UserLink from '../user-link';
@@ -150,7 +150,7 @@ class Item extends Component {
             <UserLink email={item.creator_email} name={item.creator_name} />
           </td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={option}
               menuOptions={options}

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { RoleStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, IconButton } from '../../../components';
+import { ActiveStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, IconButton } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { loginUrl, gettext, mediaUrl } from '../../../constants';
 import SysAdminGroupAddMemberDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-group-add-member-dialog';
@@ -135,7 +135,7 @@ class Item extends Component {
         role = this.getRole();
       } else {
         role = (
-          <RoleStatusEditor
+          <ActiveStatusEditor
             isShowDropdownIcon={isOpIconShown}
             currentOption={option}
             menuOptions={options}
