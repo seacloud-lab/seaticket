@@ -2,6 +2,17 @@ import React from 'react';
 import './index.css';
 
 const TopBar = ({ children }) => {
+  if (!Array.isArray(children)) {
+    return (
+      <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
+        <div className="sea-qa-project-main-panel-header-left">
+          <div className="sea-qa-project-main-panel-header-name">
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
       <div className="sea-qa-project-main-panel-header-left">
