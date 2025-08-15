@@ -385,15 +385,18 @@ class ProjectConnectionsManager(models.Manager):
         record.save()
         return record.to_dict()
 
-    def modify(self, username, project, connection_type, connection_id, name, config, connection_status):
+    def modify(self, username, project, connection_type, connection_id, name, config, connection_is_active):
         """ modify record: if not record, create it
         """
 
         record = self.filter(project=project, id=connection_id).first()
         if not record:
             record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username)
-        elif connection_status is not None:
-            record.connection_status = connection_status
+        elif connection_is_active is not None:
+            if connection_is_active == 'true':
+                record.is_active = True
+            elif connection_is_active == 'false':
+                record.is_active = False
         else:
             record.name = name
             record.config = config
