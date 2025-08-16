@@ -536,6 +536,7 @@ CREATE TABLE `discourse_topics` (
    `category_id` INT,
    `connection_id` INT NOT NULL,
    `bumped_at` datetime(6) NOT NULL,
+   `need_index` TINYINT(1) NOT NULL DEFAULT 0,
    PRIMARY KEY (`id`),
    UNIQUE KEY `discourse_topics_topic_id_connection_id_unique` (`topic_id`, `connection_id`),
    KEY `discourse_topics_connection_id_idx` (`connection_id`),
