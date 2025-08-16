@@ -125,13 +125,3 @@
   line-height: 32px;
   padding-left: 0;
 }
-
-.sea-qa-project-ticket .sf-long-text-inline-editor-container {
-  min-height: 300px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-footer-btns {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}

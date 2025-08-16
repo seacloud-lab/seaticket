@@ -31,7 +31,7 @@ class LongTextEditorUtilities {
 
   getImageNameWithTimestamp = (file) => {
     var d = Date.now();
-    return 'image-' + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
+    return file.type.includes('image') ? 'image-' : 'file-' + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
   };
 
   uploadLocalImage = (file) => {

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { LongTextInlineEditor } from '@seafile/seafile-editor';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../../constants';
 import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
@@ -9,6 +9,8 @@ import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
+import UploadFilesButton from '../../components/upload-files-btn';
+
 import './index.css';
 
 const NewTicket = ({ editorAPI, projectUuid }) => {
@@ -47,6 +49,19 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     setContent(value);
   }, []);
 
+  const handleFiles = useCallback((files) => {
+    if (files.length === 0) return;
+    const eventBus = EventBus.getInstance();
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const isImage = /image/i.test(file.type);
+      const fileName = file.name;
+      editorAPI.uploadLocalImage(file).then(url => {
+        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_IMAGE, { title: fileName, url, isImage });
+      });
+    }
+  }, [editorAPI]);
+
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     const validTags = tags.map(tag => tag.id);
@@ -75,7 +90,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               </Label>
               <Input disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
-            <div className="sea-qa-project-ticket-content mb-0">
+            <div className="sea-qa-project-ticket-content mb-4">
               <Label>{gettext('Add a description')}</Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
@@ -86,13 +101,18 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
+                isImageUploadOnly={false}
+                isSupportMultipleFiles={true}
                 editorApi={editorAPI}
                 onSaveEditorValue={onDescriptionChange}
               />
             </div>
             <div className="sea-qa-project-ticket-footer">
-              <Button className="mr-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.ALL)}>{gettext('Cancel')}</Button>
-              <Button onClick={onSubmit} color="primary" disabled={!title || !title.trim() || isSubmitting}>{gettext('Submit')}</Button>
+              <UploadFilesButton onChange={handleFiles} />
+              <div className="ml-2">
+                <Button className="mr-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.ALL)}>{gettext('Cancel')}</Button>
+                <Button onClick={onSubmit} color="primary" disabled={!title || !title.trim() || isSubmitting}>{gettext('Submit')}</Button>
+              </div>
             </div>
           </div>
           <div className="sea-qa-project-ticket-other-settings">

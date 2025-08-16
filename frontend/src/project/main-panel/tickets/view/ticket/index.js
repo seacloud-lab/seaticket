@@ -15,6 +15,7 @@ import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { useTicketsPage } from '../../hooks';
+import UploadFilesButton from '../../components/upload-files-btn';
 
 import './index.css';
 
@@ -95,11 +96,26 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
     });
   }, [ticket]);
 
+  const handleFiles = useCallback((files) => {
+    if (files.length === 0) return;
+    const eventBus = EventBus.getInstance();
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const isImage = /image/i.test(file.type);
+      const fileName = file.name;
+      editorAPI.uploadLocalImage(file).then(url => {
+        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_IMAGE, { title: fileName, url, isImage });
+      });
+    }
+  }, [editorAPI]);
+
   const onSubmitReply = useCallback(() => {
     createReply(ticket.id, reply).then(() => {
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE);
-      setTimeout(() => containerRef.current.scrollTop = 10000000, 1);
+      setTimeout(() => {
+        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+      }, 1);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -153,7 +169,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
           <Reply reply={ticket} isFirst={true} />
           {replies.map(reply => {
             const { id } = reply;
-            return (<Reply reply={reply} key={id} />);
+            return (<Reply reply={reply} key={id} projectUuid={projectUuid} />);
           })}
           <Reply className="sea-qa-project-ticket-add-comment" reply={{ creator: username }} >
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
@@ -166,13 +182,18 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
               autoSave={false}
               saveDelay={20 * 1000}
               isCheckBrowser={true}
+              isImageUploadOnly={false}
+              isSupportMultipleFiles={true}
               editorApi={editorAPI}
               onSaveEditorValue={onReplyChange}
             />
           </Reply>
-          <div className="sea-qa-project-ticket-footer-btns">
-            <StatusToggleButton status={status} onChange={toggleStatus} />
-            <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
+          <div className="sea-qa-project-ticket-footer">
+            <UploadFilesButton onChange={handleFiles} />
+            <div className="ml-2">
+              <StatusToggleButton status={status} onChange={toggleStatus} />
+              <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
+            </div>
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">

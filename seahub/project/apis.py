@@ -417,6 +417,10 @@ class TicketsAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
+
         assignees = request.POST.get('assignees')
         if assignees is not None:
             try:
@@ -669,6 +673,9 @@ class TicketAPIView(APIView):
             if file_urls and not isinstance(file_urls, list):
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            link_urls = content_dict.get('links')
+            if link_urls and isinstance(link_urls, list):
+                file_urls = (file_urls or []) + link_urls
 
         ticket_status = request.data.get('status')
         if ticket_status is not None:
@@ -952,6 +959,9 @@ class TicketRepliesAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1050,6 +1060,9 @@ class TicketReplyAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)

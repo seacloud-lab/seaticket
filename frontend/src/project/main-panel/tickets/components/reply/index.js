@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import { CustomizeMarkdownViewer } from '../../../../../components';
 import { gettext } from '../../../../../constants';
+import { useCollaborators } from '@/sea-metadata';
+import { downloadFile } from '@/utils/download';
 
 import './index.css';
-import { useCollaborators } from '@/sea-metadata';
 
-const Reply = ({ isShowStatus = false, reply, className, children }) => {
+const Reply = ({ isShowStatus = false, reply, projectUuid, className, children }) => {
 
   const [creator, setCreator] = useState({});
   const { getCollaborator, queryUser } = useCollaborators();
+
+  const onLinkClick = useCallback((link) => {
+    if (link.includes(`/project/${projectUuid}/`)) {
+      downloadFile(link);
+      return;
+    }
+    window.open(link, '_blank');
+  }, [projectUuid]);
 
   useEffect(() => {
     const creator = getCollaborator(reply.creator);
@@ -45,7 +54,7 @@ const Reply = ({ isShowStatus = false, reply, className, children }) => {
         </div>
         <div className="sea-qa-project-ticket-reply-content">
           {children && children[1] ? children[1] : (
-            <CustomizeMarkdownViewer value={content} showTOC={false} />
+            <CustomizeMarkdownViewer value={content} showTOC={false} onLinkClick={onLinkClick} />
           )}
         </div>
       </div>
