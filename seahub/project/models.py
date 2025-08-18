@@ -345,8 +345,15 @@ class ProjectConnectionsManager(models.Manager):
     def create(self, username, project, connection_type, name, config):
         """ create record
         """
+        status = {
+            'last_indexed_count': 0,
+            'last_index_status': 'pending',
+            'total_records': 0,
+            'last_sync_count': 0,
+            'last_sync_status': 'pending'
+        }
 
-        record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status='pending')
+        record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status=json.dumps(status))
         record.save()
         return record.to_dict()
 
@@ -356,7 +363,7 @@ class ProjectConnectionsManager(models.Manager):
 
         record = self.filter(project=project, id=connection_id).first()
         if not record:
-            record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status='pending')
+            record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username)
         else:
             record.name = name
             record.config = config
@@ -370,7 +377,7 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(project=project, type=connection_type)
         return records
 
-    def is_valid(self, connection_type, records, name, config):
+    def is_valid(self, connection_type, records, config):
         """ check config is valid
         """
 
@@ -393,7 +400,7 @@ class ProjectConnectionsManager(models.Manager):
 
         return flag
 
-    def enable_create(self, project, connection_type, name, config):
+    def enable_create(self, project, connection_type, config):
         """ check enable create
         """
 
@@ -401,7 +408,7 @@ class ProjectConnectionsManager(models.Manager):
             return False
 
         records = self.filter(project=project, type=connection_type)
-        return self.is_valid(connection_type, records, name, config)
+        return self.is_valid(connection_type, records, config)
 
     def enable_modify(self, project, connection_type, connection_id, name, config):
         """ check enable modify
@@ -413,7 +420,7 @@ class ProjectConnectionsManager(models.Manager):
         connection_id = int(connection_id)
         records = self.filter(project=project, type=connection_type)
         records = [record for record in records if record.id != connection_id]
-        return self.is_valid(connection_type, records, name, config)
+        return self.is_valid(connection_type, records, config)
 
 
 class ProjectConnections(models.Model):
@@ -427,7 +434,7 @@ class ProjectConnections(models.Model):
     modifier = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(null=True)
-    status = models.CharField(max_length=20)
+    status = models.TextField()
     indexed_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
 
