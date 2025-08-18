@@ -42,10 +42,12 @@
   flex-direction: column;
 }
 
-.sea-qa-project-new-ticket .sea-qa-project-ticket-footer {
-  width: 100%;
-  padding: 16px 0;
+.sea-qa-project-new-ticket .sea-qa-project-ticket-content {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.sea-qa-project-new-ticket .sea-qa-project-ticket-footer {
+  padding-left: 0;
 }

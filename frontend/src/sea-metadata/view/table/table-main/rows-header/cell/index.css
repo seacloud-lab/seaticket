@@ -2,6 +2,7 @@
   color: #aaa;
   height: 14px;
   width: 14px;
+  margin-top: -2px;
 }
 
 .sea-metadata-row-header-cell .sea-metadata-table-cell.column.name-column {

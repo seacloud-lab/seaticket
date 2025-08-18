@@ -5,6 +5,7 @@ from enum import Enum
 ORG_STORAGE_SIZE_PREFIX = 'ORG_STORAGE_SIZE_'
 ORG_STORAGE_SIZE_CACHE_TIMEOUT = 60 * 60 * 24
 
+IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
 # connection types
 class ConnectionType(Enum):

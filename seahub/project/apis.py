@@ -27,7 +27,7 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
     add_init_crawl_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
     replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task
-from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE
+from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE, IMAGE_EXTS
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -441,6 +441,10 @@ class TicketsAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
+
         assignees = request.POST.get('assignees')
         if assignees is not None:
             try:
@@ -693,6 +697,9 @@ class TicketAPIView(APIView):
             if file_urls and not isinstance(file_urls, list):
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            link_urls = content_dict.get('links')
+            if link_urls and isinstance(link_urls, list):
+                file_urls = (file_urls or []) + link_urls
 
         ticket_status = request.data.get('status')
         if ticket_status is not None:
@@ -976,6 +983,9 @@ class TicketRepliesAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1074,6 +1084,9 @@ class TicketReplyAPIView(APIView):
         if file_urls and not isinstance(file_urls, list):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        link_urls = content_dict.get('links')
+        if link_urls and isinstance(link_urls, list):
+            file_urls = (file_urls or []) + link_urls
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1434,8 +1447,11 @@ class ProjectUploadFileAPIView(APIView):
             error_msg = 'file not found.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if file.size > 1024 * 1024 * settings.PROJECT_FILE_SIZE_MAX:
-            error_msg = 'file too large.'
+        if file.name.split('.')[-1] in IMAGE_EXTS and file.size > 1024 * 1024 * settings.PROJECT_IMAGE_MAX_SIZE:
+            error_msg = 'Image size cannot exceed %s Mb.' % settings.PROJECT_IMAGE_MAX_SIZE
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if file.size > 1024 * 1024 * settings.PROJECT_FILE_MAX_SIZE:
+            error_msg = 'File size cannot exceed %s Mb.' % settings.PROJECT_FILE_MAX_SIZE
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check

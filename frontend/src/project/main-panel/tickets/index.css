@@ -26,3 +26,14 @@
   min-height: 300px;
 }
 
+.sf-long-text-inline-editor-container .sf-slate-editor-content .article,
+.sf-long-text-inline-editor-container .sf-slate-editor-content .article div:first-child {
+  height: 100%;
+}
+
+.sea-qa-project-ticket-footer {
+  display: flex;
+  align-items: center;
+  padding-left: 56px;
+  justify-content: space-between;
+}

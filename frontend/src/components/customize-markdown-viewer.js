@@ -47,8 +47,15 @@ class CustomizeMarkdownViewer extends React.PureComponent {
     if (this.isWindowsWechat) {
       return (<div className="long-text-container article" dangerouslySetInnerHTML={{ __html: this.state.innerHtml }}></div>);
     }
-    const { showTOC, value, beforeRenderCallback } = this.props;
-    return <MarkdownViewer value={value} isShowOutline={showTOC} beforeRenderCallback={beforeRenderCallback}/>;
+    const { showTOC, value, beforeRenderCallback, onLinkClick } = this.props;
+    return (
+      <MarkdownViewer
+        value={value}
+        isShowOutline={showTOC}
+        beforeRenderCallback={beforeRenderCallback}
+        onLinkClick={onLinkClick}
+      />
+    );
   }
 }
 

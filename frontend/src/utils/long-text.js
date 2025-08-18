@@ -1,4 +1,6 @@
 import { LONG_TEXT_LENGTH_LIMIT } from '../constants';
+import { Utils } from './utils';
+import toaster from '@/components/toaster';
 
 
 export const isLongTextValueExceedLimit = (value) => {
@@ -31,13 +33,17 @@ class LongTextEditorUtilities {
 
   getImageNameWithTimestamp = (file) => {
     var d = Date.now();
-    return 'image-' + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
+    return (file.type.includes('image') ? 'image-' : 'file-') + d.toString() + file.name.slice(file.name.lastIndexOf('.'));
   };
 
   uploadLocalImage = (file) => {
     const newFile = new File([file], this.getImageNameWithTimestamp(file), { type: file.type });
     return this.api.uploadFile(newFile).then((res) => {
       return this._getImageURL(res.data.url);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      throw error;
     });
   };
 
