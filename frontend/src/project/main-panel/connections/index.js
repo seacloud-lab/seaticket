@@ -239,6 +239,7 @@ const Connections = ({ title }) => {
       )}
       {isShowStatusDialog && (
         <ConnectionStatusDialog
+          projectUuid={projectUuid}
           record={activeRecordRef.current}
           onToggle={closeStatusDialog}
         />
