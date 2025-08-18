@@ -436,7 +436,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `updated_at` datetime(6) NULL,
   `indexed_at` datetime(6) NULL,
   `project_id` int(11) NOT NULL,
-  `status` varchar(20) NOT NULL,
+  `status` longtext NOT NULL,
   `deleted` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
