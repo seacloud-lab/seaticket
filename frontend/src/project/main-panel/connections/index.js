@@ -8,7 +8,7 @@ import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, Empt
 import TopBar from '../top-bar';
 import NewConnectionDialog from './new-connection-dialog';
 import ModifyConnectionDialog from './modify-connection-dialog';
-import ConnectionStatusDialog from './show-connection-status-dialog';
+import ConnectionStatusDialog from './connection-status-dialog';
 import createFormatter from './cell-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
 

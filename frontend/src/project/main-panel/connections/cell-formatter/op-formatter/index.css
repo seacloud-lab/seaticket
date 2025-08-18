@@ -9,3 +9,10 @@
   align-items: center;
   justify-content: center;
 }
+
+.sea-custom-table .sea-custom-table-row .sea-custom-table-cell .dropdown-item {
+  font-size: 14px;
+  height: 32px;
+  padding: 0.25rem 1rem;
+  line-height: 1.5;
+}
