@@ -10,7 +10,7 @@ import eventBus from '../utils/event-bus';
 
 import './index.css';
 
-const { projectName } = window.app.pageOptions;
+const { projectName, workspaceID } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
@@ -49,11 +49,8 @@ const Project = () => {
   useEffect(() => {
     if (!activeBar?.key) return;
     if (isLoading) return;
-    const { pathname, origin, search } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
-    let url = origin + newPathname + activeBar.key + '/';
+    const { origin, search } = location;
+    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${activeBar.key}/`;
     if (activeBar.key === BAR_TYPE.TICKET) {
       url = url + (search || '');
     }
