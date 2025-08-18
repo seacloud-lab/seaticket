@@ -8,10 +8,12 @@ import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, Empt
 import TopBar from '../top-bar';
 import NewConnectionDialog from './new-connection-dialog';
 import ModifyConnectionDialog from './modify-connection-dialog';
+import ConnectionStatusDialog from './show-connection-status-dialog';
 import createFormatter from './cell-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
 
 import './index.css';
+
 
 const { projectUuid } = window.app.pageOptions;
 
@@ -20,6 +22,7 @@ const Connections = ({ title }) => {
   const [records, setRecords] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
+  const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
 
   const pageRef = useRef(1);
   const pageCountRef = useRef(Math.max(parseInt(window.innerHeight / 41) + 1, 100));
@@ -126,6 +129,15 @@ const Connections = ({ title }) => {
     setIsShowRecordDialog(true);
   }, []);
 
+  const openStatusDialog = useCallback((record) => {
+    activeRecordRef.current = record;
+    setIsShowStatusDialog(true);
+  }, []);
+
+  const closeStatusDialog = useCallback(() => {
+    setIsShowStatusDialog(false);
+  }, []);
+
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
@@ -195,6 +207,7 @@ const Connections = ({ title }) => {
         loadMore={loadMore}
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
+        showStatus={openStatusDialog}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>
@@ -222,6 +235,12 @@ const Connections = ({ title }) => {
           executeOperation={deleteConnectionRecord}
           confirmBtnText={gettext('Delete')}
           toggleDialog={closeDeleteConfirmDialog}
+        />
+      )}
+      {isShowStatusDialog && (
+        <ConnectionStatusDialog
+          record={activeRecordRef.current}
+          onToggle={closeStatusDialog}
         />
       )}
     </>
