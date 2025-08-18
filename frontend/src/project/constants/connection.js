@@ -157,7 +157,7 @@ export const CONNECTION_TYPES = [
     name: gettext('GitHub'),
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
-    icon: 'discourse-forums',
+    icon: 'discourse-logo',
     name: gettext('Discourse forums'),
   }, {
     type: CONNECTION_TYPE.SITE,
