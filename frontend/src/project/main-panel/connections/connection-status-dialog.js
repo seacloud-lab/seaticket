@@ -1,11 +1,34 @@
-import React from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '../../../constants';
-import { ModalHeader } from '../../../components';
+import { CenteredLoading, ModalHeader, toaster } from '../../../components';
+import { connectionsAPI } from '../../api';
+import { Utils } from '../../../utils/utils';
 
-const ConnectionStatusDialog = ({ record, onToggle }) => {
-  const status = record.status;
+
+const ConnectionStatusDialog = ({ projectUuid, record, onToggle }) => {
+  const [connection_record, setRecord] = useState({});
+  const [isLoading, setLoading] = useState(true);
+
+  const getConnectionRecord = useCallback(() => {
+    connectionsAPI.getConnection(projectUuid, record.id).then(res => {
+      setRecord(res.data.record)
+      setLoading(false)
+
+    }).catch((error) => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [record, isLoading]);
+
+  useEffect(() => {
+    getConnectionRecord()
+  }, []);
+
+  if (isLoading) return (<CenteredLoading />);
+  const status = JSON.parse(connection_record.status);
+
   return (
     <Modal isOpen={true} toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{gettext('Connection status')}</ModalHeader>
@@ -21,6 +44,7 @@ const ConnectionStatusDialog = ({ record, onToggle }) => {
 };
 
 ConnectionStatusDialog.propTypes = {
+  projectUuid: PropTypes.string,
   record: PropTypes.object,
   onToggle: PropTypes.func.isRequired
 };

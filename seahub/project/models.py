@@ -342,6 +342,12 @@ class ProjectConnectionsManager(models.Manager):
     """ Project connections manager
     """
 
+    def get_connection_by_id(self, connection_id):
+        try:
+            return self.get(id=connection_id, deleted=False)
+        except ProjectConnections.DoesNotExist:
+            return None
+
     def create(self, username, project, connection_type, name, config):
         """ create record
         """
