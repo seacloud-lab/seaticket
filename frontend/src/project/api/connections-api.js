@@ -90,6 +90,11 @@ class ConnectionsAPI {
     return this.req.delete(url);
   }
 
+  getConnection(projectUuid, connectionID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    return this.req.get(url);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();
