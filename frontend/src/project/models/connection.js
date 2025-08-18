@@ -11,7 +11,7 @@ class ConnectionRecord {
     this.updated_at = object.updated_at || '';
     this.indexed_at = object.indexed_at || '';
     this.project_id = object.project_id || '';
-    this.status = object.status || '';
+    this.status = JSON.parse(object.status || '{}') || {};
 
     // update
     if (this.ctime) {

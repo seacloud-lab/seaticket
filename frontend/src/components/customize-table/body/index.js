@@ -5,7 +5,7 @@ import Loading from '../../loading';
 
 import './index.css';
 
-const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete, onModify }) => {
+const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete, onModify, showStatus }) => {
 
   const onScroll = useCallback((event) => {
     if (isLoading) return;
@@ -37,7 +37,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
             {columns.map(column => {
               const { key, width, is_custom, type, formatter } = column;
               const value = is_custom ? row['config']?.[key] : row[key];
-              const valueFormatter = isValidElement(formatter) && cloneElement(formatter, { value, column, row, onModify, onDelete });
+              const valueFormatter = isValidElement(formatter) && cloneElement(formatter, { value, column, row, onModify, onDelete, showStatus });
               return (
                 <div className={`sea-custom-table-cell sea-custom-table-${type}-cell`} key={key} style={{ width }} title={value}>
                   {valueFormatter}
