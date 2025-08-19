@@ -28,6 +28,21 @@ const Connections = ({ title }) => {
   const pageCountRef = useRef(Math.max(parseInt(window.innerHeight / 41) + 1, 100));
   const hasMoreRef = useRef(true);
 
+  const [detailRecords, setDetailRecords] = useState([]);
+  const [showDetail, setShowDetail] = useState(false);
+  const listGithubIssuesRecord = useCallback((record) => {
+    setLoading(true);
+    connectionsAPI.listGithubIssuesRecord(projectUuid, pageRef.current, pageCountRef.current, record.id)
+      .then(res => {
+        setDetailRecords(res.data); 
+        setLoading(false);
+        setShowDetail(true);
+      })
+      .catch(error => {
+        toaster.danger(Utils.getErrorMsg(error));
+      });
+  }, []);
+
   const activeRecordRef = useRef(null);
 
   const columns = useMemo(() => {
@@ -39,10 +54,10 @@ const Connections = ({ title }) => {
     ].map(column => (
       {
         ...column,
-        formatter: createFormatter(column.type)
+        formatter: createFormatter(column.type, { onClick: listGithubIssuesRecord } )
       }
     ));
-  }, []);
+  }, [listGithubIssuesRecord]);
   const btns = useMemo(() => {
     return [
       { name: (
@@ -212,6 +227,32 @@ const Connections = ({ title }) => {
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>
+
+      {showDetail && detailRecords.length > 0 && (
+      <div className="mt-4">
+        <h5>{gettext('Connection Detail')}</h5>
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Created Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {detailRecords.map((item, idx) => (
+              <tr key={idx}>
+                
+                <td>{item.title}</td>
+                <td>{item.author}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+
       {isShowRecordDialog && (
         <>
           {activeRecordRef.current ?

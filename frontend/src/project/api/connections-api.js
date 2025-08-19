@@ -95,6 +95,15 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  listGithubIssuesRecord(projectUuid, page, perPage, connectionID){
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    let params = {
+      page: page,
+      per_page: perPage,
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

@@ -22,7 +22,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Workspaces, Projects, ProjectConnections, Tickets, TicketReplies, \
-    TicketTags, TicketAssignees, ProjectTags, TicketParticipants
+    TicketTags, TicketAssignees, ProjectTags, TicketParticipants, GitHubIssuesRecord
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
@@ -192,6 +192,43 @@ class ProjectConnectionView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id):
+        """get GitHub Issues records
+        """
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            current_page = int(request.GET.get('page', '1'))
+            per_page = int(request.GET.get('per_page', '100'))
+        except ValueError:
+            current_page = 1
+            per_page = 100
+
+        start = (current_page - 1) * per_page
+        end = start + per_page
+
+        records = GitHubIssuesRecord.objects.filter(connection_id=connection_id,deleted=False)[start:end]
+        records = [record.to_dict() for record in records]
+
+        return Response(records, status=status.HTTP_200_OK)
+
+        return Response({'records': records}, status=status.HTTP_200_OK)
 
     def put(self, request, project_uuid, connection_id):
         """ modify connection
