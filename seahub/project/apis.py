@@ -226,8 +226,6 @@ class ProjectConnectionView(APIView):
         records = GitHubIssuesRecord.objects.filter(connection_id=connection_id,deleted=False)[start:end]
         records = [record.to_dict() for record in records]
 
-        return Response(records, status=status.HTTP_200_OK)
-
         return Response({'records': records}, status=status.HTTP_200_OK)
 
     def put(self, request, project_uuid, connection_id):

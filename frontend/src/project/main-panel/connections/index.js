@@ -34,7 +34,7 @@ const Connections = ({ title }) => {
     setLoading(true);
     connectionsAPI.listGithubIssuesRecord(projectUuid, pageRef.current, pageCountRef.current, record.id)
       .then(res => {
-        setDetailRecords(res.data); 
+        setDetailRecords(res.data.records); 
         setLoading(false);
         setShowDetail(true);
       })
