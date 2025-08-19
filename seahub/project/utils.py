@@ -163,6 +163,15 @@ def add_init_crawl_task(params):
     return json.loads(resp.content)
 
 
+def manual_crawl_site(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/manual-crawl-site')
+    resp = requests.post(url, json=params, headers=headers)
+    return json.loads(resp.content)
+
+
 def add_index_seafile_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')

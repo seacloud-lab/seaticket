@@ -26,7 +26,9 @@ from seahub.project.models import Workspaces, Projects, ProjectConnections, Tick
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     add_init_crawl_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
-    replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task
+    replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task, \
+    manual_crawl_site
+
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE, IMAGE_EXTS
 
 
@@ -306,6 +308,64 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
+
+
+class ProjectConnectionCrawlView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request, project_uuid, connection_id):
+        """trigger manual crawl for a connection
+        """
+        # role permission check
+        if not request.user.permissions.can_add_project():
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            project_connection = ProjectConnections.objects.get(id=connection_id, project=project, deleted=False)
+        except ProjectConnections.DoesNotExist:
+            error_msg = f'Connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(f'get connection {connection_id} error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        connection_type = project_connection.type
+        if connection_type != ConnectionType.SITE.value:
+            error_msg = 'Only supports manual crawling of sites'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            params = { 'connection_id': project_connection.id }
+            res = manual_crawl_site(params)
+            success = res.get('success')
+            if not success:
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, res.get('error_msg'))
+        except Exception as e:
+            logger.error(f'trigger crawl for connection {connection_id} error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 class TicketsAPIView(APIView):

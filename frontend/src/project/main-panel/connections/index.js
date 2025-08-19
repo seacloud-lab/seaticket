@@ -139,6 +139,17 @@ const Connections = ({ title }) => {
     setIsShowStatusDialog(false);
   }, []);
 
+  const onManualCrawl = useCallback((record) => {
+    const id = record?.id || activeRecordRef.current?.id;
+    if (!id) return;
+    connectionsAPI.triggerCrawl(projectUuid, id).then(() => {
+      toaster.success(gettext('Crawl task queued'));
+    }).catch((error) => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, []);
+
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
@@ -209,6 +220,7 @@ const Connections = ({ title }) => {
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
         showStatus={openStatusDialog}
+        onManualCrawl={onManualCrawl}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>
