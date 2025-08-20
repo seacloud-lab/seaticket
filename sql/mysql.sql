@@ -603,3 +603,17 @@ CREATE TABLE `github_issues` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `issue_unique_key` (`issue_id`,`connection_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `org_saml_config` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `org_id` int(11) NOT NULL,
+  `metadata_url` longtext NOT NULL,
+  `domain` varchar(255) DEFAULT NULL,
+  `dns_txt` varchar(64) DEFAULT NULL,
+  `domain_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `idp_certificate` longtext DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_id` (`org_id`),
+  UNIQUE KEY `domain` (`domain`),
+  KEY `domain_verified` (`domain_verified`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

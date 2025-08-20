@@ -64,8 +64,8 @@ class User(APIView):
         info['contact_email'] = profile.contact_email if profile and profile.contact_email else ''
         info['login_id'] = profile.login_id if profile else ''
         info['list_in_address_book'] = profile.list_in_address_book if profile else False
-        info['bind_phone'] = profile.phone or ''
-        info['sms_2fa'] = profile.sms_2fa
+        info['bind_phone'] = profile.phone if profile else ''
+        info['sms_2fa'] = profile.sms_2fa if profile else False
 
         return info
 

@@ -120,62 +120,62 @@ class UserManager(object):
 
         return self.get(email=virtual_id)
 
-    # def create_oauth_user(self, email=None, password=None, is_staff=False, is_active=False):
-    #     """
-    #     Creates and saves an oauth User which can without email.
-    #     """
-    #     virtual_id = gen_user_virtual_id()
-    #
-    #     user = User(email=virtual_id)
-    #     user.is_staff = is_staff
-    #     user.is_active = is_active
-    #     user.set_password(password)
-    #     if user.save() == 0:
-    #
-    #         # Set email as contact email.
-    #         if email:
-    #             email = email.lower()
-    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email)
-    #
-    #     return self.get(email=virtual_id)
-    #
-    # def create_ldap_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
-    #     """
-    #     Creates and saves an ldap User which can without email.
-    #     """
-    #     virtual_id = gen_user_virtual_id()
-    #
-    #     user = User(email=virtual_id)
-    #     user.is_staff = is_staff
-    #     user.is_active = is_active
-    #     user.set_password(password)
-    #     if user.save() == 0:
-    #
-    #         # Set email as contact email.
-    #         if email:
-    #             email = email.lower()
-    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
-    #
-    #     return self.get(email=virtual_id)
-    #
-    # def create_saml_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
-    #     """
-    #     Creates and saves an saml User which can without email.
-    #     """
-    #     virtual_id = gen_user_virtual_id()
-    #
-    #     user = User(email=virtual_id)
-    #     user.is_staff = is_staff
-    #     user.is_active = is_active
-    #     user.set_password(password)
-    #     if user.save() == 0:
-    #
-    #         # Set email as contact email.
-    #         if email:
-    #             email = email.lower()
-    #         Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
-    #
-    #     return self.get(email=virtual_id)
+    def create_oauth_user(self, email=None, password=None, is_staff=False, is_active=False):
+        """
+        Creates and saves an oauth User which can without email.
+        """
+        virtual_id = gen_user_virtual_id()
+    
+        user = User(email=virtual_id)
+        user.is_staff = is_staff
+        user.is_active = is_active
+        user.set_password(password)
+        if user.save() == 0:
+    
+            # Set email as contact email.
+            if email:
+                email = email.lower()
+            Profile.objects.add_or_update(username=virtual_id, contact_email=email)
+    
+        return self.get(email=virtual_id)
+    
+    def create_ldap_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
+        """
+        Creates and saves an ldap User which can without email.
+        """
+        virtual_id = gen_user_virtual_id()
+    
+        user = User(email=virtual_id)
+        user.is_staff = is_staff
+        user.is_active = is_active
+        user.set_password(password)
+        if user.save() == 0:
+    
+            # Set email as contact email.
+            if email:
+                email = email.lower()
+            Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
+    
+        return self.get(email=virtual_id)
+
+    def create_saml_user(self, email=None, password=None, nickname=None, is_staff=False, is_active=False):
+        """
+        Creates and saves an saml User which can without email.
+        """
+        virtual_id = gen_user_virtual_id()
+    
+        user = User(email=virtual_id)
+        user.is_staff = is_staff
+        user.is_active = is_active
+        user.set_password(password)
+        if user.save() == 0:
+    
+            # Set email as contact email.
+            if email:
+                email = email.lower()
+            Profile.objects.add_or_update(username=virtual_id, contact_email=email, nickname=nickname)
+    
+        return self.get(email=virtual_id)
 
     def update_role(self, email, role):
         """

@@ -225,3 +225,18 @@ if getattr(settings, 'MULTI_TENANCY', False):
         re_path(r'^org-work-weixin/', include('seahub.org_work_weixin.urls')),
         re_path(r'^org-dingtalk/', include('seahub.org_dingtalk.urls')),
     ]
+
+if getattr(settings, 'ENABLE_MULTI_SAML', False):
+    from seahub.saml.views import *
+    urlpatterns += [
+        re_path(r'^multi_saml_sso/$', multi_saml_sso, name='multi_saml_sso'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/login/$', login, name='org_saml_login'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/acs/$', acs, name='org_saml_acs'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/metadata/$', metadata, name='org_saml_metadata'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/connect/$', saml_connect, name='org_saml_connect'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/disconnect/$', saml_disconnect, name='org_saml_disconnect'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/ls/$', SamlLogoutView.as_view(), name='org_saml_ls'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/ls/post/$', SamlLogoutView.as_view(), name='org_saml_ls_post'),
+        re_path(r'^org/custom/(?P<org_id>\d+)/saml/', include('djangosaml2.urls')),
+        re_path(r'^saml/complete/$', saml_complete, name='saml_complete'),
+    ]

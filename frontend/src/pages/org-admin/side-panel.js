@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import Logo from '../../components/logo';
-import { gettext, siteRoot } from '../../constants';
+import { gettext, siteRoot, enableMultiSAML, canUseSAML } from '../../constants';
 import { Icon } from '../../components';
 
 
@@ -65,6 +65,14 @@ class SidePanel extends React.Component {
                     <span className="nav-text">{gettext('Groups')}</span>
                   </Link>
                 </li>
+                {enableMultiSAML && canUseSAML &&
+                  <li className="nav-item">
+                    <Link className={`nav-link ellipsis ${this.getActiveClass('SAML config')}`} to={siteRoot + 'org/saml-config/'} onClick={() => this.tabItemClick('SAML config')} >
+                      <Icon symbol="settings" />
+                      <span className="nav-text">{gettext('SAML config')}</span>
+                    </Link>
+                  </li>
+                }
               </ul>
             </div>
           </div>

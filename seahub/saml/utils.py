@@ -4,7 +4,7 @@ import copy
 import logging
 from os import path
 
-from seahub.constants import SAML_ATTRIBUTE_MAP, SAML_CERTS_DIR
+from seahub.constants import SAML_ATTRIBUTE_MAPPING, SAML_CERTS_DIR
 
 import saml2.xmldsig
 from saml2 import BINDING_HTTP_REDIRECT, BINDING_HTTP_POST, NAMEID_FORMAT_EMAILADDRESS
@@ -23,7 +23,7 @@ if ENABLE_SAML or ENABLE_MULTI_SAML:
     REMOTE_METADATA_URL = getattr(settings, 'SAML_REMOTE_METADATA_URL', '')
     XMLSEC_BINARY_PATH = getattr(settings, 'SAML_XMLSEC_BINARY_PATH', '/usr/bin/xmlsec1')
     CERTS_DIR = getattr(settings, 'SAML_CERTS_DIR', SAML_CERTS_DIR)
-    SAML_ATTRIBUTE_MAP = getattr(settings, 'SAML_ATTRIBUTE_MAP', SAML_ATTRIBUTE_MAP)
+    SAML_ATTRIBUTE_MAPPING = getattr(settings, 'SAML_ATTRIBUTE_MAPPING', SAML_ATTRIBUTE_MAPPING)
     SAML_PROVIDER_IDENTIFIER = getattr(settings, 'SAML_PROVIDER_IDENTIFIER', 'saml')
 
 
@@ -34,11 +34,11 @@ def settings_check(func):
             logger.error('Feature not enabled.')
             error = True
         else:
-            if not XMLSEC_BINARY_PATH or not CERTS_DIR or not SAML_ATTRIBUTE_MAP or not SAML_PROVIDER_IDENTIFIER:
+            if not XMLSEC_BINARY_PATH or not CERTS_DIR or not SAML_ATTRIBUTE_MAPPING or not SAML_PROVIDER_IDENTIFIER:
                 logger.error('SAML login relevant settings invalid.')
                 logger.error('SAML_XMLSEC_BINARY_PATH: %s' % XMLSEC_BINARY_PATH)
                 logger.error('SAML_CERTS_DIR: %s' % CERTS_DIR)
-                logger.error('SAML_ATTRIBUTE_MAP: %s' % SAML_ATTRIBUTE_MAP)
+                logger.error('SAML_ATTRIBUTE_MAPPING: %s' % SAML_ATTRIBUTE_MAPPING)
                 logger.error('SAML_PROVIDER_IDENTIFIER: %s' % SAML_PROVIDER_IDENTIFIER)
                 error = True
             if ENABLE_SAML and not REMOTE_METADATA_URL:

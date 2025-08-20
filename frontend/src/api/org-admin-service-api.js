@@ -442,6 +442,34 @@ class OrgAdminServiceApi {
     });
   }
 
+  orgAdminGetSamlConfig(orgID) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/saml-config/';
+    return this.req.get(url);
+  }
+
+  orgAdminUpdateSamlConfig(orgID, metadataUrl, domain, idpCertificate) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/saml-config/';
+    let formData = new FormData();
+    if (metadataUrl) {
+      formData.append('metadata_url', metadataUrl);
+    }
+    if (domain) {
+      formData.append('domain', domain);
+    }
+    if (idpCertificate) {
+      formData.append('idp_certificate', idpCertificate);
+    }
+    return this.req.put(url, formData);
+  }
+
+  orgAdminVerifyDomain(orgID, domain) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/verify-domain/';
+    let data = {
+      domain: domain
+    };
+    return this.req.put(url, data);
+  }
+
 }
 
 const orgAdminServiceApi = new OrgAdminServiceApi();

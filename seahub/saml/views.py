@@ -4,7 +4,7 @@ from urllib.parse import unquote, parse_qs, urlparse
 
 from djangosaml2.views import LogoutView
 
-from seahub.constants import SAML_ATTRIBUTE_MAP
+from seahub.constants import SAML_ATTRIBUTE_MAPPING
 
 from saml2 import BINDING_HTTP_POST
 from saml2.metadata import entity_descriptor
@@ -44,7 +44,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-SAML_ATTRIBUTE_MAP = getattr(settings, 'SAML_ATTRIBUTE_MAP', SAML_ATTRIBUTE_MAP)
+SAML_ATTRIBUTE_MAPPING = getattr(settings, 'SAML_ATTRIBUTE_MAPPING', SAML_ATTRIBUTE_MAPPING)
 SAML_PROVIDER_IDENTIFIER = getattr(settings, 'SAML_PROVIDER_IDENTIFIER', 'saml')
 
 
@@ -57,20 +57,21 @@ def get_org_admins(org):
 
 
 def parse_user_identity(user_identity):
-    uid = contact_email = nickname = id_in_org = user_role = None
-    for saml_key, dtable_key in SAML_ATTRIBUTE_MAP.items():
-        if dtable_key == 'uid':
-            uid = user_identity.get(saml_key, [''])[0]
-        if dtable_key == 'contact_email':
-            contact_email = user_identity.get(saml_key, [''])[0]
-        if dtable_key == 'name':
-            nickname = user_identity.get(saml_key, [''])[0]
-        if dtable_key == 'employee_id':
-            id_in_org = user_identity.get(saml_key, [''])[0]
-        if dtable_key == 'user_role':
-            user_role = user_identity.get(saml_key, [''])[0]
+    contact_email = nickname = id_in_org = user_role = None
+    parse_result = {}
+    for saml_attr, django_attrs in SAML_ATTRIBUTE_MAPPING.items():
+        try:
+            for attr in django_attrs:
+                parse_result[attr] = user_identity[saml_attr][0]
+        except KeyError:
+            pass
 
-    return uid, contact_email, nickname, id_in_org, user_role
+    contact_email = parse_result.get('contact_email', '')
+    nickname = parse_result.get('display_name', '')
+    id_in_org = parse_result.get('id_in_org', '')
+    user_role = parse_result.get('user_role', '')
+
+    return contact_email, nickname, id_in_org, user_role
 
 
 def update_user_profile(username, nickname, contact_email, org_id, id_in_org, user_role):
@@ -269,6 +270,15 @@ def acs(request, org_id=None):
         return render_error(request, _('Login failed: Bad response from ADFS/SAML service. '
                                        'Please report to your organization (company) administrator.'))
 
+    session_info = authn_response.session_info()
+    name_id = session_info.get('name_id', '')
+    if not name_id:
+        logger.error('The name_id is not available. Could not determine user identifier.')
+        return render_error(request, _('Login failed: Bad response from ADFS/SAML service. '
+                                        'Please report to your organization (company) administrator.'))
+    name_id = name_id.text
+    uid = name_id
+
     # saml connect
     relay_state = request.POST.get('RelayState', '/saml/complete/')
     is_saml_connect = parse_qs(urlparse(unquote(relay_state)).query).get('is_saml_connect', [''])[0]
@@ -277,7 +287,7 @@ def acs(request, org_id=None):
             return render_error(request, _('Failed to bind SAML, please login first.'))
 
         # get uid and other attrs from user_identity
-        uid, contact_email, nickname, id_in_org, user_role = parse_user_identity(user_identity)
+        contact_email, nickname, id_in_org, user_role = parse_user_identity(user_identity)
         if not uid:
             logger.error('saml user uid not found.')
             logger.error('user_identity: %s' % user_identity)
@@ -314,8 +324,17 @@ def acs(request, org_id=None):
 
         return HttpResponseRedirect(relay_state)
 
+    session_info = authn_response.session_info()
+    name_id = session_info.get('name_id', '')
+    if not name_id:
+        logger.error('The name_id is not available. Could not determine user identifier.')
+        return render_error(request, _('Login failed: Bad response from ADFS/SAML service. '
+                                        'Please report to your organization (company) administrator.'))
+    name_id = name_id.text
+    uid = name_id
+
     # get uid and other attrs from user_identity
-    uid, contact_email, nickname, id_in_org, user_role = parse_user_identity(user_identity)
+    contact_email, nickname, id_in_org, user_role = parse_user_identity(user_identity)
     if not uid:
         logger.error('saml user uid not found.')
         logger.error('user_identity: %s' % user_identity)
@@ -597,7 +616,7 @@ def saml_complete(request):
     else:
         token = get_token_v1(request.user.username)
 
-    resp = HttpResponseRedirect(reverse('project'))
+    resp = HttpResponseRedirect(reverse('projects'))
     resp.set_cookie('seahub_auth', request.user.username + '@' + token.key)
 
     if request.user.is_authenticated:
