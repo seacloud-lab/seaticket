@@ -27,7 +27,7 @@ from seahub.settings import S3_FILE_BUCKET
 
 logger = logging.getLogger(__name__)
 
-ENCRYPT_KEYS = ['api_token', 'token', 'webhook_secret', 'api_key']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key']
 
 
 def check_project_limit(workspace, request):

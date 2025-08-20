@@ -51,6 +51,10 @@ CONNECTION_FIELDS = {
     ConnectionType.SITE: [
         ConnectionField('url', True, False).to_dict(),
         ConnectionField('sitemap_url', False, False).to_dict(),
+    ],
+    ConnectionType.SEAFILE: [
+        ConnectionField('server_url', True, False).to_dict(),
+        ConnectionField('api_token', True, False).to_dict(),
     ]
 }
 

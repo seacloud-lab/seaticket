@@ -234,7 +234,7 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         config = decrypt_config(json.loads(project_connection.config))
-        new_config = decrypt_config(json.loads(new_config))
+        new_config = json.loads(new_config)
         config.update(new_config)
         config = encrypt_config(config)
 
