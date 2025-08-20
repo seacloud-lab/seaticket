@@ -242,7 +242,7 @@ class NormalEditorContainer extends React.Component {
     const originalOldCellValue = getCellValueByColumn(row, column);
     const key = Object.keys(updated)[0];
     const value = updated[key];
-    if (column.is_required && !isValidCellValue(value)) {
+    if (column.is_required && !isValidCellValue(value, column)) {
       this.commitCancel();
       return;
     }
@@ -289,8 +289,7 @@ class NormalEditorContainer extends React.Component {
 
   isCaretAtBeginningOfInput = () => {
     const inputNode = this.getInputNode();
-    return inputNode.selectionStart === inputNode.selectionEnd
-      && inputNode.selectionStart === 0;
+    return inputNode.selectionStart === inputNode.selectionEnd && inputNode.selectionStart === 0;
   };
 
   isCaretAtEndOfInput = () => {
