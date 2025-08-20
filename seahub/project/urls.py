@@ -4,7 +4,7 @@ from django.urls import re_path
 from .views import project_view
 from .apis import ProjectConnectionsView, ProjectConnectionView, TicketsAPIView, TicketAPIView, \
     TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView, ProjectTagsAPIView, ProjectTagAPIView, \
-    ProjectUploadFileAPIView, GetProjectUploadFileView, ProjectFileAPIView, GetProjectFileView, ProjectConnectionCrawlView
+    ProjectUploadFileAPIView, GetProjectUploadFileView, ProjectFileAPIView, GetProjectFileView, ProjectConnectionSyncView
 
 
 
@@ -25,7 +25,7 @@ urlpatterns = [
     # connections
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v2.1-connections'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/$', ProjectConnectionView.as_view(), name='api-v2.1-connection'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/crawl/$', ProjectConnectionCrawlView.as_view(), name='api-v2.1-connection-crawl'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/sync/$', ProjectConnectionSyncView.as_view(), name='api-v2.1-connection-sync'),
 
     # ticket
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),

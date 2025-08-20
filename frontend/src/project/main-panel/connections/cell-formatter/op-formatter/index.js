@@ -5,14 +5,13 @@ import { gettext } from '../../../../../constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, showStatus, onManualCrawl, row }) => {
+const OpFormatter = ({ onModify, onDelete, showStatus, onManualSync, row }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggle = () => {
     setDropdownOpen(!dropdownOpen);
   };
-  const isSite = row?.type === 'site';
 
   return (
     <div className="sea-custom-table-op-formatter">
@@ -23,7 +22,7 @@ const OpFormatter = ({ onModify, onDelete, showStatus, onManualCrawl, row }) => 
         <IconButton className="bg-color-deep mr-1" title={gettext('Delete')} icon="delete" onClick={() => onDelete(row)} />
       }
 
-      {(showStatus || onManualCrawl) &&
+      {(showStatus || onManualSync) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
@@ -36,9 +35,9 @@ const OpFormatter = ({ onModify, onDelete, showStatus, onManualCrawl, row }) => 
                 </DropdownItem>
               )
             }
-            {onManualCrawl && isSite &&
+            {onManualSync &&
               (
-                <DropdownItem onClick={() => onManualCrawl(row)}>
+                <DropdownItem onClick={() => onManualSync(row)}>
                   {gettext('Sync now')}
                 </DropdownItem>
               )

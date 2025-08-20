@@ -163,11 +163,11 @@ def add_init_crawl_task(params):
     return json.loads(resp.content)
 
 
-def manual_crawl_site(params):
+def manual_sync_connection(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/manual-crawl-site')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/manual-sync-connection')
     resp = requests.post(url, json=params, headers=headers)
     return json.loads(resp.content)
 

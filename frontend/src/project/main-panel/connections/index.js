@@ -139,11 +139,11 @@ const Connections = ({ title }) => {
     setIsShowStatusDialog(false);
   }, []);
 
-  const onManualCrawl = useCallback((record) => {
+  const onManualSync = useCallback((record) => {
     const id = record?.id || activeRecordRef.current?.id;
     if (!id) return;
-    connectionsAPI.triggerCrawl(projectUuid, id).then(() => {
-      toaster.success(gettext('Crawl task queued'));
+    connectionsAPI.triggerSync(projectUuid, id).then(() => {
+      toaster.success(gettext('Sync task queued'));
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -220,7 +220,7 @@ const Connections = ({ title }) => {
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
         showStatus={openStatusDialog}
-        onManualCrawl={onManualCrawl}
+        onManualSync={onManualSync}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>

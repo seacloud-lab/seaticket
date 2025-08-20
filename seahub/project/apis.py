@@ -27,7 +27,7 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
     add_init_crawl_task, add_index_seafile_task, get_project_related_users, encrypt_config, decrypt_config, \
     create_default_project_tags, gen_project_tags_dict, upload_file_to_tmp_dir, get_file_from_s3, \
     replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task, \
-    manual_crawl_site
+    manual_sync_connection
 
 from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE, IMAGE_EXTS
 
@@ -310,13 +310,13 @@ class ProjectConnectionView(APIView):
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
 
 
-class ProjectConnectionCrawlView(APIView):
+class ProjectConnectionSyncView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
     def post(self, request, project_uuid, connection_id):
-        """trigger manual crawl for a connection
+        """trigger manual sync for a connection
         """
         # role permission check
         if not request.user.permissions.can_add_project():
@@ -350,18 +350,21 @@ class ProjectConnectionCrawlView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         connection_type = project_connection.type
-        if connection_type != ConnectionType.SITE.value:
-            error_msg = 'Only supports manual crawling of sites'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not ConnectionType.is_valid(connection_type):
+            error_msg = f'Type {connection_type} not support.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            params = { 'connection_id': project_connection.id }
-            res = manual_crawl_site(params)
+            params = {
+                'connection_id': project_connection.id,
+                'connection_type': connection_type,
+            }
+            res = manual_sync_connection(params)
             success = res.get('success')
             if not success:
                 return api_error(status.HTTP_429_TOO_MANY_REQUESTS, res.get('error_msg'))
         except Exception as e:
-            logger.error(f'trigger crawl for connection {connection_id} error: {e}')
+            logger.error(f'trigger sync for connection {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
