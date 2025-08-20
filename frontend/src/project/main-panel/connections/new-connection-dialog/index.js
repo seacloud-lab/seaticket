@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Tooltip } from 'reactstrap';
 import { gettext, mediaUrl } from '../../../../constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '../../../../components';
 import CopyInput from '../../../../components/copy-input';
 import { STEP, STEPS } from './constants';
@@ -48,7 +48,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, [config]);
 
   const handleSubmit = useCallback(() => {
-    if (type === 'github_issue') {
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      if (!config.webhook_secret) {
+        onToggle();
+        return;
+      }
       modifyConnection({ name: name.trim(), config }, () => {
         setSubmitting(false);
       },
@@ -77,7 +81,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const step = STEPS[stepIndex];
   const typeOption = CONNECTION_TYPES.find(i => i.type === type);
-  const isGithub = type === 'github_issue';
+  const isGithub = type === CONNECTION_TYPE.GITHUB_ISSUE;
   const customSteps = isGithub ? STEPS : [STEPS[0], STEPS[1]];
 
   return (
