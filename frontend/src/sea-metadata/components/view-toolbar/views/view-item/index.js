@@ -1,0 +1,167 @@
+import { useCallback, useRef, useState } from 'react';
+import classnames from 'classnames';
+import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
+import { gettext } from '@/constants';
+
+import './index.css';
+
+const ViewItem = ({
+  view,
+  isSelect,
+  modifyAble,
+  deleteAble,
+  moveAble,
+  duplicateAble,
+
+
+  onSelect,
+  onModify,
+  onMove,
+  onDelete,
+  onDuplicate,
+}) => {
+  const [isShowDropdownMenu, setIsShowDropdownMenu] = useState(false);
+  const [dropRelativePosition, setDropRelativePosition] = useState('');
+  const [isShowDeleteConfirmationDialog, setIsShowDeleteConfirmationDialog] = useState(false);
+
+  const containerRef = useRef(null);
+  const viewRef = useRef(null);
+  const menuStyle = useRef({});
+
+  const enteredCounter = useRef(0);
+
+  const onDragStart = useCallback((event) => {
+    event.stopPropagation();
+    event.dataTransfer.setDragImage(containerRef.current, 10, 10);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', view._id);
+  }, [view]);
+
+  const onDragEnter = useCallback((event) => {
+    event.stopPropagation();
+    enteredCounter.current = enteredCounter.current + 1;
+  }, []);
+
+  const onDragOver = useCallback((event) => {
+    if (event.dataTransfer.dropEffect === 'copy') return;
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const dropRelativePosition = event.nativeEvent.offsetX <= event.target.clientWidth / 2 ? 'before' : 'after';
+    setDropRelativePosition(dropRelativePosition);
+  }, []);
+
+  const onDragLeave = useCallback((event) => {
+    event.stopPropagation();
+    enteredCounter.current = enteredCounter.current - 1;
+    if (!enteredCounter.current === 0) return;
+    setDropRelativePosition('');
+  }, []);
+
+  const onDrop = useCallback((event) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    enteredCounter.current = 0;
+
+    const moveViewID = event.dataTransfer.getData('text/plain');
+    const { _id } = view;
+    if (moveViewID !== _id) {
+      onMove && onMove(moveViewID, _id, dropRelativePosition);
+    }
+    setDropRelativePosition('');
+  }, [view, dropRelativePosition, onMove]);
+
+  const openDropdownMenu = useCallback(() => {
+    const { left, bottom } = viewRef.current.getBoundingClientRect();
+    menuStyle.current = { left, top: bottom };
+    setIsShowDropdownMenu(true);
+  }, []);
+
+  const closeDropdown = useCallback(() => {
+    setIsShowDropdownMenu(false);
+  }, [isShowDropdownMenu]);
+
+  const openDeleteConfirmationDialog = useCallback(() => {
+    setIsShowDropdownMenu(false);
+    setIsShowDeleteConfirmationDialog(true);
+  }, []);
+
+  const closeDeleteConfirmationDialog = useCallback(() => {
+    setIsShowDeleteConfirmationDialog(false);
+  }, []);
+
+  const handleModify = useCallback(() => {
+    setIsShowDropdownMenu(false);
+    onModify && onModify();
+  }, [onModify]);
+
+  const handleDuplicate = useCallback(() => {
+    setIsShowDropdownMenu(false);
+    onDuplicate && onDuplicate(view._id);
+  }, [view, onDuplicate]);
+
+  const props = moveAble ? { onDragStart, onDragEnter, onDragOver, onDragLeave, onDrop, draggable: 'true' } : {};
+
+  return (
+    <>
+      <div
+        className={classnames('sea-metadata-view-container', {
+          'sea-metadata-view-next-position-before': dropRelativePosition === 'before',
+          'sea-metadata-view-next-position-after': dropRelativePosition === 'after'
+        })}
+        ref={containerRef}
+        { ...props }
+      >
+        <div
+          className={classnames('sea-metadata-view-item', { 'active': isSelect })}
+          onClick={() => onSelect(view._id)} key={view._id}
+          ref={viewRef}
+        >
+          {view.name}
+          {isSelect && (<div className="sea-metadata-view-item-operation-down" onClick={openDropdownMenu}>{<Icon symbol="down" />}</div>)}
+        </div>
+      </div>
+      {isShowDeleteConfirmationDialog && (
+        <CommonOperationConfirmationDialog
+          toggleDialog={closeDeleteConfirmationDialog}
+          title={gettext('Delete view')}
+          message={gettext('Are you sure you want to delete view {placeholder} ?').replace('{placeholder}', `<b>${view.name}</b>`)}
+          confirmBtnText={gettext('Delete')}
+          executeOperation={() => onDelete(view._id)}
+        />
+      )}
+      {isShowDropdownMenu && (
+        <ModalPortal>
+          <ClickOutside onClickOutside={closeDropdown}>
+            <div
+              className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
+              style={menuStyle.current}
+            >
+              {modifyAble && (
+                <button onClick={handleModify} className="dropdown-item sea-qa-dropdown-item">
+                  <Icon symbol="rename" />
+                  {gettext('Rename view')}
+                </button>
+              )}
+              {duplicateAble && (
+                <button onClick={handleDuplicate} className="dropdown-item sea-qa-dropdown-item">
+                  <Icon symbol="copy" />
+                  {gettext('Duplicate view')}
+                </button>
+              )}
+              {deleteAble && (
+                <button onClick={openDeleteConfirmationDialog} className="dropdown-item sea-qa-dropdown-item">
+                  <Icon symbol="delete" />
+                  {gettext('Delete view')}
+                </button>
+              )}
+            </div>
+          </ClickOutside>
+        </ModalPortal>
+      )}
+    </>
+  );
+};
+
+export default ViewItem;

@@ -38,7 +38,7 @@ import StepsNavigation from './steps-navigation';
 import UploadFile from './upload-file';
 import ColorSelectorPopover from './color-selector-popover';
 import CustomizeTable from './customize-table';
-
+import CustomizeNameDialog from './customize-name-dialog';
 
 export {
   CenteredError, CenteredLoading,
@@ -78,4 +78,5 @@ export {
   UploadFile,
   ColorSelectorPopover,
   CustomizeTable,
+  CustomizeNameDialog,
 };

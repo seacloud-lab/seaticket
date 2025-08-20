@@ -5,17 +5,39 @@ import logging
 import uuid
 import json
 import time
+import copy
+import random
+import string
 
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError
-from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, CONNECTION_FIELDS
-from seahub.utils import get_no_duplicate_obj_name, \
+from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
+    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS
+from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
-from seahub.api2.utils import get_user_common_info
 
 from seahub.utils import normalize_cache_key
 
 logger = logging.getLogger(__name__)
+
+
+def generate_random_string_lower_digits(length):
+    letters_and_digits = string.ascii_lowercase + string.digits
+    random_string = ''.join(random.choice(letters_and_digits) for i in range(length))
+    return random_string
+
+
+def generate_views_unique_id(length, folders_views_ids=None):
+    if not folders_views_ids:
+        return generate_random_string_lower_digits(length)
+
+    while True:
+        id = generate_random_string_lower_digits(length)
+        if id not in folders_views_ids:
+            break
+
+    return id
 
 
 class WorkspacesManager(models.Manager):
@@ -472,97 +494,6 @@ class ProjectConnections(models.Model):
             'status': self.status,
         }
 
-
-class TicketsManager(models.Manager):
-
-    def list_tickets(self, project_uuid, start, end, status):
-        status_list = ['', 'open'] if status == 'open' else ['completed', 'not_planned', 'duplicate']
-
-        return self.filter(status__in=status_list,
-            project_uuid=project_uuid, deleted=False).order_by('-number')[start: end]
-
-    def list_tickets_by_username(self, project_uuid, username, start, end):
-        return self.filter(
-            project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
-
-    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None):
-        for i in range(3):
-            try:
-                previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
-                number = previous_ticket.number + 1 if previous_ticket else 1
-                item = self.create(
-                    project_uuid=project_uuid,
-                    number=number,
-                    creator=username,
-                    title=title,
-                    content=content,
-                    status=status,
-                    type=ticket_type,
-                )
-                return item
-            except self.model.MultipleObjectsReturned:
-                time.sleep(0.2)
-                continue
-        return None
-
-    def get_ticket(self, project_uuid, number, deleted=False):
-        return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
-
-    def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
-        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
-
-
-class Tickets(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    project_uuid = models.UUIDField()
-    number = models.IntegerField()
-    creator = models.CharField(max_length=255, db_index=True)
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    status = models.CharField(max_length=50, null=True, db_index=True)
-    type = models.CharField(max_length=50, null=True)
-    reply_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-    reply_updated_at = models.DateTimeField(null=True)
-    deleted = models.BooleanField(default=False, null=False, db_index=True)
-    delete_at = models.DateTimeField(null=True)
-
-    objects = TicketsManager()
-
-    class Meta:
-        unique_together = (('project_uuid', 'number'),)
-        db_table = 'tickets'
-
-    def to_dict(self, tags_dict={}, assignees_dict={}, participants_dict={}, include_deleted=False):
-        result = {
-            'project_uuid': str(self.project_uuid),
-            'number': self.number,
-            'title': self.title,
-            'content': self.content,
-            'participants': [],
-            'tags': [],
-            'status': self.status,
-            'type': self.type,
-            'reply_count': self.reply_count,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'reply_updated_at': self.reply_updated_at,
-            'creator': self.creator,
-        }
-        if self.id in tags_dict:
-            result['tags'] = tags_dict[self.id]
-        if self.id in assignees_dict:
-            result['assignees'] = assignees_dict[self.id]
-        if self.id in participants_dict:
-            result['participants'] = participants_dict[self.id]
-        if include_deleted:
-            result.update({
-                'deleted': self.deleted,
-                'delete_at': self.delete_at if self.delete_at else '',
-            })
-        return result
-
 class TicketRepliesManager(models.Manager):
 
     def list_replies(self, ticket_id, start, end):
@@ -683,4 +614,446 @@ class TicketAssignees(models.Model):
     class Meta:
         unique_together = (('ticket_id', 'assignee'),)
         db_table = 'ticket_assignees'
+
+
+class TicketFolder(object):
+
+    def __init__(self, name, children=[], folders_views_ids=None):
+        self.name = name
+        self.type = 'folder'
+        self.children = children
+
+        self.init_folder(folders_views_ids)
+
+    def init_folder(self, folders_views_ids=None):
+        self.folder_json = {
+            "_id": generate_views_unique_id(4, folders_views_ids),
+            "name": self.name,
+            "type": self.type,
+            "children": self.children
+        }
+
+
+class TicketView(object):
+
+    def __init__(self, name, view_type='table', config={}, folders_views_ids=None):
+        self.name = name
+        self.type = view_type
+        self.config = config
+        self.details = {}
+
+        self.init_view(folders_views_ids)            
+
+    def init_view(self, folders_views_ids=None):
+        self.details = {
+            "_id": generate_views_unique_id(4, folders_views_ids),
+            "table_id": '0000',  # by default
+            "name": self.name,
+            'basic_filters': [
+                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
+            ],
+            "filters": [],
+            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            "groupbys": [],
+            "filter_conjunction": "Or",
+            "hidden_columns": [],
+            "type": self.type,
+        }
+        self.details.update(self.config)
+
+
+class TicketViewsManager(models.Manager):
+
+    def get_record(self, project_uuid):
+        """
+            get record from database, if not record, create it
+        """
+        project_uuid = uuid_str_to_32_chars(project_uuid)
+        record = self.filter(project_uuid=project_uuid).first()
+        if not record:
+            record = self.create(
+                project_uuid=project_uuid,
+                details=json.dumps(TICKET_DEFAULT_DETAILS)
+            )
+        return record
+
+    # folder op
+    def add_folder(self, project_uuid, folder_name):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        exist_folders_views_ids = record.folders_views_ids
+        new_folder = TicketFolder(folder_name, [], exist_folders_views_ids)
+        folder_json = new_folder.folder_json
+        navigation.append(folder_json)
+        record.details = json.dumps(view_details)
+        record.save()
+        return folder_json
+
+    def update_folder(self, project_uuid, folder_id, folder_dict):
+        record = self.get_record(project_uuid)
+        folder_dict.pop('_id', '')
+        folder_dict.pop('type', '')
+        folder_dict.pop('children', '')
+        if 'name' in folder_dict:
+            exist_obj_names = record.folders_names
+            folder_dict['name'] = get_no_duplicate_obj_name(folder_dict['name'], exist_obj_names)
+        view_details = json.loads(record.details)
+        for folder in view_details['navigation']:
+            if folder.get('type', None) == 'folder' and folder.get('_id') == folder_id:
+                folder.update(folder_dict)
+                break
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def delete_folder(self, project_uuid, folder_id):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        views = view_details.get('views', [])
+        for folder in navigation:
+            if folder.get('_id') == folder_id:
+                # add views which in the folder into navigation
+                if folder.get('children'):
+                    navigation.extend(folder.get('children'))
+
+                # remove folder
+                navigation.remove(folder)
+                break
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    # view op
+    def list_views(self, project_uuid):
+        record = self.get_record(project_uuid)
+        return json.loads(record.details)
+
+    def get_view(self, project_uuid, view_id):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                return v
+        return None
+
+    def add_view(self, project_uuid, view_name, view_type='table', view_data={}, folder_id=None):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        view_name = get_no_duplicate_obj_name(view_name, record.views_names)
+        exist_folders_views_ids = record.folders_views_ids
+        new_view = TicketView(view_name, view_type, view_data, exist_folders_views_ids)
+        details = new_view.details
+        view_id = details.get('_id')
+        view_details['views'].append(details)
+        new_view_nav = { '_id': view_id, 'type': 'view' }
+        if folder_id:
+            folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
+            if not folder:
+                return None
+            folderChildren = folder.get('children', [])
+            folderChildren.append(new_view_nav)
+        else:
+            navigation.append(new_view_nav)
+        record.details = json.dumps(view_details)
+        record.save()
+        return new_view.details
+
+    def update_view(self, project_uuid, view_id, view_dict):
+        record = self.get_record(project_uuid)
+        view_dict.pop('_id', '')
+        if 'name' in view_dict:
+            exist_obj_names = record.views_names
+            view_dict['name'] = get_no_duplicate_obj_name(view_dict['name'], exist_obj_names)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                v.update(view_dict)
+                break
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def duplicate_view(self, project_uuid, view_id, folder_id=None):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        exist_folders_views_ids = record.folders_views_ids
+        new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
+        duplicate_view = next((copy.deepcopy(view) for view in view_details['views'] if view.get('_id') == view_id), None)
+        if not duplicate_view:
+            return None
+
+        duplicate_view['_id'] = new_view_id
+        view_name = get_no_duplicate_obj_name(duplicate_view['name'], record.views_names)
+        duplicate_view['name'] = view_name
+        view_details['views'].append(duplicate_view)
+        navigation = view_details.get('navigation', [])
+        new_view_nav = {'_id': new_view_id, 'type': 'view'}
+        if folder_id:
+            # add duplicate_view into folder
+            folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
+            if not folder:
+                return None
+            folderChildren = folder.get('children', [])
+            folderChildren.append(new_view_nav)
+        else:
+            navigation.append(new_view_nav)
+
+        record.details = json.dumps(view_details)
+        record.save()
+
+        return duplicate_view
+
+    def delete_view(self, project_uuid, view_id, folder_id=None):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        views = view_details.get('views', [])
+
+        for view in views:
+            if view.get('_id') == view_id:
+                views.remove(view)
+                break
+        for nav_item in navigation:
+            # delete view from folder
+            if folder_id and nav_item.get('_id') == folder_id and nav_item.get('type') == 'folder' and nav_item.get('children'):
+                for child in nav_item.get('children'):
+                    if child.get('_id') == view_id:
+                        nav_item.get('children').remove(child)
+                        break
+                break
+
+            # delete view not in folders
+            if nav_item.get('_id') == view_id:
+                navigation.remove(nav_item)
+                break
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def move_view(self, project_uuid, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
+        record = self.get_record(project_uuid)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+
+        updated_source_nav_list = []
+        dragged_id = None
+
+        # find drag source
+        if source_folder_id:
+            if source_view_id:
+                # drag view from folder
+                dragged_id = source_view_id
+                source_folder = next((folder for folder in navigation if folder.get('_id') == source_folder_id), None)
+                if source_folder:
+                    updated_source_nav_list = source_folder.get('children', [])
+            else:
+                # drag folder
+                dragged_id = source_folder_id
+                updated_source_nav_list = navigation
+        elif source_view_id:
+            # drag view not in folders
+            dragged_id = source_view_id
+            updated_source_nav_list = navigation
+
+        # invalid drag source
+        if not dragged_id or not updated_source_nav_list:
+            return None
+        drag_source = next((nav for nav in updated_source_nav_list if nav.get('_id') == dragged_id), None)
+        if not drag_source:
+            return None
+
+        # remove drag source from navigation
+        updated_source_nav_list.remove(drag_source)
+
+        # find drop target
+        updated_target_nav_list = navigation
+        if target_folder_id and source_view_id and not is_above_folder:
+            target_folder = next((folder for folder in navigation if folder.get('_id') == target_folder_id), None)
+            if target_folder:
+                updated_target_nav_list = target_folder.get('children', [])
+
+        # drag source already exist
+        exist_drag_source = next((nav for nav in updated_target_nav_list if nav.get('_id') == drag_source.get('_id')), None)
+        if exist_drag_source:
+            return None
+
+        # drop drag source to the target position
+        target_nav = None
+        if target_view_id:
+            # move folder/view above view
+            target_nav = next((nav for nav in updated_target_nav_list if nav.get('_id') == target_view_id), None)
+        elif target_folder_id:
+            # move folder/view above folder
+            target_nav = next((nav for nav in updated_target_nav_list if nav.get('_id') == target_folder_id), None)
+
+        insert_index = -1
+        if target_nav:
+            insert_index = updated_target_nav_list.index(target_nav)
+
+        if insert_index > -1:
+            updated_target_nav_list.insert(insert_index, drag_source)
+        else:
+            updated_target_nav_list.append(drag_source)
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+
+class TicketViews(models.Model):
+    project_uuid = models.CharField(max_length=32, db_index=True)
+    details = models.TextField()
+
+    objects = TicketViewsManager()
+
+    class Meta:
+        db_table = 'ticket_views'
+
+    @property
+    def folders_ids(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('_id') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def folders_names(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('name') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def views_ids(self):
+        views = json.loads(self.details)['views']
+        return [v.get('_id') for v in views]
+
+    @property
+    def views_names(self):
+        views = json.loads(self.details)['views']
+        return [v.get('name') for v in views]
+
+    @property
+    def folders_views_ids(self):
+        return self.folders_ids + self.views_ids
+
+
+class TicketsManager(models.Manager):
+
+    def list_tickets(self, project_uuid, start, end, view_id):
+        sorts = []
+        view = TicketViews.objects.get_view(project_uuid, view_id)
+        basic_filters = view.get('basic_filters', [])
+        filters = view.get('filters', [])
+        filter_conjunction = view.get('filter_conjunction', 'OR')
+        sorts = view.get('sorts', [])
+        
+        status_filter = ''
+        for f in basic_filters:
+            if f.get('column_key') == 'status':
+                status_filter = f
+        if status_filter:
+            if not status_filter['filter_term']:
+                status_filter['filter_term'] = ['', 'open', 'completed', 'not_planned', 'duplicate']
+            elif 'open' in status_filter['filter_term']:
+                if isinstance(status_filter['filter_term'], list):
+                    status_filter['filter_term'] = status_filter['filter_term'] + ['']
+                else:
+                    status_filter['filter_term'] = ['', 'open']
+
+        if not sorts:
+            sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
+
+        sorts = [sort['column_key'] if sort['sort_type'] == 'down' else f'-{sort["column_key"]}' for sort in sorts]
+
+        if status_filter:
+            return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False) & Q(status__in=status_filter['filter_term'])).order_by(', '.join(sorts))[start: end]
+
+        return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False)).order_by(', '.join(sorts))[start: end]
+
+
+    def list_tickets_by_username(self, project_uuid, username, start, end):
+        return self.filter(
+            project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
+
+    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None):
+        for i in range(3):
+            try:
+                previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
+                number = previous_ticket.number + 1 if previous_ticket else 1
+                item = self.create(
+                    project_uuid=project_uuid,
+                    number=number,
+                    creator=username,
+                    title=title,
+                    content=content,
+                    status=status,
+                    type=ticket_type,
+                )
+                return item
+            except self.model.MultipleObjectsReturned:
+                time.sleep(0.2)
+                continue
+        return None
+
+    def get_ticket(self, project_uuid, number, deleted=False):
+        return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
+
+    def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
+        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
+
+
+class Tickets(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.UUIDField()
+    number = models.IntegerField()
+    creator = models.CharField(max_length=255, db_index=True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    status = models.CharField(max_length=50, null=True, db_index=True)
+    type = models.CharField(max_length=50, null=True)
+    reply_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    reply_updated_at = models.DateTimeField(null=True)
+    deleted = models.BooleanField(default=False, null=False, db_index=True)
+    delete_at = models.DateTimeField(null=True)
+
+    objects = TicketsManager()
+
+    class Meta:
+        unique_together = (('project_uuid', 'number'),)
+        db_table = 'tickets'
+
+    def to_dict(self, tags_dict={}, assignees_dict={}, participants_dict={}, include_deleted=False):
+        result = {
+            'project_uuid': str(self.project_uuid),
+            'number': self.number,
+            'title': self.title,
+            'content': self.content,
+            'participants': [],
+            'tags': [],
+            'status': self.status,
+            'type': self.type,
+            'reply_count': self.reply_count,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'reply_updated_at': self.reply_updated_at,
+            'creator': self.creator,
+        }
+        if self.id in tags_dict:
+            result['tags'] = tags_dict[self.id]
+        if self.id in assignees_dict:
+            result['assignees'] = assignees_dict[self.id]
+        if self.id in participants_dict:
+            result['participants'] = participants_dict[self.id]
+        if include_deleted:
+            result.update({
+                'deleted': self.deleted,
+                'delete_at': self.delete_at if self.delete_at else '',
+            })
+        return result
 

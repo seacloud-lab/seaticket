@@ -32,7 +32,6 @@ class Context {
     this.username = username;
     this.settings = settings;
     this.api = api;
-    this.localStorage = new LocalStorage(localStorageName);
     this.permission = permission;
     this.collaboratorsCache = {};
     if (t) {
@@ -40,6 +39,14 @@ class Context {
         ...this.t_map,
         ...t
       };
+    }
+
+    this.re_set({ localStorageName });
+  };
+
+  re_set = ({ localStorageName }) => {
+    if (localStorageName) {
+      this.localStorage = new LocalStorage(localStorageName);
     }
   };
 
@@ -163,12 +170,32 @@ class Context {
 
   canModifyColumnOrder = () => {
     if (!this.canModify()) return false;
-    return true;
+    return Boolean(this.api?.modifyView);
+  };
+
+  canInsertView = () => {
+    if (!this.canModify()) return false;
+    return Boolean(this.api?.insertView);
+  };
+
+  canDeleteView = (view) => {
+    if (!this.canModify()) return false;
+    return Boolean(this.api?.deleteView);
   };
 
   canModifyView = (view) => {
     if (!this.canModify()) return false;
-    return true;
+    return Boolean(this.api?.modifyView);
+  };
+
+  canMoveView = () => {
+    if (!this.canModify()) return false;
+    return Boolean(this.api?.moveView);
+  };
+
+  canDuplicateView = () => {
+    if (!this.canModify()) return false;
+    return Boolean(this.api?.duplicateView);
   };
 
   canPreview = () => {
@@ -246,14 +273,24 @@ class Context {
   };
 
   // view
+  insertView = (name, viewData) => {
+    return this.api.insertView(name, viewData);
+  };
+
+  deleteView = (viewID) => {
+    return this.api.deleteView(viewID);
+  };
+
   modifyView = (viewId, viewData) => {
-    if (this.api.modifyView) return this.api.modifyView(viewId, viewData);
-    return new Promise((resolve, reject) => {
-      Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
-      });
-      resolve({ data: { success: true } });
-    });
+    return this.api.modifyView(viewId, viewData);
+  };
+
+  moveView = (sourceViewID, targetViewID) => {
+    return this.api.moveView(sourceViewID, targetViewID);
+  };
+
+  duplicateView = (viewID) => {
+    return this.api.duplicateView(viewID);
   };
 
   getRowsByIds = () => {

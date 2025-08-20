@@ -471,7 +471,7 @@ class InteractionMasks extends React.Component {
     // get editable columns from selected range
     for (let j = startColumnIdx; j <= endColumnIdx; j++) {
       const column = columns[j];
-      if (!column || column.is_required || NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP[column.type]) {
+      if (!column || column.is_required || !column.editable || NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP[column.type]) {
         continue;
       }
       editableColumns.push(column);

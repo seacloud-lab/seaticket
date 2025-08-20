@@ -128,6 +128,8 @@ class FilterPopover extends Component {
     const { readOnly, target, columns, placement = 'auto-start', viewType, filtersClassName = '' } = this.props;
     const { filters, filterConjunction, basicFilters } = this.state;
     const canAddFilter = columns.length > 0;
+    const advancedFilterColumns = columns.filter(c => !basicFilters.find(basicFilter => basicFilter.column_key === c.key));
+
     return (
       <UncontrolledPopover
         placement={placement}
@@ -140,14 +142,14 @@ class FilterPopover extends Component {
       >
         {({ update: scheduleUpdate }) => (
           <div ref={ref => this.dtablePopoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName}>
-            <BasicFilters readOnly={readOnly} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
+            <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
             <FormGroup className="filter-group-advanced filter-group mb-0">
               <Label className="filter-group-name">{gettext('Advanced')}</Label>
               <div className="filter-group-container">
                 <AdvancedFilters
                   filterConjunction={filterConjunction}
                   filters={filters}
-                  columns={columns}
+                  columns={advancedFilterColumns}
                   emptyPlaceholder={gettext('No filters')}
                   updateFilter={this.updateFilter}
                   deleteFilter={this.deleteFilter}

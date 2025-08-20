@@ -18,6 +18,7 @@ const Main = forwardRef(({
   options = [],
   maxHeight = 200,
   optionHeight = 30,
+  children,
   onChange,
   onToggle,
   onCreate,
@@ -47,11 +48,12 @@ const Main = forwardRef(({
         newValue.splice(optionIndex, 1);
       }
       setValue(newValue);
+      onChange && onChange(newValue);
       return;
     }
     const newValue = optionValue === value ? '' : optionValue;
     setValue(newValue);
-    onChange(newValue);
+    onChange && onChange(newValue);
     onToggle && onToggle();
   }, [isMultiple, value, onChange, onToggle]);
 
@@ -170,10 +172,18 @@ const Main = forwardRef(({
     getValue: () => {
       return value;
     },
+    setValue: (value) => {
+      setValue(value);
+    }
   }), [value]);
 
   return (
     <div className="option-editor-container">
+      {children && (
+        <div className="option-editor-selected-value-wrapper">
+          {children}
+        </div>
+      )}
       <div className="option-editor-search-wrapper">
         <SearchInput isShowSearchIcon={false} value={searchValue} size={28} placeholder={placeholder} onKeyDown={onKeyDown} onChange={onSearchValueChange} />
       </div>
