@@ -257,6 +257,7 @@ class ProjectConnectionView(APIView):
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
+
 class ProjectConnectionSyncView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
