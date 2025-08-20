@@ -64,11 +64,11 @@ const Connections = ({ title }) => {
 
   const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowRecordDialog = false, callback) => {
     connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
-      const record = res.data.record;
-      const newRecords = [...records, new Connection(record)];
+      const record = new Connection(res.data.record);
+      const newRecords = [...records, record];
       setRecords(newRecords);
       setIsShowRecordDialog(isShowRecordDialog);
-      callback && callback(new Connection(record));
+      callback && callback(record);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -105,8 +105,9 @@ const Connections = ({ title }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState, recordId) => {
-    connectionsAPI.modifyConnection(projectUuid, recordId || activeRecordRef.current.id, { name, config }).then(res => {
-      const activeRecordIndex = records.findIndex(c => c.id === activeRecordRef.current.id);
+    const activeRecordId = recordId || activeRecordRef.current.id;
+    connectionsAPI.modifyConnection(projectUuid, activeRecordId, { name, config }).then(res => {
+      const activeRecordIndex = records.findIndex(c => c.id === activeRecordId);
       const newRecord = new Connection(res.data.record);
       let newRecords = records.slice(0);
       if (activeRecordIndex === -1) {
