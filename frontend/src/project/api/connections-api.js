@@ -96,7 +96,7 @@ class ConnectionsAPI {
   }
 
   listGithubIssuesRecord(projectUuid, page, perPage, connectionID){
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/issues-records/';
     let params = {
       page: page,
       per_page: perPage,

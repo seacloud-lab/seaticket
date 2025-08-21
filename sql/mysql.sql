@@ -571,3 +571,24 @@ CREATE TABLE `discourse_replies` (
      FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`)
      ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `github_issues` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `issue_id` bigint(20) NOT NULL,
+  `issue_number` int(11) NOT NULL,
+  `title` text DEFAULT NULL,
+  `body` text DEFAULT NULL,
+  `state` varchar(20) DEFAULT NULL,
+  `labels` text DEFAULT NULL,
+  `author` varchar(255) DEFAULT NULL,
+  `url` varchar(1024) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `closed_at` timestamp NULL DEFAULT NULL,
+  `comments` int(11) DEFAULT NULL,
+  `connection_id` varchar(64) NOT NULL,
+  `need_index` tinyint(1) DEFAULT 0,
+  `deleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `issue_unique_key` (`issue_id`,`connection_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

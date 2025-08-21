@@ -192,42 +192,6 @@ class ProjectConnectionView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
-
-    def get(self, request, project_uuid, connection_id):
-        """get GitHub Issues records
-        """
-        # role permission check
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            current_page = int(request.GET.get('page', '1'))
-            per_page = int(request.GET.get('per_page', '100'))
-        except ValueError:
-            current_page = 1
-            per_page = 100
-
-        start = (current_page - 1) * per_page
-        end = start + per_page
-
-        records = GitHubIssuesRecord.objects.filter(connection_id=connection_id,deleted=False)[start:end]
-        records = [record.to_dict() for record in records]
-
-        return Response({'records': records}, status=status.HTTP_200_OK)
-
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
@@ -342,6 +306,46 @@ class ProjectConnectionView(APIView):
 
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
 
+
+class ListGitHubIssuesRecordView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id):
+        """get GitHub Issues records
+        """
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            current_page = int(request.GET.get('page', '1'))
+            per_page = int(request.GET.get('per_page', '100'))
+        except ValueError:
+            current_page = 1
+            per_page = 100
+
+        start = (current_page - 1) * per_page
+        end = start + per_page
+
+        records = GitHubIssuesRecord.objects.filter(connection_id=connection_id,deleted=False)[start:end]
+        records = [record.to_dict() for record in records]
+
+        return Response({'records': records}, status=status.HTTP_200_OK)
 
 class TicketsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
