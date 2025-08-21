@@ -161,8 +161,7 @@ const AllTickets = ({ projectUuid, projectName }) => {
       if (context.checkCanDeleteRow() && rows.length > 0) {
         list.push({
           label: gettext('Delete tickets'),
-          rows: rows,
-          callback: (event, { rows }) => {
+          callback: (event) => {
             const rowIds = rows.map(row => row._id);
             deleteRows && deleteRows(rowIds);
           }
@@ -206,6 +205,14 @@ const AllTickets = ({ projectUuid, projectName }) => {
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tickets`, [projectUuid]);
 
+  const t = useMemo(() => {
+    return {
+      row: gettext('ticket'),
+      rows: gettext('tickets'),
+      Rows: gettext('Tickets'),
+    };
+  }, []);
+
   return (
     <SeaMetadata
       viewID={viewID}
@@ -219,6 +226,8 @@ const AllTickets = ({ projectUuid, projectName }) => {
       tagsData={tagsData}
       createTag={createTag}
       toggleAllTags={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}
+
+      t={t}
     />
   );
 };

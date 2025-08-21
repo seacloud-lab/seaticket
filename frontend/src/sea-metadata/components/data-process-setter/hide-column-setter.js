@@ -6,6 +6,7 @@ import { HideColumnPopover } from '../popover';
 import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { TABLE_NOT_DISPLAY_COLUMN_KEYS } from '../../constants';
+import context from '@/sea-metadata/context';
 
 const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColumns, modifyHiddenColumns, modifyColumnOrder }) => {
   const [isShowSetter, setShowSetter] = useState(false);
@@ -18,9 +19,9 @@ const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColum
 
   const message = useMemo(() => {
     const hiddenColumnsLength = validHiddenColumns.length;
-    if (hiddenColumnsLength === 1) return gettext('1 hidden property');
-    if (hiddenColumnsLength > 1) return gettext('{name_placeholder} hidden properties').replace('{name_placeholder}', hiddenColumnsLength);
-    return gettext('Hide properties');
+    if (hiddenColumnsLength === 1) return gettext('1 hidden {column}').replace('{column}', context.t('column'));
+    if (hiddenColumnsLength > 1) return gettext('{count} hidden {columns}').replace('{count}', hiddenColumnsLength).replace('{columns}', context.t('columns'));
+    return gettext('Hide {columns}').replace('{columns}', context.t('columns'));
   }, [validHiddenColumns]);
 
   const onSetterToggle = useCallback(() => {

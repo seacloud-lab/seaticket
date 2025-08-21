@@ -8,6 +8,7 @@ import { gettext } from '@/constants';
 import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, seaTableZIndexes } from '../../../../constants';
 import { addClassName, removeClassName } from '@/utils/dom';
 import { getRowsFromSelectedRange } from '../../utils/selected-cell-utils';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -52,7 +53,7 @@ class RowsFooter extends React.Component {
       if (hasMore) {
         toaster.success(<LoadAllTip load={this.props.loadAll} />, { duration: 5 });
       } else {
-        toaster.success(gettext('All rows loaded'));
+        toaster.success(gettext('All {rows} loaded').replace('{rows}', context.t('rows')));
       }
     });
   };
@@ -110,18 +111,18 @@ class RowsFooter extends React.Component {
     const { hasMore, hasSelectedRow, rowMetrics, selectedRange, rowsCount } = this.props;
     if (hasSelectedRow) {
       const selectedRowsCount = RowMetrics.getSelectedIds(rowMetrics).length;
-      return selectedRowsCount > 1 ? gettext('{name_placeholder} rows selected').replace('{name_placeholder}', selectedRowsCount) : gettext('1 row selected');
+      return selectedRowsCount > 1 ? gettext('{count} rows selected').replace('{count}', selectedRowsCount) : gettext('1 row selected');
     }
     const selectedCellsCount = this.getSelectedCellsCount(selectedRange);
     if (selectedCellsCount > 1) {
-      return gettext('{name_placeholder} cells selected').replace('{name_placeholder}', selectedCellsCount);
+      return gettext('{count} cells selected').replace('{count}', selectedCellsCount);
     }
 
     let rowsCountText;
     if (rowsCount > 1) {
-      rowsCountText = gettext('{name_placeholder} rows').replace('{name_placeholder}', rowsCount);
+      rowsCountText = gettext('{count} rows').replace('{count}', rowsCount);
     } else {
-      rowsCountText = gettext('{name_placeholder} row').replace('{name_placeholder}', rowsCount);
+      rowsCountText = gettext('{count} row').replace('{count}', rowsCount);
     }
     if (hasMore) {
       rowsCountText += ' +';

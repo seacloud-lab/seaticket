@@ -197,7 +197,7 @@ class SortPopover extends Component {
       <div key={'sort-item-' + index} className="sort-item">
         {!readOnly &&
           <div className="delete-sort" onClick={(viewType === VIEW_TYPE.GALLERY && index === 0) ? () => {} : (event) => this.deleteSort(event, index)}>
-            {!(viewType === VIEW_TYPE.GALLERY && index === 0) && <Icon className="sea-metadata-icon" symbol="fork-number"/>}
+            {!(viewType === VIEW_TYPE.GALLERY && index === 0) && <Icon className="sea-metadata-icon" symbol="x"/>}
           </div>
         }
         <div className="condition">
@@ -208,7 +208,7 @@ class SortPopover extends Component {
               onChange={(value) => this.onSelectColumn(value, index)}
               options={columnsOptions}
               searchable={true}
-              searchPlaceholder={gettext('Search property')}
+              searchPlaceholder={gettext('Search {column}').replace('{column}', context.t('column'))}
               noOptionsPlaceholder={gettext('No results')}
             />
           </div>

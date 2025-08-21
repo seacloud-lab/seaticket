@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { Tooltip } from 'reactstrap';
 import { gettext } from '@/constants';
 import { isMobile } from '@utils/utils';
 import { SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
@@ -34,22 +33,6 @@ class ActionsCell extends Component {
       this.timer = null;
     }
     this.setState({ isLockedRowTooltipShow: false });
-  };
-
-  getLockedRowTooltip = () => {
-    const { rowId } = this.props;
-    return (
-      <Tooltip
-        target={`action-cell-${rowId}`}
-        placement='bottom'
-        isOpen={this.state.isLockedRowTooltipShow}
-        fade={false}
-        hideArrow={true}
-        className="readonly-cell-tooltip"
-      >
-        {gettext('The row is locked and cannot be modified')}
-      </Tooltip>
-    );
   };
 
   handleShowExpandedProps = () => {

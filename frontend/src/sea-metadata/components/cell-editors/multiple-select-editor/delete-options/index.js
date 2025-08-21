@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import IconBtn from '../../../../../components/icon-btn';
-import { gettext } from '../../../../../utils/constants';
 import { DELETED_OPTION_TIPS, DELETED_OPTION_BACKGROUND_COLOR } from '../../../../constants';
 
 import './index.css';
@@ -14,7 +13,7 @@ const DeleteOption = ({ value, options, onDelete }) => {
     const invalidOptionIds = value.filter(optionId => optionId && !options.find(o => o.id === optionId || o.name === optionId));
     const invalidOptions = invalidOptionIds.map(optionId => ({
       id: optionId,
-      name: gettext(DELETED_OPTION_TIPS),
+      name: DELETED_OPTION_TIPS,
       color: DELETED_OPTION_BACKGROUND_COLOR,
     }));
     return [...selectedOptions, ...invalidOptions];

@@ -7,6 +7,7 @@ import { gettext } from '@/constants';
 import { SUPPORT_GROUP_COLUMN_TYPES } from '../../constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
+import context from '../../context';
 
 const GroupbySetter = ({
   target = 'sea-metadata-groupby-popover',
@@ -28,10 +29,10 @@ const GroupbySetter = ({
 
   const message = useMemo(() => {
     const groupbysLength = groupbys ? groupbys.length : 0;
-    if (groupbysLength === 1) return gettext('Grouped by 1 property');
-    if (groupbysLength > 1) return gettext('Grouped by {name_placeholder} properties').replace('{name_placeholder}', groupbysLength);
+    if (groupbysLength === 1) return gettext('Grouped by 1 {column').replace('{column}', context.t('column'));
+    if (groupbysLength > 1) return gettext('Grouped by {count} {columns}').replace('{count}', groupbysLength).replace('{columns}', context.t('columns'));
     // need to translate to Group
-    return gettext('Group by');
+    return gettext('Group');
   }, [groupbys]);
 
   const onSetterToggle = useCallback(() => {
