@@ -12,6 +12,7 @@ import NumberFormatter from '../cell-formatter/number';
 import MultipleSelectFormatter from '../cell-formatter/multiple-select';
 import RateFormatter from '../cell-formatter/rate';
 import TagsFormatter from '../cell-formatter/tags';
+import URLFormatter from '../cell-formatter/URL';
 import Empty from './empty';
 import { CellType } from '../../constants';
 import './index.css';
@@ -25,6 +26,13 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, openExpand
         <TextFormatter value={value} column={column} className={className} openExpandedRow={() => openExpandedRow && openExpandedRow(row._id)} >
           <Empty columnType={columnType} placeholder={emptyTip} />
         </TextFormatter>
+      );
+    }
+    case CellType.URL: {
+      return (
+        <URLFormatter value={value} className={className}>
+          <Empty columnType={columnType} placeholder={emptyTip} />
+        </URLFormatter>
       );
     }
     case CellType.CTIME:

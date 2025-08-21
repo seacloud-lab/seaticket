@@ -20,7 +20,7 @@ const TagsFilter = ({
   const { tagsData } = useTagsData();
 
   const tagOptions = useMemo(() => {
-    return tagsData.rows.map(tag => {
+    return tagsData && tagsData.rows ? tagsData.rows.map(tag => {
       const { _id, color, name, description } = tag;
       return {
         ...tag,
@@ -35,7 +35,7 @@ const TagsFilter = ({
           </>
         ),
       };
-    });
+    }) : [];
   }, [tagsData]);
 
   const openEditor = useCallback(() => {

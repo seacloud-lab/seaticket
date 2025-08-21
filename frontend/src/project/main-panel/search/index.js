@@ -6,7 +6,7 @@ import { searchAPI, connectionsAPI } from '../../api';
 import { gettext, mediaUrl } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { SearchResult } from '../../models';
-import Connection from '../../models/connection';
+import Connection from '../connections/models/connection';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';

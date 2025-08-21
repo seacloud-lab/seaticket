@@ -14,17 +14,14 @@ const CustomizeTable = ({
   rows = [],
   children,
   loadMore,
-  onDelete,
-  onModify,
-  showStatus,
-  onManualSync,
+  ...params
 }) => {
 
   return (
     <div className={classnames('sea-customize-table-wrapper', className)}>
       {children}
       {children && (<div className="sea-customize-table-wrapper-divider"></div>)}
-      <Body isLoading={isLoading} emptyTip={emptyTip} columns={columns} rows={rows} loadMore={loadMore} onDelete={onDelete} onModify={onModify} showStatus={showStatus} onManualSync={onManualSync} />
+      <Body isLoading={isLoading} emptyTip={emptyTip} columns={columns} rows={rows} loadMore={loadMore} { ...params } />
     </div>
   );
 };

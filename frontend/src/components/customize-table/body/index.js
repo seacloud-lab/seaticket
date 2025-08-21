@@ -1,11 +1,12 @@
-import React, { cloneElement, isValidElement, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import EmptyTip from '../../empty-tip';
 import Loading from '../../loading';
+import Row from './row';
 
 import './index.css';
 
-const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete, onModify, showStatus, onManualSync }) => {
+const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, ...params }) => {
 
   const onScroll = useCallback((event) => {
     if (isLoading) return;
@@ -31,22 +32,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, onDelete
           return (<div className="sea-custom-table-cell" key={key} style={{ width }}>{name}</div>);
         })}
       </div>
-      {rows.map(row => {
-        return (
-          <div className="sea-custom-table-row" key={row.id}>
-            {columns.map(column => {
-              const { key, width, is_custom, type, formatter } = column;
-              const value = is_custom ? row['config']?.[key] : row[key];
-              const valueFormatter = isValidElement(formatter) && cloneElement(formatter, { value, column, row, onModify, onDelete, showStatus, onManualSync });
-              return (
-                <div className={`sea-custom-table-cell sea-custom-table-${type}-cell`} key={key} style={{ width }} title={value}>
-                  {valueFormatter}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+      {rows.map(row => (<Row key={row.id} row={row} columns={columns} { ...params } />))}
       {isLoading && (
         <div className="sea-custom-table-row sea-custom-table-row-loading">
           <Loading />

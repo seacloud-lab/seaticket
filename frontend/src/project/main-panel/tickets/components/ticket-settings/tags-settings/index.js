@@ -22,7 +22,7 @@ const TagsSettings = ({
 
   const tagOptions = useMemo(() => {
     if (isLoading) return [];
-    return tagsData.rows.map(tag => {
+    return tagsData && tagsData.rows ? tagsData.rows.map(tag => {
       const { _id, color, name, description } = tag;
       return {
         ...tag,
@@ -37,7 +37,7 @@ const TagsSettings = ({
           </>
         ),
       };
-    });
+    }) : [];
   }, [tagsData, isLoading]);
 
   const openEditor = useCallback(() => {

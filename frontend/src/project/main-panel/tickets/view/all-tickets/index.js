@@ -3,7 +3,7 @@ import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import { useTags, useTicketsPage } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_TYPES, TICKET_STATUS_OPTIONS, TICKET_STATUS } from '../../../../constants';
+import { TICKET_PAGE_TYPE, TICKET_TYPES, TICKET_STATUS_OPTIONS } from '../../../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
@@ -26,22 +26,6 @@ const AllTickets = ({ projectUuid, projectName }) => {
     { type: CellType.COLLABORATOR, key: 'participants', name: gettext('Participants'), editable: false },
     { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
     { type: CellType.CREATOR, key: 'creator', name: gettext('Creator'), editable: false },
-  ], []);
-
-  const views = useMemo(() => [
-    {
-      _id: 'open',
-      name: gettext('Open'),
-      basic_filters: [
-        { column_key: 'status', filter_predicate: 'is', filter_term: TICKET_STATUS.OPEN }
-      ]
-    }, {
-      _id: 'closed',
-      name: gettext('Closed'),
-      basic_filters: [
-        { column_key: 'status', filter_predicate: 'is_not', filter_term: TICKET_STATUS.OPEN }
-      ]
-    }
   ], []);
 
   const api = useMemo(() => ({
@@ -75,7 +59,7 @@ const AllTickets = ({ projectUuid, projectName }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, views, columns, updateViewID]);
+  }), [projectUuid, columns, updateViewID]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
