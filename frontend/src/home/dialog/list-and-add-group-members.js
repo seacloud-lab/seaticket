@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'reactstrap';
+import { Button, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { IconButton, SearchInput, toaster } from '../../components';
 import { Utils } from '../../utils/utils';
@@ -143,7 +143,7 @@ class ListAndAddGroupMembers extends React.Component {
     }
     return (
       <Fragment>
-        <p>{gettext('Add group member')}</p>
+        <Label>{gettext('Add group member')}</Label>
         <div className='add-members'>
           <UserSelect
             placeholder={gettext('Search users')}

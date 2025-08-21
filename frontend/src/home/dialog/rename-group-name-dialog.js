@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, Label } from 'reactstrap';
 import { gettext } from '../../constants/config';
 import { seaQAAPI } from '../../api/web-api';
 import { Utils } from '../../utils/utils';
@@ -66,12 +66,18 @@ class RenameGroupNameDialog extends React.Component {
 
   render() {
     return (
-      <Modal isOpen={true} toggle={this.toggle}>
+      <Modal isOpen={true} toggle={this.toggle} autoFocus={false}>
         <ModalHeader toggle={this.toggle}>{gettext('Rename group')}</ModalHeader>
         <ModalBody>
-          <label htmlFor="newGroupName">{gettext('Rename group to')}</label>
-          <Input type="text" id="newGroupName" value={this.state.newGroupName}
-            onChange={this.handleGroupNameChange} onKeyDown={this.handleKeyDown}/>
+          <Label for="newGroupName">{gettext('Rename group to')}</Label>
+          <Input
+            type="text"
+            id="newGroupName"
+            value={this.state.newGroupName}
+            onChange={this.handleGroupNameChange}
+            onKeyDown={this.handleKeyDown}
+            autoFocus
+          />
         </ModalBody>
         <ModalFooter>
           <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
