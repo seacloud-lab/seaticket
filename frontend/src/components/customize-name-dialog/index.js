@@ -37,10 +37,10 @@ const CustomizeNameDialog = ({
   }, [value, onSubmit]);
 
   return (
-    <Modal isOpen={true} centered={true} toggle={onToggle}>
+    <Modal isOpen={true} centered={true} autoFocus={false} toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{title || gettext('New')}</ModalHeader>
       <ModalBody>
-        <Input value={value} onChange={onValueChange} />
+        <Input value={value} autoFocus onChange={onValueChange} />
         {errorMessage && <Alert>{errorMessage}</Alert>}
       </ModalBody>
       <ModalFooter>

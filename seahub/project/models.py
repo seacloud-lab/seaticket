@@ -950,29 +950,30 @@ class TicketsManager(models.Manager):
         filters = view.get('filters', [])
         filter_conjunction = view.get('filter_conjunction', 'OR')
         sorts = view.get('sorts', [])
-        
-        status_filter = ''
-        for f in basic_filters:
-            if f.get('column_key') == 'status':
-                status_filter = f
-        if status_filter:
-            if not status_filter['filter_term']:
-                status_filter['filter_term'] = ['', 'open', 'completed', 'not_planned', 'duplicate']
-            elif 'open' in status_filter['filter_term']:
-                if isinstance(status_filter['filter_term'], list):
-                    status_filter['filter_term'] = status_filter['filter_term'] + ['']
-                else:
-                    status_filter['filter_term'] = ['', 'open']
+
+        q = Q(project_uuid=project_uuid) & Q(deleted=False)
+
+        for basic_filter in basic_filters:
+            if basic_filter.get('column_key') == 'status':
+                value = basic_filter['filter_term']
+                if not value:
+                    value = ['', 'open', 'completed', 'not_planned', 'duplicate']
+                elif 'open' in value:
+                    value = value + ['']
+                q = q & Q(status__in=value)
+            if basic_filter.get('column_key') == 'tags':
+                value = basic_filter['filter_term']
+                if value:
+                    tags = TicketTags.objects.filter(tag_id__in=value)
+                    if tags:
+                        ticket_ids = [tag.ticket_id for tag in tags]
+                        q = q & Q(id__in=ticket_ids)
 
         if not sorts:
             sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
 
-        sorts = [sort['column_key'] if sort['sort_type'] == 'down' else f'-{sort["column_key"]}' for sort in sorts]
-
-        if status_filter:
-            return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False) & Q(status__in=status_filter['filter_term'])).order_by(', '.join(sorts))[start: end]
-
-        return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False)).order_by(', '.join(sorts))[start: end]
+        return self.filter(q).order_by(', '.join(sorts))[start: end]
 
 
     def list_tickets_by_username(self, project_uuid, username, start, end):

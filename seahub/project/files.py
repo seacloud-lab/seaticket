@@ -208,3 +208,4 @@ class GetProjectFileView(APIView):
         response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
         response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
         return response
+

@@ -143,6 +143,26 @@ class ProjectConnectionView(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
+    def get(self, request, project_uuid, connection_id):
+        """get project connection records
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resources check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
+
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
@@ -178,7 +198,10 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get(id=connection_id)
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         config = decrypt_config(json.loads(project_connection.config))
         new_config = json.loads(new_config)

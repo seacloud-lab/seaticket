@@ -496,7 +496,7 @@ CREATE TABLE `ticket_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `ticket_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 
 CREATE TABLE `project_tags`  (
