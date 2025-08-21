@@ -1,13 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { ModalHeader } from '../../../components';
-import { gettext } from '../../../constants';
-import { seaQAAPI } from '../../../api/web-api';
-import UserSelect from '../../../components/user-select';
-import { Utils } from '../../../utils/utils';
-
-import './index.css';
+import { Button, Modal, ModalBody, ModalFooter, Label } from 'reactstrap';
+import { ModalHeader } from '../../components';
+import { gettext } from '../../constants';
+import { seaQAAPI } from '../../api/web-api';
+import UserSelect from '../../components/user-select';
+import { Utils } from '../../utils/utils';
 
 const propTypes = {
   groupID: PropTypes.number.isRequired,
@@ -53,10 +51,11 @@ class TransferGroupDialog extends React.Component {
       <Modal isOpen={true} toggle={this.toggle}>
         <ModalHeader toggle={this.toggle}>{gettext('Transfer group')}</ModalHeader>
         <ModalBody>
-          <p>{gettext('Transfer group to')}</p>
+          <Label for="transferGroupTo">{gettext('Transfer group to')}</Label>
           <UserSelect
             isMulti={false}
             className="reviewer-select"
+            id="transferGroupTo"
             selectedUsers={selectedUsers}
             placeholder={gettext('Search users')}
             onSelectChange={this.handleSelectChange}

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, ModalBody, ModalFooter, Input, Button } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Input, Button, Label } from 'reactstrap';
 import { toaster, ModalHeader } from '../../components';
 import { gettext } from '../../constants';
 import { seaQAAPI } from '../../api/web-api';
@@ -72,7 +72,7 @@ class CreateGroupDialog extends React.Component {
       <Modal isOpen={true} toggle={this.toggle} autoFocus={false}>
         <ModalHeader toggle={this.toggle} >{gettext('New group')}</ModalHeader>
         <ModalBody>
-          <label htmlFor="groupName">{gettext('Name')}</label>
+          <Label for="groupName">{gettext('Name')}</Label>
           <Input
             type="text"
             id="groupName"
