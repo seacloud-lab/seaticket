@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import json
+import datetime
 from dateutil.relativedelta import relativedelta
 from email.utils import formatdate
 
@@ -29,7 +30,7 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
     replace_file_url_in_content, upload_files_to_s3, delete_file_from_s3, gen_tmp_upload_file_path, add_github_issues_index_task, \
     manual_sync_connection
 
-from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE, IMAGE_EXTS
+from seahub.project.constants import ConnectionType, TICKET_STATUS, TICKET_TYPE, IMAGE_EXTS, CrawlStatus
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -354,6 +355,35 @@ class ProjectConnectionSyncView(APIView):
             error_msg = f'Type {connection_type} not support.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        # check connection status
+        connection_status = json.loads(project_connection.status)
+        if connection_status.get('last_sync_status') == CrawlStatus.CRAWLING:
+            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
+        elif connection_type != ConnectionType.SEAFILE.value and connection_status.get('last_sync_status') == CrawlStatus.PENDING:
+            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently pending')
+        
+        # check cooldown
+        if project_connection.indexed_at:
+            now = datetime.datetime.now(datetime.timezone.utc)
+            time_diff = now - project_connection.indexed_at
+            cooldown_seconds = 24 * 60 * 60
+            if time_diff.total_seconds() < cooldown_seconds:
+                next_sync_utc = project_connection.indexed_at + datetime.timedelta(seconds=cooldown_seconds)
+                error_msg = {
+                    'message_type': 'Manual sync too frequent',
+                    'next_time': next_sync_utc
+                }
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
+        
+        # update connection status
+        try:
+            connection_status['last_sync_status'] = CrawlStatus.PENDING
+            ProjectConnections.objects.update_status(project_connection.id, connection_status)
+        except Exception as e:
+            logger.error(f'update connection {project_connection.id} status error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
         try:
             params = {
                 'connection_id': project_connection.id,

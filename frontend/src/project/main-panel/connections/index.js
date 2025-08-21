@@ -11,6 +11,7 @@ import ModifyConnectionDialog from './modify-connection-dialog';
 import ConnectionStatusDialog from './connection-status-dialog';
 import createFormatter from './cell-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
+import dayjs from '../../../utils/dayjs';
 
 import './index.css';
 
@@ -146,7 +147,14 @@ const Connections = ({ title }) => {
       toaster.success(gettext('Sync task queued'));
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
+      let error_msg = '';
+      if (errorMessage.message_type === 'Manual sync too frequent') {
+        const next_time = errorMessage.next_time ? dayjs(errorMessage.next_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+        error_msg = errorMessage.message_type + '. Next time:' + next_time;
+      } else {
+        error_msg = errorMessage;
+      }
+      toaster.danger(error_msg);
     });
   }, []);
 
