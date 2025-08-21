@@ -116,7 +116,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
           disabled={true}
           target="sea-metadata-edit-column-format"
           title={gettext('Edit format settings')}
-          tip={isPrivateColumn ? gettext('This property is not editable') : gettext('You do not have permission')}
+          tip={isPrivateColumn ? gettext('This {column} is not editable').replace('{column}', context.t('column')) : gettext('You do not have permission')}
           iconName="set-up"
         />
       );
@@ -249,7 +249,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
                 target="sea-metadata-sort-ascending-column"
                 iconName="sort-ascending"
                 title={gettext('Sort ascending')}
-                tip={!canModifyView ? gettext('You do not have permission') : gettext('This property does not support sorting')}
+                tip={!canModifyView ? gettext('You do not have permission') : gettext('This {column} does not support sorting').replace('{column}', context.t('column'))}
                 onChange={() => modifySort(SORT_TYPE.UP)}
                 onMouseEnter={hideSubMenu}
               />
@@ -258,7 +258,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
                 target="sea-metadata-sort-descending-column"
                 iconName="sort-descending"
                 title={gettext('Sort descending')}
-                tip={!canModifyView ? gettext('You do not have permission') : gettext('This property does not support sorting')}
+                tip={!canModifyView ? gettext('You do not have permission') : gettext('This {column} does not support sorting').replace('{column}', context.t('column'))}
                 onChange={() => modifySort(SORT_TYPE.DOWN)}
                 onMouseEnter={hideSubMenu}
               />
@@ -269,7 +269,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
             target="sea-metadata-delete-column"
             iconName="delete"
             title={gettext('Delete ')}
-            tip={isPrivateColumn ? gettext('This property can not be deleted') : gettext('You do not have permission')}
+            tip={isPrivateColumn ? gettext('This {column} can not be deleted').replace('{column}', context.t('column')) : gettext('You do not have permission')}
             onChange={onDelete}
             onMouseEnter={hideSubMenu}
           /> */}

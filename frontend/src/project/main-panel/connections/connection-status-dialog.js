@@ -6,12 +6,12 @@ import { CenteredLoading, ModalHeader, toaster } from '../../../components';
 import { connectionsAPI } from '../../api';
 import { Utils } from '../../../utils/utils';
 
-const ConnectionStatusDialog = ({ projectUuid, record, onToggle }) => {
-  const [connection_record, setRecord] = useState(null);
+const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
+  const [record, setRecord] = useState(null);
   const [isLoading, setLoading] = useState(true);
 
   const getConnectionRecord = useCallback(() => {
-    connectionsAPI.getConnection(projectUuid, record.id).then(res => {
+    connectionsAPI.getConnection(projectUuid, connectionId).then(res => {
       setRecord(res.data.record);
       setLoading(false);
     }).catch((error) => {
@@ -24,7 +24,7 @@ const ConnectionStatusDialog = ({ projectUuid, record, onToggle }) => {
     getConnectionRecord();
   }, []);
 
-  const status = connection_record ? JSON.parse(connection_record.status) : {};
+  const status = record && record.status ? JSON.parse(record.status) : {};
 
   return (
     <Modal isOpen={true} toggle={onToggle}>

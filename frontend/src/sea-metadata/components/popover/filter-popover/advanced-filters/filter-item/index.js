@@ -435,7 +435,7 @@ class FilterItem extends React.Component {
           const style = selectedOption ?
             { background: selectedOption.color, color: selectedOption.textColor || null } :
             { background: DELETED_OPTION_BACKGROUND_COLOR };
-          const selectedOptionName = selectedOption ? selectedOption.name : gettext('deleted option');
+          const selectedOptionName = selectedOption ? selectedOption.name : DELETED_OPTION_TIPS;
           selectedOptionDom = { label: (
             <span className={className} style={style} title={selectedOptionName} aria-label={selectedOptionName}>{selectedOptionName}</span>
           ) };

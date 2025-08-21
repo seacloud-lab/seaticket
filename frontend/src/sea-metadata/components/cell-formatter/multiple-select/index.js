@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import SelectOption from '../select-option';
-import { gettext } from '@/constants';
 import { DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS } from '../../../constants';
 
 import './index.css';
@@ -14,7 +13,7 @@ const MultipleSelectFormatter = ({ value, options, fontSize, className, children
     const invalidOptionIds = value.filter(optionId => optionId && !options.find(o => o.id === optionId || o.name === optionId));
     const invalidOptions = invalidOptionIds.map(optionId => ({
       id: optionId,
-      name: gettext(DELETED_OPTION_TIPS),
+      name: DELETED_OPTION_TIPS,
       color: DELETED_OPTION_BACKGROUND_COLOR,
     }));
     return [...selectedOptions, ...invalidOptions];

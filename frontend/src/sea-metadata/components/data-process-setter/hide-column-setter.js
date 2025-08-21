@@ -18,9 +18,9 @@ const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColum
 
   const message = useMemo(() => {
     const hiddenColumnsLength = validHiddenColumns.length;
-    if (hiddenColumnsLength === 1) return gettext('1 hidden property');
-    if (hiddenColumnsLength > 1) return gettext('{name_placeholder} hidden properties').replace('{name_placeholder}', hiddenColumnsLength);
-    return gettext('Hide properties');
+    if (hiddenColumnsLength === 1) return gettext('1 hidden column');
+    if (hiddenColumnsLength > 1) return gettext('{count} hidden columns').replace('{count}', hiddenColumnsLength);
+    return gettext('Hide columns');
   }, [validHiddenColumns]);
 
   const onSetterToggle = useCallback(() => {

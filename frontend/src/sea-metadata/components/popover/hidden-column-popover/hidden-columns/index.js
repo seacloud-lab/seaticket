@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideColumn from './hide-column';
 import { gettext } from '@/constants';
+import context from '../../../../context';
 
 const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
   const [draggingColumnKey, setDraggingCellKey] = useState(null);
@@ -27,7 +28,11 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
 
   return (
     <div className={classnames('hide-columns-list', { 'empty-hide-columns-container': isEmpty })}>
-      {isEmpty && <div className="empty-hide-columns-list">{gettext('No properties available to be hidden')}</div>}
+      {isEmpty && (
+        <div className="empty-hide-columns-list">
+          {gettext('No {columns} available to be hidden').replace('{columns}', context.t('columns'))}
+        </div>
+      )}
       {!isEmpty && columns.map((column, columnIndex) => {
         return (
           <HideColumn

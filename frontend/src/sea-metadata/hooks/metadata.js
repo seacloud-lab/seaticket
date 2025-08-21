@@ -19,6 +19,7 @@ export const MetadataProvider = ({
   toggleAllTags,
   localStorageNamePrefix,
   createContextMenuOptions,
+  t,
   children,
   ...params
 }) => {
@@ -103,7 +104,7 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(gettext('Successfully deleted'));
+        toaster.success(gettext('{Rows} deleted').replace('{Rows}', context.t('Rows')));
         success_callback && success_callback();
       },
     });
@@ -175,6 +176,7 @@ export const MetadataProvider = ({
       settings: '',
       permission: 'rw',
       api,
+      t,
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
     storeRef.current = new Store({ viewId: viewID });

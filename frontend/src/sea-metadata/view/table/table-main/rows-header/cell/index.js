@@ -5,7 +5,6 @@ import { UncontrolledTooltip } from 'reactstrap';
 import Icon from '@/components/icon';
 import ResizeColumn from './resize-column';
 import DropdownMenu from './dropdown-menu';
-import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
 import { checkIsNameColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
@@ -161,7 +160,7 @@ const Cell = ({
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
         <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
-          {gettext(headerIconTooltip)}
+          {headerIconTooltip}
         </UncontrolledTooltip>
         <div className="header-name d-flex">
           <span title={name} className={classnames('header-name-text', { 'double': height === 56 })}>{name}</span>
