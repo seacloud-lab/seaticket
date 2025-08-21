@@ -87,9 +87,9 @@ export const ViewsDataProvider = ({
     setLoading(true);
     context.getViews().then(res => {
       const viewsData = res.data;
-      setViewsData(res.data);
+      setViewsData(viewsData);
       const view = viewsData.views.find(v => v._id === viewID);
-      if (!view);
+      if (view) return;
       toggleView(viewsData.views[0]._id);
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);

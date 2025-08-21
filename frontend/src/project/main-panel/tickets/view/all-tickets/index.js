@@ -12,7 +12,7 @@ import './index.css';
 
 const AllTickets = ({ projectUuid, projectName }) => {
 
-  const { togglePageType, viewID, updateViewID } = useTicketsPage();
+  const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
 
   const columns = useMemo(() => [
@@ -195,6 +195,8 @@ const AllTickets = ({ projectUuid, projectName }) => {
       Rows: gettext('Tickets'),
     };
   }, []);
+
+  if (isLoading) return null;
 
   return (
     <SeaMetadata
