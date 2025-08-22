@@ -176,6 +176,7 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
+        name = request.data.get('name')
         new_config = request.data.get('config')
         is_active = request.data.get('is_active')
 
@@ -197,7 +198,6 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # argument check
-        name = request.data.get('name')
         if new_config:
             config = decrypt_config(json.loads(project_connection.config))
             new_config = json.loads(new_config)
