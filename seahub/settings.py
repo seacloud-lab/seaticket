@@ -860,3 +860,9 @@ if LOG_LEVEL in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
         LOGGING['loggers']['py.warnings']['level'] = LOG_LEVEL
     except:
         pass
+
+
+S3_HOST = os.environ.get('S3_HOST') or S3_HOST
+S3_FILE_BUCKET = os.environ.get('S3_FILE_BUCKET') or S3_FILE_BUCKET
+S3_KEY_ID = os.environ.get('S3_KEY_ID') or S3_KEY_ID
+S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY') or S3_SECRET_KEY
