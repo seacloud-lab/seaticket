@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
+import dayjs from '@/utils/dayjs';
 import { connectionsAPI } from '../../../../api';
 import { Connection } from '../../models';
 import { gettext } from '@/constants';
@@ -143,6 +144,24 @@ const AllConnections = ({ projectUuid }) => {
     togglePageType && togglePageType(row.id);
   }, [togglePageType]);
 
+  const onManualSync = useCallback((record) => {
+    const id = record?.id || activeRecordRef.current?.id;
+    if (!id) return;
+    connectionsAPI.triggerSync(projectUuid, id).then(() => {
+      toaster.success(gettext('Sync task queued'));
+    }).catch((error) => {
+      const errorMessage = Utils.getErrorMsg(error);
+      let error_msg = '';
+      if (errorMessage.message_type === 'Manual sync too frequent') {
+        const next_time = errorMessage.next_time ? dayjs(errorMessage.next_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+        error_msg = errorMessage.message_type + '. Next time:' + next_time;
+      } else {
+        error_msg = errorMessage;
+      }
+      toaster.danger(error_msg);
+    });
+  }, [projectUuid]);
+
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
@@ -211,6 +230,7 @@ const AllConnections = ({ projectUuid }) => {
         onModify={openModifyDialog}
         onMore={onMore}
         expandRow={handleExpandRow}
+        onManualSync={onManualSync}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>
