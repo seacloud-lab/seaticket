@@ -11,6 +11,7 @@ import ModifyConnectionDialog from './modify-connection-dialog';
 import ConnectionStatusDialog from './connection-status-dialog';
 import createFormatter from './cell-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
+import dayjs from '../../../utils/dayjs';
 
 import './index.css';
 
@@ -139,6 +140,24 @@ const Connections = ({ title }) => {
     setIsShowStatusDialog(false);
   }, []);
 
+  const onManualSync = useCallback((record) => {
+    const id = record?.id || activeRecordRef.current?.id;
+    if (!id) return;
+    connectionsAPI.triggerSync(projectUuid, id).then(() => {
+      toaster.success(gettext('Sync task queued'));
+    }).catch((error) => {
+      const errorMessage = Utils.getErrorMsg(error);
+      let error_msg = '';
+      if (errorMessage.message_type === 'Manual sync too frequent') {
+        const next_time = errorMessage.next_time ? dayjs(errorMessage.next_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+        error_msg = errorMessage.message_type + '. Next time:' + next_time;
+      } else {
+        error_msg = errorMessage;
+      }
+      toaster.danger(error_msg);
+    });
+  }, []);
+
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
     setLoading(true);
@@ -209,6 +228,7 @@ const Connections = ({ title }) => {
         onDelete={openDeleteConfirmDialog}
         onModify={openModifyDialog}
         showStatus={openStatusDialog}
+        onManualSync={onManualSync}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>

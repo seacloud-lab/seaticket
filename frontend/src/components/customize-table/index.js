@@ -17,13 +17,14 @@ const CustomizeTable = ({
   onDelete,
   onModify,
   showStatus,
+  onManualSync,
 }) => {
 
   return (
     <div className={classnames('sea-customize-table-wrapper', className)}>
       {children}
       {children && (<div className="sea-customize-table-wrapper-divider"></div>)}
-      <Body isLoading={isLoading} emptyTip={emptyTip} columns={columns} rows={rows} loadMore={loadMore} onDelete={onDelete} onModify={onModify} showStatus={showStatus} />
+      <Body isLoading={isLoading} emptyTip={emptyTip} columns={columns} rows={rows} loadMore={loadMore} onDelete={onDelete} onModify={onModify} showStatus={showStatus} onManualSync={onManualSync} />
     </div>
   );
 };
@@ -39,6 +40,7 @@ CustomizeTable.propTypes = {
   onDelete: PropTypes.func,
   onModify: PropTypes.func,
   showStatus: PropTypes.func,
+  onManualSync: PropTypes.func,
 };
 
 CustomizeTable.Header = Header;

@@ -58,6 +58,13 @@ CONNECTION_FIELDS = {
     ]
 }
 
+class CrawlStatus:
+    PENDING = 'pending'
+    CRAWLING = 'crawling'
+    COMPLETED = 'completed'
+    FAILED = 'failed'
+    
+
 TICKET_STATUS = (
     '',
     'open',

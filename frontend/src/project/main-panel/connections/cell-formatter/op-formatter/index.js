@@ -5,7 +5,7 @@ import { gettext } from '../../../../../constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, showStatus, row }) => {
+const OpFormatter = ({ onModify, onDelete, showStatus, onManualSync, row }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -21,15 +21,27 @@ const OpFormatter = ({ onModify, onDelete, showStatus, row }) => {
       {onDelete &&
         <IconButton className="bg-color-deep mr-1" title={gettext('Delete')} icon="delete" onClick={() => onDelete(row)} />
       }
-      {showStatus &&
+
+      {(showStatus || onManualSync) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem onClick={() => showStatus(row)}>
-              {gettext('Status')}
-            </DropdownItem>
+            {showStatus &&
+              (
+                <DropdownItem onClick={() => showStatus(row)}>
+                  {gettext('Status')}
+                </DropdownItem>
+              )
+            }
+            {onManualSync &&
+              (
+                <DropdownItem onClick={() => onManualSync(row)}>
+                  {gettext('Sync now')}
+                </DropdownItem>
+              )
+            }
           </DropdownMenu>
         </Dropdown>
       }

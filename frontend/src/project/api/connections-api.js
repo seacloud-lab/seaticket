@@ -95,6 +95,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  triggerSync(projectUuid, connectionID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/sync/';
+    return this.req.post(url);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

@@ -427,6 +427,16 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(project=project, type=connection_type)
         records = [record for record in records if record.id != connection_id]
         return self.is_valid(connection_type, records, config)
+    
+
+    def update_status(self, connection_id, status):
+        try:
+            record = self.get(id=connection_id)
+            record.status = json.dumps(status)
+            record.save()
+            return record
+        except ProjectConnections.DoesNotExist:
+            return None
 
 
 class ProjectConnections(models.Model):
