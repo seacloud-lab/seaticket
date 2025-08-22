@@ -169,7 +169,8 @@ def manual_sync_connection(params):
     headers = {"Authorization": "Token %s" % token}
     url = urljoin(SEAQA_INDEXER_SERVER_URL, '/manual-sync-connection')
     resp = requests.post(url, json=params, headers=headers)
-    return json.loads(resp.content)
+    status_code = resp.status_code
+    return json.loads(resp.content), status_code
 
 
 def add_index_seafile_task(params):

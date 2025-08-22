@@ -340,22 +340,13 @@ class ProjectConnectionSyncView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        try:
-            project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        except ProjectConnections.DoesNotExist:
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        except Exception as e:
-            logger.error(f'get connection {connection_id} error: {e}')
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        connection_type = project_connection.type
-        if not ConnectionType.is_valid(connection_type):
-            error_msg = f'Type {connection_type} not support.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+        
         # check connection status
+        connection_type = project_connection.type
         connection_status = json.loads(project_connection.status)
         if connection_status.get('last_sync_status') == CrawlStatus.CRAWLING:
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
@@ -389,10 +380,10 @@ class ProjectConnectionSyncView(APIView):
                 'connection_id': project_connection.id,
                 'connection_type': connection_type,
             }
-            res = manual_sync_connection(params)
+            res, status_code = manual_sync_connection(params)
             success = res.get('success')
             if not success:
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, res.get('error_msg'))
+                return api_error(status_code, res.get('error_msg'))
         except Exception as e:
             logger.error(f'trigger sync for connection {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
