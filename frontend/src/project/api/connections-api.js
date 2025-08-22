@@ -100,6 +100,15 @@ class ConnectionsAPI {
     return this.req.post(url);
   }
 
+  getConnectionDetails(projectUuid, connectionID, { start = 0, limit = 100 } = {}){
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
+    let params = {
+      start,
+      limit
+    };
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

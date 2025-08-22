@@ -5,11 +5,14 @@ import { gettext } from '@/constants';
 import { VIEW_TYPE } from '../../../../constants';
 import StatusFilter from './status-filter';
 import TagsFilter from './tags-filter';
+import { getColumnByKey } from '@/sea-metadata/utils/column';
+import { useTagsData } from '@/sea-metadata/hooks';
 
 import './index.css';
-import { getColumnByKey } from '@/sea-metadata/utils/column';
 
 const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
+
+  const { tagsData } = useTagsData();
 
   const onStatusChange = useCallback((newValue) => {
     const filterIndex = filters.findIndex(filter => filter.column_key === 'status');
@@ -35,10 +38,10 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
           {filters.map(filter => {
             const { column_key, filter_term } = filter;
             const column = getColumnByKey(columns, column_key);
-            if (column_key === 'status') {
+            if (column && column_key === 'status') {
               return (<StatusFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
             }
-            if (column_key === 'tags') {
+            if (column && column_key === 'tags' && tagsData) {
               return (<TagsFilter readOnly={readOnly} value={filter_term} key={column_key} onChange={onTagsChange} />);
             }
             return null;

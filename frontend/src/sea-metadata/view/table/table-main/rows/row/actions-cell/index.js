@@ -36,7 +36,7 @@ class ActionsCell extends Component {
   };
 
   handleShowExpandedProps = () => {
-    this.props.openExpandedRow(this.props.rowId);
+    this.props.openExpandedRow(this.props.row);
   };
 
   render() {

@@ -10,7 +10,7 @@ import context from './context';
 import { CenteredLoading } from '@/components';
 import { lang, mediaUrl, server, username, } from '@/constants';
 
-const Main = ({ className, expandRow, toggleView, ...params }) => {
+const Main = ({ className, expandRow, toggleView, isShowViews = true, ...params }) => {
   const { isLoading } = useViewsData();
 
   if (isLoading) {
@@ -24,7 +24,7 @@ const Main = ({ className, expandRow, toggleView, ...params }) => {
   return (
     <MetadataProvider { ...params }>
       <div className={classnames('sea-metadata', className)}>
-        <ViewToolBar toggleView={toggleView} />
+        <ViewToolBar isShowViews={isShowViews} toggleView={toggleView} />
         <View expandRow={expandRow} />
       </div>
     </MetadataProvider>

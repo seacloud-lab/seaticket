@@ -494,6 +494,51 @@ class ProjectConnections(models.Model):
             'status': self.status,
         }
 
+
+class GitHubIssuesRecord(models.Model):
+    """ GitHub issues table"""
+
+    issue_id = models.BigIntegerField()
+    issue_number = models.IntegerField()
+    title = models.TextField(null=True, blank=True)
+    body = models.TextField(null=True, blank=True)
+    state = models.CharField(max_length=20, null=True, blank=True)
+    labels = models.TextField(null=True, blank=True)
+    author = models.CharField(max_length=255, null=True, blank=True)
+    url = models.CharField(max_length=1024, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+    comments = models.IntegerField(null=True, blank=True)
+    connection_id = models.CharField(max_length=64)
+    need_index = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'github_issues'
+        unique_together = [('issue_id', 'connection_id')]
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'issue_id': self.issue_id,
+            'issue_number': self.issue_number,
+            'title': self.title,
+            'body': self.body,
+            'state': self.state,
+            'labels': self.labels,
+            'author': self.author,
+            'url': self.url,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'closed_at': self.closed_at,
+            'comments': self.comments,
+            'connection_id': self.connection_id,
+            'need_index': self.need_index,
+            'deleted': self.deleted,
+        }
+
+
 class TicketRepliesManager(models.Manager):
 
     def list_replies(self, ticket_id, start, end):

@@ -29,6 +29,7 @@ export const CollaboratorsProvider = ({
   }, [collaboratorsCache, propsUpdateCollaboratorsCache]);
 
   useEffect(() => {
+    if (!getCollaborators) return;
     getCollaborators().then(res => {
       const collaborators = Array.isArray(res?.data?.user_list) ? res.data.user_list.map(user => new User(user)) : [];
       setCollaborators(collaborators);

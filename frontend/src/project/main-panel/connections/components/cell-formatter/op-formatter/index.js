@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { IconButton } from '../../../../../components';
-import { gettext } from '../../../../../constants';
+import { IconButton } from '@/components';
+import { gettext } from '@/constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, showStatus, onManualSync, row }) => {
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -21,16 +21,15 @@ const OpFormatter = ({ onModify, onDelete, showStatus, onManualSync, row }) => {
       {onDelete &&
         <IconButton className="bg-color-deep mr-1" title={gettext('Delete')} icon="delete" onClick={() => onDelete(row)} />
       }
-
-      {(showStatus || onManualSync) &&
+      {(onMore || onManualSync) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
           </DropdownToggle>
           <DropdownMenu>
-            {showStatus &&
+            {onMore &&
               (
-                <DropdownItem onClick={() => showStatus(row)}>
+                <DropdownItem onClick={() => onMore(row)}>
                   {gettext('Status')}
                 </DropdownItem>
               )

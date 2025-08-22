@@ -60,6 +60,7 @@ CONNECTION_FIELDS = {
     ]
 }
 
+
 class CrawlStatus:
     PENDING = 'pending'
     CRAWLING = 'crawling'

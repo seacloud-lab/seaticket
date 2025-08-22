@@ -7,6 +7,7 @@ const CellType = {
   MTIME: 'mtime',
   CHECKBOX: 'checkbox',
   COLLABORATOR: 'collaborator',
+  URL: 'url',
   DATE: 'date',
   LONG_TEXT: 'long-text',
   SINGLE_SELECT: 'single-select',

@@ -34,7 +34,7 @@ class UserService {
   startQueryUsers = () => {
     if (this.pendingTimer || this.waitingQueryEmails.length === 0) return;
     this.pendingTimer = setTimeout(() => {
-      this.api(this.waitingQueryEmails).then(res => {
+      this.api && this.api(this.waitingQueryEmails).then(res => {
         const { user_list } = res.data;
         user_list.forEach(user => {
           this.emailUserMap[user.email] = user;

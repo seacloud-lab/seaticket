@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { gettext } from '../../../constants';
-import { CenteredLoading, ModalHeader, toaster } from '../../../components';
-import { connectionsAPI } from '../../api';
-import { Utils } from '../../../utils/utils';
+import { gettext } from '@/constants';
+import { CenteredLoading, ModalHeader, toaster } from '@/components';
+import { connectionsAPI } from '../../../api';
+import { Utils } from '@/utils/utils';
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   const [record, setRecord] = useState(null);

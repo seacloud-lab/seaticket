@@ -1,7 +1,7 @@
-import { mediaUrl } from '../../../../../constants';
-import { CONNECTION_TYPES } from '../../../../constants';
+import { mediaUrl } from '@/constants';
+import { CONNECTION_TYPES } from '../../../constants';
 
-import './index.css';
+// import './index.css';
 
 const ConnectionNameFormatter = ({ value, row = {} }) => {
   const connectionType = row['type'];

@@ -3,6 +3,10 @@
   align-items: center;
 }
 
+.sea-qa-connection-name-formatter.click-able:hover {
+  cursor: pointer;
+}
+
 .sea-qa-connection-name-formatter .connection-icon {
   height: 24px;
   width: 24px;
@@ -15,4 +19,8 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.sea-qa-connection-name-formatter.click-able:hover .connection-name {
+  text-decoration: underline;
 }

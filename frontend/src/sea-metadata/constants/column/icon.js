@@ -17,6 +17,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.NUMBER]: 'number',
   [CellType.RATE]: 'rate',
   [CellType.TAGS]: 'tag',
+  [CellType.URL]: 'url',
 };
 
 const COLUMNS_ICON_NAME = {
@@ -35,6 +36,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.NUMBER]: gettext('Number'),
   [CellType.RATE]: gettext('Rate'),
   [CellType.TAGS]: gettext('Tag'),
+  [CellType.URL]: gettext('URL'),
 };
 
 export {

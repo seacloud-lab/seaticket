@@ -56,13 +56,14 @@
   padding: 0.25rem 0.25rem 0.25rem 0;
 }
 
-.delete-sort .sea-qa-icon-svg-fork-number {
+.delete-sort .sea-qa-icon-svg-x {
   display: inline-block;
-  font-size: 12px;
+  height: 12px;
+  width: 12px;
   color: #999;
   cursor: pointer;
 }
 
-.sorts-list .delete-sort .sea-qa-icon-svg-fork-number:hover {
+.sorts-list .delete-sort:hover .sea-qa-icon-svg-x {
   color: #666666;
 }

@@ -17,7 +17,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, ProjectConnections
+from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, encrypt_config, decrypt_config, add_github_issues_index_task, manual_sync_connection
 from seahub.project.constants import ConnectionType, CrawlStatus
@@ -337,3 +337,53 @@ class ProjectConnectionSyncView(APIView):
 
         return Response({'success': True}, status=status.HTTP_200_OK)
 
+
+class ProjectConnectionDetailsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id):
+        """get GitHub Issues records
+        """
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+
+            start = request.GET.get('start', 0)
+            limit = request.GET.get('limit', 1000)
+
+            try:
+                start = int(start)
+                limit = int(limit)
+            except:
+                start = 0
+                limit = 1000
+            end = start + limit
+
+            records = GitHubIssuesRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
+            records = [record.to_dict() for record in records]
+        else:
+            records = []
+
+        return Response({'records': records}, status=status.HTTP_200_OK)
