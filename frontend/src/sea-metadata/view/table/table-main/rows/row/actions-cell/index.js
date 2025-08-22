@@ -40,7 +40,8 @@ class ActionsCell extends Component {
   };
 
   render() {
-    const { isSelected, isLastFrozenCell, index, height, rowId } = this.props;
+    const { isSelected, isLastFrozenCell, index, height, row } = this.props;
+    const rowId = row._id;
     const cellStyle = {
       height,
       width: SEQUENCE_COLUMN_WIDTH,
@@ -84,7 +85,6 @@ ActionsCell.propTypes = {
   isLocked: PropTypes.bool,
   isSelected: PropTypes.bool,
   isLastFrozenCell: PropTypes.bool,
-  rowId: PropTypes.string,
   index: PropTypes.number,
   height: PropTypes.number,
   onSelectRow: PropTypes.func,

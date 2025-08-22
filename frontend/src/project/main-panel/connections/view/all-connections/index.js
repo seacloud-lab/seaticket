@@ -26,7 +26,7 @@ const AllConnections = ({ projectUuid }) => {
   const pageCountRef = useRef(Math.max(parseInt(window.innerHeight / 41) + 1, 100));
   const hasMoreRef = useRef(true);
 
-  const { togglePageType } = useConnectionsPage();
+  const { togglePageType, updatePageName } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
 
@@ -141,6 +141,7 @@ const AllConnections = ({ projectUuid }) => {
   }, []);
 
   const handleExpandRow = useCallback((row) => {
+    updatePageName && updatePageName(row.name);
     togglePageType && togglePageType(row.id);
   }, [togglePageType]);
 

@@ -386,4 +386,4 @@ class ProjectConnectionDetailsView(APIView):
         else:
             records = []
 
-        return Response({'records': records}, status=status.HTTP_200_OK)
+        return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)

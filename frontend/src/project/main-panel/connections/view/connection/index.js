@@ -8,7 +8,7 @@ import { GithubIssue } from '../../models';
 import context from '@/sea-metadata/context';
 
 const Connection = ({ projectUuid, connectionID }) => {
-  const { isLoading } = useConnectionsPage();
+  const { isLoading, updatePageName } = useConnectionsPage();
 
   const columns = useMemo(() => [
     { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true, expand_able: true },
@@ -36,6 +36,7 @@ const Connection = ({ projectUuid, connectionID }) => {
     getMetadata: (...params) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const rows = Array.isArray(res.data.records) ? res.data.records.map(r => new GithubIssue(r)) : [];
+        updatePageName && updatePageName(res.data.name);
         return {
           data: {
             rows,
@@ -77,7 +78,7 @@ const Connection = ({ projectUuid, connectionID }) => {
       });
     },
 
-  }), [projectUuid, columns, connectionID, viewsData]);
+  }), [projectUuid, columns, connectionID, viewsData, updatePageName]);
 
   const createContextMenuOptions = useCallback(() => {
     return [];
