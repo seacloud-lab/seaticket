@@ -5,13 +5,13 @@ class Connection {
     this.id = object.id || '';
     this.name = object.name || '';
     this.type = object.type || '';
-    this.config = JSON.parse(object.config || '{}') || {};
+    this.config = object.config || {};
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
     this.updated_at = object.updated_at || '';
     this.indexed_at = object.indexed_at || '';
     this.project_id = object.project_id || '';
-    this.status = JSON.parse(object.status || '{}') || {};
+    this.status = object.status || {};
     this.is_active = object.is_active || '';
 
     // update

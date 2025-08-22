@@ -8,6 +8,7 @@ import time
 import copy
 import random
 import string
+from copy import deepcopy
 
 from django.db import models
 from django.db.models import Q
@@ -16,6 +17,7 @@ from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_C
     CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
+from seahub.utils.hasher import AESPasswordHasher
 
 from seahub.utils import normalize_cache_key
 
@@ -38,6 +40,30 @@ def generate_views_unique_id(length, folders_views_ids=None):
             break
 
     return id
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key']
+
+
+def encrypt_config(config):
+    config_clone = deepcopy(config)
+    cryptor = AESPasswordHasher()
+    encrypted_details = {
+        key: cryptor.encode(config_clone[key])
+        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
+    }
+    config_clone.update(encrypted_details)
+    return json.dumps(config_clone)
+
+
+def decrypt_config(config):
+    config_clone = deepcopy(config)
+    cryptor = AESPasswordHasher()
+    decrypted_details = {
+        key: cryptor.decode(config_clone[key])
+        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
+    }
+    config_clone.update(decrypted_details)
+    return config_clone
+
 
 
 class WorkspacesManager(models.Manager):
@@ -381,25 +407,24 @@ class ProjectConnectionsManager(models.Manager):
             'last_sync_status': 'pending'
         }
 
-        record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username, status=json.dumps(status))
+        record = self.model(project=project, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status))
         record.save()
         return record.to_dict()
 
-    def modify(self, username, project, connection_type, connection_id, name, config, connection_is_active):
+    def modify(self, username, project, connection_type, connection_id, name, config, is_active):
         """ modify record: if not record, create it
         """
 
         record = self.filter(project=project, id=connection_id).first()
         if not record:
             record = self.model(project=project, type=connection_type, name=name, config=config, modifier=username)
-        elif connection_is_active is not None:
-            if connection_is_active == 'true':
-                record.is_active = True
-            elif connection_is_active == 'false':
-                record.is_active = False
         else:
-            record.name = name
-            record.config = config
+            if is_active is not None:
+                record.is_active = is_active
+            if name:
+                record.name = name
+            if config:
+                record.config = encrypt_config(config)
         record.save()
         return record
 
@@ -443,16 +468,15 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(project=project, type=connection_type)
         return self.is_valid(connection_type, records, config)
 
-    def enable_modify(self, project, connection_type, connection_id, name, config):
+    def enable_modify(self, connection_type, connection_id, config):
         """ check enable modify
         """
 
-        if not project or not connection_type:
+        if not connection_type:
             return False
 
         connection_id = int(connection_id)
-        records = self.filter(project=project, type=connection_type)
-        records = [record for record in records if record.id != connection_id]
+        records = self.filter(id=connection_id)
         return self.is_valid(connection_type, records, config)
     
 
@@ -488,19 +512,16 @@ class ProjectConnections(models.Model):
         db_table = 'project_connection'
 
     def to_dict(self):
-        from seahub.project.utils import decrypt_config
-        decode_config = decrypt_config(json.loads(self.config))
-        json_config = json.dumps(decode_config)
         return {
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'config': json_config,
+            'config': decrypt_config(json.loads(self.config)),
             'modifier': self.modifier,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'indexed_at': self.indexed_at,
-            'status': self.status,
+            'status': json.loads(self.status),
             'is_active': self.is_active,
         }
 

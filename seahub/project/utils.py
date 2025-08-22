@@ -5,7 +5,6 @@ import time
 import requests
 import json
 from urllib.parse import urljoin
-from copy import deepcopy
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
@@ -19,15 +18,12 @@ from seahub.api2.utils import get_user_common_info
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL, SEAQA_WEB_SERVICE_URL
 from seahub.constants import PERMISSION_READ_WRITE
-from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.constants import PREDEFINED_TICKET_TAGS
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET
 
 
 logger = logging.getLogger(__name__)
-
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key']
 
 
 def check_project_limit(workspace, request):
@@ -129,28 +125,6 @@ def restore_trash_project_name(project):
     new_project_name = project.name[project.name.find(' ')+1:]
 
     return new_project_name
-
-
-def encrypt_config(config):
-    config_clone = deepcopy(config)
-    cryptor = AESPasswordHasher()
-    encrypted_details = {
-        key: cryptor.encode(config_clone[key])
-        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
-    }
-    config_clone.update(encrypted_details)
-    return json.dumps(config_clone)
-
-
-def decrypt_config(config):
-    config_clone = deepcopy(config)
-    cryptor = AESPasswordHasher()
-    decrypted_details = {
-        key: cryptor.decode(config_clone[key])
-        for key in ENCRYPT_KEYS if key in config_clone and config_clone[key]
-    }
-    config_clone.update(decrypted_details)
-    return config_clone
 
 
 def add_init_crawl_task(params):
