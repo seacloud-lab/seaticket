@@ -11,12 +11,12 @@ const Connection = ({ projectUuid, connectionID }) => {
   const { isLoading } = useConnectionsPage();
 
   const columns = useMemo(() => [
-    { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true },
+    { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true, expand_able: true },
     // { type: CellType.LONG_TEXT, key: 'body', name: gettext('Body'), editable: false, is_required: true },
     { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
     { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
-    { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
+    // { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
     { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
     { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
     // { type: CellType.MTIME, key: 'updated_at', name: gettext('Last modify time'), editable: false },
@@ -93,6 +93,12 @@ const Connection = ({ projectUuid, connectionID }) => {
     };
   }, []);
 
+  const handleExpandRow = useCallback((row) => {
+    if (row && row.url) {
+      window.open(row.url);
+    }
+  }, []);
+
   if (isLoading) return null;
 
   return (
@@ -105,6 +111,7 @@ const Connection = ({ projectUuid, connectionID }) => {
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         toggleView={() => {}}
+        expandRow={handleExpandRow}
 
         t={t}
       />

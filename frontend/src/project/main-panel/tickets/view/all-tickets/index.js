@@ -188,7 +188,7 @@ const AllTickets = ({ projectUuid, projectName }) => {
       api={api}
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
-      expandRow={togglePageType}
+      expandRow={(row) => togglePageType(row._id)}
       toggleView={updateViewID}
 
       // tags

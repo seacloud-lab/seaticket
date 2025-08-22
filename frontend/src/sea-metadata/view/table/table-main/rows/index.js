@@ -622,9 +622,9 @@ class Rows extends Component {
     return this.resultContainerRef?.getBoundingClientRect() || { top: 0, left: 0 };
   };
 
-  toggleExpandedRowDialog = (rowId = null) => {
+  toggleExpandedRowDialog = (row) => {
     if (isFunction(this.props.expandRow)) {
-      this.props.expandRow(rowId);
+      this.props.expandRow(row);
       return;
     }
     // todo

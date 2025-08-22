@@ -257,6 +257,7 @@ class Row extends React.Component {
             isLocked={isLocked}
             isSelected={isSelected}
             rowId={row._id}
+            row={row}
             index={index}
             onSelectRow={this.onSelectRow}
             isLastFrozenCell={!lastFrozenColumnKey}

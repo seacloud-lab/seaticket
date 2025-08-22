@@ -23,7 +23,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, openExpand
   switch (columnType) {
     case CellType.TEXT: {
       return (
-        <TextFormatter value={value} column={column} className={className} openExpandedRow={() => openExpandedRow && openExpandedRow(row._id)} >
+        <TextFormatter value={value} column={column} className={className} openExpandedRow={() => openExpandedRow && openExpandedRow(row)} >
           <Empty columnType={columnType} placeholder={emptyTip} />
         </TextFormatter>
       );
