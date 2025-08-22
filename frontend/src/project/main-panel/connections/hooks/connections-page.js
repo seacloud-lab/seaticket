@@ -8,6 +8,7 @@ const ConnectionsPageContext = React.createContext(null);
 export const ConnectionsPageProvider = ({ projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
+  const [pageName, setPageName] = useState('');
 
   const resetURL = useCallback((pageType) => {
     const { pathname, origin } = location;
@@ -56,7 +57,9 @@ export const ConnectionsPageProvider = ({ projectName, children }) => {
     <ConnectionsPageContext.Provider value={{
       pageType,
       isLoading,
+      pageName,
       togglePageType,
+      updatePageName: setPageName
     }}>
       {children}
     </ConnectionsPageContext.Provider>

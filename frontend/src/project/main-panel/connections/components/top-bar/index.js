@@ -3,12 +3,11 @@ import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage } from '../../hooks';
 import { CONNECTION_PAGE_TYPE } from '../../constants';
 import { IconButton } from '@/components';
-import { gettext } from '@/constants';
 
 import './index.css';
 
 const TopBar = ({ title }) => {
-  const { pageType, togglePageType } = useConnectionsPage();
+  const { pageType, pageName, togglePageType } = useConnectionsPage();
 
   const renderLeftChildren = useCallback(() => {
     if (pageType === CONNECTION_PAGE_TYPE.ALL) {
@@ -20,14 +19,14 @@ const TopBar = ({ title }) => {
     const toggleBtn = (
       <IconButton icon="down" className="rotate-icon-90 sea-qa-project-toggle-connections-btn" onClick={() => togglePageType(CONNECTION_PAGE_TYPE.ALL)} />
     );
-    const ticketTitle = gettext('Connections') + ' / #' + pageType;
+
     return (
       <>
         {toggleBtn}
-        <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
+        <span className="text-truncate" title={pageName}>{pageName}</span>
       </>
     );
-  }, [pageType, title, togglePageType]);
+  }, [pageType, title, pageName, togglePageType]);
   return (
     <BasicTopBar>
       {renderLeftChildren()}

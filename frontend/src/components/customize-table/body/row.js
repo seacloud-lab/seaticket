@@ -1,6 +1,6 @@
 import React, { cloneElement, isValidElement, useCallback, useState } from 'react';
 
-const Row = ({ row, columns, onModify, onDelete, onMore, expandRow }) => {
+const Row = ({ row, columns, onModify, onDelete, onMore, expandRow, onManualSync }) => {
   const [isActive, setActive] = useState(false);
 
   const onMouseEnter = useCallback(() => {
@@ -19,7 +19,7 @@ const Row = ({ row, columns, onModify, onDelete, onMore, expandRow }) => {
         const valueFormatter = isValidElement(formatter) && cloneElement(formatter, {
           isRowActive: isActive,
           value, column, row,
-          onModify, onDelete, onMore, expandRow,
+          onModify, onDelete, onMore, expandRow, onManualSync,
           cancelActive: onMouseLeave,
         });
         return (
