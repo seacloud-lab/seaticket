@@ -488,11 +488,14 @@ class ProjectConnections(models.Model):
         db_table = 'project_connection'
 
     def to_dict(self):
+        from seahub.project.utils import decrypt_config
+        decode_config = decrypt_config(json.loads(self.config))
+        json_config = json.dumps(decode_config)
         return {
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'config': self.config,
+            'config': json_config,
             'modifier': self.modifier,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
