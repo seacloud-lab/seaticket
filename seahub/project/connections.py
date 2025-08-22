@@ -15,11 +15,11 @@ from rest_framework.response import Response
 from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.utils import api_error
+from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord
+from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, encrypt_config, decrypt_config, add_github_issues_index_task, manual_sync_connection
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -105,7 +105,7 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        config = encrypt_config(json.loads(config))
+        config = json.loads(config)
         enable_create = ProjectConnections.objects.enable_create(project, connection_type, config)
         if not enable_create:
             error_msg = 'Name or config is not unique'
@@ -176,15 +176,8 @@ class ProjectConnectionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        name = request.data.get('name')
-        if not name:
-            error_msg = 'name invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        new_config = request.data.get('config', {})
-        if not new_config:
-            error_msg = 'config invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        new_config = request.data.get('config')
+        is_active = request.data.get('is_active')
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -203,18 +196,25 @@ class ProjectConnectionView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        config = decrypt_config(json.loads(project_connection.config))
-        new_config = json.loads(new_config)
-        config.update(new_config)
-        config = encrypt_config(config)
+        # argument check
+        name = request.data.get('name')
+        if new_config:
+            config = decrypt_config(json.loads(project_connection.config))
+            new_config = json.loads(new_config)
+            config.update(new_config)
+            new_config = config
 
-        enable_modify = ProjectConnections.objects.enable_modify(project, project_connection.type, connection_id, name, config)
-        if not enable_modify:
-            error_msg = 'Please check input'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if is_active is not None:
+            is_active = to_python_boolean(is_active)
+
+        if new_config:
+            enable_modify = ProjectConnections.objects.enable_modify(project_connection.type, connection_id, new_config)
+            if not enable_modify:
+                error_msg = 'Please check input'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name, config)
+            record = ProjectConnections.objects.modify(username, project, project_connection.type, connection_id, name, new_config, is_active)
         except Exception as e:
             logger.error(f'modify {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
