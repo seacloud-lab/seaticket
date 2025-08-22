@@ -618,3 +618,31 @@ CREATE TABLE `org_saml_config` (
   UNIQUE KEY `domain` (`domain`),
   KEY `domain_verified` (`domain_verified`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `chat_sessions` (
+  `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` VARCHAR(36) NOT NULL,
+  `session_uuid` VARCHAR(36) NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
+  `session_name` VARCHAR(255) NOT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_session_uuid` (`session_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `chat_messages` (
+  `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
+  `session_id` BIGINT(11) NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
+  `role` ENUM('user', 'assistant') NOT NULL,
+  `content` LONGTEXT,
+  `sources` LONGTEXT,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6),
+  PRIMARY KEY (`id`),
+  KEY `idx_session_id` (`session_id`),
+  CONSTRAINT `fk_chat_messages_session`
+    FOREIGN KEY (`session_id`) REFERENCES `chat_sessions` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -62,6 +62,34 @@ class AskAPI {
     const url = this.server + '/api/v2.1/qa/';
     return this._sendPostRequest(url, params);
   }
+  // chat sessions api
+  getChatSessions(projectUuid, workspaceId) {
+    const url = this.server + '/api/v2.1/chat/sessions/?project_uuid=' + projectUuid + '&workspace_id=' + workspaceId;
+    return this.req.get(url);
+  }
+
+  createChatSession(projectUuid, sessionName, workspaceId) {
+    const url = this.server + '/api/v2.1/chat/sessions/';
+    const data = {
+      project_uuid: projectUuid,
+      session_name: sessionName,
+      workspace_id: workspaceId
+    };
+    return this.req.post(url, data);
+  }
+
+  deleteChatSession(sessionUuid, workspaceId) {
+    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/';
+    const data = {
+      workspace_id: workspaceId
+    };
+    return this.req.delete(url, { data });
+  }
+
+  getChatMessages(sessionUuid, workspaceId) {
+    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/messages/?workspace_id=' + workspaceId;
+    return this.req.get(url);
+  }
 
 }
 

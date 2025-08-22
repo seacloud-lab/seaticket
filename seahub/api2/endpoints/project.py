@@ -18,7 +18,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
-from seahub.project.models import Workspaces, Projects, ProjectGroupOrders
+from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
+    ChatSessions, ChatMessages
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search, get_project_related_users, \
@@ -438,6 +439,18 @@ class QAView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        session_uuid = request.data.get('session_uuid')
+        if not session_uuid:
+            session = ChatSessions.objects.create_session(project_uuid, 'New Chat', request.user.username)
+            session_uuid = session.session_uuid
+        else:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = f'Chat session {session_uuid} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
+
         connection_type = request.data.get('connection_type')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
@@ -467,8 +480,191 @@ class QAView(APIView):
         except Exception as e:
             logger.error(f'AI service error: {e}')
             ai_answer = 'Sorry, the AI service is temporarily unavailable, please try again later.'
+            sources = []
+
+        ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
 
         return Response({
             'answer': ai_answer,
-            'sources': sources
+            'sources': sources,
+            'session_uuid': session_uuid
         })
+
+
+class ChatSessionsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+    
+    def get(self, request):
+        """Retrieve the user's chat session list"""
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace_id = request.GET.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_uuid = request.GET.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        try:
+            project = Projects.objects.get_project_by_uuid(project_uuid)
+            if not project:
+                error_msg = 'Project not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
+            sessions_data = [session.to_dict() for session in sessions]
+
+            return Response({'sessions': sessions_data})
+            
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+    
+    def post(self, request):
+        """Create a new chat session"""
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace_id = request.data.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_uuid = request.data.get('project_uuid')
+        session_name = request.data.get('session_name', 'New Chat')
+        
+        if not project_uuid:
+            error_msg = 'project_uuid is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        try:
+            project = Projects.objects.get_project_by_uuid(project_uuid)
+            if not project:
+                error_msg = 'Project not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            session = ChatSessions.objects.create_session(
+                project_uuid=project_uuid,
+                session_name=session_name,
+                username=request.user.username
+            )
+            
+            return Response(session.to_dict(), status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+
+class ChatSessionView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def delete(self, request, session_uuid):
+        """Delete chat session"""
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace_id = request.data.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            session.delete()
+            return Response({'success': True})
+            
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+
+class ChatMessagesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+    
+    def get(self, request, session_uuid):
+        """Retrieve the message list of the chat session"""
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        workspace_id = request.GET.get('workspace_id')
+        if not workspace_id:
+            error_msg = 'workspace_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
+        if not workspace:
+            error_msg = f'Workspace {workspace_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            messages = ChatMessages.objects.get_messages_by_session(session.id)
+            messages_data = [message.to_dict() for message in messages]
+            
+            return Response({'messages': messages_data})
+            
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)

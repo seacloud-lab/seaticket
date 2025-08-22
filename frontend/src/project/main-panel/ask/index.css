@@ -1,3 +1,9 @@
+.ask-main-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
 .sea-qa-ai-ask-wrapper {
   width: 100%;
   flex: 1;
@@ -11,6 +17,7 @@
   overflow: auto;
   width: 100%;
   mask-image: linear-gradient(to bottom, #f5f5f5 calc(100% - 24px), transparent);
+  min-height: 0;
 }
 
 .sea-qa-ai-ask-chat-input-wrapper-shell {
@@ -87,18 +94,16 @@
   background-color: #fff;
   border: 1px solid #EEE;
   border-radius: 0 6px 6px 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .user-input-chat .sea-qa-ai-ask-message-content {
   background-color: rgb(237, 113, 9, .15);
   border-radius: 6px 0 6px 6px;
   border: unset;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .sea-qa-ai-ask .send-chat-btn {
   flex-shrink: 0;
-}
-
-.sea-qa-ai-ask-chats .sea-qa-ai-ask-message-content .sea-ai-outline-btn {
-  margin-top: 10px;
 }
