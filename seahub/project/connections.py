@@ -21,6 +21,7 @@ from seahub.project.models import Projects, ProjectConnections, GitHubIssuesReco
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection
 from seahub.project.constants import ConnectionType, CrawlStatus
+from seahub.settings import SERVICE_URL
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -135,7 +136,7 @@ class ProjectConnectionsView(APIView):
                 'type': connection_type,
             }
             add_init_crawl_task(params)
-        return Response({'record': record}, status=status.HTTP_201_CREATED)
+        return Response({'record': record, 'service_url': SERVICE_URL}, status=status.HTTP_201_CREATED)
 
 
 class ProjectConnectionView(APIView):
