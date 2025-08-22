@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
-import { RoleStatusEditor, toaster, Loading, Paginator, EmptyTip } from '../../../components';
+import { ActiveStatusEditor, toaster, Loading, Paginator, EmptyTip } from '../../../components';
 import SelectEditor from '../../../components/select-editor/select-editor';
 import SysAdminAddSysUserNotificationDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-sys-user-notification-dialog';
 import SysAdminUserSetQuotaDialog from '../../../components/dialog/sysadmin-dialog/set-quota';
@@ -427,7 +427,7 @@ class Item extends Component {
           <td>{item.id_in_org ? item.id_in_org : '--'}</td>
           <td>
             {item.email === username ? translateStatus(currentStatus) : (
-              <RoleStatusEditor
+              <ActiveStatusEditor
                 isShowDropdownIcon={isOpIconShown}
                 currentOption={statusOption}
                 menuOptions={statusOptions}
@@ -439,7 +439,7 @@ class Item extends Component {
           {isPro &&
           <td>
             {isAdmin ? (
-              <RoleStatusEditor
+              <ActiveStatusEditor
                 isShowDropdownIcon={isOpIconShown}
                 currentOption={adminOption}
                 menuOptions={adminOptions}
@@ -447,7 +447,7 @@ class Item extends Component {
                 closeShowDropdownIcon={this.handleMouseLeave}
               />
             ) : (!item.org_id ? (
-              <RoleStatusEditor
+              <ActiveStatusEditor
                 isShowDropdownIcon={isOpIconShown}
                 currentOption={roleOption}
                 menuOptions={roleOptions}

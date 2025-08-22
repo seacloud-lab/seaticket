@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import dayjs from '../../../utils/dayjs';
-import { EmptyTip, RoleStatusEditor, toaster, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
+import { EmptyTip, ActiveStatusEditor, toaster, Loading, Paginator, CommonOperationConfirmationDialog } from '../../../components';
 import { Utils } from '../../../utils/utils';
 import { isPro, username, gettext, multiInstitution, siteRoot, mediaUrl } from '../../../constants';
 import SelectEditor from '../../../components/select-editor/select-editor';
@@ -385,7 +385,7 @@ class Item extends Component {
             }
           </td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={statusOption}
               menuOptions={statusOptions}
@@ -396,7 +396,7 @@ class Item extends Component {
           {isPro && (
             <td>
               {isAdmin ? (
-                <RoleStatusEditor
+                <ActiveStatusEditor
                   isShowDropdownIcon={isOpIconShown}
                   currentOption={adminOption}
                   menuOptions={adminOptions}
@@ -404,7 +404,7 @@ class Item extends Component {
                   closeShowDropdownIcon={this.handleMouseLeave}
                 />
               ) : (!item.org_id ? (
-                <RoleStatusEditor
+                <ActiveStatusEditor
                   isShowDropdownIcon={isOpIconShown}
                   currentOption={option}
                   menuOptions={options}

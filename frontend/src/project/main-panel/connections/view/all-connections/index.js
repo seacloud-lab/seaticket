@@ -34,12 +34,13 @@ const AllConnections = ({ projectUuid }) => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '40%' },
       { key: 'indexed_at', name: gettext('Last indexed at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
-      { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '30%' },
+      { key: 'is_active', name: gettext('Status'), type: CONNECTION_FIELD_TYPE.ACTIVE_STATUS, width: '10%', editable: true },
+      { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
     ].map(column => (
       {
         ...column,
-        formatter: createFormatter(column.type)
+        formatter: createFormatter(column)
       }
     ));
   }, []);
@@ -56,6 +57,19 @@ const AllConnections = ({ projectUuid }) => {
         setIsShowRecordDialog(true);
       } }
     ];
+  }, []);
+
+  const onUpdate = useCallback((connectionId, update) => {
+    connectionsAPI.updateConnectionStatus(projectUuid, connectionId, update).then(() => {
+      setRecords(prev => prev.map(record =>
+        record.id === connectionId ? { ...record, ...update } : record
+      ));
+      if (Object.keys(update).includes('is_active')) {
+        toaster.success(update.is_active ? gettext('Activated') : gettext('Deactivated'));
+      }
+    }).catch(error => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
   }, []);
 
   const closeConnectionDialog = useCallback(() => {
@@ -232,6 +246,7 @@ const AllConnections = ({ projectUuid }) => {
         onMore={onMore}
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
+        onUpdate={onUpdate}
       >
         {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
       </CustomizeTable>

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
-import { RoleStatusEditor, toaster, EmptyTip, CommonOperationConfirmationDialog } from '../../../components';
+import { ActiveStatusEditor, toaster, EmptyTip, CommonOperationConfirmationDialog } from '../../../components';
 import Loading from '../../../components/loading';
 import SysAdminAddUserDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-add-user-dialog';
 import MainPanelTopbar from '../main-panel-topbar';
@@ -213,7 +213,7 @@ class Item extends Component {
         <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
           <td><a href={`${siteRoot}sys/users/${encodeURIComponent(item.email)}/`}>{item.name}</a></td>
           <td>
-            <RoleStatusEditor
+            <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={currentOption}
               menuOptions={statusOptions}

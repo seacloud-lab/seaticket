@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { IconButton, RoleStatusEditor, toaster } from '../../../../components';
+import { IconButton, ActiveStatusEditor, toaster } from '../../../../components';
 import { gettext, serviceURL } from '../../../../constants';
 import { Utils } from '../../../../utils/utils';
 import { getRoleOptions } from '../../../../utils/role-status-utils';
@@ -66,7 +66,7 @@ class MemberItem extends React.Component {
         <td><img src={member.avatar_url} alt="member-header" width="24" className="avatar"/></td>
         <td><a href={memberLink}>{member.name}</a></td>
         <td className="p-0">
-          <RoleStatusEditor
+          <ActiveStatusEditor
             isShowDropdownIcon={highlight}
             currentOption={option}
             menuOptions={options}

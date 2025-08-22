@@ -6,15 +6,7 @@ import Icon from '../icon';
 
 import './index.css';
 
-const propTypes = {
-  isShowDropdownIcon: PropTypes.bool.isRequired,
-  currentOption: PropTypes.object.isRequired,
-  menuOptions: PropTypes.array.isRequired,
-  onChangeOption: PropTypes.func.isRequired,
-  closeShowDropdownIcon: PropTypes.func.isRequired,
-};
-
-const RoleStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onChangeOption, closeShowDropdownIcon }) => {
+const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onChangeOption, closeShowDropdownIcon }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClickMenuOption = (menuOption) => {
@@ -27,7 +19,7 @@ const RoleStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onCh
   return (
     <Dropdown
       isOpen={isOpen}
-      className="role-status-editor"
+      className="active-status-editor"
       toggle={() => setIsOpen(!isOpen)}
     >
       <DropdownToggle className="dropdown-toggle-button d-flex align-items-center" tag="div">
@@ -56,6 +48,12 @@ const RoleStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, onCh
   );
 };
 
-RoleStatusEditor.propTypes = propTypes;
+ActiveStatusEditor.propTypes = {
+  isShowDropdownIcon: PropTypes.bool.isRequired,
+  currentOption: PropTypes.object.isRequired,
+  menuOptions: PropTypes.array.isRequired,
+  onChangeOption: PropTypes.func.isRequired,
+  closeShowDropdownIcon: PropTypes.func.isRequired,
+};
 
-export default RoleStatusEditor;
+export default ActiveStatusEditor;
