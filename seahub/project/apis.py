@@ -341,7 +341,7 @@ class ProjectConnectionSyncView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            project_connection = ProjectConnections.objects.get(id=connection_id, project=project, deleted=False)
+            project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         except ProjectConnections.DoesNotExist:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -392,7 +392,7 @@ class ProjectConnectionSyncView(APIView):
             res = manual_sync_connection(params)
             success = res.get('success')
             if not success:
-                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, res.get('error_msg'))
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, res.get('error_msg'))
         except Exception as e:
             logger.error(f'trigger sync for connection {connection_id} error: {e}')
             error_msg = 'Internal Server Error'
