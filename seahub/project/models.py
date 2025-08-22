@@ -523,7 +523,7 @@ class ProjectConnections(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'indexed_at': self.indexed_at,
-            'status': json.loads(self.status) if self.status else '{}',
+            'status': self.status,
             'is_active': self.is_active,
         }
 
