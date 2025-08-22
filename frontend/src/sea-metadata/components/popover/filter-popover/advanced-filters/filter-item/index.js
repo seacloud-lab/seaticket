@@ -574,7 +574,7 @@ class FilterItem extends React.Component {
       <div className="filter-item">
         {!readOnly && (
           <div className="delete-filter" onClick={this.onDeleteFilter}>
-            <Icon className="sea-metadata-icon" symbol="fork-number"/>
+            <Icon className="sea-metadata-icon" symbol="x"/>
           </div>
         )}
         <div className="condition">

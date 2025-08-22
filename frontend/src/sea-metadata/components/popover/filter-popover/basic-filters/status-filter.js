@@ -1,46 +1,44 @@
 import React, { useCallback, useMemo } from 'react';
-import { CustomizeSelect, Icon } from '@/components';
+import classnames from 'classnames';
+import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
+import { getColumnOptions } from '@/sea-metadata/utils/column';
 
-const OPTIONS = [
-  { value: 'open', name: gettext('State: open') },
-  { value: 'closed', name: gettext('State: closed') },
-  { value: 'all', name: gettext('State') },
-];
-
-const StatusFilter = ({ readOnly = true, value = 'all', onChange: onChangeAPI }) => {
+const StatusFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
 
   const options = useMemo(() => {
-    return OPTIONS.map(o => {
-      const { name } = o;
+    const columnOptions = getColumnOptions(column);
+    return columnOptions.map(o => {
+      const { name, id } = o;
       return {
-        value: o.value,
+        value: id,
         label: (
           <div className="select-basic-filter-option">
-            <div className="select-basic-filter-option-name" title={name} aria-label={name}>{name}</div>
-            <div className="select-basic-filter-option-check-icon">
-              {value === o.value && ((<Icon symbol="check-mark" />))}
+            <div className="select-basic-filter-option-checkbox mr-2">
+              <input type="checkbox" checked={value.includes(id)} readOnly />
             </div>
+            <div className="select-basic-filter-option-name" title={name} aria-label={name}>{name}</div>
           </div>
         )
       };
     });
-  }, [value]);
+  }, [column, value]);
 
-  const displayValue = useMemo(() => {
-    const selectedOption = OPTIONS.find(o => o.value === value) || OPTIONS[2];
-    return { label: <>{selectedOption.name}</> };
-  }, [value]);
+  const displayValue = useMemo(() => ({ label: <>{gettext('Status')}</> }), [value]);
 
   const onChange = useCallback((newValue) => {
-    if (newValue === value) return;
-    onChangeAPI(newValue);
+    if (value.includes(newValue)) {
+      onChangeAPI(value.filter(v => v !== newValue));
+    } else {
+      onChangeAPI([...value, newValue]);
+    }
   }, [value, onChangeAPI]);
 
   return (
     <CustomizeSelect
       disabled={readOnly}
-      className="sea-metadata-basic-filters-select mr-4"
+      supportMultipleSelect={true}
+      className={classnames('sea-metadata-basic-filters-select sea-metadata-table-view-basic-checkbox-select mr-4', { 'highlighted': value.length > 0 })}
       value={displayValue}
       options={options}
       onChange={onChange}

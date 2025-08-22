@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
 import { connectionsAPI } from '../../api';
-import Connection from '../../models/connection';
+import { Connection } from '../../models';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
 import { CommonOperationConfirmationDialog, Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '../../../components';

@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext, SELECT_OPTION_COLORS } from '../../../../../../constants';
+import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Tag from '../../../view/tags/components/tag';
 import { useTags } from '../../../hooks';
-import { OptionEditor } from '../../../../../../components';
+import { OptionEditor } from '@/components';
 
 import './index.css';
 

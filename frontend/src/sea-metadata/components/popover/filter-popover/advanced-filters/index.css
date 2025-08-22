@@ -203,13 +203,13 @@
   cursor: pointer;
 }
 
-.delete-filter .sea-qa-icon-svg-fork-number {
-  display: inline-block;
-  font-size: 12px;
+.delete-filter .sea-qa-icon-svg-x {
+  height: 12px;
+  width: 12px;
   color: #999;
 }
 
-.delete-filter .sea-qa-icon-svg-fork-number:hover {
+.delete-filter .sea-qa-icon-svg-x:hover {
   color: #666;
 }
 

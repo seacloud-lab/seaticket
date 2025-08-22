@@ -24,7 +24,7 @@ const TableViewToolbar = ({
         wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-filter"
         filtersClassName="sea-metadata-filters"
         target="sea-metadata-filter-popover"
-        readOnly={true}
+        readOnly={readOnly}
         filterConjunction={view.filter_conjunction}
         basicFilters={view.basic_filters}
         filters={view.filters}
@@ -36,7 +36,7 @@ const TableViewToolbar = ({
       <SortSetter
         wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-sort"
         target="sea-metadata-sort-popover"
-        readOnly={true}
+        readOnly={readOnly}
         sorts={view.sorts}
         type={viewType}
         columns={viewColumns}

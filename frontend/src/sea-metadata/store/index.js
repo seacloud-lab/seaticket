@@ -5,7 +5,7 @@ import {
   Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE, UNDO_OPERATION_TYPE,
   VIEW_OPERATION, COLUMN_OPERATION
 } from './operations';
-import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, DEFAULT_RETRY_TIMES, DEFAULT_RETRY_INTERVAL } from '../constants';
+import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import DataProcessor from './data-processor';
 import ServerOperator from './server-operator';
 import LocalOperator from './local-operator';
@@ -44,33 +44,33 @@ class Store {
     this.startIndex = 0;
   };
 
-  async loadMetadata(view, limit, retries = DEFAULT_RETRY_TIMES, delay = DEFAULT_RETRY_INTERVAL) {
-    const res = await context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit });
-    const rows = res?.data?.rows || [];
-    const columns = normalizeColumns(res?.data?.columns || []);
-    if (rows.length === 0 && retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return this.loadMetadata(view, limit, retries - 1, delay);
+  async loadMetadata(view, limit) {
+    if (!view) {
+      throw Error('View_not_exist');
     }
-    let data = new Metadata({ rows, columns, view });
-    data.view.rows = data.row_ids;
-    const loadedCount = rows.length;
-    data.hasMore = loadedCount === limit;
-    this.data = data;
-    this.startIndex += loadedCount;
-    DataProcessor.run(this.data, { collaborators: this.collaborators });
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit }).then(res => {
+      const rows = res?.data?.rows || [];
+      const columns = normalizeColumns(res?.data?.columns || []);
+      let data = new Metadata({ rows, columns, view });
+      data.view.rows = data.row_ids;
+      const loadedCount = rows.length;
+      data.hasMore = loadedCount === limit;
+      this.data = data;
+      this.startIndex += loadedCount;
+      DataProcessor.run(this.data, { collaborators: this.collaborators });
+    });
   }
 
-  async load(limit = PER_LOAD_NUMBER, isBeingBuilt = false) {
-    const viewRes = await context.getView(this.viewId);
-    const view = viewRes?.data?.view || {};
-    const retries = isBeingBuilt ? DEFAULT_RETRY_TIMES : 0;
-    await this.loadMetadata(view, limit, retries);
+  async load(limit = PER_LOAD_NUMBER) {
+    return context.getView(this.viewId).then(res => {
+      const view = res?.data?.view;
+      return this.loadMetadata(view, limit);
+    });
   }
 
   async reload(limit = PER_LOAD_NUMBER) {
     this.startIndex = 0;
-    await this.loadMetadata(this.data.view, limit, 0);
+    return this.loadMetadata(this.data.view, limit, 0);
   }
 
   async loadMore(limit) {

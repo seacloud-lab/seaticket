@@ -171,12 +171,7 @@ export const MetadataProvider = ({
   // init
   useEffect(() => {
     setLoading(true);
-    context.init({
-      username: '',
-      settings: '',
-      permission: 'rw',
-      api,
-      t,
+    context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
     storeRef.current = new Store({ viewId: viewID });

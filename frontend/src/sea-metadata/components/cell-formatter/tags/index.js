@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { getRowById } from '../../../utils/row';
 import { useTagsData } from '../../../hooks';
+import Tag from '../../tag';
 
 import './index.css';
 
@@ -22,17 +23,13 @@ const TagsFormatter = ({ value: oldValue, className, children: emptyFormatter, s
         {value.map((item) => {
           const tag = getRowById(tagsData, item);
           const tagColor = tag.color;
-          const tagName = tag.name;
           if (!showName) {
             return (
               <span key={item} className="sea-metadata-tag-color" style={{ backgroundColor: tagColor }}></span>
             );
           }
           return (
-            <div key={item} className="sea-metadata-tag" title={tagName}>
-              <span className="sea-metadata-tag-color mr-1" style={{ backgroundColor: tagColor }}></span>
-              <span className="sea-metadata-tag-text">{tagName}</span>
-            </div>
+            <Tag tag={tag} key={item} />
           );
         })}
       </div>

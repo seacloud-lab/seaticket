@@ -6,14 +6,13 @@ import { useTags, useTicketsPage } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_TYPES, TICKET_STATUS_OPTIONS, TICKET_STATUS } from '../../../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { toaster } from '@/components';
 
 import './index.css';
 
 const AllTickets = ({ projectUuid, projectName }) => {
 
-  const { togglePageType, viewID, updateViewID } = useTicketsPage();
+  const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
 
   const columns = useMemo(() => [
@@ -58,31 +57,15 @@ const AllTickets = ({ projectUuid, projectName }) => {
       });
     },
 
-    getViews: () => {
-      return new Promise((resolve, reject) => {
-        resolve({ data: { views } });
-      });
-    },
+    getViews: () => ticketsAPI.listViews(projectUuid),
 
     // view
-    getView: (viewID) => {
-      return new Promise((resolve, reject) => {
-        const view = views.find(v => v._id === viewID) || views[0];
-        updateViewID(view._id);
-
-        resolve({ data: {
-          view: {
-            ...view,
-            columns_keys: context.localStorage.getItem('columns_keys') || [],
-            filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'Or',
-            filters: context.localStorage.getItem('filters') || [],
-            sorts: context.localStorage.getItem('sorts') || [],
-            groupbys: context.localStorage.getItem('groupbys') || [],
-            hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-          }
-        } });
-      });
-    },
+    getView: (viewID) => ticketsAPI.getView(projectUuid, viewID),
+    insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
+    modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
+    deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
+    moveView: (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, sourceViewID, targetViewID),
+    duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
 
     // row
     insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),
@@ -212,6 +195,8 @@ const AllTickets = ({ projectUuid, projectName }) => {
       Rows: gettext('Tickets'),
     };
   }, []);
+
+  if (isLoading) return null;
 
   return (
     <SeaMetadata

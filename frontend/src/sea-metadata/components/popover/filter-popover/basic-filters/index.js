@@ -4,13 +4,23 @@ import { FormGroup, Label } from 'reactstrap';
 import { gettext } from '@/constants';
 import { VIEW_TYPE } from '../../../../constants';
 import StatusFilter from './status-filter';
+import TagsFilter from './tags-filter';
 
 import './index.css';
+import { getColumnByKey } from '@/sea-metadata/utils/column';
 
-const BasicFilters = ({ filters = [], onChange }) => {
+const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
 
   const onStatusChange = useCallback((newValue) => {
     const filterIndex = filters.findIndex(filter => filter.column_key === 'status');
+    const filter = filters[filterIndex];
+    const newFilters = filters.slice(0);
+    newFilters[filterIndex] = { ...filter, filter_term: newValue };
+    onChange && onChange(newFilters);
+  }, [filters, onChange]);
+
+  const onTagsChange = useCallback((newValue) => {
+    const filterIndex = filters.findIndex(filter => filter.column_key === 'tags');
     const filter = filters[filterIndex];
     const newFilters = filters.slice(0);
     newFilters[filterIndex] = { ...filter, filter_term: newValue };
@@ -24,8 +34,12 @@ const BasicFilters = ({ filters = [], onChange }) => {
         <div className="sea-metadata-filters-list">
           {filters.map(filter => {
             const { column_key, filter_term } = filter;
+            const column = getColumnByKey(columns, column_key);
             if (column_key === 'status') {
-              return (<StatusFilter value={filter_term} key={column_key} onChange={onStatusChange} />);
+              return (<StatusFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
+            }
+            if (column_key === 'tags') {
+              return (<TagsFilter readOnly={readOnly} value={filter_term} key={column_key} onChange={onTagsChange} />);
             }
             return null;
           })}

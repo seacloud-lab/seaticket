@@ -77,30 +77,25 @@
   display: flex;
 }
 
-.sea-metadata-table-view-basic-filter-file-type-select .sea-qa-select-option {
+.sea-metadata-table-view-basic-checkbox-select .sea-qa-select-option {
   padding: 0.25rem 1rem;
 }
 
-.sea-metadata-table-view-basic-filter-file-type-select .select-basic-filter-option .select-basic-filter-option-checkbox {
+.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.sea-metadata-table-view-basic-filter-file-type-select .select-basic-filter-option .select-basic-filter-option-checkbox,
-.sea-metadata-table-view-basic-filter-file-type-select .select-basic-filter-option .select-basic-filter-option-checkbox input {
+.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox,
+.sea-metadata-table-view-basic-checkbox-select .select-basic-filter-option .select-basic-filter-option-checkbox input {
   cursor: inherit;
 }
 
-.sea-metadata-basic-filters-select .select-basic-filter-display-name:hover {
-  cursor: pointer;
-}
-
-.sea-metadata-basic-filter-tags-select .tag-options-container {
-  width: auto;
-  height: auto;
-  position: absolute;
+.sea-metadata-basic-filter-tags-selector {
+  width: 400px;
   top: 28px;
-  left: -340px;
+  left: unset;
+  right: 0;
   z-index: 10001;
 }

@@ -2,9 +2,15 @@
 from django.urls import re_path
 
 from .views import project_view
-from .apis import ProjectConnectionsView, ProjectConnectionView, TicketsAPIView, TicketAPIView, \
-    TicketRepliesAPIView, TicketReplyAPIView, ProjectRelatedUsersView, ProjectTagsAPIView, ProjectTagAPIView, \
-    ProjectUploadFileAPIView, GetProjectUploadFileView, ProjectFileAPIView, GetProjectFileView, ProjectConnectionSyncView
+
+from .apis import ProjectRelatedUsersView
+from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView
+from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
+    ProjectFileAPIView, GetProjectFileView
+from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView
+from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
+from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
+    TicketViewsMoveView, TicketViewsDuplicateView
 
 
 
@@ -37,12 +43,20 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
 
-    # files
+     # views
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-folders/$', TicketFolders.as_view(), name='api-v2.1-project-ticket-folders'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/$', TicketViewsAPI.as_view(), name='api-v2.1-project-ticket-views'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/(?P<view_id>.+)/$', TicketViewView.as_view(), name='api-v2.1-project-ticket-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-move-views/$', TicketViewsMoveView.as_view(), name='api-v2.1-project-ticket-views-move'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-duplicate-view/$', TicketViewsDuplicateView.as_view(), name='api-v2.1-project-ticket-view-duplicate'),
+
+]
+
+# files, must at last
+urlpatterns += [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/upload-file/$', ProjectUploadFileAPIView.as_view(), name='api-v2.1-project-upload-file'),
     re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v2.1-get-project-upload-file'),
 
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', ProjectFileAPIView.as_view(), name='api-v2.1-project-file'),
     re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectFileView.as_view(), name='api-v2.1-get-project-file'),
-
 ]
-
