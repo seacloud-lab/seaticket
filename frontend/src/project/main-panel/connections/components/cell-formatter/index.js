@@ -4,7 +4,7 @@ import ConnectionNameFormatter from '../connection-name-formatter';
 import OpFormatter from './op-formatter';
 import TextFormatter from './text-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
-import ActiveStatusEditor from '../cell-editor/active-status-editor';
+import ActiveStatusEditor from '../../cell-editor/active-status-editor';
 
 const createFormatter = (column) => {
   const { type } = column;
