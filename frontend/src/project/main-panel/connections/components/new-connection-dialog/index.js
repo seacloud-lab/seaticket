@@ -169,7 +169,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           <div className="sea-qa-project-new-connection-config">
             <FormGroup>
               <Label>{gettext('Connection URL')}</Label>
-              <CopyInput value={`${serviceUrl}/webhook/github/connection-id=${newRecord.id}`} />
+              <CopyInput value={`${serviceUrl}/webhook/github/connection_id=${newRecord.id}`} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>

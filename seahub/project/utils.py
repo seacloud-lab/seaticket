@@ -166,6 +166,19 @@ def add_github_issues_index_task(params):
 
     return json.loads(resp.content)
 
+def github_webhook(params, request):
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/github/')
+    try:
+        resp = requests.post(
+            url,
+            params=params,
+            data=request.body,
+            headers=request.headers
+        )
+        resp.raise_for_status()
+        return resp
+    except requests.RequestException as e:
+        return e
 
 def search(params):
     payload = {'exp': int(time.time()) + 300, }

@@ -3,9 +3,9 @@ from django.urls import re_path
 
 from .views import project_view
 
-from .apis import ProjectRelatedUsersView, GithubWebhookView
+from .apis import ProjectRelatedUsersView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
-    ProjectConnectionDetailsView
+    ProjectConnectionDetailsView, GithubWebhookView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView

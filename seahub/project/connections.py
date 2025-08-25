@@ -16,10 +16,11 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
+from seahub.settings import SEAQA_INDEXER_SERVER_URL
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, github_webhook
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -387,3 +388,20 @@ class ProjectConnectionDetailsView(APIView):
             records = []
 
         return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)
+
+class GithubWebhookView(APIView):
+    def post(self, request):
+        connection_id = request.query_params.get('connection_id')
+        if not connection_id:
+            return Response({'error': 'Missing connection_id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        params = {'connection_id': connection_id}
+        resp = github_webhook(params, request)
+
+        if isinstance(resp, Exception):
+            return Response({'error': str(resp)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            'status_code': resp.status_code,
+            'response': resp.text
+        }, status=status.HTTP_200_OK)
