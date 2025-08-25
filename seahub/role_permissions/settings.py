@@ -68,7 +68,7 @@ DEFAULT_ENABLED_ROLE_PERMISSIONS = {
         'can_add_group': True,
         'share_limit': 100,
         'can_use_advanced_customization': False,
-        'can_use_saml': False,
+        'can_use_saml': True,
         'monthly_api_call_limit_per_user': -1
     }
 }

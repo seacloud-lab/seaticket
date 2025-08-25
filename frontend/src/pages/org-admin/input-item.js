@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Input, InputGroup, Button, Row, Col, Label } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
-import { IconButton } from '../../components';
+import { ClickOutside, IconButton } from '../../components';
 
 const propTypes = {
   value: PropTypes.string,
@@ -61,38 +61,40 @@ class OrgSamlConfigInput extends Component {
 
     return (
       <Fragment>
-        <Row className="my-4">
-          <Col md="3">
-            <Label className="web-setting-label">{displayName}</Label>
-          </Col>
-          <Col md="5">
-            <InputGroup>
-              <Input type={inputType} value={value} onChange={this.onInputChange} onFocus={this.toggleBtns} onBlur={this.hideBtns}/>
-              {this.props.domainVerified && (
-                <Button color="success" className="border-0">{gettext('Verified')}</Button>
-              )}
-            </InputGroup>
-            {this.props.isCertificate &&
-              <p className="small text-secondary mt-1">
-                {gettext('Copy the IdP\'s certificate and paste it here. The certificate format is as follows:')}
-                <br/>
-                -----BEGIN CERTIFICATE-----
-                <br/>
-                xxxxxxxxxxxxxxxxxxxx
-                <br/>
-                -----END CERTIFICATE-----
-              </p>
-            }
-          </Col>
-          <Col md="4">
-            {isBtnsShown &&
-              <Fragment>
-                <IconButton className="btn btn-secondary web-setting-icon-btn-submit" icon="check" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')} />
-                <IconButton className="btn btn-secondary web-setting-icon-btn-cancel ml-2" icon="x" title={gettext('Cancel')} aria-label={gettext('Cancel')} />
-              </Fragment>
-            }
-          </Col>
-        </Row>
+        <ClickOutside onClickOutside={this.hideBtns}>
+          <Row className="my-4">
+            <Col md="3">
+              <Label className="web-setting-label">{displayName}</Label>
+            </Col>
+            <Col md="5">
+              <InputGroup>
+                <Input type={inputType} value={value} onChange={this.onInputChange} onFocus={this.toggleBtns}/>
+                {this.props.domainVerified && (
+                  <Button color="success" className="border-0">{gettext('Verified')}</Button>
+                )}
+              </InputGroup>
+              {this.props.isCertificate &&
+                <p className="small text-secondary mt-1">
+                  {gettext('Copy the IdP\'s certificate and paste it here. The certificate format is as follows:')}
+                  <br/>
+                  -----BEGIN CERTIFICATE-----
+                  <br/>
+                  xxxxxxxxxxxxxxxxxxxx
+                  <br/>
+                  -----END CERTIFICATE-----
+                </p>
+              }
+            </Col>
+            <Col md="4">
+              {isBtnsShown &&
+                <Fragment>
+                  <IconButton className="btn btn-secondary web-setting-icon-btn-submit" icon="check" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')} />
+                  <IconButton className="btn btn-secondary web-setting-icon-btn-cancel ml-2" icon="x" title={gettext('Cancel')} aria-label={gettext('Cancel')} />
+                </Fragment>
+              }
+            </Col>
+          </Row>
+        </ClickOutside>
       </Fragment>
     );
   }

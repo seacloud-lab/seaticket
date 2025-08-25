@@ -5,7 +5,7 @@ import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router'
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
 import dayjs from 'dayjs';
-import { siteRoot, lang } from '../../constants';
+import { siteRoot, lang, enableMultiSAML, canUseSAML } from '../../constants';
 import SidePanel from './side-panel';
 import OrgUsers from './org-users';
 import OrgUserProfile from './org-user-profile';
@@ -18,6 +18,7 @@ import OrgProjects from './org-projects';
 import OrgSearchProjects from './org-search-projects';
 import OrgSettings from './org-admin-settings';
 import OrgSearchUsers from './org-search-users';
+import OrgSAMLConfig from './org-saml-config';
 
 import '../../css/layout.css';
 import '../../css/toolbar.css';
@@ -84,6 +85,9 @@ class Org extends React.Component {
             <OrgProjects path={siteRoot + 'org/projectadmin'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
             <OrgSearchProjects path={siteRoot + 'org/search-projects'} currentTab={currentTab} tabItemClick={this.tabItemClick} onCloseSidePanel={this.onCloseSidePanel}/>
             <OrgSettings path={siteRoot + 'org/settings'} onCloseSidePanel={this.onCloseSidePanel} />
+            {enableMultiSAML && canUseSAML &&
+              <OrgSAMLConfig path={siteRoot + 'org/saml-config'} onCloseSidePanel={this.onCloseSidePanel} />
+            }
           </Router>
         </div>
         <MediaQuery query="(max-width: 767.8px)">

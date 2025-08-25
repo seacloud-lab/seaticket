@@ -58,11 +58,8 @@ ETCD_SERVER_KEY_PREFIX = 'project-server-'
 ETCD_ASSIGN_KEY_PREFIX = 'assign-'
 
 
-SAML_CERTS_DIR = '/opt/seatable/seahub-data/certs'
-SAML_ATTRIBUTE_MAP = {
-  'uid': 'uid',
-  'contact_email': 'contact_email',
-  'name': 'name',
-  'employee_id': 'employee_id',
-  'user_role': 'user_role',
+SAML_CERTS_DIR = '/opt/seaqa/seaqa-data/certs'
+SAML_ATTRIBUTE_MAPPING = {
+    'name': ('display_name', ),
+    'mail': ('contact_email', ),
 }

@@ -10,6 +10,7 @@ from seahub.api2.endpoints.org_admin.info import OrgAdminInfo
 from seahub.api2.endpoints.org_admin.settings import OrgAdminSettingsView
 from seahub.api2.endpoints.org_admin.projects import OrgAdminProjectsView, OrgAdminProjectView, \
     OrgAdminTrashProjectsView, OrgAdminTrashProjectView
+from seahub.api2.endpoints.org_admin.saml_config import OrgSAMLConfigView, OrgVerifyDomain
 
 urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/search-groups/$', OrgAdminSearchGroups.as_view(), name='api-admin-search-groups'),
@@ -36,4 +37,6 @@ urlpatterns = [
     re_path(r'^admin/info/$', OrgAdminInfo.as_view(), name='api-v2.1-org-admin-info'),
     re_path(r'^admin/settings/$', OrgAdminSettingsView.as_view(), name='api-v2.1-org-admin-setting'),
 
+    re_path(r'^(?P<org_id>\d+)/admin/saml-config/$', OrgSAMLConfigView.as_view(), name='api-v2.1-org-admin-saml-config'),
+    re_path(r'^(?P<org_id>\d+)/admin/verify-domain/$', OrgVerifyDomain.as_view(), name='api-v2.1-org-admin-verify-domain'),
 ]
