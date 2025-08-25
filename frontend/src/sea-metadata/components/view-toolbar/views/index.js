@@ -22,6 +22,7 @@ const Views = ({ view, toggleView }) => {
   const displayViews = useMemo(() => {
     if (isLoading) return [];
     const { navigation, views } = viewsData;
+    if (!navigation || !views) return [];
     return navigation.map(n => views.find(v => v._id === n._id));
   }, [isLoading, viewsData, view]);
 

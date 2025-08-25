@@ -75,7 +75,7 @@ const TagsSettings = ({
 
   return (
     <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-      <Label>{gettext('tags')}</Label>
+      <Label>{gettext('Tags')}</Label>
       <div className="tags-formatter" onClick={openEditor} ref={editorRef}>
         {selectedTags.length > 0 ? (
           <>
