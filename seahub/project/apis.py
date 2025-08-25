@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import requests
 from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
@@ -16,6 +16,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_project_related_users
+from seahub.settings import SEAQA_INDEXER_SERVER_URL
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -64,4 +65,31 @@ class ProjectRelatedUsersView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({"user_list": user_list})
+
+
+class GithubWebhookView(APIView):
+
+    def post(self, request):
+        connection_id = request.query_params.get('connection-id')
+        if not connection_id:
+            return Response({'error': 'Missing connection ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        url = f"{SEAQA_INDEXER_SERVER_URL}/webhook/github/"
+
+        try:
+            resp = requests.post(
+                url,
+                params={'connection_id': connection_id},
+                data=request.body,
+                headers=request.headers
+            )
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            'status_code': resp.status_code,
+            'response': resp.text
+        }, status=status.HTTP_200_OK)
+
 

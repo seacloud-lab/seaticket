@@ -69,7 +69,6 @@ urlpatterns = [
 
     ### Apps ###
     re_path(r'^api2/', include('seahub.api2.urls')),
-    re_path('', include('seahub.sync_data.urls')),
 
     ## slide captcha
     re_path(r'^api/v2.1/slide-captcha/$', SlideCaptchaView.as_view(), name="api-v2.1-slide-captcha"),
