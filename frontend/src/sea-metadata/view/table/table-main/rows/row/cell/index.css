@@ -192,7 +192,8 @@
 
 .sea-metadata-table-cell .select-all-checkbox-container .sea-qa-icon-svg-partially-selected {
   cursor: pointer;
-  font-size: 12px;
+  height: 12px;
+  width: 12px;
   color: #2b76f6;
 }
 
