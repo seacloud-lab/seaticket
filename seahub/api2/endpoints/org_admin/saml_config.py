@@ -18,6 +18,20 @@ from seahub.organizations.utils import can_org_use_saml
 logger = logging.getLogger(__name__)
 
 
+def query_dns_txt_record(domain):
+    import dns.resolver
+    try:
+        answers = dns.resolver.resolve(domain, 'TXT')
+        return None, "".join([a.to_text() for a in answers])
+    except dns.resolver.NoAnswer:
+        return True, api_error(status.HTTP_404_NOT_FOUND, 'No TXT record found for %s' % domain)
+    except dns.resolver.NXDOMAIN:
+        return True, api_error(status.HTTP_404_NOT_FOUND, '%s does not exist' % domain)
+    except Exception as e:
+        logger.exception(e)
+        return True, api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
 class OrgSAMLConfigView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -139,30 +153,15 @@ class OrgVerifyDomain(APIView):
             error_msg = 'Cannot find dns_txt, please generate dns_txt first.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        proc = subprocess.Popen(
-            ["nslookup", "-type=TXT", domain], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        try:
-            stdout, stderr = proc.communicate(timeout=60)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            stdout, stderr = proc.communicate()
-            logger.error(
-                'Process execution timed out, stdout: %s, stderr: %s' % (stdout, stderr))
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-        except Exception as e:
-            logger.error(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        if stderr:
-            logger.error(stderr)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        if saml_config.dns_txt in stdout.decode():
+        error, result = query_dns_txt_record(domain)
+        if error:
+            return result
+        if saml_config.dns_txt in result:
             saml_config.domain_verified = True
             saml_config.save()
             return Response({'domain_verified': saml_config.domain_verified})
         else:
-            logger.error(stdout)
+            logger.debug("DNS records: %s" % result)
             error_msg = "Failed to verify domain ownership. Please make sure you have added " \
                         "the DNS TXT to your domain's DNS records and wait 5 minutes before trying again."
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
