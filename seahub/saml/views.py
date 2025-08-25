@@ -586,38 +586,8 @@ def saml_disconnect(request, org_id=None):
 
 @login_required
 def saml_complete(request):
-    from seahub.api2.utils import get_token_v1, get_token_v2
-    # generate token_v2 using information in request params
-    keys = (
-        'platform',
-        'device_id',
-        'device_name',
-        'client_version',
-        'platform_version',
-    )
-    if all(['shib_' + key in request.GET for key in keys]):
-        platform = request.GET['shib_platform']
-        device_id = request.GET['shib_device_id']
-        device_name = request.GET['shib_device_name']
-        client_version = request.GET['shib_client_version']
-        platform_version = request.GET['shib_platform_version']
-        token = get_token_v2(
-            request, request.user.username, platform, device_id,
-            device_name, client_version, platform_version)
-    elif all(['shib_' + key in request.session for key in keys]):
-        platform = request.session['shib_platform']
-        device_id = request.session['shib_device_id']
-        device_name = request.session['shib_device_name']
-        client_version = request.session['shib_client_version']
-        platform_version = request.session['shib_platform_version']
-        token = get_token_v2(
-            request, request.user.username, platform, device_id,
-            device_name, client_version, platform_version)
-    else:
-        token = get_token_v1(request.user.username)
-
     resp = HttpResponseRedirect(reverse('projects'))
-    resp.set_cookie('seahub_auth', request.user.username + '@' + token.key)
+    resp.set_cookie('seahub_auth', request.user.username)
 
     if request.user.is_authenticated:
         if request.user.is_staff:
