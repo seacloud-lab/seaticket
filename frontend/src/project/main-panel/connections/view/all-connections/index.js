@@ -70,7 +70,7 @@ const AllConnections = ({ projectUuid }) => {
       const newRecords = [...records, record];
       setRecords(newRecords);
       setIsShowRecordDialog(isShowRecordDialog);
-      callback && callback(record);
+      callback && callback(record, res.data.service_url);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);

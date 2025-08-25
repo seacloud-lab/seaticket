@@ -18,6 +18,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState({});
   const [newRecord, setNewRecord] = useState(null);
+  const [serviceUrl, setServiceUrl] = useState('');
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
@@ -72,9 +73,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       setSubmitting(false);
     },
     true,
-    (newRecord) => {
+    (newRecord, serviceUrl) => {
       setStepIndex(stepIndex + 1);
       setNewRecord(newRecord);
+      setServiceUrl(serviceUrl);
     }
     );
   }, [name, type, config, onSubmit, onToggle]);
@@ -167,8 +169,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           <div className="sea-qa-project-new-connection-config">
             <FormGroup>
               <Label>{gettext('Connection URL')}</Label>
-              {/* 127.0.0.1 use as test */}
-              <CopyInput value={`https://127.0.0.1/webhook/github/connection-id=${newRecord.id}`} />
+              <CopyInput value={`${serviceUrl}/webhook/github/connection-id=${newRecord.id}`} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
