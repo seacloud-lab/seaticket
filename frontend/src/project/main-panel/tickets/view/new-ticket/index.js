@@ -85,13 +85,13 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           <div className="sea-qa-project-ticket-content-settings">
             <div className="sea-qa-project-ticket-title mb-4">
               <Label>
-                {gettext('Add a title')}
+                {gettext('Title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
               <Input disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
             <div className="sea-qa-project-ticket-content mb-4">
-              <Label>{gettext('Add a description')}</Label>
+              <Label>{gettext('Description')}</Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
                 ref={descriptionEditorRef}
