@@ -57,6 +57,7 @@ const TicketTopBar = ({ title }) => {
     }
     return null;
   }, [pageType, togglePageType]);
+
   return (
     <TopBar>
       {renderLeftChildren()}

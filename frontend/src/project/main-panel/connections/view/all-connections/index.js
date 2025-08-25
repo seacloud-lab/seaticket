@@ -12,6 +12,8 @@ import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import createFormatter from '../../components/cell-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../../../constants';
 import { useConnectionsPage } from '../../hooks';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -43,20 +45,6 @@ const AllConnections = ({ projectUuid }) => {
         formatter: createFormatter(column)
       }
     ));
-  }, []);
-  const btns = useMemo(() => {
-    return [
-      { name: (
-        <>
-          <Icon symbol="add" className="mr-1" />
-          {gettext('Add connection')}
-        </>
-      ),
-      func: () => {
-        activeRecordRef.current = null;
-        setIsShowRecordDialog(true);
-      } }
-    ];
   }, []);
 
   const onUpdate = useCallback((connectionId, update) => {
@@ -216,6 +204,16 @@ const AllConnections = ({ projectUuid }) => {
     loadMore();
   }, []);
 
+  useEffect(() => {
+    const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.NEW_CONNECTION, () => {
+      activeRecordRef.current = null;
+      setIsShowRecordDialog(true);
+    });
+    return () => {
+      unsubscribeNewConnection();
+    };
+  }, []);
+
   if (isLoading && records.length === 0) return (<CenteredLoading />);
 
   return (
@@ -247,9 +245,7 @@ const AllConnections = ({ projectUuid }) => {
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onUpdate={onUpdate}
-      >
-        {records.length !== 0 && (<CustomizeTable.Header btns={btns} />)}
-      </CustomizeTable>
+      />
       {isShowRecordDialog && (
         <>
           {activeRecordRef.current ?
