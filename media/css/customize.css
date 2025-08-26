@@ -1,23 +1,23 @@
 .sea-qa-icon-orange {
   color: #ed7109 !important;
-  fill: #ed7109 !important
+  fill: #ed7109 !important;
 }
 
 .sea-qa-icon-svg-down {
   height: 12px !important;
-  width: 12px !important
+  width: 12px !important;
 }
 
 .sea-qa-dropdown-menu {
-  cursor: pointer
+  cursor: pointer;
 }
 
 .sea-qa-dropdown-menu .toggle-icon {
-  color: #999
+  color: #999;
 }
 
 .sea-qa-dropdown-menu .toggle-icon:hover {
-  color: #555
+  color: #555;
 }
 
 .sea-qa-dropdown-menu .dropdown-item {
@@ -26,50 +26,50 @@
   line-height: 1.5;
   min-width: 200px;
   padding: .25rem 1rem;
-  pointer-events: unset
+  pointer-events: unset;
 }
 
 .sea-qa-dropdown-menu .dropdown-item .item-icon {
   color: #8c8c8c;
   font-size: 14px;
-  margin-right: 10px
+  margin-right: 10px;
 }
 
 .sea-qa-dropdown-menu .dropdown-item:focus .item-icon,
 .sea-qa-dropdown-menu .dropdown-item:hover .item-icon {
-  color: #fff
+  color: #fff;
 }
 
 .sea-qa-dropdown-menu .dropdown-toggle .item-text {
   display: inline-block;
-  width: calc(100% - 30px)
+  width: calc(100% - 30px);
 }
 
 .sea-qa-dropdown-menu .dropdown-toggle:after {
-  color: #8c8c8c
+  color: #8c8c8c;
 }
 
 .sea-qa-dropdown-menu .dropdown-toggle:hover:after {
-  color: #fff
+  color: #fff;
 }
 
 .sea-qa-dropdown-menu .dropdown-item.disabled,
 .sea-qa-dropdown-menu .dropdown-item.disabled .item-icon,
 .sea-qa-dropdown-menu .dropdown-item.disabled .sea-qa-icon-svg,
 .sea-qa-dropdown-menu .dropdown-item.disabled:hover .item-icon {
-  color: #c2c2c2
+  color: #c2c2c2;
 }
 
 .sea-qa-dropdown-menu .dropdown-item.disabled:hover,
 .sea-qa-dropdown-menu .dropdown-item.disabled:hover .sea-qa-icon-svg {
   background-color: unset;
   color: #c2c2c2;
-  cursor: default
+  cursor: default;
 }
 
 .sea-qa-dropdown-menu .no-options {
   color: #c2c2c2;
-  min-height: 32px
+  min-height: 32px;
 }
 
 .sea-qa-icon-btn {
@@ -80,17 +80,17 @@
   font-size: 14px;
   height: 24px;
   justify-content: center;
-  width: 24px
+  width: 24px;
 }
 
 .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg):hover {
   background-color: #efefef;
-  cursor: pointer
+  cursor: pointer;
 }
 
 .sea-qa-icon-btn.bg-color-deep.bg-color-deep-keep,
 .sea-qa-icon-btn.bg-color-deep:not(.disabled):hover {
-  background-color: #e5e5e5
+  background-color: #e5e5e5;
 }
 
 .sea-qa-icon-btn .sea-qa-icon,
@@ -105,63 +105,63 @@
 
 .sea-qa-tip-default {
   color: #666;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .sea-qa-tip-large {
   color: #666;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .sea-qa-tip-danger {
   color: #f25041;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .am-action-sheet-button-list-item .my-am-action.disabled,
 .am-action-sheet-button-list-item .my-am-action.disabled .sea-qa-icon-svg {
-  color: #c2c2c2
+  color: #c2c2c2;
 }
 
 .sea-qa-icon-orange {
   color: #ed7109 !important;
-  fill: #ed7109 !important
+  fill: #ed7109 !important;
 }
 
 .sea-qa-icon-svg-down {
   height: 12px !important;
-  width: 12px !important
+  width: 12px !important;
 }
 
 .sea-qa-text-orange {
-  color: #ed7109 !important
+  color: #ed7109 !important;
 }
 
 .sea-qa-bg-orange {
-  background-color: #ed7109 !important
+  background-color: #ed7109 !important;
 }
 
 .sea-qa-border-color-orange {
-  border: #ed7109 !important
+  border: #ed7109 !important;
 }
 
 .sea-qa-table-header-sm {
-  font-size: 13px
+  font-size: 13px;
 }
 
 .sea-qa-input-subtitle {
   font-size: 14px;
   font-weight: 500;
-  text-align: left
+  text-align: left;
 }
 
 .sea-qa-log-new-value {
-  background-color: #cef5d2
+  background-color: #cef5d2;
 }
 
 .sea-qa-log-old-value {
   background-color: #ffd4df;
-  text-decoration: line-through .5px
+  text-decoration: line-through .5px;
 }
 
 .icon-color-white {
@@ -170,7 +170,7 @@
 
 .tip-default {
   color: #666;
-  font-size: 13px
+  font-size: 13px;
 }
 
 .form-control {
