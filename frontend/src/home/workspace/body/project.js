@@ -164,7 +164,7 @@ class Project extends React.Component {
   };
 
   render() {
-    let { isOwner, isAdmin, project, className = '', style = {}, workspace } = this.props;
+    let { isOwner, isAdmin, project, className = '', style = {} } = this.props;
     let { name: newName, bgColor, icon, active, isMoreOperationPopoverShow } = this.state;
     let { workspace_id, id } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
