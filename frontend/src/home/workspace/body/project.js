@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon, IconButton, ProjectIcon, toaster } from '../../../components';
+import { IconButton, ProjectIcon, toaster } from '../../../components';
 import { Utils, validateName } from '../../../utils/utils';
 import { ProjectSettingPopover } from '../../popover';
 import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
@@ -218,10 +218,7 @@ class Project extends React.Component {
         <div className="project-item-name" title={project.name}>
           {project.name}
         </div>
-        <div className="project-item-group text-truncate">
-          <Icon symbol="collaborator" className="project-workspace-icon" />
-          {workspace.name}
-        </div>
+        <div className="project-item-group"></div>
         {this.state.isShowSettings && (
           <ProjectSettingPopover
             target={`project-item-${id}`}
