@@ -85,18 +85,6 @@ TICKET_TYPE =  (
     'support',
 )
 
-PREDEFINED_TICKET_TAGS = [
-    '_bug',
-    '_documentation',
-    '_duplicate',
-    '_enhancement',
-    '_good_first_ticket',
-    '_help_wanted',
-    '_invalid',
-    '_question',
-    '_wontfix',
-]
-
 TICKET_DEFAULT_DETAILS = {
     'views': [
         {

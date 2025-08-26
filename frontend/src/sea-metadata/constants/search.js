@@ -13,4 +13,5 @@ export const SUPPORT_SEARCH_COLUMNS = [
   CellType.CREATOR,
   CellType.COLLABORATOR,
   CellType.TAGS,
+  CellType.TAG,
 ];

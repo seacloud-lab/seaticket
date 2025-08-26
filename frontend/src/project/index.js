@@ -24,11 +24,12 @@ const Project = () => {
     }
   ], []);
 
-  const resetURL = useCallback((bar, children_id) => {
+  const resetURL = useCallback((bar, ...children) => {
     const { origin, search } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar.key}/`;
-    if ((bar.key === BAR_TYPE.TICKET || bar.key === BAR_TYPE.CONNECTION) && children_id) {
-      url = url + children_id + '/';
+    const validChildren = children.filter(i => i);
+    if ((bar.key === BAR_TYPE.TICKET || bar.key === BAR_TYPE.CONNECTION) && validChildren.length > 0) {
+      url = url + validChildren.join('/') + '/';
     }
     if (bar.key === BAR_TYPE.TICKET) {
       url = url + (search || '');
@@ -56,9 +57,9 @@ const Project = () => {
     const projectNameIndex = decodePathname.indexOf(projectName);
     const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
     const params = paramsString.split('/');
-    const [barKey, children_id] = params;
+    const [barKey, ...children] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey) || BAR_TYPES[0];
-    resetURL(bar, children_id);
+    resetURL(bar, ...children);
     setActiveBar(bar);
     setLoading(false);
   }, []);

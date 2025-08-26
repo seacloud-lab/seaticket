@@ -1,4 +1,4 @@
-import { PREDEFINED_TICKET_TAG } from '../../../constants';
+import { PREDEFINED_TICKET_TAG_NAMES, PREDEFINED_TICKET_TAG } from '../../../constants';
 
 class Tag {
   constructor(object) {
@@ -8,10 +8,9 @@ class Tag {
     this.description = object.description;
     this.color = object.color || '';
     this.text_color = object.text_color || '';
-    this.is_predefined = object.is_predefined || false;
     this.tickets_count = object.tickets_count || 0;
 
-    if (this.is_predefined) {
+    if (PREDEFINED_TICKET_TAG_NAMES.includes(this.name)) {
       const { description, color, text_color, name } = PREDEFINED_TICKET_TAG[this.name];
       this.name = name;
       this.description = description;

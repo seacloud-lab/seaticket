@@ -5,11 +5,12 @@ import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } fro
 import { getFilteredRows } from '../utils/filter';
 import { getGroupRows } from '../utils/group';
 import { sortTableRows } from '../utils/sort';
-import { isGroupView } from '../utils/view';
+import { isFilterView, isGroupView, isSortView } from '../utils/view';
 import { getSearchRule } from '../utils/search';
 import { username } from '@/constants';
 import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
+import context from '../context';
 
 // const DEFAULT_COMPUTER_PROPERTIES_CONTROLLER = {
 //   isUpdateSummaries: true,
@@ -80,13 +81,24 @@ class DataProcessor {
     });
   };
 
-  static run(table, { collaborators }) {
-    const rows = table.rows;
-    const { groupbys } = table.view;
+  static run(table, { collaborators, username, userId }) {
+    let rows = table.rows;
+    const { filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
+    if (!context.isViewComputedOnServer) {
+      if (isFilterView({ filters }, availableColumns)) {
+        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, rows, filter_conjunction, filters, { username, userId, isReturnID: false });
+        rows = filterRows;
+      }
+
+      if (isSortView({ sorts }, availableColumns)) {
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+      }
+    }
+
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
-      table.view.rows = table.rows.map(row => row._id);
+      table.view.rows = rows.map(row => row._id);
       return;
     }
     let renderedRows = rows;
@@ -96,14 +108,59 @@ class DataProcessor {
     table.view.groups = groups;
   }
 
-  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators }) {
-    const { available_columns, groupbys, rows } = table.view;
-    const _isGroupView = isGroupView({ groupbys }, available_columns);
+  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId }) {
+    const { filters, filter_conjunction, sorts, groupbys } = table.view;
+    const availableColumns = table.view.available_columns || table.columns;
+    let rows = getRowsByIds(table, table.view.rows);
+    if (!context.isViewComputedOnServer) {
+      let newRows = getRowsByIds(table, newRowIds);
+      if (isFilterView({ filters }, availableColumns)) {
+        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, newRows, filter_conjunction, filters, { username, userId, isReturnID: false });
+        newRows = filterRows;
+      }
+      rows = [...rows, ...newRows];
+      if (rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+      }
+    }
+    const _isGroupView = isGroupView({ groupbys }, availableColumns);
+    if (!_isGroupView) {
+      table.view.rows = rows.map(row => row._id);
+      return;
+    }
+    let renderedRows = rows;
+    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators }) : [];
+    const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
+    table.view.rows = row_ids;
+    table.view.groups = groups;
+  }
+
+  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId }) {
+    const { filters, filter_conjunction, sorts, groupbys } = table.view;
+    const availableColumns = table.view.available_columns || table.columns;
+    let rows = getRowsByIds(table, table.view.rows);
+    if (!context.isViewComputedOnServer) {
+      let newRows = getRowsByIds(table, rowIds);
+      if (isFilterView({ filters }, availableColumns) && this.hasRelatedFilters(filters, relatedColumnKeyMap)) {
+        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, newRows, filter_conjunction, filters, { username, userId, isReturnID: false });
+        newRows = filterRows;
+      }
+      if (newRows.length === 0) {
+        rows = rows.filter(r => !rowIds.includes(r._id));
+      }
+      if (isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+      }
+    }
+    const _isGroupView = isGroupView({ groupbys }, availableColumns);
+    if (!_isGroupView) {
+      table.view.rows = rows.map(row => row._id);
+      return;
+    }
     const isRegroup = _isGroupView && this.hasRelatedGroupby(groupbys, relatedColumnKeyMap);
     if (isRegroup) {
       table.view.groups = this.getGroupedRows(table, rows, groupbys, { collaborators });
     }
-    // todo update sort and filter and ui change
   }
 
   static updateDataWithDeleteRows(deletedRowsIds, table) {
@@ -186,6 +243,12 @@ class DataProcessor {
 
   static syncOperationOnData(table, operation, { collaborators, tagsData }) {
     switch (operation.op_type) {
+      case OPERATION_TYPE.INSERT_ROW: {
+        const { row } = operation;
+        this.updateDataWithInsertRows(table, [row._id], { collaborators, tagsData });
+        this.updateSummaries();
+        break;
+      }
       case OPERATION_TYPE.MODIFY_ROW: {
         const { available_columns } = table.view;
         const { original_update, row_id } = operation;
@@ -237,6 +300,12 @@ class DataProcessor {
           }
         }
         this.updateDataWithModifyRows();
+        this.updateSummaries();
+        break;
+      }
+      case OPERATION_TYPE.DELETE_ROW: {
+        const { row_id } = operation;
+        this.updateDataWithDeleteRows([row_id], table);
         this.updateSummaries();
         break;
       }

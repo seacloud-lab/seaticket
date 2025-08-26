@@ -90,13 +90,13 @@ const filterRow = (row, filterConjunction, filters, { username = '', userId } = 
  * @param {string} userId
  * @returns filtered rows ids, array
  */
-const filterRows = (filterConjunction, filters, rows, { username, userId }) => {
+const filterRows = (filterConjunction, filters, rows, { username, userId, isReturnID = true }) => {
   let filteredRows = [];
   const formattedFilters = getFormattedFilters(filters);
   rows.forEach((row) => {
     const rowId = row._id;
     if (filterRow(row, filterConjunction, formattedFilters, { username, userId })) {
-      filteredRows.push(rowId);
+      filteredRows.push(isReturnID ? rowId : row);
     }
   });
   return filteredRows;
@@ -113,23 +113,23 @@ const filterRows = (filterConjunction, filters, rows, { username, userId }) => {
  * @param {string} userId
  * @returns filtered rows: row_ids and error message: error_message, object
  */
-const getFilteredRows = (table, rows, filterConjunction, filters, { username = null, userId = null } = {}) => {
+const getFilteredRows = (table, rows, filterConjunction, filters, { username = null, userId = null, isReturnID = true } = {}) => {
   const { columns } = table;
   let validFilters = [];
   try {
     validFilters = deleteInvalidFilter(filters, columns);
   } catch (err) {
-    return { row_ids: [], error_message: err.message };
+    return { rows: [], error_message: err.message };
   }
 
   let filteredRows = [];
   if (validFilters.length === 0) {
-    filteredRows = rows.map((row) => row._id);
+    filteredRows = isReturnID ? rows.map((row) => row._id) : rows;
   } else {
-    filteredRows = filterRows(filterConjunction, validFilters, rows, { username, userId });
+    filteredRows = filterRows(filterConjunction, validFilters, rows, { username, userId, isReturnID });
   }
 
-  return { row_ids: filteredRows, error_message: null };
+  return { rows: filteredRows, error_message: null };
 };
 
 export {

@@ -230,6 +230,17 @@ class Store {
   }
 
   // row
+  insertRow(rowData, { success_callback, fail_callback } = {}) {
+    const type = OPERATION_TYPE.INSERT_ROW;
+    const operation = this.createOperation({
+      type,
+      row_data: rowData,
+      fail_callback,
+      success_callback,
+    });
+    this.applyOperation(operation);
+  }
+
   modifyRow(row_id, row_update, old_row_data, original_update, original_old_row_data, is_copy_paste, { success_callback, fail_callback } = {}) {
     const type = OPERATION_TYPE.MODIFY_ROW;
     const operation = this.createOperation({
@@ -279,13 +290,29 @@ class Store {
     this.applyOperation(operation);
   }
 
+  deleteRow(row_id, { fail_callback, success_callback }) {
+    if (!row_id) return;
+    const row = getRowById(this.data, row_id);
+    if (!row) return;
+    if (!context.canDeleteRow(row)) return;
+    const type = OPERATION_TYPE.DELETE_ROW;
+    const operation = this.createOperation({
+      type,
+      row_id: row_id,
+      row_data: row,
+      fail_callback,
+      success_callback,
+    });
+    this.applyOperation(operation);
+  }
+
   deleteRows(rows_ids, { fail_callback, success_callback }) {
     if (!Array.isArray(rows_ids) || rows_ids.length === 0) return;
     const type = OPERATION_TYPE.DELETE_ROWS;
 
     const valid_rows_ids = rows_ids.filter((rowId) => {
       const row = getRowById(this.data, rowId);
-      return row && context.canModifyRow(row);
+      return row && context.canDeleteRow(row);
     });
 
     if (valid_rows_ids.length === 0) return;

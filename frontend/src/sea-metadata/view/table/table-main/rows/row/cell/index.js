@@ -26,7 +26,7 @@ const Cell = React.memo(({
   bgColor,
   frozen,
   height,
-  openExpandedRow,
+  onRowExpand,
 }) => {
   const canEditable = useMemo(() => {
     if (!context.canModifyCell(column, row)) return false;
@@ -37,8 +37,9 @@ const Cell = React.memo(({
 
   const className = useMemo(() => {
     const { type } = column;
-    return classnames('sea-metadata-table-cell', `sea-metadata-table-data-${type}-cell`, highlightClassName, {
+    return classnames('sea-metadata-table-cell', `sea-metadata-table-${type}-cell`, highlightClassName, {
       'table-cell-uneditable': !canEditable,
+      'table-cell-clickable': column.click,
       'last-cell': isLastCell,
       'table-last--frozen': isLastFrozenCell,
       'cell-selected': isCellSelected,
@@ -159,7 +160,14 @@ const Cell = React.memo(({
   };
   return (
     <div key={`${row._id}-${column.key}`} {...containerProps}>
-      <Formatter isCellSelected={isCellSelected} value={cellValue} column={column} row={row} onChange={modifyRow} openExpandedRow={isCellSelected ? openExpandedRow : null} />
+      <Formatter
+        isCellSelected={isCellSelected}
+        value={cellValue}
+        column={column}
+        row={row}
+        onChange={modifyRow}
+        onClick={isCellSelected && column.click ? column.click : null}
+      />
       {isCellSelected && (<CellOperationBtn row={row} column={column}/>)}
     </div>
   );

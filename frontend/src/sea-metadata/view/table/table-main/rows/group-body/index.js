@@ -844,7 +844,7 @@ class GroupBody extends Component {
             modifyRowViaButton={this.props.modifyRowViaButton}
             reloadRows={this.props.reloadRows}
             columnColor={columnColor}
-            openExpandedRow={this.props.openExpandedRow}
+            onRowExpand={this.props.onRowExpand}
           />
         );
       }

@@ -20,8 +20,7 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects, Tickets, TicketReplies, \
     TicketTags, TicketAssignees, ProjectTags, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    create_default_project_tags, gen_project_tags_dict, replace_file_url_in_content, \
-    upload_files_to_s3
+    gen_project_tags_dict, replace_file_url_in_content, upload_files_to_s3
 from seahub.project.constants import TICKET_STATUS, TICKET_TYPE
 
 
@@ -202,8 +201,8 @@ class TicketsAPIView(APIView):
             except Exception as e:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not project_tags:  # init default tags
-                project_tags = create_default_project_tags(project_uuid)
+            if not project_tags:
+                project_tags = []
             project_tag_ids = [project_tag.id for project_tag in project_tags]
             for tag in tags:
                 if tag not in project_tag_ids:
@@ -469,8 +468,8 @@ class TicketAPIView(APIView):
             except Exception as e:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not project_tags:  # init default tags
-                project_tags = create_default_project_tags(project_uuid)
+            if not project_tags:
+                project_tags = []
             project_tag_ids = [project_tag.id for project_tag in project_tags]
             for tag in tags:
                 if tag not in project_tag_ids:

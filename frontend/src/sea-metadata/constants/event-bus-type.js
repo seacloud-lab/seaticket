@@ -42,7 +42,7 @@ export const EVENT_BUS_TYPE = {
   SELECT_ROWS: 'select_rows',
   MOVE_ROW: 'move_row',
   DELETE_ROWS: 'delete_rows',
-  OCR: 'ocr',
+  EXPAND_ROW: 'expand_row',
 
   // metadata
   RELOAD_DATA: 'reload_data',

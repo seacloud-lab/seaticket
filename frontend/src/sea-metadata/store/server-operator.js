@@ -4,6 +4,7 @@ import { OPERATION_TYPE } from './operations';
 import { getColumnByKey, getServerOptions } from '../utils/column';
 import { CellType } from '../constants';
 import context from '../context';
+import { Utils } from '@/utils/utils';
 
 const MAX_LOAD_ROWS = 100;
 
@@ -13,12 +14,23 @@ class ServerOperator {
     const { op_type } = operation;
 
     switch (op_type) {
+      case OPERATION_TYPE.INSERT_ROW: {
+        const { row_data } = operation;
+        context.insertRow(row_data).then(row => {
+          operation.row = row;
+          callback({ operation });
+        }).catch(error => {
+          const errorMessage = Utils.getErrorMsg(error);
+          callback({ operation, error: errorMessage });
+        });
+        break;
+      }
       case OPERATION_TYPE.MODIFY_ROW: {
         const { row_id, row_update, is_copy_paste } = operation;
         context.modifyRow(row_id, row_update, is_copy_paste).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify {row}').replace('{row}', context.t('row')) });
+          callback({ operation, error: gettext('Failed to modify {row}').replace('{row}', context.t('row')) });
         });
         break;
       }
@@ -34,12 +46,21 @@ class ServerOperator {
             callback({ operation });
           }).catch(error => {
             if (error.response && error.response.status === 413) {
-              callback({ error: gettext('Number of rows exceeds the limit of 1000') });
+              callback({ operation, error: gettext('Number of rows exceeds the limit of 1000') });
             } else {
-              callback({ error: gettext('Failed to modify {rows}').replace('{rows}', context.t('rows')) });
+              callback({ operation, error: gettext('Failed to modify {rows}').replace('{rows}', context.t('rows')) });
             }
           });
         }
+        break;
+      }
+      case OPERATION_TYPE.DELETE_ROW: {
+        const { row_id } = operation;
+        context.deleteRow(row_id).then(res => {
+          callback({ operation });
+        }).catch(error => {
+          callback({ operation, error: gettext('Failed to delete {row}').replace('{row}', context.t('row')) });
+        });
         break;
       }
       case OPERATION_TYPE.DELETE_ROWS: {
@@ -48,20 +69,20 @@ class ServerOperator {
         context.deleteRows(rowIds).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to delete {rows}').replace('{rows}', context.t('rows')) });
+          callback({ operation, error: gettext('Failed to delete {rows}').replace('{rows}', context.t('rows')) });
         });
         break;
       }
       case OPERATION_TYPE.RESTORE_ROWS: {
         const { rows_data } = operation;
         if (!Array.isArray(rows_data) || rows_data.length === 0) {
-          callback({ error: gettext('Failed to restore {rows}').replace('{rows}', context.t('rows')) });
+          callback({ operation, error: gettext('Failed to restore {rows}').replace('{rows}', context.t('rows')) });
           break;
         }
         context.restoreRows(rows_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to restore {rows}').replace('{rows}', context.t('rows')) });
+          callback({ operation, error: gettext('Failed to restore {rows}').replace('{rows}', context.t('rows')) });
         });
         break;
       }
@@ -77,7 +98,7 @@ class ServerOperator {
           operation.data = operation.column.data;
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to insert {column}').replace('{column}', context.t('column')) });
+          callback({ operation, error: gettext('Failed to insert {column}').replace('{column}', context.t('column')) });
         });
         break;
       }
@@ -86,7 +107,7 @@ class ServerOperator {
         context.deleteColumn(column_key).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to delete {column}').replace('{column}', context.t('column')) });
+          callback({ operation, error: gettext('Failed to delete {column}').replace('{column}', context.t('column')) });
         });
         break;
       }
@@ -95,7 +116,7 @@ class ServerOperator {
         context.renameColumn(column_key, new_name).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to rename {column}').replace('{column}', context.t('column')) });
+          callback({ operation, error: gettext('Failed to rename {column}').replace('{column}', context.t('column')) });
         });
         break;
       }
@@ -110,7 +131,7 @@ class ServerOperator {
         context.modifyColumnData(column_key, origin_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify {column} data').replace('{column}', context.t('column')) });
+          callback({ operation, error: gettext('Failed to modify {column} data').replace('{column}', context.t('column')) });
         });
         break;
       }
@@ -119,7 +140,7 @@ class ServerOperator {
         context.modifyView(view_id, { columns_keys: new_columns_keys }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify {column} order').replace('{column}', context.t('column')) });
+          callback({ operation, error: gettext('Failed to modify {column} order').replace('{column}', context.t('column')) });
         });
         break;
       }
@@ -128,7 +149,7 @@ class ServerOperator {
         context.modifyView(view_id, { filters, filter_conjunction, basic_filters }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify filter') });
+          callback({ operation, error: gettext('Failed to modify filter') });
         });
         break;
       }
@@ -137,7 +158,7 @@ class ServerOperator {
         context.modifyView(view_id, { sorts }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify sort') });
+          callback({ operation, error: gettext('Failed to modify sort') });
         });
         break;
       }
@@ -146,7 +167,7 @@ class ServerOperator {
         context.modifyView(view_id, { groupbys }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify group') });
+          callback({ operation, error: gettext('Failed to modify group') });
         });
         break;
       }
@@ -155,7 +176,7 @@ class ServerOperator {
         context.modifyView(view_id, { hidden_columns }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify hidden {columns').replace('{columns}', context.t('columns')) });
+          callback({ operation, error: gettext('Failed to modify hidden {columns').replace('{columns}', context.t('columns')) });
         });
         break;
       }
@@ -164,7 +185,7 @@ class ServerOperator {
         context.modifyView(view_id, { settings }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ error: gettext('Failed to modify settings') });
+          callback({ operation, error: gettext('Failed to modify settings') });
         });
         break;
       }

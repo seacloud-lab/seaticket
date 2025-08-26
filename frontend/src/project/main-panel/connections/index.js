@@ -6,7 +6,7 @@ import { CONNECTION_PAGE_TYPE } from '../../constants';
 import TopBar from './components/top-bar';
 
 const {
-  projectUuid, projectName,
+  projectUuid, projectName, workspaceID,
 } = window.app.pageOptions;
 
 const Page = () => {
@@ -18,7 +18,7 @@ const Page = () => {
 
 const Index = ({ title }) => {
   return (
-    <ConnectionsPageProvider projectName={projectName}>
+    <ConnectionsPageProvider workspaceID={workspaceID} projectName={projectName}>
       <TopBar title={title} />
       <Page />
     </ConnectionsPageProvider>

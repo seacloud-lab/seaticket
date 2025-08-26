@@ -85,27 +85,23 @@ class TagsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  modifyProjectTag(projectUuid, tagId, { name, description, color, text_color }) {
+  modifyProjectTag(projectUuid, tagId, update,) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
     let form = new FormData();
-    if (name) {
-      form.append('name', name);
-    }
-    if (description) {
-      form.append('description', description);
-    }
-    if (color) {
-      form.append('color', color);
-    }
-    if (text_color) {
-      form.append('text_color', text_color);
-    }
+    Object.keys(update).forEach(key => {
+      form.append(key, update[key]);
+    });
     return this.req.put(url, form);
   }
 
   deleteProjectTag(projectUuid, tagId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/';
     return this.req.delete(url);
+  }
+
+  listProjectTicketsByTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tags/' + tagId + '/tickets/';
+    return this.req.get(url);
   }
 
 }

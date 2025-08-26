@@ -7,7 +7,7 @@ import Views from './views';
 
 import './index.css';
 
-const ViewToolBar = ({ isShowViews, toggleView }) => {
+const ViewToolBar = ({ tools = ['views', 'search', 'filters', 'sorts', 'groups', 'order_and_hidden'], toggleView }) => {
 
   const { collaborators } = useCollaborators();
   const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
@@ -22,10 +22,10 @@ const ViewToolBar = ({ isShowViews, toggleView }) => {
 
   return (
     <div className="sea-metadata-view-ribbon" onClick={onHeaderClick}>
-      {!isShowViews ? (
-        <div className="sea-metadata-views"></div>
+      {tools.includes('views') ? (
+        <Views view={view} toggleView={toggleView} />
       ) : (
-        <Views isShowViews={isShowViews} view={view} toggleView={toggleView} />
+        <div className="sea-metadata-views"></div>
       )}
       <div className="sea-metadata-view-tools">
         {!isLoading && (
@@ -33,6 +33,7 @@ const ViewToolBar = ({ isShowViews, toggleView }) => {
             {viewType === VIEW_TYPE.TABLE && (
               <TableViewToolbar
                 readOnly={readOnly}
+                tools={tools}
                 view={view}
                 collaborators={collaborators}
                 modifyFilters={modifyFilters}

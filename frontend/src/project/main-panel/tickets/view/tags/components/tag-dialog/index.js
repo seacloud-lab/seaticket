@@ -4,11 +4,11 @@ import classnames from 'classnames';
 import { ColorSelectorPopover, IconButton, ModalHeader } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Tag from '../tag';
-import { isHexColor, isDarkColor, validateName, Utils } from '@/utils/utils';
+import { isHexColor, isDarkColor, validateName } from '@/utils/utils';
 
 import './index.css';
 
-const TagDialog = ({ tag: oldTag, onSubmit, onToggle }) => {
+const TagDialog = ({ row: oldTag, onSubmit, onToggle }) => {
   const [name, setName] = useState(oldTag?.name || '');
   const [description, setDescription] = useState(oldTag?.description || '');
   const [color, setColor] = useState(oldTag?.color || SELECT_OPTION_COLORS[0].COLOR);
@@ -87,12 +87,14 @@ const TagDialog = ({ tag: oldTag, onSubmit, onToggle }) => {
       setSubmitting(false);
       return;
     }
-    onSubmit({ name: validName, description, color, text_color: textColor }).then(() => {
-      onToggle();
-    }).catch(error => {
-      const errorMsg = Utils.getErrorMsg(error);
-      setError({ type: 'network', msg: errorMsg });
-      setSubmitting(false);
+    onSubmit({ name: validName, description, color, text_color: textColor }, {
+      success_callback: () => {
+        onToggle();
+      },
+      fail_callback: (error) => {
+        setError({ type: 'network', msg: error });
+        setSubmitting(false);
+      }
     });
   }, [name, description, color, textColor, isValidColor, onToggle, onSubmit]);
 
@@ -103,7 +105,7 @@ const TagDialog = ({ tag: oldTag, onSubmit, onToggle }) => {
   }, [color, textColor]);
 
   return (
-    <Modal centered={true} isOpen={true} autoFocus={false} className="sea-qa-tag-dialog" toggle={onToggle}>
+    <Modal isOpen={true} autoFocus={false} className="sea-qa-tag-dialog" toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{oldTag ? gettext('Edit tag') : gettext('New tag')}</ModalHeader>
       <ModalBody >
         <FormGroup className="tag-preview">

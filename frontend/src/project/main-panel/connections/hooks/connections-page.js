@@ -5,19 +5,17 @@ import eventBus from '../../../../utils/event-bus';
 
 const ConnectionsPageContext = React.createContext(null);
 
-export const ConnectionsPageProvider = ({ projectName, children }) => {
+export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
   const [pageName, setPageName] = useState('');
 
   const resetURL = useCallback((pageType) => {
-    const { pathname, origin } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
+    const { origin } = location;
+    const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageType === CONNECTION_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
-    history.replaceState(null, null, origin + newPathname + BAR_TYPE.CONNECTION + urlPart);
-  }, []);
+    history.replaceState(null, null, url + urlPart);
+  }, [workspaceID]);
 
   const togglePageType = useCallback((pageType) => {
     setPageType(pageType);

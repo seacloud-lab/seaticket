@@ -49,6 +49,20 @@ export default function apply(data, operation) {
   };
 
   switch (op_type) {
+    case OPERATION_TYPE.INSERT_ROW: {
+      const { row } = operation;
+      const { rows } = data;
+      const updatedRows = [...rows];
+      const rowIndex = updatedRows.findIndex(r => r._id === row._id);
+      data.id_row_map[row._id] = row;
+      if (rowIndex === -1) {
+        data.row_ids.push(row._id);
+      } else {
+        updatedRows[rowIndex] = row;
+      }
+      data.rows = updatedRows;
+      return data;
+    }
     case OPERATION_TYPE.MODIFY_ROW: {
       const { row_id, original_row_update, row_update } = operation;
       updateDataByModifyRows({
@@ -60,6 +74,11 @@ export default function apply(data, operation) {
     case OPERATION_TYPE.MODIFY_ROWS: {
       const { id_original_row_updates, id_row_updates } = operation;
       updateDataByModifyRows({ id_original_row_updates, id_row_updates });
+      return data;
+    }
+    case OPERATION_TYPE.DELETE_ROW: {
+      const { row_id } = operation;
+      updateDataByDeleteRows([row_id]);
       return data;
     }
     case OPERATION_TYPE.DELETE_ROWS: {

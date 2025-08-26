@@ -8,6 +8,7 @@ import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 import { TagsDataProvider } from './tagsData';
+import { getRowById } from '../utils/row';
 
 const MetadataContext = React.createContext(null);
 
@@ -75,6 +76,10 @@ export const MetadataProvider = ({
     storeRef.current.modifySettings(settings);
   }, [storeRef]);
 
+  const insertRow = useCallback((data, { success_callback, fail_callback } = {}) => {
+    storeRef.current.insertRow(data, { success_callback, fail_callback });
+  }, [storeRef]);
+
   const updateLocalRow = useCallback(({ rowId }, update) => {
     storeRef.current.modifyLocalRow({ row_id: rowId }, update);
   }, [storeRef]);
@@ -86,11 +91,23 @@ export const MetadataProvider = ({
   const modifyRows = useCallback((rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste = false, { success_callback, fail_callback } = {}) => {
     storeRef.current.modifyRows(rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste, {
       fail_callback: (error) => {
-        console.log(error);
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
       },
       success_callback: () => {
+        success_callback && success_callback();
+      },
+    });
+  }, [metadata, storeRef]);
+
+  const deleteRow = useCallback((rowId, { success_callback, fail_callback } = {}) => {
+    storeRef.current.deleteRow(rowId, {
+      fail_callback: (error) => {
+        fail_callback && fail_callback(error);
+        error && toaster.danger(error);
+      },
+      success_callback: () => {
+        toaster.success(gettext('{Row} deleted').replace('{Row}', context.t('Row')));
         success_callback && success_callback();
       },
     });
@@ -105,6 +122,26 @@ export const MetadataProvider = ({
       },
       success_callback: () => {
         toaster.success(gettext('{Rows} deleted').replace('{Rows}', context.t('Rows')));
+        success_callback && success_callback();
+      },
+    });
+  };
+
+  const modifyRowByRowExpand = (rowId, update, { success_callback, fail_callback } = {}) => {
+    const updates = update;
+    const originalUpdates = update;
+    const row = getRowById(metadata, rowId);
+    if (!row) return;
+    let oldRowData = {};
+    Object.keys(update).forEach(key => {
+      oldRowData[key] = row[key];
+    });
+    storeRef.current.modifyRow(rowId, updates, oldRowData, originalUpdates, oldRowData, false, {
+      fail_callback: (error) => {
+        fail_callback && fail_callback(error);
+        error && toaster.danger(error);
+      },
+      success_callback: () => {
         success_callback && success_callback();
       },
     });
@@ -224,7 +261,10 @@ export const MetadataProvider = ({
         modifySorts,
         modifyGroupbys,
         modifyHiddenColumns,
+        insertRow,
+        modifyRowByRowExpand,
         modifyRows,
+        deleteRow,
         deleteRows,
         modifyRow,
         moveRow,

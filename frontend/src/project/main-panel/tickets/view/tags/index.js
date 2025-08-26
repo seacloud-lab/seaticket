@@ -1,82 +1,220 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button } from 'reactstrap';
-import classNames from 'classnames';
-import { useTags } from '../../hooks';
-import { CenteredLoading, EmptyTip, SearchInput } from '../../../../../components';
-import { gettext } from '../../../../../constants';
-import TagRecord from './components/tag-record';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useTags, useTicketsPage } from '../../hooks';
+import { CenteredLoading } from '@/components';
+import { gettext } from '@/constants';
 import TagDialog from './components/tag-dialog';
+import SeaMetadata, { CellType } from '@/sea-metadata';
+import context from '@/sea-metadata/context';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '../../../../constants';
 
-import './index.css';
-
-const Tags = () => {
-  const [isShowTagDialog, setIsShowTagDialog] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-
+const AllTags = ({ projectUuid }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
+  const { toggleChildrenPageType } = useTicketsPage();
 
-  const editTag = useRef(null);
+  const columns = useMemo(() => [
+    {
+      type: CellType.TAG, key: 'name', name: gettext('Tag'),
+      editable: false, is_name_column: true, frozen: true,
+      click: (row) => toggleChildrenPageType(row._id)
+    },
+    { type: CellType.TEXT, key: 'description', name: gettext('Description'), editable: true, is_required: false },
+    { type: CellType.NUMBER, key: 'tickets_count', name: gettext('Tickets count'), editable: false },
+  ], [toggleChildrenPageType]);
 
-  const openTagDialog = useCallback((tag = null) => {
-    editTag.current = tag;
-    setIsShowTagDialog(true);
+  const viewsData = useMemo(() => ({
+    navigation: [{ _id: '0000', type: 'view' }],
+    views: [
+      {
+        _id: '0000',
+        name: gettext('All'),
+      }
+    ]
+  }), []);
+
+  const api = useMemo(() => ({
+    getMetadata: (...params) => {
+      return new Promise((resolve, reject) => {
+        resolve({ data: {
+          rows: tagsData.rows,
+          columns: columns,
+        } });
+      });
+    },
+
+    // view
+    getViews: () => {
+      return new Promise((resolve, reject) => {
+        resolve({ data: viewsData });
+      });
+    },
+
+    getView: (viewID) => {
+      return new Promise((resolve, reject) => {
+        const view = viewsData.views[0];
+
+        resolve({ data: { view: {
+          ...view,
+          sorts: context.localStorage.getItem('sorts') || [],
+        } } });
+      });
+    },
+
+    modifyView: (viewID, viewData) => {
+      return new Promise((resolve, reject) => {
+        Object.keys(viewData).forEach(key => {
+          context.localStorage.setItem(key, viewData[key]);
+        });
+        resolve({ data: { success: true } });
+      });
+    },
+
+    // row
+    insertRow: createTag,
+    modifyRow: (...params) => modifyTag(...params),
+    deleteRow: (...params) => deleteTag(...params),
+
+  }), [projectUuid, columns, viewsData, createTag, tagsData]);
+
+  const createContextMenuOptions = useCallback(({
+    isGroupView,
+    selectedRange,
+    selectedPosition,
+    position,
+    table,
+    rowMetrics,
+    deleteRows,
+    hideMenu,
+    onClearSelected,
+    onCopySelected,
+    rowGetterByIndex,
+    selectNone,
+    context,
+  }) => {
+    let list = [];
+
+    // handle selected multiple cells
+    if (selectedRange) {
+      if (context.canModify()) {
+        list.push({
+          label: gettext('Clear selected'),
+          callback: onClearSelected,
+        });
+      }
+      list.push({
+        label: gettext('Copy selected'),
+        callback: onCopySelected,
+      });
+
+      if (context.canDeleteRow()) {
+        const { topLeft, bottomRight } = selectedRange;
+        let rows = [];
+        for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
+          const row = rowGetterByIndex({ isGroupView, groupRowIndex: topLeft.groupRowIndex, rowIndex: i });
+          if (row) {
+            rows.push(row);
+          }
+        }
+        if (rows.length > 0) {
+          list.push({
+            label: gettext('Delete selected'),
+            rows: rows,
+            callback: (event, { rows }) => {
+              const rowIds = rows.map(row => row._id);
+              deleteRows && deleteRows(rowIds);
+            }
+          });
+        }
+      }
+      return list;
+    }
+
+    // handle selected rows
+    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+    if (selectedRowIds.length > 1) {
+      let rows = [];
+      selectedRowIds.forEach(id => {
+        const row = table.id_row_map[id];
+        if (row) {
+          rows.push(row);
+        }
+      });
+
+      if (context.canDeleteRow() && rows.length > 0) {
+        list.push({
+          label: gettext('Delete tags'),
+          callback: (event) => {
+            const rowIds = rows.map(row => row._id);
+            deleteRows && deleteRows(rowIds);
+          }
+        });
+      }
+      return list;
+    }
+
+    // handle selected cell
+    if (!selectedPosition) return list;
+    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+    if (!row) return list;
+    list.push({
+      label: gettext('Edit tag'),
+      callback: () => {
+        context.eventBus.dispatch('expand_row', row);
+      }
+    });
+
+    if (context.canDeleteRow()) {
+      list.push({
+        label: gettext('Delete tag'),
+        callback: () => deleteRows && deleteRows([row._id])
+      });
+    }
+    return list;
   }, []);
 
-  const closeTagDialog = useCallback(() => {
-    editTag.current = null;
-    setIsShowTagDialog(false);
-  }, []);
+  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tags`, [projectUuid]);
 
-  const onSearchValueChange = useCallback((value) => {
-    setSearchValue(value);
+  const t = useMemo(() => {
+    return {
+      row: gettext('tag'),
+      rows: gettext('tags'),
+      Rows: gettext('Tags'),
+    };
   }, []);
 
   useEffect(() => {
     reload();
   }, []);
 
-  if (isLoading) return (<CenteredLoading />);
+  useEffect(() => {
+    const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
+      context.eventBus.dispatch('expand_row');
+    });
+    return () => {
+      unsubscribeNewTag();
+    };
+  }, []);
 
-  const lowerSearchValue = searchValue.toLowerCase();
-  const displayTags = searchValue ? tagsData.rows.filter(tag => tag.name.toLowerCase().includes(lowerSearchValue)) : tagsData.rows;
+  if (isLoading) return (<CenteredLoading />);
 
   return (
     <>
-      <div className="sea-qa-project-tags-wrapper d-flex-column">
-        <div className="sea-qa-project-tags-wrapper-header">
-          <SearchInput placeholder={gettext('Search tags')} value={searchValue} onChange={onSearchValueChange} />
-          <Button color="primary" className="ml-4" onClick={() => openTagDialog()}>{gettext('New tag')}</Button>
-        </div>
-        <div className={classNames('sea-qa-project-tags-wrapper-body', { 'empty': displayTags.length === 0 })}>
-          <div className="sea-qa-project-tags-op-wrapper p-2 ">
-            <div className="sea-qa-project-tags-op-wrapper-left">
-              <div className="sea-qa-project-tags-op-btn disabled">{displayTags.length && gettext('{count} tags').replace('{count}', displayTags.length)}</div>
-            </div>
-            <div className="sea-qa-project-tags-op-wrapper-right">
-              <div className="sea-qa-project-tags-op-btn">{gettext('Sort')}</div>
-            </div>
-          </div>
-          <div className="sea-qa-project-tags-body">
-            {displayTags.length === 0 ? (
-              <EmptyTip text={gettext('No tags')} />
-            ) : (
-              <div className="sea-qa-project-tags">
-                {displayTags.map(tag => (<TagRecord key={tag._id} tag={tag} editTag={openTagDialog} deleteTag={deleteTag} />))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {isShowTagDialog && (
-        <TagDialog
-          tag={editTag.current}
-          onToggle={closeTagDialog}
-          onSubmit={editTag.current ? (newTag) => modifyTag(editTag.current._id, newTag) : createTag}
-        />
-      )}
+      <SeaMetadata
+        viewID="0000"
+        api={api}
+        localStorageNamePrefix={localStorageName}
+        createContextMenuOptions={createContextMenuOptions}
+        viewTools={['views', 'search', 'sorts']}
+        isViewComputedOnServer={false}
+        t={t}
+        toggleView={() => {}}
+      >
+        <TagDialog />
+      </SeaMetadata>
     </>
   );
 
 };
 
-export default Tags;
+export default AllTags;
