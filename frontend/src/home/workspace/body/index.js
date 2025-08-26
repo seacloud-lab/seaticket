@@ -4,6 +4,8 @@ import classnames from 'classnames';
 import Project from './project';
 import SharedProject from './shared-project';
 import VirtualProject from './virtual-project';
+import { gettext } from '../../../constants';
+
 import './index.css';
 
 const propTypes = {
@@ -49,8 +51,8 @@ const propTypes = {
 class WorkspaceContainer extends Component {
 
   render() {
-    const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle } = this.props;
-    const total = this.props.projectList.length + this.props.groupSharedProjects.length;
+    const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle, projectList, groupSharedProjects } = this.props;
+    const total = projectList.length + groupSharedProjects.length;
     const { className: virtualClassName, style: virtualStyle } = getProjectClassAndStyle(total, total);
     return (
       <div className={classnames('project-group-content d-flex', {
@@ -58,7 +60,10 @@ class WorkspaceContainer extends Component {
         'table-mobile-item-container': !isDesktop,
       })}
       >
-        {this.props.projectList.map((project, index) => {
+        {total === 0 && (
+          <div className="tip">{gettext('No project')}</div>
+        )}
+        {projectList.map((project, index) => {
           const { className, style } = getProjectClassAndStyle(index, total);
           return (
             <Project
@@ -87,8 +92,8 @@ class WorkspaceContainer extends Component {
             />
           );
         })}
-        {this.props.groupSharedProjects.map((project, index) => {
-          const { className, style } = getProjectClassAndStyle(this.props.projectList.length + index, total);
+        {groupSharedProjects.map((project, index) => {
+          const { className, style } = getProjectClassAndStyle(projectList.length + index, total);
           return (
             <SharedProject
               className={className}
