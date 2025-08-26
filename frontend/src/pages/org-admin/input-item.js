@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Input, InputGroup, Button, Row, Col, Label } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
-import { ClickOutside, IconButton } from '../../components';
+import { ClickOutside, Icon } from '../../components';
 
 const propTypes = {
   value: PropTypes.string,
@@ -87,10 +87,14 @@ class OrgSamlConfigInput extends Component {
             </Col>
             <Col md="4">
               {isBtnsShown &&
-                <Fragment>
-                  <IconButton className="btn btn-secondary web-setting-icon-btn-submit" icon="check" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')} />
-                  <IconButton className="btn btn-secondary web-setting-icon-btn-cancel ml-2" icon="x" title={gettext('Cancel')} aria-label={gettext('Cancel')} />
-                </Fragment>
+                <>
+                  <Button color="primary" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')}>
+                    <Icon symbol={'check'} />
+                  </Button>
+                  <Button color="secondary" onClick={this.hideBtns} title={gettext('Cancel')} aria-label={gettext('Cancel')} className="ml-2">
+                    <Icon symbol={'x'} />
+                  </Button>
+                </>
               }
             </Col>
           </Row>
