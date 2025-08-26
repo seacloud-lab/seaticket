@@ -86,7 +86,7 @@ const TagsFilter = ({
                 {Array.isArray(value) && value.map(v => {
                   const tag = getRowById(tagsData, v);
                   return (
-                    <Tag tag={tag} className="mr-0">
+                    <Tag tag={tag} key={v} className="mr-0">
                       <Tag.RemoveBtn callback={() => handleDeselect(v)} />
                     </Tag>
                   );

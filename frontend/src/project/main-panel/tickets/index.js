@@ -10,7 +10,6 @@ import { CollaboratorsProvider } from '@/sea-metadata';
 import { ticketsAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
-import { seaQAAPI } from '@/api/web-api';
 
 import './index.css';
 
@@ -20,7 +19,7 @@ const {
 
 const Page = () => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
-    uploadFile: (...params) => seaQAAPI.uploadFile(projectUuid, ...params)
+    uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
 
   const { isLoading, pageType } = useTicketsPage();
