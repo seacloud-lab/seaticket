@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-14 17:40+0800\n"
+"POT-Creation-Date: 2025-08-26 10:34+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,166 +17,137 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: seahub/api2/endpoints/admin/account.py:181 seahub/api2/endpoints/user.py:123
+#: seahub/api2/endpoints/admin/account.py:133 seahub/api2/endpoints/user.py:123
 #: seahub/api2/views.py:178
 msgid "Name is too long (maximum is 64 characters)"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/account.py:185 seahub/api2/endpoints/user.py:127
+#: seahub/api2/endpoints/admin/account.py:137 seahub/api2/endpoints/user.py:127
 #: seahub/api2/views.py:182 seahub/forms.py:39 seahub/profile/forms.py:27
 msgid "Name should not include '/'."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/account.py:200
+#: seahub/api2/endpoints/admin/account.py:152
 msgid "Login id can't be empty"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/account.py:204
-#: seahub/api2/endpoints/admin/users.py:509
+#: seahub/api2/endpoints/admin/account.py:156
+#: seahub/api2/endpoints/admin/users.py:480
 #, python-format
 msgid "Login id %s already exists."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/account.py:211
+#: seahub/api2/endpoints/admin/account.py:163
 msgid "Department is too long (maximum is 512 characters)"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/account.py:218 seahub/forms.py:63
-msgid "Space quota can't be empty"
-msgstr ""
-
-#: seahub/api2/endpoints/admin/account.py:224
-msgid "Must be an integer that is greater than or equal to 0."
-msgstr ""
-
-#: seahub/api2/endpoints/admin/account.py:228 seahub/forms.py:64
-msgid "Space quota is too low (minimum value is 0)"
-msgstr ""
-
-#: seahub/api2/endpoints/admin/account.py:236
-#, python-format
-msgid "Failed to set quota: maximum quota is %d MB"
-msgstr ""
-
-#: seahub/api2/endpoints/admin/account.py:311
-#: seahub/api2/endpoints/admin/users.py:303
-#: seahub/api2/endpoints/admin/users.py:478 seahub/forms.py:25
-#: seahub/invitations/views.py:66 seahub/saml/views.py:358
+#: seahub/api2/endpoints/admin/account.py:238
+#: seahub/api2/endpoints/admin/users.py:295
+#: seahub/api2/endpoints/admin/users.py:449 seahub/forms.py:25
+#: seahub/invitations/views.py:66 seahub/saml/views.py:374
 msgid "The number of users exceeds the limit."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/address_book/groups.py:71
-#: seahub/api2/endpoints/admin/address_book/groups.py:260
 #: seahub/api2/endpoints/admin/groups.py:128
-#: seahub/api2/endpoints/groups.py:115 seahub/api2/endpoints/groups.py:223
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:79
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:314
-#: seahub/api2/endpoints/org_admin/groups.py:104
-#: seahub/api2/endpoints/org_admin/groups.py:294
+#: seahub/api2/endpoints/groups.py:117 seahub/api2/endpoints/groups.py:231
+#: seahub/api2/endpoints/org_admin/groups.py:108
+#: seahub/api2/endpoints/org_admin/groups.py:298
 msgid ""
 "Group name can only contain letters, numbers, blank, hyphen, dot, single "
 "quote or underscore"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/address_book/groups.py:208
-msgid "There are sub-departments in this department."
-msgstr ""
-
-#: seahub/api2/endpoints/admin/address_book/groups.py:215
-#: seahub/api2/endpoints/admin/address_book/org_groups.py:69
-#: seahub/api2/endpoints/admin/groups.py:298
-#: seahub/api2/endpoints/admin/org_groups.py:119
-#: seahub/api2/endpoints/groups.py:331
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:258
-#: seahub/api2/endpoints/org_admin/groups.py:352
-msgid "Cannot delete group with bases"
-msgstr ""
-
 #: seahub/api2/endpoints/admin/groups.py:135
-#: seahub/api2/endpoints/groups.py:120 seahub/api2/endpoints/groups.py:228
-#: seahub/api2/endpoints/org_admin/groups.py:132
-#: seahub/api2/endpoints/org_admin/groups.py:299
+#: seahub/api2/endpoints/groups.py:122 seahub/api2/endpoints/groups.py:236
+#: seahub/api2/endpoints/org_admin/groups.py:136
+#: seahub/api2/endpoints/org_admin/groups.py:303
 msgid "There is already a group with that name."
 msgstr ""
 
 #: seahub/api2/endpoints/admin/groups.py:219
-#: seahub/api2/endpoints/groups.py:257
-#: seahub/api2/endpoints/org_admin/groups.py:260
+#: seahub/api2/endpoints/groups.py:264
+#: seahub/api2/endpoints/org_admin/groups.py:264
 #, python-format
 msgid "User %s is already group owner."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:396
+#: seahub/api2/endpoints/admin/groups.py:278
+#: seahub/api2/endpoints/admin/org_groups.py:122
+#: seahub/api2/endpoints/groups.py:320
+msgid "Cannot delete group with bases"
+msgstr ""
+
+#: seahub/api2/endpoints/admin/users.py:367
 #, python-format
 msgid "Successfully added user %(user)s."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:400 seahub/views/sysadmin.py:90
+#: seahub/api2/endpoints/admin/users.py:371 seahub/views/sysadmin.py:84
 #, python-format
 msgid "You are invited to join %s"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:402
+#: seahub/api2/endpoints/admin/users.py:373
 #, python-format
 msgid "Successfully added user %(user)s. An email notification has been sent."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:407
+#: seahub/api2/endpoints/admin/users.py:378
 #, python-format
 msgid ""
 "Successfully added user %(user)s. But email notification can not be sent, "
 "because email service is not properly configured."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:618
+#: seahub/api2/endpoints/admin/users.py:567
 msgid "Edit succeeded"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:625
-#: seahub/api2/endpoints/org_admin/users.py:402
+#: seahub/api2/endpoints/admin/users.py:574
+#: seahub/api2/endpoints/org_admin/users.py:401
 #, python-format
 msgid "Your account on %s is activated"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:628
+#: seahub/api2/endpoints/admin/users.py:577
 msgid "Edit succeeded, an email has been sent."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:632
+#: seahub/api2/endpoints/admin/users.py:581
 msgid ""
 "Edit succeeded, but failed to send email, please check your email "
 "configuration."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:841 seahub/auth/views.py:400
+#: seahub/api2/endpoints/admin/users.py:790 seahub/auth/views.py:400
 msgid "Unable to reset password."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:871 seahub/views/sysadmin.py:79
+#: seahub/api2/endpoints/admin/users.py:820 seahub/views/sysadmin.py:73
 #, python-format
 msgid "Password has been reset on %s"
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:873
+#: seahub/api2/endpoints/admin/users.py:822
 #, python-format
 msgid ""
 "Successfully reset password to %(passwd)s, an email has been sent to "
 "%(user)s."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:878
+#: seahub/api2/endpoints/admin/users.py:827
 #, python-format
 msgid ""
 "Successfully reset password to %(passwd)s, but failed to send email to "
 "%(user)s, please check your email configuration."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:881
+#: seahub/api2/endpoints/admin/users.py:830
 #, python-format
 msgid "Successfully reset password to %(passwd)s for user %(user)s."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:885
+#: seahub/api2/endpoints/admin/users.py:834
 #, python-format
 msgid ""
 "Successfully reset password to %(passwd)s for user %(user)s. But email "
@@ -195,45 +166,55 @@ msgstr ""
 msgid "value invalid."
 msgstr ""
 
-#: seahub/api2/endpoints/group_members.py:129
-#: seahub/api2/endpoints/group_members.py:358
+#: seahub/api2/endpoints/group_members.py:130
+#: seahub/api2/endpoints/group_members.py:343
 #, python-format
 msgid "User %s is already a group member."
 msgstr ""
 
-#: seahub/api2/endpoints/group_members.py:135
-#: seahub/api2/endpoints/group_members.py:368
-#: seahub/api2/endpoints/org_admin/two_factor_auth.py:52
-#: seahub/api2/endpoints/org_admin/two_factor_auth.py:91
-#: seahub/api2/endpoints/org_admin/users.py:257
+#: seahub/api2/endpoints/group_members.py:141
+#: seahub/api2/endpoints/group_members.py:374
+#: seahub/api2/endpoints/org_admin/groups.py:569
+msgid "Number of group members exceeds limit."
+msgstr ""
+
+#: seahub/api2/endpoints/group_members.py:353
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:53
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:92
+#: seahub/api2/endpoints/org_admin/users.py:256
 #: seahub/api2/endpoints/org_admin/work_weixin.py:256
 #, python-format
 msgid "User %s not found in organization."
 msgstr ""
 
-#: seahub/api2/endpoints/group_members.py:146
-#: seahub/api2/endpoints/group_members.py:389
-msgid "Number of group members exceeds limit."
-msgstr ""
-
-#: seahub/api2/endpoints/groups.py:129 seahub/api2/endpoints/groups.py:131
-#: seahub/api2/endpoints/groups.py:133 seahub/api2/endpoints/groups.py:144
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:101
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:103
-#: seahub/api2/endpoints/org_admin/address_book/groups.py:105
-#: seahub/api2/endpoints/org_admin/groups.py:139
-#: seahub/api2/endpoints/org_admin/groups.py:141
+#: seahub/api2/endpoints/groups.py:131 seahub/api2/endpoints/groups.py:133
+#: seahub/api2/endpoints/groups.py:135 seahub/api2/endpoints/groups.py:146
 #: seahub/api2/endpoints/org_admin/groups.py:143
-#: seahub/api2/endpoints/org_admin/groups.py:150
+#: seahub/api2/endpoints/org_admin/groups.py:145
+#: seahub/api2/endpoints/org_admin/groups.py:147
+#: seahub/api2/endpoints/org_admin/groups.py:154
 #, python-format
 msgid "Number of groups exceeds the %s limit."
+msgstr ""
+
+#: seahub/api2/endpoints/org_admin/groups.py:350
+msgid "Cannot delete group with projects"
+msgstr ""
+
+#: seahub/api2/endpoints/org_admin/groups.py:720
+#: seahub/api2/endpoints/org_admin/groups.py:767
+msgid "Workspace not found"
+msgstr ""
+
+#: seahub/api2/endpoints/org_admin/groups.py:772
+msgid "Project not found."
 msgstr ""
 
 #: seahub/api2/endpoints/org_admin/settings.py:55
 #: seahub/api2/endpoints/org_admin/settings.py:73
 #: seahub/api2/endpoints/org_admin/settings.py:105 seahub/auth/sms_login.py:74
 #: seahub/auth/sms_two_factor_auth.py:60 seahub/auth/views.py:349
-#: seahub/auth/views.py:363 seahub/oauth/views.py:258 seahub/oauth/views.py:270
+#: seahub/auth/views.py:363 seahub/oauth/views.py:259 seahub/oauth/views.py:271
 #: seahub/org_dingtalk/views.py:141 seahub/org_dingtalk/views.py:170
 #: seahub/org_dingtalk/views.py:202 seahub/org_dingtalk/views.py:240
 #: seahub/org_dingtalk/views.py:401 seahub/org_dingtalk/views.py:425
@@ -243,7 +224,7 @@ msgstr ""
 #: seahub/org_work_weixin/views.py:489 seahub/org_work_weixin/views.py:549
 #: seahub/org_work_weixin/views.py:569 seahub/org_work_weixin/views.py:592
 #: seahub/org_work_weixin/views.py:619 seahub/org_work_weixin/views.py:636
-#: seahub/organizations/views.py:587 seahub/views/sso.py:125
+#: seahub/organizations/views.py:585 seahub/views/sso.py:125
 #: seahub/weixin/views.py:42 seahub/weixin/views.py:124
 #: seahub/weixin/views.py:262 seahub/weixin/views.py:306
 #: seahub/weixin/views.py:360 seahub/work_weixin/views.py:37
@@ -268,8 +249,8 @@ msgid ""
 "%(max_valid_size)s"
 msgstr ""
 
-#: seahub/api2/endpoints/org_admin/users.py:192
-#: seahub/api2/endpoints/org_admin/users.py:198
+#: seahub/api2/endpoints/org_admin/users.py:191
+#: seahub/api2/endpoints/org_admin/users.py:197
 #, python-format
 msgid "User %s already exists."
 msgstr ""
@@ -319,17 +300,24 @@ msgstr ""
 msgid "Please log in."
 msgstr ""
 
-#: seahub/auth/forms.py:29
+#: seahub/auth/forms.py:29 seahub/templates/registration/login.html:43
+#: seahub/templates/registration/login.html:44
+#: seahub/templates/registration/login.html:45
+#: seahub/templates/registration/multi_saml_sso.html:14
+#: seahub/templates/registration/multi_saml_sso.html:15
+#: seahub/templates/registration/multi_saml_sso.html:16
 msgid "Email or username"
 msgstr ""
 
 #: seahub/auth/forms.py:30 seahub/auth/forms.py:249
 #: seahub/invitations/templates/invitations/token_view.html:13
-#: seahub/templates/organizations/org_register.html:38
-#: seahub/templates/organizations/sms_org_register.html:163
-#: seahub/templates/registration/login.html:48
+#: seahub/templates/organizations/org_register.html:30
+#: seahub/templates/organizations/sms_org_register.html:156
+#: seahub/templates/registration/login.html:66
+#: seahub/templates/registration/login.html:67
+#: seahub/templates/registration/login.html:68
 #: seahub/templates/registration/password_set_form.html:22
-#: seahub/templates/sysadmin/sudo_mode.html:36
+#: seahub/templates/sysadmin/sudo_mode.html:27
 msgid "Password"
 msgstr ""
 
@@ -426,8 +414,8 @@ msgstr ""
 #: seahub/org_work_weixin/views.py:308 seahub/org_work_weixin/views.py:337
 #: seahub/org_work_weixin/views.py:420 seahub/org_work_weixin/views.py:503
 #: seahub/org_work_weixin/views.py:647 seahub/org_work_weixin/views.py:697
-#: seahub/organizations/views.py:414 seahub/organizations/views.py:545
-#: seahub/profile/views.py:289 seahub/utils/__init__.py:98
+#: seahub/organizations/views.py:413 seahub/organizations/views.py:544
+#: seahub/profile/views.py:289 seahub/utils/__init__.py:111
 #: seahub/weixin/views.py:187 seahub/work_weixin/views.py:78
 #: seahub/work_weixin/views.py:112 seahub/work_weixin/views.py:202
 msgid "Internal Server Error"
@@ -455,12 +443,12 @@ msgstr ""
 msgid "Unable to change password."
 msgstr ""
 
-#: seahub/avatar/models.py:148 seahub/avatar/models.py:172
+#: seahub/avatar/models.py:149 seahub/avatar/models.py:173
 #, python-format
 msgid "Avatar for %s"
 msgstr ""
 
-#: seahub/base/accounts.py:588
+#: seahub/base/accounts.py:543
 #, python-format
 msgid "Account %(account)s froze on %(site)s."
 msgstr ""
@@ -473,33 +461,33 @@ msgstr ""
 msgid "Enter a valid e-mail address."
 msgstr ""
 
-#: seahub/base/templatetags/seahub_tags.py:150
-#: seahub/base/templatetags/seahub_tags.py:186
+#: seahub/base/templatetags/seahub_tags.py:149
+#: seahub/base/templatetags/seahub_tags.py:185
 msgid "Just now"
 msgstr ""
 
-#: seahub/base/templatetags/seahub_tags.py:161
+#: seahub/base/templatetags/seahub_tags.py:160
 #, python-format
 msgid "%(days)d day ago"
 msgid_plural "%(days)d days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: seahub/base/templatetags/seahub_tags.py:168
+#: seahub/base/templatetags/seahub_tags.py:167
 #, python-format
 msgid "%(hours)d hour ago"
 msgid_plural "%(hours)d hours ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: seahub/base/templatetags/seahub_tags.py:175
+#: seahub/base/templatetags/seahub_tags.py:174
 #, python-format
 msgid "%(minutes)d minute ago"
 msgid_plural "%(minutes)d minutes ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: seahub/base/templatetags/seahub_tags.py:181
+#: seahub/base/templatetags/seahub_tags.py:180
 #, python-format
 msgid "%(seconds)d second ago"
 msgid_plural "%(seconds)d seconds ago"
@@ -544,13 +532,21 @@ msgstr ""
 #: seahub/dingtalk/views.py:88 seahub/dingtalk/views.py:130
 #: seahub/dingtalk/views.py:152 seahub/dingtalk/views.py:158
 #: seahub/dingtalk/views.py:168 seahub/dingtalk/views.py:202
-#: seahub/oauth/views.py:85 seahub/oauth/views.py:108 seahub/oauth/views.py:178
-#: seahub/oauth/views.py:194 seahub/templates/remote_user/error.html:8
+#: seahub/oauth/views.py:86 seahub/oauth/views.py:109 seahub/oauth/views.py:179
+#: seahub/oauth/views.py:195 seahub/templates/remote_user/error.html:8
 msgid "Error, please contact administrator."
 msgstr ""
 
 #: seahub/forms.py:54
 msgid "The two passwords didn't match."
+msgstr ""
+
+#: seahub/forms.py:63
+msgid "Space quota can't be empty"
+msgstr ""
+
+#: seahub/forms.py:64
+msgid "Space quota is too low (minimum value is 0)"
 msgstr ""
 
 #: seahub/group/error_msg.py:8
@@ -593,20 +589,20 @@ msgstr ""
 msgid "Can not remove myself"
 msgstr ""
 
-#: seahub/group/views.py:103
+#: seahub/group/views.py:98
 msgid "Permission denied"
 msgstr ""
 
-#: seahub/group/views.py:148
+#: seahub/group/views.py:110
 #, python-format
 msgid "You are invited to join a group on %s"
 msgstr ""
 
-#: seahub/invitations/models.py:18 seahub/invitations/models.py:46
+#: seahub/invitations/models.py:17 seahub/invitations/models.py:45
 msgid "Guest"
 msgstr ""
 
-#: seahub/invitations/models.py:100
+#: seahub/invitations/models.py:99
 #, python-format
 msgid "%(user)s invited you to join %(site_name)s."
 msgstr ""
@@ -645,13 +641,15 @@ msgid "Set your password"
 msgstr ""
 
 #: seahub/invitations/templates/invitations/token_view.html:10
-#: seahub/templates/registration/login.html:45
+#: seahub/templates/registration/login.html:54
+#: seahub/templates/registration/login.html:55
+#: seahub/templates/registration/login.html:56
 msgid "Email"
 msgstr ""
 
 #: seahub/invitations/templates/invitations/token_view.html:17
-#: seahub/templates/organizations/org_register.html:49
-#: seahub/templates/organizations/sms_org_register.html:180
+#: seahub/templates/organizations/org_register.html:41
+#: seahub/templates/organizations/sms_org_register.html:173
 #: seahub/templates/registration/password_change_form.html:25
 #: seahub/templates/registration/password_reset_confirm.html:19
 #: seahub/templates/registration/password_reset_form.html:40
@@ -663,13 +661,13 @@ msgstr ""
 msgid "It is required."
 msgstr ""
 
-#: seahub/oauth/views.py:154
+#: seahub/oauth/views.py:155
 msgid ""
 "Error, please contact administrator: token might be expired or security code "
 "is not valid."
 msgstr ""
 
-#: seahub/oauth/views.py:197 seahub/org_dingtalk/views.py:356
+#: seahub/oauth/views.py:198 seahub/org_dingtalk/views.py:356
 #: seahub/org_work_weixin/views.py:424 seahub/org_work_weixin/views.py:700
 #: seahub/templates/remote_user/create_unknown_user_false.html:8
 #: seahub/weixin/views.py:191 seahub/work_weixin/views.py:116
@@ -677,13 +675,13 @@ msgid ""
 "Error, new user registration is not allowed, please contact administrator."
 msgstr ""
 
-#: seahub/oauth/views.py:220
+#: seahub/oauth/views.py:221
 msgid ""
 "Error, please contact administrator: contact_email must be unique and might "
 "already be in use."
 msgstr ""
 
-#: seahub/oauth/views.py:238 seahub/org_work_weixin/views.py:703
+#: seahub/oauth/views.py:239 seahub/org_work_weixin/views.py:703
 #: seahub/templates/remote_user/not_active.html:6
 #: seahub/templates/shibboleth/complete.html:8 seahub/work_weixin/views.py:142
 msgid ""
@@ -701,7 +699,7 @@ msgid "Permission denied."
 msgstr ""
 
 #: seahub/profile/templates/profile/set_profile_react.html:5
-#: seahub/templates/base.html:60
+#: seahub/templates/base.html:64
 msgid "Personal settings"
 msgstr ""
 
@@ -740,7 +738,15 @@ msgstr ""
 msgid "Contact email has been updated."
 msgstr ""
 
-#: seahub/project/views.py:38
+#: seahub/project/constants.py:104
+msgid "Open"
+msgstr ""
+
+#: seahub/project/constants.py:117
+msgid "Closed"
+msgstr ""
+
+#: seahub/project/views.py:39
 msgid "This project does not exist"
 msgstr ""
 
@@ -748,66 +754,66 @@ msgstr ""
 msgid "SAML login relevant settings invalid."
 msgstr ""
 
-#: seahub/saml/views.py:107 seahub/saml/views.py:111 seahub/saml/views.py:131
-#: seahub/saml/views.py:149 seahub/saml/views.py:153 seahub/saml/views.py:191
-#: seahub/saml/views.py:303 seahub/saml/views.py:436 seahub/saml/views.py:440
-#: seahub/saml/views.py:469 seahub/saml/views.py:493 seahub/saml/views.py:497
-#: seahub/saml/views.py:501 seahub/saml/views.py:549 seahub/saml/views.py:553
-#: seahub/saml/views.py:557
+#: seahub/saml/views.py:105 seahub/saml/views.py:109 seahub/saml/views.py:129
+#: seahub/saml/views.py:147 seahub/saml/views.py:151 seahub/saml/views.py:189
+#: seahub/saml/views.py:310 seahub/saml/views.py:452 seahub/saml/views.py:456
+#: seahub/saml/views.py:485 seahub/saml/views.py:509 seahub/saml/views.py:513
+#: seahub/saml/views.py:517 seahub/saml/views.py:565 seahub/saml/views.py:569
+#: seahub/saml/views.py:573
 msgid "Internal server error. Please contact system administrator."
 msgstr ""
 
-#: seahub/saml/views.py:127 seahub/saml/views.py:187 seahub/saml/views.py:465
-#: seahub/saml/views.py:522
+#: seahub/saml/views.py:125 seahub/saml/views.py:185 seahub/saml/views.py:481
+#: seahub/saml/views.py:538
 msgid ""
 "Login failed: ADFS/SAML service error. Please report to your organization "
 "(company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:170 seahub/saml/views.py:225 seahub/saml/views.py:240
-#: seahub/saml/views.py:257 seahub/saml/views.py:272 seahub/saml/views.py:297
-#: seahub/saml/views.py:335
+#: seahub/saml/views.py:168 seahub/saml/views.py:223 seahub/saml/views.py:238
+#: seahub/saml/views.py:255 seahub/saml/views.py:270 seahub/saml/views.py:277
+#: seahub/saml/views.py:304 seahub/saml/views.py:331 seahub/saml/views.py:351
 msgid ""
 "Login failed: Bad response from ADFS/SAML service. Please report to your "
 "organization (company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:211
+#: seahub/saml/views.py:209
 msgid ""
 "Login failed: Bad response from ADFS/SAML service. Please make sure your SSO "
 "account has verified email and retry later, or report to your organization "
 "(company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:280
+#: seahub/saml/views.py:287
 msgid "Failed to bind SAML, please login first."
 msgstr ""
 
-#: seahub/saml/views.py:345
+#: seahub/saml/views.py:361
 msgid ""
 "This email address is already used by an existing account.You can connect "
 "both accounts from the personal settings of your local account."
 msgstr ""
 
-#: seahub/saml/views.py:373
+#: seahub/saml/views.py:389
 msgid ""
 "Failed to create new user: the number of users exceeds the organization "
 "quota. Please report to your organization (company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:390
+#: seahub/saml/views.py:406
 msgid ""
 "Login failed: failed to create user. Please report to your organization "
 "(company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:415
+#: seahub/saml/views.py:431
 msgid ""
 "Login failed: user is deactivated. Please report to your organization "
 "(company) administrator."
 msgstr ""
 
-#: seahub/saml/views.py:526
+#: seahub/saml/views.py:542
 msgid "Failed to get ADFS/SAML config, please check your ADFS/SAML service."
 msgstr ""
 
@@ -815,49 +821,49 @@ msgstr ""
 msgid "Sorry, but the requested page could not be found."
 msgstr ""
 
-#: seahub/templates/base.html:11 seahub/templates/base_clean.html:11
+#: seahub/templates/base.html:12 seahub/templates/base_clean.html:11
 #: seahub/templates/base_for_react.html:11
 msgid "SeaQA - As simple as Excel, with the power of a database"
 msgstr ""
 
-#: seahub/templates/base.html:13 seahub/templates/base.html:22
+#: seahub/templates/base.html:14 seahub/templates/base.html:23
 #: seahub/templates/base_for_react.html:13
 #: seahub/templates/base_for_react.html:23 seahub/templates/home.html:17
 #: seahub/templates/project_view_react.html:17
 msgid "File, Collaboration, Team, Organization"
 msgstr ""
 
-#: seahub/templates/base.html:39
+#: seahub/templates/base.html:43
 msgid "Side nav menu"
 msgstr ""
 
-#: seahub/templates/base.html:46 seahub/templates/base.html:49
+#: seahub/templates/base.html:50 seahub/templates/base.html:53
 msgid "View profile and more"
 msgstr ""
 
-#: seahub/templates/base.html:63
+#: seahub/templates/base.html:67
 msgid "System admin"
 msgstr ""
 
-#: seahub/templates/base.html:66 seahub/templates/base.html:69
+#: seahub/templates/base.html:70 seahub/templates/base.html:73
 msgid "Admin"
 msgstr ""
 
-#: seahub/templates/base.html:66
+#: seahub/templates/base.html:70
 msgid "Team admin"
 msgstr ""
 
-#: seahub/templates/base.html:72
+#: seahub/templates/base.html:76
 #: seahub/templates/registration/logged_out.html:4
 #: seahub/templates/registration/logout.html:4
 msgid "Log out"
 msgstr ""
 
-#: seahub/templates/base.html:118
+#: seahub/templates/base.html:122
 msgid "Yes"
 msgstr ""
 
-#: seahub/templates/base.html:119
+#: seahub/templates/base.html:123
 msgid "No"
 msgstr ""
 
@@ -867,15 +873,15 @@ msgstr ""
 
 #: seahub/templates/choose_register.html:3
 #: seahub/templates/choose_register.html:8
-#: seahub/templates/organizations/org_register.html:3
-#: seahub/templates/organizations/org_register.html:21
-#: seahub/templates/organizations/sms_org_register.html:3
-#: seahub/templates/organizations/sms_org_register.html:139
-#: seahub/templates/registration/login.html:158
-#: seahub/templates/registration/registration_form.html:3
-#: seahub/templates/registration/registration_form.html:30
-#: seahub/templates/registration/sms_registration_form.html:3
-#: seahub/templates/registration/sms_registration_form.html:36
+#: seahub/templates/organizations/org_register.html:4
+#: seahub/templates/organizations/org_register.html:13
+#: seahub/templates/organizations/sms_org_register.html:4
+#: seahub/templates/organizations/sms_org_register.html:132
+#: seahub/templates/registration/login.html:183
+#: seahub/templates/registration/registration_form.html:4
+#: seahub/templates/registration/registration_form.html:23
+#: seahub/templates/registration/sms_registration_form.html:4
+#: seahub/templates/registration/sms_registration_form.html:29
 msgid "Signup"
 msgstr ""
 
@@ -888,71 +894,71 @@ msgstr ""
 msgid "The %(site_name)s team"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:23
-#: seahub/templates/organizations/sms_org_register.html:141
-#: seahub/templates/registration/registration_form.html:32
-#: seahub/templates/registration/sms_registration_form.html:38
+#: seahub/templates/organizations/org_register.html:15
+#: seahub/templates/organizations/sms_org_register.html:134
+#: seahub/templates/registration/registration_form.html:25
+#: seahub/templates/registration/sms_registration_form.html:31
 msgid "Welcome back, you are already signed in."
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:23
-#: seahub/templates/organizations/sms_org_register.html:141
-#: seahub/templates/registration/registration_form.html:32
-#: seahub/templates/registration/sms_registration_form.html:38
+#: seahub/templates/organizations/org_register.html:15
+#: seahub/templates/organizations/sms_org_register.html:134
+#: seahub/templates/registration/registration_form.html:25
+#: seahub/templates/registration/sms_registration_form.html:31
 msgid "Return to the homepage"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:26
-#: seahub/templates/organizations/sms_org_register.html:156
+#: seahub/templates/organizations/org_register.html:18
+#: seahub/templates/organizations/sms_org_register.html:149
 msgid "Team name"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:30
-#: seahub/templates/organizations/sms_org_register.html:159
+#: seahub/templates/organizations/org_register.html:22
+#: seahub/templates/organizations/sms_org_register.html:152
 msgid "Admin name"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:34
+#: seahub/templates/organizations/org_register.html:26
 msgid "Admin email"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:42
-#: seahub/templates/organizations/sms_org_register.html:168
+#: seahub/templates/organizations/org_register.html:34
+#: seahub/templates/organizations/sms_org_register.html:161
 #: seahub/templates/registration/password_change_form.html:22
 #: seahub/templates/registration/password_set_form.html:25
-#: seahub/templates/sysadmin/sudo_mode.html:4
-#: seahub/templates/sysadmin/sudo_mode.html:44
+#: seahub/templates/sysadmin/sudo_mode.html:5
+#: seahub/templates/sysadmin/sudo_mode.html:35
 msgid "Confirm password"
 msgstr ""
 
-#: seahub/templates/organizations/sms_org_register.html:235
-#: seahub/templates/registration/sms_registration_form.html:200
+#: seahub/templates/organizations/sms_org_register.html:228
+#: seahub/templates/registration/sms_registration_form.html:193
 msgid "Name cannot be blank"
 msgstr ""
 
-#: seahub/templates/organizations/sms_org_register.html:239
-#: seahub/templates/registration/login.html:259
+#: seahub/templates/organizations/sms_org_register.html:232
+#: seahub/templates/registration/login.html:284
 #: seahub/templates/registration/password_change_form.html:53
 #: seahub/templates/registration/password_set_form.html:51
-#: seahub/templates/registration/registration_form.html:160
-#: seahub/templates/registration/sms_registration_form.html:204
-#: seahub/templates/sysadmin/sudo_mode.html:59
+#: seahub/templates/registration/registration_form.html:153
+#: seahub/templates/registration/sms_registration_form.html:197
+#: seahub/templates/sysadmin/sudo_mode.html:50
 msgid "Password cannot be blank"
 msgstr ""
 
-#: seahub/templates/organizations/sms_org_register.html:243
+#: seahub/templates/organizations/sms_org_register.html:236
 #: seahub/templates/registration/password_change_form.html:57
 #: seahub/templates/registration/password_set_form.html:55
-#: seahub/templates/registration/registration_form.html:164
-#: seahub/templates/registration/sms_registration_form.html:208
+#: seahub/templates/registration/registration_form.html:157
+#: seahub/templates/registration/sms_registration_form.html:201
 msgid "Please enter the password again"
 msgstr ""
 
-#: seahub/templates/organizations/sms_org_register.html:247
+#: seahub/templates/organizations/sms_org_register.html:240
 #: seahub/templates/registration/password_change_form.html:61
 #: seahub/templates/registration/password_set_form.html:59
-#: seahub/templates/registration/registration_form.html:168
-#: seahub/templates/registration/sms_registration_form.html:212
+#: seahub/templates/registration/registration_form.html:161
+#: seahub/templates/registration/sms_registration_form.html:205
 msgid "Passwords don't match"
 msgstr ""
 
@@ -963,8 +969,8 @@ msgid "Your account %(username)s on %(site_name)s has been activated."
 msgstr ""
 
 #: seahub/templates/organizations/user_activation_email.html:15
-#: seahub/templates/registration/login.html:87
-#: seahub/templates/registration/multi_saml_sso.html:20
+#: seahub/templates/registration/login.html:112
+#: seahub/templates/registration/multi_saml_sso.html:28
 #: seahub/templates/registration/password_reset_complete.html:8
 #: seahub/templates/sysadmin/user_activation_email.html:15
 #: seahub/templates/sysadmin/user_add_email.html:30
@@ -1029,8 +1035,8 @@ msgid ""
 msgstr ""
 
 #: seahub/templates/registration/activation_email.html:18
-#: seahub/templates/registration/registration_form.html:65
-#: seahub/templates/registration/sms_registration_form.html:64
+#: seahub/templates/registration/registration_form.html:58
+#: seahub/templates/registration/sms_registration_form.html:57
 msgid "Sign up"
 msgstr ""
 
@@ -1045,62 +1051,51 @@ msgstr ""
 msgid "Log in again"
 msgstr ""
 
-#: seahub/templates/registration/login.html:4
-#: seahub/templates/registration/login.html:40
+#: seahub/templates/registration/login.html:5
+#: seahub/templates/registration/login.html:37
 #: seahub/templates/registration/multi_saml_sso.html:4
 #: seahub/templates/registration/multi_saml_sso.html:9
 msgid "Log in"
 msgstr ""
 
-#: seahub/templates/registration/login.html:43
-msgid "Phone, email or username"
-msgstr ""
-
-#: seahub/templates/registration/login.html:54
+#: seahub/templates/registration/login.html:79
 msgid "Refresh"
 msgstr ""
 
-#: seahub/templates/registration/login.html:74
+#: seahub/templates/registration/login.html:99
 msgid "Incorrect account or password"
 msgstr ""
 
-#: seahub/templates/registration/login.html:83
+#: seahub/templates/registration/login.html:108
 #, python-format
 msgid "Remember me for %(remember_days)s days "
 msgstr ""
 
-#: seahub/templates/registration/login.html:91
-#: seahub/templates/registration/login.html:95
+#: seahub/templates/registration/login.html:116
+#: seahub/templates/registration/login.html:120
 msgid "Single Sign-On"
 msgstr ""
 
-#: seahub/templates/registration/login.html:102
+#: seahub/templates/registration/login.html:127
 msgid "Login with"
 msgstr ""
 
-#: seahub/templates/registration/login.html:154
+#: seahub/templates/registration/login.html:179
 msgid "Forgot password?"
 msgstr ""
 
-#: seahub/templates/registration/login.html:233
+#: seahub/templates/registration/login.html:258
 msgid "Failed to refresh the CAPTCHA, please try again later."
 msgstr ""
 
-#: seahub/templates/registration/login.html:252
-msgid "Phone, email or username cannot be blank"
-msgstr ""
-
-#: seahub/templates/registration/login.html:254
-#: seahub/templates/registration/registration_form.html:156
-msgid "Email cannot be blank"
-msgstr ""
-
-#: seahub/templates/registration/multi_saml_sso.html:11
-msgid "Email or Username"
-msgstr ""
-
-#: seahub/templates/registration/multi_saml_sso.html:57
+#: seahub/templates/registration/login.html:277
+#: seahub/templates/registration/multi_saml_sso.html:65
 msgid "Email or username cannot be blank"
+msgstr ""
+
+#: seahub/templates/registration/login.html:279
+#: seahub/templates/registration/registration_form.html:149
+msgid "Email cannot be blank"
 msgstr ""
 
 #: seahub/templates/registration/password_change_done.html:4
@@ -1224,24 +1219,24 @@ msgstr ""
 msgid "Signup function is not enabled."
 msgstr ""
 
-#: seahub/templates/registration/registration_form.html:47
+#: seahub/templates/registration/registration_form.html:40
 msgid "Department"
 msgstr ""
 
-#: seahub/templates/registration/registration_form.html:52
+#: seahub/templates/registration/registration_form.html:45
 msgid "Telephone"
 msgstr ""
 
-#: seahub/templates/registration/registration_form.html:57
+#: seahub/templates/registration/registration_form.html:50
 msgid "Note"
 msgstr ""
 
-#: seahub/templates/registration/registration_form.html:73
-#: seahub/templates/registration/sms_registration_form.html:72
+#: seahub/templates/registration/registration_form.html:66
+#: seahub/templates/registration/sms_registration_form.html:65
 msgid "Signup with"
 msgstr ""
 
-#: seahub/templates/registration/registration_form.html:132
+#: seahub/templates/registration/registration_form.html:125
 #, python-format
 msgid ""
 "Passwords must have at least %(min_len)s characters and contain %(level)s of "
@@ -1268,17 +1263,17 @@ msgid ""
 "uppercase letters, lowercase letters, numbers and special characters."
 msgstr ""
 
-#: seahub/templates/sysadmin/sudo_mode.html:32
+#: seahub/templates/sysadmin/sudo_mode.html:23
 msgid "Confirm password to continue"
 msgstr ""
 
-#: seahub/templates/sysadmin/sudo_mode.html:33
+#: seahub/templates/sysadmin/sudo_mode.html:24
 msgid ""
 "You are entering admin area, we won't ask for your password again for a few "
 "hours."
 msgstr ""
 
-#: seahub/templates/sysadmin/sudo_mode.html:40
+#: seahub/templates/sysadmin/sudo_mode.html:31
 msgid "Incorrect password"
 msgstr ""
 
@@ -1440,7 +1435,7 @@ msgstr ""
 msgid "Disable"
 msgstr ""
 
-#: seahub/utils/__init__.py:84
+#: seahub/utils/__init__.py:97
 msgid "permission error"
 msgstr ""
 

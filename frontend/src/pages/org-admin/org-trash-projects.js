@@ -254,7 +254,7 @@ class OrgTrashProjects extends React.Component {
     return (
       <div className='cur-view-content'>
         <p className="mt-4 text-secondary">
-          {gettext('Tip: tables deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', expireDays)}
+          {gettext('Tip: projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', expireDays)}
         </p>
         <table>
           <thead>
