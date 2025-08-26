@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
 import OptionGroup from '../select-option-group';
 import Icon from '../icon';
+import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 
@@ -23,7 +24,7 @@ class CustomizeSelect extends Component {
       so it can be closed when other select is clicked.
     */
     if (this.state.isShowSelectOptions) event.stopPropagation();
-    let eventClassName = event.target.className;
+    let eventClassName = getEventClassName(event);
     if (this.props.disabled || eventClassName.indexOf('option-search-control') > -1 || eventClassName === 'option-group-search') return;
     // Prevent closing by pressing the spacebar in the search input
     if (event.target.value === '') return;

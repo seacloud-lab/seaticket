@@ -77,6 +77,15 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
     });
   }, [ticket, modifyTicket]);
 
+  const onAssigneesChange = useCallback((assignees = []) => {
+    modifyTicket(ticket.id, { assignees }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
   const onTypeChange = useCallback((type = '') => {
     modifyTicket(ticket.id, { type }).then(res => {
       // todo
@@ -197,7 +206,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <AssigneesSettings isReadonly={true} value={assignees} />
+          <AssigneesSettings isReadonly={!enableEditOtherSettings} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!enableEditOtherSettings} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!enableEditOtherSettings} value={type} onChange={onTypeChange} />
         </div>
