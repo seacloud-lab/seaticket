@@ -267,3 +267,7 @@
 .sea-qa-help-icon:hover {
   color: #888;
 }
+
+#org-users table tbody tr {
+  height: 42px;
+}

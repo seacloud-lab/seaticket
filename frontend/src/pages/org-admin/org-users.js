@@ -229,7 +229,7 @@ class OrgUsers extends Component {
     return (
       <>
         <MainPanelTopbar children={topbarChildren} onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}/>
-        <div className="main-panel-center flex-row">
+        <div className="main-panel-center flex-row" id="org-users">
           <div className="cur-view-container">
             <div className="cur-view-path org-user-nav tab-nav-container">
               <ul className="nav">
