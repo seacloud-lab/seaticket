@@ -23,15 +23,14 @@ const TopBar = ({ title }) => {
         <div className="w-100 text-truncate">{title}</div>
       );
     }
-
-    const toggleBtn = (
-      <IconButton icon="down" className="rotate-icon-90 sea-qa-project-toggle-connections-btn" onClick={() => togglePageType(CONNECTION_PAGE_TYPE.ALL)} />
-    );
-
     const connectionTitle = gettext('Connections') + ' / ' + pageName;
     return (
       <>
-        {toggleBtn}
+        <IconButton
+          icon="down"
+          className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
+          onClick={() => togglePageType(CONNECTION_PAGE_TYPE.ALL)}
+        />
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
       </>
     );
@@ -42,7 +41,7 @@ const TopBar = ({ title }) => {
       return (
         <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={handleNewConnection}>
           <Icon symbol="add" className="mr-2" />
-          {gettext('New connection')}
+          {gettext('Add connection')}
         </Button>
       );
     }
