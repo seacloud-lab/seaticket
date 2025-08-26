@@ -1146,7 +1146,6 @@ class Tickets(models.Model):
             })
         return result
 
-
 class ChatSessionsManager(models.Manager):
     def create_session(self, project_uuid, session_name, username):
         """Create a new chat session"""
@@ -1302,3 +1301,4 @@ class DiscourseForumRepliesRecord(models.Model):
             'author': self.author,
             'connection_id': self.connection_id,
         }
+

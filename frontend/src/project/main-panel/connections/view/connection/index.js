@@ -4,7 +4,7 @@ import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
-import { GithubIssue, DiscourseForum } from '../../models';
+import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
@@ -36,6 +36,12 @@ const getColumns = (connType) => {
       { type: CellType.TEXT, key: 'slug', name: gettext('Slug'), editable: false, is_required: true },
       { type: CellType.NUMBER, key: 'views', name: gettext('Views'), editable: false },
       { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
+    ];
+  } else if (connType === CONNECTION_TYPE.SITE) {
+    return [
+      { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true, expand_able: true },
+      { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
+      { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false },
     ];
   }
   // GITHUB_ISSUE
@@ -80,6 +86,8 @@ const Connection = ({ projectUuid, connectionID }) => {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
+        } else if (type === CONNECTION_TYPE.SITE) {
+          rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
         }
         updatePageName && updatePageName(name);
         return {

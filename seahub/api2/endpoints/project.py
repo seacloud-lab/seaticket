@@ -5,7 +5,6 @@ from datetime import datetime, UTC
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
-from django.contrib.auth.hashers import make_password
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -24,6 +23,8 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search, get_project_related_users, \
     ask_ai_question
+
+from seaqa_indexer.utils.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
 
@@ -225,6 +226,8 @@ class ProjectsView(APIView):
 
         try:
             project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
+            seadb_api = SeaDBAPI(username)
+            seadb_api.create_base(project.uuid)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

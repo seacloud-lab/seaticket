@@ -36,6 +36,7 @@ const TableMain = ({
 
   const columns = useMemo(() => {
     const { hidden_columns, columns: allColumns } = metadata.view;
+
     return allColumns.filter(column => !hidden_columns.includes(column.key));
   }, [metadata.view.hidden_columns, metadata.view.columns]);
 
