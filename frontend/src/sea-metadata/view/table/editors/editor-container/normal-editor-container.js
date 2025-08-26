@@ -16,9 +16,14 @@ class NormalEditorContainer extends React.Component {
 
   static displayName = 'EditorContainer';
 
-  state = { isInvalid: false };
-  changeCommitted = false;
-  changeCanceled = false;
+  constructor() {
+    super();
+    this.state = {
+      isInvalid: false
+    };
+    this.changeCommitted = false;
+    this.changeCanceled = false;
+  }
 
   componentDidMount() {
     const inputNode = this.getInputNode();

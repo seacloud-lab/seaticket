@@ -81,14 +81,13 @@ const NumberEditor = forwardRef(({
     <input
       ref={inputRef}
       type="text"
-      className="form-control"
+      className="form-control text-end"
       value={value}
       onBlur={onBlur}
       onPaste={onPaste}
       onCut={onCut}
       onKeyDown={onKeyDown}
       onChange={onChange}
-      style={{ textAlign: 'right' }}
       disabled={readOnly}
     />
   );
