@@ -1,7 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
-import { toaster, ModalPortal, Icon } from '../../components';
+import { toaster, ModalPortal } from '../../components';
 import OrgUsersList from './org-users-list';
 import OrgAdminList from './org-admin-list';
 import MainPanelTopbar from './main-panel-topbar';
@@ -190,27 +190,25 @@ class OrgUsers extends Component {
     let topbarChildren;
     if (this.props.currentTab === 'admins') {
       topbarChildren = (
-        <Fragment>
+        <>
           <button className={topBtn} title={gettext('Add admin')} aria-label={gettext('Add admin')} onClick={this.toggleAddOrgAdmin}>
-            <Icon symbol="add-square" className="text-secondary mr-1" />{gettext('Add admin')}
+            {gettext('Add admin')}
           </button>
           {this.state.isShowAddOrgAdminDialog &&
             <ModalPortal>
               <AddOrgAdminDialog toggle={this.toggleAddOrgAdmin} onAddedOrgAdmin={this.onAddedOrgAdmin}/>
             </ModalPortal>
           }
-        </Fragment>
+        </>
       );
     } else if (this.props.currentTab === 'users') {
       topbarChildren = (
-        <Fragment>
+        <>
           <button className={topBtn} title={gettext('Add user')} aria-label={gettext('Add user')} onClick={this.toggleAddOrgUser}>
-            <Icon symbol="add-square" className="text-secondary mr-1" />
             {gettext('Add user')}
           </button>
           {invitationLink &&
             <button className={topBtn} title={gettext('Invite user')} aria-label={gettext('Invite user')} onClick={this.toggleInviteUserDialog}>
-              <Icon symbol="add-square" className="text-secondary mr-1" />
               {gettext('Invite user')}
             </button>
           }
@@ -224,12 +222,12 @@ class OrgUsers extends Component {
               <InviteUserDialog invitationLink={invitationLink} toggle={this.toggleInviteUserDialog}/>
             </ModalPortal>
           }
-        </Fragment>
+        </>
       );
     }
 
     return (
-      <Fragment>
+      <>
         <MainPanelTopbar children={topbarChildren} onCloseSidePanel={this.props.onCloseSidePanel} search={this.getSearch()}/>
         <div className="main-panel-center flex-row">
           <div className="cur-view-container">
@@ -267,7 +265,7 @@ class OrgUsers extends Component {
             }
           </div>
         </div>
-      </Fragment>
+      </>
     );
   }
 }
