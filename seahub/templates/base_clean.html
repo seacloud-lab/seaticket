@@ -1,4 +1,5 @@
 {% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
@@ -21,7 +22,7 @@
 {% block extra_ogp_tags %}{% endblock %}
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <link rel="shortcut icon" href="{{ MEDIA_URL }}{{ favicon_path }}" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250821" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250826" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20250813" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
 {% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
@@ -72,7 +73,7 @@ html, body, #wrapper {
     <div id="header" class="hide">
       {# for non-logged-in user #}
       <div id="lang">
-        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }}</a>
+        <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">{{ LANGUAGE_CODE|language_name_local|capfirst }} <span id="down-icon-wrapper"></span></a>
         <div id="lang-context-selector" class="sf-popover hide">
           <ul class="sf-popover-con">
             {% for LANG in LANGUAGES %}
@@ -125,5 +126,6 @@ html, body, #wrapper {
         })();
     </script>
     {% block extra_script %}{% endblock %}
+    {% render_bundle 'downIcon' 'js' %}
 </body>
 </html>
