@@ -200,6 +200,7 @@ export const normalizeColumns = (columns) => {
     if (column.is_name_column) {
       displayColumns.unshift(column);
     } else {
+      if (column.key === 'reply_count') return;
       displayColumns.push(column);
     }
   });
