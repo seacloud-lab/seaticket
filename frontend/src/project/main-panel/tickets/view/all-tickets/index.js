@@ -22,7 +22,6 @@ const AllTickets = ({ projectUuid, projectName }) => {
     { type: CellType.LONG_TEXT, key: 'content', name: gettext('Content'), editable: true, is_required: true },
     { type: CellType.COLLABORATOR, key: 'assignees', name: gettext('Assignees'), editable: true },
     { type: CellType.TAGS, key: 'tags', name: gettext('Tags'), editable: true, modify_data_able: true },
-    { type: CellType.NUMBER, key: 'reply_count', name: gettext('Reply count'), editable: false, data: { format: 'number' } },
     { type: CellType.COLLABORATOR, key: 'participants', name: gettext('Participants'), editable: false },
     { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
     { type: CellType.CREATOR, key: 'creator', name: gettext('Creator'), editable: false },
