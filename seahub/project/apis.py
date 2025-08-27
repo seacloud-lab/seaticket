@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
@@ -63,3 +64,4 @@ class ProjectRelatedUsersView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({"user_list": user_list})
+
