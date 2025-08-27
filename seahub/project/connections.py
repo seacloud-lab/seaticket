@@ -415,6 +415,9 @@ class GithubWebhookView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if not project_connection.is_active:
+            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
+
         msg = request.body
         config = decrypt_config(json.loads(project_connection.config))
         secret = config.get('webhook_secret')
@@ -438,7 +441,7 @@ class GithubWebhookView(APIView):
 
         params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
         try:
-            resp = update_github_issue_by_webhook(params)
+            update_github_issue_by_webhook(params)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
