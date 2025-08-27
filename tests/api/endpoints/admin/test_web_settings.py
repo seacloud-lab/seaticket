@@ -26,9 +26,9 @@ class AdminWebSettingsTest(BaseTestCase):
         data = {
             "ENABLE_BRANDING_CSS": False,
             "CUSTOM_CSS": "test_style",
-            "SITE_NAME": "Seafile",
+            "SITE_NAME": "SeaSearch",
             "LOGIN_REMEMBER_DAYS": 7,
-            "SITE_TITLE": "Private Seafile",
+            "SITE_TITLE": "SeaSearch",
             "USER_STRONG_PASSWORD_REQUIRED": 0,
             "FORCE_PASSWORD_CHANGE": True,
             "FREEZE_USER_ON_LOGIN_FAILED": False,
