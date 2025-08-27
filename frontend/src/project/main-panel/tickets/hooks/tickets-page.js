@@ -11,17 +11,16 @@ export const TicketsPageProvider = ({ projectName, children }) => {
   const [pageType, setPageType] = useState(TICKET_PAGE_TYPE.ALL);
   const [viewID, setViewID] = useState('open');
 
-  const resetURL = useCallback((pageType, viewID) => {
+  const resetURL = useCallback((pageType) => {
     const { pathname, origin } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
+    const projectPath = `/project/${projectName}/`;
+    const projectPathIndex = decodePathname.indexOf(projectPath);
+    if (projectPathIndex === -1) return;
+    const newPathname = decodePathname.slice(0, projectPathIndex + projectPath.length);
     let urlPart = pageType === TICKET_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
-    if (pageType === TICKET_PAGE_TYPE.ALL && viewID) {
-      urlPart = urlPart + '?view=' + viewID;
-    }
     history.replaceState(null, null, origin + newPathname + BAR_TYPE.TICKET + urlPart);
-  }, []);
+  }, [projectName]);
 
   const togglePageType = useCallback((pageType) => {
     setPageType(pageType);
@@ -31,8 +30,13 @@ export const TicketsPageProvider = ({ projectName, children }) => {
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const projectPath = `/project/${projectName}/`;
+    const projectPathIndex = decodePathname.indexOf(projectPath);
+    if (projectPathIndex === -1) {
+      setLoading(false);
+      return;
+    }
+    const paramsString = decodePathname.slice(projectPathIndex + projectPath.length);
     const params = paramsString.split('/');
     const [, ticketType = ''] = params;
     let pageType = TICKET_PAGE_TYPE.ALL;

@@ -13,11 +13,13 @@ export const ConnectionsPageProvider = ({ projectName, children }) => {
   const resetURL = useCallback((pageType) => {
     const { pathname, origin } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
+    const projectPath = `/project/${projectName}/`;
+    const projectPathIndex = decodePathname.indexOf(projectPath);
+    if (projectPathIndex === -1) return;
+    const newPathname = decodePathname.slice(0, projectPathIndex + projectPath.length);
     let urlPart = pageType === CONNECTION_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
     history.replaceState(null, null, origin + newPathname + BAR_TYPE.CONNECTION + urlPart);
-  }, []);
+  }, [projectName]);
 
   const togglePageType = useCallback((pageType) => {
     setPageType(pageType);
@@ -27,8 +29,13 @@ export const ConnectionsPageProvider = ({ projectName, children }) => {
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const projectPath = `/project/${projectName}/`;
+    const projectPathIndex = decodePathname.indexOf(projectPath);
+    if (projectPathIndex === -1) {
+      setLoading(false);
+      return;
+    }
+    const paramsString = decodePathname.slice(projectPathIndex + projectPath.length);
     const params = paramsString.split('/');
     const [, connectionType = ''] = params;
     let pageType = CONNECTION_PAGE_TYPE.ALL;

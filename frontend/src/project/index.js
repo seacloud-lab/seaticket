@@ -53,8 +53,13 @@ const Project = () => {
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const projectPath = `/project/${projectName}/`;
+    const projectPathIndex = decodePathname.indexOf(projectPath);
+    if (projectPathIndex === -1) {
+      setLoading(false);
+      return;
+    }
+    const paramsString = decodePathname.slice(projectPathIndex + projectPath.length);
     const params = paramsString.split('/');
     const [barKey, children_id] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey) || BAR_TYPES[0];
