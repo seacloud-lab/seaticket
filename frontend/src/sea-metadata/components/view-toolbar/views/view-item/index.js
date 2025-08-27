@@ -4,6 +4,7 @@ import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } fr
 import { gettext } from '@/constants';
 
 import './index.css';
+import { isFunction } from '@/utils/utils';
 
 const ViewItem = ({
   view,
@@ -12,8 +13,6 @@ const ViewItem = ({
   deleteAble,
   moveAble,
   duplicateAble,
-
-
   onSelect,
   onModify,
   onMove,
@@ -114,8 +113,8 @@ const ViewItem = ({
         { ...props }
       >
         <div
-          className={classnames('sea-metadata-view-item', { 'active': isSelect })}
-          onClick={() => onSelect(view._id)} key={view._id}
+          className={classnames('sea-metadata-view-item', { 'active': isSelect, 'disabled': !isFunction(onSelect) })}
+          onClick={() => onSelect && onSelect(view._id)} key={view._id}
           ref={viewRef}
         >
           {view.name}

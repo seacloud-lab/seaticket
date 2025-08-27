@@ -202,13 +202,13 @@ const AllTags = ({ projectUuid }) => {
     <>
       <SeaMetadata
         viewID="0000"
+        className="sea-tags-metadata"
         api={api}
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={['views', 'search', 'sorts']}
         isViewComputedOnServer={false}
         t={t}
-        toggleView={() => {}}
       >
         <TagDialog />
       </SeaMetadata>

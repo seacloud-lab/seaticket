@@ -5,6 +5,7 @@ import { useViewsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 import ViewItem from './view-item';
 import context from '@/sea-metadata/context';
+import { isFunction } from '@/utils/utils';
 
 import './index.css';
 
@@ -118,7 +119,7 @@ const Views = ({ view, toggleView }) => {
       <div className="sea-metadata-views">
         <div className="sea-metadata-views-nav-container" ref={viewsNavContainerRef} onScroll={onScroll} onWheel={onWheel}>
           {displayViews.map(v => {
-            const isSelect = v._id === view._id;
+            const isSelect = isFunction(toggleView) && v._id === view._id;
             return (
               <ViewItem
                 key={v._id}

@@ -38,6 +38,10 @@
   flex-shrink: 0;
 }
 
+.sea-metadata-views .sea-metadata-view-item.disabled {
+  cursor: default;
+}
+
 .sea-metadata-views .sea-metadata-view-item.active { 
   color: #ED7109;
   position: relative;
