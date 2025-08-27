@@ -448,7 +448,7 @@ FAVICON_NOTIFICATION_PATH = 'favicons/notification-favicon.png'
 APPLE_TOUCH_ICON_PATH = 'favicons/favicon.png'
 
 # Path to the Logo Imagefile (relative to the media path)
-LOGO_PATH = 'img/seatable-logo.png'
+LOGO_PATH = 'img/SeaSearch.png'
 # logo size. the unit is 'px'
 LOGO_WIDTH = ''
 LOGO_HEIGHT = 32
