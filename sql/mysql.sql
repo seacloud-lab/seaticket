@@ -508,7 +508,6 @@ CREATE TABLE `project_tags`  (
   `description` text NOT NULL,
   `color` varchar(50) NOT NULL,
   `text_color` varchar(50) NOT NULL,
-  `is_predefined` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_tags_project_uuid_name`(`project_uuid`, `name`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
