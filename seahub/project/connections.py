@@ -17,7 +17,6 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.settings import SEAQA_INDEXER_SERVER_URL
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
