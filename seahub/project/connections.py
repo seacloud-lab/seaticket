@@ -407,7 +407,8 @@ class GithubWebhookView(APIView):
 
         connection_id = request.query_params.get('connection_id')
         if not connection_id:
-            return Response({'error': 'Missing connection_id.'}, status=status.HTTP_400_BAD_REQUEST)
+            error_msg = 'Missing connection_id.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         msg = request.body
@@ -415,10 +416,6 @@ class GithubWebhookView(APIView):
         config = decrypt_config(json.loads(project_connection.config))
         secret = config.get('webhook_secret')
         signature = request.headers.get('X-Hub-Signature-256')
-        if not self.verify_signature(signature, msg, secret):
-            error_msg = 'Signature verification failed.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -426,14 +423,26 @@ class GithubWebhookView(APIView):
         if not is_active:
             return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
 
+        if not self.verify_signature(signature, msg, secret):
+            error_msg = 'Signature verification failed.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         event = request.headers.get('X-GitHub-Event')
         if event != 'issues':
-            return Response({'msg': f'Ignored event: {event}'}, status=status.HTTP_200_OK)
+            return Response({'success': True}, status=status.HTTP_200_OK)
 
-        params = {'connection_id': connection_id}
-        resp = update_github_issue_by_webhook(params, request)
+        payload = request.data
+        issue_data = payload.get('issue')
+        action = payload.get('action')
+
+        if not issue_data:
+            error_msg = 'No issue payload.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        params = {'connection_id': connection_id, 'action': action}
+        resp = update_github_issue_by_webhook(params, issue_data)
         if isinstance(resp, Exception):
             error_msg = f"{str(resp)}"
             api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'response': resp.text}, status=status.HTTP_200_OK)
+        return Response({'success': True}, status=status.HTTP_200_OK)

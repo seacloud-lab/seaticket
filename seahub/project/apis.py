@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import requests
 from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
@@ -16,7 +15,6 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_project_related_users
-from seahub.settings import SEAQA_INDEXER_SERVER_URL
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
