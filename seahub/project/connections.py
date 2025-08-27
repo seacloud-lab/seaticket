@@ -291,7 +291,7 @@ class ProjectConnectionSyncView(APIView):
         if not project_connection:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         # check connection status
         connection_type = project_connection.type
         connection_status = json.loads(project_connection.status)
@@ -299,7 +299,7 @@ class ProjectConnectionSyncView(APIView):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
         elif connection_type != ConnectionType.SEAFILE.value and connection_status.get('last_sync_status') == CrawlStatus.PENDING:
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently pending')
-        
+
         # check cooldown
         if project_connection.indexed_at:
             now = datetime.datetime.now(datetime.timezone.utc)
@@ -312,7 +312,7 @@ class ProjectConnectionSyncView(APIView):
                     'next_time': next_sync_utc
                 }
                 return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
-        
+
         # update connection status
         try:
             connection_status['last_sync_status'] = CrawlStatus.PENDING
@@ -321,7 +321,7 @@ class ProjectConnectionSyncView(APIView):
             logger.error(f'update connection {project_connection.id} status error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         try:
             params = {
                 'connection_id': project_connection.id,
@@ -363,12 +363,12 @@ class ProjectConnectionDetailsView(APIView):
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
 
             start = request.GET.get('start', 0)
@@ -411,17 +411,14 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        msg = request.body
-        is_active = project_connection.is_active
-        config = decrypt_config(json.loads(project_connection.config))
-        secret = config.get('webhook_secret')
-        signature = request.headers.get('X-Hub-Signature-256')
-        if not project_connection:
+        if not project_connection or not project_connection.is_active:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not is_active:
-            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
+        msg = request.body
+        config = decrypt_config(json.loads(project_connection.config))
+        secret = config.get('webhook_secret')
+        signature = request.headers.get('X-Hub-Signature-256')
 
         if not self.verify_signature(signature, msg, secret):
             error_msg = 'Signature verification failed.'
@@ -435,14 +432,16 @@ class GithubWebhookView(APIView):
         issue_data = payload.get('issue')
         action = payload.get('action')
 
-        if not issue_data:
-            error_msg = 'No issue payload.'
+        if not issue_data and not issue_data.get('id'):
+            error_msg = 'issue_data invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        params = {'connection_id': connection_id, 'action': action}
-        resp = update_github_issue_by_webhook(params, issue_data)
-        if isinstance(resp, Exception):
-            error_msg = f"{str(resp)}"
-            api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
+        try:
+            resp = update_github_issue_by_webhook(params)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
