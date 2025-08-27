@@ -20,7 +20,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, github_webhook
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, update_github_issue_by_webhook
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -390,6 +390,8 @@ class ProjectConnectionDetailsView(APIView):
         return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)
 
 class GithubWebhookView(APIView):
+    throttle_classes = (UserRateThrottle,)
+
     def verify_signature(self, signature, msg, github_secret):
         if not signature:
             return True
@@ -410,15 +412,16 @@ class GithubWebhookView(APIView):
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         msg = request.body
         is_active = project_connection.is_active
-        config = json.loads(project_connection.config)
-        config = decrypt_config(config)
+        config = decrypt_config(json.loads(project_connection.config))
         secret = config.get('webhook_secret')
         signature = request.headers.get('X-Hub-Signature-256')
         if not self.verify_signature(signature, msg, secret):
-            return Response({'error': 'Invalid signature.'}, status=status.HTTP_400_BAD_REQUEST)
+            error_msg = 'Signature verification failed.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not project_connection:
-            return Response({'error': 'Project connection not found.'}, status=status.HTTP_404_NOT_FOUND)
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if not is_active:
             return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
@@ -428,12 +431,9 @@ class GithubWebhookView(APIView):
             return Response({'msg': f'Ignored event: {event}'}, status=status.HTTP_200_OK)
 
         params = {'connection_id': connection_id}
-        resp = github_webhook(params, request)
-
+        resp = update_github_issue_by_webhook(params, request)
         if isinstance(resp, Exception):
-            return Response({'error': str(resp)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            error_msg = f"{str(resp)}"
+            api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({
-            'status_code': resp.status_code,
-            'response': resp.text
-        }, status=status.HTTP_200_OK)
+        return Response({'response': resp.text}, status=status.HTTP_200_OK)

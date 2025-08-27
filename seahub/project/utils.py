@@ -166,14 +166,17 @@ def add_github_issues_index_task(params):
 
     return json.loads(resp.content)
 
-def github_webhook(params, request):
+def update_github_issue_by_webhook(params, request):
+    payload = {'exp': int(time.time()) + 300, }
     url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/github/')
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
     try:
         resp = requests.post(
             url,
             params=params,
             data=request.body,
-            headers=request.headers
+            headers=headers,
         )
         resp.raise_for_status()
         return resp
