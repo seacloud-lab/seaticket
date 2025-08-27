@@ -762,7 +762,7 @@ class GroupBody extends Component {
 
   renderGroups = () => {
     const {
-      totalWidth: columnsWidth, containerWidth,
+      totalWidth: columnsWidth, containerWidth, isShowRowExpandBtn,
       columns, colOverScanStartIdx, colOverScanEndIdx, groupOffsetLeft,
       rowMetrics, summaryConfigs, lastFrozenColumnKey, showCellColoring, columnColors,
     } = this.props;
@@ -845,6 +845,7 @@ class GroupBody extends Component {
             reloadRows={this.props.reloadRows}
             columnColor={columnColor}
             onRowExpand={this.props.onRowExpand}
+            isShowRowExpandBtn={isShowRowExpandBtn}
           />
         );
       }

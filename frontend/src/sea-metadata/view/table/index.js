@@ -172,7 +172,7 @@ const Table = ({ expandRow, children }) => {
   const closeRowExpand = useCallback(() => {
     expandRowRef.current = null;
     setIsShowRowExpand(false);
-  }, [expandRow]);
+  }, []);
 
   useEffect(() => {
     const expandRowSubscribe = context.eventBus.subscribe(EVENT_BUS_TYPE.EXPAND_ROW, (row = null) => {
@@ -190,6 +190,7 @@ const Table = ({ expandRow, children }) => {
         <TableMain
           isGroupView={isGroupView}
           isLoadingMore={isLoadingMore}
+          isShowRowExpandBtn={Boolean(expandRow)}
           loadMore={loadMore}
           metadata={metadata}
           tagsData={tagsData}

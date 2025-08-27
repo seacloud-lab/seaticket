@@ -68,7 +68,7 @@ const TicketTopBar = ({ title }) => {
         </Button>
       );
     }
-    if (pageType === TICKET_PAGE_TYPE.TAGS) {
+    if (pageType === TICKET_PAGE_TYPE.TAGS && childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
       return (
         <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
           <Icon symbol="add" className="mr-2" />
@@ -77,7 +77,7 @@ const TicketTopBar = ({ title }) => {
       );
     }
     return null;
-  }, [pageType, togglePageType]);
+  }, [pageType, childrenPageType, togglePageType]);
 
   return (
     <TopBar>

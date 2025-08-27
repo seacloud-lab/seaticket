@@ -107,7 +107,6 @@ class Row extends React.Component {
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
           bgColor={bgColor}
-          onRowExpand={this.props.onRowExpand}
         />
       );
     });
@@ -170,7 +169,6 @@ class Row extends React.Component {
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
           bgColor={bgColor}
-          onRowExpand={this.props.onRowExpand}
         />
       );
     });
@@ -263,6 +261,7 @@ class Row extends React.Component {
             isLastFrozenCell={!lastFrozenColumnKey}
             height={cellHeight}
             onRowExpand={this.props.onRowExpand}
+            isShowRowExpandBtn={this.props.isShowRowExpandBtn}
           />
           {frozenCells}
         </div>

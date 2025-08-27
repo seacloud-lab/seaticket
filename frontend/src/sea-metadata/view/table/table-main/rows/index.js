@@ -702,6 +702,7 @@ class Rows extends Component {
               onRef={(ref) => this.headerFrozenRef = ref}
               containerWidth={containerWidth}
               table={table}
+              isShowRowExpandBtn={this.props.isShowRowExpandBtn}
               columnMetrics={columnMetrics}
               colOverScanStartIdx={colOverScanStartIdx}
               colOverScanEndIdx={colOverScanEndIdx}

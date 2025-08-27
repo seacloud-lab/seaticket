@@ -460,7 +460,7 @@ class RowsBody extends Component {
     this.rowFrozenRefs = [];
     const {
       rowsCount, columns, colOverScanStartIdx, colOverScanEndIdx, lastFrozenColumnKey,
-      rowMetrics, showCellColoring, columnColors
+      rowMetrics, showCellColoring, columnColors, isShowRowExpandBtn
     } = this.props;
     const { startRenderIndex, endRenderIndex, selectedPosition } = this.state;
     const cellMetaData = this.getCellMetaData();
@@ -500,6 +500,7 @@ class RowsBody extends Component {
           searchResult={this.props.searchResult}
           columnColor={columnColor}
           onRowExpand={this.props.onRowExpand}
+          isShowRowExpandBtn={isShowRowExpandBtn}
         />
       );
     });

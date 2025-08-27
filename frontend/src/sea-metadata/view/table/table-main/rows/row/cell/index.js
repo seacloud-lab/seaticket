@@ -26,7 +26,6 @@ const Cell = React.memo(({
   bgColor,
   frozen,
   height,
-  onRowExpand,
 }) => {
   const canEditable = useMemo(() => {
     if (!context.canModifyCell(column, row)) return false;
