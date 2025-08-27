@@ -2,9 +2,9 @@ import { useCallback, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
+import { isFunction } from '@/utils/utils';
 
 import './index.css';
-import { isFunction } from '@/utils/utils';
 
 const ViewItem = ({
   view,
