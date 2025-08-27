@@ -654,7 +654,6 @@ class ProjectTags(models.Model):
     description = models.TextField()
     color = models.CharField(max_length=50)
     text_color = models.CharField(max_length=50)
-    is_predefined = models.BooleanField()
 
     class Meta:
         unique_together = (('project_uuid', 'name'),)
@@ -667,7 +666,6 @@ class ProjectTags(models.Model):
             'description': self.description,
             'color': self.color,
             'text_color': self.text_color,
-            'is_predefined': self.is_predefined,
         }
         if self.id in tickets_count_dict:
             result['tickets_count'] = tickets_count_dict[self.id]
@@ -1052,6 +1050,15 @@ class TicketsManager(models.Manager):
         sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
 
         return self.filter(q).order_by(', '.join(sorts))[start: end]
+    
+    def list_tickets_by_tag(self, project_uuid, tag_id):
+        q = Q(project_uuid=project_uuid) & Q(deleted=False)
+        tags = TicketTags.objects.filter(tag_id__in=[tag_id])
+        if tags:
+            ticket_ids = [tag.ticket_id for tag in tags]
+            q = q & Q(id__in=ticket_ids)
+            return self.filter(q)
+        return []
 
 
     def list_tickets_by_username(self, project_uuid, username, start, end):

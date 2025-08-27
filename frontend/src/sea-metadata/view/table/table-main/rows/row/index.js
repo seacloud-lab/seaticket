@@ -107,7 +107,6 @@ class Row extends React.Component {
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
           bgColor={bgColor}
-          openExpandedRow={this.props.openExpandedRow}
         />
       );
     });
@@ -170,7 +169,6 @@ class Row extends React.Component {
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
           bgColor={bgColor}
-          openExpandedRow={this.props.openExpandedRow}
         />
       );
     });
@@ -262,7 +260,8 @@ class Row extends React.Component {
             onSelectRow={this.onSelectRow}
             isLastFrozenCell={!lastFrozenColumnKey}
             height={cellHeight}
-            openExpandedRow={this.props.openExpandedRow}
+            onRowExpand={this.props.onRowExpand}
+            isShowRowExpandBtn={this.props.isShowRowExpandBtn}
           />
           {frozenCells}
         </div>
@@ -299,7 +298,7 @@ Row.propTypes = {
   reloadRows: PropTypes.func,
   searchResult: PropTypes.object,
   columnColor: PropTypes.object,
-  openExpandedRow: PropTypes.func
+  onRowExpand: PropTypes.func
 };
 
 export default Row;

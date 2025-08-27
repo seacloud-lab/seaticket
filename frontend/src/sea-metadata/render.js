@@ -10,7 +10,7 @@ import context from './context';
 import { CenteredLoading } from '@/components';
 import { lang, mediaUrl, server, username, } from '@/constants';
 
-const Main = ({ className, expandRow, toggleView, isShowViews = true, ...params }) => {
+const Main = ({ className, expandRow, toggleView, viewTools, children, ...params }) => {
   const { isLoading } = useViewsData();
 
   if (isLoading) {
@@ -24,8 +24,8 @@ const Main = ({ className, expandRow, toggleView, isShowViews = true, ...params 
   return (
     <MetadataProvider { ...params }>
       <div className={classnames('sea-metadata', className)}>
-        <ViewToolBar isShowViews={isShowViews} toggleView={toggleView} />
-        <View expandRow={expandRow} />
+        <ViewToolBar tools={viewTools} toggleView={toggleView} />
+        <View expandRow={expandRow} children={children} />
       </div>
     </MetadataProvider>
   );
@@ -36,6 +36,7 @@ const SeaMetadata = ({
   api,
   viewID,
   permission = 'rw',
+  isViewComputedOnServer = true,
   settings = { lang, server, mediaUrl },
   t,
   ...params
@@ -47,6 +48,7 @@ const SeaMetadata = ({
       username,
       settings,
       permission,
+      isViewComputedOnServer,
       api,
       t,
     });

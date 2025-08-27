@@ -18,8 +18,10 @@ export const OPERATION_TYPE = {
   MODIFY_COLUMN_ORDER: 'modify_column_order',
 
   // row
+  INSERT_ROW: 'insert_row',
   MODIFY_ROW: 'modify_row',
   MODIFY_ROWS: 'modify_rows',
+  DELETE_ROW: 'delete_row',
   DELETE_ROWS: 'delete_rows',
   RESTORE_ROWS: 'restore_rows',
   RELOAD_ROWS: 'reload_rows',
@@ -41,8 +43,10 @@ export const COLUMN_DATA_OPERATION_TYPE = {
 };
 
 export const OPERATION_ATTRIBUTES = {
+  [OPERATION_TYPE.INSERT_ROW]: ['row', 'row_data'],
   [OPERATION_TYPE.MODIFY_ROW]: ['row_id', 'row_update', 'original_update', 'old_row_data', 'original_old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.MODIFY_ROWS]: ['row_ids', 'id_row_updates', 'id_original_row_updates', 'id_old_row_data', 'id_original_old_row_data', 'is_copy_paste'],
+  [OPERATION_TYPE.DELETE_ROW]: ['row_id', 'row_data'],
   [OPERATION_TYPE.DELETE_ROWS]: ['rows_ids', 'deleted_rows'],
   [OPERATION_TYPE.RELOAD_ROWS]: ['row_ids'],
   [OPERATION_TYPE.MOVE_ROW]: ['row_id', 'update_data'],
@@ -70,6 +74,9 @@ export const OPERATION_ATTRIBUTES = {
 };
 
 export const UNDO_OPERATION_TYPE = [
+  OPERATION_TYPE.INSERT_ROW,
+  OPERATION_TYPE.DELETE_ROW,
+  OPERATION_TYPE.MODIFY_ROW,
   OPERATION_TYPE.MODIFY_ROWS,
   OPERATION_TYPE.INSERT_COLUMN,
   OPERATION_TYPE.DELETE_COLUMN,
@@ -89,6 +96,7 @@ export const LOCAL_APPLY_OPERATION_TYPE = [
 
 // apply operation after exec operation on the server
 export const NEED_APPLY_AFTER_SERVER_OPERATION = [
+  OPERATION_TYPE.INSERT_ROW,
   OPERATION_TYPE.INSERT_COLUMN,
   OPERATION_TYPE.MODIFY_FILTERS,
   OPERATION_TYPE.MODIFY_SORTS,

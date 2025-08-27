@@ -13,6 +13,7 @@ import context from '@/sea-metadata/context';
 
 const RowsHeader = ({
   isGroupView,
+  isShowRowExpandBtn,
   containerWidth,
   hasSelectedRow,
   isSelectedAll,
@@ -105,6 +106,7 @@ const RowsHeader = ({
           <ActionsCell
             isMobile={isMobile}
             height={height}
+            isShowRowExpandBtn={isShowRowExpandBtn}
             hasSelectedRow={hasSelectedRow}
             isSelectedAll={isSelectedAll}
             isLastFrozenCell={!lastFrozenColumnKey}

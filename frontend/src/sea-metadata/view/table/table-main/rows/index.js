@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { HorizontalScrollbar } from '../../../../components/scrollbar';
 import EmptyTip from '@/components/empty-tip';
-import { isFunction, isMobile } from '@/utils/utils';
+import { isMobile } from '@/utils/utils';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { gettext } from '@/constants';
 import { addClassName, removeClassName, getEventClassName } from '@/utils/dom';
@@ -622,14 +622,6 @@ class Rows extends Component {
     return this.resultContainerRef?.getBoundingClientRect() || { top: 0, left: 0 };
   };
 
-  toggleExpandedRowDialog = (row) => {
-    if (isFunction(this.props.expandRow)) {
-      this.props.expandRow(row);
-      return;
-    }
-    // todo
-  };
-
   renderRowsBody = ({ containerWidth }) => {
     const { isGroupView } = this.props;
     const { rowMetrics, columnMetrics, colOverScanStartIdx, colOverScanEndIdx } = this.state;
@@ -660,7 +652,6 @@ class Rows extends Component {
       cacheScrollTop: this.storeScrollTop,
       onCellContextMenu: this.onCellContextMenu,
       getTableCanvasContainerRect: this.getTableCanvasContainerRect,
-      openExpandedRow: this.toggleExpandedRowDialog,
     };
     if (this.props.isGroupView) {
       return (
@@ -711,6 +702,7 @@ class Rows extends Component {
               onRef={(ref) => this.headerFrozenRef = ref}
               containerWidth={containerWidth}
               table={table}
+              isShowRowExpandBtn={this.props.isShowRowExpandBtn}
               columnMetrics={columnMetrics}
               colOverScanStartIdx={colOverScanStartIdx}
               colOverScanEndIdx={colOverScanEndIdx}

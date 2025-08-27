@@ -1,30 +1,36 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '../../../../utils/type-detection';
-import { BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE } from '../../../constants';
+import { BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../../../constants';
 import eventBus from '../../../../utils/event-bus';
 import { Utils } from '@/utils/utils';
 
 const TicketsPageContext = React.createContext(null);
 
-export const TicketsPageProvider = ({ projectName, children }) => {
+export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(TICKET_PAGE_TYPE.ALL);
+  const [childrenPageType, setChildrenPageType] = useState(TICKET_CHILDREN_PAGE_TYPE.ALL);
   const [viewID, setViewID] = useState('open');
 
-  const resetURL = useCallback((pageType, viewID) => {
-    const { pathname, origin } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const newPathname = decodePathname.slice(0, projectNameIndex + projectName.length + 1);
+  const resetURL = useCallback((pageType, childrenPageType, viewID) => {
+    const { origin } = location;
+    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageType === TICKET_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
     if (pageType === TICKET_PAGE_TYPE.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
-    history.replaceState(null, null, origin + newPathname + BAR_TYPE.TICKET + urlPart);
-  }, []);
+    if (pageType === TICKET_PAGE_TYPE.TAGS && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
+      urlPart = urlPart + childrenPageType + '/';
+    }
+    history.replaceState(null, null, url + urlPart);
+  }, [workspaceID]);
 
   const togglePageType = useCallback((pageType) => {
     setPageType(pageType);
+  }, []);
+
+  const toggleChildrenPageType = useCallback((childrenPageType) => {
+    setChildrenPageType(childrenPageType);
   }, []);
 
   // init page type
@@ -34,22 +40,28 @@ export const TicketsPageProvider = ({ projectName, children }) => {
     const projectNameIndex = decodePathname.indexOf(projectName);
     const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
     const params = paramsString.split('/');
-    const [, ticketType = ''] = params;
+    const [, pageTypeFromURL = '', childrenPageTypeFromURL = ''] = params;
     let pageType = TICKET_PAGE_TYPE.ALL;
-    if (ticketType === TICKET_PAGE_TYPE.NEW) {
+    let childrenPageType = TICKET_CHILDREN_PAGE_TYPE.ALL;
+    if (pageTypeFromURL === TICKET_PAGE_TYPE.NEW) {
       pageType = TICKET_PAGE_TYPE.NEW;
-    } else if (ticketType === TICKET_PAGE_TYPE.TAGS) {
+    } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TAGS) {
       pageType = TICKET_PAGE_TYPE.TAGS;
+      if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
+        const childrenNumber = Number(childrenPageTypeFromURL);
+        childrenPageType = childrenPageTypeFromURL && isNumber(childrenNumber) ? childrenNumber : TICKET_CHILDREN_PAGE_TYPE.ALL;
+      }
     } else {
-      const ticketNumber = Number(ticketType);
-      pageType = ticketType && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_TYPE.ALL;
+      const ticketNumber = Number(pageTypeFromURL);
+      pageType = pageTypeFromURL && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_TYPE.ALL;
     }
     if (pageType === TICKET_PAGE_TYPE.ALL) {
       const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || 'open';
       setViewID(viewID);
     }
-    togglePageType(pageType);
+    setChildrenPageType(childrenPageType);
+    setPageType(pageType);
     setLoading(false);
   }, [projectName]);
 
@@ -61,15 +73,17 @@ export const TicketsPageProvider = ({ projectName, children }) => {
   }, []);
 
   useEffect(() => {
-    resetURL(pageType, viewID);
-  }, [pageType, viewID]);
+    resetURL(pageType, childrenPageType, viewID);
+  }, [pageType, childrenPageType, viewID]);
 
   return (
     <TicketsPageContext.Provider value={{
       pageType,
       viewID,
+      childrenPageType,
       isLoading,
       togglePageType,
+      toggleChildrenPageType,
       updateViewID: setViewID,
     }}>
       {children}

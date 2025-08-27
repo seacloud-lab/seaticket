@@ -65,7 +65,7 @@ ColumnDropdownItem.propTypes = {
   target: PropTypes.string.isRequired,
   iconName: PropTypes.string,
   title: PropTypes.string.isRequired,
-  tip: PropTypes.string.isRequired,
+  tip: PropTypes.string,
   className: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   onMouseEnter: PropTypes.func.isRequired,

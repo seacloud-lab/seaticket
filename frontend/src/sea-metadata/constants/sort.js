@@ -16,6 +16,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.CHECKBOX,
   CellType.NUMBER,
   CellType.RATE,
+  CellType.TAG,
 ];
 
 const SHOW_DISABLED_SORT_COLUMNS = [

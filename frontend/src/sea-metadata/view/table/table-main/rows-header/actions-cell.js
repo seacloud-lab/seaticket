@@ -8,7 +8,8 @@ class ActionsCell extends Component {
 
   render() {
     const {
-      isMobile, hasSelectedRow, isSelectedAll, isLastFrozenCell, groupOffsetLeft, height
+      isMobile, hasSelectedRow, isSelectedAll, isLastFrozenCell, groupOffsetLeft, height,
+      isShowRowExpandBtn
     } = this.props;
     const columnCellClass = 'sea-metadata-table-cell column';
     const columnCellStyle = {
@@ -18,7 +19,10 @@ class ActionsCell extends Component {
     };
     return (
       <div
-        className={classnames(columnCellClass, { 'table-last--frozen': isLastFrozenCell })}
+        className={classnames(columnCellClass, {
+          'table-last--frozen': isLastFrozenCell,
+          'justify-content-center': !isShowRowExpandBtn
+        })}
         style={{ ...columnCellStyle }}
       >
         <SelectAll

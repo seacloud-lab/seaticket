@@ -10,6 +10,7 @@ class Context {
     this.api = null;
     this.localStorage = null;
     this.permission = 'r';
+    this.isViewComputedOnServer = true;
     this.collaboratorsCache = {};
     this.eventBus = eventBus;
     this.t_map = {
@@ -27,12 +28,14 @@ class Context {
     permission = 'r',
     api,
     localStorageName,
+    isViewComputedOnServer = true,
     t,
   }) => {
     this.username = username;
     this.settings = settings;
     this.api = api;
     this.permission = permission;
+    this.isViewComputedOnServer = isViewComputedOnServer;
     this.collaboratorsCache = {};
     if (t) {
       this.t_map = {
@@ -120,7 +123,7 @@ class Context {
     return true;
   };
 
-  checkCanDeleteRow = () => {
+  canDeleteRow = () => {
     if (!this.canModify()) return false;
     if (!this.api?.deleteRows && !this.api?.deleteRow) return false;
     return true;

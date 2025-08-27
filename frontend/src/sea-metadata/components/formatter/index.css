@@ -16,8 +16,3 @@
   display: flex;
   align-items: center;
 }
-
-.hover-decoration:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}

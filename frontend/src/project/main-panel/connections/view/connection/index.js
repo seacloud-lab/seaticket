@@ -11,7 +11,15 @@ const Connection = ({ projectUuid, connectionID }) => {
   const { isLoading, updatePageName } = useConnectionsPage();
 
   const columns = useMemo(() => [
-    { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true, expand_able: true },
+    {
+      type: CellType.TEXT, key: 'title', name: gettext('Title'),
+      editable: false, is_name_column: true, frozen: true,
+      click: (row) => {
+        if (row && row.url) {
+          window.open(row.url);
+        }
+      }
+    },
     // { type: CellType.LONG_TEXT, key: 'body', name: gettext('Body'), editable: false, is_required: true },
     { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
@@ -107,7 +115,6 @@ const Connection = ({ projectUuid, connectionID }) => {
       <SeaMetadata
         viewID="0000"
         api={api}
-        isShowViews={false}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}

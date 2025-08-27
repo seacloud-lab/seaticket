@@ -4,7 +4,7 @@ import Table from './table';
 import { useMetadata } from '../hooks';
 import { VIEW_TYPE } from '../constants';
 
-const View = ({ expandRow }) => {
+const View = ({ expandRow, children }) => {
   const { isLoading, metadata, errorMessage } = useMetadata();
 
   const renderView = useCallback((metadata) => {
@@ -12,13 +12,13 @@ const View = ({ expandRow }) => {
     const viewType = metadata?.view?.type;
     switch (viewType) {
       case VIEW_TYPE.TABLE: {
-        return (<Table expandRow={expandRow} />);
+        return (<Table expandRow={expandRow} children={children} />);
       }
       default: {
-        return (<Table expandRow={expandRow} />);
+        return (<Table expandRow={expandRow} children={children} />);
       }
     }
-  }, []);
+  }, [children]);
 
   if (isLoading) return (<CenteredLoading />);
 

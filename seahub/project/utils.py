@@ -18,7 +18,6 @@ from seahub.api2.utils import get_user_common_info
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL, SEAQA_WEB_SERVICE_URL
 from seahub.constants import PERMISSION_READ_WRITE
-from seahub.project.constants import PREDEFINED_TICKET_TAGS
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET
 
@@ -194,26 +193,10 @@ def ask_ai_question(params):
     return ai_answer, sources
 
 
-def create_default_project_tags(project_uuid):
-    project_tags = []
-    for name in PREDEFINED_TICKET_TAGS:
-        project_tag = ProjectTags(
-            project_uuid=project_uuid,
-            name=name,
-            description='',
-            color='',
-            text_color='',
-            is_predefined=True,
-        )
-        project_tags.append(project_tag)
-    ProjectTags.objects.bulk_create(project_tags)
-    return project_tags
-
-
 def gen_project_tags_dict(project_uuid, key='id'):
     project_tags = ProjectTags.objects.filter(project_uuid=project_uuid)
-    if not project_tags:  # init default tags
-        project_tags = create_default_project_tags(project_uuid)
+    if not project_tags:
+        return {}
 
     project_tags_dict = {}
     for project_tag in project_tags:

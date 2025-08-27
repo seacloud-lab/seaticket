@@ -13,9 +13,10 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, TicketTags, ProjectTags
+from seahub.project.models import Projects, TicketTags, ProjectTags, Tickets, TicketAssignees, \
+    TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    create_default_project_tags
+    gen_project_tags_dict
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -63,8 +64,8 @@ class ProjectTagsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:  # init default tags
-            project_tags = create_default_project_tags(project_uuid)
+        if not project_tags:
+            project_tags = []
 
         tickets_count_dict = {}
         if tickets_count == '1':
@@ -127,11 +128,12 @@ class ProjectTagsAPIView(APIView):
             project_tags = ProjectTags.objects.filter(
                 project_uuid=project_uuid)
         except Exception as e:
+            logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:  # init default tags
-            project_tags = create_default_project_tags(project_uuid)
+        if not project_tags:
+            project_tags = []
 
         if name in [project_tag.name for project_tag in project_tags]:
             error_msg = 'tag already exists.'
@@ -145,7 +147,6 @@ class ProjectTagsAPIView(APIView):
                 description=description,
                 color=color,
                 text_color=text_color,
-                is_predefined=False,
             )
         except Exception as e:
             logger.error(e)
@@ -175,7 +176,7 @@ class ProjectTagAPIView(APIView):
         description = request.POST.get('description')
         color = request.POST.get('color')
         text_color = request.POST.get('text_color')
-        if not name and not description and not color and not text_color:
+        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -197,10 +198,6 @@ class ProjectTagAPIView(APIView):
         if not project_tag:
             error_msg = 'Project tag not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if project_tag.is_predefined:
-            error_msg = 'Default tag cannot be modified.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
         try:
@@ -247,9 +244,6 @@ class ProjectTagAPIView(APIView):
         if not project_tag:
             error_msg = 'Project tag not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        if project_tag.is_predefined:
-            error_msg = 'Default tag cannot be modified.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             project_tag.delete()
@@ -259,4 +253,77 @@ class ProjectTagAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
+
+
+class ProjectTagTicketsAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+    def get(self, request, project_uuid, tag_id):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            tickets = Tickets.objects.list_tickets_by_tag(
+                    project_uuid, tag_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not tickets:
+            return Response({
+                'tickets': []
+            })
+
+        tags_dict = {}
+        ticket_tags = TicketTags.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
+        for tag in ticket_tags:
+            tag_info = project_tags_dict.get(tag.tag_id, None)
+            if tag_info:
+                if tag.ticket_id not in tags_dict:
+                    tags_dict[tag.ticket_id] = [tag.tag_id]
+                else:
+                    tags_dict[tag.ticket_id].append(tag.tag_id)
+
+        assignees_dict = {}
+        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        for ticket_assignee in ticket_assignees:
+            if ticket_assignee.ticket_id not in assignees_dict:
+                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
+            else:
+                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
+
+        participants_dict = {}
+        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        for ticket_participant in ticket_participants:
+            if ticket_participant.ticket_id not in participants_dict:
+                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
+            else:
+                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
+
+        return Response({
+            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict, participants_dict=participants_dict) for ticket in tickets],
+        })
 

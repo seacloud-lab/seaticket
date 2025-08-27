@@ -10,6 +10,19 @@ function createOperation(op) {
 export default function invert(operation) {
   const { op_type } = operation.clone();
   switch (op_type) {
+    case OPERATION_TYPE.INSERT_ROW: {
+      return createOperation({
+        type: OPERATION_TYPE.DELETE_ROW,
+        row_id: operation.row._id,
+        row_data: deepCopy(operation.row),
+      });
+    }
+    case OPERATION_TYPE.DELETE_ROW: {
+      return createOperation({
+        type: OPERATION_TYPE.INSERT_ROW,
+        row_data: deepCopy(operation.row_data),
+      });
+    }
     case OPERATION_TYPE.MODIFY_ROW: {
       const {
         row_id,

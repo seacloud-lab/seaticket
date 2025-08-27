@@ -36,20 +36,23 @@ class ActionsCell extends Component {
   };
 
   handleShowExpandedProps = () => {
-    this.props.openExpandedRow(this.props.row);
+    this.props.onRowExpand(this.props.row);
   };
 
   render() {
-    const { isSelected, isLastFrozenCell, index, height, row } = this.props;
+    const { isSelected, isLastFrozenCell, index, height, row, isShowRowExpandBtn } = this.props;
     const rowId = row._id;
-    const cellStyle = {
+    let cellStyle = {
       height,
       width: SEQUENCE_COLUMN_WIDTH,
       minWidth: SEQUENCE_COLUMN_WIDTH,
     };
     return (
       <div
-        className={classnames('sea-metadata-table-cell column actions-cell', { 'table-last--frozen': isLastFrozenCell })}
+        className={classnames('sea-metadata-table-cell column actions-cell', {
+          'table-last--frozen': isLastFrozenCell,
+          'justify-content-center': !isShowRowExpandBtn
+        })}
         id={`action-cell-${rowId}`}
         style={{ ...cellStyle }}
         onMouseEnter={this.onCellMouseEnter}
@@ -75,7 +78,9 @@ class ActionsCell extends Component {
             </label>
           </div>
         </div>
-        <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
+        {isShowRowExpandBtn && (
+          <IconBtn icon="expand" className="row-expand" iconClassName="row-expand-icon" onClick={this.handleShowExpandedProps} />
+        )}
       </div>
     );
   }
@@ -88,7 +93,7 @@ ActionsCell.propTypes = {
   index: PropTypes.number,
   height: PropTypes.number,
   onSelectRow: PropTypes.func,
-  openExpandedRow: PropTypes.func,
+  onRowExpand: PropTypes.func,
 };
 
 export default ActionsCell;

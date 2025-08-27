@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toKeyCode } from 'is-hotkey';
 import toaster from '@/components/toaster';
 import TableMain from './table-main';
-import { Utils } from '@/utils/utils';
+import { Utils, isFunction } from '@/utils/utils';
 import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, MAX_LOAD_NUMBER } from '../../constants';
@@ -11,18 +11,22 @@ import { useMetadata, useCollaborators, useTagsData } from '../../hooks';
 
 import './index.css';
 
-const Table = ({ expandRow }) => {
+const Table = ({ expandRow, children }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
+  const [isShowRowExpand, setIsShowRowExpand] = useState(false);
 
+  const expandRowRef = useRef(null);
   const containerRef = useRef(null);
 
   const {
     isLoading,
     metadata,
     store,
+    insertRow,
     modifyRows,
     deleteRows,
     modifyRow,
+    modifyRowByRowExpand,
     modifyRowTags,
     renameColumn,
     deleteColumn,
@@ -156,36 +160,72 @@ const Table = ({ expandRow }) => {
     return containerRef?.current?.getBoundingClientRect() || { x: 0, right: window.innerWidth };
   }, [containerRef]);
 
+  const onRowExpand = useCallback((row) => {
+    if (isFunction(expandRow)) {
+      expandRow(row);
+      return;
+    }
+    expandRowRef.current = row || null;
+    setIsShowRowExpand(true);
+  }, [expandRow, children]);
+
+  const closeRowExpand = useCallback(() => {
+    expandRowRef.current = null;
+    setIsShowRowExpand(false);
+  }, []);
+
+  useEffect(() => {
+    const expandRowSubscribe = context.eventBus.subscribe(EVENT_BUS_TYPE.EXPAND_ROW, (row = null) => {
+      expandRowRef.current = row;
+      setIsShowRowExpand(true);
+    });
+    return () => {
+      expandRowSubscribe();
+    };
+  }, []);
+
   return (
-    <div className="sea-metadata-container sea-metadata-container-transform" ref={containerRef}>
-      <TableMain
-        isGroupView={isGroupView}
-        isLoadingMore={isLoadingMore}
-        loadMore={loadMore}
-        metadata={metadata}
-        tagsData={tagsData}
-        collaborators={collaborators}
-        modifyRow={modifyRow}
-        modifyRowTags={modifyRowTags}
-        modifyRows={modifyRows}
-        deleteRows={deleteRows}
-        rowGetterById={rowGetterById}
-        rowGetterByIndex={rowGetterByIndex}
-        getTableContentRect={getTableContentRect}
-        getAdjacentRowsIds={getAdjacentRowsIds}
-        loadAll={loadAll}
-        insertColumn={insertColumn}
-        renameColumn={renameColumn}
-        deleteColumn={deleteColumn}
-        modifyColumnData={modifyColumnData}
-        modifyColumnWidth={modifyColumnWidth}
-        modifyColumnOrder={modifyColumnOrder}
-        onGridKeyDown={onHotKey}
-        onGridKeyUp={onHotKeyUp}
-        createContextMenuOptions={createContextMenuOptions}
-        expandRow={expandRow}
-      />
-    </div>
+    <>
+      <div className="sea-metadata-container sea-metadata-container-transform" ref={containerRef}>
+        <TableMain
+          isGroupView={isGroupView}
+          isLoadingMore={isLoadingMore}
+          isShowRowExpandBtn={Boolean(expandRow)}
+          loadMore={loadMore}
+          metadata={metadata}
+          tagsData={tagsData}
+          collaborators={collaborators}
+          modifyRow={modifyRow}
+          modifyRowTags={modifyRowTags}
+          modifyRows={modifyRows}
+          deleteRows={deleteRows}
+          rowGetterById={rowGetterById}
+          rowGetterByIndex={rowGetterByIndex}
+          getTableContentRect={getTableContentRect}
+          getAdjacentRowsIds={getAdjacentRowsIds}
+          loadAll={loadAll}
+          insertColumn={insertColumn}
+          renameColumn={renameColumn}
+          deleteColumn={deleteColumn}
+          modifyColumnData={modifyColumnData}
+          modifyColumnWidth={modifyColumnWidth}
+          modifyColumnOrder={modifyColumnOrder}
+          onGridKeyDown={onHotKey}
+          onGridKeyUp={onHotKeyUp}
+          createContextMenuOptions={createContextMenuOptions}
+          onRowExpand={onRowExpand}
+        />
+      </div>
+      {isShowRowExpand && isValidElement(children) && (
+        <>
+          {cloneElement(children, {
+            row: expandRowRef.current,
+            onToggle: closeRowExpand,
+            onSubmit: expandRowRef.current ? (...params) => modifyRowByRowExpand(expandRowRef.current._id, ...params) : insertRow
+          })}
+        </>
+      )}
+    </>
   );
 };
 
