@@ -429,10 +429,10 @@ def genpassword():
 INIT_PASSWD = genpassword
 
 # browser tab title
-SITE_TITLE = 'Private SeaQA'
+SITE_TITLE = 'SeaSearch'
 
 # Base name used in email sending
-SITE_NAME = 'SeaQA'
+SITE_NAME = 'SeaSearch'
 
 # Path to the license file(relative to the media path)
 LICENSE_PATH = os.path.join(PROJECT_ROOT, '../../seatable-license.txt')
