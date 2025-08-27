@@ -455,6 +455,7 @@ CREATE TABLE `tickets`  (
   `content` text NOT NULL,
   `status` varchar(50) DEFAULT NULL,
   `type` varchar(50) DEFAULT NULL,
+  `priority` tinyint(1) NOT NULL DEFAULT 0,
   `reply_count` int(11) NOT NULL DEFAULT 0,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
@@ -465,6 +466,7 @@ CREATE TABLE `tickets`  (
   UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
   KEY `tickets_creator`(`creator`),
   KEY `tickets_status`(`status`),
+  KEY `tickets_priority`(`priority`),
   KEY `tickets_deleted`(`deleted`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 

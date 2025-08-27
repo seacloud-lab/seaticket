@@ -1068,7 +1068,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None):
+    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None, priority=0):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -1081,6 +1081,7 @@ class TicketsManager(models.Manager):
                     content=content,
                     status=status,
                     type=ticket_type,
+                    priority=priority,
                 )
                 return item
             except self.model.MultipleObjectsReturned:
@@ -1104,6 +1105,7 @@ class Tickets(models.Model):
     content = models.TextField()
     status = models.CharField(max_length=50, null=True, db_index=True)
     type = models.CharField(max_length=50, null=True)
+    priority = models.SmallIntegerField(null=True)
     reply_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1127,6 +1129,7 @@ class Tickets(models.Model):
             'tags': [],
             'status': self.status,
             'type': self.type,
+            'priority': self.priority,
             'reply_count': self.reply_count,
             'created_at': self.created_at,
             'updated_at': self.updated_at,

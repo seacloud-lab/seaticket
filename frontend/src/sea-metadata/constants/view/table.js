@@ -44,6 +44,7 @@ export const TABLE_SUPPORT_EDIT_TYPE_MAP = {
   [CellType.CHECKBOX]: true,
   [CellType.LONG_TEXT]: true,
   [CellType.TAGS]: true,
+  [CellType.RATE]: true,
 };
 
 export const TABLE_NOT_DISPLAY_COLUMN_KEYS = [

@@ -22,6 +22,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), editable: true, data: { options: TICKET_STATUS_OPTIONS }, is_required: true },
     { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), editable: true, data: { options: TICKET_TYPES } },
+    { type: CellType.RATE, key: 'priority', name: gettext('Priority'), editable: true },
     { type: CellType.LONG_TEXT, key: 'content', name: gettext('Content'), editable: true, is_required: true },
     { type: CellType.COLLABORATOR, key: 'assignees', name: gettext('Assignees'), editable: true },
     { type: CellType.TAGS, key: 'tags', name: gettext('Tags'), editable: true, modify_data_able: true },
