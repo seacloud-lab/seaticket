@@ -115,7 +115,7 @@ def invitation_poster_view(request, token):
     qrcode_img = qrcode_img.convert('RGBA')
     qr_width, qr_height = qrcode_img.size
 
-    icon_path = os.path.join(settings.MEDIA_ROOT, 'img', 'seatable-invitation.ico')
+    icon_path = os.path.join(settings.MEDIA_ROOT, 'favicons', 'favicon.ico')
     with open(icon_path, 'rb') as f:
         icon_img = Image.open(f)
 
