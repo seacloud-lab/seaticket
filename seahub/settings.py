@@ -442,10 +442,9 @@ LOGIN_BG_IMAGE_PATH = 'img/login-bg.jpg'
 
 # Path to the favicon file (relative to the media path)
 # tip: use a different name when modify it.
-FAVICON_PATH = 'favicons/favicon.png'
-FAVICON_NOTIFICATION_PATH = 'favicons/notification-favicon.png'
-
-APPLE_TOUCH_ICON_PATH = 'favicons/favicon.png'
+FAVICON_PATH = 'favicons/favicon.ico'
+FAVICON_NOTIFICATION_PATH = 'favicons/notification-favicon.ico'
+APPLE_TOUCH_ICON_PATH = 'favicons/favicon.ico'
 
 # Path to the Logo Imagefile (relative to the media path)
 LOGO_PATH = 'img/SeaSearch.png'
@@ -673,13 +672,13 @@ PWA_APP_START_URL = '/'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 PWA_APP_ICONS = [
     {
-        'src': '/media/favicons/favicon.png',
+        'src': '/media/favicons/favicon.ico',
         'sizes': '512x512',
     }
 ]
 PWA_APP_ICONS_APPLE = [
     {
-        'src': '/media/favicons/favicon.png',
+        'src': '/media/favicons/favicon.ico',
         'sizes': '512x512',
     }
 ]
