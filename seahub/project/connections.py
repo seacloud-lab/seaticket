@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import hmac
+import hashlib
 import logging
 import json
 import datetime
@@ -390,10 +391,42 @@ class ProjectConnectionDetailsView(APIView):
         return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)
 
 class GithubWebhookView(APIView):
+    def verify_signature(self, signature, msg, github_secret):
+        if not signature:
+            return True
+
+        sha_name, signature = signature.split('=')
+        if sha_name != 'sha256':
+            return False
+
+        mac = hmac.new(github_secret.encode(), msg=msg, digestmod=hashlib.sha256)
+        return hmac.compare_digest(mac.hexdigest(), signature)
+
     def post(self, request):
+
         connection_id = request.query_params.get('connection_id')
         if not connection_id:
             return Response({'error': 'Missing connection_id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        msg = request.body
+        is_active = project_connection.is_active
+        config = json.loads(project_connection.config)
+        config = decrypt_config(config)
+        secret = config.get('webhook_secret')
+        signature = request.headers.get('X-Hub-Signature-256')
+        if not self.verify_signature(signature, msg, secret):
+            return Response({'error': 'Invalid signature.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not project_connection:
+            return Response({'error': 'Project connection not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not is_active:
+            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
+
+        event = request.headers.get('X-GitHub-Event')
+        if event != 'issues':
+            return Response({'msg': f'Ignored event: {event}'}, status=status.HTTP_200_OK)
 
         params = {'connection_id': connection_id}
         resp = github_webhook(params, request)

@@ -65,31 +65,3 @@ class ProjectRelatedUsersView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({"user_list": user_list})
-
-
-class GithubWebhookView(APIView):
-
-    def post(self, request):
-        connection_id = request.query_params.get('connection-id')
-        if not connection_id:
-            return Response({'error': 'Missing connection ID.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        url = f"{SEAQA_INDEXER_SERVER_URL}/webhook/github/"
-
-        try:
-            resp = requests.post(
-                url,
-                params={'connection_id': connection_id},
-                data=request.body,
-                headers=request.headers
-            )
-            resp.raise_for_status()
-        except requests.RequestException as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return Response({
-            'status_code': resp.status_code,
-            'response': resp.text
-        }, status=status.HTTP_200_OK)
-
-
