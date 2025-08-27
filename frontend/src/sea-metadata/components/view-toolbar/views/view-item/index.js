@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
+import { isFunction } from '@/utils/utils';
 
 import './index.css';
 
@@ -12,8 +13,6 @@ const ViewItem = ({
   deleteAble,
   moveAble,
   duplicateAble,
-
-
   onSelect,
   onModify,
   onMove,
@@ -114,8 +113,8 @@ const ViewItem = ({
         { ...props }
       >
         <div
-          className={classnames('sea-metadata-view-item', { 'active': isSelect })}
-          onClick={() => onSelect(view._id)} key={view._id}
+          className={classnames('sea-metadata-view-item', { 'active': isSelect, 'disabled': !isFunction(onSelect) })}
+          onClick={() => onSelect && onSelect(view._id)} key={view._id}
           ref={viewRef}
         >
           {view.name}
