@@ -1105,7 +1105,7 @@ class Tickets(models.Model):
     content = models.TextField()
     status = models.CharField(max_length=50, null=True, db_index=True)
     type = models.CharField(max_length=50, null=True)
-    priority = models.SmallIntegerField(null=True)
+    priority = models.SmallIntegerField(default=0)
     reply_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

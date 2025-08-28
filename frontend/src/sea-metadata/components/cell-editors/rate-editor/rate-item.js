@@ -36,7 +36,7 @@ const RateItem = ({
 
   if (enterIndex >= index) {
     style = {
-      fill: color,
+      color: color,
       opacity: value >= index ? 1 : 0.4
     };
   }
@@ -46,12 +46,11 @@ const RateItem = ({
       <div
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        style={style}
         onClick={onChange}
         className={classnames('sea-metadata-rate-item', { 'active': value >= index })}
         ref={ref}
       >
-        <Icon className="sea-metadata-icon" symbol={type || 'rate'} />
+        <Icon className="sea-metadata-icon" symbol={type || 'rate'} style={style} />
       </div>
       {enterIndex !== -1 && (
         <UncontrolledTooltip placement='bottom' target={ref} modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]} className="sea-metadata-tooltip">
