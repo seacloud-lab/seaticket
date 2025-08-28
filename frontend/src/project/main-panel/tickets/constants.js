@@ -160,6 +160,7 @@ export const TICKET_PAGE_TYPE = {
   ALL: 'all',
   NEW: 'new',
   TAGS: 'tags',
+  TYPES: 'types',
 };
 
 export const TICKET_CHILDREN_PAGE_TYPE = {

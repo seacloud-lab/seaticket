@@ -23,6 +23,8 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/(?P<children_id>\d+)/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/new/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/$', project_view, name='project_view'),
@@ -55,8 +57,8 @@ urlpatterns = [
 
     # types
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/$', ProjectTypesAPIView.as_view(), name='api-v2.1-project-types'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<tag_id>\d+)/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<tag_id>\d+)/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
 
      # views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-folders/$', TicketFolders.as_view(), name='api-v2.1-project-ticket-folders'),

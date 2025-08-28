@@ -180,7 +180,9 @@ class TicketsAPIView(APIView):
 
         type_id = request.POST.get('type')
         if type_id is not None:
-            if not isinstance(type_id, int):
+            try:
+                type_id = int(type_id)
+            except:
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
@@ -448,7 +450,9 @@ class TicketAPIView(APIView):
         is_update_type = 'type' in request.data
         type_id = request.data.get('type')
         if is_update_type and type_id is not None:
-            if not isinstance(type_id, int):
+            try:
+                type_id = int(type_id)
+            except:
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:

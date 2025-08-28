@@ -1,9 +1,10 @@
 import React, { useCallback } from 'react';
 import { Button } from 'reactstrap';
 import TopBar from '../../../top-bar';
-import { useTags, useTicketsPage } from '../../hooks';
+import { useTags, useTypes, useTicketsPage} from '../../hooks';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../constants';
+import { EVENT_BUS_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../../../constants';
 import { IconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 
@@ -14,6 +15,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 const TicketTopBar = ({ title }) => {
   const { pageType, togglePageType, childrenPageType, toggleChildrenPageType } = useTicketsPage();
   const { tagsData } = useTags();
+  const { typesData } = useTypes();
 
   const renderLeftChildren = useCallback(() => {
     if (pageType === TICKET_PAGE_TYPE.ALL) {
@@ -36,6 +38,24 @@ const TicketTopBar = ({ title }) => {
       }
       const tag = getRowById(tagsData, childrenPageType);
       const customTitle = gettext('Tags') + ' / ' + tag?.name;
+      return (
+        <>
+          <IconButton icon="down" className="rotate-icon-90 sea-qa-project-toggle-tickets-btn" onClick={() => toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL)} />
+          <span className="text-truncate" title={customTitle}>{customTitle}</span>
+        </>
+      );
+    }
+    if (pageType === TICKET_PAGE_TYPE.TYPES) {
+      if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
+        return (
+          <>
+            {toggleBtn}
+            <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>
+          </>
+        );
+      }
+      const type = getRowById(typesData, childrenPageType);
+      const customTitle = gettext('Types') + ' / ' + type?.name;
       return (
         <>
           <IconButton icon="down" className="rotate-icon-90 sea-qa-project-toggle-tickets-btn" onClick={() => toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL)} />
@@ -74,6 +94,14 @@ const TicketTopBar = ({ title }) => {
         <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
           <Icon symbol="add" className="mr-2" />
           {gettext('New tag')}
+        </Button>
+      );
+    }
+    if (pageType === TICKET_PAGE_TYPE.TYPES && childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
+      return (
+        <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
+          <Icon symbol="add" className="mr-2" />
+          {gettext('New type')}
         </Button>
       );
     }
