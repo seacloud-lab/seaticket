@@ -56,7 +56,7 @@ const Project = () => {
     const decodePathname = decodeURIComponent(pathname);
     const part = `/project/${projectName}/`;
     const projectNameIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectNameIndex + part.length + 1);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey) || BAR_TYPES[0];

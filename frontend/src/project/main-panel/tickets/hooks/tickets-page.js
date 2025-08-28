@@ -39,7 +39,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     const decodePathname = decodeURIComponent(pathname);
     const part = `/project/${projectName}/`;
     const projectNameIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectNameIndex + part.length + 1);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [, pageTypeFromURL = '', childrenPageTypeFromURL = ''] = params;
     let pageType = TICKET_PAGE_TYPE.ALL;
