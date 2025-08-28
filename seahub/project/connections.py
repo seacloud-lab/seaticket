@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import hmac
+import hashlib
 import logging
 import json
 import datetime
@@ -19,7 +20,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, update_github_issue_by_webhook
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -290,7 +291,7 @@ class ProjectConnectionSyncView(APIView):
         if not project_connection:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         # check connection status
         connection_type = project_connection.type
         connection_status = json.loads(project_connection.status)
@@ -298,7 +299,7 @@ class ProjectConnectionSyncView(APIView):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
         elif connection_type != ConnectionType.SEAFILE.value and connection_status.get('last_sync_status') == CrawlStatus.PENDING:
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently pending')
-        
+
         # check cooldown
         if project_connection.indexed_at:
             now = datetime.datetime.now(datetime.timezone.utc)
@@ -311,7 +312,7 @@ class ProjectConnectionSyncView(APIView):
                     'next_time': next_sync_utc
                 }
                 return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
-        
+
         # update connection status
         try:
             connection_status['last_sync_status'] = CrawlStatus.PENDING
@@ -320,7 +321,7 @@ class ProjectConnectionSyncView(APIView):
             logger.error(f'update connection {project_connection.id} status error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         try:
             params = {
                 'connection_id': project_connection.id,
@@ -362,12 +363,12 @@ class ProjectConnectionDetailsView(APIView):
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
 
             start = request.GET.get('start', 0)
@@ -387,3 +388,63 @@ class ProjectConnectionDetailsView(APIView):
             records = []
 
         return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)
+
+class GithubWebhookView(APIView):
+    throttle_classes = (UserRateThrottle,)
+
+    def verify_signature(self, signature, msg, github_secret):
+        if not signature:
+            return True
+
+        sha_name, signature = signature.split('=')
+        if sha_name != 'sha256':
+            return False
+
+        mac = hmac.new(github_secret.encode(), msg=msg, digestmod=hashlib.sha256)
+        return hmac.compare_digest(mac.hexdigest(), signature)
+
+    def post(self, request):
+
+        connection_id = request.query_params.get('connection_id')
+        if not connection_id:
+            error_msg = 'Missing connection_id.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection or not project_connection.is_active:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not project_connection.is_active:
+            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
+
+        msg = request.body
+        config = decrypt_config(json.loads(project_connection.config))
+        secret = config.get('webhook_secret')
+        signature = request.headers.get('X-Hub-Signature-256')
+
+        if not self.verify_signature(signature, msg, secret):
+            error_msg = 'Signature verification failed.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        event = request.headers.get('X-GitHub-Event')
+        if event != 'issues':
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
+        payload = request.data
+        issue_data = payload.get('issue')
+        action = payload.get('action')
+
+        if not issue_data and not issue_data.get('id'):
+            error_msg = 'issue_data invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
+        try:
+            update_github_issue_by_webhook(params)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
