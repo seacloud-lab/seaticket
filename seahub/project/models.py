@@ -1019,7 +1019,7 @@ class TicketViews(models.Model):
 
 class TicketsManager(models.Manager):
 
-    def list_tickets(self, project_uuid, start, end, view_id):
+    def list_tickets_by_view(self, project_uuid, start, end, view_id):
         sorts = []
         view = TicketViews.objects.get_view(project_uuid, view_id)
         basic_filters = view.get('basic_filters', [])
@@ -1060,6 +1060,8 @@ class TicketsManager(models.Manager):
             return self.filter(q)
         return []
 
+    def list_tickets(self, project_uuid):
+        return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False))
 
     def list_tickets_by_username(self, project_uuid, username, start, end):
         return self.filter(

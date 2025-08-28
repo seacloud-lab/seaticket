@@ -69,8 +69,9 @@ class ProjectTagsAPIView(APIView):
 
         tickets_count_dict = {}
         if tickets_count == '1':
+            tickets = Tickets.objects.list_tickets(project_uuid)
             ticket_tags = TicketTags.objects.filter(
-                tag_id__in=[project_tag.id for project_tag in project_tags])
+                tag_id__in=[project_tag.id for project_tag in project_tags], ticket_id__in=[ticket.id for ticket in tickets])
             for ticket_tag in ticket_tags:
                 if ticket_tag.tag_id not in tickets_count_dict:
                     tickets_count_dict[ticket_tag.tag_id] = 1

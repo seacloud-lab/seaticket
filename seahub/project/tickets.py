@@ -90,7 +90,7 @@ class TicketsAPIView(APIView):
                 tickets = Tickets.objects.list_tickets_by_username(
                     project_uuid, username, start, end)
             else:
-                tickets = Tickets.objects.list_tickets(
+                tickets = Tickets.objects.list_tickets_by_view(
                     project_uuid, start, end, view_id)
         except Exception as e:
             logger.error(e)
