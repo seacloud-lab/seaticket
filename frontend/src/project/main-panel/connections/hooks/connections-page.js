@@ -25,8 +25,9 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const part = `/project/${projectName}/`;
+    const projectNameIndex = decodePathname.indexOf(part);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length + 1);
     const params = paramsString.split('/');
     const [, connectionType = ''] = params;
     let pageType = CONNECTION_PAGE_TYPE.ALL;
