@@ -503,6 +503,14 @@ CREATE TABLE `ticket_tags`  (
   UNIQUE KEY `ticket_tags_ticket_id_tag_id`(`ticket_id`, `tag_id`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
+CREATE TABLE `connection_views`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  `details` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `connection_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
 CREATE TABLE `project_tags`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(32) NOT NULL,

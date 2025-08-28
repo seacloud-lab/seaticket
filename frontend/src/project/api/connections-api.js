@@ -122,6 +122,19 @@ class ConnectionsAPI {
     return this.req.put(url, form);
   }
 
+  insertView(projectUuid, name, viewData) {
+    console.log(111, projectUuid, name, viewData);
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (viewData) {
+      form.append('data', viewData);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();
