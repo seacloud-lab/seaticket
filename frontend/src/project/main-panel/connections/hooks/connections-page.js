@@ -27,7 +27,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     const decodePathname = decodeURIComponent(pathname);
     const part = `/project/${projectName}/`;
     const projectNameIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectNameIndex + part.length + 1);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [, connectionType = ''] = params;
     let pageType = CONNECTION_PAGE_TYPE.ALL;
