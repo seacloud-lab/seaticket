@@ -454,7 +454,7 @@ CREATE TABLE `tickets`  (
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
   `status` varchar(50) DEFAULT NULL,
-  `type` varchar(50) DEFAULT NULL,
+  `type` bigint(20) DEFAULT NULL,
   `priority` tinyint(1) NOT NULL DEFAULT 0,
   `reply_count` int(11) NOT NULL DEFAULT 0,
   `created_at` datetime(6) NOT NULL,
@@ -465,6 +465,7 @@ CREATE TABLE `tickets`  (
   PRIMARY KEY (`id`),
   UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
   KEY `tickets_creator`(`creator`),
+  KEY `tickets_type`(`type`),
   KEY `tickets_status`(`status`),
   KEY `tickets_priority`(`priority`),
   KEY `tickets_deleted`(`deleted`)
@@ -486,14 +487,6 @@ CREATE TABLE `ticket_replies`  (
   KEY `ticket_replies_deleted`(`deleted`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
-CREATE TABLE `ticket_tags`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ticket_id` bigint(20) NOT NULL,
-  `tag_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ticket_tags_ticket_id_tag_id`(`ticket_id`, `tag_id`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
 CREATE TABLE `ticket_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,
@@ -502,6 +495,13 @@ CREATE TABLE `ticket_views`  (
   CONSTRAINT `ticket_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
+CREATE TABLE `ticket_tags`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `ticket_id` bigint(20) NOT NULL,
+  `tag_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ticket_tags_ticket_id_tag_id`(`ticket_id`, `tag_id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `project_tags`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -512,6 +512,16 @@ CREATE TABLE `project_tags`  (
   `text_color` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_tags_project_uuid_name`(`project_uuid`, `name`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+
+CREATE TABLE `project_types`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `color` varchar(50) NOT NULL,
+  `text_color` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_types_project_uuid_name`(`project_uuid`, `name`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `ticket_participants`  (

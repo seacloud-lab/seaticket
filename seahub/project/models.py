@@ -673,6 +673,29 @@ class ProjectTags(models.Model):
         return result
 
 
+class ProjectTypes(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.UUIDField()
+    name = models.CharField(max_length=255)
+    color = models.CharField(max_length=50)
+    text_color = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = (('project_uuid', 'name'),)
+        db_table = 'project_types'
+
+    def to_dict(self, tickets_count_dict={}):
+        result = {
+            'id': self.id,
+            'name': self.name,
+            'color': self.color,
+            'text_color': self.text_color,
+        }
+        if self.id in tickets_count_dict:
+            result['tickets_count'] = tickets_count_dict[self.id]
+        return result
+
+
 class TicketParticipants(models.Model):
     id = models.BigAutoField(primary_key=True)
     ticket_id = models.BigIntegerField(db_index=True)
@@ -1061,6 +1084,9 @@ class TicketsManager(models.Manager):
             return self.filter(q)
         return []
 
+    def list_tickets_by_type(self, project_uuid, type_id):
+        return self.filter(project_uuid=project_uuid, type=type_id, deleted=False)
+
     def list_tickets(self, project_uuid):
         return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False))
 
@@ -1068,7 +1094,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, ticket_type=None, priority=0):
+    def create_ticket(self, project_uuid, username, title, content, status, type_id=None, ticket_type=None, priority=0):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -1080,7 +1106,7 @@ class TicketsManager(models.Manager):
                     title=title,
                     content=content,
                     status=status,
-                    type=ticket_type,
+                    type=type_id,
                     priority=priority,
                 )
                 return item
@@ -1104,7 +1130,7 @@ class Tickets(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     status = models.CharField(max_length=50, null=True, db_index=True)
-    type = models.CharField(max_length=50, null=True)
+    type = models.BigIntegerField(null=True, db_index=True)
     priority = models.SmallIntegerField(default=0)
     reply_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
