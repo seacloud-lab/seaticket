@@ -54,8 +54,9 @@ const Project = () => {
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
-    const projectNameIndex = decodePathname.indexOf(projectName);
-    const paramsString = decodePathname.slice(projectNameIndex + projectName.length + 1);
+    const part = `/project/${projectName}/`;
+    const projectNameIndex = decodePathname.indexOf(part);
+    const paramsString = decodePathname.slice(projectNameIndex + part.length + 1);
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
     const bar = BAR_TYPES.find(b => b.key === barKey) || BAR_TYPES[0];
