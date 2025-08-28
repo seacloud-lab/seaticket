@@ -259,7 +259,7 @@ class Projects(models.Model):
     creator = models.CharField(max_length=255)
     modifier = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     delete_time = models.DateTimeField(null=True)
     color = models.CharField(max_length=50, null=True)
@@ -604,6 +604,7 @@ class TicketRepliesManager(models.Manager):
     def get_previous_reply_by_username(self, ticket_id, username, deleted=False):
         return self.filter(ticket_id=ticket_id, creator=username, deleted=deleted).order_by('-number').first()
 
+
 class TicketReplies(models.Model):
     id = models.BigAutoField(primary_key=True)
     ticket_id = models.BigIntegerField()
@@ -611,7 +612,7 @@ class TicketReplies(models.Model):
     creator = models.CharField(max_length=255, db_index=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     delete_at= models.DateTimeField(null=True)
 
@@ -1105,7 +1106,7 @@ class Tickets(models.Model):
     type = models.CharField(max_length=50, null=True)
     reply_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     reply_updated_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     delete_at = models.DateTimeField(null=True)
@@ -1145,3 +1146,107 @@ class Tickets(models.Model):
             })
         return result
 
+
+class ChatSessionsManager(models.Manager):
+    def create_session(self, project_uuid, session_name, username):
+        """Create a new chat session"""
+        session_uuid = str(uuid.uuid4())
+        session = self.model(
+            project_uuid=project_uuid,
+            session_uuid=session_uuid,
+            username=username,
+            session_name=session_name
+        )
+        session.save()
+        return session
+
+    def get_sessions_by_project(self, project_uuid, username):
+        """Retrieve all chat sessions of the project"""
+        return self.filter(project_uuid=project_uuid, username=username).order_by('-updated_at')
+
+    def get_session_by_uuid(self, session_uuid):
+        """According to session_uuid to obtain the session"""
+        try:
+            return self.get(session_uuid=session_uuid)
+        except self.model.DoesNotExist:
+            return None
+
+
+class ChatSessions(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project_uuid = models.CharField(max_length=36, db_index=True)
+    session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
+    username = models.CharField(max_length=255, db_index=True)
+    session_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = ChatSessionsManager()
+
+    class Meta:
+        db_table = 'chat_sessions'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'project_uuid': self.project_uuid,
+            'session_uuid': self.session_uuid,
+            'username': self.username,
+            'session_name': self.session_name,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class ChatMessagesManager(models.Manager):
+    def create_message(self, session_id, username, role, content, sources=''):
+        """Create a new chat message"""
+        message = self.model(
+            session_id=session_id,
+            username=username,
+            role=role,
+            content=content,
+            sources=sources
+        )
+        message.save()
+        return message
+    
+    def get_messages_by_session(self, session_id):
+        """Retrieve all messages of the session"""
+        return self.filter(session_id=session_id).order_by('created_at')
+
+
+class ChatMessages(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('assistant', 'Assistant'),
+    ]
+    
+    id = models.BigAutoField(primary_key=True)
+    session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE, db_index=True)
+    username = models.CharField(max_length=255)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    content = models.TextField(null=True)
+    sources = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    objects = ChatMessagesManager()
+    
+    class Meta:
+        db_table = 'chat_messages'
+        indexes = [
+            models.Index(fields=['session_id']),
+        ]
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'username': self.username,
+            'role': self.role,
+            'content': self.content,
+            'sources': self.sources,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }

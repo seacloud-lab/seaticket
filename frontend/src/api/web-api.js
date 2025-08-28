@@ -734,12 +734,6 @@ class SeaQAAPI {
     return this.req.get(url);
   }
 
-  // ai
-  askQuestion(params) {
-    const url = this.server + '/api/v2.1/qa/';
-    return this._sendPostRequest(url, params);
-  }
-
 }
 
 const seaQAAPI = new SeaQAAPI();
