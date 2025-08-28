@@ -10,6 +10,8 @@ import { STEP, STEPS } from './constants';
 
 import './index.css';
 
+const { server } = window.app.pageOptions;
+
 const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [type, setType] = useState(CONNECTION_TYPES[0].type);
@@ -18,7 +20,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState({});
   const [newRecord, setNewRecord] = useState(null);
-  const [serviceUrl, setServiceUrl] = useState('');
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
@@ -73,10 +74,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       setSubmitting(false);
     },
     true,
-    (newRecord, serviceUrl) => {
+    (newRecord) => {
       setStepIndex(stepIndex + 1);
       setNewRecord(newRecord);
-      setServiceUrl(serviceUrl);
     }
     );
   }, [name, type, config, onSubmit, onToggle]);
@@ -169,7 +169,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           <div className="sea-qa-project-new-connection-config">
             <FormGroup>
               <Label>{gettext('Connection URL')}</Label>
-              <CopyInput value={`${serviceUrl}/webhook/github/connection_id=${newRecord.id}`} />
+              <CopyInput value={`${server}/webhook/github/connection_id=${newRecord.id}`} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
