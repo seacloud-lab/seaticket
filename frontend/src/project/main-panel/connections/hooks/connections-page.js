@@ -18,7 +18,9 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   }, [workspaceID]);
 
   const togglePageType = useCallback((pageType) => {
+    setLoading(true);
     setPageType(pageType);
+    setTimeout(() => setLoading(false), 1);
   }, []);
 
   // init page type

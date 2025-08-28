@@ -1,5 +1,5 @@
 import React from 'react';
-import { BAR_TYPE } from '../constants';
+import { BAR_TYPE, BAR_TYPES } from '../constants';
 import Search from './search';
 import Tickets from './tickets';
 import Connections from './connections';
@@ -9,11 +9,14 @@ import Ask from './ask';
 import './index.css';
 
 const Container = ({ activeBar }) => {
-  if (!activeBar) return (<TopBar />);
-  if (activeBar.key === BAR_TYPE.ASK) return (<Ask title={activeBar.name}/>); // Question answering page
-  if (activeBar.key === BAR_TYPE.SEARCH) return (<Search title={activeBar.name}/>); // search page
-  if (activeBar.key === BAR_TYPE.TICKET) return (<Tickets title={activeBar.name} />); // tickets page
-  return (<Connections title={activeBar.name} />); // connections page
+  const barKey = activeBar[0];
+  if (!barKey) return (<TopBar />);
+  const bar = BAR_TYPES.find(b => b.key === barKey);
+  const title = bar.name;
+  if (barKey === BAR_TYPE.ASK) return (<Ask title={title}/>); // Question answering page
+  if (barKey === BAR_TYPE.SEARCH) return (<Search title={title}/>); // search page
+  if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} />); // tickets page
+  return (<Connections title={title} />); // connections page
 };
 
 const MainPanel = ({ activeBar }) => {

@@ -1,54 +1,57 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
-import { BAR_TYPES, BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE, CONNECTION_PAGE_TYPE } from './constants';
+import { BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE, CONNECTION_PAGE_TYPE } from './constants';
 import { CenteredLoading } from '../components';
 import eventBus from '../utils/event-bus';
+import { ConnectionsProvider } from './main-panel/connections/hooks';
 
 import './index.css';
 
-const { projectName, workspaceID } = window.app.pageOptions;
+const { projectName, projectUuid, workspaceID } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activeBar, setActiveBar] = useState(BAR_TYPES[0]);
+  const [activeBar, setActiveBar] = useState([BAR_TYPE.ASK]);
 
-  const bars = useMemo(() => [
-    {
-      key: '_',
-      name: '',
-      children: BAR_TYPES
-    }
-  ], []);
-
-  const resetURL = useCallback((bar, ...children) => {
+  const resetURL = useCallback(([bar], ...children) => {
     const { origin, search } = location;
-    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar.key}/`;
+    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar.key === BAR_TYPE.TICKET || bar.key === BAR_TYPE.CONNECTION) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if (bar.key === BAR_TYPE.TICKET) {
+    if (bar === BAR_TYPE.TICKET) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);
   }, []);
 
-  const toggleBar = useCallback((bar) => {
-    if (activeBar?.key === bar.key) {
-      if (bar.key === BAR_TYPE.TICKET && !location.pathname.endsWith('ticket/')) {
+  const toggleBar = useCallback((newActiveBar) => {
+    const activeBarKey = newActiveBar[0];
+    if (activeBar[0] === activeBarKey) {
+      if ([BAR_TYPE.ASK, BAR_TYPE.SEARCH].includes(activeBarKey)) return;
+      if (activeBarKey === BAR_TYPE.TICKET && !location.pathname.endsWith('tickets/')) {
         eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_TYPE.ALL);
+        return;
       }
-      if (bar.key === BAR_TYPE.CONNECTION && !location.pathname.endsWith('connections/')) {
-        eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, CONNECTION_PAGE_TYPE.ALL);
+      if (activeBarKey === BAR_TYPE.CONNECTION) {
+        if (!location.pathname.endsWith('connections/') && !newActiveBar[1]) {
+          eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, CONNECTION_PAGE_TYPE.ALL);
+          setActiveBar(newActiveBar);
+          return;
+        }
+        if (newActiveBar[1]) {
+          eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, newActiveBar[1]);
+        }
       }
-      return;
     }
-    resetURL(bar);
-    setActiveBar(bar);
+
+    resetURL(newActiveBar, newActiveBar[1]);
+    setActiveBar(newActiveBar);
   }, [activeBar]);
 
   useEffect(() => {
@@ -59,9 +62,9 @@ const Project = () => {
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
-    const bar = BAR_TYPES.find(b => b.key === barKey) || BAR_TYPES[0];
-    resetURL(bar, ...children);
-    setActiveBar(bar);
+    const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.ASK;
+    resetURL([bar], ...children);
+    setActiveBar([bar, children[0]]);
     setLoading(false);
   }, []);
 
@@ -71,10 +74,10 @@ const Project = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <>
-            <SidePanel bars={bars} activeBar={activeBar} toggleBar={toggleBar} />
+          <ConnectionsProvider projectUuid={projectUuid} >
+            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
             <MainPanel activeBar={activeBar} />
-          </>
+          </ConnectionsProvider>
         )}
       </div>
     </I18nextProvider>
