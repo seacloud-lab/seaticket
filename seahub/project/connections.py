@@ -297,8 +297,6 @@ class ProjectConnectionSyncView(APIView):
         connection_status = json.loads(project_connection.status)
         if connection_status.get('last_sync_status') == CrawlStatus.CRAWLING:
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
-        elif connection_type != ConnectionType.SEAFILE.value and connection_status.get('last_sync_status') == CrawlStatus.PENDING:
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently pending')
 
         # check cooldown
         if project_connection.indexed_at:
