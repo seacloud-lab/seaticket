@@ -29,9 +29,6 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
     <>
       <div
         className={classnames('sea-qa-project-navigation-item', {
-          'sea-qa-project-navigation-item-level0': level === 0,
-          'sea-qa-project-navigation-item-level1': level === 1,
-          'sea-qa-project-navigation-item-level': level > 1,
           'sea-qa-project-navigation-item-active': isActive,
         })}
         style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
@@ -42,21 +39,22 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
         <span className="sea-qa-project-navigation-item-name">{name}</span>
         <IconButton icon="down" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
       </div>
-      {isShowChildren && (
-        <>
-          {connections.map(connection => {
-            return (
-              <ConnectionNav
-                key={connection.id}
-                nav={connection}
-                activeBar={activeBar}
-                level={2}
-                onClick={(connectionId) => onClick([nav.key, String(connectionId)])}
-              />
-            );
-          })}
-        </>
-      )}
+      <div
+        className={classnames('w-100 o-hidden', { 'side-panel-slide': isShowChildren, 'side-panel-slide-up': !isShowChildren })}
+        style={{ height: isShowChildren ? connections.length * 32 : 0, opacity: isShowChildren ? 1 : 0 }}
+      >
+        {connections.map(connection => {
+          return (
+            <ConnectionNav
+              key={connection.id}
+              nav={connection}
+              activeBar={activeBar}
+              level={2}
+              onClick={(connectionId) => onClick([nav.key, String(connectionId)])}
+            />
+          );
+        })}
+      </div>
     </>
   );
 };

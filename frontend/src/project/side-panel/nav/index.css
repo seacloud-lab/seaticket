@@ -9,14 +9,9 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-navigation-item:not(.sea-qa-project-navigation-item-level0):hover {
-  background-color: #EFEFED;
-}
-
 .sea-qa-project-navigation-item.sea-qa-project-navigation-item-active,
-.sea-qa-project-navigation-item:has(> .sea-qa-project-navigation-item-more-operation.show) {
+.sea-qa-project-navigation-item:hover {
   background-color: #EDEDEA;
-  position: relative;
 }
 
 .sea-qa-project-navigation-item .sea-qa-project-navigation-item-name {
@@ -26,27 +21,13 @@
   white-space: nowrap;
 }
 
-.sea-qa-project-navigation-item .sea-qa-project-navigation-item-more-btn {
-  opacity: 0;
-}
-
-.sea-qa-project-navigation-item:hover .sea-qa-project-navigation-item-more-btn,
-.sea-qa-project-navigation-item-more-operation.show .sea-qa-project-navigation-item-more-btn {
-  opacity: 1;
-}
-
-.sea-qa-project-navigation-item-level0 {
-  padding: 0 .5rem;
-  font-size: 14px;
-  color: #666666;
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-}
-
 .sea-qa-project-navigation-item .sea-qa-project-navigation-item-icon {
   height: 16px;
   width: 16px;
   color: #666;
   margin-right: 8px;
+}
+
+.sea-qa-project-navigation-item .sea-qa-icon-btn:hover {
+  background-color: var(--bs-hover-tertiary-bg) !important;
 }

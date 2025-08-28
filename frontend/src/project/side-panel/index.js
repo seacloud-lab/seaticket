@@ -27,7 +27,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
     <div className="sea-qa-project-side-panel" ref={ref}>
       <div className="sea-qa-project-side-panel-container">
         <Header />
-        <div className="sea-qa-project-navigation">
+        <div className="sea-qa-project-navigation sea-qa-nav-list">
           <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
           <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
           <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />

@@ -25,22 +25,17 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
   const { name } = nav;
 
   return (
-    <>
-      <div
-        className={classnames('sea-qa-project-navigation-item', {
-          'sea-qa-project-navigation-item-level0': level === 0,
-          'sea-qa-project-navigation-item-level1': level === 1,
-          'sea-qa-project-navigation-item-level': level > 1,
-          'sea-qa-project-navigation-item-active': isActive,
-        })}
-        style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
-        onClick={() => handleClick(connectionOption.type)}
-        title={name}
-      >
-        <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon" />
-        <span className="sea-qa-project-navigation-item-name">{name}</span>
-      </div>
-    </>
+    <div
+      className={classnames('sea-qa-project-navigation-item', {
+        'sea-qa-project-navigation-item-active': isActive,
+      })}
+      style={{ paddingLeft: level > 1 ? (level - 1) * 20 + 8 : 8 }}
+      onClick={() => handleClick(connectionOption.type)}
+      title={name}
+    >
+      <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon" />
+      <span className="sea-qa-project-navigation-item-name">{name}</span>
+    </div>
   );
 };
 
