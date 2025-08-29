@@ -19,7 +19,9 @@ const AssigneesSettings = ({
 
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
 
-  const deleteAssignee = useCallback((email) => {
+  const deleteAssignee = useCallback((event, email) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
     const newValue = value.filter(i => i !== email);
     onChange(newValue);
   }, [value, onChange]);
@@ -55,9 +57,7 @@ const AssigneesSettings = ({
                 api={queryUser}
               >
                 {!isReadonly && (
-                  <Collaborator.RemoveBtn
-                    callback={() => deleteAssignee(assignee)}
-                  />
+                  <Collaborator.RemoveBtn callback={(event) => deleteAssignee(event, assignee)}/>
                 )}
               </AsyncCollaborator>
             );
