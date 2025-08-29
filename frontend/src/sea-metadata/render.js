@@ -8,7 +8,7 @@ import {
 import ViewToolBar from './components/view-toolbar';
 import context from './context';
 import { CenteredLoading } from '@/components';
-import { lang, mediaUrl, server, username, } from '@/constants';
+import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
 
 const Main = ({ className, expandRow, toggleView, viewTools, children, ...params }) => {
   const { isLoading } = useViewsData();
@@ -35,7 +35,7 @@ const SeaMetadata = ({
   toggleView,
   api,
   viewID,
-  permission = 'rw',
+  permission = PERMISSION_TYPES.READ_ONLY,
   isViewComputedOnServer = true,
   settings = { lang, server, mediaUrl },
   t,

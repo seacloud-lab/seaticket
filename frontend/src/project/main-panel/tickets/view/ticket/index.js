@@ -7,7 +7,10 @@ import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafil
 import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
 import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '../../../../../components';
 import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG, TICKET_TYPES } from '../../../../constants';
-import { gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '../../../../../constants';
+import {
+  gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
+  PERMISSION_TYPES
+} from '@/constants';
 import { Utils } from '../../../../../utils/utils';
 import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
 import Reply from '../../components/reply';
@@ -19,7 +22,7 @@ import UploadFilesButton from '../../components/upload-files-btn';
 
 import './index.css';
 
-const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
+const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState({});
@@ -155,7 +158,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
   const { id, status, title, creator, replies, assignees = [], type, tags } = ticket;
   const typeOption = TICKET_TYPES.find(o => o.id === type);
-  const enableEditOtherSettings = creator === user.email;
+  const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
 
   return (
@@ -226,9 +229,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
-          <AssigneesSettings isReadonly={!enableEditOtherSettings} value={assignees} onChange={onAssigneesChange} />
-          <TagsSettings isReadonly={!enableEditOtherSettings} value={tags} onChange={onTagsChange} />
-          <TypeSettings isReadonly={!enableEditOtherSettings} value={type} onChange={onTypeChange} />
+          <AssigneesSettings isReadonly={!editable} value={assignees} onChange={onAssigneesChange} />
+          <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
+          <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
         </div>
       </div>
     </div>
