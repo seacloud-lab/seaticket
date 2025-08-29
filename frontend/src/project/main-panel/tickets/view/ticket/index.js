@@ -23,6 +23,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState({});
+  const [scrollTop, setScrollTop] = useState(0);
 
   const { togglePageType } = useTicketsPage();
 
@@ -36,6 +37,11 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
 
   const replyEditorRef = useRef(null);
   const containerRef = useRef(null);
+
+  const handleScroll = useCallback(Utils.throttle((event) => {
+    if (!event) return;
+    setScrollTop(event.target.scrollTop);
+  }, 30), []);
 
   // api
   const modifyTicket = useCallback((ticketID, data) => {
@@ -153,7 +159,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
   const statusOption = TICKET_STATUS_CONFIG[status];
 
   return (
-    <div className="sea-qa-project-ticket">
+    <div className="sea-qa-project-ticket" onScroll={handleScroll}>
       <div className="sea-qa-project-ticket-header">
         <div className="sea-qa-project-ticket-header-left">
           <div className="sea-qa-project-ticket-title-number">
@@ -172,6 +178,20 @@ const Ticket = ({ editorAPI, projectUuid, ticketID }) => {
           <span>{statusOption?.statusName}</span>
         </div>
         {typeOption && (<Option className="sea-qa-project-ticket-status ml-3" option={typeOption} />)}
+      </div>
+      <div className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 121, 'd-flex': scrollTop >= 121 })}>
+        <div className={classnames('sea-qa-project-ticket-status', status)}>
+          <Icon symbol={statusOption?.icon} />
+          <span>{statusOption?.statusName}</span>
+        </div>
+        <div className="sea-qa-project-ticket-title-number-type">
+          <div className="sea-qa-project-ticket-title-number">
+            <span className="sea-qa-project-ticket-title">{title}</span>
+            <span className="sea-qa-project-ticket-number ml-1">{`#${id}`}</span>
+          </div>
+          {typeOption && (<div className="text-truncate w-100">{typeOption.name}</div>)}
+        </div>
+        <IconButton icon="copy" className="sea-qa-project-ticket-copy ml-1" onClick={copyLink} />
       </div>
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="sea-qa-project-ticket-reply-container-wrapper">
