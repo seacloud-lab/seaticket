@@ -118,7 +118,8 @@ const Connection = ({ projectUuid, connectionID }) => {
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
-        toggleView={() => {}}
+        isViewComputedOnServer={false}
+        viewTools={['views', 'search', 'sorts', 'groupbys', 'order_and_hidden']}
         expandRow={handleExpandRow}
 
         t={t}
