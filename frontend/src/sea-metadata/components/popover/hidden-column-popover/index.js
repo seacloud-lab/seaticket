@@ -8,7 +8,6 @@ import { gettext, KeyCodes } from '@/constants';
 import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
-import context from '../../../context';
 
 const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement, columns, hiddenColumns: oldHiddenColumns, canReorder, modifyColumnOrder }) => {
   const [searchValue, setSearchValue] = useState('');
@@ -101,11 +100,29 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
       className="sea-metadata-hide-columns-popover"
       boundariesElement={document.body}
     >
-      <div ref={popoverRef} onClick={onPopoverInsideClick} className="sea-metadata-hide-columns-container" style={{ maxHeight: window.innerHeight - 100 }}>
+      <div
+        onClick={onPopoverInsideClick}
+        ref={popoverRef}
+        className="sea-metadata-hide-columns-container"
+        style={{ maxHeight: window.innerHeight - 100 }}
+      >
         <div className="sea-metadata-hide-columns-search-container">
-          <SearchInput placeholder={gettext('Search {column}').replace('{column}', context.t('column'))} onKeyDown={onKeyDown} onChange={onChangeSearch} size={28} autoFocus={true}/>
+          <SearchInput
+            placeholder={gettext('Search column')}
+            onKeyDown={onKeyDown}
+            onChange={onChangeSearch}
+            size={28}
+            autoFocus={true}
+          />
         </div>
-        <HiddenColumns readOnly={readOnly} columns={displayColumns} hiddenColumns={hiddenColumns} onChange={hideColumn} canReorder={canReorder} modifyColumnOrder={modifyColumnOrder} />
+        <HiddenColumns
+          readOnly={readOnly}
+          columns={displayColumns}
+          hiddenColumns={hiddenColumns}
+          onChange={hideColumn}
+          canReorder={canReorder}
+          modifyColumnOrder={modifyColumnOrder}
+        />
         {!readOnly && !searchValue && (
           <div className="sea-metadata-hide-columns-operations">
             <div className="sea-metadata-hide-columns-operation px-2" onClick={hideAll} aria-label={gettext('Hide all')}>{gettext('Hide all')}</div>

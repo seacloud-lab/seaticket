@@ -8,7 +8,6 @@ import { gettext } from '@/constants';
 import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, seaTableZIndexes } from '../../../../constants';
 import { addClassName, removeClassName } from '@/utils/dom';
 import { getRowsFromSelectedRange } from '../../utils/selected-cell-utils';
-import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -53,7 +52,7 @@ class RowsFooter extends React.Component {
       if (hasMore) {
         toaster.success(<LoadAllTip load={this.props.loadAll} />, { duration: 5 });
       } else {
-        toaster.success(gettext('All {rows} loaded').replace('{rows}', context.t('rows')));
+        toaster.success(gettext('All rows loaded'));
       }
     });
   };

@@ -185,7 +185,14 @@ const Main = forwardRef(({
         </div>
       )}
       <div className="option-editor-search-wrapper">
-        <SearchInput isShowSearchIcon={false} value={searchValue} size={28} placeholder={placeholder} onKeyDown={onKeyDown} onChange={onSearchValueChange} />
+        <SearchInput
+          isShowSearchIcon={false}
+          value={searchValue}
+          size={28}
+          placeholder={placeholder}
+          onKeyDown={onKeyDown}
+          onChange={onSearchValueChange}
+        />
       </div>
       <div className="option-editor-content" style={{ maxHeight }} ref={displayCollaboratorsRef}>
         {displayOptions.length === 0 ? (

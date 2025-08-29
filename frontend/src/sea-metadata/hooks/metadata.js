@@ -107,7 +107,7 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(gettext('{Row} deleted').replace('{Row}', context.t('Row')));
+        toaster.success(gettext('Row deleted'));
         success_callback && success_callback();
       },
     });
@@ -121,7 +121,7 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(gettext('{Rows} deleted').replace('{Rows}', context.t('Rows')));
+        toaster.success(gettext('Rows deleted'));
         success_callback && success_callback();
       },
     });
