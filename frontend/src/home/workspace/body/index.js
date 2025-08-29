@@ -60,8 +60,8 @@ class WorkspaceContainer extends Component {
         'table-mobile-item-container': !isDesktop,
       })}
       >
-        {total === 0 && (
-          <div className="tip">{gettext('No project')}</div>
+        {total === 0 && !this.props.isShowVirtualProject && (
+          <div className="tip">{gettext('No projects')}</div>
         )}
         {projectList.map((project, index) => {
           const { className, style } = getProjectClassAndStyle(index, total);
