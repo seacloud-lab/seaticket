@@ -10,7 +10,7 @@ import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 
-const TagTickets = ({ projectUuid, workspaceID, projectName }) => {
+const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
@@ -221,9 +221,9 @@ const TagTickets = ({ projectUuid, workspaceID, projectName }) => {
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
       expandRow={(row) => togglePageType(row._id)}
-      toggleView={() => {}}
       viewTools={['search', 'sorts']}
       isViewComputedOnServer={false}
+      permission={permission}
 
       // tags
       tagsData={tagsData}

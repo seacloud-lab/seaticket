@@ -52,6 +52,7 @@
             avatarURL: '{{ avatar_url }}',
             isOrgStaff: {% if is_org_staff %} true {% else %} false {% endif %},
             isProjectAdmin: {% if is_project_admin %} true {% else %} false {% endif %},
+            permission: '{{ permission }}',
             projectName: '{{ project_name|escapejs }}',
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',

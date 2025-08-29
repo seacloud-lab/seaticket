@@ -8,7 +8,7 @@ import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
-const AllTags = ({ projectUuid }) => {
+const AllTags = ({ projectUuid, permission }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
   const { toggleChildrenPageType } = useTicketsPage();
 
@@ -205,6 +205,7 @@ const AllTags = ({ projectUuid }) => {
         className="sea-tags-metadata"
         api={api}
         localStorageNamePrefix={localStorageName}
+        permission={permission}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={['views', 'search', 'sorts']}
         isViewComputedOnServer={false}

@@ -8,7 +8,7 @@ import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 
-const AllTickets = ({ projectUuid, workspaceID, projectName }) => {
+const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
@@ -185,6 +185,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName }) => {
       viewID={viewID}
       api={api}
       localStorageNamePrefix={localStorageName}
+      permission={permission}
       createContextMenuOptions={createContextMenuOptions}
       expandRow={(row) => togglePageType(row._id)}
       toggleView={updateViewID}

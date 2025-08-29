@@ -7,11 +7,12 @@ from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Workspaces, Projects
-from seahub.project.utils import check_project_admin_permission
+from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL
 from seahub.group.models import Group
+from seahub.constants import PERMISSION_READ
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -45,6 +46,7 @@ def project_view(request, workspace_id, project_name, children_id = ''):
     }
 
     is_project_admin= check_project_admin_permission(request.user.username, workspace.owner)
+    permission = check_project_permission(request.user.username, workspace.owner)
 
     return_dict = {
         'version': SEAQA_VERSION,
@@ -56,6 +58,7 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'media_url': MEDIA_URL,
         'icon': json.dumps(icon),
         'is_project_admin': is_project_admin,
+        'permission': permission if permission else PERMISSION_READ
     }
 
     return render(request, 'project_view_react.html', return_dict)

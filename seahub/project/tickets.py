@@ -497,16 +497,9 @@ class TicketAPIView(APIView):
 
         # permission check
         username = request.user.username
-
-        # group admin can modify status
-        if username != ticket.creator:
-            if ticket_status and check_project_admin_permission(username, workspace.owner):
-                ticket.status = ticket_status
-                ticket.save()
-                return Response({"ticket": ticket.to_dict()})
-            else:
-                error_msg = 'Permission denied.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)  
 
         # upload files
         if file_urls:
