@@ -96,7 +96,13 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
     >
       <div ref={popoverRef} onClick={onPopoverInsideClick} className="seaqa-hide-container" style={{ maxHeight: window.innerHeight - 100 }}>
         <div className="seaqa-hide-search-container">
-          <SearchInput placeholder={gettext('Search connection')} onKeyDown={onKeyDown} onChange={onChangeSearch} autoFocus={true} size={28} />
+          <SearchInput
+            placeholder={gettext('Search connection')}
+            onKeyDown={onKeyDown}
+            onChange={onChangeSearch}
+            autoFocus={true}
+            size={28}
+          />
         </div>
         <HiddenConnections
           readOnly={readOnly}

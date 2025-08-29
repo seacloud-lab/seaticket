@@ -6,14 +6,8 @@ import Tab from './Tab';
 import './index.css';
 
 export class Item extends React.Component {
-  static defaultProps = {
-    prefixCls: 'am-tab-bar-item',
-    title: ''
-  };
-
   render() {
-    const { prefixCls, style } = this.props;
-
+    const { prefixCls = 'am-tab-bar-item', style } = this.props;
     return (
       <div className={prefixCls} style={style}>
         {this.props.children}
@@ -22,13 +16,13 @@ export class Item extends React.Component {
   }
 }
 class AntTabBar extends React.Component {
+
   static defaultProps = {
     prefixCls: 'am-tab-bar',
     barTintColor: 'white',
     tintColor: '#108ee9',
     hidden: false,
     unselectedTintColor: '#888',
-    placeholder: '正在加载',
     animated: false,
     swipeable: false,
     prerenderingSiblingsNumber: 1,

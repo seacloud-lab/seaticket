@@ -12,7 +12,7 @@ const siteRoot = window.app.config.siteRoot;
 const propTypes = {
   project: PropTypes.object.isRequired,
   onDeleteProjectToggle: PropTypes.func.isRequired,
-  onShareProjectToggle: PropTypes.func.isRequired,
+  onShareProjectToggle: PropTypes.func,
   onUpdateProject: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
@@ -73,10 +73,6 @@ class Project extends React.Component {
 
   onDeleteProjectToggle = () => {
     this.props.onDeleteProjectToggle(this.props.project);
-  };
-
-  onShareProjectToggle = () => {
-    this.props.onShareProjectToggle(this.props.project);
   };
 
   onMobileShareProjectToggle = () => {
@@ -208,9 +204,10 @@ class Project extends React.Component {
           {this.state.isMoreOperationPopoverShow && (
             <ProjectItemPopover
               target={`project-item-${id}`}
+              project={project}
               onToggle={this.toggleMoreOperation}
               onProjectSettingsToggle={this.onProjectSettingsToggle}
-              onShareProjectToggle={this.onShareProjectToggle}
+              onShareProjectToggle={this.props.onShareProjectToggle}
               onDeleteProjectToggle={this.onDeleteProjectToggle}
             />
           )}

@@ -13,9 +13,7 @@ import SidePanel from './side-panel';
 import { Utils } from '../../../utils/utils';
 import './index.css';
 
-const {
-  workspaceID, projectUuid
-} = window.app.pageOptions;
+const { workspaceID, projectUuid } = window.app.pageOptions;
 
 const Ask = ({ title }) => {
   const [chatSessions, setChatSessions] = useState([]);
@@ -51,7 +49,7 @@ const Ask = ({ title }) => {
   }, [chatHistoryContentRef, timer]);
 
   const updateSessionChatHistories = useCallback((sessionId, newChatHistories, isReply, callback) => {
-    const filteredChatHistories = newChatHistories.filter(chat => 
+    const filteredChatHistories = newChatHistories.filter(chat =>
       !chat.isUserSpeak && Array.isArray(chat.messages) ? chat.messages.length > 0 : true
     );
 
@@ -105,7 +103,7 @@ const Ask = ({ title }) => {
       project_uuid: projectUuid,
       workspace_id: workspaceID,
       query: validMessage,
-      session_uuid: currentSessionId, 
+      session_uuid: currentSessionId,
     }).then((res) => {
       const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = res.data;
 

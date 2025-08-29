@@ -3,17 +3,11 @@ import PropTypes from 'prop-types';
 import { PopoverBody } from 'reactstrap';
 import CustomizePopover from '../../../components/customize-popover';
 import { gettext } from '../../../constants';
-
-import './project-item-popover.css';
 import { Icon } from '../../../components';
 
-class ProjectItemPopover extends React.Component {
+import './project-item-popover.css';
 
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
+class ProjectItemPopover extends React.Component {
 
   onEnter = (e) => {
     e.preventDefault();
@@ -21,7 +15,7 @@ class ProjectItemPopover extends React.Component {
   };
 
   onShareProjectToggle = () => {
-    this.props.onShareProjectToggle();
+    this.props.onShareProjectToggle(this.props.project);
     this.props.onToggle();
   };
 
@@ -52,22 +46,20 @@ class ProjectItemPopover extends React.Component {
         ]}
       >
         <PopoverBody className="project-item-popover-content">
-          {(
-            <>
-              <button className="dropdown-item project-item-operation" onClick={this.onShareProjectToggle}>
-                <Icon symbol="share" className="project-item-operation-icon" />
-                {gettext('Share')}
-              </button>
-              <button className="dropdown-item project-item-operation" onClick={this.onProjectSettingsToggle}>
-                <Icon symbol="rename" className="project-item-operation-icon" />
-                {gettext('Edit name and icon')}
-              </button>
-              <button className="dropdown-item project-item-operation" onClick={this.onDeleteProjectToggle}>
-                <Icon symbol="delete" className="project-item-operation-icon" />
-                {gettext('Delete')}
-              </button>
-            </>
-          )}
+          {this.props.onShareProjectToggle &&
+            <button className="dropdown-item project-item-operation" onClick={this.onShareProjectToggle}>
+              <Icon symbol="share" className="project-item-operation-icon" />
+              {gettext('Share')}
+            </button>
+          }
+          <button className="dropdown-item project-item-operation" onClick={this.onProjectSettingsToggle}>
+            <Icon symbol="rename" className="project-item-operation-icon" />
+            {gettext('Edit name and icon')}
+          </button>
+          <button className="dropdown-item project-item-operation" onClick={this.onDeleteProjectToggle}>
+            <Icon symbol="delete" className="project-item-operation-icon" />
+            {gettext('Delete')}
+          </button>
         </PopoverBody>
       </CustomizePopover>
     );

@@ -204,13 +204,13 @@ class Workspace extends React.Component {
     this.onDeleteProjectToggle();
   };
 
-  onShareProjectToggle = (project) => {
-    this.setState({
-      isShowSharedDialog: !this.state.isShowSharedDialog,
-      currentProject: project
-    });
-    this.onUnfreezedItem();
-  };
+  // onShareProjectToggle = (project) => {
+  //   this.setState({
+  //     isShowSharedDialog: !this.state.isShowSharedDialog,
+  //     currentProject: project
+  //   });
+  //   this.onUnfreezedItem();
+  // };
 
   onMobileShareProjectToggle = (project) => {
     this.setState({

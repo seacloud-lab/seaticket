@@ -24,6 +24,7 @@ class VirtualProject extends React.Component {
       icon: '',
       bgColor: '',
       isChange: true,
+      isCreatingProject: false,
       isDataLoaded: false,
       baseCreated: [],
     };
@@ -56,9 +57,9 @@ class VirtualProject extends React.Component {
     });
   }
 
-  onCreate = () => {
-    const { name, icon, bgColor, baseCreated, isChange } = this.state;
-    if (!isChange) return;
+  onCreateProject = () => {
+    const { name, icon, bgColor, baseCreated, isChange, isCreatingProject } = this.state;
+    if (!isChange || isCreatingProject) return;
     const { currentWorkspace } = this.props;
     let response = validateName(name);
     if (!response.isValid) {
@@ -75,11 +76,13 @@ class VirtualProject extends React.Component {
         }
       }
     }
+    this.setState({ isCreatingProject: true });
     seaQAAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
       let newProject = new Base(res.data.project);
       this.props.createBlankProject(newProject);
+      this.setState({ isCreatingProject: false });
     }).catch((error) => {
-      this.setState({ isChange: false });
+      this.setState({ isChange: false, isCreatingProject: false });
       this.handleError(error);
     });
   };
@@ -136,7 +139,7 @@ class VirtualProject extends React.Component {
             className="virtual-project-settings"
             placement="bottom-start"
             target="create-project"
-            onToggle={this.onCreate}
+            onToggle={this.onCreateProject}
             name={name}
             bgColor={bgColor}
             icon={icon}

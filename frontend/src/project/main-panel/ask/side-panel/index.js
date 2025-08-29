@@ -35,7 +35,7 @@ const SidePanel = ({
         <div className="ask-side-panel-title">
           {!isCollapsed && gettext('Histories')}
         </div>
-        <button 
+        <button
           className="ask-side-panel-toggle"
           onClick={toggleCollapse}
           title={isCollapsed ? gettext('Expand') : gettext('Collapse')}

@@ -168,7 +168,14 @@ const Main = forwardRef(({
         </div>
       )}
       <div className="collaborator-editor-search-wrapper">
-        <SearchInput isShowSearchIcon={false} value={searchValue} size={28} placeholder={placeholder} onKeyDown={onKeyDown} onChange={onSearchValueChange} />
+        <SearchInput
+          isShowSearchIcon={false}
+          value={searchValue}
+          size={28}
+          placeholder={placeholder}
+          onKeyDown={onKeyDown}
+          onChange={onSearchValueChange}
+        />
       </div>
       <div className="collaborator-editor-content" style={{ maxHeight }} ref={displayCollaboratorsRef}>
         {displayCollaborators.current.length === 0 ? (

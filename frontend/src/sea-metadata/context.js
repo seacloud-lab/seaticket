@@ -1,6 +1,5 @@
 import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
-import { gettext } from '@/constants';
 
 class Context {
 
@@ -13,13 +12,6 @@ class Context {
     this.isViewComputedOnServer = true;
     this.collaboratorsCache = {};
     this.eventBus = eventBus;
-    this.t_map = {
-      row: gettext('row'),
-      rows: gettext('rows'),
-      Rows: gettext('Rows'),
-      column: gettext('column'),
-      columns: gettext('columns'),
-    };
   }
 
   init = ({
@@ -37,13 +29,6 @@ class Context {
     this.permission = permission;
     this.isViewComputedOnServer = isViewComputedOnServer;
     this.collaboratorsCache = {};
-    if (t) {
-      this.t_map = {
-        ...this.t_map,
-        ...t
-      };
-    }
-
     this.re_set({ localStorageName });
   };
 
@@ -61,11 +46,6 @@ class Context {
     this.localStorage = null;
     this.eventBus = null;
     this.permission = 'r';
-  };
-
-  t = (key) => {
-    const t_value = this.t_map[key];
-    return t_value || key;
   };
 
   getSetting = (key) => {
