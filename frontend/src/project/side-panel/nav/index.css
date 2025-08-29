@@ -1,0 +1,33 @@
+.sea-qa-project-navigation-item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  width: 100%;
+  padding: 0 .5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sea-qa-project-navigation-item.sea-qa-project-navigation-item-active,
+.sea-qa-project-navigation-item:hover {
+  background-color: #EDEDEA;
+}
+
+.sea-qa-project-navigation-item .sea-qa-project-navigation-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-qa-project-navigation-item .sea-qa-project-navigation-item-icon {
+  height: 16px;
+  width: 16px;
+  color: #666;
+  margin-right: 8px;
+}
+
+.sea-qa-project-navigation-item .sea-qa-icon-btn:hover {
+  background-color: var(--bs-hover-tertiary-bg) !important;
+}

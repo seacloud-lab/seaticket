@@ -27,3 +27,12 @@
   overflow: auto;
   font-size: 14px;
 }
+
+.sea-qa-nav-list .side-panel-slide {
+  transition: all 0.3s ease-in-out;
+}
+
+.sea-qa-nav-list .side-panel-slide-up {
+  transition: all 0.3s ease-in-out;
+  height: 0;
+}

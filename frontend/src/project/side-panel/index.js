@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import NodeGroup from './node-group';
 import ResizeBar from '../../components/resize-bar';
 import Header from './header';
+import { BAR_TYPES } from '../constants';
+import Nav from './nav';
+import ConnectionsNav from './nav/connections-nav';
 
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
 
-const SidePanel = ({ bars, activeBar, toggleBar }) => {
+const SidePanel = ({ activeBar, toggleBar }) => {
 
   const ref = useRef(null);
 
@@ -25,15 +27,11 @@ const SidePanel = ({ bars, activeBar, toggleBar }) => {
     <div className="sea-qa-project-side-panel" ref={ref}>
       <div className="sea-qa-project-side-panel-container">
         <Header />
-        <div className="sea-qa-project-navigation">
-          {bars.map(node => (
-            <NodeGroup
-              key={node.key}
-              node={node}
-              activeNode={activeBar}
-              toggleNode={toggleBar}
-            />
-          ))}
+        <div className="sea-qa-project-navigation sea-qa-nav-list">
+          <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
+          <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
+          <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
+          <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
         </div>
       </div>
       <ResizeBar min={200} max={600} onResize={onResize} />
