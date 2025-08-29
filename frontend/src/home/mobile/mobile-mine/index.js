@@ -72,8 +72,9 @@ class MobileMine extends React.Component {
   renderMenu = () => {
     let data;
     const { isStaff, isOrgStaff, isInstAdmin } = this.state;
+    const { isAdminPanel = false } = this.props;
 
-    if (this.props.isAdminPanel) {
+    if (isAdminPanel) {
       if (isStaff) {
         data = {
           url: '',
@@ -184,10 +185,6 @@ class MobileMine extends React.Component {
   }
 
 }
-
-MobileMine.defaultProps = {
-  isAdminPanel: false
-};
 
 MobileMine.propTypes = propTypes;
 

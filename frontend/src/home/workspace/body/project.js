@@ -12,7 +12,7 @@ const siteRoot = window.app.config.siteRoot;
 const propTypes = {
   project: PropTypes.object.isRequired,
   onDeleteProjectToggle: PropTypes.func.isRequired,
-  onShareProjectToggle: PropTypes.func.isRequired,
+  onShareProjectToggle: PropTypes.func,
   onUpdateProject: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
