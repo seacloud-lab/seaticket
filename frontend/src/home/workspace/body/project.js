@@ -75,10 +75,6 @@ class Project extends React.Component {
     this.props.onDeleteProjectToggle(this.props.project);
   };
 
-  onShareProjectToggle = () => {
-    this.props.onShareProjectToggle(this.props.project);
-  };
-
   onMobileShareProjectToggle = () => {
     this.props.onMobileShareProjectToggle(this.props.project);
   };
@@ -208,9 +204,10 @@ class Project extends React.Component {
           {this.state.isMoreOperationPopoverShow && (
             <ProjectItemPopover
               target={`project-item-${id}`}
+              project={project}
               onToggle={this.toggleMoreOperation}
               onProjectSettingsToggle={this.onProjectSettingsToggle}
-              onShareProjectToggle={this.onShareProjectToggle}
+              onShareProjectToggle={this.props.onShareProjectToggle}
               onDeleteProjectToggle={this.onDeleteProjectToggle}
             />
           )}
