@@ -7,7 +7,7 @@ import Views from './views';
 
 import './index.css';
 
-const ViewToolBar = ({ tools = ['views', 'search', 'filters', 'sorts', 'groups', 'order_and_hidden'], toggleView }) => {
+const ViewToolBar = ({ tools = ['views', 'search', 'filters', 'sorts', 'groupbys', 'order_and_hidden'], toggleView }) => {
 
   const { collaborators } = useCollaborators();
   const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
