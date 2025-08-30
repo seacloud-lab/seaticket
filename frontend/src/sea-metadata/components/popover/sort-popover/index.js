@@ -12,9 +12,9 @@ import {
   EVENT_BUS_TYPE, COLUMNS_ICON_CONFIG, VIEW_SORT_COLUMN_RULES, VIEW_FIRST_SORT_COLUMN_RULES, SORT_TYPE, VIEW_TYPE,
 } from '../../../constants';
 import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
+import context from '@/sea-metadata/context';
 
 import './index.css';
-import context from '@/sea-metadata/context';
 
 const SORT_TYPES = [
   {
@@ -208,7 +208,7 @@ class SortPopover extends Component {
               onChange={(value) => this.onSelectColumn(value, index)}
               options={columnsOptions}
               searchable={true}
-              searchPlaceholder={gettext('Search column')}
+              placeholder={context.translate('Search {column}')}
               noOptionsPlaceholder={gettext('No results')}
             />
           </div>

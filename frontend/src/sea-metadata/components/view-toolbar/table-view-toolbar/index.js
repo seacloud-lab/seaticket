@@ -2,9 +2,10 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
+import { VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
-  tools = ['views', 'search', 'filters', 'sorts', 'groupbys', 'order_and_hidden'],
+  tools = VIEW_TOOLS,
   readOnly, view, collaborators,
   modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {

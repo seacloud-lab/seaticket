@@ -30,7 +30,7 @@ class ServerOperator {
         context.modifyRow(row_id, row_update, is_copy_paste).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to modify row') });
+          callback({ operation, error: context.translate('Failed to modify {row}') });
         });
         break;
       }
@@ -48,7 +48,7 @@ class ServerOperator {
             if (error.response && error.response.status === 413) {
               callback({ operation, error: gettext('Number of rows exceeds the limit of 1000') });
             } else {
-              callback({ operation, error: gettext('Failed to modify rows') });
+              callback({ operation, error: context.translate('Failed to modify {rows}') });
             }
           });
         }
@@ -59,7 +59,7 @@ class ServerOperator {
         context.deleteRow(row_id).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to delete row') });
+          callback({ operation, error: context.translate('Failed to delete {row}') });
         });
         break;
       }
@@ -69,20 +69,20 @@ class ServerOperator {
         context.deleteRows(rowIds).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to delete rows') });
+          callback({ operation, error: context.translate('Failed to delete {rows}') });
         });
         break;
       }
       case OPERATION_TYPE.RESTORE_ROWS: {
         const { rows_data } = operation;
         if (!Array.isArray(rows_data) || rows_data.length === 0) {
-          callback({ operation, error: gettext('Failed to restore rows') });
+          callback({ operation, error: context.translate('Failed to restore {rows}') });
           break;
         }
         context.restoreRows(rows_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to restore rows') });
+          callback({ operation, error: context.translate('Failed to restore {rows}') });
         });
         break;
       }
@@ -98,7 +98,7 @@ class ServerOperator {
           operation.data = operation.column.data;
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to insert column') });
+          callback({ operation, error: context.translate('Failed to insert {column}') });
         });
         break;
       }
@@ -107,7 +107,7 @@ class ServerOperator {
         context.deleteColumn(column_key).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to delete column') });
+          callback({ operation, error: context.translate('Failed to delete {column}') });
         });
         break;
       }
@@ -116,7 +116,7 @@ class ServerOperator {
         context.renameColumn(column_key, new_name).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to rename column') });
+          callback({ operation, error: context.translate('Failed to rename {column}') });
         });
         break;
       }
@@ -131,7 +131,7 @@ class ServerOperator {
         context.modifyColumnData(column_key, origin_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to modify {column} data') });
+          callback({ operation, error: context.translate('Failed to modify {column} data') });
         });
         break;
       }
@@ -140,7 +140,7 @@ class ServerOperator {
         context.modifyView(view_id, { columns_keys: new_columns_keys }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to modify {column} order') });
+          callback({ operation, error: context.translate('Failed to modify {column} order') });
         });
         break;
       }
@@ -176,7 +176,7 @@ class ServerOperator {
         context.modifyView(view_id, { hidden_columns }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: gettext('Failed to modify hidden columns') });
+          callback({ operation, error: context.translate('Failed to modify hidden {columns}') });
         });
         break;
       }

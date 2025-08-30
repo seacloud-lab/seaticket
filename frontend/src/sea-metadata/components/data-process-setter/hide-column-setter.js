@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import IconBtn from '@/components/icon-button';
 import { HideColumnPopover } from '../popover';
-import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { TABLE_NOT_DISPLAY_COLUMN_KEYS } from '../../constants';
+import context from '@/sea-metadata/context';
 
 const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColumns, modifyHiddenColumns, modifyColumnOrder }) => {
   const [isShowSetter, setShowSetter] = useState(false);
@@ -18,9 +18,9 @@ const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColum
 
   const message = useMemo(() => {
     const hiddenColumnsLength = validHiddenColumns.length;
-    if (hiddenColumnsLength === 1) return gettext('1 hidden column');
-    if (hiddenColumnsLength > 1) return gettext('{count} hidden columns').replace('{count}', hiddenColumnsLength);
-    return gettext('Hide columns');
+    if (hiddenColumnsLength === 1) return context.translate('1 hidden {column}');
+    if (hiddenColumnsLength > 1) return context.translate('{count} hidden {columns}', { count: hiddenColumnsLength });
+    return context.translate('Hide {columns}');
   }, [validHiddenColumns]);
 
   const onSetterToggle = useCallback(() => {

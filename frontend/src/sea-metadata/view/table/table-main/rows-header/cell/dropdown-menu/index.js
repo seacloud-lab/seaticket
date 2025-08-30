@@ -116,7 +116,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
           disabled={true}
           target="sea-metadata-edit-column-format"
           title={gettext('Edit format settings')}
-          tip={isPrivateColumn ? gettext('This column is not editable') : gettext('You do not have permission')}
+          tip={isPrivateColumn ? context.translate('This {column} is not editable') : gettext('You do not have permission')}
           iconName="set-up"
         />
       );
@@ -249,7 +249,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
                 target="sea-metadata-sort-ascending-column"
                 iconName="sort-ascending"
                 title={gettext('Sort ascending')}
-                tip={!canModifyView ? gettext('You do not have permission') : gettext('This column does not support sorting')}
+                tip={!canModifyView ? gettext('You do not have permission') : context.translate('This {column} does not support sorting')}
                 onChange={() => modifySort(SORT_TYPE.UP)}
                 onMouseEnter={hideSubMenu}
               />
@@ -258,21 +258,12 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
                 target="sea-metadata-sort-descending-column"
                 iconName="sort-descending"
                 title={gettext('Sort descending')}
-                tip={!canModifyView ? gettext('You do not have permission') : gettext('This column does not support sorting')}
+                tip={!canModifyView ? gettext('You do not have permission') : context.translate('This {column} does not support sorting')}
                 onChange={() => modifySort(SORT_TYPE.DOWN)}
                 onMouseEnter={hideSubMenu}
               />
             </>
           )}
-          {/* <DropdownItem
-            disabled={!canDeleteColumn}
-            target="sea-metadata-delete-column"
-            iconName="delete"
-            title={gettext('Delete ')}
-            tip={isPrivateColumn ? gettext('This column can not be deleted') : gettext('You do not have permission')}
-            onChange={onDelete}
-            onMouseEnter={hideSubMenu}
-          /> */}
           {CellType.TAGS === column.type && (
             <DropdownItem
               iconName="tag"

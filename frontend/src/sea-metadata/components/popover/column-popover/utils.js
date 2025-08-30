@@ -1,9 +1,11 @@
+import { gettext } from '@/constants';
 import { isRegExpression } from '../../../utils/common';
 import { getColumnByKey, getColumnByName } from '../../../utils/column';
 import { CellType } from '../../../constants';
 import { COMMON_FORM_COLUMN_TYPE, TEXT_FORM_COLUMN, NUMBER_FORM_COLUMN } from './constants';
+import context from '../../../context';
 
-const _validateColumnName = ({ columnName, oldColumn, metadata, gettext }) => {
+const _validateColumnName = ({ columnName, oldColumn, metadata }) => {
   if (!columnName) return { type: COMMON_FORM_COLUMN_TYPE.COLUMN_NAME, tips: gettext('This is required') };
   if (columnName.includes('.')) {
     return {
@@ -29,23 +31,23 @@ const _validateColumnName = ({ columnName, oldColumn, metadata, gettext }) => {
   ) {
     return {
       type: COMMON_FORM_COLUMN_TYPE.COLUMN_NAME,
-      tips: gettext('There is another property with this name'),
+      tips: context.translate('There is another {column} with this name'),
     };
   }
   return null;
 };
 
-const _validateColumnType = ({ column, metadata, gettext }) => {
+const _validateColumnType = ({ column, metadata }) => {
   if (column.unique && getColumnByKey(metadata.columns, column.key)) {
     return {
       type: COMMON_FORM_COLUMN_TYPE.COLUMN_TYPE,
-      tips: gettext('Another property has this property type'),
+      tips: context.translate('Another {column} has this {column} type'),
     };
   }
   return null;
 };
 
-const _validateTextFormColumn = ({ column, gettext }) => {
+const _validateTextFormColumn = ({ column }) => {
   const { format_specification_value, format_check_type } = column;
   if (format_check_type === 'custom_format' && format_specification_value) {
     if (!isRegExpression(format_specification_value)) {
@@ -58,7 +60,7 @@ const _validateTextFormColumn = ({ column, gettext }) => {
   return null;
 };
 
-const _validateNumberFormColumn = ({ column, gettext }) => {
+const _validateNumberFormColumn = ({ column }) => {
   const { format, currency_symbol } = column;
   if (format === 'custom_currency' && !currency_symbol) {
     return {

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { EVENT_BUS_TYPE, VIEW_TYPE } from '../../constants';
+import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS } from '../../constants';
 import TableViewToolbar from './table-view-toolbar';
 import { useCollaborators, useMetadata } from '../../hooks';
 import context from '../../context';
@@ -7,7 +7,7 @@ import Views from './views';
 
 import './index.css';
 
-const ViewToolBar = ({ tools = ['views', 'search', 'filters', 'sorts', 'groupbys', 'order_and_hidden'], toggleView }) => {
+const ViewToolBar = ({ tools = VIEW_TOOLS, toggleView }) => {
 
   const { collaborators } = useCollaborators();
   const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();

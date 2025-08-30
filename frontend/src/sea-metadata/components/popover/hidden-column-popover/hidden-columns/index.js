@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideColumn from './hide-column';
-import { gettext } from '@/constants';
+import context from '@/sea-metadata/context';
 
 const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
   const [draggingColumnKey, setDraggingCellKey] = useState(null);
@@ -29,7 +29,7 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
     <div className={classnames('hide-columns-list', { 'empty-hide-columns-container': isEmpty })}>
       {isEmpty && (
         <div className="empty-hide-columns-list">
-          {gettext('No columns available to be hidden')}
+          {context.translate('No {columns} available to be hidden' )}
         </div>
       )}
       {!isEmpty && columns.map((column, columnIndex) => {

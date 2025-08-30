@@ -6,7 +6,6 @@ import Store from '../store';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
-import { gettext } from '@/constants';
 import { TagsDataProvider } from './tagsData';
 import { getRowById } from '../utils/row';
 
@@ -107,7 +106,7 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(gettext('Row deleted'));
+        toaster.success(context.translate('{Row} deleted'));
         success_callback && success_callback();
       },
     });
@@ -121,7 +120,7 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(gettext('Rows deleted'));
+        toaster.success(context.translate('{Rows} deleted'));
         success_callback && success_callback();
       },
     });
