@@ -179,6 +179,7 @@ const AllTags = ({ projectUuid, permission }) => {
     return {
       row: gettext('tag'),
       rows: gettext('tags'),
+      Row: gettext('Tag'),
       Rows: gettext('Tags'),
     };
   }, []);

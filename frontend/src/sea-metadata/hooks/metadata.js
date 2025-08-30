@@ -120,7 +120,11 @@ export const MetadataProvider = ({
         error && toaster.danger(error);
       },
       success_callback: () => {
-        toaster.success(context.translate('{Rows} deleted'));
+        if (rowsIds.length === 1) {
+          toaster.success(context.translate('{Row} deleted'));
+        } else {
+          toaster.success(context.translate('{Rows} deleted'));
+        }
         success_callback && success_callback();
       },
     });

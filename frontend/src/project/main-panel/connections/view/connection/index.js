@@ -96,8 +96,9 @@ const Connection = ({ projectUuid, connectionID }) => {
 
   const t = useMemo(() => {
     return {
-      row: gettext('github issues'),
+      row: gettext('github issue'),
       rows: gettext('github issues'),
+      Row: gettext('Github issue'),
       Rows: gettext('Github issues'),
     };
   }, []);

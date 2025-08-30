@@ -7,6 +7,7 @@ class Translate {
     const DEFAULT_VARIABLES = {
       row: gettext('row'),
       rows: gettext('rows'),
+      Row: gettext('Row'),
       Rows: gettext('Rows'),
       Column: gettext('Column'),
       column: gettext('column'),
