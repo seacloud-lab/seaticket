@@ -35,7 +35,7 @@ const FilterSetter = ({
 
   const message = useMemo(() => {
     if (filtersCount === 1) return gettext('1 filter');
-    if (filtersCount > 1) return filtersCount + ' ' + gettext('Filters');
+    if (filtersCount > 1) return filtersCount + ' ' + gettext('filters');
     return gettext('Filter');
   }, [filtersCount]);
 

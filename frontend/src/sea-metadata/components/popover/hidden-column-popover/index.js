@@ -6,6 +6,7 @@ import SearchInput from '@/components/search-input';
 import HiddenColumns from './hidden-columns';
 import { gettext, KeyCodes } from '@/constants';
 import { getEventClassName } from '@/utils/dom';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -108,7 +109,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
       >
         <div className="sea-metadata-hide-columns-search-container">
           <SearchInput
-            placeholder={gettext('Search column')}
+            placeholder={context.translate('Search {column}')}
             onKeyDown={onKeyDown}
             onChange={onChangeSearch}
             size={28}

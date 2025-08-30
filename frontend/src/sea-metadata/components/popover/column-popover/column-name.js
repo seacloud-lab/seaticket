@@ -2,7 +2,7 @@ import React, { useState, forwardRef, useImperativeHandle, useCallback, useEffec
 import PropTypes from 'prop-types';
 import { FormGroup, FormFeedback, Input } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
+import context from '../../../context';
 
 // eslint-disable-next-line react/display-name
 const ColumnName = forwardRef(({ readOnly, value }, ref) => {
@@ -28,7 +28,7 @@ const ColumnName = forwardRef(({ readOnly, value }, ref) => {
   return (
     <FormGroup className={classnames('sea-metadata-column-settings-item', { 'is-invalid': error })}>
       <Input
-        placeholder={gettext('Property name')}
+        placeholder={context.translate('{Column} name')}
         value={name}
         onChange={onNameChange}
         readOnly={readOnly}

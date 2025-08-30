@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { CellType, COLUMNS_ICON_CONFIG, DEFAULT_DATE_FORMAT, DEFAULT_RATE_DATA } from '../../../../constants';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -121,7 +122,7 @@ const CustomDropdownMenu = ({ modifiers, onSelect }) => {
   return (
     <DropdownMenu className="sea-metadata-column-type-dropdown-menu" modifiers={modifiers} style={{ zIndex: 1061 }}>
       <div className="search-column-container">
-        <Input onChange={onSearchColumn} placeholder={gettext('Search properties')} value={searchValue} onClick={onSearchClick} ref={inputRef} />
+        <Input onChange={onSearchColumn} placeholder={context.translate('Search {column}')} value={searchValue} onClick={onSearchClick} ref={inputRef} />
       </div>
       {displayColumns.length > 0 && (
         <>

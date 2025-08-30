@@ -203,6 +203,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return {
       row: gettext('ticket'),
       rows: gettext('tickets'),
+      Row: gettext('Ticket'),
       Rows: gettext('Tickets'),
     };
   }, []);

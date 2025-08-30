@@ -19,6 +19,7 @@ import {
   filterTermModifierIsWithin,
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -326,7 +327,7 @@ class FilterItem extends React.Component {
           optionStyle.color = inOption.textColor || null;
         } else {
           optionStyle.background = DELETED_OPTION_BACKGROUND_COLOR;
-          optionName = gettext(DELETED_OPTION_TIPS);
+          optionName = DELETED_OPTION_TIPS;
         }
         labelArray.push(
           <span className={className} style={optionStyle} key={'option_' + item} title={optionName} aria-label={optionName}>
@@ -590,7 +591,7 @@ class FilterItem extends React.Component {
                 options={filterColumnOptions}
                 onChange={this.onSelectColumn}
                 searchable={true}
-                searchPlaceholder={gettext('Search property')}
+                searchPlaceholder={context.translate('Search {column}')}
                 noOptionsPlaceholder={gettext('No results')}
               />
             </div>

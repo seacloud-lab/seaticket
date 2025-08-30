@@ -1,5 +1,6 @@
 import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
+import Translate from './utils/translate';
 
 class Context {
 
@@ -11,6 +12,7 @@ class Context {
     this.permission = 'r';
     this.isViewComputedOnServer = true;
     this.collaboratorsCache = {};
+    this.translate = (key) => key;
     this.eventBus = eventBus;
   }
 
@@ -29,6 +31,9 @@ class Context {
     this.permission = permission;
     this.isViewComputedOnServer = isViewComputedOnServer;
     this.collaboratorsCache = {};
+    const translate = new Translate(t);
+    this.translate = translate.translate;
+
     this.re_set({ localStorageName });
   };
 
@@ -46,6 +51,7 @@ class Context {
     this.localStorage = null;
     this.eventBus = null;
     this.permission = 'r';
+    this.translate = (key) => key;
   };
 
   getSetting = (key) => {

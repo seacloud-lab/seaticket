@@ -8,6 +8,7 @@ import { gettext } from '@/constants';
 import { getColumnByKey } from '../../../../utils/column';
 import { COLUMNS_ICON_CONFIG, SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
 import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountType, getDefaultCountType } from '../../../../utils/group';
+import context from '@/sea-metadata/context';
 
 /*
   groupby: {
@@ -179,7 +180,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
             options={columnsOptions}
             onChange={selectColumn}
             searchable={true}
-            searchPlaceholder={gettext('Search property')}
+            searchPlaceholder={context.translate('Search {column}')}
             noOptionsPlaceholder={gettext('No results')}
           />
         </div>

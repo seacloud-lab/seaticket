@@ -1,3 +1,4 @@
+import { gettext } from '@/constants';
 import { CellType } from '../column';
 
 export const CELL_NAVIGATION_MODE = {
@@ -78,7 +79,7 @@ export const OVER_SCAN_COLUMNS = 10;
 
 export const DELETED_OPTION_BACKGROUND_COLOR = '#eaeaea';
 
-export const DELETED_OPTION_TIPS = 'Deleted option';
+export const DELETED_OPTION_TIPS = gettext('Deleted option');
 
 export const SUPPORT_BATCH_DOWNLOAD_TYPES = [];
 

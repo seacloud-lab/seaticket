@@ -4,7 +4,6 @@ import { HorizontalScrollbar } from '../../../../components/scrollbar';
 import EmptyTip from '@/components/empty-tip';
 import { isMobile } from '@/utils/utils';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
-import { gettext } from '@/constants';
 import { addClassName, removeClassName, getEventClassName } from '@/utils/dom';
 import { getColOverScanEndIdx, getColOverScanStartIdx } from '../../utils/grid';
 import { getVisibleBoundaries } from '../../utils/viewport';
@@ -686,7 +685,7 @@ class Rows extends Component {
     const isSelectedAll = RowMetrics.isSelectedAll(rowIds, rowMetrics);
 
     if (rowsCount === 0 && !this.props.hasMore) {
-      return (<EmptyTip text={gettext('No rows')} />);
+      return (<EmptyTip text={context.translate('No {rows}')} />);
     }
 
     return (
