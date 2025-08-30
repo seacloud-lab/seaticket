@@ -256,6 +256,35 @@ def ask_ai_question(params):
     return ai_answer, agent_memory, sources
 
 
+def create_ticket_info(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_AI_SERVER_URL, '/create-ticket-info')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
+    resp_json = resp.json()
+    title = resp_json.get('title', '')
+    description = resp_json.get('description', '')
+    return title, description
+
+
+def gen_project_tags_dict(project_uuid, key='id'):
+    project_tags = ProjectTags.objects.filter(project_uuid=project_uuid)
+    if not project_tags:
+        return {}
+
+    project_tags_dict = {}
+    for project_tag in project_tags:
+        tag_info = project_tag.to_dict()
+        if key == 'id':
+            project_tags_dict[project_tag.id] = tag_info
+        else:
+            project_tags_dict[project_tag.name] = tag_info
+    return project_tags_dict
+
+
 def gen_s3_file_path(project_uuid, file_path):
     return f'/projects/{project_uuid}/{file_path}'
 

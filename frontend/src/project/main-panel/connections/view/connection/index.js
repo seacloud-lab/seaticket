@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
-import { Modal, ModalBody } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { processor } from '@seafile/seafile-editor';
+import { processor, getPreviewContent } from '@seafile/seafile-editor';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import GithubIssueDetails from '../../components/github-issue-details';
@@ -12,7 +12,7 @@ import { GITHUB_STATE_OPTIONS, CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP } f
 import { GithubIssue, DiscourseForum, WebCrawl, Seafile } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster, ModalHeader } from '@/components';
+import { toaster, ModalHeader, Loading } from '@/components';
 import { isDarkColor } from '@/utils/utils';
 
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
@@ -53,6 +53,89 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   );
 };
 
+const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setDescription(initialData.description || '');
+    } else {
+      setTitle('');
+      setDescription('');
+    }
+  }, [initialData]);
+
+  const handleSubmit = () => {
+    const { previewText, images, links, checklist } = getPreviewContent(description);
+    const content = {
+      text: description,
+      preview: previewText,
+      images,
+      links,
+      checklist,
+    };
+    const ticketData = {
+      title: title,
+      content: content,
+      type: '',
+      assignees: [],
+      tags: [],
+    };
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
+      toaster.success(gettext('Successfully created ticket.'));
+      setTimeout(toggle, 500);
+    });
+  };
+
+  return (
+    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 800 }}>
+      <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
+      <ModalBody>
+        <div className="d-flex">
+          <div style={{ flex: 2, paddingRight: '1rem' }}>
+            {isLoading && <Loading/>}
+            <Form>
+              <FormGroup>
+                <Label for="ticketTitle">{gettext('Title')}</Label>
+                <Input
+                  type="text"
+                  name="title"
+                  id="ticketTitle"
+                  value={title}
+                  readOnly={isLoading}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{ marginBottom: '1rem' }}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="ticketDescription">{gettext('Description')}</Label>
+                <Input
+                  type="textarea"
+                  name="description"
+                  id="ticketDescription"
+                  value={description}
+                  readOnly={isLoading}
+                  onChange={(e) => setDescription(e.target.value)}
+                  style={{ height: '250px' }}
+                />
+              </FormGroup>
+            </Form>
+          </div>
+          <div style={{ flex: 1, padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
+            <p>{gettext('Describe your instructions of how to create related tickets')}</p>
+          </div>
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
+        <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
+
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
@@ -65,6 +148,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [typesData, setTypesData] = useState(null);
+  const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [ticketData, setTicketData] = useState(null);
+  const [isTicketLoading, setTicketLoading] = useState(false);
 
   const parseChecklistFromBody = (bodyText) => {
     if (!bodyText) return { total: 0, completed: 0 };
@@ -275,7 +361,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         return {
           data: {
             rows,
-            columns,
+            columns: columns,
           }
         };
       });
@@ -407,6 +493,18 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
           window.open(originalPageUrl, '_blank', 'noopener,noreferrer');
         }
+      }, {
+        label: gettext('Create related ticket'),
+        callback: () => {
+          setTicketData(null);
+          setTicketDialogOpen(true);
+          setTicketLoading(true);
+          connectionsAPI.createTicketInfo(projectUuid, connectionID, row.topic_id).then(res => {
+            setTicketData(res.data);
+          }).finally(() => {
+            setTicketLoading(false);
+          });
+        }
       }];
     }
 
@@ -505,6 +603,15 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           title={siteDetails.title}
           content={siteDetails.content}
           onClose={() => setSiteDetails(null)}
+        />
+      )}
+      {isTicketDialogOpen && (
+        <CreateTicketDialog
+          projectUuid={projectUuid}
+          initialData={ticketData}
+          isLoading={isTicketLoading}
+          isOpen={isTicketDialogOpen}
+          toggle={() => setTicketDialogOpen(false)}
         />
       )}
     </CollaboratorsProvider>

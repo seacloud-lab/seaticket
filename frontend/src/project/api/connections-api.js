@@ -188,6 +188,15 @@ class ConnectionsAPI {
     return this._sendPostRequest(url, form);
   }
 
+  createTicketInfo(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v2.1/ai/create-ticket-info/';
+    let form = new FormData();
+    form.append('project_uuid', projectUuid);
+    form.append('connection_id', connectionID);
+    form.append('record_id', recordID);
+    return this._sendPostRequest(url, form);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();
