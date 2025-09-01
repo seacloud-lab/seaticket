@@ -118,33 +118,40 @@ class ProjectConnectionsView(APIView):
 
         try:
             record = ProjectConnections.objects.create(request.user.username, project, connection_type, name, config)
-            connection_id = record.get('id', '')
-            if connection_type == ConnectionType.SITE.value:
-                seadb_api = SeaDBAPI(request.user.username)
-                init_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        connection_id = record.id
+        try:
+            if connection_type == ConnectionType.SITE.value:
+                seadb_api = SeaDBAPI(request.user.username)
+                init_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
+        except Exception as e:
+            logger.error(e)
+            record.delete()
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         if connection_type == ConnectionType.SEAFILE.value:
             params = {
-                'connection_id': record.get('id', '')
+                'connection_id': connection_id
             }
             add_index_seafile_task(params)
         elif connection_type == ConnectionType.GITHUB_ISSUE.value:
             params = {
-                'connection_id': record.get('id', '')
+                'connection_id': connection_id
             }
             add_github_issues_index_task(params)
 
         else:
             params = {
-                'connection_id': record.get('id', ''),
+                'connection_id': connection_id,
                 'type': connection_type,
             }
             add_init_crawl_task(params)
-        return Response({'record': record}, status=status.HTTP_201_CREATED)
+        return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
 
 class ProjectConnectionView(APIView):

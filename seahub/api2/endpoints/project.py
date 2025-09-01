@@ -226,9 +226,6 @@ class ProjectsView(APIView):
 
         try:
             project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
-            seadb_api = SeaDBAPI(username)
-            seadb_api.delete_base(project.uuid)
-            seadb_api.create_base(project.uuid)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -237,6 +234,15 @@ class ProjectsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         except Exception as e:
             logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+            seadb_api.create_base(project.uuid)
+        except Exception as e:
+            logger.error(e)
+            project.delete()
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
@@ -499,7 +505,7 @@ class ChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
-    
+
     def get(self, request):
         """Retrieve the user's chat session list"""
         if not is_org_context(request):
@@ -525,23 +531,23 @@ class ChatSessionsView(APIView):
         if not project_uuid:
             error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
             if not project:
                 error_msg = 'Project not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            
+
             sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
             sessions_data = [session.to_dict() for session in sessions]
 
             return Response({'sessions': sessions_data})
-            
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-    
+
     def post(self, request):
         """Create a new chat session"""
         if not is_org_context(request):
@@ -565,25 +571,25 @@ class ChatSessionsView(APIView):
 
         project_uuid = request.data.get('project_uuid')
         session_name = request.data.get('session_name', 'New Chat')
-        
+
         if not project_uuid:
             error_msg = 'project_uuid is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         try:
             project = Projects.objects.get_project_by_uuid(project_uuid)
             if not project:
                 error_msg = 'Project not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            
+
             session = ChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
                 username=request.user.username
             )
-            
+
             return Response(session.to_dict(), status=status.HTTP_201_CREATED)
-            
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -621,10 +627,10 @@ class ChatSessionView(APIView):
             if not session:
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            
+
             session.delete()
             return Response({'success': True})
-            
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -635,7 +641,7 @@ class ChatMessagesView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
-    
+
     def get(self, request, session_uuid):
         """Retrieve the message list of the chat session"""
         if not is_org_context(request):
@@ -662,12 +668,12 @@ class ChatMessagesView(APIView):
             if not session:
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            
+
             messages = ChatMessages.objects.get_messages_by_session(session.id)
             messages_data = [message.to_dict() for message in messages]
-            
+
             return Response({'messages': messages_data})
-            
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

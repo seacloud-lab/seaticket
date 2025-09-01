@@ -411,7 +411,7 @@ class ProjectConnectionsManager(models.Manager):
 
         record = self.model(project=project, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status))
         record.save()
-        return record.to_dict()
+        return record
 
     def modify(self, username, project, connection_type, connection_id, name, config, is_active):
         """ modify record: if not record, create it
@@ -480,7 +480,7 @@ class ProjectConnectionsManager(models.Manager):
         connection_id = int(connection_id)
         records = self.filter(id=connection_id)
         return self.is_valid(connection_type, records, config)
-    
+
 
     def update_status(self, connection_id, status):
         try:
@@ -719,7 +719,7 @@ class TicketView(object):
         self.config = config
         self.details = {}
 
-        self.init_view(folders_views_ids)            
+        self.init_view(folders_views_ids)
 
     def init_view(self, folders_views_ids=None):
         self.details = {
@@ -1051,7 +1051,7 @@ class TicketsManager(models.Manager):
         sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
 
         return self.filter(q).order_by(', '.join(sorts))[start: end]
-    
+
     def list_tickets_by_tag(self, project_uuid, tag_id):
         q = Q(project_uuid=project_uuid) & Q(deleted=False)
         tags = TicketTags.objects.filter(tag_id__in=[tag_id])
@@ -1184,7 +1184,7 @@ class ChatSessions(models.Model):
 
     class Meta:
         db_table = 'chat_sessions'
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -1209,7 +1209,7 @@ class ChatMessagesManager(models.Manager):
         )
         message.save()
         return message
-    
+
     def get_messages_by_session(self, session_id):
         """Retrieve all messages of the session"""
         return self.filter(session_id=session_id).order_by('created_at')
@@ -1220,7 +1220,7 @@ class ChatMessages(models.Model):
         ('user', 'User'),
         ('assistant', 'Assistant'),
     ]
-    
+
     id = models.BigAutoField(primary_key=True)
     session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE, db_index=True)
     username = models.CharField(max_length=255)
@@ -1229,15 +1229,15 @@ class ChatMessages(models.Model):
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     objects = ChatMessagesManager()
-    
+
     class Meta:
         db_table = 'chat_messages'
         indexes = [
             models.Index(fields=['session_id']),
         ]
-    
+
     def to_dict(self):
         return {
             'id': self.id,
