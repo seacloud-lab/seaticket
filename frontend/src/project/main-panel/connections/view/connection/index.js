@@ -1,16 +1,45 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATUS_OPTIONS } from '../../constants';
-import { GithubIssue } from '../../models';
+import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
+import { GithubIssue, DiscourseForum } from '../../models';
 import context from '@/sea-metadata/context';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
-const Connection = ({ projectUuid, connectionID }) => {
-  const { isLoading, updatePageName } = useConnectionsPage();
+const RowDetails = ({ rowDetails, onClose }) => {
+  return (
+    <Modal isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
+      <ModalHeader toggle={onClose}>{gettext('Replies')}</ModalHeader>
+      <ModalBody>
+        <div className="sea-qa-row-details" style={{ maxHeight: '60vh', overflow: 'auto', padding: '1rem 2rem' }}>
+          {rowDetails.map(detail => (
+            <div key={detail.id} className="reply-item" style={{ marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
+              <div className="author" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{detail.author}</div>
+              <div className="content" dangerouslySetInnerHTML={{ __html: detail.content }}></div>
+            </div>
+          ))}
+        </div>
+      </ModalBody>
+    </Modal>
+  );
+};
 
-  const columns = useMemo(() => [
+const getColumns = (connType) => {
+  if (connType === CONNECTION_TYPE.DISCOURSE_FORUM) {
+    return [
+      {
+        type: CellType.TEXT, key: 'title', name: gettext('Title'),
+        editable: false, is_name_column: true, frozen: true,
+      },
+      { type: CellType.TEXT, key: 'slug', name: gettext('Slug'), editable: false, is_required: true },
+      { type: CellType.NUMBER, key: 'views', name: gettext('Views'), editable: false },
+      { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
+    ];
+  }
+  // GITHUB_ISSUE
+  return [
     {
       type: CellType.TEXT, key: 'title', name: gettext('Title'),
       editable: false, is_name_column: true, frozen: true,
@@ -20,15 +49,17 @@ const Connection = ({ projectUuid, connectionID }) => {
         }
       }
     },
-    // { type: CellType.LONG_TEXT, key: 'body', name: gettext('Body'), editable: false, is_required: true },
     { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
     { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
-    // { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
     { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
     { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-    // { type: CellType.MTIME, key: 'updated_at', name: gettext('Last modify time'), editable: false },
-  ], []);
+  ];
+};
+
+const Connection = ({ projectUuid, connectionID }) => {
+  const { isLoading, updatePageName } = useConnectionsPage();
+  const [rowDetails, setRowDetails] = useState(null);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -43,12 +74,18 @@ const Connection = ({ projectUuid, connectionID }) => {
   const api = useMemo(() => ({
     getMetadata: (...params) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
-        const rows = Array.isArray(res.data.records) ? res.data.records.map(r => new GithubIssue(r)) : [];
-        updatePageName && updatePageName(res.data.name);
+        const { name, type, records } = res.data;
+        let rows = [];
+        if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+          rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
+        } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+          rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
+        }
+        updatePageName && updatePageName(name);
         return {
           data: {
             rows,
-            columns,
+            columns: getColumns(type),
           }
         };
       });
@@ -86,7 +123,7 @@ const Connection = ({ projectUuid, connectionID }) => {
       });
     },
 
-  }), [projectUuid, columns, connectionID, viewsData, updatePageName]);
+  }), [projectUuid, connectionID, viewsData, updatePageName]);
 
   const createContextMenuOptions = useCallback(() => {
     return [];
@@ -106,7 +143,16 @@ const Connection = ({ projectUuid, connectionID }) => {
   const handleExpandRow = useCallback((row) => {
     if (row && row.url) {
       window.open(row.url);
+    } else {
+      const params = { topic_id: row.topic_id };
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
+        setRowDetails(res.data.row_details);
+      });
     }
+  }, [projectUuid, connectionID]);
+
+  const onRowDetailsClose = useCallback(() => {
+    setRowDetails(null);
   }, []);
 
   if (isLoading) return null;
@@ -125,6 +171,7 @@ const Connection = ({ projectUuid, connectionID }) => {
 
         t={t}
       />
+      {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
     </CollaboratorsProvider>
   );
 

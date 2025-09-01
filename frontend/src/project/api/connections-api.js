@@ -109,6 +109,12 @@ class ConnectionsAPI {
     return this.req.get(url, { params: params });
   }
 
+  getConnectionRowDetail(projectUuid, connectionID, params) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
+
+    return this.req.get(url, { params: params });
+  }
+
   updateConnectionStatus(projectUuid, connectionID, { is_active }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();

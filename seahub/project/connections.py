@@ -18,9 +18,11 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config
+from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
+    DiscourseForumTopicsRecord, DiscourseForumRepliesRecord
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, update_github_issue_by_webhook
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
+    update_github_issue_by_webhook, check_project_permission
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -343,7 +345,7 @@ class ProjectConnectionDetailsView(APIView):
     throttle_classes = (UserRateThrottle, )
 
     def get(self, request, project_uuid, connection_id):
-        """get GitHub Issues records
+        """get records
         """
         # role permission check
         if not is_org_context(request):
@@ -358,7 +360,7 @@ class ProjectConnectionDetailsView(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -366,26 +368,30 @@ class ProjectConnectionDetailsView(APIView):
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
 
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+        end = start + limit
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-
-            start = request.GET.get('start', 0)
-            limit = request.GET.get('limit', 1000)
-
-            try:
-                start = int(start)
-                limit = int(limit)
-            except:
-                start = 0
-                limit = 1000
-            end = start + limit
-
             records = GitHubIssuesRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
+            records = [record.to_dict() for record in records]
+        elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
             records = [record.to_dict() for record in records]
         else:
             records = []
 
-        return Response({'records': records, 'name': project_connection.name }, status=status.HTTP_200_OK)
+        return Response({
+            'records': records,
+            'name': project_connection.name,
+            'type': project_connection.type,
+        })
 
 class GithubWebhookView(APIView):
     throttle_classes = (UserRateThrottle,)
@@ -446,3 +452,45 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class ProjectConnectionRowDetailView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id):
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        row_details = []
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            topic_id = request.GET.get('topic_id')
+            if not topic_id:
+                error_msg = 'Missing topic_id.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row_details = DiscourseForumRepliesRecord.objects.filter(
+                connection_id=connection_id, topic_id=topic_id
+            ).order_by("post_number")
+            row_details = [item.to_dict() for item in row_details]
+        return Response({
+            'row_details': row_details,
+        })
