@@ -2,7 +2,7 @@ import React from 'react';
 import { ConnectionsPageProvider, useConnectionsPage } from './hooks';
 import AllConnections from './view/all-connections';
 import Connection from './view/connection';
-import { CONNECTION_PAGE_TYPE } from '../../constants';
+import { CONNECTION_PAGE_TYPE } from './constants';
 import TopBar from './components/top-bar';
 
 const {

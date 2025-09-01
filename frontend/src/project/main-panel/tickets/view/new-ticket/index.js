@@ -4,7 +4,7 @@ import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../../constants';
 import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
 import { toaster } from '../../../../../components';
-import { TICKET_PAGE_TYPE } from '../../../../constants';
+import { TICKET_PAGE_TYPE } from '../../constants';
 import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';

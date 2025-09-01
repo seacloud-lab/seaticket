@@ -1,4 +1,4 @@
-import { gettext } from '../../constants';
+import { gettext } from '@/constants';
 
 export const BAR_TYPE = {
   ASK: 'ask',

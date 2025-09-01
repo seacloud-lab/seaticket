@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, } from 'reactstrap';
-import { TICKET_STATUS, TICKET_STATUS_CONFIG } from '../../../../../constants';
-import { Icon, OptionEditor } from '../../../../../../components';
+import { TICKET_STATUS, TICKET_STATUS_CONFIG } from '../../../constants';
+import { Icon, OptionEditor } from '@/components';
 
 import './index.css';
 

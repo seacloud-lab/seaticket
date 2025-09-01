@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { ChatMessage } from '../../models';
-import { CHAT_MESSAGE_TYPE } from '../../constants';
+import { ChatMessage } from './models';
+import { CHAT_MESSAGE_TYPE } from './constants';
 import MessageInput from './message-input';
 import { gettext } from '../../../constants';
 import { askAPI } from '../../api';

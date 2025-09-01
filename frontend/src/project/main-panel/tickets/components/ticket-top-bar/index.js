@@ -2,7 +2,8 @@ import React, { useCallback } from 'react';
 import { Button } from 'reactstrap';
 import TopBar from '../../../top-bar';
 import { useTags, useTicketsPage } from '../../hooks';
-import { EVENT_BUS_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../../../constants';
+import { EVENT_BUS_TYPE } from '../../../../constants';
+import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../constants';
 import { IconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 

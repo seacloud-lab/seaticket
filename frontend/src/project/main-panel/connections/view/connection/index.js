@@ -3,7 +3,7 @@ import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATUS_OPTIONS } from '@/project/constants';
+import { GITHUB_STATUS_OPTIONS } from '../../constants';
 import { GithubIssue } from '../../models';
 import context from '@/sea-metadata/context';
 

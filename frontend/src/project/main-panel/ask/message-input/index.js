@@ -1,12 +1,12 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { IconButton, ClickOutside } from '../../../../components';
-import { CHAT_MESSAGE_TYPE } from '../../../constants';
-import { gettext } from '../../../../constants';
-import * as CommonlyUsedHotkey from '../../../../utils/hotkey';
-import { getType, Utils } from '../../../../utils/utils';
-import InputUtils from '../../../../utils/input-utils';
+import { IconButton, ClickOutside } from '@/components';
+import { gettext } from '@/constants';
+import * as CommonlyUsedHotkey from '@/utils/hotkey';
+import { getType, Utils } from '@/utils/utils';
+import InputUtils from '@/utils/input-utils';
+import { CHAT_MESSAGE_TYPE } from '../constants';
 
 import './index.css';
 

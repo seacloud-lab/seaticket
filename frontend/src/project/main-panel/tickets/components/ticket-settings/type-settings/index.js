@@ -1,9 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext } from '../../../../../../constants';
-import { Option, OptionEditor } from '../../../../../../components';
-import { TICKET_TYPES } from '../../../../../constants';
+import { gettext } from '@/constants';
+import { Option, OptionEditor } from '@/components';
+import { TICKET_TYPES } from '../../../constants';
 
 import './index.css';
 

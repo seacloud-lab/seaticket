@@ -1,4 +1,4 @@
-import { CONNECTION_TYPE } from '../constants';
+import { CONNECTION_TYPE } from '../../connections/constants';
 
 class SearchResult {
   constructor(data = {}) {

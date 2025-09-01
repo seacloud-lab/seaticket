@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '../../../../utils/type-detection';
-import { BAR_TYPE, EVENT_BUS_TYPE, TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../../../constants';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
+import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../constants';
 import eventBus from '../../../../utils/event-bus';
 import { Utils } from '@/utils/utils';
 

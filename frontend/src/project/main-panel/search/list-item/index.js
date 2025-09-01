@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { mediaUrl } from '../../../../constants';
-import { CONNECTION_TYPES } from '../../../constants';
+import { mediaUrl } from '@/constants';
+import { CONNECTION_TYPES } from '../../connections/constants';
 
 import './index.css';
 

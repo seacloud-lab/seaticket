@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import copy from 'copy-to-clipboard';
-import { IconButton, toaster } from '../../../../../components';
-import { CHAT_MESSAGE_TYPE } from '../../../../constants';
-import { gettext } from '../../../../../constants';
+import { IconButton, toaster } from '@/components';
+import { CHAT_MESSAGE_TYPE } from '../../constants';
+import { gettext } from '@/constants';
 
 import './index.css';
 
