@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { mediaUrl } from '@/constants';
-import { CONNECTION_TYPE, CONNECTION_TYPES } from '../../constants';
+import { CONNECTION_TYPE, CONNECTION_TYPES } from '../../main-panel/connections/constants';
 
 const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
 

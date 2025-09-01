@@ -1,5 +1,5 @@
 import slugid from 'slugid';
-import { getTime } from '../../utils/date';
+import { getTime } from '@/utils/date';
 
 class ChatMessage {
   constructor(object) {

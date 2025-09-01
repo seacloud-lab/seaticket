@@ -1,7 +1,6 @@
+import { useCallback, useMemo } from 'react';
 import ActiveStatusEditorComponent from '@/components/active-status-editor';
 import { gettext } from '@/constants';
-import { useCallback, useMemo } from 'react';
-
 
 const ActiveStatusEditor = ({
   isRowActive,

@@ -1,6 +1,6 @@
 import React from 'react';
-import { gettext } from '../../../../constants';
-import { Loading } from '../../../../components';
+import { gettext } from '@/constants';
+import { Loading } from '@/components';
 
 import './index.css';
 

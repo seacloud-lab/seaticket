@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import MessageBox from './message-box';
 import CommonMessage from './common-message';
 import MessageOperations from './message-operations';
-import { CHAT_MESSAGE_TYPE } from '../../../constants';
+import { CHAT_MESSAGE_TYPE } from '../constants';
 
 import './index.css';
 

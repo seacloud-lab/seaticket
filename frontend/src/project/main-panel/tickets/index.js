@@ -5,7 +5,7 @@ import TagTickets from './view/tag-tickets';
 import AllTickets from './view/all-tickets';
 import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
-import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../constants';
+import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from './constants';
 import TicketTopBar from './components/ticket-top-bar';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { ticketsAPI } from '../../api';

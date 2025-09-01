@@ -1,4 +1,4 @@
-import { PREDEFINED_TICKET_TAG_NAMES, PREDEFINED_TICKET_TAG } from '../../../constants';
+import { PREDEFINED_TICKET_TAG_NAMES, PREDEFINED_TICKET_TAG } from '../constants';
 
 class Tag {
   constructor(object) {

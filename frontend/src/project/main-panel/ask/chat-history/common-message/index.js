@@ -1,9 +1,9 @@
 import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { CHAT_MESSAGE_TYPE } from '../../../../constants';
-import { CustomizeMarkdownViewer } from '../../../../../components';
-import { gettext } from '../../../../../constants';
+import { CHAT_MESSAGE_TYPE } from '../../constants';
+import { CustomizeMarkdownViewer } from '@/components';
+import { gettext } from '@/constants';
 
 import './index.css';
 

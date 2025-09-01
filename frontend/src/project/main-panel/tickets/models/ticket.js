@@ -1,5 +1,5 @@
-import dayjs from '../../../../utils/dayjs';
-import { TICKET_STATUS } from '../../../constants';
+import dayjs from '@/utils/dayjs';
+import { TICKET_STATUS } from '../constants';
 
 class Reply {
   constructor(object) {

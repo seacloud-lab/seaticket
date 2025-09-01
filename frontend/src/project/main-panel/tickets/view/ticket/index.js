@@ -4,14 +4,14 @@ import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
-import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '../../../../../components';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG, TICKET_TYPES } from '../../../../constants';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '@/components';
+import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG, TICKET_TYPES } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
 } from '@/constants';
-import { Utils } from '../../../../../utils/utils';
+import { Utils } from '@/utils/utils';
 import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
 import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';

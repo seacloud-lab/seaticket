@@ -7,7 +7,7 @@ import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import createFormatter from '../../components/cell-formatter';
-import { CONNECTION_FIELD_TYPE } from '../../../../constants';
+import { CONNECTION_FIELD_TYPE } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
 
 import './index.css';
