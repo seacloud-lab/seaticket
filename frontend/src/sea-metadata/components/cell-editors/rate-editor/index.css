@@ -1,3 +1,7 @@
+.sea-metadata-rate-editor-popover-container .popover {
+  width: 200px;
+}
+
 .sea-metadata-rate-editor {
   height: 100%;
   width: 100%;
@@ -6,13 +10,49 @@
 
 .sea-metadata-rate-item {
   cursor: pointer;
+  height: 32px;
+  padding-left: 14px;
+  padding-right: 12px;
+  height: 32px;
+  white-space: nowrap;
+  display: flex;
+  flex: 0 0 100%;
+  -webkit-box-flex: 0;
+  -webkit-box-align: center;
+  align-items: center;
+  text-overflow: ellipsis;
+  min-width: min-content;
+  justify-content: space-between;
 }
 
-.sea-metadata-rate-item.active {
-  opacity: 1 !important;
+.sea-metadata-rate-item > * {
+  pointer-events: none;
+}
+
+.sea-metadata-rate-item-readonly {
+  cursor: default;
+  padding: 0;
+}
+
+.sea-metadata-rate-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sea-metadata-rate-item-readonly:hover {
+  background-color: transparent;
+}
+
+.sea-metadata-rate-item-left,
+.sea-metadata-rate-item-right {
+  display: flex;
+  align-items: center;
 }
 
 .sea-metadata-rate-item .sea-qa-icon-svg {
   fill: inherit;
   font-size: 16px;
+}
+
+.sea-metadata-rate-item .sea-qa-icon-svg.sea-qa-icon-svg-priority-01 {
+  fill: #ff8000;
 }
