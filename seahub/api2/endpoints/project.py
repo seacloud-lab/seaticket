@@ -24,7 +24,7 @@ from seahub.project.utils import check_project_limit, check_project_admin_permis
     convert_project_trash_names, check_project_permission, search, get_project_related_users, \
     ask_ai_question
 
-from seaqa_indexer.utils.seadb_api import SeaDBAPI
+from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
 

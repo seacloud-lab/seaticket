@@ -25,7 +25,7 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
     update_github_issue_by_webhook, check_project_permission, init_seadb_table, list_seadb_table_records
 from seahub.project.constants import ConnectionType, CrawlStatus
 
-from seaqa_indexer.utils.seadb_api import SeaDBAPI
+from seahub.project.seadb_api import SeaDBAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')

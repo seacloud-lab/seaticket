@@ -656,6 +656,10 @@ S3_FILE_BUCKET = ''
 S3_KEY_ID = ''
 S3_SECRET_KEY = ''
 
+
+# seadb config
+SEADB_SERVER_URL = ''
+
 PROJECT_IMAGE_MAX_SIZE = 10  # 10MB
 PROJECT_FILE_MAX_SIZE = 25  # 25MB
 
@@ -865,3 +869,5 @@ S3_HOST = os.environ.get('S3_HOST') or S3_HOST
 S3_FILE_BUCKET = os.environ.get('S3_FILE_BUCKET') or S3_FILE_BUCKET
 S3_KEY_ID = os.environ.get('S3_KEY_ID') or S3_KEY_ID
 S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY') or S3_SECRET_KEY
+
+SEADB_SERVER_URL = os.environ.get('SEADB_SERVER_URL') or SEADB_SERVER_URL
