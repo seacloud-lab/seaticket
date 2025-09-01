@@ -21,7 +21,8 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
     DiscourseForumTopicsRecord, DiscourseForumRepliesRecord
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, update_github_issue_by_webhook
+    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
+    update_github_issue_by_webhook, check_project_permission
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 
@@ -359,7 +360,7 @@ class ProjectConnectionDetailsView(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -472,7 +473,7 @@ class ProjectConnectionRowDetailView(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
