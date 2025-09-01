@@ -426,18 +426,28 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         event = request.headers.get('X-GitHub-Event')
-        if event != 'issues':
+
+        if event != 'issues' and event != 'issue_comment':
             return Response({'success': True}, status=status.HTTP_200_OK)
 
         payload = request.data
-        issue_data = payload.get('issue')
         action = payload.get('action')
 
-        if not issue_data and not issue_data.get('id'):
-            error_msg = 'issue_data invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if event == 'issues':
+            update_data = payload.get('issue')
+            if not update_data and not update_data.get('id'):
+                error_msg = 'issue_data invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        elif event == 'issue_comment':
+            update_data = payload
+            if not update_data and not update_data.get('comment'):
+                error_msg = 'comment_data invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
+        if event == 'issues':
+            params = {'connection_id': connection_id, 'action': action, 'event':event, 'update_data': update_data}
+        elif event == 'issue_comment':
+            params = {'connection_id': connection_id, 'action': action, 'event': event, 'update_data': update_data}
         try:
             update_github_issue_by_webhook(params)
         except Exception as e:

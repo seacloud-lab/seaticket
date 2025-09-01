@@ -542,7 +542,7 @@ class GitHubIssuesRecord(models.Model):
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
-    comments = models.IntegerField(null=True, blank=True)
+    comments_count = models.IntegerField(null=True, blank=True)
     connection_id = models.CharField(max_length=64)
     need_index = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
@@ -565,7 +565,7 @@ class GitHubIssuesRecord(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'closed_at': self.closed_at,
-            'comments': self.comments,
+            'comments_count': self.comments_count,
             'connection_id': self.connection_id,
             'need_index': self.need_index,
             'deleted': self.deleted,

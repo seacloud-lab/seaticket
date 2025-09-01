@@ -597,7 +597,7 @@ CREATE TABLE `github_issues` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `closed_at` timestamp NULL DEFAULT NULL,
-  `comments` int(11) DEFAULT NULL,
+  `comments_count` int(11) DEFAULT NULL,
   `connection_id` varchar(64) NOT NULL,
   `need_index` tinyint(1) DEFAULT 0,
   `deleted` tinyint(1) DEFAULT 0,
@@ -646,3 +646,20 @@ CREATE TABLE `chat_messages` (
     FOREIGN KEY (`session_id`) REFERENCES `chat_sessions` (`id`)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `github_issue_comments` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `comment_id` bigint(20) NOT NULL,
+  `issue_id` bigint(20) NOT NULL,
+  `connection_id` varchar(64) NOT NULL,
+  `author` varchar(255) DEFAULT NULL,
+  `body` text DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT 0,
+  `need_index` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_comment_connection` (`connection_id`,`comment_id`),
+  KEY `fk_comment_issue` (`issue_id`,`connection_id`),
+  CONSTRAINT `fk_comment_issue` FOREIGN KEY (`issue_id`, `connection_id`) REFERENCES `github_issues` (`issue_id`, `connection_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6351 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
