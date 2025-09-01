@@ -1287,7 +1287,6 @@ class DiscourseForumRepliesRecord(models.Model):
     content = models.TextField(null=True, blank=True)
     author = models.CharField(max_length=255, null=True, blank=True)
     connection_id = models.CharField(max_length=64)
-    need_index = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'discourse_replies'

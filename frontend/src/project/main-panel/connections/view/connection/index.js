@@ -34,7 +34,7 @@ const getColumns = (connType) => {
         editable: false, is_name_column: true, frozen: true,
       },
       { type: CellType.TEXT, key: 'slug', name: gettext('Slug'), editable: false, is_required: true },
-      { type: CellType.NUMBER, key: 'views', name: gettext('Views'), editable: false },
+      { type: CellType.NUMBER, key: 'views', name: gettext('Views count'), editable: false },
       { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
     ];
   }
