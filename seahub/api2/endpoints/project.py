@@ -227,6 +227,7 @@ class ProjectsView(APIView):
         try:
             project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
             seadb_api = SeaDBAPI(username)
+            seadb_api.delete_base(project.uuid)
             seadb_api.create_base(project.uuid)
         except OperationalError:
             error_msg = _('Base name contains illegal characters')
