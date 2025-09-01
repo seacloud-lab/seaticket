@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter } from '../../data-process-setter';
+import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 import { VIEW_TOOLS } from '../../../constants';
 
@@ -71,6 +71,7 @@ const TableViewToolbar = ({
           modifyColumnOrder={modifyColumnOrder}
         />
       )}
+      <ManageSetter />
     </>
   );
 };

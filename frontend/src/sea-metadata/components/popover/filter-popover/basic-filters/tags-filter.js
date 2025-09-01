@@ -69,7 +69,7 @@ const TagsFilter = ({
       >
         <div className="selected-option" onClick={openEditor} >
           <span className="selected-option-show">{gettext('Tags')}</span>
-          <Icon symbol="down" />
+          {!readOnly && (<Icon symbol="down" />)}
         </div>
         {isShowEditor && (
           <ClickOutside onClickOutside={closeEditor}>
