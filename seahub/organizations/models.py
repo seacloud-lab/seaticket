@@ -456,7 +456,7 @@ class OrganizationManager(models.Manager):
 
     def get_org_id_by_group(self, group_id):
         try:
-            org_group = OrgGroup.objects.get(group_id=group_id)
+            org_group = OrgGroup.objects.filter(group_id=group_id).first()
             if not org_group:
                 return None
             return org_group.org_id
