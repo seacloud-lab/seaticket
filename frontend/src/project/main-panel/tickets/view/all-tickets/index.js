@@ -20,7 +20,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       key: 'priority',
       editable: true,
       frozen: true,
-      width: 30,
+      width: 33,
       data: { type: 'rate' }
     },
     {
