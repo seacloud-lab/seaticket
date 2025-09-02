@@ -18,7 +18,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageType === CONNECTION_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
 
-    if (isNumber(pageType) && viewID) {
+    if (![CONNECTION_PAGE_TYPE.ALL, CONNECTION_PAGE_TYPE.NEW].includes(pageType) && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
 
@@ -48,7 +48,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       pageType = connectionType && isNumber(connectionID) ? connectionID : CONNECTION_PAGE_TYPE.ALL;
     }
 
-    if (isNumber(pageType)) {
+    if (![CONNECTION_PAGE_TYPE.ALL, CONNECTION_PAGE_TYPE.NEW].includes(pageType) && viewID) {
       const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || 'open';
       setViewID(viewID);
