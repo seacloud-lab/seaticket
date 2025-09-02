@@ -146,6 +146,23 @@ const Cell = ({
   const { key, name, type } = column;
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
+
+  if (column.key === 'priority') {
+    return (
+      <div key={key} className="sea-metadata-row-header-cell">
+        <div
+          className={classnames('sea-metadata-table-cell column', { 'table-last--frozen': isLastFrozenCell })}
+          ref={headerCellRef}
+          style={style}
+          id={`sea-metadata-column-${key}`}
+        >
+          <div className="sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate">
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const cell = (
     <div
       className={classnames('sea-metadata-table-cell column', { 'table-last--frozen': isLastFrozenCell, 'name-column': checkIsNameColumn(column) })}

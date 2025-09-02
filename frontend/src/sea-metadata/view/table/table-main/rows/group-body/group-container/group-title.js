@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import IconBtn from '@/components/icon-button';
 import { gettext } from '@/constants';
 import CellFormatter from '../../../../../../components/cell-formatter';
 import { getOption, getColumnOptions } from '../../../../../../utils/column';
 import { CellType, DELETED_OPTION_BACKGROUND_COLOR } from '../../../../../../constants';
+import { RATE_MAP } from '../../../../../../components/cell-editors/rate-editor/constants';
+import RateItem from '../../../../../../components/cell-editors/rate-editor/rate-item';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   const emptyTip = useMemo(() => `(${gettext('Empty')})`, []);
@@ -66,16 +67,14 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         );
       }
       case CellType.RATE: {
-        const { color, type } = column.data || {};
-        const rateShowType = type || 'rate';
-        if (!cellValue || !color) return emptyTip;
-        let rateList = [];
-        for (let i = 0; i < cellValue; i++) {
-          rateList.push(
-            <IconBtn key={i} style={{ fill: color, height: 16, width: 16 }} icon={rateShowType} className="sea-metadata-group-title-rate-item" />
-          );
-        }
-        return rateList;
+        const item = RATE_MAP[cellValue];
+        if (!cellValue || !item) return emptyTip;
+        return (
+          <RateItem
+            value={cellValue}
+            readOnly={true}
+          />
+        );
       }
       default: {
         return cellValue || emptyTip;

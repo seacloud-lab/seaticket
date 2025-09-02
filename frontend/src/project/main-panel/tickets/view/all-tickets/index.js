@@ -16,8 +16,21 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const columns = useMemo(() => [
     {
-      type: CellType.TEXT, key: 'title', name: gettext('Title'),
-      editable: true, is_name_column: true, frozen: true, is_required: true,
+      type: CellType.RATE,
+      key: 'priority',
+      editable: true,
+      frozen: true,
+      width: 33,
+      data: { type: 'rate' }
+    },
+    {
+      type: CellType.TEXT,
+      key: 'title',
+      name: gettext('Title'),
+      editable: true,
+      is_name_column: true,
+      frozen: true,
+      is_required: true,
       click: (row) => togglePageType(row._id)
     },
     { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), editable: true, data: { options: TICKET_STATUS_OPTIONS }, is_required: true },

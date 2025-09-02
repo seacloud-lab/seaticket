@@ -13,7 +13,7 @@ const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) 
     return (<CheckboxEditor isCellSelected={isCellSelected} value={value} column={column} onChange={onChange} />);
   }
   if (type === CellType.RATE && cellEditAble) {
-    return (<RateEditor isCellSelected={isCellSelected} value={value} column={column} onChange={onChange} />);
+    return (<RateEditor { ...params } value={value} column={column} onChange={onChange} row={row} />);
   }
 
   return (<CellFormatter { ...params } readonly={true} value={value} column={column} row={row} />);

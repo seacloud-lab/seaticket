@@ -185,6 +185,20 @@ class TicketsAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        priority = request.data.get('priority')
+        if priority is not None:
+            try:
+                priority = int(priority)
+            except:
+                error_msg = 'priority invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            if priority < 0:
+                priority = 0
+            elif priority > 5:
+                priority = 5
+        else:
+            priority = 0
+
         tags = request.POST.get('tags')
         if tags is not None:
             try:
@@ -250,7 +264,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, ticket_status, ticket_type)
+                project_uuid, username, title, content, ticket_status, ticket_type, priority)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -435,6 +449,18 @@ class TicketAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        priority = request.data.get('priority')
+        if priority is not None:
+            try:
+                priority = int(priority)
+            except:
+                error_msg = 'priority invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            if priority < 0:
+                priority = 0
+            elif priority > 5:
+                priority = 5
+
         is_update_assignees = 'assignees' in request.data
         assignees = request.data.get('assignees')
         if is_update_assignees and assignees is not None:
@@ -521,6 +547,8 @@ class TicketAPIView(APIView):
                 ticket.status = ticket_status
             if ticket_type or ticket_type == '':
                 ticket.type = ticket_type
+            if priority is not None:
+                ticket.priority = priority
             ticket.updated_at = timezone.now()
             ticket.save()
         except Exception as e:

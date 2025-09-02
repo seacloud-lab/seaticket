@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { UncontrolledTooltip } from 'reactstrap';
 import CustomizeSelect from '@/components/customize-select';
 import SearchInput from '@/components/search-input';
@@ -8,6 +9,7 @@ import IconBtn from '@/components/icon-button';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
 import RateItem from '../../../../cell-editors/rate-editor/rate-item';
+import { RATE_MAP } from '../../../../cell-editors/rate-editor/constants';
 import { gettext } from '@/constants';
 import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions } from '../../../../../utils/column';
 import {
@@ -20,6 +22,7 @@ import {
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
+import CustomizePopover from '@/components/customize-popover';
 
 import './index.css';
 
@@ -47,7 +50,7 @@ class FilterItem extends React.Component {
     super(props);
     this.state = {
       filterTerm: props.filter.filter_term,
-      enterRateItemIndex: -1,
+      isRateFilterOpen: false,
     };
     this.filterPredicateOptions = null;
     this.filterTermModifierOptions = null;
@@ -77,7 +80,7 @@ class FilterItem extends React.Component {
       nextProps.filterConjunction !== currentProps.filterConjunction ||
       nextProps.conjunctionOptions !== currentProps.conjunctionOptions ||
       nextProps.filterColumnOptions !== currentProps.filterColumnOptions ||
-      nextState.enterRateItemIndex !== this.state.enterRateItemIndex
+      nextState.isRateFilterOpen !== this.state.isRateFilterOpen
     );
     return shouldUpdated;
   }
@@ -233,14 +236,6 @@ class FilterItem extends React.Component {
     }
   };
 
-  onMouseEnterRateItem = (index) => {
-    this.setState({ enterRateItemIndex: index });
-  };
-
-  onMouseLeaveRateItem = () => {
-    this.setState({ enterRateItemIndex: -1 });
-  };
-
   onChangeRateNumber = (index) => {
     this.onFilterTermChanged(index);
   };
@@ -354,6 +349,14 @@ class FilterItem extends React.Component {
         supportMultipleSelect={isSupportMultipleSelect}
       />
     );
+  };
+
+  onRateFilterOpen = () => {
+    this.setState({ isRateFilterOpen: true });
+  };
+
+  onRateFilterClose = () => {
+    this.setState({ isRateFilterOpen: false });
   };
 
   renderFilterTerm = (filterColumn) => {
@@ -481,27 +484,35 @@ class FilterItem extends React.Component {
         return this.renderMultipleSelectOption(options, filter_term, readOnly);
       }
       case CellType.RATE: {
-        const { max } = filterColumn.data || {};
-        let rateList = [];
-        for (let i = 0; i < max; i++) {
-          const rateItem = (
-            <RateItem
-              key={i}
-              enterIndex={this.state.enterRateItemIndex}
-              index={i + 1}
-              onMouseEnter={this.onMouseEnterRateItem}
-              onMouseLeave={this.onMouseLeaveRateItem}
-              value={Number(filter_term) || max}
-              column={filterColumn}
-              isShowRateItem={true}
-              onChange={this.onChangeRateNumber}
-            />
-          );
-          rateList.push(rateItem);
-        }
         return (
-          <div className="filter-rate-list">
-            {rateList}
+          <div>
+            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onRateFilterOpen} id={`rate-editor-${filterColumn.key}`} >
+              <RateItem
+                value={Number(filter_term)}
+                readOnly={true}
+              />
+            </div>
+            {this.state.isRateFilterOpen && (
+              <CustomizePopover
+                target={`rate-editor-${filterColumn.key}`}
+                className={classnames('sea-metadata-rate-editor-popover-container')}
+                hidePopover={this.onRateFilterClose}
+                hidePopoverWithEsc={this.onRateFilterClose}
+              >
+                <div className="sea-metadata-rate-editor-popover">
+                  {Object.keys(RATE_MAP).map((key) => (
+                    <RateItem
+                      key={key}
+                      index={Number(key)}
+                      value={key}
+                      onClick={this.onChangeRateNumber}
+                      readOnly={false}
+                      isSelected={Number(key) === Number(filter_term)}
+                    />
+                  ))}
+                </div>
+              </CustomizePopover>
+            )}
           </div>
         );
       }

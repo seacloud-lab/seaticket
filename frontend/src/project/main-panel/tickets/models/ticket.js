@@ -30,6 +30,7 @@ class Ticket {
     this.status = object.status || TICKET_STATUS.OPEN;
     this.type = object.type || '';
     this.tags = object.tags || [];
+    this.priority = object.priority || 0;
 
     this.assignees = object.assignees || [];
     this.participants = object.participants || [];
@@ -98,6 +99,7 @@ class TicketForTickets {
     this.status = object.status || TICKET_STATUS.OPEN;
     this.type = object.type || '';
     this.tags = object.tags || [];
+    this.priority = object.priority || 0;
 
     this.assignees = object.assignees || [];
     this.participants = object.participants || [];
