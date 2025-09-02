@@ -6,6 +6,7 @@
   height: 100%;
   width: 100%;
   align-items: center;
+  cursor: pointer;
 }
 
 .sea-metadata-rate-item {
@@ -30,7 +31,6 @@
 }
 
 .sea-metadata-rate-item-readonly {
-  cursor: default;
   padding: 0;
 }
 

@@ -7,7 +7,7 @@ import { RATE_MAP } from './constants';
 
 import './index.css';
 
-const RateEditor = ({ row, column, value: oldValue, onChange }) => {
+const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
   const [value, setValue] = useState(oldValue || 0);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -36,12 +36,18 @@ const RateEditor = ({ row, column, value: oldValue, onChange }) => {
         }
         setIsOpen(false);
       }
+      if (!isOpen && isCellSelected && e.key === 'Enter') {
+        setIsOpen(true);
+      }
+      if (isOpen && e.key === 'Escape') {
+        setIsOpen(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown, true);
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [onChangeValue, isOpen]);
+  }, [onChangeValue, isOpen, isCellSelected]);
 
   return (
     <>
