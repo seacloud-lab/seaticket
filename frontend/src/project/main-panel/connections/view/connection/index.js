@@ -26,7 +26,23 @@ const RowDetails = ({ rowDetails, onClose }) => {
   );
 };
 
-const getColumns = (connType) => {
+const SiteContentDialog = ({ title, content, onClose }) => {
+  return (
+    <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
+      <ModalHeader toggle={onClose}>{title || gettext('Content')}</ModalHeader>
+      <ModalBody>
+        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
+          {!content && <div>{gettext('Loading...')}</div>}
+          {!!content && (
+            <div className="site-page-content" dangerouslySetInnerHTML={{ __html: content }}></div>
+          )}
+        </div>
+      </ModalBody>
+    </Modal>
+  );
+};
+
+const getColumns = (connType, { onClickSiteTitle } = {}) => {
   if (connType === CONNECTION_TYPE.DISCOURSE_FORUM) {
     return [
       {
@@ -44,9 +60,11 @@ const getColumns = (connType) => {
         type: CellType.TEXT, key: 'title', name: gettext('Title'),
         editable: false, is_name_column: true, frozen: true, expand_able: true,
         click: (row) => {
-          if (row && row.url) {
-            window.open(row.url);
+          if (onClickSiteTitle) {
+            onClickSiteTitle(row);
+            return;
           }
+          if (row && row.url) window.open(row.url);
         }
       },
       { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
@@ -103,6 +121,7 @@ const getT = (connectionType) => {
 const Connection = ({ projectUuid, connectionID }) => {
   const { isLoading, updatePageName } = useConnectionsPage();
   const [rowDetails, setRowDetails] = useState(null);
+  const [siteDetails, setSiteDetails] = useState(null);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -113,6 +132,18 @@ const Connection = ({ projectUuid, connectionID }) => {
       }
     ]
   }), []);
+
+  const handleClickSiteTitle = useCallback((row) => {
+    if (!row || !row.url) return;
+    // open dialog first with loading state
+    setSiteDetails({ title: row.title, content: '' });
+    const params = { url: row.url };
+    connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
+      setSiteDetails({ title: row.title, content: res.data.content || '' });
+    }).catch(() => {
+      setSiteDetails({ title: row.title, content: gettext('Failed to load content.') });
+    });
+  }, [projectUuid, connectionID]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
@@ -131,7 +162,7 @@ const Connection = ({ projectUuid, connectionID }) => {
         return {
           data: {
             rows,
-            columns: getColumns(type),
+            columns: getColumns(type, { onClickSiteTitle: handleClickSiteTitle }),
           }
         };
       });
@@ -169,7 +200,7 @@ const Connection = ({ projectUuid, connectionID }) => {
       });
     },
 
-  }), [projectUuid, connectionID, viewsData, updatePageName]);
+  }), [projectUuid, connectionID, viewsData, updatePageName, handleClickSiteTitle]);
 
   const createContextMenuOptions = useCallback(() => {
     return [];
@@ -207,6 +238,13 @@ const Connection = ({ projectUuid, connectionID }) => {
         expandRow={handleExpandRow}
       />
       {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {siteDetails && (
+        <SiteContentDialog
+          title={siteDetails.title}
+          content={siteDetails.content}
+          onClose={() => setSiteDetails(null)}
+        />
+      )}
     </CollaboratorsProvider>
   );
 

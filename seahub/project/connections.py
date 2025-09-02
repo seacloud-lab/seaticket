@@ -17,12 +17,13 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.utils import is_org_context
+from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
     DiscourseForumTopicsRecord, DiscourseForumRepliesRecord
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission, init_seadb_table, list_seadb_table_records
+    update_github_issue_by_webhook, check_project_permission, init_seadb_table, list_seadb_table_records, \
+    get_file_from_s3_web_crawl, url_to_filename
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 from seahub.project.seadb_api import SeaDBAPI
@@ -498,6 +499,7 @@ class ProjectConnectionRowDetailView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         row_details = []
+        content = ''
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             topic_id = request.GET.get('topic_id')
             if not topic_id:
@@ -507,6 +509,15 @@ class ProjectConnectionRowDetailView(APIView):
                 connection_id=connection_id, topic_id=topic_id
             ).order_by("post_number")
             row_details = [item.to_dict() for item in row_details]
+        elif project_connection.type == ConnectionType.SITE.value:
+            url = request.GET.get('url')
+            filename = url_to_filename(url)
+            uuid_32_chars = uuid_str_to_32_chars(project_uuid)
+            file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+            if file:
+                content = json.loads(file.read())
+                content = content.get('content')
         return Response({
             'row_details': row_details,
+            'content': content,
         })
