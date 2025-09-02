@@ -23,7 +23,7 @@ const Project = () => {
     const { origin, search } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.ASK) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
     if (bar === BAR_TYPE.TICKET) {
@@ -35,7 +35,11 @@ const Project = () => {
   const toggleBar = useCallback((newActiveBar) => {
     const activeBarKey = newActiveBar[0];
     if (activeBar[0] === activeBarKey) {
-      if ([BAR_TYPE.ASK, BAR_TYPE.SEARCH].includes(activeBarKey)) return;
+      if ([BAR_TYPE.SEARCH].includes(activeBarKey)) return;
+      if (activeBarKey === BAR_TYPE.ASK && !location.pathname.endsWith('ask/')) {
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_TYPE.NEW);
+        return;
+      }
       if (activeBarKey === BAR_TYPE.TICKET && !location.pathname.endsWith('tickets/')) {
         eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_TYPE.ALL);
         return;

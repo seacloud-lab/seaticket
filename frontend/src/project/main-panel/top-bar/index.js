@@ -1,10 +1,15 @@
 import React from 'react';
+import classnames from 'classnames';
+
 import './index.css';
 
-const TopBar = ({ children }) => {
+const TopBar = ({ children, className }) => {
+  const _className = classnames('sea-qa-project-panel-header sea-qa-project-main-panel-header', className);
+
+
   if (!Array.isArray(children)) {
     return (
-      <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
+      <div className={_className}>
         <div className="sea-qa-project-main-panel-header-left">
           <div className="sea-qa-project-main-panel-header-name">
             {children}
@@ -14,7 +19,7 @@ const TopBar = ({ children }) => {
     );
   }
   return (
-    <div className="sea-qa-project-panel-header sea-qa-project-main-panel-header">
+    <div className={_className}>
       <div className="sea-qa-project-main-panel-header-left">
         <div className="sea-qa-project-main-panel-header-name">
           {children[0]}

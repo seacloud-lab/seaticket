@@ -512,32 +512,25 @@ class ChatSessionsView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        workspace_id = request.GET.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
+        # argument check
+        project_uuid = request.GET.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_uuid = request.GET.get('project_uuid')
-        if not project_uuid:
-            error_msg = 'project_uuid parameter is required.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         try:
-            project = Projects.objects.get_project_by_uuid(project_uuid)
-            if not project:
-                error_msg = 'Project not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             sessions = ChatSessions.objects.get_sessions_by_project(project_uuid, request.user.username)
             sessions_data = [session.to_dict() for session in sessions]
 
@@ -554,41 +547,37 @@ class ChatSessionsView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        workspace_id = request.data.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
+        # argument check
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        session_name = request.data.get('session_name', '')
+        if not session_name:
+            error_msg = 'session_name parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_uuid = request.data.get('project_uuid')
-        session_name = request.data.get('session_name', 'New Chat')
-
-        if not project_uuid:
-            error_msg = 'project_uuid is required.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         try:
-            project = Projects.objects.get_project_by_uuid(project_uuid)
-            if not project:
-                error_msg = 'Project not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             session = ChatSessions.objects.create_session(
                 project_uuid=project_uuid,
                 session_name=session_name,
                 username=request.user.username
             )
 
-            return Response(session.to_dict(), status=status.HTTP_201_CREATED)
+            return Response({ 'session': session.to_dict() }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             logger.error(e)
@@ -601,21 +590,69 @@ class ChatSessionView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    def put(self, request, session_uuid):
+        """Modify chat session"""
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        session_name = request.data.get('session_name', '')
+        if not session_name:
+            error_msg = 'session_name parameter is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+            if not session:
+                error_msg = 'Session not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            session.session_name = session_name
+            session.save()
+
+            return Response({'success': True})
+
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
     def delete(self, request, session_uuid):
         """Delete chat session"""
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        workspace_id = request.data.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
+        # argument check
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
@@ -648,15 +685,18 @@ class ChatMessagesView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        workspace_id = request.GET.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
+        # argument check
+        project_uuid = request.GET.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):

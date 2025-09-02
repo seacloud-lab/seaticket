@@ -114,6 +114,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
     },
 
     focusInput: () => {
+      setContainerFocus(true);
       inputRef.current.focus();
     }
 
@@ -134,7 +135,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
               onKeyUp={onKeyUp}
               onMouseUp={onMouseUp}
               onPaste={onPaste}
-              placeholder={gettext('Your questions')}
+              placeholder={gettext('What problem you want to solve?')}
               tabIndex={-1}
               contentEditable={!disabled}
             >

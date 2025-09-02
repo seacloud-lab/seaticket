@@ -63,31 +63,39 @@ class AskAPI {
     return this._sendPostRequest(url, params);
   }
   // chat sessions api
-  getChatSessions(projectUuid, workspaceId) {
-    const url = this.server + '/api/v2.1/chat/sessions/?project_uuid=' + projectUuid + '&workspace_id=' + workspaceId;
+  listChatSessions(projectUuid) {
+    const url = this.server + '/api/v2.1/chat/sessions/?project_uuid=' + projectUuid;
     return this.req.get(url);
   }
 
-  createChatSession(projectUuid, sessionName, workspaceId) {
+  createChatSession(projectUuid, sessionName) {
     const url = this.server + '/api/v2.1/chat/sessions/';
     const data = {
       project_uuid: projectUuid,
       session_name: sessionName,
-      workspace_id: workspaceId
     };
     return this.req.post(url, data);
   }
 
-  deleteChatSession(sessionUuid, workspaceId) {
+  deleteChatSession(projectUuid, sessionUuid) {
     const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/';
     const data = {
-      workspace_id: workspaceId
+      project_uuid: projectUuid
     };
     return this.req.delete(url, { data });
   }
 
-  getChatMessages(sessionUuid, workspaceId) {
-    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/messages/?workspace_id=' + workspaceId;
+  modifyChatSession(projectUuid, sessionUuid, update) {
+    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/';
+    const data = {
+      ...update,
+      project_uuid: projectUuid
+    };
+    return this.req.put(url, data);
+  }
+
+  getChatMessages(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/messages/?project_uuid=' + projectUuid;
     return this.req.get(url);
   }
 

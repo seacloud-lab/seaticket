@@ -1,0 +1,28 @@
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 3px;
+  width: 100%;
+  height: 38px;
+  cursor: pointer;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item.active,
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover {
+  background-color: var(--bs-nav-active-bg);
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 4px;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn {
+  display: none;
+}
+
+.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-more-op-btn {
+  display: flex;
+}
