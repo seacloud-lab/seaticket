@@ -14,7 +14,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
-    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS
+    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -558,7 +558,7 @@ class ConnectionsViewsManager(models.Manager):
 		
     def get_record_by_view(self, project_uuid, start, end, view_id, connection_id):
         sorts = []
-        view = ConnectionsViews.objects.get_view(project_uuid, view_id)
+        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
         basic_filters = view.get('basic_filters', [])
         sorts = view.get('sorts', [])
 
@@ -579,34 +579,36 @@ class ConnectionsViewsManager(models.Manager):
         
         return self.filter(q).order_by(', '.join(sorts))[start: end]
 
-    def get_record(self, project_uuid):
+    def get_record(self, project_uuid, connection_id):
         """
             get record from database, if not record, create it
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
-        record = self.filter(project_uuid=project_uuid).first()
+        record = self.filter(connection_id=connection_id).first()
+        
         if not record:
             record = self.create(
                 project_uuid=project_uuid,
-                details=json.dumps(TICKET_DEFAULT_DETAILS)
+                connection_id=connection_id,
+                details=json.dumps(CONNECTION_DEFAULT_DETAILS)
             )
         return record
 
     # view op
-    def list_views(self, project_uuid):
-        record = self.get_record(project_uuid)
+    def list_views(self, project_uuid, connection_id):
+        record = self.get_record(project_uuid, connection_id)
         return json.loads(record.details)
 
-    def get_view(self, project_uuid, view_id):
-        record = self.get_record(project_uuid)
+    def get_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
         view_details = json.loads(record.details)
         for v in view_details['views']:
             if v.get('_id') == view_id:
                 return v
         return None
 
-    def add_view(self, project_uuid, view_name, view_type='table', view_data={}):
-        record = self.get_record(project_uuid)
+    def add_view(self, project_uuid, connection_id, view_name, view_type='table', view_data={}):
+        record = self.get_record(project_uuid, connection_id)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
@@ -620,8 +622,8 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return new_view.details
 
-    def update_view(self, project_uuid, view_id, view_dict):
-        record = self.get_record(project_uuid)
+    def update_view(self, project_uuid, connection_id, view_id, view_dict):
+        record = self.get_record(project_uuid, connection_id)
         view_dict.pop('_id', '')
         if 'name' in view_dict:
             exist_obj_names = record.views_names
@@ -635,8 +637,8 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, view_id):
-        record = self.get_record(project_uuid)
+    def duplicate_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
@@ -656,8 +658,8 @@ class ConnectionsViewsManager(models.Manager):
 
         return duplicate_view
 
-    def delete_view(self, project_uuid, view_id):
-        record = self.get_record(project_uuid)
+    def delete_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         views = view_details.get('views', [])
@@ -677,8 +679,8 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def move_view(self, project_uuid, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
-        record = self.get_record(project_uuid)
+    def move_view(self, project_uuid, connection_id, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
+        record = self.get_record(project_uuid, connection_id)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
 
@@ -748,7 +750,9 @@ class ConnectionsViewsManager(models.Manager):
 
 class ConnectionsViews(models.Model):
     project_uuid = models.CharField(max_length=32, db_index=True)
+    connection_id = models.IntegerField()
     details = models.TextField()
+
 
     objects = ConnectionsViewsManager()
 

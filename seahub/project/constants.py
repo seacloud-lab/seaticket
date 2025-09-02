@@ -121,6 +121,42 @@ TICKET_DEFAULT_DETAILS = {
     ]
 }
 
+CONNECTION_DEFAULT_DETAILS = {
+    'views': [
+        {
+            '_id': 'open',
+            'name': _('Open'),
+            'type': 'table',
+            'basic_filters': [
+                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+            ],
+            'columns_keys': [],
+            'filter_conjunction': 'Or',
+            'filters': [],
+            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            'groupbys': [],
+            'hidden_columns': [],
+        }, {
+            '_id': 'closed',
+            'name': _('Closed'),
+            'type': 'table',
+            'basic_filters': [
+                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']}
+            ],
+            'columns_keys': [],
+            'filter_conjunction': 'Or',
+            'filters': [],
+            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            'groupbys': [],
+            'hidden_columns': [],
+        }
+    ],
+    'navigation': [
+        {'_id': 'open', 'type': 'view'},
+        {'_id': 'closed', 'type': 'view'}
+    ]
+}
+
 
 # web crawl table
 class PropertyTypes:

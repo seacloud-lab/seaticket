@@ -506,9 +506,10 @@ CREATE TABLE `ticket_tags`  (
 CREATE TABLE `connection_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,
+  `connection_id` int(11),
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `connection_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `connection_views_connection_id_568ecbbf_fk_project_uuid` FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `project_tags`  (

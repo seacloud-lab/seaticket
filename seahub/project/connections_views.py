@@ -25,7 +25,7 @@ class ConnectionViewsAPI(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    def get(self, request, project_uuid, connection_id):
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -40,7 +40,7 @@ class ConnectionViewsAPI(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            views = ConnectionsViews.objects.list_views(project_uuid)
+            views = ConnectionsViews.objects.list_views(project_uuid, connection_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -48,7 +48,7 @@ class ConnectionViewsAPI(APIView):
 
         return Response(views)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, connection_id):
         #  Add a view
         view_name = request.data.get('name')
         view_type = request.data.get('type', 'table')
@@ -72,13 +72,13 @@ class ConnectionViewsAPI(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            new_view = ConnectionsViews.objects.add_view(project_uuid, view_name, view_type, view_data)
+            new_view = ConnectionsViews.objects.add_view(project_uuid, connection_id, view_name, view_type, view_data)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'add view failed')
         except Exception as e:
@@ -94,7 +94,7 @@ class ConnectionViewView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid, view_id):
+    def get(self, request, project_uuid, connection_id, view_id):
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -108,13 +108,13 @@ class ConnectionViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            view = ConnectionsViews.objects.get_view(project_uuid, view_id)
+            view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -122,7 +122,7 @@ class ConnectionViewView(APIView):
 
         return Response({'view': view})
 
-    def put(self, request, project_uuid, view_id):
+    def put(self, request, project_uuid, connection_id, view_id):
         # Update a view, including rename, change filters and so on
         # by a json data
         view_data = request.data.get('view_data', None)
@@ -143,7 +143,7 @@ class ConnectionViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -153,7 +153,7 @@ class ConnectionViewView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            result = ConnectionsViews.objects.update_view(project_uuid, view_id, view_data)
+            result = ConnectionsViews.objects.update_view(project_uuid, connection_id, view_id, view_data)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -161,7 +161,7 @@ class ConnectionViewView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, view_id):
+    def delete(self, request, project_uuid, connection_id, view_id):
         if not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -179,7 +179,7 @@ class ConnectionViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -190,7 +190,7 @@ class ConnectionViewView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            result = ConnectionsViews.objects.delete_view(project_uuid, view_id)
+            result = ConnectionsViews.objects.delete_view(project_uuid, connection_id, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -206,8 +206,13 @@ class ConnectionViewsDuplicateView(APIView):
 
     def post(self, request, project_uuid):
         view_id = request.data.get('view_id')
+        connection_id = request.data.get('connection_id')
         if not view_id:
             error_msg = 'view_id invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        if not connection_id:
+            error_msg = 'connection_id invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
@@ -223,7 +228,7 @@ class ConnectionViewsDuplicateView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -233,7 +238,7 @@ class ConnectionViewsDuplicateView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            new_view = ConnectionsViews.objects.duplicate_view(project_uuid, view_id)
+            new_view = ConnectionsViews.objects.duplicate_view(project_uuid, connection_id, view_id)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'duplicate view failed')
         except Exception as e:
@@ -251,11 +256,16 @@ class ConnectionViewsMoveView(APIView):
 
     def post(self, request, project_uuid):
         # move view or folder to another position
+        connection_id = request.data.get('connection_id', False)
         source_view_id = request.data.get('source_view_id')
         source_folder_id = request.data.get('source_folder_id')
         target_view_id = request.data.get('target_view_id')
         target_folder_id = request.data.get('target_folder_id')
         is_above_folder = request.data.get('is_above_folder', False)
+
+        if not connection_id:
+            error_msg = 'connection_id is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # must drag view or folder
         if not source_view_id and not source_folder_id:
@@ -282,7 +292,7 @@ class ConnectionViewsMoveView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection_id)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -304,7 +314,7 @@ class ConnectionViewsMoveView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, f'target_folder_id {target_folder_id} does not exists.')
 
         try:
-            results = ConnectionsViews.objects.move_view(project_uuid, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder)
+            results = ConnectionsViews.objects.move_view(project_uuid, connection_id, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder)
             if not results:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'move view or folder failed')
         except Exception as e:

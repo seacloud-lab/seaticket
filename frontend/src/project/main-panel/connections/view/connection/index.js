@@ -157,13 +157,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         };
       });
     },
-    getViews: () => connectionsAPI.listViews(projectUuid),
-    getView: (viewID) => connectionsAPI.getView(projectUuid, viewID),
-    insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, name, viewData),
-    deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, viewID),
-    moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, sourceViewID, targetViewID),
-    duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, viewID),
-    modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, viewID, viewData),
+    getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
+    getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
+    insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
+    deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
+    moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
+    duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
+    modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
 
   }), [projectUuid, connectionID, updatePageName, handleClickSiteTitle]);
 

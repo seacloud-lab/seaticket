@@ -46,7 +46,6 @@ const AllConnections = ({ projectUuid }) => {
   }, []);
 
   const handleExpandRow = useCallback((row) => {
-    console.log('handleExpandRow');
     updatePageName && updatePageName(row.name);
     togglePageType && togglePageType(row.id);
   }, [togglePageType]);
