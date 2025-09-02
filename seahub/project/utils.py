@@ -1,10 +1,11 @@
 import os
+import re
 import logging
 import jwt
 import time
 import requests
 import json
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
@@ -19,7 +20,7 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL, SEAQA_WEB_SERVICE_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET
+from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.constants import WEB_CRAWL_COLUMNS
 
 
@@ -225,6 +226,10 @@ def gen_s3_file_path(project_uuid, file_path):
     return f'/projects/{project_uuid}/{file_path}'
 
 
+def gen_s3_web_crawl_file_path(project_uuid, site_id, filename):
+    return f"{project_uuid}/{site_id}/" + filename
+
+
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
     file_name = os.path.basename(file_path)
@@ -281,6 +286,12 @@ def get_file_from_s3(project_uuid, file_path):
     file = response['Body']
     return file
 
+
+def get_file_from_s3_web_crawl(project_uuid, site_id, filename):
+    s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
+    response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+    file = response['Body']
+    return file
 
 def delete_file_from_s3(project_uuid, file_path):
     s3_file_path = gen_s3_file_path(project_uuid, file_path)
@@ -354,3 +365,24 @@ def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, li
         logger.error(f'SeaDB query error for connection {connection_id}: {e}')
         records = []
     return records
+
+
+def url_to_filename(url):
+    """
+    Convert URL to valid filename
+    """
+    # Remove protocol prefix
+    url = re.sub(r'^https?://', '', url)
+
+    # Replace invalid characters
+    filename = quote_plus(url)
+    # filename = unquote(urllib.parse.quote_plus(url))
+
+    # Ensure filename doesn't exceed maximum length limit (255 characters)
+    if len(filename) > 240:
+        # Keep beginning and end, use hash value in the middle
+        hash_part = hashlib.md5(url.encode('utf-8')).hexdigest()[:16]
+        filename = filename[:110] + '_' + hash_part + '_' + filename[-110:]
+
+    # Add .json extension
+    return filename + '.json'
