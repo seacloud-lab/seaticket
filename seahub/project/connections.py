@@ -22,8 +22,10 @@ from seahub.project.models import Projects, ProjectConnections, GitHubIssuesReco
     DiscourseForumTopicsRecord, DiscourseForumRepliesRecord
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission
+    update_github_issue_by_webhook, check_project_permission, init_seadb_table, list_seadb_table_records
 from seahub.project.constants import ConnectionType, CrawlStatus
+
+from seahub.project.seadb_api import SeaDBAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -121,24 +123,35 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        connection_id = record.id
+        try:
+            if connection_type == ConnectionType.SITE.value:
+                seadb_api = SeaDBAPI(request.user.username)
+                init_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
+        except Exception as e:
+            logger.error(e)
+            record.delete()
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         if connection_type == ConnectionType.SEAFILE.value:
             params = {
-                'connection_id': record.get('id', '')
+                'connection_id': connection_id
             }
             add_index_seafile_task(params)
         elif connection_type == ConnectionType.GITHUB_ISSUE.value:
             params = {
-                'connection_id': record.get('id', '')
+                'connection_id': connection_id
             }
             add_github_issues_index_task(params)
 
         else:
             params = {
-                'connection_id': record.get('id', ''),
+                'connection_id': connection_id,
                 'type': connection_type,
             }
             add_init_crawl_task(params)
-        return Response({'record': record}, status=status.HTTP_201_CREATED)
+        return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
 
 class ProjectConnectionView(APIView):
@@ -384,6 +397,9 @@ class ProjectConnectionDetailsView(APIView):
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
             records = [record.to_dict() for record in records]
+        elif project_connection.type == ConnectionType.SITE.value:
+            seadb_api = SeaDBAPI(username)
+            records = list_seadb_table_records(seadb_api, project_uuid, connection_id, start, limit, username)
         else:
             records = []
 

@@ -49,7 +49,6 @@ const getOptions = (status) => {
 const StatusToggleButton = ({ status: oldStatus, onChange }) => {
   const [status, setStatus] = useState(BTNS[oldStatus][0].value);
   const [isShowPopover, setIsShowPopover] = useState(false);
-
   const downBtn = useRef(null);
   const options = useRef(getOptions(oldStatus));
 
