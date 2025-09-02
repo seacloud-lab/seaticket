@@ -205,9 +205,10 @@ export const normalizeColumns = (columns) => {
     }
   });
   // find key ==="priority" column and move to first
-  const priorityColumn = displayColumns.find(c => c.key === 'priority');
-  if (priorityColumn) {
-    displayColumns = [priorityColumn, ...displayColumns.filter(c => c.key !== 'priority')];
+  const priorityColumns = displayColumns.filter(c => c.key === 'priority');
+  // use only one priority column
+  if (priorityColumns.length > 0) {
+    displayColumns = [priorityColumns[0], ...displayColumns.filter(c => c.key !== 'priority')];
   }
   return displayColumns.map(c => {
     if (columnsWidth[c.key]) {
