@@ -196,6 +196,7 @@ export const normalizeColumns = (columns) => {
   if (!Array.isArray(columns) || columns.length === 0) return [];
   const columnsWidth = context.localStorage.getItem('columns_width') || {};
   let displayColumns = [];
+  // find name column and move to first
   columns.forEach(column => {
     if (column.is_name_column) {
       displayColumns.unshift(column);
@@ -203,6 +204,11 @@ export const normalizeColumns = (columns) => {
       displayColumns.push(column);
     }
   });
+  // find key ==="priority" column and move to first
+  const priorityColumn = displayColumns.find(c => c.key === 'priority');
+  if (priorityColumn) {
+    displayColumns = [priorityColumn, ...displayColumns.filter(c => c.key !== 'priority')];
+  }
   return displayColumns.map(c => {
     if (columnsWidth[c.key]) {
       c.width = columnsWidth[c.key];

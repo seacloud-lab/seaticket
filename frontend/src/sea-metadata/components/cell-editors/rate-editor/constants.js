@@ -6,19 +6,19 @@ const RATE_MAP = {
     icon: 'priority-00',
   },
   '2': {
-    name: gettext('Urgent priority'),
+    name: gettext('Urgent'),
     icon: 'priority-01',
   },
   '3': {
-    name: gettext('High priority'),
+    name: gettext('High'),
     icon: 'priority-02',
   },
   '4': {
-    name: gettext('Medium priority'),
+    name: gettext('Medium'),
     icon: 'priority-03',
   },
   '5': {
-    name: gettext('Low priority'),
+    name: gettext('Low'),
     icon: 'priority-04',
   },
 };
