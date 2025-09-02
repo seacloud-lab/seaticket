@@ -17,7 +17,6 @@ const ViewToolBar = ({ tools = VIEW_TOOLS, toggleView }) => {
   }, []);
 
   const view = metadata?.view;
-  console.log('view---', view);
   const viewType = view?.type;
   const readOnly = !isLoading && context.canModifyView ? !context.canModifyView(view) : true;
 

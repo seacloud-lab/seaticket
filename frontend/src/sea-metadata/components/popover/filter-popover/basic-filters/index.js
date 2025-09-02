@@ -30,8 +30,6 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
     onChange && onChange(newFilters);
   }, [filters, onChange]);
 
-  console.log('columns', columns);
-
   return (
     <FormGroup className="filter-group-basic filter-group p-4">
       <Label className="filter-group-name">{gettext('Basic')}</Label>
