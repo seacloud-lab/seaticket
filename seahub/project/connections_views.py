@@ -51,7 +51,6 @@ class ConnectionViewsAPI(APIView):
     def post(self, request, project_uuid):
         #  Add a view
         view_name = request.data.get('name')
-        folder_id = request.data.get('folder_id', None)
         view_type = request.data.get('type', 'table')
         view_data = request.data.get('data', {})
 
@@ -78,17 +77,8 @@ class ConnectionViewsAPI(APIView):
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # check folder exist
-        if folder_id:
-            if not record:
-                error_msg = 'The views does not exists.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            if folder_id not in record.folders_ids:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'folder %s does not exists' % folder_id)
-
         try:
-            new_view = ConnectionsViews.objects.add_view(project_uuid, view_name, view_type, view_data, folder_id)
+            new_view = ConnectionsViews.objects.add_view(project_uuid, view_name, view_type, view_data)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'add view failed')
         except Exception as e:
@@ -172,7 +162,6 @@ class ConnectionViewView(APIView):
         return Response({'success': True})
 
     def delete(self, request, project_uuid, view_id):
-        folder_id = request.data.get('folder_id', None)
         if not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -200,12 +189,8 @@ class ConnectionViewView(APIView):
             error_msg = f'view_id {view_id} does not exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # check folder exist
-        if folder_id and folder_id not in record.folders_ids:
-            return api_error(status.HTTP_400_BAD_REQUEST, f'folder {folder_id} does not exists')
-
         try:
-            result = ConnectionsViews.objects.delete_view(project_uuid, view_id, folder_id)
+            result = ConnectionsViews.objects.delete_view(project_uuid, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -221,7 +206,6 @@ class ConnectionViewsDuplicateView(APIView):
 
     def post(self, request, project_uuid):
         view_id = request.data.get('view_id')
-        folder_id = request.data.get('folder_id', None)
         if not view_id:
             error_msg = 'view_id invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -248,12 +232,8 @@ class ConnectionViewsDuplicateView(APIView):
             error_msg = 'view_id %s does not exists.' % view_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # check folder exist
-        if folder_id and folder_id not in record.folders_ids:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'folder %s does not exists' % folder_id)
-
         try:
-            new_view = ConnectionsViews.objects.duplicate_view(project_uuid, view_id, folder_id)
+            new_view = ConnectionsViews.objects.duplicate_view(project_uuid, view_id)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'duplicate view failed')
         except Exception as e:

@@ -527,18 +527,18 @@ class ProjectConnections(models.Model):
         }
 
 class ConnectionsView(object):
-
-    def __init__(self, name, view_type='table', config={}, folders_views_ids=None):
+    
+    def __init__(self, name, view_type='table', config={}):
         self.name = name
         self.type = view_type
         self.config = config
         self.details = {}
 
-        self.init_view(folders_views_ids)            
+        self.init_view()            
 
-    def init_view(self, folders_views_ids=None):
+    def init_view(self):
         self.details = {
-            "_id": generate_views_unique_id(4, folders_views_ids),
+            "_id": generate_views_unique_id(4),
             "table_id": '0000',  # by default
             "name": self.name,
             'basic_filters': [
@@ -553,23 +553,6 @@ class ConnectionsView(object):
             "type": self.type,
         }
         self.details.update(self.config)
-
-class ConnectionsFolder(object):
-
-    def __init__(self, name, children=[], folders_views_ids=None):
-        self.name = name
-        self.type = 'folder'
-        self.children = children
-
-        self.init_folder(folders_views_ids)
-
-    def init_folder(self, folders_views_ids=None):
-        self.folder_json = {
-            "_id": generate_views_unique_id(4, folders_views_ids),
-            "name": self.name,
-            "type": self.type,
-            "children": self.children
-        }
 
 class ConnectionsViewsManager(models.Manager):
 		
@@ -618,54 +601,6 @@ class ConnectionsViewsManager(models.Manager):
             )
         return record
 
-    # folder op
-    def add_folder(self, project_uuid, folder_name):
-        record = self.get_record(project_uuid)
-        view_details = json.loads(record.details)
-        navigation = view_details.get('navigation', [])
-        exist_folders_views_ids = record.folders_views_ids
-        new_folder = ConnectionsFolder(folder_name, [], exist_folders_views_ids)
-        folder_json = new_folder.folder_json
-        navigation.append(folder_json)
-        record.details = json.dumps(view_details)
-        record.save()
-        return folder_json
-
-    def update_folder(self, project_uuid, folder_id, folder_dict):
-        record = self.get_record(project_uuid)
-        folder_dict.pop('_id', '')
-        folder_dict.pop('type', '')
-        folder_dict.pop('children', '')
-        if 'name' in folder_dict:
-            exist_obj_names = record.folders_names
-            folder_dict['name'] = get_no_duplicate_obj_name(folder_dict['name'], exist_obj_names)
-        view_details = json.loads(record.details)
-        for folder in view_details['navigation']:
-            if folder.get('type', None) == 'folder' and folder.get('_id') == folder_id:
-                folder.update(folder_dict)
-                break
-        record.details = json.dumps(view_details)
-        record.save()
-        return view_details
-
-    def delete_folder(self, project_uuid, folder_id):
-        record = self.get_record(project_uuid)
-        view_details = json.loads(record.details)
-        navigation = view_details.get('navigation', [])
-        views = view_details.get('views', [])
-        for folder in navigation:
-            if folder.get('_id') == folder_id:
-                # add views which in the folder into navigation
-                if folder.get('children'):
-                    navigation.extend(folder.get('children'))
-
-                # remove folder
-                navigation.remove(folder)
-                break
-        record.details = json.dumps(view_details)
-        record.save()
-        return view_details
-
     # view op
     def list_views(self, project_uuid):
         record = self.get_record(project_uuid)
@@ -679,25 +614,17 @@ class ConnectionsViewsManager(models.Manager):
                 return v
         return None
 
-    def add_view(self, project_uuid, view_name, view_type='table', view_data={}, folder_id=None):
+    def add_view(self, project_uuid, view_name, view_type='table', view_data={}):
         record = self.get_record(project_uuid)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
-        exist_folders_views_ids = record.folders_views_ids
-        new_view = ConnectionsView(view_name, view_type, view_data, exist_folders_views_ids)
+        new_view = ConnectionsView(view_name, view_type, view_data)
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
-        if folder_id:
-            folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
-            if not folder:
-                return None
-            folderChildren = folder.get('children', [])
-            folderChildren.append(new_view_nav)
-        else:
-            navigation.append(new_view_nav)
+        navigation.append(new_view_nav)
         record.details = json.dumps(view_details)
         record.save()
         return new_view.details
@@ -717,7 +644,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, view_id, folder_id=None):
+    def duplicate_view(self, project_uuid, view_id):
         record = self.get_record(project_uuid)
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
@@ -732,22 +659,13 @@ class ConnectionsViewsManager(models.Manager):
         view_details['views'].append(duplicate_view)
         navigation = view_details.get('navigation', [])
         new_view_nav = {'_id': new_view_id, 'type': 'view'}
-        if folder_id:
-            # add duplicate_view into folder
-            folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
-            if not folder:
-                return None
-            folderChildren = folder.get('children', [])
-            folderChildren.append(new_view_nav)
-        else:
-            navigation.append(new_view_nav)
-
+        navigation.append(new_view_nav)
         record.details = json.dumps(view_details)
         record.save()
 
         return duplicate_view
 
-    def delete_view(self, project_uuid, view_id, folder_id=None):
+    def delete_view(self, project_uuid, view_id):
         record = self.get_record(project_uuid)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
@@ -758,13 +676,6 @@ class ConnectionsViewsManager(models.Manager):
                 views.remove(view)
                 break
         for nav_item in navigation:
-            # delete view from folder
-            if folder_id and nav_item.get('_id') == folder_id and nav_item.get('type') == 'folder' and nav_item.get('children'):
-                for child in nav_item.get('children'):
-                    if child.get('_id') == view_id:
-                        nav_item.get('children').remove(child)
-                        break
-                break
 
             # delete view not in folders
             if nav_item.get('_id') == view_id:
