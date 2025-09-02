@@ -560,8 +560,6 @@ class ConnectionsViewsManager(models.Manager):
         sorts = []
         view = ConnectionsViews.objects.get_view(project_uuid, view_id)
         basic_filters = view.get('basic_filters', [])
-        filters = view.get('filters', [])
-        filter_conjunction = view.get('filter_conjunction', 'OR')
         sorts = view.get('sorts', [])
 
         q = Q(deleted=False) & Q(connection_id=connection_id)
@@ -574,13 +572,6 @@ class ConnectionsViewsManager(models.Manager):
                         elif 'open' in value:
                                 value = value + ['']
                         q = q & Q(state__in=value)
-                # if basic_filter.get('column_key') == 'tags':
-                        # value = basic_filter['filter_term']
-                        # if value:
-                        #     tags = TicketTags.objects.filter(tag_id__in=value)
-                        #     if tags:
-                        #         ticket_ids = [tag.ticket_id for tag in tags]
-                        #         q = q & Q(id__in=ticket_ids)
 
         if not sorts:
                 sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
