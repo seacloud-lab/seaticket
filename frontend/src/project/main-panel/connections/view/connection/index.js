@@ -123,16 +123,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [rowDetails, setRowDetails] = useState(null);
   const [siteDetails, setSiteDetails] = useState(null);
 
-  const viewsData = useMemo(() => ({
-    navigation: [{ _id: '0000', type: 'view' }],
-    views: [
-      {
-        _id: '0000',
-        name: gettext('All'),
-      }
-    ]
-  }), []);
-
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
     // open dialog first with loading state
@@ -175,7 +165,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, viewID),
     modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, viewID, viewData),
 
-  }), [projectUuid, connectionID, viewsData, updatePageName, handleClickSiteTitle]);
+  }), [projectUuid, connectionID, updatePageName, handleClickSiteTitle]);
 
   const createContextMenuOptions = useCallback(() => {
     return [];
@@ -210,7 +200,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         createContextMenuOptions={createContextMenuOptions}
         isViewComputedOnServer={false}
         permission={permission}
-        viewTools={['views', 'search', 'sorts', 'groupbys', 'order_and_hidden']}
         toggleView={updateViewID}
         expandRow={handleExpandRow}
       />
