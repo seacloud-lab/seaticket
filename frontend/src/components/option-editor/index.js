@@ -20,7 +20,6 @@ const OptionsEditor = ({
   const mainRef = useRef(null);
 
   const handleClose = useCallback(() => {
-    console.log(1);
     if (isMultiple) {
       const value = mainRef.current.getValue();
       onChange(value);

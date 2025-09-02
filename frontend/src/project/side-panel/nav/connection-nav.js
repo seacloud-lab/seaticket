@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { mediaUrl } from '@/constants';
-import { CONNECTION_TYPE, CONNECTION_TYPES } from '../../main-panel/connections/constants';
+import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../main-panel/connections/constants';
 
 const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
 
@@ -18,7 +18,7 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
   const handleClick = useCallback((type) => {
     if (isActive) return;
     const { id } = nav;
-    if (type !== CONNECTION_TYPE.GITHUB_ISSUE) return;
+    if (!SUPPORT_DETAILS_CONNECTION_TYPES.includes(type)) return;
     onClick && onClick(id);
   }, [isActive, nav, onClick]);
 

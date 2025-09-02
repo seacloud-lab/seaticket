@@ -192,3 +192,9 @@ export const GITHUB_STATUS_OPTIONS = [
   { id: GITHUB_STATUS.NOT_PLANNED, value: GITHUB_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
   { id: GITHUB_STATUS.DUPLICATE, value: GITHUB_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
 ];
+
+export const SUPPORT_DETAILS_CONNECTION_TYPES = [
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SITE,
+];

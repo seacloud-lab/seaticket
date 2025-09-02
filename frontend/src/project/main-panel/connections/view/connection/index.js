@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
@@ -6,7 +7,6 @@ import { gettext } from '@/constants';
 import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
 const RowDetails = ({ rowDetails, onClose }) => {
   return (
@@ -37,9 +37,18 @@ const getColumns = (connType) => {
       { type: CellType.NUMBER, key: 'views', name: gettext('Views count'), editable: false },
       { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
     ];
-  } else if (connType === CONNECTION_TYPE.SITE) {
+  }
+  if (connType === CONNECTION_TYPE.SITE) {
     return [
-      { type: CellType.TEXT, key: 'title', name: gettext('Title'), editable: false, is_name_column: true, frozen: true, expand_able: true },
+      {
+        type: CellType.TEXT, key: 'title', name: gettext('Title'),
+        editable: false, is_name_column: true, frozen: true, expand_able: true,
+        click: (row) => {
+          if (row && row.url) {
+            window.open(row.url);
+          }
+        }
+      },
       { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
       { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false },
     ];
@@ -63,6 +72,34 @@ const getColumns = (connType) => {
   ];
 };
 
+const getT = (connectionType) => {
+  if (connectionType === CONNECTION_TYPE.SITE) {
+    return {
+      row: gettext('site'),
+      rows: gettext('sites'),
+      Row: gettext('Site'),
+      Rows: gettext('Sites'),
+    };
+  }
+  if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
+    return {
+      row: gettext('github issue'),
+      rows: gettext('github issues'),
+      Row: gettext('Github issue'),
+      Rows: gettext('Github issues'),
+    };
+  }
+  if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
+    return {
+      row: gettext('discourse forum'),
+      rows: gettext('discourse forums'),
+      Row: gettext('Discourse forum'),
+      Rows: gettext('Discourse forums'),
+    };
+  }
+  return {};
+};
+
 const Connection = ({ projectUuid, connectionID }) => {
   const { isLoading, updatePageName } = useConnectionsPage();
   const [rowDetails, setRowDetails] = useState(null);
@@ -82,6 +119,7 @@ const Connection = ({ projectUuid, connectionID }) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { name, type, records } = res.data;
         let rows = [];
+        context.re_set({ t: getT(type) });
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
@@ -139,24 +177,15 @@ const Connection = ({ projectUuid, connectionID }) => {
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
-  const t = useMemo(() => {
-    return {
-      row: gettext('github issue'),
-      rows: gettext('github issues'),
-      Row: gettext('Github issue'),
-      Rows: gettext('Github issues'),
-    };
-  }, []);
-
   const handleExpandRow = useCallback((row) => {
     if (row && row.url) {
       window.open(row.url);
-    } else {
-      const params = { topic_id: row.topic_id };
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-        setRowDetails(res.data.row_details);
-      });
+      return;
     }
+    const params = { topic_id: row.topic_id };
+    connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
+      setRowDetails(res.data.row_details);
+    });
   }, [projectUuid, connectionID]);
 
   const onRowDetailsClose = useCallback(() => {
@@ -176,8 +205,6 @@ const Connection = ({ projectUuid, connectionID }) => {
         isViewComputedOnServer={false}
         viewTools={['views', 'search', 'sorts', 'groupbys', 'order_and_hidden']}
         expandRow={handleExpandRow}
-
-        t={t}
       />
       {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
     </CollaboratorsProvider>
