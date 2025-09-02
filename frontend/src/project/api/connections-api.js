@@ -100,9 +100,10 @@ class ConnectionsAPI {
     return this.req.post(url);
   }
 
-  getConnectionDetails(projectUuid, connectionID, { start = 0, limit = 100 } = {}){
+  getConnectionDetails(projectUuid, connectionID, { view_id = '0000', start = 0, limit = 100, } = {}){
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
     let params = {
+      view_id,
       start,
       limit
     };
@@ -122,8 +123,12 @@ class ConnectionsAPI {
     return this.req.put(url, form);
   }
 
+  listViews(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/';
+    return this.req.get(url);
+  }
+
   insertView(projectUuid, name, viewData) {
-    console.log(111, projectUuid, name, viewData);
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/';
     let form = new FormData();
     if (name) {
@@ -131,6 +136,46 @@ class ConnectionsAPI {
     }
     if (viewData) {
       form.append('data', viewData);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  getView(projectUuid, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/' + viewID + '/';
+    return this.req.get(url);
+  }
+
+  modifyView(projectUuid, viewID, viewData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/' + viewID + '/';
+    const params = {
+      view_data: viewData,
+    };
+    return this.req.put(url, params);
+  }
+
+  deleteView(projectUuid, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-views/' + viewID + '/';
+    return this.req.delete(url);
+  }
+
+  moveView(projectUuid, sourceViewID, targetViewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-move-views/';
+    let form = new FormData();
+    if (sourceViewID) {
+      form.append('source_view_id', sourceViewID);
+    }
+    if (targetViewID) {
+      form.append('target_view_id', targetViewID);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  duplicateView(projectUuid, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connection-duplicate-view/';
+
+    let form = new FormData();
+    if (viewID) {
+      form.append('view_id', viewID);
     }
     return this._sendPostRequest(url, form);
   }

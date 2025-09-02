@@ -13,8 +13,8 @@ from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTi
 from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
-from .connections_views import TicketFolders, ConnectionViewsAPI, TicketViewView, \
-    TicketViewsMoveView, TicketViewsDuplicateView
+from .connections_views import ConnectionViewsAPI, ConnectionViewView, \
+    ConnectionViewsMoveView, ConnectionViewsDuplicateView
 
 
 urlpatterns = [
@@ -48,6 +48,9 @@ urlpatterns = [
 
     # connection views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connection-views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connection-views/(?P<view_id>.+)/$', ConnectionViewView.as_view(), name='api-v2.1-connection-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connection-move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connection-duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
 
     # ticket
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),

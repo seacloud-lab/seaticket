@@ -26,7 +26,7 @@ const Project = () => {
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.ASK) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if (bar === BAR_TYPE.TICKET) {
+    if (bar.key === BAR_TYPE.TICKET || bar.key === BAR_TYPE.CONNECTION) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);

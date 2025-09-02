@@ -119,7 +119,7 @@ const getT = (connectionType) => {
 };
 
 const Connection = ({ projectUuid, permission, connectionID }) => {
-  const { isLoading, updatePageName } = useConnectionsPage();
+  const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const [rowDetails, setRowDetails] = useState(null);
   const [siteDetails, setSiteDetails] = useState(null);
 
@@ -167,41 +167,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         };
       });
     },
-
-    getViews: () => {
-      return new Promise((resolve, reject) => {
-        resolve({ data: viewsData });
-      });
-    },
-
-    // view
-    getView: (viewID) => {
-      return new Promise((resolve, reject) => {
-        const view = viewsData.views[0];
-
-        resolve({ data: { view: {
-          ...view,
-          columns_keys: context.localStorage.getItem('columns_keys') || [],
-          filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'Or',
-          filters: context.localStorage.getItem('filters') || [],
-          sorts: context.localStorage.getItem('sorts') || [],
-          groupbys: context.localStorage.getItem('groupbys') || [],
-          hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-        } } });
-      });
-    },
+    getViews: () => connectionsAPI.listViews(projectUuid),
+    getView: (viewID) => connectionsAPI.getView(projectUuid, viewID),
     insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, name, viewData),
-    // deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
-    // moveView: (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, sourceViewID, targetViewID),
-    // duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
-    // modifyView: (viewID, viewData) => {
-    //   return new Promise((resolve, reject) => {
-    //     Object.keys(viewData).forEach(key => {
-    //       context.localStorage.setItem(key, viewData[key]);
-    //     });
-    //     resolve({ data: { success: true } });
-    //   });
-    // },
+    deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, viewID),
+    moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, sourceViewID, targetViewID),
+    duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, viewID),
+    modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, viewID, viewData),
 
   }), [projectUuid, connectionID, viewsData, updatePageName, handleClickSiteTitle]);
 
@@ -231,14 +203,15 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   return (
     <CollaboratorsProvider>
       <SeaMetadata
-        viewID="0000"
+        viewID={viewID}
         api={api}
-        className="sea-qa-connection-details 111"
+        className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         isViewComputedOnServer={false}
         permission={permission}
         viewTools={['views', 'search', 'sorts', 'groupbys', 'order_and_hidden']}
+        toggleView={updateViewID}
         expandRow={handleExpandRow}
       />
       {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}

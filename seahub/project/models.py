@@ -482,7 +482,6 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(id=connection_id)
         return self.is_valid(connection_type, records, config)
 
-
     def update_status(self, connection_id, status):
         try:
             record = self.get(id=connection_id)
@@ -491,7 +490,7 @@ class ProjectConnectionsManager(models.Manager):
             return record
         except ProjectConnections.DoesNotExist:
             return None
-
+    
 class ProjectConnections(models.Model):
     """ Project connections table
     """
@@ -573,6 +572,38 @@ class ConnectionsFolder(object):
         }
 
 class ConnectionsViewsManager(models.Manager):
+		
+    def get_record_by_view(self, project_uuid, start, end, view_id, connection_id):
+        sorts = []
+        view = ConnectionsViews.objects.get_view(project_uuid, view_id)
+        basic_filters = view.get('basic_filters', [])
+        filters = view.get('filters', [])
+        filter_conjunction = view.get('filter_conjunction', 'OR')
+        sorts = view.get('sorts', [])
+
+        q = Q(deleted=False) & Q(connection_id=connection_id)
+
+        for basic_filter in basic_filters:
+                if basic_filter.get('column_key') == 'status':
+                        value = basic_filter['filter_term']
+                        if not value:
+                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
+                        elif 'open' in value:
+                                value = value + ['']
+                        q = q & Q(state__in=value)
+                # if basic_filter.get('column_key') == 'tags':
+                        # value = basic_filter['filter_term']
+                        # if value:
+                        #     tags = TicketTags.objects.filter(tag_id__in=value)
+                        #     if tags:
+                        #         ticket_ids = [tag.ticket_id for tag in tags]
+                        #         q = q & Q(id__in=ticket_ids)
+
+        if not sorts:
+                sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
+        
+        return self.filter(q).order_by(', '.join(sorts))[start: end]
 
     def get_record(self, project_uuid):
         """
@@ -669,7 +700,6 @@ class ConnectionsViewsManager(models.Manager):
             navigation.append(new_view_nav)
         record.details = json.dumps(view_details)
         record.save()
-        print(66666666666666666666)
         return new_view.details
 
     def update_view(self, project_uuid, view_id, view_dict):
@@ -867,6 +897,8 @@ class GitHubIssuesRecord(models.Model):
     connection_id = models.CharField(max_length=64)
     need_index = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+
+    objects = ConnectionsViewsManager()
 
     class Meta:
         db_table = 'github_issues'

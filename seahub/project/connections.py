@@ -393,7 +393,23 @@ class ProjectConnectionDetailsView(APIView):
             limit = 1000
         end = start + limit
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            records = GitHubIssuesRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
+            view_id = request.GET.get('view_id', '')
+            if not view_id:
+                error_msg = 'view_id is invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+    
+            start = request.GET.get('start', 0)
+            limit = request.GET.get('limit', 1000)
+
+            try:
+                start = int(start)
+                limit = int(limit)
+            except:
+                start = 0
+                limit = 1000
+            end = start + limit
+
+            records = GitHubIssuesRecord.objects.get_record_by_view(project_uuid, start, end, view_id, connection_id)
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
