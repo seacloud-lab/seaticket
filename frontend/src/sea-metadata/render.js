@@ -55,6 +55,10 @@ const SeaMetadata = ({
     setLoading(false);
   }, []);
 
+  useEffect(() => {
+    context.re_set({ t });
+  }, [t]);
+
   if (isLoading) return null;
 
   return (
