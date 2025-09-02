@@ -20,7 +20,7 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET
-from seaqa_indexer.utils.constants import WEB_CRAWL_COLUMNS
+from seahub.project.constants import WEB_CRAWL_COLUMNS
 
 
 logger = logging.getLogger(__name__)
@@ -333,7 +333,7 @@ def delete_project(project):
     except Exception as e:
         logger.error(e)
 
-    
+
 def init_seadb_table(seadb_api, project_uuid, username, connection_id):
     res = seadb_api.create_table(project_uuid, connection_id)
     table_id = res['table_id']
