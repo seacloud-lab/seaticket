@@ -71,7 +71,9 @@ def is_group_admin_or_owner(group_id, email):
         return False
     if group.creator_name == email:
         return True
-    group_user = GroupUser.objects.get(group_id=group_id, user_name=email)
+    group_user = GroupUser.objects.filter(group_id=group_id, user_name=email).first()
+    if not group_user:
+        return False
     if group_user.is_staff:
         return True
     return False
@@ -79,7 +81,9 @@ def is_group_admin_or_owner(group_id, email):
 def is_group_admin_or_owner_by_group(group, email):
     if group.creator_name == email:
         return True
-    group_user = GroupUser.objects.get(group_id=group.group_id, user_name=email)
+    group_user = GroupUser.objects.filter(group_id=group.group_id, user_name=email).first()
+    if not group_user:
+        return False
     if group_user.is_staff:
         return True
     return False

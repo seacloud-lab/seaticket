@@ -333,7 +333,7 @@ class OrgAdminGroup(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         group_id = int(group_id)
-        group = Group.objects.get(group_id=group_id)
+        group = Group.objects.filter(group_id=group_id).first() 
         if not group:
             return Response({'success': True})
 
