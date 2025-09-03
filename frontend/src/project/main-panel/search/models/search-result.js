@@ -10,6 +10,7 @@ class SearchResult {
     this.title = data.title || '';
     this.url = data.url || '';
     this.content = data.content || '';
+    this.time = data.time || '';
 
     if (this.type === CONNECTION_TYPE.SEAFILE) {
       const filename = data.filename || '';

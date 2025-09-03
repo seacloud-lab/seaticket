@@ -30,7 +30,7 @@
   min-width: 0;
 }
 
-.list-item-title {
+.list-item-content .list-item-title {
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
@@ -38,11 +38,23 @@
   text-overflow: ellipsis;
 }
 
-.list-item-path {
+.list-item-content .list-item-path {
   font-size: 13px;
   color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
+}
+
+.list-item-content .list-item-detail {
+  font-size: 13px;
+  color: #666;
+  white-space: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
