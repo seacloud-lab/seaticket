@@ -1,0 +1,139 @@
+.sea-qa-ai-ask-wrapper {
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-ai-ask-chats-wrapper {
+  flex: 1;
+  overflow: auto;
+  width: 100%;
+  mask-image: linear-gradient(to bottom, #f5f5f5 calc(100% - 24px), transparent);
+  min-height: 0;
+}
+
+.sea-qa-ai-ask-chat-input-wrapper-shell {
+  padding: 16px;
+}
+
+.sea-qa-ai-ask-chats-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.sea-qa-ai-ask-chats {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 16px 16px 24px;
+}
+
+.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chats {
+  padding: 16px calc(100% / 7) 24px;
+}
+
+.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat-input-wrapper-shell {
+   padding: 16px calc(100% / 7);
+}
+
+.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat {
+  width: 100% !important;
+}
+
+.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat.user-input-chat {
+  margin-left: 0 !important;
+}
+
+.sea-qa-ai-ask-wrapper .sea-qa-ai-ask-chat:not(.user-input-chat) .sea-qa-ai-ask-chat-message-content {
+  max-width: 300px;
+}
+
+.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat:not(.user-input-chat) .sea-qa-ai-ask-chat-message-content {
+  max-width: 400px;
+}
+
+.sea-qa-ai-ask-chat {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: calc(100% - 18px);
+  height: fit-content;
+  margin-top: 24px;
+}
+
+.sea-qa-ai-ask-chat:first-child {
+  margin-top: 0;
+}
+
+.sea-qa-ai-ask-chat.user-input-chat {
+  justify-content: flex-end;
+  margin-left: 18px;
+  align-items: flex-end;
+}
+
+.sea-qa-ai-ask-message-content {
+  max-width: 100%;
+  min-width: 48px;
+  min-height: 40px;
+  width: fit-content;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  height: auto;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 0 6px 6px 6px;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #EEE;
+  border-radius: 0 6px 6px 6px;
+}
+
+.user-input-chat .sea-qa-ai-ask-message-content {
+  background-color: rgb(237, 113, 9, .15);
+  border-radius: 6px 0 6px 6px;
+  border: unset;
+}
+
+.sea-qa-ai-ask .send-chat-btn {
+  flex-shrink: 0;
+}
+
+/* empty */
+.sea-qa-ai-ask-wrapper.empty {
+  overflow-y: auto;
+}
+
+.sea-qa-ai-ask-wrapper.empty .sea-qa-ai-ask-chats-wrapper {
+  flex: unset;
+  height: fit-content;
+  overflow: unset;
+  flex-shrink: 0;
+}
+
+.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: fit-content;
+  width: 100%;
+  margin-top: 134px;
+}
+
+.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-icon {
+  height: 44px;
+  width: 44px;
+  color: var(--bs-primary);
+}
+
+.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-title {
+  margin-top: 16px;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-description {
+  margin-bottom: 16px;
+  font-size: 16px;
+}

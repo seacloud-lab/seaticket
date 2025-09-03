@@ -17,3 +17,7 @@ export const CHAT_MESSAGE_FILE_TYPES = [
   CHAT_MESSAGE_TYPE.PDF,
   CHAT_MESSAGE_TYPE.IMAGE,
 ];
+
+export const ASK_PAGE_TYPE = {
+  NEW: 'new',
+};

@@ -111,13 +111,20 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
 
     setAsk: (messages = []) => {
       setAsk(messages);
+      setContainerFocus(true);
+      inputRef.current.focus();
     },
 
     focusInput: () => {
+      setContainerFocus(true);
       inputRef.current.focus();
-    }
+    },
 
-  }), [setAsk]);
+    getProblem: () => {
+      return inputRef?.current?.innerText || '';
+    },
+
+  }), [setAsk, inputRef]);
 
   const disabled = isReply || readOnly;
 
@@ -134,7 +141,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
               onKeyUp={onKeyUp}
               onMouseUp={onMouseUp}
               onPaste={onPaste}
-              placeholder={gettext('Your questions')}
+              placeholder={gettext('What problem you want to solve?')}
               tabIndex={-1}
               contentEditable={!disabled}
             >

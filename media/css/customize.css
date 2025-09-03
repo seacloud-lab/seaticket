@@ -35,6 +35,12 @@
   margin-right: 10px;
 }
 
+.sea-qa-dropdown-menu .dropdown-item svg.item-icon {
+  height: 14px;
+  width: 14px;
+  margin-top: -2px;
+}
+
 .sea-qa-dropdown-menu .dropdown-item:focus .item-icon,
 .sea-qa-dropdown-menu .dropdown-item:hover .item-icon {
   color: #fff;
