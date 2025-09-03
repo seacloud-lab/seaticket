@@ -34,11 +34,11 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
           <CenteredLoading />
           :
           <>
-            <p>{gettext('Last indexed count')}: {status.last_indexed_count}</p>
-            <p>{gettext('Last index status')}: {status.last_index_status}</p>
             <p>{gettext('Total records')}: {status.total_records}</p>
             <p>{gettext('Last sync count')}: {status.last_sync_count}</p>
             <p>{gettext('Last sync status')}: {status.last_sync_status}</p>
+            <p>{gettext('Last indexed count')}: {status.last_indexed_count}</p>
+            <p>{gettext('Last index status')}: {status.last_index_status}</p>
           </>
         }
       </ModalBody>

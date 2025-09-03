@@ -505,6 +505,7 @@ class ProjectConnections(models.Model):
     updated_at = models.DateTimeField(null=True)
     status = models.TextField()
     indexed_at = models.DateTimeField(null=True)
+    synced_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     is_active = models.BooleanField(default=True, null=False, db_index=True)
 
@@ -523,6 +524,7 @@ class ProjectConnections(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'indexed_at': self.indexed_at,
+            'synced_at': self.synced_at,
             'status': self.status,
             'is_active': self.is_active,
         }
