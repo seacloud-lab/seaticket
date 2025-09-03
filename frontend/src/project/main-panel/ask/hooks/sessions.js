@@ -30,7 +30,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const modifySession = useCallback((sessionId, { name }) => {
     return askAPI.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
       let newSessions = sessions.slice(0);
-      const sessionIdx = newSessions.findIndex(s => s.session_uuid === sessionId);
+      const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       let session = newSessions[sessionIdx];
       session.name = name;
       newSessions[sessionIdx] = session;
@@ -41,7 +41,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const deleteSession = useCallback((sessionId) => {
     return askAPI.deleteChatSession(projectUuid, sessionId).then(res => {
       let newSessions = sessions.slice(0);
-      const sessionIdx = newSessions.findIndex(s => s.session_uuid === sessionId);
+      const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       newSessions.splice(sessionIdx, 1);
       if (pageType === sessionId) {
         togglePageType(ASK_PAGE_TYPE.NEW);
@@ -64,7 +64,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
 
   const solveProblem = useCallback((sessionId, problem) => {
     let newSessions = sessions.slice(0);
-    const sessionIdx = newSessions.findIndex(session => session.session_uuid === sessionId);
+    const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
     let session = newSessions[sessionIdx];
     session.is_replying = true;
     session.problem = null;
@@ -84,7 +84,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     let newSessions = sessions.slice(0);
-    const sessionIdx = newSessions.findIndex(session => session.session_uuid === sessionId);
+    const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
     if (sessionIdx === -1) return;
     if (Object.keys(update).length === 0) return;
     let session = newSessions[sessionIdx];

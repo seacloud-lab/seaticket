@@ -37,13 +37,13 @@ const Session = ({ session, permission, isSelected }) => {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
-  const { session_uuid } = session;
+  const { _id: sessionId } = session;
 
   return (
     <>
       <div
         className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected || isOpen })}
-        onClick={() => togglePageType(session_uuid)}
+        onClick={() => togglePageType(sessionId)}
       >
         <div className="sea-qa-ai-ask-session-name text-truncate">
           {session.name}
@@ -72,14 +72,14 @@ const Session = ({ session, permission, isSelected }) => {
           title={gettext('Chat name')}
           value={session.name}
           onToggle={closeRename}
-          onSubmit={(name) => modifySession(session_uuid, { name })}
+          onSubmit={(name) => modifySession(sessionId, { name })}
         />
       )}
       {isShowDeleteDialog && (
         <CommonOperationConfirmationDialog
           title={gettext('Delete chat')}
           message={gettext('Are you sure you want to delete chat {placeholder} ?').replace('{placeholder}', `<b>${session.name}</b>`)}
-          executeOperation={() => deleteSession(session_uuid)}
+          executeOperation={() => deleteSession(sessionId)}
           confirmBtnText={gettext('Delete')}
           toggleDialog={closeDelete}
         />

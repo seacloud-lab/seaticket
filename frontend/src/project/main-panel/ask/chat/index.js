@@ -36,7 +36,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const readOnly = useMemo(() => false, []);
   const session = useMemo(() => {
     if (sessionId === ASK_PAGE_TYPE.NEW) return null;
-    return sessions.find(s => s.session_uuid === sessionId);
+    return sessions.find(s => s._id === sessionId);
   }, [sessionId, sessions]);
 
   const jumpToBottom = useCallback((delay = 1) => {
@@ -77,7 +77,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
-      const newSessionId = session.session_uuid;
+      const newSessionId = session._id;
       currentSessionId.current = newSessionId;
       newSessionProblem.current = '';
       togglePageType(newSessionId);
@@ -174,9 +174,9 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   useEffect(() => {
     if (loading) return;
-    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (session_uuid, { data, error }) => {
-      modifyLocalSession(session_uuid, { is_replying: false });
-      if (session_uuid !== sessionId) return;
+    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error }) => {
+      modifyLocalSession(reply_session_id, { is_replying: false });
+      if (reply_session_id !== sessionId) return;
       let newChatHistories = chatHistories.slice(0);
       if (error) {
         const errorMessage = Utils.getErrorMsg(error);

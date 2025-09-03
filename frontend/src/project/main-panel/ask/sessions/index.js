@@ -23,9 +23,9 @@ const Sessions = ({ sessionId, permission }) => {
           <EmptyTip text={gettext('No chats')} />
         )}
         {sessions.map(session => {
-          const isSelected = sessionId === session.session_uuid;
+          const isSelected = sessionId === session._id;
           return (
-            <Session key={session.session_uuid} session={session} permission={permission} isSelected={isSelected} />
+            <Session key={session._id} session={session} permission={permission} isSelected={isSelected} />
           );
         })}
       </div>
