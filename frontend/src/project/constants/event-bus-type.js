@@ -4,4 +4,6 @@ export const EVENT_BUS_TYPE = {
   NEW_CONNECTION: 'new_connection',
   NEW_TAG: 'new_tag',
   ASK_PAGE: 'ask_page',
+  ASK_QUESTION: 'ask_question',
+  AI_REPLY: 'ai_reply',
 };

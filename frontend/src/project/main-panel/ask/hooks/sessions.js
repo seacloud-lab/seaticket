@@ -5,10 +5,12 @@ import { toaster } from '@/components';
 import { ChatSession } from '../models';
 import { useAskPage } from './page-type';
 import { ASK_PAGE_TYPE } from '../constants';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ workspaceID, projectUuid, children }) => {
+export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [isShowSessions, setIsShowSessions] = useState(true);
@@ -60,6 +62,39 @@ export const SessionsProvider = ({ workspaceID, projectUuid, children }) => {
     setIsShowSessions(!isShowSessions);
   }, [isShowSessions]);
 
+  const solveProblem = useCallback((sessionId, problem) => {
+    let newSessions = sessions.slice(0);
+    const sessionIdx = newSessions.findIndex(session => session.session_uuid === sessionId);
+    let session = newSessions[sessionIdx];
+    session.is_replying = true;
+    session.problem = null;
+    newSessions[sessionIdx] = session;
+    setSessions(newSessions);
+    askAPI.askQuestion({
+      project_uuid: projectUuid,
+      workspace_id: workspaceID,
+      query: problem,
+      session_uuid: sessionId,
+    }).then(res => {
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data });
+    }).catch(error => {
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error });
+    });
+  }, [projectUuid, workspaceID, sessions]);
+
+  const modifyLocalSession = useCallback((sessionId, update) => {
+    let newSessions = sessions.slice(0);
+    const sessionIdx = newSessions.findIndex(session => session.session_uuid === sessionId);
+    if (sessionIdx === -1) return;
+    if (Object.keys(update).length === 0) return;
+    let session = newSessions[sessionIdx];
+    Object.keys(update).forEach(key => {
+      session[key] = update[key];
+    });
+    newSessions[sessionIdx] = session;
+    setSessions(newSessions);
+  }, [sessions]);
+
   useEffect(() => {
     setLoading(true);
     const isShowSessions = localStorage.getItem(localStorageKeyRef.current) || 'true';
@@ -67,7 +102,9 @@ export const SessionsProvider = ({ workspaceID, projectUuid, children }) => {
     askAPI.listChatSessions(projectUuid).then(res => {
       let sessions = res.data.sessions;
       if (Array.isArray(sessions) && sessions.length > 0) {
-        sessions = sessions.map(s => new ChatSession(s));
+        sessions = sessions.map(session => new ChatSession(session));
+      } else {
+        sessions = [];
       }
       setSessions(sessions);
     }).catch(error => {
@@ -83,6 +120,13 @@ export const SessionsProvider = ({ workspaceID, projectUuid, children }) => {
     localStorage.setItem(localStorageKeyRef.current, String(isShowSessions));
   }, [isShowSessions]);
 
+  useEffect(() => {
+    const unsubscribeAskQuestion = eventBus.subscribe(EVENT_BUS_TYPE.ASK_QUESTION, solveProblem);
+    return () => {
+      unsubscribeAskQuestion();
+    };
+  }, [sessions, solveProblem]);
+
   return (
     <SessionsContext.Provider value={{
       sessions,
@@ -94,6 +138,8 @@ export const SessionsProvider = ({ workspaceID, projectUuid, children }) => {
       openShowSessions,
       closeShowSessions,
       toggleIsShowSessions,
+      solveProblem,
+      modifyLocalSession,
     }}>
       {children}
     </SessionsContext.Provider>

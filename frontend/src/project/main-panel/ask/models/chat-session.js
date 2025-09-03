@@ -1,3 +1,4 @@
+
 class ChatSession {
   constructor(object) {
     this._id = object.id;
@@ -6,6 +7,9 @@ class ChatSession {
     this.name = object.session_name || '';
     this.created_at = object.created_at || '';
     this.updated_at = object.updated_at || '';
+
+    this.is_replying = false;
+    this.problem = null;
   }
 }
 

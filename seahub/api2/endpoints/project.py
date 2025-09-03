@@ -434,14 +434,10 @@ class QAView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        # argument check
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
-            error_msg = 'project_uuid invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        workspace_id = request.data.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
+            error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         query = request.data.get('query')
@@ -451,7 +447,7 @@ class QAView(APIView):
 
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
-            session = ChatSessions.objects.create_session(project_uuid, 'New Chat', request.user.username)
+            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
             session_uuid = session.session_uuid
         else:
             session = ChatSessions.objects.get_session_by_uuid(session_uuid)
@@ -459,19 +455,16 @@ class QAView(APIView):
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
-
-        connection_type = request.data.get('connection_type')
-
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            error_msg = f'project {project_uuid} not found.'
+            error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
+
+        connection_type = request.data.get('connection_type')
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
@@ -492,12 +485,14 @@ class QAView(APIView):
             ai_answer = 'Sorry, the AI service is temporarily unavailable, please try again later.'
             sources = []
 
-        ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
+        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
 
         return Response({
             'answer': ai_answer,
             'sources': sources,
-            'session_uuid': session_uuid
+            'session_uuid': session_uuid,
+            'user_message_id': user_message.id,
+            'ai_reply_message_id': ai_reply_message.id,
         })
 
 

@@ -10,6 +10,8 @@ import ChatHistory from '../chat-history';
 import Thinking from '../thinking';
 import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -26,11 +28,16 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const chatHistoryContentRef = useRef(null);
   const messageInputRef = useRef(null);
   const currentSessionId = useRef('');
+  const newSessionProblem = useRef('');
+
+  const { createSession, sessions, modifyLocalSession } = useSessions();
+  const { togglePageType } = useAskPage();
 
   const readOnly = useMemo(() => false, []);
-
-  const { createSession } = useSessions();
-  const { togglePageType } = useAskPage();
+  const session = useMemo(() => {
+    if (sessionId === ASK_PAGE_TYPE.NEW) return null;
+    return sessions.find(s => s.session_uuid === sessionId);
+  }, [sessionId, sessions]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -45,82 +52,60 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   const updateChatHistories = useCallback((newChatHistories, isReply, callback) => {
     setChatHistories(newChatHistories);
-    setReply(isReply);
     callback && callback();
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(async (message) => {
+  const sendMessage = useCallback((message) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
       return;
     }
-    const main = (sessionId) => {
-      const newChatHistories = [...chatHistories];
-      let messages = [{ type: CHAT_MESSAGE_TYPE.TEXT, value: validMessage }];
-      newChatHistories.push(new ChatMessage({
-        messages: messages,
-        isUserSpeak: true,
-      }));
-      updateChatHistories(newChatHistories, true, () => {
-        messageInputRef.current?.clearInput();
-      });
-      askAPI.askQuestion({
-        project_uuid: projectUuid,
-        workspace_id: workspaceID,
-        query: validMessage,
-        session_uuid: sessionId,
-      }).then((res) => {
-        const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = res.data;
-
-        const newChatData = [
-          { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
-          { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
-        ];
-
-        newChatHistories[newChatHistories.length - 1]._id = userMessageId;
-        newChatHistories.push(new ChatMessage({
-          _id: aiReplyMessageId,
-          messages: newChatData,
-          type: CHAT_MESSAGE_TYPE.GROUP
-        }));
-
-        updateChatHistories(newChatHistories, false);
-      }).catch((error) => {
-        const errorMessage = Utils.getErrorMsg(error);
-        newChatHistories.push(new ChatMessage({
-          messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: gettext(errorMessage) }],
-          type: CHAT_MESSAGE_TYPE.ERROR
-        }));
-        updateChatHistories(newChatHistories, false);
-      });
-    };
+    const newChatHistories = chatHistories.slice(0);
+    const messages = [{ type: CHAT_MESSAGE_TYPE.TEXT, value: validMessage }];
+    newChatHistories.push(new ChatMessage({
+      messages: messages,
+      isUserSpeak: true,
+    }));
+    updateChatHistories(newChatHistories, false, () => {
+      messageInputRef.current?.clearInput();
+    });
 
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
-      main(sessionId);
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, sessionId, validMessage);
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
       const newSessionId = session.session_uuid;
       currentSessionId.current = newSessionId;
+      newSessionProblem.current = '';
       togglePageType(newSessionId);
-      main(newSessionId);
+      setTimeout(() => {
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage);
+      }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, projectUuid, workspaceID, togglePageType]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
 
   useEffect(() => {
-    if (sessionId === ASK_PAGE_TYPE.NEW) {
-      setChatHistories([]);
-      messageInputRef.current?.focusInput();
-      return;
+    if (currentSessionId.current === sessionId) return;
+    const problem = messageInputRef.current?.getProblem() || '';
+    if (currentSessionId.current !== ASK_PAGE_TYPE.NEW) {
+      modifyLocalSession(currentSessionId.current, { problem });
+    } else {
+      newSessionProblem.current = problem;
     }
+
+    currentSessionId.current = sessionId;
+    updateChatHistories([]);
     setLoading(true);
-    if (currentSessionId.current === sessionId) {
-      currentSessionId.current = null;
+
+    // new blank chat
+    if (sessionId === ASK_PAGE_TYPE.NEW) {
       setLoading(false);
       return;
     }
+
     askAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
         if (item.role === 'user') {
@@ -155,7 +140,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           type: CHAT_MESSAGE_TYPE.GROUP
         });
       });
-      setChatHistories(messages);
+      updateChatHistories(messages);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -175,7 +160,55 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     wrapper && resizeObserver.observe(wrapper);
   }, []);
 
-  const isEmpty = chatHistories.length === 0;
+  useEffect(() => {
+    setReply(Boolean(session?.is_replying));
+  }, [session?.is_replying]);
+
+  useEffect(() => {
+    if (sessionId !== ASK_PAGE_TYPE.NEW) {
+      messageInputRef.current?.setAsk([session?.problem || '']);
+    } else {
+      messageInputRef.current?.setAsk([newSessionProblem.current || '']);
+    }
+  }, [sessionId, session?.problem]);
+
+  useEffect(() => {
+    if (loading) return;
+    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (session_uuid, { data, error }) => {
+      modifyLocalSession(session_uuid, { is_replying: false });
+      if (session_uuid !== sessionId) return;
+      let newChatHistories = chatHistories.slice(0);
+      if (error) {
+        const errorMessage = Utils.getErrorMsg(error);
+        newChatHistories.push(new ChatMessage({
+          messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: gettext(errorMessage) }],
+          type: CHAT_MESSAGE_TYPE.ERROR
+        }));
+        updateChatHistories(newChatHistories, false);
+        return;
+      }
+      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
+      const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
+      if (messageIndex > -1) return;
+      const newChatData = [
+        { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
+        { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
+      ];
+
+      newChatHistories[newChatHistories.length - 1]._id = userMessageId;
+      newChatHistories.push(new ChatMessage({
+        _id: aiReplyMessageId,
+        messages: newChatData,
+        type: CHAT_MESSAGE_TYPE.GROUP
+      }));
+      updateChatHistories(newChatHistories, false);
+    });
+    return () => {
+      unsubscribeAIReply();
+    };
+  }, [loading, sessionId, chatHistories, modifyLocalSession]);
+
+  const isEmpty = chatHistories.length === 0 && !loading;
 
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
@@ -193,14 +226,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
               <ChatHistory key={`chat-${chatIndex}`} chat={chat} />
             );
           })}
-          {isReply && (<Thinking />)}
+          {!loading && isReply && (<Thinking />)}
           {loading && (<Loading />)}
         </div>
       </div>
       <div className="sea-qa-ai-ask-chat-input-wrapper-shell">
         <MessageInput
           ref={messageInputRef}
-          isReply={isReply}
+          isReply={loading || isReply}
           readOnly={readOnly}
           sendMessage={sendMessage}
         />

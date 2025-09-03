@@ -111,14 +111,20 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
 
     setAsk: (messages = []) => {
       setAsk(messages);
+      setContainerFocus(true);
+      inputRef.current.focus();
     },
 
     focusInput: () => {
       setContainerFocus(true);
       inputRef.current.focus();
-    }
+    },
 
-  }), [setAsk]);
+    getProblem: () => {
+      return inputRef?.current?.innerText || '';
+    },
+
+  }), [setAsk, inputRef]);
 
   const disabled = isReply || readOnly;
 
