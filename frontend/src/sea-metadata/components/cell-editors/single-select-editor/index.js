@@ -82,13 +82,16 @@ const SingleSelectEditor = forwardRef(({
 
   }), [column, onCommit]);
 
+  const isTypeColumn = useMemo(() => column.key === 'type', [column.key]);
+
   return (
     <div className="sea-metadata-single-select-editor option-editor-popover" style={style} ref={editorRef}>
       <Main
         ref={mainRef}
         isMultiple={false}
-        placeholder={gettext('Search options')}
-        emptyTip={gettext('No options available')}
+        placeholder={isTypeColumn ? gettext('Search options') : gettext('Search tags')}
+        emptyTip={isTypeColumn ? gettext('No options available') : gettext('No tags available')}
+        addToolText={isTypeColumn ? gettext('Add option') : gettext('Add tag')}
         value={value}
         options={options}
         onChange={onSubmit}
