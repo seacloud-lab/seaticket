@@ -183,3 +183,7 @@
   color: #212529;
   height: 38px;
 }
+
+.flex-1 {
+  flex: 1;
+}
