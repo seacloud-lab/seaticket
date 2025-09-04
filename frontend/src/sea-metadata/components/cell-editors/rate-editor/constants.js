@@ -3,7 +3,7 @@ import { gettext } from '@/constants';
 const RATE_MAP = {
   '1': {
     name: gettext('No priority'),
-    icon: 'priority-00',
+    // No priority, no icon
   },
   '2': {
     name: gettext('Urgent'),
