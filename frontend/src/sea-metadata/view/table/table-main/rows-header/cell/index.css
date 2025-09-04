@@ -5,6 +5,7 @@
   margin-top: -2px;
 }
 
+.sea-metadata-row-header-cell .sea-metadata-table-cell.column.priority-column,
 .sea-metadata-row-header-cell .sea-metadata-table-cell.column.name-column {
   cursor: default;
 }

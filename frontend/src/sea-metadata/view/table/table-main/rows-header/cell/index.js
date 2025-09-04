@@ -8,6 +8,7 @@ import DropdownMenu from './dropdown-menu';
 import { COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
 import { checkIsNameColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -151,12 +152,18 @@ const Cell = ({
     return (
       <div key={key} className="sea-metadata-row-header-cell">
         <div
-          className={classnames('sea-metadata-table-cell column', { 'table-last--frozen': isLastFrozenCell })}
+          className='sea-metadata-table-cell column priority-column'
           ref={headerCellRef}
           style={style}
           id={`sea-metadata-column-${key}`}
         >
-          <div className="sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate">
+          <div className="sea-metadata-table-column-content">
+            <span className="mr-2" id={`header-icon-${key}`}>
+              <Icon symbol={'priority-column'} className="sea-metadata-icon sea-metadata-column-icon" />
+            </span>
+            <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
+              {gettext('Priority')}
+            </UncontrolledTooltip>
           </div>
         </div>
       </div>
