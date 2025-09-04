@@ -148,6 +148,7 @@
 
 .sea-metadata-table-cell .sea-metadata-url-formatter {
   text-decoration: none;
+  flex: 1;
 }
 
 .sea-metadata-table-cell .sea-metadata-ui.long-text-formatter {
