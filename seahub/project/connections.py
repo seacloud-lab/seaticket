@@ -315,12 +315,12 @@ class ProjectConnectionSyncView(APIView):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Connection is currently syncing')
 
         # check cooldown
-        if project_connection.synced_at:
+        if project_connection.last_sync_time:
             now = datetime.datetime.now(datetime.timezone.utc)
-            time_diff = now - project_connection.synced_at
+            time_diff = now - project_connection.last_sync_time
             cooldown_seconds = 24 * 60 * 60
             if time_diff.total_seconds() < cooldown_seconds:
-                next_sync_utc = project_connection.synced_at + datetime.timedelta(seconds=cooldown_seconds)
+                next_sync_utc = project_connection.last_sync_time + datetime.timedelta(seconds=cooldown_seconds)
                 error_msg = {
                     'message_type': 'Manual sync too frequent',
                     'next_time': next_sync_utc

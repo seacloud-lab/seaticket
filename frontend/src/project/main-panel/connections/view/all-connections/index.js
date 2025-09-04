@@ -23,7 +23,7 @@ const AllConnections = ({ projectUuid }) => {
   const columns = useMemo(() => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '40%' },
-      { key: 'synced_at', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
+      { key: 'indexed_at', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
       { key: 'is_active', name: gettext('Status'), type: CONNECTION_FIELD_TYPE.ACTIVE_STATUS, width: '10%', editable: true },
       { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
