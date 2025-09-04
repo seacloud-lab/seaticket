@@ -23,6 +23,7 @@ const Main = forwardRef(({
   onToggle,
   onCreate,
   onPressTab,
+  addToolText = gettext('Add tag'),
 }, ref) => {
   const [value, setValue] = useState(propsValue);
   const [searchValue, setSearchValue] = useState('');
@@ -218,7 +219,11 @@ const Main = forwardRef(({
         )}
       </div>
       {onCreate && searchValue.trim() && !options.find(o => o.name === searchValue.trim()) && (
-        <CustomizeAddTool className="option-editor-add-search-result" name={`${gettext('Add tag')} ${searchValue.trim()}`} callBack={handleCreate} />
+        <CustomizeAddTool
+          className="option-editor-add-search-result"
+          name={`${addToolText} ${searchValue.trim()}`}
+          callBack={handleCreate}
+        />
       )}
     </div>
   );
