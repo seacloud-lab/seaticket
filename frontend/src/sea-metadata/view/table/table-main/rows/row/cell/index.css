@@ -62,6 +62,7 @@
   padding: 0;
   max-width: 100%;
   overflow: hidden;
+  flex: 1;
 }
 
 .sea-metadata-table-cell .sea-metadata-ui.cell-formatter-container.sea-metadata-file-formatter {
