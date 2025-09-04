@@ -18,7 +18,11 @@ const RateItem = ({ value, readOnly, onClick, isSelected, index }) => {
   return (
     <div className={classnames('sea-metadata-rate-item')} onClick={() => onClick(value)}>
       <span className={classnames('sea-metadata-rate-item-left')}>
-        <Icon className="sea-metadata-icon" symbol={rateItem.icon} title={rateItem.name}/>
+        {rateItem.icon ?
+          <Icon className="sea-metadata-icon" symbol={rateItem.icon} title={rateItem.name}/>
+          :
+          <span className="px-2"></span>
+        }
         <span className="ml-2">{rateItem.name}</span>
       </span>
       <span className={classnames('sea-metadata-rate-item-right')}>
