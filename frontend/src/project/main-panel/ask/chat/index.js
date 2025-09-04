@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { Icon, Loading, toaster } from '@/components';
+import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
@@ -20,7 +20,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   // eslint-disable-next-line no-unused-vars
   const [size, setSize] = useState('');
   const [height, setHeight] = useState(window.innerHeight - 44);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
 
   const timer = useRef(null);
@@ -221,13 +221,13 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
               <div className="sea-qa-ai-ask-chats-tip-description">{gettext('Describe your problem, assistant will try to solve it by searching your knowledge bases.')}</div>
             </div>
           )}
-          {chatHistories.map((chat, chatIndex) => {
+          {!loading && chatHistories.map((chat, chatIndex) => {
             return (
               <ChatHistory key={`chat-${chatIndex}`} chat={chat} />
             );
           })}
           {!loading && isReply && (<Thinking />)}
-          {loading && (<Loading />)}
+          {loading && (<CenteredLoading className="flex-1" />)}
         </div>
       </div>
       <div className="sea-qa-ai-ask-chat-input-wrapper-shell">
