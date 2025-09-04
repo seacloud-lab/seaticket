@@ -149,13 +149,6 @@ export const PREDEFINED_TICKET_TAG = {
   },
 };
 
-export const TICKET_TYPES = [
-  { id: 'bug', value: 'bug', name: gettext('Bug'), textColor: '#FFF', color: '#F4667C', borderColor: '#DC556A' },
-  { id: 'feature', value: 'feature', name: gettext('Feature'), textColor: '#FFF', color: '#46A1FD', borderColor: '#3C8FE4' },
-  { id: 'request', value: 'request', name: gettext('Request'), textColor: '#212529', color: '#FFFCB5', borderColor: '#E8E79D' },
-  { id: 'support', value: 'support', name: gettext('Support'), textColor: '#212529', color: '#DDFFE6', borderColor: '#BBEBCD' },
-];
-
 export const TICKET_PAGE_TYPE = {
   ALL: 'all',
   NEW: 'new',

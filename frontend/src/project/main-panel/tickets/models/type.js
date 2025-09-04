@@ -3,7 +3,6 @@ class Type {
     this._id = String(object.id) || '';
     this.id = String(object.id) || '';
     this.name = object.name || '';
-    this.value = object.name || '';
     this.color = object.color || '';
     this.text_color = object.text_color || '';
     this.textColor = object.text_color || '';

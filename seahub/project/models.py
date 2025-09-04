@@ -1094,7 +1094,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, type_id=None, ticket_type=None, priority=0):
+    def create_ticket(self, project_uuid, username, title, content, status, type_id=None, priority=0):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()

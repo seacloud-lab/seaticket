@@ -6,7 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '@/components';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG, TICKET_TYPES } from '../../constants';
+import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -17,8 +17,9 @@ import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useTicketsPage } from '../../hooks';
+import { useTicketsPage, useTypes } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -29,6 +30,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [scrollTop, setScrollTop] = useState(0);
 
   const { togglePageType } = useTicketsPage();
+  const { typesData } = useTypes();
 
   const user = useMemo(() => {
     return {
@@ -157,7 +159,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
   const { id, status, title, creator, replies, assignees = [], type, tags } = ticket;
-  const typeOption = TICKET_TYPES.find(o => o.id === type);
+  const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
 
