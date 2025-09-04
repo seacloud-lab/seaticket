@@ -14,11 +14,20 @@ const AllTypes = ({ projectUuid }) => {
 
   const columns = useMemo(() => [
     {
-      type: CellType.TYPE, key: 'name', name: gettext('Type'),
-      editable: false, is_name_column: true, frozen: true,
+      type: CellType.TYPE,
+      key: 'name',
+      name: gettext('Type'),
+      editable: false,
+      is_name_column: true,
+      frozen: true,
       click: (row) => toggleChildrenPageType(row._id)
     },
-    { type: CellType.NUMBER, key: 'tickets_count', name: gettext('Tickets count'), editable: false },
+    {
+      type: CellType.NUMBER,
+      key: 'tickets_count',
+      name: gettext('Tickets count'),
+      editable: false,
+    },
   ], [toggleChildrenPageType]);
 
   const viewsData = useMemo(() => ({

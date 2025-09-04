@@ -4,12 +4,10 @@ class Type {
     this.id = String(object.id) || '';
     this.name = object.name || '';
     this.value = object.name || '';
-
     this.color = object.color || '';
     this.text_color = object.text_color || '';
     this.textColor = object.text_color || '';
     this.tickets_count = object.tickets_count || 0;
-
   }
 
   _update = (keyValue = {}) => {

@@ -20,7 +20,7 @@ function Icon({ className, symbol, ...otherProps }) {
 }
 
 Icon.propTypes = {
-  symbol: PropTypes.string.isRequired,
+  symbol: PropTypes.string,
   className: PropTypes.string,
 };
 

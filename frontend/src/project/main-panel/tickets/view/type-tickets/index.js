@@ -3,33 +3,84 @@ import copy from 'copy-to-clipboard';
 import { typesAPI, ticketsAPI } from '../../../../api';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTags, useTypes, useTicketsPage } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS, BAR_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../../../../constants';
+import { useTypes, useTicketsPage } from '../../hooks';
+import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { BAR_TYPE } from '@/project/constants/bar';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
-  const { tagsData } = useTags();
   const { isLoading: isTypesLoading, typesData, createType } = useTypes();
 
   const columns = useMemo(() => [
     {
-      type: CellType.TEXT, key: 'title', name: gettext('Title'),
-      editable: true, is_name_column: true, frozen: true, is_required: true,
+      type: CellType.TEXT,
+      key: 'title',
+      name: gettext('Title'),
+      editable: true,
+      is_name_column: true,
+      frozen: true,
+      is_required: true,
       click: (row) => togglePageType(row._id)
     },
-    { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), editable: true, data: { options: TICKET_STATUS_OPTIONS }, is_required: true },
-    { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), editable: true, data: { options: typesData.rows } },
-    { type: CellType.LONG_TEXT, key: 'content', name: gettext('Content'), editable: true, is_required: true },
-    { type: CellType.COLLABORATOR, key: 'assignees', name: gettext('Assignees'), editable: true },
-    { type: CellType.TAGS, key: 'tags', name: gettext('Tags'), editable: true, modify_data_able: true },
-    { type: CellType.COLLABORATOR, key: 'participants', name: gettext('Participants'), editable: false },
-    { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-    { type: CellType.CREATOR, key: 'creator', name: gettext('Creator'), editable: false },
+    {
+      type: CellType.SINGLE_SELECT,
+      key: 'status',
+      name: gettext('Status'),
+      editable: true,
+      data: { options: TICKET_STATUS_OPTIONS },
+      is_required: true,
+    },
+    {
+      type: CellType.SINGLE_SELECT,
+      key: 'type',
+      name: gettext('Type'),
+      editable: true,
+      modify_data_able: true,
+      data: { options: typesData.rows },
+    },
+    {
+      type: CellType.LONG_TEXT,
+      key: 'content',
+      name: gettext('Content'),
+      editable: true,
+      is_required: true,
+    },
+    {
+      type: CellType.COLLABORATOR,
+      key: 'assignees',
+      name: gettext('Assignees'),
+      editable: true,
+    },
+    {
+      type: CellType.TAGS,
+      key: 'tags',
+      name: gettext('Tags'),
+      editable: true,
+      modify_data_able: true,
+    },
+    {
+      type: CellType.COLLABORATOR,
+      key: 'participants',
+      name: gettext('Participants'),
+      editable: false,
+    },
+    {
+      type: CellType.CTIME,
+      key: 'created_at',
+      name: gettext('Create time'),
+      editable: false,
+    },
+    {
+      type: CellType.CREATOR,
+      key: 'creator',
+      name: gettext('Creator'),
+      editable: false,
+    },
   ], [togglePageType]);
 
   const viewsData = useMemo(() => ({

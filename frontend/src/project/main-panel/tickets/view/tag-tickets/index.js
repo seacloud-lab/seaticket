@@ -19,18 +19,69 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const columns = useMemo(() => [
     {
-      type: CellType.TEXT, key: 'title', name: gettext('Title'),
-      editable: true, is_name_column: true, frozen: true, is_required: true,
+      type: CellType.TEXT,
+      key: 'title',
+      name: gettext('Title'),
+      editable: true,
+      is_name_column: true,
+      frozen: true,
+      is_required: true,
       click: (row) => togglePageType(row._id)
     },
-    { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), editable: true, data: { options: TICKET_STATUS_OPTIONS }, is_required: true },
-    { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), editable: true, data: { options: typesData.rows } },
-    { type: CellType.LONG_TEXT, key: 'content', name: gettext('Content'), editable: true, is_required: true },
-    { type: CellType.COLLABORATOR, key: 'assignees', name: gettext('Assignees'), editable: true },
-    { type: CellType.TAGS, key: 'tags', name: gettext('Tags'), editable: true, modify_data_able: true },
-    { type: CellType.COLLABORATOR, key: 'participants', name: gettext('Participants'), editable: false },
-    { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-    { type: CellType.CREATOR, key: 'creator', name: gettext('Creator'), editable: false },
+    {
+      type: CellType.SINGLE_SELECT,
+      key: 'status',
+      name: gettext('Status'),
+      editable: true,
+      data: { options: TICKET_STATUS_OPTIONS },
+      is_required: true,
+    },
+    {
+      type: CellType.SINGLE_SELECT,
+      key: 'type',
+      name: gettext('Type'),
+      editable: true,
+      modify_data_able: true,
+      data: { options: typesData.rows },
+    },
+    {
+      type: CellType.LONG_TEXT,
+      key: 'content',
+      name: gettext('Content'),
+      editable: true,
+      is_required: true,
+    },
+    {
+      type: CellType.COLLABORATOR,
+      key: 'assignees',
+      name: gettext('Assignees'),
+      editable: true,
+    },
+    {
+      type: CellType.TAGS,
+      key: 'tags',
+      name: gettext('Tags'),
+      editable: true,
+      modify_data_able: true,
+    },
+    {
+      type: CellType.COLLABORATOR,
+      key: 'participants',
+      name: gettext('Participants'),
+      editable: false,
+    },
+    {
+      type: CellType.CTIME,
+      key: 'created_at',
+      name: gettext('Create time'),
+      editable: false,
+    },
+    {
+      type: CellType.CREATOR,
+      key: 'creator',
+      name: gettext('Creator'),
+      editable: false,
+    },
   ], [togglePageType]);
 
   const viewsData = useMemo(() => ({
