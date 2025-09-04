@@ -131,7 +131,7 @@ const Search = ({ title }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result => <ListItem key={result.id || result.uuid} {...result} />)}
+                {results.map(result => <ListItem key={result.id || result.uuid} {...result} searchValue={value} />)}
               </div>
             }
           </>
