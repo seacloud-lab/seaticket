@@ -118,7 +118,7 @@ const getT = (connectionType) => {
   return {};
 };
 
-const Connection = ({ projectUuid, connectionID }) => {
+const Connection = ({ projectUuid, permission, connectionID }) => {
   const { isLoading, updatePageName } = useConnectionsPage();
   const [rowDetails, setRowDetails] = useState(null);
   const [siteDetails, setSiteDetails] = useState(null);
@@ -234,6 +234,7 @@ const Connection = ({ projectUuid, connectionID }) => {
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         isViewComputedOnServer={false}
+        permission={permission}
         viewTools={['views', 'search', 'sorts', 'groupbys', 'order_and_hidden']}
         expandRow={handleExpandRow}
       />

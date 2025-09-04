@@ -6,14 +6,14 @@ import { CONNECTION_PAGE_TYPE } from './constants';
 import TopBar from './components/top-bar';
 
 const {
-  projectUuid, projectName, workspaceID,
+  projectUuid, projectName, workspaceID, permission
 } = window.app.pageOptions;
 
 const Page = () => {
   const { isLoading, pageType } = useConnectionsPage();
   if (isLoading) return null;
   if (pageType === CONNECTION_PAGE_TYPE.ALL) return (<AllConnections projectUuid={projectUuid} projectName={projectName} />);
-  return (<Connection projectUuid={projectUuid} connectionID={pageType} />);
+  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} />);
 };
 
 const Index = ({ title }) => {
