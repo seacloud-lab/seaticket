@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
 class TypesAPI {
@@ -104,7 +104,7 @@ class TypesAPI {
 }
 
 const typesAPI = new TypesAPI();
-const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
 typesAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { typesAPI };

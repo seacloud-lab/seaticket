@@ -1,5 +1,5 @@
 import axios from 'axios';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
 class AskAPI {
@@ -102,7 +102,7 @@ class AskAPI {
 }
 
 const askAPI = new AskAPI();
-const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
 askAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { askAPI };

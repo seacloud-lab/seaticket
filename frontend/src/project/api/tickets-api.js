@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
 class TicketsAPI {
@@ -234,7 +234,7 @@ class TicketsAPI {
 }
 
 const ticketsAPI = new TicketsAPI();
-const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
 ticketsAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { ticketsAPI };

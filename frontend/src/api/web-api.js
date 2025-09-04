@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../constants/config';
 
 class SeaQAAPI {
@@ -737,7 +737,7 @@ class SeaQAAPI {
 }
 
 const seaQAAPI = new SeaQAAPI();
-const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
 seaQAAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { seaQAAPI };

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
 class TagsAPI {
@@ -107,7 +107,7 @@ class TagsAPI {
 }
 
 const tagsAPI = new TagsAPI();
-const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
 tagsAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export { tagsAPI };
