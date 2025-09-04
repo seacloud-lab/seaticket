@@ -1,5 +1,5 @@
 import axios from 'axios';
-import cookie from 'react-cookies';
+import Cookies from 'js-cookie';
 import { siteRoot } from '../constants';
 
 class SysAdminServiceApi {
@@ -18,7 +18,7 @@ class SysAdminServiceApi {
   }
 
   initForUsage() {
-    const xcsrfHeaders = cookie.load('seaqa_csrftoken');
+    const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
       this.server = server;
