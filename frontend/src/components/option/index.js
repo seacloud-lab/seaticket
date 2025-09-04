@@ -5,7 +5,7 @@ import './index.css';
 
 const Option = ({ option, className, children }) => {
 
-  const { color, textColor, borderColor, name } = option;
+  const { color, textColor, borderColor = 'transparent', name } = option;
   return (
     <div
       style={{ color: textColor, borderColor, backgroundColor: color }}

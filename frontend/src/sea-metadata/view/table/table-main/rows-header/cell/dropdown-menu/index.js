@@ -12,10 +12,12 @@ import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../..
 import { CellType, DEFAULT_DATE_FORMAT, SORT_COLUMN_OPTIONS, SHOW_DISABLED_SORT_COLUMNS, SORT_TYPE, EVENT_BUS_TYPE } from '../../../../../../constants';
 import context from '@/sea-metadata/context';
 import { useTagsData } from '@/sea-metadata/hooks';
+import { useTicketsPage } from '@/project/main-panel/tickets/hooks/tickets-page';
 
 import './index.css';
 
 const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColumnData, deleteColumn }, ref) => {
+  const { togglePageType } = useTicketsPage();
   const menuRef = createRef();
   const dropdownDomRef = createRef();
   const [isMenuShow, setMenuShow] = useState(false);
@@ -195,17 +197,22 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
     },
   }), [isRenamePopoverShow, isOptionPopoverShow]);
 
+  const toggleAllTypes = useCallback(() => {
+    togglePageType('types');
+  }, []);
+
   const renderDropdownMenu = useCallback(() => {
     const { type } = column;
     const canModifyColumnData = context.canModifyColumnData(column);
     // const canDeleteColumn = context.canDeleteColumn(column);
     // const canRenameColumn = context.canRenameColumn(column);
     const canModifyView = context.canModifyView();
+    const isTypeColumn = column.key === 'type' && column.type === CellType.SINGLE_SELECT;
 
     return (
       <DropdownMenu ref={menuRef} className="sea-metadata-column-dropdown-menu">
         <div ref={dropdownDomRef}>
-          {type === CellType.SINGLE_SELECT && (
+          {type === CellType.SINGLE_SELECT && !isTypeColumn && (
             <>
               <DropdownItem
                 disabled={!canModifyColumnData}
@@ -230,7 +237,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
           {type === CellType.DATE && (
             <>{renderDateFormat(canModifyColumnData)}</>
           )}
-          {[CellType.DATE, CellType.SINGLE_SELECT, CellType.MULTIPLE_SELECT].includes(column.type) && (
+          {[CellType.DATE, CellType.SINGLE_SELECT, CellType.MULTIPLE_SELECT].includes(column.type) && !isTypeColumn && (
             <DefaultDropdownItem key="divider-item" divider />
           )}
           {/* <DropdownItem
@@ -242,7 +249,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
             onChange={openRenamePopover}
             onMouseEnter={hideSubMenu}
           /> */}
-          {(SORT_COLUMN_OPTIONS.includes(column.type) || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)) && (
+          {(SORT_COLUMN_OPTIONS.includes(column.type) || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)) && !isTypeColumn && (
             <>
               <DropdownItem
                 disabled={!canModifyView || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)}
@@ -272,6 +279,13 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
               onMouseEnter={hideSubMenu}
             />
           )}
+          {isTypeColumn &&
+            <DropdownItem
+              title={gettext('Types')}
+              onChange={toggleAllTypes}
+              onMouseEnter={hideSubMenu}
+            />
+          }
         </div>
       </DropdownMenu>
     );

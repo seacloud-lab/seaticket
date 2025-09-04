@@ -28,7 +28,7 @@ class Ticket {
     this.title = object.title || '';
     this.content = object.content || '';
     this.status = object.status || TICKET_STATUS.OPEN;
-    this.type = object.type || '';
+    this.type = String(object.type) || '';
     this.tags = object.tags || [];
     this.priority = object.priority || 0;
 
@@ -97,7 +97,7 @@ class TicketForTickets {
     this.title = object.title || '';
     this.content = object.content || '';
     this.status = object.status || TICKET_STATUS.OPEN;
-    this.type = object.type || '';
+    this.type = String(object.type) || '';
     this.tags = object.tags || [];
     this.priority = object.priority || 0;
 

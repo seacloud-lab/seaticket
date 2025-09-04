@@ -47,7 +47,7 @@ const ColumnDropdownItem = ({
         onMouseEnter={onMouseEnter}
         id={target}
       >
-        <Icon className="sea-metadata-icon" symbol={iconName} />
+        {iconName && <Icon className="sea-metadata-icon" symbol={iconName} />}
         <span className="item-text">{title}</span>
         {isShowToolTip && (
           <UncontrolledTooltip placement="right" target={target} fade={false} delay={{ show: 0, hide: 0 }} className="sea-metadata-tooltip">
@@ -61,14 +61,14 @@ const ColumnDropdownItem = ({
 };
 
 ColumnDropdownItem.propTypes = {
-  disabled: PropTypes.bool.isRequired,
-  target: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
+  target: PropTypes.string,
   iconName: PropTypes.string,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   tip: PropTypes.string,
   className: PropTypes.string,
-  onChange: PropTypes.func.isRequired,
-  onMouseEnter: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
+  onMouseEnter: PropTypes.func,
 };
 
 export default ColumnDropdownItem;

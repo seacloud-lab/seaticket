@@ -1,21 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
 import copy from 'copy-to-clipboard';
-import { tagsAPI, ticketsAPI } from '../../../../api';
+import { typesAPI, ticketsAPI } from '../../../../api';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTags, useTypes, useTicketsPage } from '../../hooks';
-import { BAR_TYPE } from '../../../../constants';
+import { useTypes, useTicketsPage } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { BAR_TYPE } from '@/project/constants/bar';
 
-const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
+const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
-  const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
-  const { typesData } = useTypes();
+  const { isLoading: isTypesLoading, typesData, createType } = useTypes();
 
   const columns = useMemo(() => [
     {
@@ -96,7 +95,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return tagsAPI.listProjectTicketsByTag(projectUuid, childrenPageType).then(res => {
+      return typesAPI.listProjectTicketsByType(projectUuid, childrenPageType).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         return {
           data: {
@@ -250,20 +249,19 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return list;
   }, [projectName, workspaceID]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tag-tickets`, [projectUuid]);
+  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-type-tickets`, [projectUuid]);
 
   const t = useMemo(() => {
     return {
       row: gettext('ticket'),
       rows: gettext('tickets'),
-      Row: gettext('Ticket'),
       Rows: gettext('Tickets'),
     };
   }, []);
 
-  if (isLoading || isTagsLoading) return null;
-  const tag = getRowById(tagsData, childrenPageType);
-  if (!tag) {
+  if (isLoading || isTypesLoading) return null;
+  const type = getRowById(typesData, childrenPageType);
+  if (!type) {
     toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL);
     return null;
   }
@@ -275,17 +273,17 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
       expandRow={(row) => togglePageType(row._id)}
+      toggleView={() => {}}
       viewTools={['search', 'sorts']}
       isViewComputedOnServer={false}
-      permission={permission}
 
-      // tags
-      tagsData={tagsData}
-      createTag={createTag}
+      // types
+      typesData={typesData}
+      createType={createType}
 
       t={t}
     />
   );
 };
 
-export default TagTickets;
+export default TypeTickets;

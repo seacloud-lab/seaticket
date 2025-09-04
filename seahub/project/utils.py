@@ -207,21 +207,6 @@ def ask_ai_question(params):
     return ai_answer, sources
 
 
-def gen_project_tags_dict(project_uuid, key='id'):
-    project_tags = ProjectTags.objects.filter(project_uuid=project_uuid)
-    if not project_tags:
-        return {}
-
-    project_tags_dict = {}
-    for project_tag in project_tags:
-        tag_info = project_tag.to_dict()
-        if key == 'id':
-            project_tags_dict[project_tag.id] = tag_info
-        else:
-            project_tags_dict[project_tag.name] = tag_info
-    return project_tags_dict
-
-
 def gen_s3_file_path(project_uuid, file_path):
     return f'/projects/{project_uuid}/{file_path}'
 

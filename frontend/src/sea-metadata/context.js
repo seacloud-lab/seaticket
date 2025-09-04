@@ -151,7 +151,6 @@ class Context {
 
   canModifyColumnData = (column) => {
     if (!this.canModify()) return false;
-    // if (!this.api?.modifyColumnData) return false;
     return Boolean(column?.modify_data_able);
   };
 

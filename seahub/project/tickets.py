@@ -18,9 +18,9 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects, Tickets, TicketReplies, \
-    TicketTags, TicketAssignees, ProjectTags, TicketParticipants
+    TicketTags, TicketAssignees, ProjectTags, ProjectTypes, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    gen_project_tags_dict, replace_file_url_in_content, upload_files_to_s3
+    replace_file_url_in_content, upload_files_to_s3
 from seahub.project.constants import TICKET_STATUS, TICKET_TYPE
 
 
@@ -97,19 +97,18 @@ class TicketsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        ticket_id_list = [ticket.id for ticket in tickets]
+
         tags_dict = {}
-        ticket_tags = TicketTags.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
-        project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
+        ticket_tags = TicketTags.objects.filter(ticket_id__in=ticket_id_list)
         for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, None)
-            if tag_info:
-                if tag.ticket_id not in tags_dict:
-                    tags_dict[tag.ticket_id] = [tag.tag_id]
-                else:
-                    tags_dict[tag.ticket_id].append(tag.tag_id)
+            if tag.ticket_id not in tags_dict:
+                tags_dict[tag.ticket_id] = [tag.tag_id]
+            else:
+                tags_dict[tag.ticket_id].append(tag.tag_id)
 
         assignees_dict = {}
-        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=ticket_id_list)
         for ticket_assignee in ticket_assignees:
             if ticket_assignee.ticket_id not in assignees_dict:
                 assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
@@ -117,7 +116,7 @@ class TicketsAPIView(APIView):
                 assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
 
         participants_dict = {}
-        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=[ticket.id for ticket in tickets])
+        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=ticket_id_list)
         for ticket_participant in ticket_participants:
             if ticket_participant.ticket_id not in participants_dict:
                 participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
@@ -179,9 +178,20 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
-        ticket_type = request.data.get('type')
-        if ticket_type is not None:
-            if ticket_type not in TICKET_TYPE:
+        type_id = request.POST.get('type')
+        if type_id is not None:
+            try:
+                type_id = int(type_id)
+            except:
+                error_msg = 'type invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            try:
+                project_type = ProjectTypes.objects.filter(
+                    id=type_id, project_uuid=project_uuid).first()
+            except Exception as e:
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            if not project_type:
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -264,7 +274,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, ticket_status, ticket_type, priority)
+                project_uuid, username, title, content, ticket_status, type_id, ticket_type, priority)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -281,19 +291,16 @@ class TicketsAPIView(APIView):
         tags_dict = {}
         if tags:
             try:
-                project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 ticket_tags = [TicketTags(
                     ticket_id=ticket.id,
-                    tag_id=project_tags_dict.get(tag, {}).get('id'),
-                ) for tag in tags if project_tags_dict.get(tag, None)]
+                    tag_id=tag,
+                ) for tag in tags]
                 TicketTags.objects.bulk_create(ticket_tags)
                 for tag in ticket_tags:
-                    tag_info = project_tags_dict.get(tag.tag_id, None)
-                    if tag_info:
-                        if tag.ticket_id not in tags_dict:
-                            tags_dict[tag.ticket_id] = [tag_info]
-                        else:
-                            tags_dict[tag.ticket_id].append(tag_info)
+                    if tag.ticket_id not in tags_dict:
+                        tags_dict[tag.ticket_id] = [tag.tag_id]
+                    else:
+                        tags_dict[tag.ticket_id].append(tag.tag_id)
             except Exception as e:
                 logger.error(e)
 
@@ -359,7 +366,6 @@ class TicketAPIView(APIView):
                 ticket.id, start, end)
             ticket_tags = TicketTags.objects.filter(
                 ticket_id=ticket.id)
-            project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
             ticket_assignees = TicketAssignees.objects.filter(
                 ticket_id=ticket.id)
             ticket_participants = TicketParticipants.objects.filter(
@@ -371,12 +377,10 @@ class TicketAPIView(APIView):
 
         tags_dict = {}
         for tag in ticket_tags:
-            tag_info = project_tags_dict.get(tag.tag_id, None)
-            if tag_info:
-                if tag.ticket_id not in tags_dict:
-                    tags_dict[tag.ticket_id] = [tag.tag_id]
-                else:
-                    tags_dict[tag.ticket_id].append(tag.tag_id)
+            if tag.ticket_id not in tags_dict:
+                tags_dict[tag.ticket_id] = [tag.tag_id]
+            else:
+                tags_dict[tag.ticket_id].append(tag.tag_id)
 
         assignees_dict = {}
         for ticket_assignee in ticket_assignees:
@@ -443,9 +447,21 @@ class TicketAPIView(APIView):
                 error_msg = 'status invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        ticket_type = request.data.get('type')
-        if ticket_type is not None:
-            if ticket_type not in TICKET_TYPE:
+        is_update_type = 'type' in request.data
+        type_id = request.data.get('type')
+        if is_update_type and type_id is not None:
+            try:
+                type_id = int(type_id)
+            except:
+                error_msg = 'type invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            try:
+                project_type = ProjectTypes.objects.filter(
+                    id=type_id, project_uuid=project_uuid).first()
+            except Exception as e:
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            if not project_type:
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -545,8 +561,8 @@ class TicketAPIView(APIView):
                 ticket.content = content
             if ticket_status or ticket_status == '':
                 ticket.status = ticket_status
-            if ticket_type or ticket_type == '':
-                ticket.type = ticket_type
+            if is_update_type:
+                ticket.type = type_id
             if priority is not None:
                 ticket.priority = priority
             ticket.updated_at = timezone.now()
@@ -558,17 +574,15 @@ class TicketAPIView(APIView):
 
         if is_update_tags:
             try:
-                project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                 exist_ticket_tags = TicketTags.objects.filter(ticket_id=ticket.id)
-                exist_tags = [project_tags_dict.get(tag.tag_id, {}).get('id') for tag in exist_ticket_tags if project_tags_dict.get(tag.tag_id, None)]
+                exist_tags = [tag.tag_id for tag in exist_ticket_tags]
                 tags_to_create = list(set(tags) - set(exist_tags))
                 tags_to_delete = list(set(exist_tags) - set(tags))
                 if tags_to_create:
-                    project_tags_dict = gen_project_tags_dict(project_uuid, key='id')
                     ticket_tags = [TicketTags(
                         ticket_id=ticket.id,
-                        tag_id=project_tags_dict.get(tag, {}).get('id'),
-                    ) for tag in tags_to_create if project_tags_dict.get(tag, None)]
+                        tag_id=tag,
+                    ) for tag in tags_to_create]
                     TicketTags.objects.bulk_create(ticket_tags)
                 if tags_to_delete:
                     TicketTags.objects.filter(

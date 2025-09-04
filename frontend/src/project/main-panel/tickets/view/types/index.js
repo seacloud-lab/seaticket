@@ -1,33 +1,26 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useTags, useTicketsPage } from '../../hooks';
+import { useTypes, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import TagDialog from './components/tag-dialog';
+import TypeDialog from './components/type-dialog';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
-const AllTags = ({ projectUuid, permission }) => {
-  const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
+const AllTypes = ({ projectUuid }) => {
+  const { isLoading, typesData, createType, modifyType, deleteType, reload } = useTypes();
   const { toggleChildrenPageType } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
-      type: CellType.TAG,
+      type: CellType.TYPE,
       key: 'name',
-      name: gettext('Tag'),
+      name: gettext('Type'),
       editable: false,
       is_name_column: true,
       frozen: true,
       click: (row) => toggleChildrenPageType(row._id)
-    },
-    {
-      type: CellType.TEXT,
-      key: 'description',
-      name: gettext('Description'),
-      editable: true,
-      is_required: false,
     },
     {
       type: CellType.NUMBER,
@@ -51,7 +44,7 @@ const AllTags = ({ projectUuid, permission }) => {
     getMetadata: (...params) => {
       return new Promise((resolve, reject) => {
         resolve({ data: {
-          rows: tagsData.rows,
+          rows: typesData.rows,
           columns: columns,
         } });
       });
@@ -85,11 +78,11 @@ const AllTags = ({ projectUuid, permission }) => {
     },
 
     // row
-    insertRow: createTag,
-    modifyRow: (...params) => modifyTag(...params),
-    deleteRow: (...params) => deleteTag(...params),
+    insertRow: createType,
+    modifyRow: (...params) => modifyType(...params),
+    deleteRow: (...params) => deleteType(...params),
 
-  }), [projectUuid, columns, viewsData, createTag, tagsData]);
+  }), [projectUuid, columns, viewsData, createType, typesData]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -157,7 +150,7 @@ const AllTags = ({ projectUuid, permission }) => {
 
       if (context.canDeleteRow() && rows.length > 0) {
         list.push({
-          label: gettext('Delete tags'),
+          label: gettext('Delete types'),
           callback: (event) => {
             const rowIds = rows.map(row => row._id);
             deleteRows && deleteRows(rowIds);
@@ -173,7 +166,7 @@ const AllTags = ({ projectUuid, permission }) => {
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
     list.push({
-      label: gettext('Edit tag'),
+      label: gettext('Edit type'),
       callback: () => {
         context.eventBus.dispatch('expand_row', row);
       }
@@ -181,21 +174,20 @@ const AllTags = ({ projectUuid, permission }) => {
 
     if (context.canDeleteRow()) {
       list.push({
-        label: gettext('Delete tag'),
+        label: gettext('Delete type'),
         callback: () => deleteRows && deleteRows([row._id])
       });
     }
     return list;
   }, []);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tags`, [projectUuid]);
+  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-types`, [projectUuid]);
 
   const t = useMemo(() => {
     return {
-      row: gettext('tag'),
-      rows: gettext('tags'),
-      Row: gettext('Tag'),
-      Rows: gettext('Tags'),
+      row: gettext('type'),
+      rows: gettext('types'),
+      Rows: gettext('Types'),
     };
   }, []);
 
@@ -204,11 +196,11 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
+    const unsubscribeNewType = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TYPE, () => {
       context.eventBus.dispatch('expand_row');
     });
     return () => {
-      unsubscribeNewTag();
+      unsubscribeNewType();
     };
   }, []);
 
@@ -218,20 +210,19 @@ const AllTags = ({ projectUuid, permission }) => {
     <>
       <SeaMetadata
         viewID="0000"
-        className="sea-tags-metadata"
+        className="sea-types-metadata"
         api={api}
         localStorageNamePrefix={localStorageName}
-        permission={permission}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={['views', 'search', 'sorts']}
         isViewComputedOnServer={false}
         t={t}
       >
-        <TagDialog />
+        <TypeDialog />
       </SeaMetadata>
     </>
   );
 
 };
 
-export default AllTags;
+export default AllTypes;

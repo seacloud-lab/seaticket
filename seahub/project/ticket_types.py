@@ -12,15 +12,15 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, TicketTags, ProjectTags, Tickets, TicketAssignees, \
-    TicketParticipants
+from seahub.project.models import Projects, ProjectTypes, Tickets, TicketAssignees, \
+    TicketParticipants, TicketTags
 from seahub.project.utils import check_project_admin_permission, check_project_permission
 
 
 logger = logging.getLogger(__name__)
 
 
-class ProjectTagsAPIView(APIView):
+class ProjectTypesAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -53,28 +53,29 @@ class ProjectTagsAPIView(APIView):
 
         # main
         try:
-            project_tags = ProjectTags.objects.filter(
+            project_types = ProjectTypes.objects.filter(
                 project_uuid=project_uuid)
         except Exception as e:
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:
-            project_tags = []
+        if not project_types:
+            project_types = []
 
         tickets_count_dict = {}
         if tickets_count == '1':
-            tickets = Tickets.objects.list_tickets(project_uuid)
-            ticket_tags = TicketTags.objects.filter(
-                tag_id__in=[project_tag.id for project_tag in project_tags], ticket_id__in=[ticket.id for ticket in tickets])
-            for ticket_tag in ticket_tags:
-                if ticket_tag.tag_id not in tickets_count_dict:
-                    tickets_count_dict[ticket_tag.tag_id] = 1
+            tickets = Tickets.objects.filter(
+                project_uuid=project_uuid,
+                deleted=False,
+                type__in=[project_type.id for project_type in project_types])
+            for ticket in tickets:
+                if ticket.type not in tickets_count_dict:
+                    tickets_count_dict[ticket.type] = 1
                 else:
-                    tickets_count_dict[ticket_tag.tag_id] += 1
+                    tickets_count_dict[ticket.type] += 1
 
         return Response({
-            'project_tags': [project_tag.to_dict(tickets_count_dict) for project_tag in project_tags],
+            'project_types': [project_type.to_dict(tickets_count_dict) for project_type in project_types],
         })
 
     def post(self, request, project_uuid):
@@ -91,10 +92,6 @@ class ProjectTagsAPIView(APIView):
         if not name:
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        description = request.POST.get('description')
-        if not description:
-            description = ''
 
         color = request.POST.get('color')
         if not color:
@@ -121,26 +118,25 @@ class ProjectTagsAPIView(APIView):
 
         # main
         try:
-            project_tags = ProjectTags.objects.filter(
+            project_types = ProjectTypes.objects.filter(
                 project_uuid=project_uuid)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:
-            project_tags = []
+        if not project_types:
+            project_types = []
 
-        if name in [project_tag.name for project_tag in project_tags]:
-            error_msg = 'tag already exists.'
+        if name in [project_type.name for project_type in project_types]:
+            error_msg = 'type already exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # main
         try:
-            project_tag = ProjectTags.objects.create(
+            project_type = ProjectTypes.objects.create(
                 project_uuid=project_uuid,
                 name=name,
-                description=description,
                 color=color,
                 text_color=text_color,
             )
@@ -149,16 +145,16 @@ class ProjectTagsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_tag': project_tag.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'project_type': project_type.to_dict()}, status=status.HTTP_201_CREATED)
 
 
-class ProjectTagAPIView(APIView):
+class ProjectTypeAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def put(self, request, project_uuid, tag_id):
+    def put(self, request, project_uuid, type_id):
         """
         Permission:
         1. group admin
@@ -169,10 +165,9 @@ class ProjectTagAPIView(APIView):
 
         # argument check
         name = request.data.get('name')
-        description = request.POST.get('description')
         color = request.POST.get('color')
         text_color = request.POST.get('text_color')
-        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
+        if 'name' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -189,31 +184,29 @@ class ProjectTagAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid).first()
-        if not project_tag:
-            error_msg = 'Project tag not found.'
+        project_type = ProjectTypes.objects.filter(
+            id=type_id, project_uuid=project_uuid).first()
+        if not project_type:
+            error_msg = 'Project type not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # main
         try:
             if name:
-                project_tag.name = name
-            if description:
-                project_tag.description = description
+                project_type.name = name
             if color:
-                project_tag.color = color
+                project_type.color = color
             if text_color:
-                project_tag.text_color = text_color
-            project_tag.save()
+                project_type.text_color = text_color
+            project_type.save()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_tag': project_tag.to_dict()})
+        return Response({'project_type': project_type.to_dict()})
 
-    def delete(self, request, project_uuid, tag_id):
+    def delete(self, request, project_uuid, type_id):
         """
         Permission:
         1. group admin
@@ -235,14 +228,14 @@ class ProjectTagAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid).first()
-        if not project_tag:
-            error_msg = 'Project tag not found.'
+        project_type = ProjectTypes.objects.filter(
+            id=type_id, project_uuid=project_uuid).first()
+        if not project_type:
+            error_msg = 'Project type not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            project_tag.delete()
+            project_type.delete()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -251,11 +244,11 @@ class ProjectTagAPIView(APIView):
         return Response({'success': True})
 
 
-class ProjectTagTicketsAPIView(APIView):
+class ProjectTypeTicketsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
-    def get(self, request, project_uuid, tag_id):
+    def get(self, request, project_uuid, type_id):
         """
         Permission:
         1. owner
@@ -278,10 +271,16 @@ class ProjectTagTicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        project_type = ProjectTypes.objects.filter(
+            id=type_id, project_uuid=project_uuid).first()
+        if not project_type:
+            error_msg = 'Project type not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
         # main
         try:
-            tickets = Tickets.objects.list_tickets_by_tag(
-                    project_uuid, tag_id)
+            tickets = Tickets.objects.list_tickets_by_type(
+                    project_uuid, type_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -291,7 +290,7 @@ class ProjectTagTicketsAPIView(APIView):
             return Response({
                 'tickets': []
             })
-
+        
         ticket_id_list = [ticket.id for ticket in tickets]
 
         tags_dict = {}
