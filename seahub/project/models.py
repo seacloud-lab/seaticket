@@ -491,6 +491,7 @@ class ProjectConnectionsManager(models.Manager):
         except ProjectConnections.DoesNotExist:
             return None
     
+
 class ProjectConnections(models.Model):
     """ Project connections table
     """
@@ -526,6 +527,7 @@ class ProjectConnections(models.Model):
             'is_active': self.is_active,
         }
 
+
 class ConnectionsView(object):
     
     def __init__(self, name, view_type='table', config={}):
@@ -554,30 +556,8 @@ class ConnectionsView(object):
         }
         self.details.update(self.config)
 
+
 class ConnectionsViewsManager(models.Manager):
-		
-    def get_record_by_view(self, project_uuid, start, end, view_id, connection_id):
-        sorts = []
-        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
-        basic_filters = view.get('basic_filters', [])
-        sorts = view.get('sorts', [])
-
-        q = Q(deleted=False) & Q(connection_id=connection_id)
-
-        for basic_filter in basic_filters:
-                if basic_filter.get('column_key') == 'status':
-                        value = basic_filter['filter_term']
-                        if not value:
-                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
-                        elif 'open' in value:
-                                value = value + ['']
-                        q = q & Q(state__in=value)
-
-        if not sorts:
-                sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
-        
-        return self.filter(q).order_by(', '.join(sorts))[start: end]
 
     def get_record(self, project_uuid, connection_id):
         """
@@ -748,6 +728,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
+
 class ConnectionsViews(models.Model):
     project_uuid = models.CharField(max_length=32, db_index=True)
     connection_id = models.IntegerField()
@@ -785,6 +766,33 @@ class ConnectionsViews(models.Model):
     def folders_views_ids(self):
         return self.folders_ids + self.views_ids
 
+
+class GitHubIssuesRecordManager(models.Manager):
+
+    def get_records_by_view(self, project_uuid, connection_id, view_id, start, end):
+        sorts = []
+        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
+        basic_filters = view.get('basic_filters', [])
+        sorts = view.get('sorts', [])
+
+        q = Q(deleted=False) & Q(connection_id=connection_id)
+
+        for basic_filter in basic_filters:
+                if basic_filter.get('column_key') == 'status':
+                        value = basic_filter['filter_term']
+                        if not value:
+                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
+                        elif 'open' in value:
+                                value = value + ['']
+                        q = q & Q(state__in=value)
+
+        if not sorts:
+                sorts = [{ 'column_key': 'created_at', 'sort_type': 'down' }]
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
+        
+        return self.filter(q).order_by(', '.join(sorts))[start: end]
+
+
 class GitHubIssuesRecord(models.Model):
     """ GitHub issues table"""
 
@@ -804,7 +812,7 @@ class GitHubIssuesRecord(models.Model):
     need_index = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
 
-    objects = ConnectionsViewsManager()
+    objects = GitHubIssuesRecordManager()
 
     class Meta:
         db_table = 'github_issues'
@@ -829,6 +837,7 @@ class GitHubIssuesRecord(models.Model):
             'need_index': self.need_index,
             'deleted': self.deleted,
         }
+
 
 class TicketRepliesManager(models.Manager):
 
