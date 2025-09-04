@@ -77,14 +77,6 @@ TICKET_STATUS = (
     'duplicate',
 )
 
-TICKET_TYPE =  (
-    '',
-    'bug',
-    'feature',
-    'request',
-    'support',
-)
-
 TICKET_DEFAULT_DETAILS = {
     'views': [
         {

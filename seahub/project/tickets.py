@@ -21,7 +21,7 @@ from seahub.project.models import Projects, Tickets, TicketReplies, \
     TicketTags, TicketAssignees, ProjectTags, ProjectTypes, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3
-from seahub.project.constants import TICKET_STATUS, TICKET_TYPE
+from seahub.project.constants import TICKET_STATUS
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -178,8 +178,8 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
-        type_id = request.POST.get('type')
-        if type_id is not None:
+        type_id = request.POST.get('type') or None
+        if type_id:
             try:
                 type_id = int(type_id)
             except:
@@ -274,7 +274,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, ticket_status, type_id, ticket_type, priority)
+                project_uuid, username, title, content, ticket_status, type_id, priority)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

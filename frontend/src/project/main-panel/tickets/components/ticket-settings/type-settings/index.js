@@ -1,9 +1,9 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
-import { TICKET_TYPES } from '../../../constants';
+import { useTypes } from '../../../hooks';
 
 import './index.css';
 
@@ -15,7 +15,16 @@ const TypeSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
+  const { typesData } = useTypes();
+
   const editorRef = useRef(null);
+
+  const options = useMemo(() => {
+    return typesData.rows.map(o => ({
+      ...o,
+      value: o.id,
+    }));
+  }, [typesData.rows]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -30,7 +39,7 @@ const TypeSettings = ({
     onChange(type);
   }, [onChange]);
 
-  const typeOption = TICKET_TYPES.find(o => o.id === value);
+  const typeOption = options.find(o => o.value === value);
 
   return (
     <>
@@ -47,7 +56,7 @@ const TypeSettings = ({
           value={value}
           placeholder={gettext('Search type')}
           emptyTip={gettext('No types')}
-          options={TICKET_TYPES}
+          options={options}
           onChange={onTypeChange}
           onToggle={closeEditor}
         />
