@@ -22,6 +22,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
+  const [resolveType, setResolveType] = useState('ask');
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -38,6 +39,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     if (sessionId === ASK_PAGE_TYPE.NEW) return null;
     return sessions.find(s => s._id === sessionId);
   }, [sessionId, sessions]);
+
+  const convertToAgent = useCallback(() => {
+    setResolveType('agent');
+  }, [resolveType]);
+
+  const convertToAsk = useCallback(() => {
+    setResolveType('ask');
+  }, [resolveType]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -73,7 +82,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     });
 
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, sessionId, validMessage);
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, sessionId, validMessage, resolveType);
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -82,10 +91,10 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       newSessionProblem.current = '';
       togglePageType(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage);
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage, resolveType);
       }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageType, resolveType]);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
@@ -213,6 +222,18 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
       <div className="sea-qa-ai-ask-chats-wrapper">
+        <div>
+          <div
+            className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
+          >
+            <button onClick={convertToAgent} className="dropdown-item sea-qa-dropdown-item">
+              {gettext('Agent')}
+            </button>
+            <button onClick={convertToAsk} className="dropdown-item sea-qa-dropdown-item">
+              {gettext('Ask')}
+            </button>
+          </div>
+        </div>
         <div className="sea-qa-ai-ask-chats" ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
