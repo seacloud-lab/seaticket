@@ -10,11 +10,13 @@ import random
 import string
 from copy import deepcopy
 
+from rest_framework import status
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
+from seahub.api2.utils import api_error
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
-    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS
+    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -530,31 +532,32 @@ class ProjectConnections(models.Model):
 
 class ConnectionsView(object):
     
-    def __init__(self, name, view_type='table', config={}):
+    def __init__(self, name, view_type='table', config={}, project_connection_type = ''):
         self.name = name
         self.type = view_type
         self.config = config
         self.details = {}
-
+        self.project_connection_type = project_connection_type
+        
         self.init_view()            
 
     def init_view(self):
-        self.details = {
-            "_id": generate_views_unique_id(4),
-            "table_id": '0000',  # by default
-            "name": self.name,
-            'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
-                {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
-            ],
-            "filters": [],
-            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
-            "groupbys": [],
-            "filter_conjunction": "Or",
-            "hidden_columns": [],
-            "type": self.type,
-        }
-        self.details.update(self.config)
+        if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
+            self.details = {
+                    "_id": generate_views_unique_id(4),
+                    "table_id": '0000',  # by default
+                    "name": self.name,
+                    'basic_filters': [
+                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    ],
+                    "filters": [],
+                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                    "groupbys": [],
+                    "filter_conjunction": "Or",
+                    "hidden_columns": [],
+                    "type": self.type,
+                }
+            self.details.update(self.config)
 
 
 class ConnectionsViewsManager(models.Manager):
@@ -565,12 +568,17 @@ class ConnectionsViewsManager(models.Manager):
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(connection_id=connection_id).first()
-        
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+           
         if not record:
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=json.dumps(CONNECTION_DEFAULT_DETAILS)
+                details=json.dumps(CONNECTION_DEFAULT_DETAILS[project_connection.type])
             )
         return record
 
@@ -592,7 +600,13 @@ class ConnectionsViewsManager(models.Manager):
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
-        new_view = ConnectionsView(view_name, view_type, view_data)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        new_view = ConnectionsView(view_name, view_type, view_data, project_connection.type)
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)

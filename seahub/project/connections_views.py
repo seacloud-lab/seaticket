@@ -204,9 +204,8 @@ class ConnectionViewsDuplicateView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, connection_id):
         view_id = request.data.get('view_id')
-        connection_id = request.data.get('connection_id')
         if not view_id:
             error_msg = 'view_id invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -254,9 +253,8 @@ class ConnectionViewsMoveView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, connection_id):
         # move view or folder to another position
-        connection_id = request.data.get('connection_id', False)
         source_view_id = request.data.get('source_view_id')
         source_folder_id = request.data.get('source_folder_id')
         target_view_id = request.data.get('target_view_id')
