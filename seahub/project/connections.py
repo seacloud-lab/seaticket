@@ -520,10 +520,13 @@ class ProjectConnectionRowDetailView(APIView):
             url = request.GET.get('url')
             filename = url_to_filename(url)
             uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-            file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
-            if file:
-                content = json.loads(file.read())
-                content = content.get('content')
+            try:
+                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                if file:
+                    content = json.loads(file.read())
+                    content = content.get('content')
+            except Exception as e:
+                logger.error(e)
         return Response({
             'row_details': row_details,
             'content': content,
