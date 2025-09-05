@@ -1350,9 +1350,9 @@ class TicketsManager(models.Manager):
                         ticket_ids = [tag.ticket_id for tag in tags]
                         q = q & Q(id__in=ticket_ids)
 
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts if sort.get('column_key')]
         if not sorts:
-            sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts if sort['column_key']]
+            sorts = ['-number']
 
         return self.filter(q).order_by(', '.join(sorts))[start: end]
 
