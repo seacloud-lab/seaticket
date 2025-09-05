@@ -492,7 +492,7 @@ class ProjectConnectionsManager(models.Manager):
             return record
         except ProjectConnections.DoesNotExist:
             return None
-    
+
 
 class ProjectConnections(models.Model):
     """ Project connections table

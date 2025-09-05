@@ -100,7 +100,7 @@ class ConnectionsAPI {
     return this.req.post(url);
   }
 
-  getConnectionDetails(projectUuid, connectionID, { view_id = '0000', start = 0, limit = 100, } = {}){
+  getConnectionDetails(projectUuid, connectionID, { view_id = 'open', start = 0, limit = 100, } = {}){
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
     let params = {
       view_id,
@@ -141,12 +141,12 @@ class ConnectionsAPI {
   }
 
   getView(projectUuid, viewID, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/' + viewID + '/views/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     return this.req.get(url);
   }
 
   modifyView(projectUuid, connectionID, viewID, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/' + viewID + '/views/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     const params = {
       view_data: viewData,
     };
@@ -154,7 +154,7 @@ class ConnectionsAPI {
   }
 
   deleteView(projectUuid, connectionID, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/' + viewID + '/views/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     return this.req.delete(url);
   }
 

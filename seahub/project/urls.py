@@ -48,7 +48,7 @@ urlpatterns = [
 
     # connection views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/(?P<view_id>.+)/views/$', ConnectionViewView.as_view(), name='api-v2.1-connection-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewView.as_view(), name='api-v2.1-connection-view'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
 
