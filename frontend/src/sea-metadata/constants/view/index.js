@@ -30,10 +30,7 @@ export const VIEW_TYPE_ICON = {
 };
 
 export const VIEW_TYPE_DEFAULT_BASIC_FILTER = {
-  [VIEW_TYPE.TABLE]: [
-    { column_key: 'status', filter_predicate: 'is_any_of', filter_term: ['open'] },
-    { column_key: 'tags', filter_predicate: 'has_any_of', filter_term: [] },
-  ],
+  [VIEW_TYPE.TABLE]: [],
   [VIEW_TYPE.GALLERY]: [],
   [VIEW_TYPE.KANBAN]: [],
 };
