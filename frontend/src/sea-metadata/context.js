@@ -37,13 +37,16 @@ class Context {
     this.re_set({ localStorageName });
   };
 
-  re_set = ({ localStorageName, t }) => {
+  re_set = ({ localStorageName, t, api }) => {
     if (localStorageName) {
       this.localStorage = new LocalStorage(localStorageName);
     }
     if (t) {
       const translate = new Translate(t);
       this.translate = translate.translate;
+    }
+    if (api) {
+      this.api = api;
     }
   };
 
