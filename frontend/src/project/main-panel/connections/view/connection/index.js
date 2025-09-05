@@ -65,8 +65,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     setSiteDetails({ title: row.title, content: '' });
     const params = { url: row.url };
     connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-      const raw = res.data.content || '';
-      setSiteDetails({ title: row.title, content: raw });
+      const raw = res.data.row_details || '';
+      setSiteDetails({ title: row.title, content: raw.content });
     }).catch(() => {
       setSiteDetails({ title: row.title, content: gettext('Failed to load content.') });
     });
