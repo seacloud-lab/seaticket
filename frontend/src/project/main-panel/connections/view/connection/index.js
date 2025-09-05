@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
-import { connectionsAPI } from '@/project/api';
+import { connectionsAPI, tagsAPI, typesAPI,ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
@@ -51,6 +51,115 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const tryParseJsonArray = (str) => {
+    try {
+      const parsed = JSON.parse(str);
+      if (Array.isArray(parsed)) {
+        return parsed.map(item => 
+          typeof item === 'string' ? item.trim() : String(item).trim()
+        );
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const createTicketFromRow = useCallback(async (rowData) => {
+    setIsSubmitting(true);
+    let assigneeEmails = [];
+    if (rowData.assignees && rowData.assignees !== '[]') {
+        try {
+        const res = await ticketsAPI.listProjectRelatedUsers(projectUuid)
+        const projectUsers = res.data.user_list || [];
+        const assigneeNames = Array.isArray(rowData.assignees) 
+          ? rowData.assignees 
+          : typeof rowData.assignees === 'string' 
+            ? tryParseJsonArray(rowData.assignees) || rowData.assignees.split(',').map(name => name.trim())
+            : [];
+
+        assigneeEmails = assigneeNames
+          .map(assigneeName => {
+            const matchedUser = projectUsers.find(user => 
+              user.name === assigneeName || 
+              user.email === assigneeName ||
+              (user.contact_email && user.contact_email === assigneeName)
+            );
+            return matchedUser ? matchedUser.email : null;
+          })
+          .filter(email => email !== null);
+      } catch (error) {
+        console.error('Failed to load project users:', error);
+      }
+    }
+
+    let labelIDs = [];
+    if (rowData.labels) {
+      const res = await tagsAPI.listProjectTags(projectUuid)
+      const projectTags = res.data.project_tags || [];
+      const labelNames = Array.isArray(rowData.labels) 
+        ? rowData.labels 
+        : typeof rowData.labels === 'string' 
+          ? tryParseJsonArray(rowData.labels) || rowData.labels.split(',').map(name => name.trim())
+          : [];
+      labelIDs = labelNames
+        .map(labelName => {
+          const matchedTag = projectTags.find(tag => tag.name === labelName);
+          return matchedTag ? matchedTag.id : null;
+        })
+        .filter(id => id !== null);
+      rowData.labels = labelIDs;
+    }
+
+    let matchedType = null;
+    if (rowData.type) {
+      const res = await typesAPI.listProjectTypes(projectUuid);
+      const projectTypes = res.data.project_types || [];
+      matchedType = projectTypes.find(
+        typeObj => typeObj.name.trim().toLowerCase() === rowData.type.trim().toLowerCase()
+      );
+  }
+
+    const bodyText = rowData.body || 'body is empty';
+      const contentData = {
+      text: bodyText,
+      preview: bodyText.substring(0, 100) + '...',
+      images: [],
+      links: [],
+      checklist: {
+        total: 0,
+        completed: 0
+      }
+    };
+
+    const ticketData = {
+      title: `${rowData.title || ''}`,
+      content: contentData,
+      author: `${rowData.author || ''}`,
+      status: `${rowData.status_reason || ''}`
+    };
+
+    if (assigneeEmails.length > 0) {
+      ticketData.assignees = assigneeEmails;
+    }
+
+    if (labelIDs.length > 0) {
+      ticketData.tags = labelIDs;
+    }
+
+    if (matchedType) {
+      ticketData.type = matchedType.id;
+    }
+
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(res => {
+      setIsSubmitting(false);
+    }).catch(error => {
+      setIsSubmitting(false);
+    });
+  }, [projectUuid]);
+
 
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
@@ -220,9 +329,41 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     };
   }, [projectUuid, connectionID, connection, columns]);
 
-  const createContextMenuOptions = useCallback(() => {
-    return [];
-  }, []);
+  const createContextMenuOptions = useCallback(({
+    isGroupView,
+    selectedPosition,
+    table,
+    rowMetrics,
+    rowGetterByIndex,
+  }) => {
+    let list = [];
+
+    // handle selected rows
+    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+    let selectedRow = null;
+
+    if (selectedRowIds.length === 1) {
+      selectedRow = table.id_row_map[selectedRowIds[0]];
+    } else if (selectedPosition) {
+      const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+      selectedRow = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex });
+    }
+
+    // handle selected cell
+    if (!selectedPosition) return list;
+    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+    if (!row) return list;
+
+    if (selectedRow) {
+      list.push({
+        label: isSubmitting ? gettext('Creating ticket...') : gettext('Create new ticket'),
+        callback: () => createTicketFromRow(selectedRow),
+        disabled: isSubmitting
+      });
+    }
+    return list;
+  }, [createTicketFromRow, isSubmitting]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 

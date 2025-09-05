@@ -6,8 +6,11 @@ class GithubIssue {
     this.title = object.title || '';
     this.body = object.body || '';
     this.status = object.state || 'open';
+    this.status_reason = object.state_reason || 'open';
     this.labels = object.labels || '';
+    this.type = object.issue_type || '';
     this.author = object.author || '';
+    this.assignees = object.assignees || '';
     this.url = object.url || '';
     this.created_at = object.created_at || '';
     this.updated_at = object.updated_at || '';

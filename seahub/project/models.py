@@ -815,13 +815,16 @@ class GitHubIssuesRecord(models.Model):
     title = models.TextField(null=True, blank=True)
     body = models.TextField(null=True, blank=True)
     state = models.CharField(max_length=20, null=True, blank=True)
+    state_reason = models.CharField(max_length=20, null=True, blank=True)
     labels = models.TextField(null=True, blank=True)
+    issue_type = models.TextField(null=True, blank=True)
     author = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=1024, null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     comments = models.IntegerField(null=True, blank=True)
+    assignees = models.TextField(null=True, blank=True)
     connection_id = models.CharField(max_length=64)
     need_index = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
@@ -840,17 +843,21 @@ class GitHubIssuesRecord(models.Model):
             'title': self.title,
             'body': self.body,
             'state': self.state,
+            'state_reason': self.state_reason,
             'labels': self.labels,
+            'issue_type': self.issue_type,
             'author': self.author,
             'url': self.url,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'closed_at': self.closed_at,
             'comments': self.comments,
+            'assignees': self.assignees,
             'connection_id': self.connection_id,
             'need_index': self.need_index,
             'deleted': self.deleted,
         }
+
 
 
 class TicketRepliesManager(models.Manager):

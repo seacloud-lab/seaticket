@@ -270,9 +270,12 @@ class TicketsAPIView(APIView):
                 error_msg = 'Upload files failed.'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        ticket_status = request.POST.get('status')
+        if not ticket_status:
+            ticket_status = 'open'
+
         # main
         try:
-            ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
                 project_uuid, username, title, content, ticket_status, type_id, priority)
         except Exception as e:

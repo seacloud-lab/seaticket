@@ -612,7 +612,10 @@ CREATE TABLE `github_issues` (
   `title` text DEFAULT NULL,
   `body` text DEFAULT NULL,
   `state` varchar(20) DEFAULT NULL,
+  `state_reason` varchar(20) DEFAULT NULL,
+  `assignees` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`assignees`)),
   `labels` text DEFAULT NULL,
+  `issue_type` varchar(20) DEFAULT NULL,
   `author` varchar(255) DEFAULT NULL,
   `url` varchar(1024) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -624,7 +627,7 @@ CREATE TABLE `github_issues` (
   `deleted` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `issue_unique_key` (`issue_id`,`connection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23284 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `org_saml_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
