@@ -34,7 +34,9 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   const [innerHtml, setInnerHtml] = useState('');
 
   useEffect(() => {
-    processor.process(content).then((result) => {
+    // replace error markdown format -\n to \n\n
+    const newContent = content.replace(/-\n/ig, '\n\n');
+    processor.process(newContent).then((result) => {
       let innerHtml = String(result).replace(/<a /ig, '<a target="_blank" tabindex="-1"').replace(/<table>/ig, '<table class="table table-bordered w-100">');
       setInnerHtml(innerHtml);
     });
