@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
 import { CONNECTION_PAGE_TYPE } from '../constants';
 
 const ConnectionsPageContext = React.createContext(null);
@@ -10,11 +11,17 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
   const [pageName, setPageName] = useState('');
+  const [viewID, setViewID] = useState('open');
 
-  const resetURL = useCallback((pageType) => {
+  const resetURL = useCallback((pageType, viewID) => {
     const { origin } = location;
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageType === CONNECTION_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
+
+    if (![CONNECTION_PAGE_TYPE.ALL, CONNECTION_PAGE_TYPE.NEW].includes(pageType) && viewID) {
+      urlPart = urlPart + '?view=' + viewID;
+    }
+
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
@@ -40,6 +47,13 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       const connectionID = Number(connectionType);
       pageType = connectionType && isNumber(connectionID) ? connectionID : CONNECTION_PAGE_TYPE.ALL;
     }
+
+    if (![CONNECTION_PAGE_TYPE.ALL, CONNECTION_PAGE_TYPE.NEW].includes(pageType) && viewID) {
+      const searchParams = Utils.getUrlSearches();
+      const viewID = searchParams?.view || 'open';
+      setViewID(viewID);
+    }
+
     togglePageType(pageType);
     setLoading(false);
   }, [projectName]);
@@ -52,16 +66,18 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   }, []);
 
   useEffect(() => {
-    resetURL(pageType);
-  }, [pageType]);
+    resetURL(pageType, viewID);
+  }, [pageType, viewID]);
 
   return (
     <ConnectionsPageContext.Provider value={{
+      viewID,
       pageType,
       isLoading,
       pageName,
       togglePageType,
-      updatePageName: setPageName
+      updatePageName: setPageName,
+      updateViewID: setViewID,
     }}>
       {children}
     </ConnectionsPageContext.Provider>

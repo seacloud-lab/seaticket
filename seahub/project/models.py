@@ -10,11 +10,13 @@ import random
 import string
 from copy import deepcopy
 
+from rest_framework import status
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
+from seahub.api2.utils import api_error
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
-    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS
+    CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -388,6 +390,7 @@ class ProjectGroupOrders(models.Model):
         self.save_group_ids(group_ids)
         return group_ids, None
 
+# connections
 class ProjectConnectionsManager(models.Manager):
     """ Project connections manager
     """
@@ -481,7 +484,6 @@ class ProjectConnectionsManager(models.Manager):
         records = self.filter(id=connection_id)
         return self.is_valid(connection_type, records, config)
 
-
     def update_status(self, connection_id, status):
         try:
             record = self.get(id=connection_id)
@@ -528,6 +530,283 @@ class ProjectConnections(models.Model):
         }
 
 
+class ConnectionsView(object):
+    
+    def __init__(self, name, view_type='table', config={}, project_connection_type = ''):
+        self.name = name
+        self.type = view_type
+        self.config = config
+        self.details = {}
+        self.project_connection_type = project_connection_type
+        
+        self.init_view()            
+
+    def init_view(self):
+        if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
+            self.details = {
+                    "_id": generate_views_unique_id(4),
+                    "table_id": '0000',  # by default
+                    "name": self.name,
+                    'basic_filters': [
+                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    ],
+                    "filters": [],
+                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                    "groupbys": [],
+                    "filter_conjunction": "Or",
+                    "hidden_columns": [],
+                    "type": self.type,
+                }
+            self.details.update(self.config)
+
+
+class ConnectionsViewsManager(models.Manager):
+
+    def get_record(self, project_uuid, connection_id):
+        """
+            get record from database, if not record, create it
+        """
+        project_uuid = uuid_str_to_32_chars(project_uuid)
+        record = self.filter(connection_id=connection_id).first()
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+           
+        if not record:
+            record = self.create(
+                project_uuid=project_uuid,
+                connection_id=connection_id,
+                details=json.dumps(CONNECTION_DEFAULT_DETAILS[project_connection.type])
+            )
+        return record
+
+    # view op
+    def list_views(self, project_uuid, connection_id):
+        record = self.get_record(project_uuid, connection_id)
+        return json.loads(record.details)
+
+    def get_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                return v
+        return None
+
+    def add_view(self, project_uuid, connection_id, view_name, view_type='table', view_data={}):
+        record = self.get_record(project_uuid, connection_id)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        view_name = get_no_duplicate_obj_name(view_name, record.views_names)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        new_view = ConnectionsView(view_name, view_type, view_data, project_connection.type)
+        details = new_view.details
+        view_id = details.get('_id')
+        view_details['views'].append(details)
+        new_view_nav = { '_id': view_id, 'type': 'view' }
+        navigation.append(new_view_nav)
+        record.details = json.dumps(view_details)
+        record.save()
+        return new_view.details
+
+    def update_view(self, project_uuid, connection_id, view_id, view_dict):
+        record = self.get_record(project_uuid, connection_id)
+        view_dict.pop('_id', '')
+        if 'name' in view_dict:
+            exist_obj_names = record.views_names
+            view_dict['name'] = get_no_duplicate_obj_name(view_dict['name'], exist_obj_names)
+        view_details = json.loads(record.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                v.update(view_dict)
+                break
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def duplicate_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
+        view_details = json.loads(record.details)
+        exist_folders_views_ids = record.folders_views_ids
+        new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
+        duplicate_view = next((copy.deepcopy(view) for view in view_details['views'] if view.get('_id') == view_id), None)
+        if not duplicate_view:
+            return None
+
+        duplicate_view['_id'] = new_view_id
+        view_name = get_no_duplicate_obj_name(duplicate_view['name'], record.views_names)
+        duplicate_view['name'] = view_name
+        view_details['views'].append(duplicate_view)
+        navigation = view_details.get('navigation', [])
+        new_view_nav = {'_id': new_view_id, 'type': 'view'}
+        navigation.append(new_view_nav)
+        record.details = json.dumps(view_details)
+        record.save()
+
+        return duplicate_view
+
+    def delete_view(self, project_uuid, connection_id, view_id):
+        record = self.get_record(project_uuid, connection_id)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+        views = view_details.get('views', [])
+
+        for view in views:
+            if view.get('_id') == view_id:
+                views.remove(view)
+                break
+        for nav_item in navigation:
+
+            # delete view not in folders
+            if nav_item.get('_id') == view_id:
+                navigation.remove(nav_item)
+                break
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+    def move_view(self, project_uuid, connection_id, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
+        record = self.get_record(project_uuid, connection_id)
+        view_details = json.loads(record.details)
+        navigation = view_details.get('navigation', [])
+
+        updated_source_nav_list = []
+        dragged_id = None
+
+        # find drag source
+        if source_folder_id:
+            if source_view_id:
+                # drag view from folder
+                dragged_id = source_view_id
+                source_folder = next((folder for folder in navigation if folder.get('_id') == source_folder_id), None)
+                if source_folder:
+                    updated_source_nav_list = source_folder.get('children', [])
+            else:
+                # drag folder
+                dragged_id = source_folder_id
+                updated_source_nav_list = navigation
+        elif source_view_id:
+            # drag view not in folders
+            dragged_id = source_view_id
+            updated_source_nav_list = navigation
+
+        # invalid drag source
+        if not dragged_id or not updated_source_nav_list:
+            return None
+        drag_source = next((nav for nav in updated_source_nav_list if nav.get('_id') == dragged_id), None)
+        if not drag_source:
+            return None
+
+        # remove drag source from navigation
+        updated_source_nav_list.remove(drag_source)
+
+        # find drop target
+        updated_target_nav_list = navigation
+        if target_folder_id and source_view_id and not is_above_folder:
+            target_folder = next((folder for folder in navigation if folder.get('_id') == target_folder_id), None)
+            if target_folder:
+                updated_target_nav_list = target_folder.get('children', [])
+
+        # drag source already exist
+        exist_drag_source = next((nav for nav in updated_target_nav_list if nav.get('_id') == drag_source.get('_id')), None)
+        if exist_drag_source:
+            return None
+
+        # drop drag source to the target position
+        target_nav = None
+        if target_view_id:
+            # move folder/view above view
+            target_nav = next((nav for nav in updated_target_nav_list if nav.get('_id') == target_view_id), None)
+        elif target_folder_id:
+            # move folder/view above folder
+            target_nav = next((nav for nav in updated_target_nav_list if nav.get('_id') == target_folder_id), None)
+
+        insert_index = -1
+        if target_nav:
+            insert_index = updated_target_nav_list.index(target_nav)
+
+        if insert_index > -1:
+            updated_target_nav_list.insert(insert_index, drag_source)
+        else:
+            updated_target_nav_list.append(drag_source)
+
+        record.details = json.dumps(view_details)
+        record.save()
+        return view_details
+
+
+class ConnectionsViews(models.Model):
+    project_uuid = models.CharField(max_length=32, db_index=True)
+    connection_id = models.IntegerField()
+    details = models.TextField()
+
+
+    objects = ConnectionsViewsManager()
+
+    class Meta:
+        db_table = 'connection_views'
+
+    @property
+    def folders_ids(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('_id') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def folders_names(self):
+        details = json.loads(self.details)
+        navigation = details.get('navigation', [])
+        return [folder.get('name') for folder in navigation if folder.get('type', None) == 'folder']
+
+    @property
+    def views_ids(self):
+        views = json.loads(self.details)['views']
+        return [v.get('_id') for v in views]
+
+    @property
+    def views_names(self):
+        views = json.loads(self.details)['views']
+        return [v.get('name') for v in views]
+
+    @property
+    def folders_views_ids(self):
+        return self.folders_ids + self.views_ids
+
+
+class GitHubIssuesRecordManager(models.Manager):
+
+    def get_records_by_view(self, project_uuid, connection_id, view_id, start, end):
+        sorts = []
+        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
+        basic_filters = view.get('basic_filters', [])
+        sorts = view.get('sorts', [])
+
+        q = Q(deleted=False) & Q(connection_id=connection_id)
+
+        for basic_filter in basic_filters:
+                if basic_filter.get('column_key') == 'status':
+                        value = basic_filter['filter_term']
+                        if not value:
+                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
+                        elif 'open' in value:
+                                value = value + ['']
+                        q = q & Q(state__in=value)
+
+        if not sorts:
+                sorts = [{ 'column_key': 'created_at', 'sort_type': 'down' }]
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
+        
+        return self.filter(q).order_by(', '.join(sorts))[start: end]
+
+
 class GitHubIssuesRecord(models.Model):
     """ GitHub issues table"""
 
@@ -546,6 +825,8 @@ class GitHubIssuesRecord(models.Model):
     connection_id = models.CharField(max_length=64)
     need_index = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+
+    objects = GitHubIssuesRecordManager()
 
     class Meta:
         db_table = 'github_issues'

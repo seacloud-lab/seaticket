@@ -78,7 +78,6 @@ export const ViewsDataProvider = ({
       newViewsData.navigation.splice(sourceViewIndex, 1);
       const newTargetViewIndex = newViewsData.navigation.findIndex(n => n._id === targetViewNav._id);
       newViewsData.navigation.splice(newTargetViewIndex, 0, sourceViewNav);
-      console.log(newViewsData);
       setViewsData(newViewsData);
     });
   }, [viewsData]);

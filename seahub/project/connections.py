@@ -365,6 +365,12 @@ class ProjectConnectionDetailsView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        # argument check
+        view_id = request.GET.get('view_id', '')
+        if not view_id:
+            error_msg = 'view_id is invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -392,8 +398,9 @@ class ProjectConnectionDetailsView(APIView):
             start = 0
             limit = 1000
         end = start + limit
+        
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            records = GitHubIssuesRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
+            records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]

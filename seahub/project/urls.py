@@ -13,6 +13,8 @@ from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTi
 from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
+from .connections_views import ConnectionViewsAPI, ConnectionViewView, \
+    ConnectionViewsMoveView, ConnectionViewsDuplicateView
 
 
 urlpatterns = [
@@ -44,6 +46,12 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v2.1-connection-details'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/row-detail/$', ProjectConnectionRowDetailView.as_view(), name='api-v2.1-connection-row-detail'),
 
+    # connection views
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewView.as_view(), name='api-v2.1-connection-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
+
     # ticket
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
@@ -60,7 +68,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
 
-     # views
+    # ticket views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-folders/$', TicketFolders.as_view(), name='api-v2.1-project-ticket-folders'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/$', TicketViewsAPI.as_view(), name='api-v2.1-project-ticket-views'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/(?P<view_id>.+)/$', TicketViewView.as_view(), name='api-v2.1-project-ticket-view'),
