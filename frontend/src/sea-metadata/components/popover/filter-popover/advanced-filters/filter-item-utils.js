@@ -11,10 +11,12 @@ class FilterItemUtils {
     return {
       value: { column },
       label: (
-        <Fragment>
-          <span className="sea-metadata-filter-header-icon"><Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} /></span>
+        <>
+          <span className="sea-metadata-filter-header-icon">
+            <Icon className="sea-metadata-icon" symbol={column.key === 'priority' ? 'priority-column' : COLUMNS_ICON_CONFIG[type]} />
+          </span>
           <span className="select-option-name">{name}</span>
-        </Fragment>
+        </>
       )
     };
   }
