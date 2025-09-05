@@ -12,11 +12,11 @@ requireContext.keys().forEach(path => {
 });
 
 function Icon({ className, symbol, ...otherProps }) {
-  const iconClass = `sea-qa-icon-svg sea-qa-icon-svg-${symbol} ${className || ''}`;
-  const props = { className: iconClass, ...otherProps };
-  const Component = components[symbol];
-  if (!Component) return null;
-  return (<Component { ...props } />);
+  const SvgComponent = components[symbol];
+  if (!SvgComponent) return null;
+  return (
+    <SvgComponent className={`sea-qa-icon-svg sea-qa-icon-svg-${symbol} ${className ?? ''}`} {...otherProps} />
+  );
 }
 
 Icon.propTypes = {
