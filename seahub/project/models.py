@@ -1352,7 +1352,7 @@ class TicketsManager(models.Manager):
 
         if not sorts:
             sorts = [{ 'column_key': 'number', 'sort_type': 'down' }]
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
+        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts if sort['column_key']]
 
         return self.filter(q).order_by(', '.join(sorts))[start: end]
 
