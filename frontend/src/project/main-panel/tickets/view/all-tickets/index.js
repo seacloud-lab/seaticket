@@ -19,6 +19,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     {
       type: CellType.RATE,
       key: 'priority',
+      name: gettext('Priority'),
       editable: true,
       frozen: true,
       width: 33,

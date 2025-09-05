@@ -328,10 +328,6 @@
   color: #fff;
 }
 
-/* .sea-qa-select-option:not(.active):hover .sea-metadata-filter-header-icon .sf2-icon-tick {
-  color: #aaa;
-} */
-
 .sea-qa-select-option:not(.active):hover .sea-metadata-filter-header-icon .sea-qa-icon-svg {
   color: #aaa;
 }
