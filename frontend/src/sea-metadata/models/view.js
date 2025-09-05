@@ -1,5 +1,5 @@
 import { getColumnByKey } from '../utils/column';
-import { VIEW_TYPE_DEFAULT_BASIC_FILTER, VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE } from '../constants';
+import { VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE } from '../constants';
 
 class View {
 
@@ -13,17 +13,7 @@ class View {
     this.filters = object.filters || [];
     this.filter_conjunction = object.filter_conjunction || 'Or';
 
-    const defaultBasicFilters = VIEW_TYPE_DEFAULT_BASIC_FILTER[this.type];
-    this.basic_filters = object.basic_filters && object.basic_filters.length > 0 ? object.basic_filters : defaultBasicFilters;
-    if (this.basic_filters.length < defaultBasicFilters.length) {
-      this.basic_filters = [...this.basic_filters, ...defaultBasicFilters.slice(this.basic_filters.length)];
-    } else if (this.basic_filters.length > defaultBasicFilters.length) {
-      this.basic_filters = defaultBasicFilters.map(defaultFilter => {
-        const filter = this.basic_filters.find(item => item.column_key === defaultFilter.column_key);
-        if (filter) return filter;
-        return defaultFilter;
-      });
-    }
+    this.basic_filters = object.basic_filters || [];
 
     // sort
     this.sorts = object.sorts && object.sorts.length > 0 ? object.sorts : VIEW_TYPE_DEFAULT_SORTS[this.type];

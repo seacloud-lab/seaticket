@@ -8,6 +8,7 @@ import { getValidFilters } from '../../utils/filter';
 import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { VIEW_TYPE } from '../../constants';
+import { getType } from '@/utils/utils';
 
 const FilterSetter = ({
   readOnly,
@@ -30,7 +31,16 @@ const FilterSetter = ({
   }, [propsFilters, columns]);
 
   const filtersCount = useMemo(() => {
-    return filters.length + basicFilters.length;
+    const validBasicFilters = basicFilters.filter((f) => {
+      const { filter_term } = f;
+      if (!filter_term) return filter_term === 0;
+      const filterTermType = getType(filter_term);
+      if (filterTermType === 'Array') return filter_term.length > 0;
+      if (filterTermType === 'String') return Boolean(filter_term);
+      if (filterTermType === 'Number') return true;
+      return true;
+    }, []);
+    return filters.length + validBasicFilters.length;
   }, [filters, basicFilters]);
 
   const message = useMemo(() => {

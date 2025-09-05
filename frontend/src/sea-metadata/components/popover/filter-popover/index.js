@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isHotkey from 'is-hotkey';
 import { FormGroup, Label, UncontrolledPopover } from 'reactstrap';
+import classnames from 'classnames';
 import CommonAddTool from '@/components/customize-add-tool';
 import AdvancedFilters from './advanced-filters';
 import BasicFilters from './basic-filters';
@@ -130,6 +131,7 @@ class FilterPopover extends Component {
     const { filters, filterConjunction, basicFilters } = this.state;
     const canAddFilter = columns.length > 0;
     const advancedFilterColumns = columns.filter(c => !basicFilters.find(basicFilter => basicFilter.column_key === c.key));
+    const isValidBasicFilters = basicFilters.length > 0;
 
     return (
       <UncontrolledPopover
@@ -143,10 +145,14 @@ class FilterPopover extends Component {
       >
         {({ update: scheduleUpdate }) => (
           <div ref={ref => this.dtablePopoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName}>
-            <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
+            {isValidBasicFilters && (
+              <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
+            )}
             <FormGroup className="filter-group-advanced filter-group mb-0">
-              <Label className="filter-group-name">{gettext('Advanced')}</Label>
-              <div className="filter-group-container">
+              {isValidBasicFilters && (
+                <Label className="filter-group-name">{gettext('Advanced')}</Label>
+              )}
+              <div className={classnames('filter-group-container', { 'pt-4': !isValidBasicFilters })}>
                 <AdvancedFilters
                   filterConjunction={filterConjunction}
                   filters={filters}
