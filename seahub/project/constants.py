@@ -157,47 +157,8 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': 'closed', 'type': 'view'}
         ]
     },
-    ConnectionType.SITE.value: {
-        'views': [
-            {
-                '_id': '0000',
-                'name': _('All'),
-                'type': 'table',
-                'basic_filters': [
-                    
-                ],
-                'columns_keys': [],
-                'filter_conjunction': 'Or',
-                'filters': [],
-                'sorts': [{ 'column_key': 'last_modified', 'sort_type': 'down' }],
-                'groupbys': [],
-                'hidden_columns': [],
-            }
-        ],
-        'navigation': [
-            {'_id': '0000', 'type': 'view'},
-        ]
-    },
-    ConnectionType.DISCOURSE_FORUM.value: {
-        'views': [
-            {
-                '_id': '0000',
-                'name': _('All'),
-                'type': 'table',
-                'basic_filters': [ 
-                ],
-                'columns_keys': [],
-                'filter_conjunction': 'Or',
-                'filters': [],
-                'sorts': [{ 'column_key': 'bumped_at', 'sort_type': 'down' }],
-                'groupbys': [],
-                'hidden_columns': [],
-            }
-        ],
-        'navigation': [
-            {'_id': '0000', 'type': 'view'},
-        ]
-    },
+    ConnectionType.SITE.value: {},
+    ConnectionType.DISCOURSE_FORUM.value: {},
     ConnectionType.EMAIL.value: {},
     ConnectionType.SEAFILE.value: {},
 }

@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import { connectionsAPI } from '@/project/api';
@@ -7,6 +7,8 @@ import { gettext } from '@/constants';
 import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
+import { useConnections } from '../../hooks';
+import { toaster } from '@/components';
 
 const RowDetails = ({ rowDetails, onClose }) => {
   return (
@@ -42,39 +44,13 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   );
 };
 
-const getT = (connectionType) => {
-  if (connectionType === CONNECTION_TYPE.SITE) {
-    return {
-      row: gettext('site'),
-      rows: gettext('sites'),
-      Row: gettext('Site'),
-      Rows: gettext('Sites'),
-    };
-  }
-  if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
-    return {
-      row: gettext('github issue'),
-      rows: gettext('github issues'),
-      Row: gettext('Github issue'),
-      Rows: gettext('Github issues'),
-    };
-  }
-  if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
-    return {
-      row: gettext('discourse forum'),
-      rows: gettext('discourse forums'),
-      Row: gettext('Discourse forum'),
-      Rows: gettext('Discourse forums'),
-    };
-  }
-  return {};
-};
-
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
+  const { connections } = useConnections();
   const [rowDetails, setRowDetails] = useState(null);
   const [siteDetails, setSiteDetails] = useState(null);
-  const [connectionType, setConnectionType] = useState('');
+  const [connection, setConnection] = useState({});
+  const [isLoadingConnection, setLoadingConnection] = useState(true);
 
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
@@ -88,8 +64,38 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     });
   }, [projectUuid, connectionID]);
 
-  const getColumns = useCallback((connType) => {
-    if (connType === CONNECTION_TYPE.DISCOURSE_FORUM) {
+  const t = useMemo(() => {
+    const connectionType = connection?.type;
+    if (connectionType === CONNECTION_TYPE.SITE) {
+      return {
+        row: gettext('site'),
+        rows: gettext('sites'),
+        Row: gettext('Site'),
+        Rows: gettext('Sites'),
+      };
+    }
+    if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return {
+        row: gettext('github issue'),
+        rows: gettext('github issues'),
+        Row: gettext('Github issue'),
+        Rows: gettext('Github issues'),
+      };
+    }
+    if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return {
+        row: gettext('discourse forum'),
+        rows: gettext('discourse forums'),
+        Row: gettext('Discourse forum'),
+        Rows: gettext('Discourse forums'),
+      };
+    }
+    return {};
+  }, [connection]);
+
+  const columns = useMemo(() => {
+    const connectionType = connection?.type;
+    if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return [
         {
           type: CellType.TEXT, key: 'title', name: gettext('Title'),
@@ -100,7 +106,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
       ];
     }
-    if (connType === CONNECTION_TYPE.SITE) {
+    if (connectionType === CONNECTION_TYPE.SITE) {
       return [
         {
           type: CellType.TEXT, key: 'title', name: gettext('Title'),
@@ -113,32 +119,42 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false },
       ];
     }
-    // GITHUB_ISSUE
-    return [
-      {
-        type: CellType.TEXT, key: 'title', name: gettext('Title'),
-        editable: false, is_name_column: true, frozen: true,
-        click: (row) => {
-          if (row && row.url) {
-            window.open(row.url);
+    if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return [
+        {
+          type: CellType.TEXT, key: 'title', name: gettext('Title'),
+          editable: false, is_name_column: true, frozen: true,
+          click: (row) => {
+            if (row && row.url) {
+              window.open(row.url);
+            }
           }
-        }
-      },
-      { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-      { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
-      { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
-      { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
-      { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-    ];
-  }, [handleClickSiteTitle]);
+        },
+        { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
+        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
+        { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
+        { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
+        { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
+      ];
+    }
+    return [];
+  }, [connection, handleClickSiteTitle]);
 
-  const basicAPI = useMemo(() => ({
-    getMetadata: (...params) => {
+  const viewsData = useMemo(() => ({
+    navigation: [{ _id: '0000', type: 'view' }],
+    views: [
+      {
+        _id: '0000',
+        name: gettext('All'),
+      }
+    ]
+  }), []);
+
+  const api = useMemo(() => {
+    const getMetadata = (...params) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
-        const { name, type, records } = res.data;
+        const { type, records } = res.data;
         let rows = [];
-        setConnectionType(type);
-        context.re_set({ t: getT(type) });
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
@@ -146,58 +162,63 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         } else if (type === CONNECTION_TYPE.SITE) {
           rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
         }
-        updatePageName && updatePageName(name);
         return {
           data: {
             rows,
-            columns: getColumns(type),
+            columns,
           }
         };
       });
-    },
-    getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
-    getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
-  }), [projectUuid, connectionID, updatePageName]);
+    };
 
-  const api = useMemo(() => {
-    if (connectionType !== CONNECTION_TYPE.GITHUB_ISSUE) {
+    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE) {
       return {
-        ...basicAPI,
-        getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID).then(res => {
-          return {
-            data: {
-              view: {
-                ...res.data.view,
-                columns_keys: context.localStorage.getItem('columns_keys') || [],
-                filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'Or',
-                filters: context.localStorage.getItem('filters') || [],
-                sorts: context.localStorage.getItem('sorts') || [],
-                groupbys: context.localStorage.getItem('groupbys') || [],
-                hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-              }
-            }
-          };
-        }),
-        modifyView: (viewID, viewData) => {
-          return new Promise((resolve, reject) => {
-            Object.keys(viewData).forEach(key => {
-              context.localStorage.setItem(key, viewData[key]);
-            });
-            resolve({ data: { success: true } });
-          });
-        },
+        getMetadata,
+        getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
+        getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
+        insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
+        deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
+        moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
+        duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
+        modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
       };
     }
 
     return {
-      ...basicAPI,
-      insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
-      deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
-      moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
-      duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
-      modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
+      getMetadata,
+      getViews: () => {
+        return new Promise((resolve, reject) => {
+          resolve({ data: viewsData });
+        });
+      },
+
+      // view
+      getView: (viewID) => {
+        return new Promise((resolve, reject) => {
+          const view = viewsData.views[0];
+
+          resolve({ data: { view: {
+            ...view,
+            columns_keys: context.localStorage.getItem('columns_keys') || [],
+            filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'Or',
+            filters: context.localStorage.getItem('filters') || [],
+            sorts: context.localStorage.getItem('sorts') || [],
+            groupbys: context.localStorage.getItem('groupbys') || [],
+            hidden_columns: context.localStorage.getItem('hidden_columns') || [],
+          } } });
+        });
+      },
+
+      modifyView: (viewID, viewData) => {
+        return new Promise((resolve, reject) => {
+          Object.keys(viewData).forEach(key => {
+            context.localStorage.setItem(key, viewData[key]);
+          });
+          resolve({ data: { success: true } });
+        });
+      },
     };
-  }, [projectUuid, connectionID, basicAPI, connectionType]);
+  }, [projectUuid, connectionID, connection, columns]);
 
   const createContextMenuOptions = useCallback(() => {
     return [];
@@ -220,20 +241,48 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     setRowDetails(null);
   }, []);
 
-  if (isLoading) return null;
+  useEffect(() => {
+    const connection = connections.find(c => c.id === connectionID);
+    if (connection) {
+      setConnection(connection);
+      updatePageName && updatePageName(connection.name);
+      setLoadingConnection(false);
+      return;
+    }
+    connectionsAPI.getConnection(projectUuid, connectionID).then(res => {
+      const connection = res.data.record;
+      updatePageName && updatePageName(connection.name);
+      setConnection(connection);
+      setLoadingConnection(false);
+    }).catch(error => {
+      toaster.danger(gettext('Connection not found'));
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isLoadingConnection) return;
+    if (connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+      updateViewID('');
+    }
+  }, [isLoadingConnection, connection]);
+
+  if (isLoading || isLoadingConnection) return null;
+
+  const isGithubIssuesView = connection?.type === CONNECTION_TYPE.GITHUB_ISSUE;
 
   return (
     <CollaboratorsProvider>
       <SeaMetadata
-        viewID={viewID}
+        viewID={isGithubIssuesView ? viewID : '0000'}
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
-        isViewComputedOnServer={connectionType === CONNECTION_TYPE.GITHUB_ISSUE}
-        toggleView={connectionType === CONNECTION_TYPE.GITHUB_ISSUE ? updateViewID : null}
+        isViewComputedOnServer={isGithubIssuesView}
+        toggleView={isGithubIssuesView ? updateViewID : undefined}
         expandRow={handleExpandRow}
+        t={t}
       />
       {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
       {siteDetails && (
