@@ -5,12 +5,28 @@ import SelectOption from '../select-option';
 
 import './index.css';
 
-const SingleSelectFormatter = ({ value, options, fontSize, className, children: emptyFormatter }) => {
+const SingleSelectFormatter = ({ value, options, fontSize, className, column, row, children: emptyFormatter }) => {
+
   const option = useMemo(() => {
     return options.find(item => item.id === value || item.name === value);
   }, [options, value]);
 
+  if (!option && options.length === 0) {
+    const newOption = {
+      color: row.color,
+      textColor: row.textColor,
+      name: value,
+      id: row._id,
+    };
+    return (
+      <div className={classnames('sea-metadata-ui cell-formatter-container single-select-formatter', className)}>
+        <SelectOption option={newOption} fontSize={fontSize} />
+      </div>
+    );
+  }
+
   if (!option) return emptyFormatter || null;
+
   return (
     <div className={classnames('sea-metadata-ui cell-formatter-container single-select-formatter', className)}>
       <SelectOption option={option} fontSize={fontSize} />
