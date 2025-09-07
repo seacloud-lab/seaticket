@@ -65,7 +65,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     }
     case CellType.SINGLE_SELECT: {
       return (
-        <SingleSelectFormatter value={value} options={column.data?.options || []} className={className} { ...props }>
+        <SingleSelectFormatter value={value} options={column.data?.options || []} row={row} className={className} { ...props }>
           <Empty columnType={columnType} placeholder={emptyTip} />
         </SingleSelectFormatter>
       );

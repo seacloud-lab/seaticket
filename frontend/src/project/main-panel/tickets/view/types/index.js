@@ -14,7 +14,7 @@ const AllTypes = ({ projectUuid }) => {
 
   const columns = useMemo(() => [
     {
-      type: CellType.TYPE,
+      type: CellType.SINGLE_SELECT,
       key: 'name',
       name: gettext('Type'),
       editable: false,

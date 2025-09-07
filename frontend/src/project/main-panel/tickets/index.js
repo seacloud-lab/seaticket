@@ -28,16 +28,64 @@ const Page = () => {
   const { isLoading, pageType, childrenPageType } = useTicketsPage();
   if (isLoading) return null;
   if (pageType === TICKET_PAGE_TYPE.TAGS) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Tags projectUuid={projectUuid} permission={permission} />);
-    return (<TagTickets projectUuid={projectUuid} workspaceID={workspaceID} projectName={projectName} permission={permission} />);
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
+      return (
+        <Tags projectUuid={projectUuid} permission={permission} />
+      );
+    } else {
+      return (
+        <TagTickets
+          tagID={childrenPageType}
+          projectUuid={projectUuid}
+          workspaceID={workspaceID}
+          projectName={projectName}
+          permission={permission}
+        />
+      );
+    }
   }
   if (pageType === TICKET_PAGE_TYPE.TYPES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} />);
-    return (<TypeTickets projectUuid={projectUuid} workspaceID={workspaceID} projectName={projectName} />);
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
+      return (
+        <Types projectUuid={projectUuid} />
+      );
+    } else {
+      return (
+        <TypeTickets
+          typeID={childrenPageType}
+          projectUuid={projectUuid}
+          workspaceID={workspaceID}
+          projectName={projectName}
+        />
+      );
+    }
   }
-  if (pageType === TICKET_PAGE_TYPE.ALL) return (<AllTickets projectUuid={projectUuid} workspaceID={workspaceID} projectName={projectName} permission={permission} />);
-  if (pageType === TICKET_PAGE_TYPE.NEW) return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
-  return (<Ticket projectUuid={projectUuid} ticketID={pageType} editorAPI={longtextAPI} permission={permission} />);
+  if (pageType === TICKET_PAGE_TYPE.ALL) {
+    return (
+      <AllTickets
+        projectUuid={projectUuid}
+        workspaceID={workspaceID}
+        projectName={projectName}
+        permission={permission}
+      />
+    );
+  }
+  if (pageType === TICKET_PAGE_TYPE.NEW) {
+    return (
+      <NewTicket
+        projectUuid={projectUuid}
+        editorAPI={longtextAPI}
+      />
+    );
+  }
+  return (
+    <Ticket
+      projectUuid={projectUuid}
+      ticketID={pageType}
+      editorAPI={longtextAPI}
+      permission={permission}
+    />
+  );
 };
 
 const Index = ({ title }) => {
