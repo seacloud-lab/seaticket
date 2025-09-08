@@ -24,11 +24,22 @@
 
 .sf-long-text-inline-editor-container {
   min-height: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
+.sf-long-text-inline-editor-container .sf-slate-editor-content,
+.sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-scroll-container,
+.sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-editor-content,
 .sf-long-text-inline-editor-container .sf-slate-editor-content .article,
-.sf-long-text-inline-editor-container .sf-slate-editor-content .article div:first-child {
-  height: 100%;
+.sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-article-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sf-long-text-inline-editor-container .sf-slate-editor-content .article>div:first-child {
+  flex: 1;
 }
 
 .sea-qa-project-ticket-footer {

@@ -55,7 +55,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [ticket]);
+  }, [projectUuid, ticket]);
 
   const createReply = useCallback((ticketID, reply) => {
     return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
@@ -63,7 +63,23 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
       setTicket(newTicket);
       return res.data.ticket_reply;
     });
-  }, [ticket]);
+  }, [projectUuid, ticket]);
+
+  const modifyReply = useCallback((ticketID, replyID, reply) => {
+    return ticketsAPI.modifyProjectTicketReply(projectUuid, ticketID, replyID, reply).then(res => {
+      const newTicket = ticket._modify_reply(replyID, reply);
+      setTicket(deepCopy(newTicket));
+      return newTicket;
+    });
+  }, [projectUuid, ticket]);
+
+  const deleteReply = useCallback((ticketID, replyID) => {
+    return ticketsAPI.deleteProjectTicketReply(projectUuid, ticketID, replyID).then(res => {
+      const newTicket = ticket._delete_reply(replyID);
+      setTicket(deepCopy(newTicket));
+      return newTicket;
+    });
+  }, [projectUuid, ticket]);
 
   const copyLink = useCallback(() => {
     copy(window.location.href);
@@ -116,23 +132,35 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
     });
   }, [ticket]);
 
+  const onContentChange = useCallback((content, callback) => {
+    modifyTicket(ticket.id, { content }).then(res => {
+      callback && callback();
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback(error);
+    });
+  }, [ticket, modifyTicket]);
+
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
+    const editor = replyEditorRef.current.getEditor();
     const eventBus = EventBus.getInstance();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const isImage = /image/i.test(file.type);
       const fileName = file.name;
       editorAPI.uploadLocalImage(file).then(url => {
-        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_IMAGE, { title: fileName, url, isImage });
+        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_ATTACHMENTS, editor, { title: fileName, url, isImage });
       });
     }
   }, [editorAPI]);
 
   const onSubmitReply = useCallback(() => {
     createReply(ticket.id, reply).then(() => {
+      const editor = replyEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
-      eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE);
+      eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
       setTimeout(() => {
         containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
       }, 1);
@@ -140,7 +168,17 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [reply, ticket, createReply]);
+  }, [reply, ticket, replyEditorRef, createReply]);
+
+  const handleModifyReply = useCallback((replyID, content, callback) => {
+    modifyReply(ticket.id, replyID, content).then(res => {
+      callback && callback();
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback(error);
+    });
+  }, [ticket, modifyReply]);
 
   useEffect(() => {
     setLoading(true);
@@ -200,10 +238,26 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
       </div>
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="sea-qa-project-ticket-reply-container-wrapper">
-          <Reply reply={ticket} isFirst={true} />
+          <Reply
+            reply={ticket}
+            isShowStatus={true}
+            readonly={!editable}
+            lang={lang}
+            editorAPI={editorAPI}
+            onModify={onContentChange}
+          />
           {replies.map(reply => {
-            const { id } = reply;
-            return (<Reply reply={reply} key={id} projectUuid={projectUuid} />);
+            return (
+              <Reply
+                key={reply.id}
+                readonly={!editable}
+                reply={reply}
+                projectUuid={projectUuid}
+                editorAPI={editorAPI}
+                onDelete={(reply) => deleteReply(id, reply.id)}
+                onModify={(content, callback) => handleModifyReply(reply.id, content, callback)}
+              />
+            );
           })}
           <Reply className="sea-qa-project-ticket-add-comment" reply={{ creator: username }} >
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
