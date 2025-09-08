@@ -1,4 +1,5 @@
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import dayjs from 'dayjs';
 import { EmptyTip } from '@/components';
 import { mediaUrl } from '@/constants';
 
@@ -21,7 +22,7 @@ const DiscourseForumsDetails = ({ rowDetailsTitle, rowDetails, onClose }) => {
                   </div>
                   <div className='sea-qa-discourse-forums-reply-item-author-name'>{detail.author}</div>
                 </div>
-                <div className='sea-qa-discourse-forums-reply-item-author-time'>{detail.updated_at}</div>
+                <div className='sea-qa-discourse-forums-reply-item-author-time'>{dayjs(detail.updated_at).format('YYYY-MM-DD HH:mm:ss')}</div>
               </div>
               <div className='sea-qa-discourse-forums-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.content }}></div>
             </div>
