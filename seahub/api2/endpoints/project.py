@@ -445,6 +445,7 @@ class QAView(APIView):
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        resolve_type = request.data.get('resolve_type', 'ask')
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
             session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
@@ -476,6 +477,7 @@ class QAView(APIView):
             'query': query,
             'connection_type': connection_type,
             'username': username,
+            'resolve_type': resolve_type,
         }
 
         try:
@@ -547,7 +549,7 @@ class ChatSessionsView(APIView):
         if not project_uuid:
             error_msg = 'project_uuid parameter is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         session_name = request.data.get('session_name', '')
         if not session_name:
             error_msg = 'session_name parameter is required.'
