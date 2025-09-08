@@ -31,6 +31,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [rowDetails, setRowDetails] = useState(null);
+  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
@@ -216,6 +217,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
     const params = { topic_id: row.topic_id };
     connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
+      setRowDetailsTitle(row.title);
       setRowDetails(res.data.row_details);
     });
   }, [projectUuid, connectionID]);
@@ -267,7 +269,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && <DiscourseForumsDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {rowDetails && <DiscourseForumsDetails rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}

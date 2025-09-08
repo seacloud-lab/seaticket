@@ -1,14 +1,14 @@
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import { EmptyTip } from '@/components';
-import { gettext, mediaUrl } from '@/constants';
+import { mediaUrl } from '@/constants';
 
 import './index.css';
 
-const DiscourseForumsDetails = ({ rowDetails, onClose }) => {
+const DiscourseForumsDetails = ({ rowDetailsTitle, rowDetails, onClose }) => {
 
   return (
     <Modal className='sea-qa-discourse-forums-details-container' isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
-      <ModalHeader toggle={onClose}>{gettext('Replies')}</ModalHeader>
+      <ModalHeader toggle={onClose}>{rowDetailsTitle}</ModalHeader>
       <ModalBody>
         <div className='sea-qa-discourse-forums-row-details'>
           {!rowDetails.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
