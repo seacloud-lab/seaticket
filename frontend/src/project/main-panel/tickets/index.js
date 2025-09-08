@@ -39,7 +39,7 @@ const Page = () => {
     return (<TypeTickets { ...props } typeID={childrenPageType}/>);
   }
   if (pageType === TICKET_PAGE_TYPE.ALL) {
-    return ( <AllTickets { ...props }/>);
+    return (<AllTickets { ...props }/>);
   }
   if (pageType === TICKET_PAGE_TYPE.NEW) {
     return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
