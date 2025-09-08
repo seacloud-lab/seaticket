@@ -92,14 +92,6 @@ const TicketTopBar = ({ title }) => {
   }, [pageType, childrenPageType, title, tagsData, togglePageType]);
 
   const renderRightChildren = useCallback(() => {
-    if (pageType === TICKET_PAGE_TYPE.ALL) {
-      return (
-        <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>
-          <Icon symbol="add" className="mr-2" />
-          {gettext('New ticket')}
-        </Button>
-      );
-    }
     if (pageType === TICKET_PAGE_TYPE.TAGS && childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
       return (
         <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
@@ -116,7 +108,14 @@ const TicketTopBar = ({ title }) => {
         </Button>
       );
     }
-    return null;
+    if (pageType === TICKET_PAGE_TYPE.TYPES || pageType === TICKET_PAGE_TYPE.TAGS || pageType === TICKET_PAGE_TYPE.NEW) return null;
+
+    return (
+      <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>
+        <Icon symbol="add" className="mr-2" />
+        {gettext('New ticket')}
+      </Button>
+    );
   }, [pageType, childrenPageType, togglePageType]);
 
   return (

@@ -1,0 +1,70 @@
+.sea-qa-project-ticket .sea-qa-project-ticket-header {
+  width: 100%;
+  display: flex;
+  height: 43px;
+  padding: 16px 0 0 0;
+  flex-shrink: 0;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-left {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-right {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: fit-content;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-title-number {
+  display: flex;
+  max-width: 100%;
+  width: fit-content;
+  align-items: center;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-title {
+  flex: 1;
+  width: fit-content;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 18px;
+  margin-right: 2px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-number {
+  display: inline-block;
+  color: #666;
+  font-size: 16px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {
+  height: 24px;
+  width: 24px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-rename-btn {
+  display: inline-flex;
+  margin-left: 8px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-rename-btn .sea-qa-icon-svg-rename {
+  height: 14px;
+  width: 14px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-input,
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn,
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-submit-btn {
+  height: 27px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn {
+  margin-right: 10px;
+}
