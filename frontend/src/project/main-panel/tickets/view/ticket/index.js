@@ -6,7 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '@/components';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_CONFIG } from '../../constants';
+import { TICKET_STATUS_CONFIG } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -17,9 +17,10 @@ import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useTicketsPage, useTypes } from '../../hooks';
+import { useTypes } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
+import Header from './header';
 
 import './index.css';
 
@@ -29,7 +30,6 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [ticket, setTicket] = useState({});
   const [scrollTop, setScrollTop] = useState(0);
 
-  const { togglePageType } = useTicketsPage();
   const { typesData } = useTypes();
 
   const user = useMemo(() => {
@@ -142,6 +142,16 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
     });
   }, [ticket, modifyTicket]);
 
+  const onTitleChange = useCallback((title, callback) => {
+    modifyTicket(ticket.id, { title }).then(res => {
+      callback && callback();
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback(error);
+    });
+  }, [ticket, modifyTicket]);
+
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
     const editor = replyEditorRef.current.getEditor();
@@ -203,34 +213,23 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   return (
     <div className="sea-qa-project-ticket" onScroll={handleScroll}>
-      <div className="sea-qa-project-ticket-header">
-        <div className="sea-qa-project-ticket-header-left">
-          <div className="sea-qa-project-ticket-title-number">
-            <span className="sea-qa-project-ticket-title">{title}</span>
-            <span className="sea-qa-project-ticket-number ml-1">{`#${id}`}</span>
-          </div>
-        </div>
-        <div className="sea-qa-project-ticket-header-right">
-          <Button color="primary" onClick={() => togglePageType(TICKET_PAGE_TYPE.NEW)}>{gettext('New ticket')}</Button>
-          <IconButton icon="copy" className="sea-qa-project-ticket-copy ml-1" onClick={copyLink} />
-        </div>
-      </div>
+      <Header readonly={!editable} title={title} id={id} copyLink={copyLink} modifyTitle={onTitleChange} />
       <div className="sea-qa-project-ticket-status-wrapper">
         <div className={classnames('sea-qa-project-ticket-status', status)}>
           <Icon symbol={statusOption?.icon} />
           <span>{statusOption?.statusName}</span>
         </div>
-        {typeOption && (<Option className="sea-qa-project-ticket-status ml-3" option={typeOption} />)}
+        {typeOption && (<Option className="sea-qa-project-ticket-status ml-2" option={typeOption} />)}
       </div>
-      <div className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 121, 'd-flex': scrollTop >= 121 })}>
+      <div className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 82, 'd-flex': scrollTop >= 82 })}>
         <div className={classnames('sea-qa-project-ticket-status', status)}>
           <Icon symbol={statusOption?.icon} />
           <span>{statusOption?.statusName}</span>
         </div>
         <div className="sea-qa-project-ticket-title-number-type">
-          <div className="sea-qa-project-ticket-title-number">
+          <div className="sea-qa-project-ticket-title-number o-hidden">
             <span className="sea-qa-project-ticket-title">{title}</span>
-            <span className="sea-qa-project-ticket-number ml-1">{`#${id}`}</span>
+            <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
           </div>
           {typeOption && (<div className="text-truncate w-100">{typeOption.name}</div>)}
         </div>

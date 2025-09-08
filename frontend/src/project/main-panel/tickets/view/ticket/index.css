@@ -9,61 +9,24 @@
   padding: 0 16px 50px 16px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header {
-  width: 100%;
-  display: flex;
-  padding: 16px 16px 0 16px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-left {
-  flex: 1;
-  margin-right: 16px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-right {
-  display: flex;
-  height: 38px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {
-  height: 38px;
-  width: 38px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-title {
-  font-weight: 600;
-  font-size: 32px;
-  margin-right: 2px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-number {
-  color: #59636e;
-  font-size: 30px;
-}
-
 .sea-qa-project-ticket .sea-qa-project-ticket-status-wrapper {
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 16px 16px 0;
   border-bottom: 1px solid #ddd;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-status {
-  height: 32px;
+  height: 20px;
   display: flex;
   align-items: center;
-  font-weight: 600;
-  padding: 0 12px;
-  font-size: 14px;
+  padding: 0 10px;
+  font-size: 13px;
   color: #fff;
   background-color: var(--ticket-close-color);
-  border-radius: 20px;
+  border-radius: 10px;
   gap: 8px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-status.option {
-  height: 32px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-status.open {
@@ -83,7 +46,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0px 16px;
+  padding: 0;
   position: sticky;
   top: 0px;
   z-index: 103;
@@ -99,33 +62,18 @@
   margin-right: 16px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-simple-info-wrapper-sticky .sea-qa-project-ticket-title-number {
-  display: flex;
-  max-width: 100%;
-  width: fit-content;
-  overflow: hidden;
-}
-
 .sea-qa-project-ticket .sea-qa-project-ticket-simple-info-wrapper-sticky .sea-qa-project-ticket-title {
-  flex: 1;
-  width: fit-content;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 14px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-simple-info-wrapper-sticky .sea-qa-project-ticket-number {
-  display: inline-block;
   font-size: 14px;
 }
-
 
 .sea-qa-project-ticket .sea-qa-project-ticket-content-wrapper {
   width: 100%;
   display: flex;
-  padding: 16px 16px 0 16px;
+  padding: 16px 16px 0 0;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-reply-container-wrapper {
