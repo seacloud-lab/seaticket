@@ -24,68 +24,27 @@ const Page = () => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
+  const props = useMemo(() => ({
+    projectUuid, projectName, workspaceID, permission
+  }), []);
 
   const { isLoading, pageType, childrenPageType } = useTicketsPage();
   if (isLoading) return null;
   if (pageType === TICKET_PAGE_TYPE.TAGS) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
-      return (
-        <Tags projectUuid={projectUuid} permission={permission} />
-      );
-    } else {
-      return (
-        <TagTickets
-          tagID={childrenPageType}
-          projectUuid={projectUuid}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          permission={permission}
-        />
-      );
-    }
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Tags { ...props } />);
+    return (<TagTickets { ...props } tagID={childrenPageType} />);
   }
   if (pageType === TICKET_PAGE_TYPE.TYPES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) {
-      return (
-        <Types projectUuid={projectUuid} />
-      );
-    } else {
-      return (
-        <TypeTickets
-          typeID={childrenPageType}
-          projectUuid={projectUuid}
-          workspaceID={workspaceID}
-          projectName={projectName}
-        />
-      );
-    }
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} />);
+    return (<TypeTickets { ...props } typeID={childrenPageType}/>);
   }
   if (pageType === TICKET_PAGE_TYPE.ALL) {
-    return (
-      <AllTickets
-        projectUuid={projectUuid}
-        workspaceID={workspaceID}
-        projectName={projectName}
-        permission={permission}
-      />
-    );
+    return (<AllTickets { ...props }/>);
   }
   if (pageType === TICKET_PAGE_TYPE.NEW) {
-    return (
-      <NewTicket
-        projectUuid={projectUuid}
-        editorAPI={longtextAPI}
-      />
-    );
+    return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
   }
-  return (
-    <Ticket
-      projectUuid={projectUuid}
-      ticketID={pageType}
-      editorAPI={longtextAPI}
-      permission={permission}
-    />
-  );
+  return (<Ticket { ...props } ticketID={pageType} editorAPI={longtextAPI} />);
 };
 
 const Index = ({ title }) => {

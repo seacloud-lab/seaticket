@@ -102,6 +102,7 @@ export const ViewsDataProvider = ({
     <ViewsDataContext.Provider
       value={{
         isLoading,
+        viewID,
         viewsData,
         insertView,
         deleteView,

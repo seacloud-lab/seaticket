@@ -18,7 +18,7 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
+  const { isLoading, viewsData, viewID, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
 
   const displayViews = useMemo(() => {
     if (isLoading) return [];
@@ -119,7 +119,7 @@ const Views = ({ view, toggleView }) => {
       <div className="sea-metadata-views">
         <div className="sea-metadata-views-nav-container" ref={viewsNavContainerRef} onScroll={onScroll} onWheel={onWheel}>
           {displayViews.map(v => {
-            const isSelect = isFunction(toggleView) && v._id === view._id;
+            const isSelect = isFunction(toggleView) && v._id === viewID;
             return (
               <ViewItem
                 key={v._id}
