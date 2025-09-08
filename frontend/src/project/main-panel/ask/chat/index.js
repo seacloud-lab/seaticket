@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { CenteredLoading, Icon, toaster } from '@/components';
+import { CenteredLoading, Icon, toaster, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
@@ -223,16 +223,18 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
       <div className="sea-qa-ai-ask-chats-wrapper">
         <div>
-          <div
-            className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
-          >
+          <div>
+            <span className="sea-qa-project-navigation-item-name">{123}</span>
+            <IconButton icon="down" className={classnames('', { 'rotate-icon-90': true })} onClick={() => {}} />
+          </div>
+          {/* <div className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu">
             <button onClick={convertToAgent} className="dropdown-item sea-qa-dropdown-item">
               {gettext('Agent')}
             </button>
             <button onClick={convertToAsk} className="dropdown-item sea-qa-dropdown-item">
               {gettext('Ask')}
             </button>
-          </div>
+          </div> */}
         </div>
         <div className="sea-qa-ai-ask-chats" ref={chatHistoryContentRef}>
           {isEmpty && (
