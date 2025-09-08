@@ -21,7 +21,7 @@ const DiscourseForumsDetails = ({ rowDetailsTitle, rowDetails, onClose }) => {
                   </div>
                   <div className='sea-qa-discourse-forums-reply-item-author-name'>{detail.author}</div>
                 </div>
-                <div className='sea-qa-discourse-forums-reply-item-author-time'>{detail.reply_time}</div>
+                <div className='sea-qa-discourse-forums-reply-item-author-time'>{detail.updated_at}</div>
               </div>
               <div className='sea-qa-discourse-forums-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.content }}></div>
             </div>

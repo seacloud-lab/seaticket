@@ -588,7 +588,7 @@ CREATE TABLE `discourse_replies` (
    `post_number` INT NOT NULL,
    `content` TEXT NOT NULL,
    `author` VARCHAR(255),
-   `reply_time` datetime(6) NOT NULL,
+   `updated_at` datetime(6) NOT NULL,
    `connection_id` INT NOT NULL,
    PRIMARY KEY (`id`),
    KEY `discourse_replies_topic_id_idx` (`topic_id`),
