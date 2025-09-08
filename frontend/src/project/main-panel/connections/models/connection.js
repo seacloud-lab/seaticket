@@ -8,7 +8,6 @@ class Connection {
     this.config = object.config || {};
     this.modifier = object.modifier || '';
     this.ctime = object.created_at || '';
-    this.updated_at = object.updated_at || '';
     this.indexed_at = object.indexed_at || '';
     this.last_sync_time = object.last_sync_time || '';
     this.project_id = object.project_id || '';
@@ -19,7 +18,6 @@ class Connection {
     if (this.ctime) {
       this.ctime = dayjs(this.ctime).format('YYYY-MM-DD HH:mm:ss');
     }
-    this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
     this.indexed_at = this.indexed_at ? dayjs(this.indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
     this.last_sync_time = this.last_sync_time ? dayjs(this.last_sync_time).format('YYYY-MM-DD HH:mm:ss') : '--';
   }
