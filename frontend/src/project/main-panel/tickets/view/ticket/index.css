@@ -134,6 +134,10 @@
   flex-direction: column;
 }
 
+.sea-qa-project-ticket .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: #1991eb;
+}
+
 .sea-qa-project-ticket .sf-slate-viewer-scroll-container {
   padding: 0;
   overflow-x: hidden;

@@ -18,6 +18,15 @@ class Reply {
     }
     this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
   }
+
+  _update = (content = '') => {
+    if (typeof content === 'string') {
+      this.content = content;
+    } else {
+      this.content = content?.text;
+    }
+    return this;
+  };
 }
 
 class Ticket {
@@ -78,14 +87,19 @@ class Ticket {
     return this;
   };
 
-  _delete_reply = (reply) => {
-    // todo
+  _delete_reply = (replyID) => {
+    this.replies = this.replies.filter(reply => reply.id !== replyID);
     this.reply_updated_at = dayjs(new Date()).fromNow();
+    return this;
   };
 
-  _modify_reply = (reply) => {
-    // todo
+  _modify_reply = (replyID, content) => {
+    const replyIndex = this.replies.findIndex(reply => reply.id === replyID);
+    let reply = this.replies[replyIndex];
+    reply = reply._update(content);
+    this.replies[replyIndex] = reply;
     this.reply_updated_at = dayjs(new Date()).fromNow();
+    return this;
   };
 }
 

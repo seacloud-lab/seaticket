@@ -32,6 +32,13 @@
   color: #59636e;
 }
 
+.sea-qa-project-ticket-reply.editing .sea-qa-project-ticket-reply-op {
+  padding: 4px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .sea-qa-project-ticket-reply .sea-qa-project-ticket-reply-user-name {
   font-weight: 600;
   color: #212529;
@@ -41,4 +48,8 @@
   width: 100%;
   min-height: 100px;
   display: flex;
+}
+
+.sea-qa-project-ticket-reply .sea-qa-project-ticket-reply-content.editing {
+  flex-direction: column;
 }
