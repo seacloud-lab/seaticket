@@ -1571,7 +1571,7 @@ class DiscourseForumRepliesRecord(models.Model):
     post_number = models.IntegerField()
     content = models.TextField(null=True, blank=True)
     author = models.CharField(max_length=255, null=True, blank=True)
-    reply_time = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
     connection_id = models.CharField(max_length=64)
 
     class Meta:
@@ -1586,6 +1586,6 @@ class DiscourseForumRepliesRecord(models.Model):
             'content': self.content,
             'author': self.author,
             'connection_id': self.connection_id,
-            'reply_time': self.reply_time,
+            'updated_at': self.updated_at,
         }
 
