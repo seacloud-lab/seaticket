@@ -1,3 +1,7 @@
+.sea-qa-discourse-forums-details-container .modal-body {
+  padding: 0px 16px;
+}
+
 .sea-qa-discourse-forums-details-container .sea-qa-discourse-forums-row-details {
   min-height: 40vh;
   max-height: 60vh;
@@ -12,6 +16,7 @@
 }
 
 .sea-qa-discourse-forums-details-container .sea-qa-discourse-forums-row-details .sea-qa-discourse-forums-reply-item {
+  margin-top: 16px;
   margin-bottom: 16px;
   border-bottom: 1px solid #eee;
 }
@@ -19,12 +24,15 @@
 .sea-qa-discourse-forums-reply-item .sea-qa-discourse-forums-reply-item-author-info-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .sea-qa-discourse-forums-reply-item .sea-qa-discourse-forums-reply-item-content {
   padding-left: 42px;
-  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.sea-qa-discourse-forums-reply-item .sea-qa-discourse-forums-reply-item-content :last-child {
+  margin-bottom: 0px;
 }
 
 .sea-qa-discourse-forums-reply-item .sea-qa-discourse-forums-reply-item-author-info-wrapper .sea-qa-discourse-forums-reply-item-author-info-left {
