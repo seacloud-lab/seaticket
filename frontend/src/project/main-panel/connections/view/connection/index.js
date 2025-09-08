@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
+import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
@@ -9,24 +10,6 @@ import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster } from '@/components';
-
-const RowDetails = ({ rowDetails, onClose }) => {
-  return (
-    <Modal isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
-      <ModalHeader toggle={onClose}>{gettext('Replies')}</ModalHeader>
-      <ModalBody>
-        <div className="sea-qa-row-details" style={{ maxHeight: '60vh', overflow: 'auto', padding: '1rem 2rem' }}>
-          {rowDetails.map(detail => (
-            <div key={detail.id} className="reply-item" style={{ marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
-              <div className="author" style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{detail.author}</div>
-              <div className="content" dangerouslySetInnerHTML={{ __html: detail.content }}></div>
-            </div>
-          ))}
-        </div>
-      </ModalBody>
-    </Modal>
-  );
-};
 
 const SiteContentDialog = ({ title, content, onClose }) => {
   return (
@@ -48,6 +31,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [rowDetails, setRowDetails] = useState(null);
+  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
@@ -233,6 +217,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
     const params = { topic_id: row.topic_id };
     connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
+      setRowDetailsTitle(row.title);
       setRowDetails(res.data.row_details);
     });
   }, [projectUuid, connectionID]);
@@ -284,7 +269,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && <RowDetails rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {rowDetails && <DiscourseForumsDetails rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}
