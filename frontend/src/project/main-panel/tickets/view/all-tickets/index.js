@@ -242,6 +242,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
   }, []);
 
   if (isLoading || isTypesLoading) return null;
+  console.log(viewID);
 
   return (
     <SeaMetadata
