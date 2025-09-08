@@ -84,14 +84,9 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        owned = request.GET.get('owned')
         try:
-            if owned == 'true':
-                tickets = Tickets.objects.list_tickets_by_username(
-                    project_uuid, username, start, end)
-            else:
-                tickets = Tickets.objects.list_tickets_by_view(
-                    project_uuid, start, end, view_id)
+            tickets = Tickets.objects.list_tickets_by_view(
+                project_uuid, username, start, end, view_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

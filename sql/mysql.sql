@@ -464,10 +464,6 @@ CREATE TABLE `tickets`  (
   `delete_at` datetime(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
-  KEY `tickets_creator`(`creator`),
-  KEY `tickets_type`(`type`),
-  KEY `tickets_status`(`status`),
-  KEY `tickets_priority`(`priority`),
   KEY `tickets_deleted`(`deleted`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 

@@ -1324,37 +1324,13 @@ class TicketViews(models.Model):
 
 class TicketsManager(models.Manager):
 
-    def list_tickets_by_view(self, project_uuid, start, end, view_id):
-        sorts = []
+    def list_tickets_by_view(self, project_uuid, username, start, end, view_id):
+        from seahub.project.view_utils import filter_tickets_by_view
         view = TicketViews.objects.get_view(project_uuid, view_id)
-        basic_filters = view.get('basic_filters', [])
-        filters = view.get('filters', [])
-        filter_conjunction = view.get('filter_conjunction', 'OR')
-        sorts = view.get('sorts', [])
+        q, sorts = filter_tickets_by_view(username, view)
 
-        q = Q(project_uuid=project_uuid) & Q(deleted=False)
-
-        for basic_filter in basic_filters:
-            if basic_filter.get('column_key') == 'status':
-                value = basic_filter['filter_term']
-                if not value:
-                    value = ['', 'open', 'completed', 'not_planned', 'duplicate']
-                elif 'open' in value:
-                    value = value + ['']
-                q = q & Q(status__in=value)
-            if basic_filter.get('column_key') == 'tags':
-                value = basic_filter['filter_term']
-                if value:
-                    tags = TicketTags.objects.filter(tag_id__in=value)
-                    if tags:
-                        ticket_ids = [tag.ticket_id for tag in tags]
-                        q = q & Q(id__in=ticket_ids)
-
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts if sort.get('column_key')]
-        if not sorts:
-            sorts = ['-number']
-
-        return self.filter(q).order_by(', '.join(sorts))[start: end]
+        return self.filter(
+            project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
 
     def list_tickets_by_tag(self, project_uuid, tag_id):
         q = Q(project_uuid=project_uuid) & Q(deleted=False)
@@ -1407,11 +1383,11 @@ class Tickets(models.Model):
     id = models.BigAutoField(primary_key=True)
     project_uuid = models.UUIDField()
     number = models.IntegerField()
-    creator = models.CharField(max_length=255, db_index=True)
+    creator = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    status = models.CharField(max_length=50, null=True, db_index=True)
-    type = models.BigIntegerField(null=True, db_index=True)
+    status = models.CharField(max_length=50, null=True)
+    type = models.BigIntegerField(null=True)
     priority = models.SmallIntegerField(default=0)
     reply_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
