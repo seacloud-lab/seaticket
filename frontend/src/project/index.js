@@ -69,7 +69,7 @@ const Project = () => {
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
     const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.CHAT;
-    resetURL([bar], ...children);
+    resetURL(true, [bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);
   }, []);
