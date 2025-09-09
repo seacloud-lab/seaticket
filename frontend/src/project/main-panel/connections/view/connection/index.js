@@ -26,7 +26,7 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   }, [content]);
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
-      <ModalHeader toggle={onClose}>{title || gettext('Content')}</ModalHeader>
+      <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
       <ModalBody>
         <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
           <div className="site-page-content" dangerouslySetInnerHTML={{ __html: innerHtml }}></div>
