@@ -27,6 +27,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
 
   const status = record && record.status ? JSON.parse(record.status) : {};
   const last_sync_time = record && record.last_sync_time ? dayjs(record.last_sync_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+  const last_index_time = record && record.indexed_at ? dayjs(record.indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
   return (
     <Modal isOpen={true} toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{gettext('Connection status')}</ModalHeader>
@@ -41,6 +42,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             <p>{gettext('Last sync time')}: {last_sync_time}</p>
             <p>{gettext('Last indexed count')}: {status.last_indexed_count}</p>
             <p>{gettext('Last index status')}: {status.last_index_status}</p>
+            <p>{gettext('Last index time')}: {last_index_time}</p>
           </>
         }
       </ModalBody>
