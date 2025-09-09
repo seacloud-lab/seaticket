@@ -89,7 +89,8 @@ export const ViewsDataProvider = ({
       setViewsData(viewsData);
       const view = viewsData.views.find(v => v._id === viewID);
       if (view) return;
-      toggleView(viewsData.views[0]._id);
+      const viewsNavigation = viewsData.navigation.filter(v => v.type === 'view');
+      toggleView(viewsNavigation[0]._id);
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);
       toaster.danger(errorMsg);

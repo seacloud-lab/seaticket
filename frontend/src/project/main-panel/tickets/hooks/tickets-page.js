@@ -11,7 +11,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(TICKET_PAGE_TYPE.ALL);
   const [childrenPageType, setChildrenPageType] = useState(TICKET_CHILDREN_PAGE_TYPE.ALL);
-  const [viewID, setViewID] = useState('open');
+  const [viewID, setViewID] = useState('');
 
   const resetURL = useCallback((pageType, childrenPageType, viewID) => {
     const { origin } = location;
@@ -68,7 +68,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     }
     if (pageType === TICKET_PAGE_TYPE.ALL) {
       const searchParams = Utils.getUrlSearches();
-      const viewID = searchParams?.view || 'open';
+      const viewID = searchParams?.view || '';
       setViewID(viewID);
     }
     setChildrenPageType(childrenPageType);
