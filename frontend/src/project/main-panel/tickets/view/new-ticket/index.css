@@ -52,3 +52,7 @@
   padding-left: 0;
   padding-bottom: 50px;
 }
+
+.sea-qa-project-new-ticket .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: #1991eb;
+}

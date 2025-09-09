@@ -51,13 +51,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
+    const editor = descriptionEditorRef.current.getEditor();
     const eventBus = EventBus.getInstance();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const isImage = /image/i.test(file.type);
       const fileName = file.name;
       editorAPI.uploadLocalImage(file).then(url => {
-        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_IMAGE, { title: fileName, url, isImage });
+        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_ATTACHMENTS, editor, { title: fileName, url, isImage });
       });
     }
   }, [editorAPI]);
