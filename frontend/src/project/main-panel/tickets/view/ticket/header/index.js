@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Input } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, toaster } from '@/components';
+import { IconButton, toaster, Icon, Option } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
 import { validateTitle } from '@/utils/utils';
@@ -9,9 +9,12 @@ import { validateTitle } from '@/utils/utils';
 import './index.css';
 
 const Header = ({
-  readonly,
+  readonly = true,
+  className,
   title: propsTitle,
   id,
+  statusOption,
+  typeOption,
   copyLink,
   modifyTitle,
 }) => {
@@ -55,36 +58,50 @@ const Header = ({
     }
   }, [handleCancelModify, handleModify]);
 
+  useEffect(() => {
+    if (!readonly) return;
+    setTitle(propsTitle);
+  }, [readonly, propsTitle]);
+
   return (
-    <div className="sea-qa-project-ticket-header">
-      <div className={classnames('sea-qa-project-ticket-header-left', { 'o-hidden': !isRenaming })}>
-        <div className={classnames('sea-qa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
+    <div className={classnames('sea-qa-project-ticket-header', className)}>
+      <div className="sea-qa-project-ticket-title-wrapper">
+        <div className={classnames('sea-qa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
+          <div className={classnames('sea-qa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
+            {isRenaming ? (
+              <Input value={title} autoFocus={true} className="sea-qa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
+            ) : (
+              <>
+                <span className="sea-qa-project-ticket-title">{title}</span>
+                <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
+              </>
+            )}
+            {!readonly && !isRenaming && (
+              <IconButton icon="rename" className="sea-qa-project-ticket-rename-btn" onClick={() => setIsRenaming(true)} />
+            )}
+          </div>
+        </div>
+        <div className="sea-qa-project-ticket-title-wrapper-right">
           {isRenaming ? (
-            <Input value={title} autoFocus={true} className="sea-qa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
-          ) : (
             <>
-              <span className="sea-qa-project-ticket-title">{title}</span>
-              <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
+              <Button className="sea-qa-project-ticket-title-cancel-btn" onClick={handleCancelModify}>
+                {gettext('Cancel')}
+              </Button>
+              <Button className="sea-qa-project-ticket-title-submit-btn" color="primary" onClick={handleModify}>
+                {gettext('Submit')}
+              </Button>
             </>
-          )}
-          {!readonly && !isRenaming && (
-            <IconButton icon="rename" className="sea-qa-project-ticket-rename-btn" onClick={() => setIsRenaming(true)} />
+          ) : (
+            <IconButton icon="copy" className="sea-qa-project-ticket-copy" onClick={copyLink} />
           )}
         </div>
       </div>
-      <div className="sea-qa-project-ticket-header-right">
-        {isRenaming ? (
-          <>
-            <Button className="sea-qa-project-ticket-title-cancel-btn" onClick={handleCancelModify}>
-              {gettext('Cancel')}
-            </Button>
-            <Button className="sea-qa-project-ticket-title-submit-btn" color="primary" onClick={handleModify}>
-              {gettext('Submit')}
-            </Button>
-          </>
-        ) : (
-          <IconButton icon="copy" className="sea-qa-project-ticket-copy" onClick={copyLink} />
-        )}
+      <div className="sea-qa-project-ticket-status-wrapper">
+        <div className={classnames('sea-qa-project-ticket-status', statusOption?.value)}>
+          <Icon symbol={statusOption?.icon} />
+          <span>{statusOption?.statusName}</span>
+        </div>
+        {typeOption && (<Option className="ml-2" option={typeOption} />)}
       </div>
     </div>
   );

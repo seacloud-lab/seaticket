@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, Icon, IconButton, toaster, Option, EmptyTip } from '@/components';
+import { CenteredLoading, toaster, EmptyTip } from '@/components';
 import { TICKET_STATUS_CONFIG } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
@@ -213,28 +213,22 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   return (
     <div className="sea-qa-project-ticket" onScroll={handleScroll}>
-      <Header readonly={!editable} title={title} id={id} copyLink={copyLink} modifyTitle={onTitleChange} />
-      <div className="sea-qa-project-ticket-status-wrapper">
-        <div className={classnames('sea-qa-project-ticket-status', status)}>
-          <Icon symbol={statusOption?.icon} />
-          <span>{statusOption?.statusName}</span>
-        </div>
-        {typeOption && (<Option className="sea-qa-project-ticket-status ml-2" option={typeOption} />)}
-      </div>
-      <div className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 82, 'd-flex': scrollTop >= 82 })}>
-        <div className={classnames('sea-qa-project-ticket-status', status)}>
-          <Icon symbol={statusOption?.icon} />
-          <span>{statusOption?.statusName}</span>
-        </div>
-        <div className="sea-qa-project-ticket-title-number-type">
-          <div className="sea-qa-project-ticket-title-number o-hidden">
-            <span className="sea-qa-project-ticket-title">{title}</span>
-            <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
-          </div>
-          {typeOption && (<div className="text-truncate w-100">{typeOption.name}</div>)}
-        </div>
-        <IconButton icon="copy" className="sea-qa-project-ticket-copy ml-1" onClick={copyLink} />
-      </div>
+      <Header
+        readonly={!editable}
+        title={title}
+        id={id}
+        statusOption={statusOption}
+        typeOption={typeOption}
+        copyLink={copyLink}
+        modifyTitle={onTitleChange}
+      />
+      <Header
+        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 94, 'd-flex': scrollTop >= 94 })}
+        title={title}
+        id={id}
+        statusOption={statusOption}
+        typeOption={typeOption}
+      />
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="sea-qa-project-ticket-reply-container-wrapper">
           <Reply
