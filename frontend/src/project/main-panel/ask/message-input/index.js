@@ -124,6 +124,8 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
       return inputRef?.current?.innerText || '';
     },
 
+    inputWrapper: inputRef?.current.parentNode.parentNode.parentNode,
+
   }), [setAsk, inputRef]);
 
   const disabled = isReply || readOnly;

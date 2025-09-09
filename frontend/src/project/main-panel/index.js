@@ -13,7 +13,7 @@ const Container = ({ activeBar }) => {
   if (!barKey) return (<TopBar />);
   const bar = BAR_TYPES.find(b => b.key === barKey);
   const title = bar.name;
-  if (barKey === BAR_TYPE.ASK) return (<Ask title={title}/>); // Question answering page
+  if (barKey === BAR_TYPE.CHAT) return (<Ask title={title}/>); // Question answering page
   if (barKey === BAR_TYPE.SEARCH) return (<Search title={title}/>); // search page
   if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} />); // tickets page
   return (<Connections title={title} />); // connections page

@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { CenteredLoading, Icon, toaster } from '@/components';
+import { CenteredLoading, Icon, toaster, IconButton, ClickOutside } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
@@ -23,6 +23,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
   const [resolveType, setResolveType] = useState('ask');
+  const [isShowSessionToggle, setIsShowSessionToggle] = useState(false);
+  const [sessionTogglePanelTranslateY, setSessionTogglePanelTranslateY] = useState(0);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -42,10 +44,12 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   const convertToAgent = useCallback(() => {
     setResolveType('agent');
+    setIsShowSessionToggle(false);
   }, [resolveType]);
 
   const convertToAsk = useCallback(() => {
     setResolveType('ask');
+    setIsShowSessionToggle(false);
   }, [resolveType]);
 
   const jumpToBottom = useCallback((delay = 1) => {
@@ -217,23 +221,18 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     };
   }, [loading, sessionId, chatHistories, modifyLocalSession]);
 
+  const onClickSessionToggle = useCallback((e) => {
+    const { bottom } = messageInputRef.current.inputWrapper.getBoundingClientRect();
+    const overflowHeight = bottom + 6 + 82; // 6: margin, 82: panel height
+    setSessionTogglePanelTranslateY(overflowHeight > window.innerHeight ? (window.innerHeight - overflowHeight - 95) : 0);
+    setIsShowSessionToggle(true);
+  }, [messageInputRef]);
+
   const isEmpty = chatHistories.length === 0 && !loading;
 
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
-      <div className="sea-qa-ai-ask-chats-wrapper">
-        <div>
-          <div
-            className="sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
-          >
-            <button onClick={convertToAgent} className="dropdown-item sea-qa-dropdown-item">
-              {gettext('Agent')}
-            </button>
-            <button onClick={convertToAsk} className="dropdown-item sea-qa-dropdown-item">
-              {gettext('Ask')}
-            </button>
-          </div>
-        </div>
+      <div className='sea-qa-ai-ask-chats-wrapper'>
         <div className="sea-qa-ai-ask-chats" ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
@@ -258,6 +257,28 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           readOnly={readOnly}
           sendMessage={sendMessage}
         />
+        <div className='sea-qa-ai-ask-chats-toggle-session-wrapper'>
+          <div className='sea-qa-ai-ask-chats-toggle-session-button'>
+            <span className='sea-qa-ai-ask-chats-toggle-session-button-name'>{resolveType.charAt(0).toUpperCase() + resolveType.slice(1)}</span>
+            <IconButton icon='down' onClick={onClickSessionToggle} />
+          </div>
+          {isShowSessionToggle && (
+            <div className='sea-qa-ai-ask-chats-toggle-session-panel' style={{ transform: `translateY(${sessionTogglePanelTranslateY}px)` }}>
+              <ClickOutside onClickOutside={() => setIsShowSessionToggle(false)}>
+                <div className='sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu'>
+                  <div onClick={convertToAgent} className='dropdown-item sea-qa-dropdown-item'>
+                    <span>{gettext('Agent')}</span>
+                    {resolveType === 'agent' && <IconButton icon='check-mark'/>}
+                  </div>
+                  <div onClick={convertToAsk} className='dropdown-item sea-qa-dropdown-item'>
+                    <span>{gettext('Ask')}</span>
+                    {resolveType === 'ask' && <IconButton icon='check-mark'/>}
+                  </div>
+                </div>
+              </ClickOutside>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

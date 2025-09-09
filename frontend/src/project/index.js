@@ -17,13 +17,13 @@ const { projectName, projectUuid, workspaceID } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activeBar, setActiveBar] = useState([BAR_TYPE.ASK]);
+  const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.ASK) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && isKeepSearch) {
@@ -36,7 +36,7 @@ const Project = () => {
     const activeBarKey = newActiveBar[0];
     if (activeBar[0] === activeBarKey) {
       if ([BAR_TYPE.SEARCH].includes(activeBarKey)) return;
-      if (activeBarKey === BAR_TYPE.ASK && !location.pathname.endsWith('ask/')) {
+      if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_TYPE.NEW);
         return;
       }
@@ -68,8 +68,8 @@ const Project = () => {
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
-    const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.ASK;
-    resetURL(true, [bar], ...children);
+    const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.CHAT;
+    resetURL([bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);
   }, []);
