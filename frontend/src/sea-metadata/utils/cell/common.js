@@ -4,10 +4,11 @@ import { getCellValueByColumn } from './core';
 import {
   getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionName, getCollaboratorsName, getColumnOptionNamesByIds,
   getColumnOptionIdsByNames, getTagsDisplayString, getColumnOptions,
+  getTypeDisplayString,
 } from '../column';
 import context from '@/sea-metadata/context';
 
-export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData } = {}) => {
+export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData, typesData } = {}) => {
   if (!row) return '';
   const { type, data } = column;
   const cellValue = getCellValueByColumn(row, column);
@@ -43,6 +44,9 @@ export const getCellValueDisplayString = (row, column, { collaborators = [], tag
     case CellType.CREATOR:
     case CellType.LAST_MODIFIER: {
       return cellValue === 'anonymous' ? cellValue : getCollaboratorsName(collaborators, [cellValue]);
+    }
+    case CellType.TYPE: {
+      return getTypeDisplayString(typesData, cellValue);
     }
     case CellType.TAGS: {
       return getTagsDisplayString(tagsData, cellValue);

@@ -6,7 +6,6 @@ import Store from '../store';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
-import { TagsDataProvider } from './tagsData';
 import { getRowById } from '../utils/row';
 
 const MetadataContext = React.createContext(null);
@@ -15,8 +14,7 @@ export const MetadataProvider = ({
   viewID,
   api,
   tagsData,
-  createTag,
-  toggleAllTags,
+  typesData,
   localStorageNamePrefix,
   createContextMenuOptions,
   t,
@@ -205,6 +203,11 @@ export const MetadataProvider = ({
 
   useEffect(() => {
     if (isLoading) return;
+    storeRef.current.typesData = typesData;
+  }, [isLoading, typesData]);
+
+  useEffect(() => {
+    if (isLoading) return;
     storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
   }, [isLoading, collaborators, collaboratorsCache]);
 
@@ -282,9 +285,7 @@ export const MetadataProvider = ({
         createContextMenuOptions,
       }}
     >
-      <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
-        {children}
-      </TagsDataProvider>
+      {children}
     </MetadataContext.Provider>
   );
 };

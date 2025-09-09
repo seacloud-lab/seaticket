@@ -11,6 +11,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.MTIME,
   CellType.DATE,
   CellType.SINGLE_SELECT,
+  CellType.TYPE,
   CellType.MULTIPLE_SELECT,
   CellType.COLLABORATOR,
   CellType.CHECKBOX,

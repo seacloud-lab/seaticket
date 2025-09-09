@@ -67,6 +67,7 @@ const SINGLE_CELL_VALUE_COLUMN_TYPE_MAP = {
   [CellType.DATE]: true,
   [CellType.LONG_TEXT]: true,
   [CellType.SINGLE_SELECT]: true,
+  [CellType.TYPE]: true,
   [CellType.NUMBER]: true,
   [CellType.RATE]: true,
 };

@@ -16,6 +16,7 @@ const CellType = {
   RATE: 'rate',
   TAG: 'tag',
   TAGS: 'tags',
+  TYPE: 'type',
 };
 
 export default CellType;

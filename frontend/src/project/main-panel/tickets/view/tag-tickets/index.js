@@ -15,7 +15,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
-  const { typesData } = useTypes();
+  const { typesData, createType } = useTypes();
 
   const columns = useMemo(() => [
     {
@@ -27,56 +27,47 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       frozen: true,
       is_required: true,
       click: (row) => togglePageType(row._id)
-    },
-    {
+    }, {
       type: CellType.SINGLE_SELECT,
       key: 'status',
       name: gettext('Status'),
       editable: true,
       data: { options: TICKET_STATUS_OPTIONS },
       is_required: true,
-    },
-    {
-      type: CellType.SINGLE_SELECT,
+    }, {
+      type: CellType.TYPE,
       key: 'type',
       name: gettext('Type'),
       editable: true,
       modify_data_able: true,
-      data: { options: typesData.rows },
-    },
-    {
+    }, {
       type: CellType.LONG_TEXT,
       key: 'content',
       name: gettext('Description'),
       editable: true,
       is_required: true,
-    },
-    {
+    }, {
       type: CellType.COLLABORATOR,
       key: 'assignees',
       name: gettext('Assignees'),
       editable: true,
-    },
-    {
+    }, {
       type: CellType.TAGS,
       key: 'tags',
       name: gettext('Tags'),
       editable: true,
       modify_data_able: true,
-    },
-    {
+    }, {
       type: CellType.COLLABORATOR,
       key: 'participants',
       name: gettext('Participants'),
       editable: false,
-    },
-    {
+    }, {
       type: CellType.CTIME,
       key: 'created_at',
       name: gettext('Create time'),
       editable: false,
-    },
-    {
+    }, {
       type: CellType.CREATOR,
       key: 'creator',
       name: gettext('Creator'),
@@ -282,6 +273,9 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       // tags
       tagsData={tagsData}
       createTag={createTag}
+
+      typesData={typesData}
+      createType={createType}
 
       t={t}
     />

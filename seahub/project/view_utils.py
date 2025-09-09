@@ -303,7 +303,7 @@ class ViewFilter(object):
         return q
 
     def filter_tickets_by_view(self, username, view):
-        from seahub.project.models import TicketTags, TicketParticipants, TicketAssignees
+        from seahub.project.models import TicketTags, TicketParticipants, TicketAssignees, ProjectTypes
 
         basic_filters = view.get('basic_filters', [])
         filters = view.get('filters', [])
@@ -319,7 +319,7 @@ class ViewFilter(object):
                 value = filter_obj['filter_term']
                 filter_predicate = filter_obj['filter_predicate']
                 condition = column_key
-                if column_key == 'status':
+                if column_key == 'status' or column_key == 'type':
                     if value == []:
                         continue
                     basic_q = self.format_filter_predicate(

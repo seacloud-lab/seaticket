@@ -24,6 +24,7 @@ const SUPPORT_GROUP_COLUMN_TYPES = [
   CellType.MTIME,
   CellType.CHECKBOX,
   CellType.SINGLE_SELECT,
+  CellType.TYPE,
   CellType.MULTIPLE_SELECT,
   CellType.COLLABORATOR,
   CellType.CREATOR,

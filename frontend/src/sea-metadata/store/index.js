@@ -27,6 +27,7 @@ class Store {
     this.localOperator = new LocalOperator();
     this.collaborators = props.collaborators || [];
     this.tagsData = {};
+    this.typesData = {};
   }
 
   destroy = () => {
@@ -38,6 +39,7 @@ class Store {
     this.pendingOperations = [];
     this.isSendingOperation = false;
     this.tagsData = {};
+    this.typesData = {};
   };
 
   initStartIndex = () => {
@@ -57,7 +59,10 @@ class Store {
       data.hasMore = loadedCount === limit;
       this.data = data;
       this.startIndex += loadedCount;
-      DataProcessor.run(this.data, { collaborators: this.collaborators });
+      DataProcessor.run(this.data, {
+        collaborators: this.collaborators,
+        typesData: this.typesData,
+      });
     });
   }
 
@@ -91,7 +96,7 @@ class Store {
     this.data.hasMore = loadedCount === limit;
     this.data.rowsCount = this.data.row_ids.length;
     this.startIndex = this.startIndex + loadedCount;
-    DataProcessor.run(this.data, { collaborators: this.collaborators });
+    DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
   }
 
@@ -104,7 +109,7 @@ class Store {
     const rowIndex = this.data.rows.findIndex(row => row._id === newRowId);
     this.data.id_row_map[newRowId] = newRow;
     this.data.rows[rowIndex] = newRow;
-    DataProcessor.run(this.data, { collaborators: this.collaborators });
+    DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
   }
 
   createOperation(op) {
@@ -192,7 +197,11 @@ class Store {
   };
 
   syncOperationOnData(operation) {
-    DataProcessor.syncOperationOnData(this.data, operation, { collaborators: this.collaborators, tagsData: this.tagsData });
+    DataProcessor.syncOperationOnData(this.data, operation, {
+      collaborators: this.collaborators,
+      tagsData: this.tagsData,
+      typesData: this.typesData,
+    });
   }
 
   // redo/undo

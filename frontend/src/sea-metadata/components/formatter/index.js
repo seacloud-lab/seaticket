@@ -14,8 +14,10 @@ import RateFormatter from '../cell-formatter/rate';
 import TagsFormatter from '../cell-formatter/tags';
 import URLFormatter from '../cell-formatter/URL';
 import TagFormatter from '../cell-formatter/tag';
+import TypeFormatter from '../cell-formatter/type';
 import Empty from './empty';
 import { CellType } from '../../constants';
+
 import './index.css';
 
 const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, row, ...params }) => {
@@ -110,6 +112,13 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
         <RateFormatter value={value} data={column?.data} className={className} { ...props }>
           <Empty columnType={columnType} placeholder={emptyTip} />
         </RateFormatter>
+      );
+    }
+    case CellType.TYPE: {
+      return (
+        <TypeFormatter value={value} className={className} { ...props }>
+          <Empty columnType={columnType} placeholder={emptyTip} />
+        </TypeFormatter>
       );
     }
     case CellType.TAGS: {

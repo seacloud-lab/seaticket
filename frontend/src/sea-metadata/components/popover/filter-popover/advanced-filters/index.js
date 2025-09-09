@@ -98,6 +98,7 @@ class AdvancedFilters extends Component {
         updateFilter={this.updateFilter}
         updateConjunction={this.updateConjunction}
         collaborators={this.props.collaborators}
+        typesData={this.props.typesData}
         isPre={this.props.isPre}
       />
     );

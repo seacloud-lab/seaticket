@@ -207,12 +207,11 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
     // const canDeleteColumn = context.canDeleteColumn(column);
     // const canRenameColumn = context.canRenameColumn(column);
     const canModifyView = context.canModifyView();
-    const isTypeColumn = column.key === 'type' && column.type === CellType.SINGLE_SELECT;
 
     return (
       <DropdownMenu ref={menuRef} className="sea-metadata-column-dropdown-menu">
         <div ref={dropdownDomRef}>
-          {type === CellType.SINGLE_SELECT && !isTypeColumn && (
+          {type === CellType.SINGLE_SELECT && (
             <>
               <DropdownItem
                 disabled={!canModifyColumnData}
@@ -237,7 +236,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
           {type === CellType.DATE && (
             <>{renderDateFormat(canModifyColumnData)}</>
           )}
-          {[CellType.DATE, CellType.SINGLE_SELECT, CellType.MULTIPLE_SELECT].includes(column.type) && !isTypeColumn && (
+          {[CellType.DATE, CellType.SINGLE_SELECT, CellType.MULTIPLE_SELECT].includes(type) && (
             <DefaultDropdownItem key="divider-item" divider />
           )}
           {/* <DropdownItem
@@ -249,7 +248,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
             onChange={openRenamePopover}
             onMouseEnter={hideSubMenu}
           /> */}
-          {(SORT_COLUMN_OPTIONS.includes(column.type) || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)) && !isTypeColumn && (
+          {(SORT_COLUMN_OPTIONS.includes(type) || SHOW_DISABLED_SORT_COLUMNS.includes(type)) && (
             <>
               <DropdownItem
                 disabled={!canModifyView || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)}
@@ -271,7 +270,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
               />
             </>
           )}
-          {CellType.TAGS === column.type && (
+          {CellType.TAGS === type && (
             <DropdownItem
               iconName="tag"
               title={gettext('Tags')}
@@ -279,7 +278,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
               onMouseEnter={hideSubMenu}
             />
           )}
-          {isTypeColumn &&
+          {CellType.TYPE === type &&
             <DropdownItem
               title={gettext('Types')}
               onChange={toggleAllTypes}

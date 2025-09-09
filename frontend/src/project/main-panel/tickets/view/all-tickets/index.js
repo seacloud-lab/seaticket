@@ -24,8 +24,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       frozen: true,
       width: 33,
       data: { type: 'rate' }
-    },
-    {
+    }, {
       type: CellType.TEXT,
       key: 'title',
       name: gettext('Title'),
@@ -34,56 +33,47 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       frozen: true,
       is_required: true,
       click: (row) => togglePageType(row._id)
-    },
-    {
+    }, {
       type: CellType.SINGLE_SELECT,
       key: 'status',
       name: gettext('Status'),
       editable: true,
       data: { options: TICKET_STATUS_OPTIONS },
       is_required: true,
-    },
-    {
-      type: CellType.SINGLE_SELECT,
+    }, {
+      type: CellType.TYPE,
       key: 'type',
       name: gettext('Type'),
       editable: true,
       modify_data_able: true,
-      data: { options: typesData.rows },
-    },
-    {
+    }, {
       type: CellType.LONG_TEXT,
       key: 'content',
       name: gettext('Description'),
       editable: true,
       is_required: true,
-    },
-    {
+    }, {
       type: CellType.COLLABORATOR,
       key: 'assignees',
       name: gettext('Assignees'),
       editable: true,
-    },
-    {
+    }, {
       type: CellType.TAGS,
       key: 'tags',
       name: gettext('Tags'),
       editable: true,
       modify_data_able: true,
-    },
-    {
+    }, {
       type: CellType.COLLABORATOR,
       key: 'participants',
       name: gettext('Participants'),
       editable: false,
-    },
-    {
+    }, {
       type: CellType.CTIME,
       key: 'created_at',
       name: gettext('Create time'),
       editable: false,
-    },
-    {
+    }, {
       type: CellType.CREATOR,
       key: 'creator',
       name: gettext('Creator'),
@@ -107,7 +97,23 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     getViews: () => ticketsAPI.listViews(projectUuid),
 
     // view
-    getView: (viewID) => ticketsAPI.getView(projectUuid, viewID),
+    getView: (viewID) => ticketsAPI.getView(projectUuid, viewID).then(res => {
+      const view = res?.data?.view;
+      const basic_filters = view?.basic_filters || [];
+      if (basic_filters.length === 3) return { data: { view } };
+      return {
+        data: {
+          view: {
+            ...view,
+            basic_filters: [
+              basic_filters.find(f => f.column_key === 'status') || { column_key: 'status', filter_predicate: 'is_any_of', filter_term: [] },
+              basic_filters.find(f => f.column_key === 'type') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
+              basic_filters.find(f => f.column_key === 'tags') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
+            ]
+          }
+        }
+      };
+    }),
     insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
     modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
     deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),

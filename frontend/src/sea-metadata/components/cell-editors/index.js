@@ -8,6 +8,7 @@ import SingleSelectEditor from './single-select-editor';
 import CollaboratorEditor from './collaborator-editor';
 import LongTextEditor from './long-text-editor';
 import TagsEditor from './tags-editor';
+import TypeEditor from './type-editor';
 import { CellType } from '../../constants';
 
 // eslint-disable-next-line react/display-name
@@ -34,6 +35,9 @@ const Editor = React.forwardRef((props, ref) => {
     }
     case CellType.LONG_TEXT: {
       return (<LongTextEditor ref={ref} { ...props } />);
+    }
+    case CellType.TYPE: {
+      return (<TypeEditor ref={ref} { ...props} />);
     }
     case CellType.TAGS: {
       return (<TagsEditor ref={ref} { ...props } />);

@@ -30,7 +30,8 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
       case CellType.CHECKBOX: {
         return <input className="checkbox" type="checkbox" readOnly={true} checked={cellValue} />;
       }
-      case CellType.SINGLE_SELECT: {
+      case CellType.SINGLE_SELECT:
+      case CellType.TYPE: {
         const options = getColumnOptions(column);
         if (options.length === 0 || !originalCellValue) return emptyTip;
         const selectedOption = getOption(options, originalCellValue);
