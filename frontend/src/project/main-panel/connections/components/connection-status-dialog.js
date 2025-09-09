@@ -5,6 +5,7 @@ import { gettext } from '@/constants';
 import { CenteredLoading, ModalHeader, toaster } from '@/components';
 import { connectionsAPI } from '../../../api';
 import { Utils } from '@/utils/utils';
+import dayjs from '@/utils/dayjs';
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   const [record, setRecord] = useState(null);
@@ -25,7 +26,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   }, []);
 
   const status = record && record.status ? JSON.parse(record.status) : {};
-
+  const last_sync_time = record && record.last_sync_time ? dayjs(record.last_sync_time).format('YYYY-MM-DD HH:mm:ss') : '--';
   return (
     <Modal isOpen={true} toggle={onToggle}>
       <ModalHeader toggle={onToggle}>{gettext('Connection status')}</ModalHeader>
@@ -34,11 +35,12 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
           <CenteredLoading />
           :
           <>
-            <p>{gettext('Last indexed count')}: {status.last_indexed_count}</p>
-            <p>{gettext('Last index status')}: {status.last_index_status}</p>
             <p>{gettext('Total records')}: {status.total_records}</p>
             <p>{gettext('Last sync count')}: {status.last_sync_count}</p>
             <p>{gettext('Last sync status')}: {status.last_sync_status}</p>
+            <p>{gettext('Last sync time')}: {last_sync_time}</p>
+            <p>{gettext('Last indexed count')}: {status.last_indexed_count}</p>
+            <p>{gettext('Last index status')}: {status.last_index_status}</p>
           </>
         }
       </ModalBody>
