@@ -433,7 +433,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `config` longtext NOT NULL,
   `modifier` varchar(255) NOT NULL,
   `created_at` datetime(6) NOT NULL,
-  `updated_at` datetime(6) NULL,
+  `last_sync_time` datetime(6) NULL,
   `indexed_at` datetime(6) NULL,
   `project_id` int(11) NOT NULL,
   `status` longtext NOT NULL,
