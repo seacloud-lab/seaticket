@@ -506,7 +506,6 @@ class ProjectConnectionRowDetailView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         row_details = []
-        content = ''
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             topic_id = request.GET.get('topic_id')
             if not topic_id:
@@ -520,11 +519,12 @@ class ProjectConnectionRowDetailView(APIView):
             url = request.GET.get('url')
             filename = url_to_filename(url)
             uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-            file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
-            if file:
-                content = json.loads(file.read())
-                content = content.get('content')
+            try:
+                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                if file:
+                    row_details = json.loads(file.read())
+            except Exception as e:
+                logger.error(e)
         return Response({
             'row_details': row_details,
-            'content': content,
         })

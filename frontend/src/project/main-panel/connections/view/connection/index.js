@@ -10,17 +10,26 @@ import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster } from '@/components';
+import { processor } from '@seafile/seafile-editor';
 
 const SiteContentDialog = ({ title, content, onClose }) => {
+
+  const [innerHtml, setInnerHtml] = useState('');
+
+  useEffect(() => {
+    // replace error markdown format -\n to \n\n
+    const newContent = content.replace(/-\n/ig, '\n\n');
+    processor.process(newContent).then((result) => {
+      let innerHtml = String(result).replace(/<a /ig, '<a target="_blank" tabindex="-1"').replace(/<table>/ig, '<table class="table table-bordered w-100">');
+      setInnerHtml(innerHtml);
+    });
+  }, [content]);
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onClose}>{title || gettext('Content')}</ModalHeader>
       <ModalBody>
         <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
-          {!content && <div>{gettext('Loading...')}</div>}
-          {!!content && (
-            <div className="site-page-content" dangerouslySetInnerHTML={{ __html: content }}></div>
-          )}
+          <div className="site-page-content" dangerouslySetInnerHTML={{ __html: innerHtml }}></div>
         </div>
       </ModalBody>
     </Modal>
@@ -42,7 +51,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     setSiteDetails({ title: row.title, content: '' });
     const params = { url: row.url };
     connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-      setSiteDetails({ title: row.title, content: res.data.content || '' });
+      const raw = res.data.row_details || '';
+      setSiteDetails({ title: row.title, content: raw.content });
     }).catch(() => {
       setSiteDetails({ title: row.title, content: gettext('Failed to load content.') });
     });
