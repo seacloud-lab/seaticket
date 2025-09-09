@@ -19,14 +19,14 @@ const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.ASK]);
 
-  const resetURL = useCallback(([bar], ...children) => {
+  const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.ASK) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if (bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);
@@ -56,7 +56,7 @@ const Project = () => {
       }
     }
 
-    resetURL(newActiveBar, newActiveBar[1]);
+    resetURL(false, newActiveBar, newActiveBar[1]);
     setActiveBar(newActiveBar);
   }, [activeBar]);
 
@@ -69,7 +69,7 @@ const Project = () => {
     const params = paramsString.split('/');
     const [barKey, ...children] = params;
     const bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.ASK;
-    resetURL([bar], ...children);
+    resetURL(true, [bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);
   }, []);

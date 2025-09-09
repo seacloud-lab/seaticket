@@ -11,7 +11,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const [isLoading, setLoading] = useState(true);
   const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
   const [pageName, setPageName] = useState('');
-  const [viewID, setViewID] = useState('open');
+  const [viewID, setViewID] = useState('');
 
   const resetURL = useCallback((pageType, viewID) => {
     const { origin } = location;
@@ -25,8 +25,9 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
-  const togglePageType = useCallback((pageType) => {
+  const togglePageType = useCallback((pageType, viewID = '') => {
     setLoading(true);
+    setViewID(viewID);
     setPageType(pageType);
     setTimeout(() => setLoading(false), 1);
   }, []);
@@ -50,7 +51,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
 
     if (![CONNECTION_PAGE_TYPE.ALL, CONNECTION_PAGE_TYPE.NEW].includes(pageType) && viewID) {
       const searchParams = Utils.getUrlSearches();
-      const viewID = searchParams?.view || 'open';
+      const viewID = searchParams?.view || '';
       setViewID(viewID);
     }
 
