@@ -11,7 +11,7 @@ export const AskPageProvider = ({ workspaceID, projectName, children }) => {
 
   const resetURL = useCallback((pageType) => {
     const { origin } = location;
-    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.ASK}/`;
+    let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
     let urlPart = pageType === ASK_PAGE_TYPE.NEW ? '' : pageType + '/';
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
