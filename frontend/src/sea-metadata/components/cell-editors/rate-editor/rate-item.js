@@ -5,7 +5,7 @@ import Icon from '../../../../components/icon';
 import { RATE_MAP } from './constants';
 import { gettext } from '@/constants';
 
-const RateItem = ({ value, readOnly, onClick, isSelected, index }) => {
+const RateItem = ({ value, readOnly, onClick, isSelected, hotKey }) => {
   const rateItem = RATE_MAP[value];
   if (!rateItem) return null;
   if (readOnly) {
@@ -27,7 +27,7 @@ const RateItem = ({ value, readOnly, onClick, isSelected, index }) => {
       </span>
       <span className={classnames('sea-metadata-rate-item-right')}>
         {isSelected && <Icon className="sea-metadata-icon" symbol="check" title={gettext('Selected')}/>}
-        <span className="ml-2">{index - 1}</span>
+        <span className="ml-2">{hotKey}</span>
       </span>
     </div>
   );

@@ -9,7 +9,7 @@ import IconBtn from '@/components/icon-button';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
 import RateItem from '../../../../cell-editors/rate-editor/rate-item';
-import { RATE_MAP } from '../../../../cell-editors/rate-editor/constants';
+import { RATE_LIST } from '../../../../cell-editors/rate-editor/constants';
 import { gettext } from '@/constants';
 import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions } from '../../../../../utils/column';
 import {
@@ -500,14 +500,14 @@ class FilterItem extends React.Component {
                 hidePopoverWithEsc={this.onRateFilterClose}
               >
                 <div className="sea-metadata-rate-editor-popover">
-                  {Object.keys(RATE_MAP).map((key) => (
+                  {RATE_LIST.map((item, index) => (
                     <RateItem
-                      key={key}
-                      index={Number(key)}
-                      value={key}
+                      key={index}
+                      value={item.value}
+                      hotKey={item.hotKey}
                       onClick={this.onChangeRateNumber}
                       readOnly={false}
-                      isSelected={Number(key) === Number(filter_term)}
+                      isSelected={item.value === Number(filter_term)}
                     />
                   ))}
                 </div>

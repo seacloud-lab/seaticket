@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import RateItem from './rate-item';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
-import { RATE_MAP } from './constants';
+import { RATE_LIST } from './constants';
 
 import './index.css';
 
@@ -16,10 +16,9 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
   }, [oldValue]);
 
   const onChangeValue = useCallback((val) => {
-    const newValue = Number(val);
-    if (newValue !== value && newValue > -1) {
-      setValue(newValue);
-      onChange({ [column.key]: newValue });
+    if (val !== value) {
+      setValue(val);
+      onChange({ [column.key]: val });
     }
     setIsOpen(false);
   }, [value, column, onChange]);
@@ -29,10 +28,11 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
       if (isOpen && Number(e.key) >= 0 && Number(e.key) <= 4) {
         e.preventDefault();
         e.stopPropagation();
-        const newValue = Number(e.key) + 1;
-        if (newValue !== value && newValue > -1) {
-          setValue(newValue);
-          onChange({ [column.key]: newValue });
+        // eslint-disable-next-line
+        const selectedPriority = RATE_LIST.find(item => item.hotKey == e.key);
+        if (selectedPriority && selectedPriority.value !== value) {
+          setValue(selectedPriority.value);
+          onChange({ [column.key]: selectedPriority.value });
         }
         setIsOpen(false);
       }
@@ -69,14 +69,14 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
           ]}
         >
           <div className="sea-metadata-rate-editor-popover">
-            {Object.keys(RATE_MAP).map((key) => (
+            {RATE_LIST.map((item, index) => (
               <RateItem
-                key={key}
-                index={Number(key)}
-                value={key}
+                key={index}
+                value={item.value}
+                hotKey={item.hotKey}
                 onClick={onChangeValue}
                 readOnly={false}
-                isSelected={Number(key) === value}
+                isSelected={item.value === value}
               />
             ))}
           </div>
