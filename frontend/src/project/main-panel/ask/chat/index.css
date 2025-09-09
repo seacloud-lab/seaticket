@@ -14,18 +14,6 @@
   min-height: 0;
 }
 
-.sea-qa-ai-ask-chats-wrapper .sea-qa-ai-ask-chats-toggle-session-wrapper {
-  width: 100px;
-  margin-left: 16px;
-}
-
-.sea-qa-ai-ask-chats-wrapper .sea-qa-ai-ask-chats-toggle-session-wrapper .sea-qa-ai-ask-chats-toggle-session-button {
-  display: flex;
-  margin-top: 16px;
-  margin-bottom: 8px;
-  align-items: center;
-}
-
 .sea-qa-ai-ask-chat-input-wrapper-shell {
   padding: 16px;
 }
@@ -148,4 +136,26 @@
 .sea-qa-ai-ask-chats .sea-qa-ai-ask-chats-tip .sea-qa-ai-ask-chats-tip-description {
   margin-bottom: 16px;
   font-size: 16px;
+}
+
+.sea-qa-ai-ask-chat-input-wrapper-shell .sea-qa-ai-ask-chats-toggle-session-wrapper {
+  width: 65px;
+  margin-left: 10px;
+  transform: translateY(-42px);
+}
+
+.sea-qa-ai-ask-chats-toggle-session-wrapper .sea-qa-ai-ask-chats-toggle-session-button {
+  display: flex;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.sea-qa-ai-ask-chats-toggle-session-wrapper .sea-qa-dropdown-menu .sea-qa-dropdown-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sea-qa-ai-ask-chats-toggle-session-wrapper .sea-qa-dropdown-menu .sea-qa-dropdown-item .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg):hover {
+  background-color: transparent
 }

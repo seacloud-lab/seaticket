@@ -19,8 +19,8 @@ from .connections_views import ConnectionViewsAPI, ConnectionViewView, \
 
 urlpatterns = [
     # project page
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/ask/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/ask/(?P<children_id>[-0-9a-f]{36})/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/chat/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/chat/(?P<children_id>[-0-9a-f]{36})/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/search/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/$', project_view, name='project_view'),
