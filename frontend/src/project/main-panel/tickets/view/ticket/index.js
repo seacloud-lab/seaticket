@@ -206,7 +206,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies = [], assignees = [], type, tags } = ticket;  
+  const { id, status, title, creator, replies = [], assignees = [], type, tags } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
