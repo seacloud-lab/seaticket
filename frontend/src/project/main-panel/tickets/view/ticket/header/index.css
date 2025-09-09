@@ -1,17 +1,28 @@
 .sea-qa-project-ticket .sea-qa-project-ticket-header {
   width: 100%;
   display: flex;
-  height: 43px;
-  padding: 16px 0 0 0;
+  height: 94px;
+  padding: 16px 0;
+  flex-shrink: 0;
+  flex-direction: column;
+  border-bottom: 1px solid #ddd;
+  gap: 12px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper {
+  width: 100%;
+  display: flex;
+  height: 28px;
+  align-items: center;
   flex-shrink: 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-left {
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-left {
   flex: 1;
   margin-right: 16px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-header-right {
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-right {
   display: flex;
   align-items: center;
   height: 100%;
@@ -32,14 +43,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 18px;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 500;
   margin-right: 2px;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-number {
   display: inline-block;
   color: #666;
-  font-size: 16px;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {
@@ -52,19 +66,43 @@
   margin-left: 8px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-rename-btn .sea-qa-icon-svg-rename {
-  height: 14px;
-  width: 14px;
-}
-
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-input,
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn,
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-submit-btn {
-  height: 27px;
+  height: 28px;
   padding-top: 0;
   padding-bottom: 0;
+  line-height: 1;
 }
 
 .sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn {
   margin-right: 10px;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 2px;
+  font-size: 13px;
+  color: #fff;
+  background-color: var(--ticket-close-color);
+  border-radius: 10px;
+  gap: 5px;
+  line-height: 1;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.open {
+  background-color: var(--ticket-open-color);
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.not_planned,
+.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.duplicate {
+  background-color: var(--ticket-invalid-color);
 }
