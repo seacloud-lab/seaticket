@@ -11,7 +11,7 @@ const SingleSelectFormatter = ({ value, options, fontSize, className, column, ro
     return options.find(item => item.id === value || item.name === value);
   }, [options, value]);
 
-  if (!option && options.length === 0) {
+  if (column.key === 'name' && !option && options.length === 0) {
     const newOption = {
       color: row.color,
       textColor: row.textColor,
