@@ -14,8 +14,6 @@ const TypeFormatter = ({ value, fontSize, className, children: emptyFormatter })
     return getRowById(typesData, value);
   }, [typesData, value]);
 
-  console.log(option)
-
   if (!option) return emptyFormatter || null;
 
   return (

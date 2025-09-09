@@ -1,5 +1,5 @@
 import { CellType, SORT_COLUMN_OPTIONS } from '../../constants';
-import { getColumnOptions } from '../column';
+import { getColumnOptions, getTypesOptions } from '../column';
 
 /**
  * Check is valid sort
@@ -51,7 +51,7 @@ const getMultipleIndexesOrderbyOptions = (optionIds, option_id_index_map) => {
  * @param {array} columns
  * @returns valid and formatted sorts, array
  */
-const deleteInvalidSort = (sorts, columns) => {
+const deleteInvalidSort = (sorts, columns, typesData) => {
   const validSorts = getValidSorts(sorts, columns);
   let cleanSorts = [];
   validSorts.forEach((sort) => {
@@ -63,6 +63,15 @@ const deleteInvalidSort = (sorts, columns) => {
       case CellType.SINGLE_SELECT:
       case CellType.MULTIPLE_SELECT: {
         const options = getColumnOptions(sortColumn);
+        let option_id_index_map = {};
+        options.forEach((option, index) => {
+          option_id_index_map[option.id] = index;
+        });
+        newSort.option_id_index_map = option_id_index_map;
+        break;
+      }
+      case CellType.TYPE: {
+        const options = getTypesOptions(typesData);
         let option_id_index_map = {};
         options.forEach((option, index) => {
           option_id_index_map[option.id] = index;

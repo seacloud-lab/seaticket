@@ -31,9 +31,9 @@ class DataProcessor {
     return sortTableRows(table, tableRows, sorts, { collaborators, typesData });
   }
 
-  static getGroupedRows(table, rows, groupbys, { collaborators }) {
+  static getGroupedRows(table, rows, groupbys, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    const groups = getGroupRows(table, tableRows, groupbys, { collaborators });
+    const groups = getGroupRows(table, tableRows, groupbys, { collaborators, typesData });
     return groups;
   }
 
@@ -92,7 +92,7 @@ class DataProcessor {
       }
 
       if (isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false, typesData });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
 
@@ -120,7 +120,7 @@ class DataProcessor {
       }
       rows = [...rows, ...newRows];
       if (rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false, typesData });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
@@ -149,7 +149,7 @@ class DataProcessor {
         rows = rows.filter(r => !rowIds.includes(r._id));
       }
       if (isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false, typesData });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);

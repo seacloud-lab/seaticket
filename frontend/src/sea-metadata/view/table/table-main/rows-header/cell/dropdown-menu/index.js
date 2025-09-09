@@ -9,15 +9,13 @@ import DropdownItem from './dropdown-item';
 import { gettext } from '@/constants';
 import { isMobile } from '@/utils/utils';
 import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
-import { CellType, DEFAULT_DATE_FORMAT, SORT_COLUMN_OPTIONS, SHOW_DISABLED_SORT_COLUMNS, SORT_TYPE, EVENT_BUS_TYPE } from '../../../../../../constants';
+import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
 import context from '@/sea-metadata/context';
-import { useTagsData } from '@/sea-metadata/hooks';
-import { useTicketsPage } from '@/project/main-panel/tickets/hooks/tickets-page';
+import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
 
 import './index.css';
 
 const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColumnData, deleteColumn }, ref) => {
-  const { togglePageType } = useTicketsPage();
   const menuRef = createRef();
   const dropdownDomRef = createRef();
   const [isMenuShow, setMenuShow] = useState(false);
@@ -26,6 +24,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
   const [isOptionPopoverShow, setOptionPopoverShow] = useState(false);
 
   const { toggleAllTags } = useTagsData();
+  const { toggleAllTypes } = useTypesData();
 
   const isPrivateColumn = useMemo(() => {
     return checkIsPredefinedColumn(column);
@@ -197,21 +196,17 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
     },
   }), [isRenamePopoverShow, isOptionPopoverShow]);
 
-  const toggleAllTypes = useCallback(() => {
-    togglePageType('types');
-  }, []);
-
   const renderDropdownMenu = useCallback(() => {
     const { type } = column;
-    const canModifyColumnData = context.canModifyColumnData(column);
+    // const canModifyColumnData = context.canModifyColumnData(column);
     // const canDeleteColumn = context.canDeleteColumn(column);
     // const canRenameColumn = context.canRenameColumn(column);
-    const canModifyView = context.canModifyView();
+    // const canModifyView = context.canModifyView();
 
     return (
       <DropdownMenu ref={menuRef} className="sea-metadata-column-dropdown-menu">
         <div ref={dropdownDomRef}>
-          {type === CellType.SINGLE_SELECT && (
+          {/* {type === CellType.SINGLE_SELECT && (
             <>
               <DropdownItem
                 disabled={!canModifyColumnData}
@@ -239,7 +234,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
           {[CellType.DATE, CellType.SINGLE_SELECT, CellType.MULTIPLE_SELECT].includes(type) && (
             <DefaultDropdownItem key="divider-item" divider />
           )}
-          {/* <DropdownItem
+          <DropdownItem
             disabled={!canRenameColumn}
             target="sea-metadata-rename-column"
             iconName="rename"
@@ -247,7 +242,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
             tip={isPrivateColumn ? gettext('This is not editable') : gettext('You do not have permission')}
             onChange={openRenamePopover}
             onMouseEnter={hideSubMenu}
-          /> */}
+          />
           {(SORT_COLUMN_OPTIONS.includes(type) || SHOW_DISABLED_SORT_COLUMNS.includes(type)) && (
             <>
               <DropdownItem
@@ -270,6 +265,7 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
               />
             </>
           )}
+          */}
           {CellType.TAGS === type && (
             <DropdownItem
               iconName="tag"

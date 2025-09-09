@@ -28,7 +28,7 @@ const sortRowsWithMultiSorts = (tableRows, sorts, { collaborators }) => {
       let nextCellVal = getCellValueByColumn(nextRow, column);
       if (DATE_COLUMN_OPTIONS.includes(columnType)) {
         initValue = initValue || sortDate(currCellVal, nextCellVal, sort_type);
-      } else if (columnType === CellType.SINGLE_SELECT) {
+      } else if (columnType === CellType.SINGLE_SELECT || columnType === CellType.TYPE) {
         initValue = initValue || sortSingleSelect(currCellVal, nextCellVal, sort);
       } else if (NUMBER_SORTER_COLUMN_TYPES.includes(columnType)) {
         initValue = initValue || sortNumber(currCellVal, nextCellVal, sort_type);
@@ -60,11 +60,11 @@ const sortRowsWithMultiSorts = (tableRows, sorts, { collaborators }) => {
  * @param {object} value e.g. { collaborators, ... }
  * @returns sorted rows ids, array
  */
-const sortTableRows = (table, rows, sorts, { collaborators, isReturnID = true } = {}) => {
+const sortTableRows = (table, rows, sorts, { collaborators, typesData, isReturnID = true } = {}) => {
   const { columns } = table;
   if (!Array.isArray(rows) || rows.length === 0) return [];
   const sortRows = rows.slice(0);
-  const validSorts = deleteInvalidSort(sorts, columns);
+  const validSorts = deleteInvalidSort(sorts, columns, typesData);
   sortRowsWithMultiSorts(sortRows, validSorts, { collaborators });
   return isReturnID ? sortRows.map((row) => row._id) : sortRows;
 };

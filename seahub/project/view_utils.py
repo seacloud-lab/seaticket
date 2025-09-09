@@ -303,7 +303,7 @@ class ViewFilter(object):
         return q
 
     def filter_tickets_by_view(self, username, view):
-        from seahub.project.models import TicketTags, TicketParticipants, TicketAssignees, ProjectTypes
+        from seahub.project.models import TicketTags, TicketParticipants, TicketAssignees
 
         basic_filters = view.get('basic_filters', [])
         filters = view.get('filters', [])
