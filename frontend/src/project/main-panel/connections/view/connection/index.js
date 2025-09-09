@@ -14,7 +14,7 @@ import { toaster } from '@/components';
 const SiteContentDialog = ({ title, content, onClose }) => {
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
-      <ModalHeader toggle={onClose}>{title || gettext('Content')}</ModalHeader>
+      <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
       <ModalBody>
         <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
           {!content && <div>{gettext('Loading...')}</div>}
