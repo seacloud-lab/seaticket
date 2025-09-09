@@ -27,7 +27,7 @@ import './index.css';
 const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
-  const [ticket, setTicket] = useState({});
+  const [ticket, setTicket] = useState(null);
   const [scrollTop, setScrollTop] = useState(0);
 
   const { typesData } = useTypes();
@@ -192,7 +192,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   useEffect(() => {
     setLoading(true);
-    setTicket({});
+    setTicket(null);
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
       const ticket = new TicketModel(res.data.ticket);
       setTicket(ticket);
@@ -206,7 +206,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies, assignees = [], type, tags } = ticket;
+  const { id, status, title, creator, replies = [], assignees = [], type, tags } = ticket;  
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
