@@ -10,7 +10,7 @@ import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTypes = ({ projectUuid }) => {
   const { isLoading, typesData, createType, modifyType, deleteType, reload } = useTypes();
-  const { toggleChildrenPageType } = useTicketsPage();
+  const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
@@ -20,7 +20,7 @@ const AllTypes = ({ projectUuid }) => {
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => toggleChildrenPageType(row._id)
+      click: (row) => togglePageType(pageType, row._id)
     },
     {
       type: CellType.NUMBER,
@@ -28,7 +28,7 @@ const AllTypes = ({ projectUuid }) => {
       name: gettext('Tickets count'),
       editable: false,
     },
-  ], [toggleChildrenPageType]);
+  ], [pageType, togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

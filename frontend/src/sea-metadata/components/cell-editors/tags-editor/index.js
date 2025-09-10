@@ -68,7 +68,7 @@ const TagsEditor = forwardRef(({
   }, [createTag]);
 
   const onSubmit = useCallback(() => {
-    setTimeout(() => onCommit && onCommit(true), 1);
+    setTimeout(() => onCommit && onCommit(false), 1);
   }, [onCommit]);
 
   useEffect(() => {
@@ -93,8 +93,7 @@ const TagsEditor = forwardRef(({
       return { [key]: value };
     },
     onBlur: () => {
-      const value = mainRef.current.getValue();
-      onCommit && onCommit(value);
+      onCommit && onCommit(true);
     },
 
   }), [column, onCommit]);

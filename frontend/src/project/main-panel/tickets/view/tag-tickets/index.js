@@ -13,7 +13,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
-  const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
+  const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
   const { typesData, createType } = useTypes();
 
@@ -39,6 +39,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       key: 'type',
       name: gettext('Type'),
       editable: true,
+      modify_data_able: true,
     }, {
       type: CellType.LONG_TEXT,
       key: 'content',
@@ -254,7 +255,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
   if (isLoading || isTagsLoading) return null;
   const tag = getRowById(tagsData, childrenPageType);
   if (!tag) {
-    toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL);
+    togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL);
     return null;
   }
 
@@ -272,9 +273,11 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       // tags
       tagsData={tagsData}
       createTag={createTag}
+      toggleAllTags={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}
 
       typesData={typesData}
       createType={createType}
+      toggleAllTypes={() => togglePageType(TICKET_PAGE_TYPE.TYPES)}
 
       t={t}
     />

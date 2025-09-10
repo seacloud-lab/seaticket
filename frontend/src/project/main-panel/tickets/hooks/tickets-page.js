@@ -29,13 +29,14 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
-  const togglePageType = useCallback((pageType) => {
-    setPageType(pageType);
-  }, []);
-
-  const toggleChildrenPageType = useCallback((childrenPageType) => {
-    setChildrenPageType(childrenPageType);
-  }, []);
+  const togglePageType = useCallback((newPageType, newChildrenPageType = TICKET_CHILDREN_PAGE_TYPE.ALL) => {
+    if (pageType !== newPageType) {
+      setPageType(newPageType);
+    }
+    if (childrenPageType !== newChildrenPageType) {
+      setChildrenPageType(newChildrenPageType);
+    }
+  }, [pageType, childrenPageType]);
 
   // init page type
   useEffect(() => {
@@ -94,7 +95,6 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
       childrenPageType,
       isLoading,
       togglePageType,
-      toggleChildrenPageType,
       updateViewID: setViewID,
     }}>
       {children}
