@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { IconButton } from '@/components';
+import { IconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row }) => {
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStatusActive }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -41,6 +41,18 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row }) => {
                 </DropdownItem>
               )
             }
+            {handleStatusActive && (
+              <>
+                <DropdownItem onClick={() => (handleStatusActive(true, row))}>
+                  {gettext('Active')}
+                  {row.is_active && <Icon symbol="check" className="sea-qa-role-status-check ml-2" />}
+                </DropdownItem>
+                <DropdownItem onClick={() => (handleStatusActive(false, row))}>
+                  {gettext('Inactive')}
+                  {!row.is_active && <Icon symbol="check" className="sea-qa-role-status-check ml-2" />}
+                </DropdownItem>
+              </>
+            )}
           </DropdownMenu>
         </Dropdown>
       }

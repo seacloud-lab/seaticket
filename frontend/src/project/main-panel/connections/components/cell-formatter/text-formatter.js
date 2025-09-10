@@ -6,7 +6,7 @@ const TextFormatter = ({ value }) => {
 };
 
 TextFormatter.propTypes = {
-  value: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
 };
 
 export default TextFormatter;
