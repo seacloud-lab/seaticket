@@ -6,3 +6,4 @@ export * from './long-text';
 export * from './number';
 export * from './option';
 export * from './tag';
+export * from './type';

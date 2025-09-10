@@ -1,6 +1,7 @@
 import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
 import Translate from './utils/translate';
+import { CellType } from './constants';
 
 class Context {
 
@@ -154,6 +155,8 @@ class Context {
 
   canModifyColumnData = (column) => {
     if (!this.canModify()) return false;
+    if (column.type === CellType.TAGS || column.type === CellType.TYPE) return Boolean(column?.modify_data_able);
+    if (!this.api?.modifyColumnData) return false;
     return Boolean(column?.modify_data_able);
   };
 

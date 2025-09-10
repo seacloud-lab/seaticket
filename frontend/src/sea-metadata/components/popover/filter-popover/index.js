@@ -162,6 +162,7 @@ class FilterPopover extends Component {
                   deleteFilter={this.deleteFilter}
                   modifyFilterConjunction={this.modifyFilterConjunction}
                   collaborators={this.props.collaborators}
+                  typesData={this.props.typesData}
                   readOnly={readOnly}
                   scheduleUpdate={scheduleUpdate}
                   isPre={this.props.isPre}

@@ -6,6 +6,7 @@ export const SUPPORT_SEARCH_COLUMNS = [
   CellType.LONG_TEXT,
   CellType.NUMBER,
   CellType.SINGLE_SELECT,
+  CellType.TYPE,
   CellType.CTIME,
   CellType.MTIME,
   CellType.MULTIPLE_SELECT,

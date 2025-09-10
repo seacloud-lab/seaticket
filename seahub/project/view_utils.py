@@ -319,7 +319,7 @@ class ViewFilter(object):
                 value = filter_obj['filter_term']
                 filter_predicate = filter_obj['filter_predicate']
                 condition = column_key
-                if column_key == 'status':
+                if column_key == 'status' or column_key == 'type':
                     if value == []:
                         continue
                     basic_q = self.format_filter_predicate(

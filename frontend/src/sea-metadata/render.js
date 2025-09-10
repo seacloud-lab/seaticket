@@ -4,13 +4,28 @@ import View from './view';
 import {
   MetadataProvider,
   ViewsDataProvider, useViewsData,
+  TagsDataProvider,
+  TypesDataProvider,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
 import context from './context';
 import { CenteredLoading } from '@/components';
 import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
 
-const Main = ({ className, expandRow, toggleView, viewTools, children, ...params }) => {
+const Main = ({
+  className,
+  viewTools,
+  tagsData,
+  createTag,
+  toggleAllTags,
+  typesData,
+  createType,
+  toggleAllTypes,
+  expandRow,
+  toggleView,
+  children,
+  ...params
+}) => {
   const { isLoading } = useViewsData();
 
   if (isLoading) {
@@ -22,12 +37,16 @@ const Main = ({ className, expandRow, toggleView, viewTools, children, ...params
   }
 
   return (
-    <MetadataProvider { ...params }>
-      <div className={classnames('sea-metadata', className)}>
-        <ViewToolBar tools={viewTools} toggleView={toggleView} />
-        <View expandRow={expandRow} children={children} />
-      </div>
-    </MetadataProvider>
+    <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
+      <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
+        <MetadataProvider tagsData={tagsData} typesData={typesData} { ...params }>
+          <div className={classnames('sea-metadata', className)}>
+            <ViewToolBar tools={viewTools} toggleView={toggleView} />
+            <View expandRow={expandRow} children={children} />
+          </div>
+        </MetadataProvider>
+      </TypesDataProvider>
+    </TagsDataProvider>
   );
 };
 

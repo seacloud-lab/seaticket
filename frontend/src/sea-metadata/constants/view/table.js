@@ -39,6 +39,7 @@ export const TABLE_SUPPORT_EDIT_TYPE_MAP = {
   [CellType.DATE]: true,
   [CellType.NUMBER]: true,
   [CellType.SINGLE_SELECT]: true,
+  [CellType.TYPE]: true,
   [CellType.MULTIPLE_SELECT]: true,
   [CellType.COLLABORATOR]: true,
   [CellType.CHECKBOX]: true,

@@ -1,15 +1,18 @@
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import CellFormatter from '../../../../../../components/cell-formatter';
-import { getOption, getColumnOptions } from '../../../../../../utils/column';
-import { CellType, DELETED_OPTION_BACKGROUND_COLOR } from '../../../../../../constants';
-import { RATE_MAP } from '../../../../../../components/cell-editors/rate-editor/constants';
-import RateItem from '../../../../../../components/cell-editors/rate-editor/rate-item';
+import CellFormatter from '@/sea-metadata/components/cell-formatter';
+import { getOption, getColumnOptions, getTypesOptions } from '@/sea-metadata/utils/column';
+import { CellType, DELETED_OPTION_BACKGROUND_COLOR } from '@/sea-metadata/constants';
+import { RATE_MAP } from '@/sea-metadata/components/cell-editors/rate-editor/constants';
+import RateItem from '@/sea-metadata/components/cell-editors/rate-editor/rate-item';
+import { useTypesData } from '@/sea-metadata/hooks';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   const emptyTip = useMemo(() => `(${gettext('Empty')})`, []);
   const deletedOptionTip = useMemo(() => gettext('Deleted option'), []);
+
+  const { typesData } = useTypesData();
 
   const renderGroupCellVal = useCallback(() => {
     const { type } = column;
@@ -30,8 +33,9 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
       case CellType.CHECKBOX: {
         return <input className="checkbox" type="checkbox" readOnly={true} checked={cellValue} />;
       }
-      case CellType.SINGLE_SELECT: {
-        const options = getColumnOptions(column);
+      case CellType.SINGLE_SELECT:
+      case CellType.TYPE: {
+        const options = type === CellType.SINGLE_SELECT ? getColumnOptions(column) : getTypesOptions(typesData);
         if (options.length === 0 || !originalCellValue) return emptyTip;
         const selectedOption = getOption(options, originalCellValue);
         const style = selectedOption ?

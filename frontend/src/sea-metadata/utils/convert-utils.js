@@ -342,6 +342,13 @@ const convert2Tags = (cellValue, oldCellValue, fromColumn, targetColumn, api) =>
   return null;
 };
 
+const convert2Type = (cellValue, oldCellValue, fromColumn, targetColumn, api) => {
+  const { key: copiedColumnKey } = fromColumn;
+  const { key: pasteColumnKey } = targetColumn;
+  if (copiedColumnKey === pasteColumnKey) return cellValue;
+  return null;
+};
+
 function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { collaborators, tagsData, api }) {
   const { type: fromColumnType, data: fromColumnData } = fromColumn;
   const { type: targetColumnType, data: targetColumnData } = targetColumn;
@@ -372,6 +379,9 @@ function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { c
     }
     case CellType.RATE: {
       return convert2Rate(cellValue, oldCellValue, fromColumn, targetColumn);
+    }
+    case CellType.TYPE: {
+      return convert2Type(cellValue, oldCellValue, fromColumn, targetColumn, api);
     }
     case CellType.TAGS: {
       return convert2Tags(cellValue, oldCellValue, fromColumn, targetColumn, api);

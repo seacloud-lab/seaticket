@@ -11,7 +11,7 @@ import FilterCalendar from '../filter-calendar';
 import RateItem from '../../../../cell-editors/rate-editor/rate-item';
 import { RATE_LIST } from '../../../../cell-editors/rate-editor/constants';
 import { gettext } from '@/constants';
-import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions } from '../../../../../utils/column';
+import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions } from '../../../../../utils/column';
 import {
   getFilterByColumn, getUpdatedFilterBySelectSingle, getUpdatedFilterBySelectMultiple, getUpdatedFilterByCreator, getUpdatedFilterByCollaborator,
   getColumnOptions, getUpdatedFilterByPredicate,
@@ -360,7 +360,7 @@ class FilterItem extends React.Component {
   };
 
   renderFilterTerm = (filterColumn) => {
-    const { index, filter, collaborators, readOnly } = this.props;
+    const { index, filter, collaborators, readOnly, typesData } = this.props;
     const { type } = filterColumn;
     const { filter_term, filter_predicate, filter_term_modifier } = filter;
     // predicate is empty or not empty
@@ -426,9 +426,10 @@ class FilterItem extends React.Component {
       case CellType.CHECKBOX: {
         return this.getInputComponent('checkbox');
       }
-      case CellType.SINGLE_SELECT: {
+      case CellType.SINGLE_SELECT:
+      case CellType.TYPE: {
         // get options
-        const options = getSelectColumnOptions(filterColumn);
+        const options = type === CellType.SINGLE_SELECT ? getSelectColumnOptions(filterColumn) : getTypesOptions(typesData);
         if ([FILTER_PREDICATE_TYPE.IS_ANY_OF, FILTER_PREDICATE_TYPE.IS_NONE_OF].includes(filter_predicate)) {
           return this.renderMultipleSelectOption(options, filter_term);
         }

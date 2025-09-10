@@ -1,58 +1,29 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { getCellValueByColumn } from '../../../utils/cell';
-import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
-import context from '@/sea-metadata/context';
+import { getTypesOptions } from '../../../utils/column';
 import Main from '@/components/option-editor/main';
-import { gettext } from '@/constants';
+import { useTypesData } from '../../../hooks';
 
 import './index.css';
 
-const SingleSelectEditor = forwardRef(({
+const TypeEditor = forwardRef(({
   height,
   column,
-  columns,
-  row,
   value,
   editorPosition = { left: 0, top: 0 },
   onCommit,
   onPressTab,
-  modifyColumnData,
 }, ref) => {
   const editorRef = useRef(null);
   const mainRef = useRef(null);
-  const canEditData = context.canModifyColumnData(column);
 
-  const options = useMemo(() => {
-    const options = getColumnOptions(column);
-    const { data } = column;
-    const { cascade_column_key, cascade_settings } = data || {};
-    if (cascade_column_key) {
-      const cascadeColumn = getColumnByKey(columns, cascade_column_key);
-      if (cascadeColumn) {
-        const cascadeColumnValue = getCellValueByColumn(row, cascadeColumn);
-        if (!cascadeColumnValue) return [];
-        const cascadeSetting = cascade_settings[cascadeColumnValue];
-        if (!cascadeSetting || !Array.isArray(cascadeSetting) || cascadeSetting.length === 0) return [];
-        return options.filter(option => cascadeSetting.includes(option.id));
-      }
-    }
-    return options.map(o => ({ ...o, value: o.id }));
-  }, [row, column, columns]);
+  const { typesData } = useTypesData();
+
+  const options = useMemo(() => getTypesOptions(typesData), [typesData]);
 
   const style = useMemo(() => {
     return { width: column.width, top: height - 2 };
   }, [column, height]);
-
-  const createOption = useCallback((name) => {
-    const newOption = generateNewOption(options, name || '');
-    let newOptions = options.slice(0);
-    newOptions.push(newOption);
-    modifyColumnData(column.key, { options: newOptions }, { options: column.data.options || [] });
-    return new Promise((resolve, reject) => {
-      resolve({ value: newOption.id });
-    });
-  }, [column, options, onCommit, modifyColumnData]);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);
@@ -87,20 +58,17 @@ const SingleSelectEditor = forwardRef(({
       <Main
         ref={mainRef}
         isMultiple={false}
-        placeholder={gettext('Search options')}
-        emptyTip={gettext('No options available')}
-        addToolText={gettext('Add option')}
+        isSearchEnabled={false}
         value={value}
         options={options}
         onChange={onSubmit}
-        onCreate={canEditData ? createOption : null}
         onPressTab={onPressTab}
       />
     </div>
   );
 });
 
-SingleSelectEditor.propTypes = {
+TypeEditor.propTypes = {
   height: PropTypes.number,
   column: PropTypes.object,
   columns: PropTypes.array,
@@ -111,4 +79,4 @@ SingleSelectEditor.propTypes = {
   onPressTab: PropTypes.func,
 };
 
-export default SingleSelectEditor;
+export default TypeEditor;

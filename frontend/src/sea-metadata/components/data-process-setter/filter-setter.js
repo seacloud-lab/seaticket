@@ -9,6 +9,7 @@ import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { VIEW_TYPE } from '../../constants';
 import { getType } from '@/utils/utils';
+import { useTypesData } from '@/sea-metadata/hooks';
 
 const FilterSetter = ({
   readOnly,
@@ -25,6 +26,8 @@ const FilterSetter = ({
   viewType = VIEW_TYPE.TABLE,
 }) => {
   const [isShowSetter, setShowSetter] = useState(false);
+
+  const { typesData } = useTypesData();
 
   const filters = useMemo(() => {
     return deepCopy(getValidFilters(propsFilters || [], columns));
@@ -88,6 +91,7 @@ const FilterSetter = ({
           readOnly={readOnly}
           columns={columns}
           collaborators={collaborators}
+          typesData={typesData}
           filterConjunction={filterConjunction}
           filters={filters}
           basicFilters={basicFilters}

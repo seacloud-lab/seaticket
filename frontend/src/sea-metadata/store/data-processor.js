@@ -26,14 +26,14 @@ class DataProcessor {
     return row_ids;
   }
 
-  static getSortedRows(table, rows, sorts, { collaborators }) {
+  static getSortedRows(table, rows, sorts, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    return sortTableRows(table, tableRows, sorts, { collaborators });
+    return sortTableRows(table, tableRows, sorts, { collaborators, typesData });
   }
 
-  static getGroupedRows(table, rows, groupbys, { collaborators }) {
+  static getGroupedRows(table, rows, groupbys, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    const groups = getGroupRows(table, tableRows, groupbys, { collaborators });
+    const groups = getGroupRows(table, tableRows, groupbys, { collaborators, typesData });
     return groups;
   }
 
@@ -81,7 +81,7 @@ class DataProcessor {
     });
   };
 
-  static run(table, { collaborators, username, userId }) {
+  static run(table, { collaborators, username, userId, typesData }) {
     let rows = table.rows;
     const { filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
@@ -92,7 +92,7 @@ class DataProcessor {
       }
 
       if (isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
 
@@ -108,7 +108,7 @@ class DataProcessor {
     table.view.groups = groups;
   }
 
-  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId }) {
+  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData }) {
     const { filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
@@ -120,7 +120,7 @@ class DataProcessor {
       }
       rows = [...rows, ...newRows];
       if (rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
@@ -135,7 +135,7 @@ class DataProcessor {
     table.view.groups = groups;
   }
 
-  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId }) {
+  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData }) {
     const { filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
@@ -149,7 +149,7 @@ class DataProcessor {
         rows = rows.filter(r => !rowIds.includes(r._id));
       }
       if (isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, isReturnID: false });
+        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
       }
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
@@ -241,11 +241,11 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators, tagsData }) {
+  static syncOperationOnData(table, operation, { collaborators, tagsData, typesData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;
-        this.updateDataWithInsertRows(table, [row._id], { collaborators, tagsData });
+        this.updateDataWithInsertRows(table, [row._id], { collaborators, tagsData, typesData });
         this.updateSummaries();
         break;
       }
@@ -262,7 +262,7 @@ class DataProcessor {
             }
           }
         });
-        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [row_id], { collaborators });
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [row_id], { collaborators, typesData });
         this.updateSummaries();
         break;
       }
@@ -285,7 +285,7 @@ class DataProcessor {
             }
           }
         });
-        this.updateDataWithModifyRows(table, relatedColumnKeyMap, row_ids, { collaborators });
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, row_ids, { collaborators, typesData });
         this.updateSummaries();
         break;
       }
@@ -299,7 +299,7 @@ class DataProcessor {
             relatedColumnKeyMap[columnKey] = true;
           }
         }
-        this.updateDataWithModifyRows();
+        this.updateDataWithModifyRows(table, relatedColumnKeyMap, [], { collaborators, typesData });
         this.updateSummaries();
         break;
       }
@@ -334,7 +334,7 @@ class DataProcessor {
           });
         }
         table.view.rows = updatedRowIds;
-        this.updateDataWithModifyRows(table, { collaborators });
+        this.updateDataWithModifyRows(table, {}, [], { collaborators, typesData });
         this.updateSummaries();
         break;
       }
@@ -382,7 +382,7 @@ class DataProcessor {
             const row = table.rows[i];
             for (let j = 0; j < columns.length; j++) {
               const column = columns[j];
-              const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData });
+              const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData, typesData });
               let flag = false;
               for (let k = 0; k < copyRegValue.length; k++) {
                 const reg = copyRegValue[k].reg;

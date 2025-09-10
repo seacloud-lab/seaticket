@@ -5,7 +5,7 @@ import {
 } from '../../constants';
 import { deleteInvalidGroupby } from './core';
 import { isValidCellValue, getCellValueByColumn } from '../cell';
-import { getCollaboratorsNames } from '../column';
+import { getCollaboratorsNames, getTypesOptions } from '../column';
 import { sortDate, sortText, sortNumber, sortCheckbox, sortCollaborator, sortSingleSelect, sortMultipleSelect } from '../sort';
 
 const _getFormattedCellValue = (cellValue, groupby) => {
@@ -82,7 +82,7 @@ const _findGroupIndex = (sCellValue, cellValue2GroupIndexMap, groupsLength) => {
   return -1;
 };
 
-const getSortedGroups = (groups, groupbys, level, collaborators = []) => {
+const getSortedGroups = (groups, groupbys, level, { collaborators = [], typesData } = {}) => {
   const sortFlag = 0;
   const { column, sort_type } = groupbys[level];
   const { type: columnType, data: columnData } = column;
@@ -90,6 +90,13 @@ const getSortedGroups = (groups, groupbys, level, collaborators = []) => {
   let option_id_index_map = {};
   if (columnType === CellType.SINGLE_SELECT || columnType === CellType.MULTIPLE_SELECT) {
     const { options } = columnData || {};
+    if (Array.isArray(options)) {
+      options.forEach((option, index) => {
+        option_id_index_map[option.id] = index;
+      });
+    }
+  } else if (columnType === CellType.TYPE) {
+    const options = getTypesOptions(typesData);
     if (Array.isArray(options)) {
       options.forEach((option, index) => {
         option_id_index_map[option.id] = index;
@@ -118,7 +125,7 @@ const getSortedGroups = (groups, groupbys, level, collaborators = []) => {
           nextCollaborators = getCollaboratorsNames(nextCollaborators, collaborators);
         }
         sortResult = sortCollaborator(currCollaborators, nextCollaborators, normalizedSortType);
-      } else if (columnType === CellType.SINGLE_SELECT) {
+      } else if (columnType === CellType.SINGLE_SELECT || columnType === CellType.TYPE) {
         sortResult = sortSingleSelect(currCellVal, nextCellVal, { sort_type: normalizedSortType, option_id_index_map });
       } else if (columnType === CellType.MULTIPLE_SELECT) {
         sortResult = sortMultipleSelect(currCellVal, nextCellVal, { sort_type: normalizedSortType, option_id_index_map });
@@ -141,7 +148,7 @@ const getSortedGroups = (groups, groupbys, level, collaborators = []) => {
 
     // eslint-disable-next-line
     groups = groups.map((group) => {
-      const sortedSubgroups = getSortedGroups(group.subgroups, groupbys, nextLevel, collaborators);
+      const sortedSubgroups = getSortedGroups(group.subgroups, groupbys, nextLevel, { collaborators, typesData });
       return {
         ...group,
         subgroups: sortedSubgroups,
@@ -151,7 +158,7 @@ const getSortedGroups = (groups, groupbys, level, collaborators = []) => {
   return groups;
 };
 
-const groupRowsWithMultipleGroupbys = (groupbys, rows, collaborators) => {
+const groupRowsWithMultipleGroupbys = (groupbys, rows, { collaborators, typesData }) => {
   const validGroupbys = groupbys.length > MAX_GROUP_LEVEL
     ? groupbys.slice(0, MAX_GROUP_LEVEL)
     : [...groupbys];
@@ -207,7 +214,7 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, collaborators) => {
     }
   });
 
-  groups = getSortedGroups(groups, validGroupbys, 0, collaborators);
+  groups = getSortedGroups(groups, validGroupbys, 0, { collaborators, typesData });
 
   return groups;
 };
@@ -221,12 +228,12 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, collaborators) => {
  *    cell_value, original_cell_value, column_key,
       row_ids, subgroups, summaries, ...}, ...], array
  */
-const groupTableRows = (groupbys, rows, collaborators = []) => {
+const groupTableRows = (groupbys, rows, { collaborators = [], typesData } = {}) => {
   if (groupbys.length === 0) {
     return [];
   }
   if (groupbys.length > 1) {
-    return groupRowsWithMultipleGroupbys(groupbys, rows, collaborators);
+    return groupRowsWithMultipleGroupbys(groupbys, rows, { collaborators, typesData });
   }
   const groupby = groupbys[0];
   const { column_key, column } = groupby;
@@ -253,7 +260,7 @@ const groupTableRows = (groupbys, rows, collaborators = []) => {
   });
 
   // sort groups
-  groups = getSortedGroups(groups, groupbys, 0, collaborators);
+  groups = getSortedGroups(groups, groupbys, 0, { collaborators, typesData });
 
   return groups;
 };
@@ -268,7 +275,7 @@ const groupTableRows = (groupbys, rows, collaborators = []) => {
  *    cell_value, original_cell_value, column_key,
       row_ids, subgroups, summaries, ...}, ...], array
  */
-const getGroupRows = (table, rows, groupbys, { collaborators }) => {
+const getGroupRows = (table, rows, groupbys, { collaborators, typesData }) => {
   if (rows.length === 0) return [];
   if (groupbys.length === 0) return rows;
   let validGroupbys = [];
@@ -277,7 +284,7 @@ const getGroupRows = (table, rows, groupbys, { collaborators }) => {
   } catch (err) {
     validGroupbys = [];
   }
-  return groupTableRows(validGroupbys, rows, collaborators);
+  return groupTableRows(validGroupbys, rows, { collaborators, typesData });
 };
 
 export {
