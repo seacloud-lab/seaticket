@@ -10,7 +10,7 @@ import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
-  const { toggleChildrenPageType } = useTicketsPage();
+  const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
@@ -20,7 +20,7 @@ const AllTags = ({ projectUuid, permission }) => {
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => toggleChildrenPageType(row._id)
+      click: (row) => togglePageType(pageType, row._id)
     },
     {
       type: CellType.TEXT,
@@ -35,7 +35,7 @@ const AllTags = ({ projectUuid, permission }) => {
       name: gettext('Tickets count'),
       editable: false,
     },
-  ], [toggleChildrenPageType]);
+  ], [pageType, togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

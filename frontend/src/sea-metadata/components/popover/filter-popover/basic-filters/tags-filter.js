@@ -6,6 +6,7 @@ import { ClickOutside, Icon } from '@/components';
 import Main from '@/components/option-editor/main';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 
 const TagsFilter = ({
   readOnly,
@@ -44,14 +45,17 @@ const TagsFilter = ({
   }, [readOnly]);
 
   const closeEditor = useCallback(() => {
-    const value = mainRef.current.getValue();
-    onChange && onChange(value);
+    const newValue = mainRef.current.getValue();
+    if (isCellValueChanged(newValue, value)) {
+      onChange && onChange(newValue);
+    }
     setIsShowEditor(false);
-  }, [onChange]);
+  }, [value, onChange]);
 
-  const handleChange = useCallback((value) => {
-    onChange && onChange(value);
-  }, [onChange]);
+  const handleChange = useCallback((newValue) => {
+    if (!isCellValueChanged(newValue, value)) return;
+    onChange && onChange(newValue);
+  }, [value, onChange]);
 
   const handleDeselect = useCallback((tagId) => {
     const newValue = value.filter(v => v !== tagId);

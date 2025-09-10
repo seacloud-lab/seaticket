@@ -13,7 +13,7 @@ import { BAR_TYPE } from '@/project/constants/bar';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
-  const { togglePageType, isLoading, childrenPageType, toggleChildrenPageType } = useTicketsPage();
+  const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
   const { isLoading: isTypesLoading, typesData, createType } = useTypes();
 
   const columns = useMemo(() => [
@@ -262,7 +262,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
   if (isLoading || isTypesLoading) return null;
   const type = getRowById(typesData, childrenPageType);
   if (!type) {
-    toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL);
+    togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL);
     return null;
   }
 

@@ -62,7 +62,7 @@ class Ticket {
     this.reply_updated_at = this.reply_updated_at ? dayjs(this.reply_updated_at).fromNow() : '--';
 
     if (this.replies) {
-      this.replies = this.replies.map(reply => new Reply(reply));
+      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
     }
 
     if (this.tags) {
@@ -128,7 +128,7 @@ class TicketForTickets {
     this.updated_at = object.updated_at || '';
 
     if (this.replies) {
-      this.replies = this.replies.map(reply => new Reply(reply));
+      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
     }
 
     if (this.reply_count || this.reply_count === '0') {
