@@ -17,7 +17,7 @@ import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useTypes } from '../../hooks';
+import { useDataCache, useTypes } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
@@ -31,6 +31,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [scrollTop, setScrollTop] = useState(0);
 
   const { typesData } = useTypes();
+  const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
     return {
@@ -52,10 +53,11 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const modifyTicket = useCallback((ticketID, data) => {
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, data).then(res => {
       const newTicket = ticket._update(data);
+      updateCacheData('rows', String(ticketID), data);
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [projectUuid, ticket]);
+  }, [projectUuid, ticket, updateCacheData]);
 
   const createReply = useCallback((ticketID, reply) => {
     return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
@@ -123,14 +125,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   }, [ticket, modifyTicket]);
 
   const onTagsChange = useCallback((tags) => {
-    return ticketsAPI.modifyProjectTicket(projectUuid, ticket.id, { tags }).then(res => {
-      const newTicket = ticket._update({ tags: deepCopy(tags) });
-      setTicket(deepCopy(newTicket));
+    return modifyTicket(ticket.id, { tags }).then(res => {
+      // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket]);
+  }, [ticket, modifyTicket]);
 
   const onContentChange = useCallback((content, callback) => {
     modifyTicket(ticket.id, { content }).then(res => {

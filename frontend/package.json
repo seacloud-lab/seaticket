@@ -37,6 +37,7 @@
     "rmc-tabs": "1.2.29",
     "socket.io-client": "^2.2.0",
     "unified": "7.0.0",
+    "shallowequal": "^1.1.0",
     "slugid": "^2.0.0"
   },
   "scripts": {
