@@ -763,7 +763,7 @@ class GroupBody extends Component {
   renderGroups = () => {
     const {
       totalWidth: columnsWidth, containerWidth, isShowRowExpandBtn,
-      columns, colOverScanStartIdx, colOverScanEndIdx, groupOffsetLeft,
+      columns, colOverScanStartIdx, colOverScanEndIdx, groupOffsetLeft, groupHeaderColSpan,
       rowMetrics, summaryConfigs, lastFrozenColumnKey, showCellColoring, columnColors,
     } = this.props;
     this.rowFrozenRefs = [];
@@ -801,6 +801,7 @@ class GroupBody extends Component {
             columns={columns}
             summaryConfigs={summaryConfigs}
             isExpanded={isExpanded}
+            groupHeaderColSpan={groupHeaderColSpan}
             folding={folding}
             lastFrozenColumnKey={lastFrozenColumnKey}
             onExpandGroupToggle={this.onExpandGroupToggle}

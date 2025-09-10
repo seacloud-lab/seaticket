@@ -4,7 +4,7 @@ import joinClasses from 'classnames';
 import GroupContainerLeft from './group-container-left';
 import GroupContainerRight from './group-container-right';
 import { isMobile } from '@/utils/utils';
-import { checkIsColumnFrozen } from '../../../../../../utils/column';
+import { getFrozenColumns } from '../../../../../../utils/column';
 import { GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH, seaTableZIndexes } from '../../../../../../constants';
 
 import './index.css';
@@ -76,7 +76,7 @@ class GroupContainer extends Component {
   render() {
     const {
       group, columns, width, isExpanded, folding, summaryConfigs, height, backdropHeight, top,
-      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft,
+      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft, groupHeaderColSpan,
     } = this.props;
     const { left, level } = group;
     const firstLevelGroup = level === 1;
@@ -87,10 +87,15 @@ class GroupContainer extends Component {
       folding ? 'folding' : '',
     );
 
-    const firstColumn = columns[0] || {};
-    const firstColumnFrozen = checkIsColumnFrozen(firstColumn);
-    const firstColumnWidth = firstColumn.width || 0;
-    const leftPaneWidth = SEQUENCE_COLUMN_WIDTH + firstColumnWidth + (firstLevelGroup ? 0 : ((level - 1) * GROUP_VIEW_OFFSET - 1));
+    const frozenColumns = getFrozenColumns(columns);
+    const groupHeaderColumns = frozenColumns.length > 0 ? frozenColumns : columns;
+    const groupHeaderColSpanColumns = groupHeaderColumns.slice(0, groupHeaderColSpan);
+    const groupHeaderContentWidth = groupHeaderColSpanColumns.reduce((pre, cur) => pre + (cur.width || 0), 0);
+    const firstColumn = groupHeaderColumns[0];
+    const firstColumnFrozen = frozenColumns.length > 0;
+    const lastFrozenColumn = frozenColumns[frozenColumns.length - 1];
+
+    const leftPaneWidth = SEQUENCE_COLUMN_WIDTH + groupHeaderContentWidth + (firstLevelGroup ? 0 : ((level - 1) * GROUP_VIEW_OFFSET - 1));
     const rightPaneWidth = width - leftPaneWidth;
     const groupItemStyle = {
       height,
@@ -113,7 +118,7 @@ class GroupContainer extends Component {
           ref={ref => this.leftContainer = ref}
           group={group}
           firstColumnFrozen={firstColumnFrozen}
-          lastColumnFrozen={firstColumn.key === lastFrozenColumnKey}
+          lastColumnFrozen={lastFrozenColumn.key === lastFrozenColumnKey}
           leftPaneWidth={leftPaneWidth}
           height={height}
           isExpanded={isExpanded}
@@ -131,6 +136,7 @@ class GroupContainer extends Component {
           groupOffsetLeft={groupOffsetLeft}
           lastFrozenColumnKey={lastFrozenColumnKey}
           columns={columns}
+          groupHeaderColSpan={groupHeaderColSpan}
           summaryConfigs={summaryConfigs}
         />
       </div>

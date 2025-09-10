@@ -2,8 +2,14 @@ import dcopy from 'deep-copy';
 import { CellType, SEQUENCE_COLUMN_WIDTH } from '../../constants';
 import context from '../../context';
 
+
+export const checkIsColumnFrozen = (column) => {
+  if (!column) return false;
+  return !!column.frozen;
+};
+
 export const getFrozenColumns = (columns) => {
-  return columns.filter(column => column.frozen);
+  return columns.filter(column => checkIsColumnFrozen(column));
 };
 
 export const getFrozenColumnsWidth = (columns) => {
@@ -64,11 +70,6 @@ export const getColumnWidth = (column) => {
 export const checkIsNameColumn = (column) => {
   if (!column) return false;
   return Boolean(column?.is_name_column);
-};
-
-export const checkIsColumnFrozen = (column) => {
-  if (!column) return false;
-  return !!column.frozen;
 };
 
 export const handleCascadeColumn = (optionValue, columnKey, columns, row, updated = {}, processedColumns = new Set()) => {
