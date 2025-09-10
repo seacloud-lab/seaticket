@@ -58,7 +58,7 @@ class SearchAPI {
     }
   }
 
-  search(workspaceID, projectUuid, query, connectionIds, cancelToken) {
+  search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, cancelToken) {
     const url = `${this.server}/api/v2.1/search/`;
     let params = {
       query: query,
@@ -67,6 +67,12 @@ class SearchAPI {
     };
     if (connectionIds) {
       params.connection_ids = connectionIds;
+    }
+    if (timeFrom) {
+      params.time_from = timeFrom;
+    }
+    if (timeTo) {
+      params.time_to = timeTo;
     }
     return this.req.post(url, params, { cancelToken: cancelToken });
   }

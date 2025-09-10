@@ -10,6 +10,8 @@ import Connection from '../connections/models/connection';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
+import FilterByDate from './filter-by-date';
+import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY } from './constants';
 
 import './index.css';
 import './search-filters.css';
@@ -24,11 +26,19 @@ const Search = ({ title }) => {
   const [searching, setSearching] = useState(false);
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState([]);
   const [connections, setConnections] = useState([]);
+  const [filterDate, setFilterDate] = useState(
+    {
+      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME,
+      value: '',
+      from: null,
+      to: null,
+    },
+  );
 
   const sourceRef = useRef(null);
   const timer = useRef(null);
 
-  const onChange = useCallback((value = '', hiddenConnectionIDs, connections) => {
+  const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
     const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
     if (!oldSearch.includes(value)) {
       oldSearch.push(value);
@@ -52,8 +62,18 @@ const Search = ({ title }) => {
       const CancelToken = axios.CancelToken;
       const source = CancelToken.source();
       sourceRef.current = source;
+
       const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      searchAPI.search(workspaceID, projectUuid, value, showConnnectionIds, source.token).then(res => {
+
+      let timeFrom = null;
+      let timeTo = null;
+      if (filterDate.value) {
+        const isCustom = filterDate.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
+        timeFrom = isCustom ? filterDate.start?.unix() : filterDate.from;
+        timeTo = isCustom ? filterDate.end?.unix() : filterDate.to;
+      }
+
+      searchAPI.search(workspaceID, projectUuid, value, showConnnectionIds, timeFrom, timeTo, source.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
@@ -73,6 +93,12 @@ const Search = ({ title }) => {
     setValue('');
     setResults([]);
     setSearching(false);
+    setFilterDate({
+      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME,
+      value: '',
+      from: null,
+      to: null,
+    });
     if (sourceRef.current) {
       sourceRef.current.cancel('The current request has been manually canceled');
     }
@@ -96,6 +122,12 @@ const Search = ({ title }) => {
     setHiddenConnectionIDs(hiddenConnectionIDs);
   }, []);
 
+  const onFilterDateChange = useCallback((filterType, filterDate) => {
+    if (filterType === SEARCH_FILTERS_KEY.DATE) {
+      setFilterDate(filterDate);
+    }
+  }, []);
+
   return (
     <>
       <TopBar>
@@ -108,12 +140,13 @@ const Search = ({ title }) => {
           isClearable={true}
           size={38}
           placeholder={gettext('Search')}
-          onChange={(value) => onChange(value, hiddenConnectionIDs, connections)}
+          onChange={(value) => onChange(value, hiddenConnectionIDs, connections, filterDate)}
           onClear={onClear}
           storeKey={SEARCH_STORE_KEY}
         />
         <div className="search-filters-container">
           <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
+          <FilterByDate date={filterDate} onChange={onFilterDateChange} />
         </div>
         {searching ?
           <CenteredLoading className="sea-qa-project-search-loading-tip" />
