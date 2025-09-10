@@ -10,7 +10,6 @@ const View = ({
   children
 }) => {
   const { isLoading, metadata, errorMessage } = useMetadata();
-  console.log(groupHeaderColSpan);
 
   const renderView = useCallback((metadata) => {
     if (!metadata) return null;

@@ -2,7 +2,6 @@ import dcopy from 'deep-copy';
 import { CellType, SEQUENCE_COLUMN_WIDTH } from '../../constants';
 import context from '../../context';
 
-
 export const checkIsColumnFrozen = (column) => {
   if (!column) return false;
   return !!column.frozen;
