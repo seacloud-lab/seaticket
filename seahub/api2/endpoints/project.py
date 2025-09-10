@@ -394,7 +394,6 @@ class SearchView(APIView):
         except ValueError:
             count = 20
 
-        connection_types = request.data.get('connection_types')
         connection_ids = request.data.get('connection_ids')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
@@ -415,7 +414,6 @@ class SearchView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
-            'connection_types': connection_types,
             'connection_ids': connection_ids,
             'count': count,
         }
@@ -465,8 +463,6 @@ class QAView(APIView):
 
         user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
 
-        connection_type = request.data.get('connection_type')
-
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
@@ -475,7 +471,6 @@ class QAView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
-            'connection_type': connection_type,
             'username': username,
             'resolve_type': resolve_type,
         }
