@@ -219,7 +219,7 @@ const AllTags = ({ projectUuid, permission }) => {
       <SeaMetadata
         viewID="0000"
         className="sea-tags-metadata"
-        groupHeaderColSpan={2}
+        fixedColumnCount={2}
         api={api}
         localStorageNamePrefix={localStorageName}
         permission={permission}

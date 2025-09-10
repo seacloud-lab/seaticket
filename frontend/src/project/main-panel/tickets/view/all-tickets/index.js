@@ -253,7 +253,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       viewID={viewID}
       api={api}
       t={t}
-      groupHeaderColSpan={2}
+      fixedColumnCount={2}
       localStorageNamePrefix={localStorageName}
       permission={permission}
       createContextMenuOptions={createContextMenuOptions}

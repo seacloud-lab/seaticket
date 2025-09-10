@@ -15,7 +15,7 @@ import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants'
 const Main = ({
   className,
   viewTools,
-  groupHeaderColSpan = 1,
+  fixedColumnCount = 1,
   tagsData,
   createTag,
   toggleAllTags,
@@ -43,7 +43,7 @@ const Main = ({
         <MetadataProvider tagsData={tagsData} typesData={typesData} { ...params }>
           <div className={classnames('sea-metadata', className)}>
             <ViewToolBar tools={viewTools} toggleView={toggleView} />
-            <View groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />
+            <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
           </div>
         </MetadataProvider>
       </TypesDataProvider>
