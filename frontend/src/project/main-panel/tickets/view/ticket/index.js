@@ -136,8 +136,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
     });
   }, [ticket, modifyTicket]);
 
-  const onContentChange = useCallback((content, callback) => {
-    modifyTicket(ticket.id, { content }).then(res => {
+  const onDescriptionChange = useCallback((description, callback) => {
+    modifyTicket(ticket.id, { description }).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -242,7 +242,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
-            onModify={onContentChange}
+            onModify={onDescriptionChange}
           />
           {replies.map(reply => {
             return (

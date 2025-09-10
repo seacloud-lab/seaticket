@@ -42,7 +42,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       modify_data_able: true,
     }, {
       type: CellType.LONG_TEXT,
-      key: 'content',
+      key: 'description',
       name: gettext('Description'),
       editable: true,
       is_required: true,

@@ -15,7 +15,7 @@ import './index.css';
 
 const NewTicket = ({ editorAPI, projectUuid }) => {
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [description, setDescription] = useState('');
   const [assignees, setAssignees] = useState([]);
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
@@ -46,7 +46,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setContent(value);
+    setDescription(value);
   }, []);
 
   const handleFiles = useCallback((files) => {
@@ -66,14 +66,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     const validTags = tags.map(tagId => Number(tagId));
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, content, type, assignees, tags: validTags }).then(res => {
+    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags: validTags }).then(res => {
       togglePageType(res.data.ticket.number);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags]);
+  }, [title, description, type, assignees, tags]);
 
   return (
     <div className="sea-qa-project-new-ticket">
@@ -98,7 +98,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 ref={descriptionEditorRef}
                 lang={lang}
                 headerName={gettext('Description')}
-                value={content || ''}
+                value={description || ''}
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
