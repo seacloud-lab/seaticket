@@ -16,3 +16,18 @@
   padding: 0.25rem 1rem;
   line-height: 1.5;
 }
+
+.sea-custom-table-op-formatter .dropdown-menu .active-status-dropdown-item {
+  align-items: center;
+  display: flex;
+  height: 28px;
+  justify-content: space-between;
+  min-width: 140px;
+  padding: 2px 12px;
+}
+
+.sea-custom-table-op-formatter .dropdown-menu .active-status-dropdown-item .sea-qa-role-status-check {
+  color: #798d99;
+  height: 12px;
+  width: 12px;
+}

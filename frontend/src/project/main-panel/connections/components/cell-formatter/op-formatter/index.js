@@ -43,13 +43,13 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStat
             }
             {handleStatusActive && (
               <>
-                <DropdownItem onClick={() => (handleStatusActive(true, row))}>
+                <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(true, row))}>
                   {gettext('Active')}
-                  {row.is_active && <Icon symbol="check" className="sea-qa-role-status-check ml-2" />}
+                  {row.is_active && <Icon symbol='check' className='sea-qa-role-status-check ml-2' />}
                 </DropdownItem>
-                <DropdownItem onClick={() => (handleStatusActive(false, row))}>
+                <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(false, row))}>
                   {gettext('Inactive')}
-                  {!row.is_active && <Icon symbol="check" className="sea-qa-role-status-check ml-2" />}
+                  {!row.is_active && <Icon symbol='check' className='sea-qa-role-status-check ml-2' />}
                 </DropdownItem>
               </>
             )}
