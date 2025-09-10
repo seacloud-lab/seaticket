@@ -460,8 +460,11 @@ class TicketAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        is_update_priority = 'priority' in request.data
         priority = request.data.get('priority')
-        if priority is not None:
+        if is_update_priority:
+            if not priority:
+                priority = 0
             try:
                 priority = int(priority)
             except:
@@ -558,7 +561,7 @@ class TicketAPIView(APIView):
                 ticket.status = ticket_status
             if is_update_type:
                 ticket.type = type_id
-            if priority is not None:
+            if is_update_priority:
                 ticket.priority = priority
             ticket.updated_at = timezone.now()
             ticket.save()
