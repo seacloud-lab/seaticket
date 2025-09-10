@@ -396,6 +396,8 @@ class SearchView(APIView):
 
         connection_types = request.data.get('connection_types')
         connection_ids = request.data.get('connection_ids')
+        time_from = request.data.get('time_from')
+        time_to = request.data.get('time_to')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
@@ -418,6 +420,8 @@ class SearchView(APIView):
             'connection_types': connection_types,
             'connection_ids': connection_ids,
             'count': count,
+            'time_from': time_from,
+            'time_to': time_to,
         }
         results = search(params)
 
