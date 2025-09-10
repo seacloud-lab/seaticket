@@ -45,7 +45,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       key: 'type',
       name: gettext('Type'),
       editable: true,
-      modify_data_able: true,
     }, {
       type: CellType.LONG_TEXT,
       key: 'content',

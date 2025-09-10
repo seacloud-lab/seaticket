@@ -12,6 +12,7 @@ import './index.css';
 
 const Main = forwardRef(({
   isMultiple = false,
+  isSearchEnabled = true,
   placeholder,
   emptyTip,
   value: propsValue = '',
@@ -185,16 +186,18 @@ const Main = forwardRef(({
           {children}
         </div>
       )}
-      <div className="option-editor-search-wrapper">
-        <SearchInput
-          isShowSearchIcon={false}
-          value={searchValue}
-          size={28}
-          placeholder={placeholder}
-          onKeyDown={onKeyDown}
-          onChange={onSearchValueChange}
-        />
-      </div>
+      {isSearchEnabled && (
+        <div className="option-editor-search-wrapper">
+          <SearchInput
+            isShowSearchIcon={false}
+            value={searchValue}
+            size={28}
+            placeholder={placeholder}
+            onKeyDown={onKeyDown}
+            onChange={onSearchValueChange}
+          />
+        </div>
+      )}
       <div className="option-editor-content" style={{ maxHeight }} ref={displayCollaboratorsRef}>
         {displayOptions.length === 0 ? (
           <div className="tip-default p-4">{emptyTip}</div>

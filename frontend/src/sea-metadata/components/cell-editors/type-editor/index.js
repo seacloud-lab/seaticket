@@ -1,9 +1,7 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { generateNewOption, getTypesOptions } from '../../../utils/column';
-import context from '@/sea-metadata/context';
+import { getTypesOptions } from '../../../utils/column';
 import Main from '@/components/option-editor/main';
-import { gettext } from '@/constants';
 import { useTypesData } from '../../../hooks';
 
 import './index.css';
@@ -19,24 +17,13 @@ const TypeEditor = forwardRef(({
   const editorRef = useRef(null);
   const mainRef = useRef(null);
 
-  const { typesData, createType } = useTypesData();
-
-  const canEditData = context.canModifyColumnData(column) && createType;
+  const { typesData } = useTypesData();
 
   const options = useMemo(() => getTypesOptions(typesData), [typesData]);
 
   const style = useMemo(() => {
     return { width: column.width, top: height - 2 };
   }, [column, height]);
-
-  const createOption = useCallback((name) => {
-    const newOption = generateNewOption(options, name || '');
-    return createType({ name, color: newOption.color, text_color: newOption.textColor }).then(type => {
-      return new Promise((resolve, reject) => {
-        resolve({ value: type._id });
-      });
-    });
-  }, [column, options, onCommit, createType]);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);
@@ -71,13 +58,10 @@ const TypeEditor = forwardRef(({
       <Main
         ref={mainRef}
         isMultiple={false}
-        placeholder={gettext('Search options')}
-        emptyTip={gettext('No options available')}
-        addToolText={gettext('Add option')}
+        isSearchEnabled={false}
         value={value}
         options={options}
         onChange={onSubmit}
-        onCreate={canEditData ? createOption : null}
         onPressTab={onPressTab}
       />
     </div>

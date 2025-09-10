@@ -11,7 +11,6 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
   const options = useMemo(() => {
     return typesData && typesData.rows ? typesData.rows.map(type => {
       const { _id, name } = type;
-      console.log(type);
       return {
         ...type,
         value: _id,
