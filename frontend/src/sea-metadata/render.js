@@ -42,7 +42,7 @@ const Main = ({
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
         <MetadataProvider tagsData={tagsData} typesData={typesData} { ...params }>
           <div className={classnames('sea-metadata', className)}>
-            <ViewToolBar tools={viewTools} toggleView={toggleView} />
+            <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} toggleView={toggleView} />
             <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
           </div>
         </MetadataProvider>

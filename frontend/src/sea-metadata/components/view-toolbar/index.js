@@ -7,7 +7,7 @@ import Views from './views';
 
 import './index.css';
 
-const ViewToolBar = ({ tools = VIEW_TOOLS, toggleView }) => {
+const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
 
   const { collaborators } = useCollaborators();
   const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
@@ -34,6 +34,7 @@ const ViewToolBar = ({ tools = VIEW_TOOLS, toggleView }) => {
               <TableViewToolbar
                 readOnly={readOnly}
                 tools={tools}
+                fixedColumnCount={fixedColumnCount}
                 view={view}
                 collaborators={collaborators}
                 modifyFilters={modifyFilters}

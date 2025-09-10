@@ -6,7 +6,7 @@ import { VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
-  readOnly, view, collaborators,
+  readOnly, view, collaborators, fixedColumnCount,
   modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
@@ -65,7 +65,7 @@ const TableViewToolbar = ({
           wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-hide-column"
           target="sea-metadata-hide-column-popover"
           readOnly={readOnly}
-          columns={viewColumns.slice(1)}
+          columns={viewColumns.slice(fixedColumnCount)}
           hiddenColumns={view.hidden_columns || []}
           modifyHiddenColumns={modifyHiddenColumns}
           modifyColumnOrder={modifyColumnOrder}
