@@ -4,7 +4,11 @@ import Table from './table';
 import { useMetadata } from '../hooks';
 import { VIEW_TYPE } from '../constants';
 
-const View = ({ expandRow, children }) => {
+const View = ({
+  groupHeaderColSpan,
+  expandRow,
+  children
+}) => {
   const { isLoading, metadata, errorMessage } = useMetadata();
 
   const renderView = useCallback((metadata) => {
@@ -12,13 +16,13 @@ const View = ({ expandRow, children }) => {
     const viewType = metadata?.view?.type;
     switch (viewType) {
       case VIEW_TYPE.TABLE: {
-        return (<Table expandRow={expandRow} children={children} />);
+        return (<Table groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />);
       }
       default: {
-        return (<Table expandRow={expandRow} children={children} />);
+        return (<Table groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />);
       }
     }
-  }, [children]);
+  }, [groupHeaderColSpan, children]);
 
   if (isLoading) return (<CenteredLoading />);
 

@@ -11,7 +11,7 @@ import { useMetadata, useCollaborators, useTagsData } from '../../hooks';
 
 import './index.css';
 
-const Table = ({ expandRow, children }) => {
+const Table = ({ groupHeaderColSpan, expandRow, children }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [isShowRowExpand, setIsShowRowExpand] = useState(false);
 
@@ -191,6 +191,7 @@ const Table = ({ expandRow, children }) => {
           isGroupView={isGroupView}
           isLoadingMore={isLoadingMore}
           isShowRowExpandBtn={Boolean(expandRow)}
+          groupHeaderColSpan={groupHeaderColSpan}
           loadMore={loadMore}
           metadata={metadata}
           tagsData={tagsData}
