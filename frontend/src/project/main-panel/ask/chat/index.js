@@ -188,12 +188,13 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         updateChatHistories(newChatHistories, false);
         return;
       }
-      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
+      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
       const newChatData = [
         { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
         { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
+        { type: CHAT_MESSAGE_TYPE.MEMORY, value: memory },
       ];
 
       newChatHistories[newChatHistories.length - 1]._id = userMessageId;

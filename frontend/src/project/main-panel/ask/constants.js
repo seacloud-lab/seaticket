@@ -10,6 +10,7 @@ export const CHAT_MESSAGE_TYPE = {
   PDF: 'pdf',
   IMAGE: 'image',
   SOURCES: 'sources',
+  MEMORY: 'memory',
 };
 
 export const CHAT_MESSAGE_FILE_TYPES = [
