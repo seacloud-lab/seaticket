@@ -165,7 +165,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       });
     };
 
-    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.SITE) {
       return {
         getMetadata,
         getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
@@ -256,26 +256,28 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   useEffect(() => {
     if (isLoadingConnection) return;
-    if (connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+    const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE].includes(connection.type);
+    if (!isMultiView) {
       updateViewID('');
     }
-  }, [isLoadingConnection, connection]);
+  }, [isLoadingConnection, connection, viewID, updateViewID]);
 
   if (isLoading || isLoadingConnection) return null;
 
   const isGithubIssuesView = connection?.type === CONNECTION_TYPE.GITHUB_ISSUE;
+  const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE].includes(connection?.type);
 
   return (
     <CollaboratorsProvider>
       <SeaMetadata
-        viewID={isGithubIssuesView ? viewID : '0000'}
+        viewID={isMultiView ? viewID : '0000'}
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
         isViewComputedOnServer={isGithubIssuesView}
-        toggleView={isGithubIssuesView ? updateViewID : undefined}
+        toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
         t={t}
       />

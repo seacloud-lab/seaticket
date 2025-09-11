@@ -153,3 +153,11 @@ class SeaDBAPI:
         }
         response = requests.delete(url, json=data, headers=headers, timeout=self.timeout)
         return parse_response(response)
+
+    # metadata
+    def get_base_metadata(self, base_id):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/metadata'
+        response = requests.get(url, headers=headers, timeout=self.timeout)
+        return parse_response(response)

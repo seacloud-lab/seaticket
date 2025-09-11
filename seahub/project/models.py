@@ -557,10 +557,33 @@ class ConnectionsView(object):
                     "hidden_columns": [],
                     "type": self.type,
                 }
-            self.details.update(self.config)
+        elif self.project_connection_type == ConnectionType.SITE.value:
+            self.details = {
+                    "_id": generate_views_unique_id(4),
+                    "table_id": '0000',
+                    "name": self.name,
+                    'basic_filters': [],
+                    "filters": [],
+                    'sorts': [],
+                    "groupbys": [],
+                    "filter_conjunction": "Or",
+                    "hidden_columns": [],
+                    "type": self.type,
+                }
+        self.details.update(self.config)
 
 
 class ConnectionsViewsManager(models.Manager):
+
+    def get_connection_view(self, connection_id, view_id):
+        connection_views = self.filter(connection_id=connection_id).first()
+        if not connection_views:
+            return None
+        
+        view_details = json.loads(connection_views.details)
+        for v in view_details['views']:
+            if v.get('_id') == view_id:
+                return v
 
     def get_record(self, project_uuid, connection_id):
         """

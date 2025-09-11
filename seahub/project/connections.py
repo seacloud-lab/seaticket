@@ -19,11 +19,11 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
-    DiscourseForumTopicsRecord, DiscourseForumRepliesRecord
+    DiscourseForumTopicsRecord, DiscourseForumRepliesRecord, ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission, init_seadb_table, list_seadb_table_records, \
-    get_file_from_s3_web_crawl, url_to_filename
+    update_github_issue_by_webhook, check_project_permission, init_seadb_table, url_to_filename, \
+    list_connection_view_records, get_file_from_s3_web_crawl
 from seahub.project.constants import ConnectionType, CrawlStatus
 
 from seahub.project.seadb_api import SeaDBAPI
@@ -406,8 +406,21 @@ class ProjectConnectionDetailsView(APIView):
             records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.SITE.value:
+            try:
+                view = ConnectionsViews.objects.get_connection_view(connection_id, view_id)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+            if not view:
+                error_msg = 'Connection view %s not found.' % view_id
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
             seadb_api = SeaDBAPI(username)
-            records = list_seadb_table_records(seadb_api, project_uuid, connection_id, start, limit, username)
+            records = list_connection_view_records(
+                seadb_api, project_uuid, connection_id, view, start, limit, username
+            )
         else:
             records = []
 

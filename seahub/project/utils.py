@@ -17,11 +17,12 @@ from seahub.group.models import Group, GroupUser
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
-    SEAQA_AI_SERVER_URL, SEAQA_WEB_SERVICE_URL
+    SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.constants import WEB_CRAWL_COLUMNS
+from seahub.project.view_utils import view_data_2_sql
 
 
 logger = logging.getLogger(__name__)
@@ -343,6 +344,29 @@ def init_seadb_table(seadb_api, project_uuid, username, connection_id):
 
 def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
     sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection {connection_id}: {e}')
+        records = []
+    return records
+
+def get_current_table_metadata(tables, table_name):
+    for table in tables:
+        if table['name'] == table_name:
+            return table
+    return None
+
+def list_connection_view_records(seadb_api, project_uuid, connection_id, view, start, limit, username):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, str(connection_id))
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    view_copy = view.copy()
+    sql = view_data_2_sql(connection_id, columns, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
