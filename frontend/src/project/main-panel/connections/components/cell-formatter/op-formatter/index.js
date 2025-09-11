@@ -44,12 +44,12 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStat
             {handleStatusActive && (
               <>
                 <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(true, row))}>
-                  {gettext('Active')}
-                  {row.is_active && <Icon symbol='check' className='sea-qa-role-status-check ml-2' />}
+                  <span>{gettext('Active')}</span>
+                  {row.is_active && <Icon symbol='check' className='sea-qa-role-status-check' />}
                 </DropdownItem>
                 <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(false, row))}>
-                  {gettext('Inactive')}
-                  {!row.is_active && <Icon symbol='check' className='sea-qa-role-status-check ml-2' />}
+                  <span>{gettext('Inactive')}</span>
+                  {!row.is_active && <Icon symbol='check' className='sea-qa-role-status-check' />}
                 </DropdownItem>
               </>
             )}
