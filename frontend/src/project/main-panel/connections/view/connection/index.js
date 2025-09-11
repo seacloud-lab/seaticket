@@ -110,7 +110,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           }
         },
         { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
-        { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false },
+        { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false, sort_able: false, filter_able: false },
       ];
     }
     if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {

@@ -42,9 +42,9 @@ export const VIEW_TYPE_DEFAULT_SORTS = {
 };
 
 export const VIEW_SORT_COLUMN_RULES = {
-  [VIEW_TYPE.TABLE]: (column) => SORT_COLUMN_OPTIONS.includes(column.type),
-  [VIEW_TYPE.GALLERY]: (column) => GALLERY_SORT_COLUMN_OPTIONS.includes(column.type),
-  [VIEW_TYPE.KANBAN]: (column) => SORT_COLUMN_OPTIONS.includes(column.type),
+  [VIEW_TYPE.TABLE]: (column) => SORT_COLUMN_OPTIONS.includes(column.type) && column.sort_able,
+  [VIEW_TYPE.GALLERY]: (column) => GALLERY_SORT_COLUMN_OPTIONS.includes(column.type) && column.sort_able,
+  [VIEW_TYPE.KANBAN]: (column) => SORT_COLUMN_OPTIONS.includes(column.type) && column.sort_able,
 };
 
 export const VIEW_FIRST_SORT_COLUMN_RULES = {

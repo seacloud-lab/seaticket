@@ -82,7 +82,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     return () => {
       allSubscribe();
     };
-  }, []);
+  }, [togglePageType]);
 
   useEffect(() => {
     resetURL(pageType, childrenPageType, viewID);

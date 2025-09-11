@@ -51,8 +51,8 @@ const CommonMessage = forwardRef(({ messages }, ref) => {
                   {value.map((v, index) => {
                     return (
                       <p className="sea-qa-ai-ask-message-source" key={index} title={v.title}>
-                        <span className="">{`[${index}]`}&ensp;</span>
-                        <a href={v.url}>{v.title}</a>
+                        <span className="">{`[${index + 1}]`}&ensp;</span>
+                        <a href={v.url} rel="noreferrer" target="_blank">{v.title}</a>
                       </p>
                     );
                   })}
