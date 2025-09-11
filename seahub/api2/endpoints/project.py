@@ -476,11 +476,12 @@ class QAView(APIView):
         }
 
         try:
-            ai_answer, sources = ask_ai_question(params)
+            ai_answer, agent_memory, sources = ask_ai_question(params)
         except Exception as e:
             logger.error(f'AI service error: {e}')
             ai_answer = 'Sorry, the AI service is temporarily unavailable, please try again later.'
             sources = []
+            agent_memory = {}
 
         ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
 
@@ -490,6 +491,7 @@ class QAView(APIView):
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
+            'agent_memory': agent_memory,
         })
 
 

@@ -203,8 +203,9 @@ def ask_ai_question(params):
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
     ai_answer = resp_json.get('answer', '')
+    agent_memory = resp_json.get('agent_memory', {})
     sources = resp_json.get('sources', [])
-    return ai_answer, sources
+    return ai_answer, agent_memory, sources
 
 
 def gen_s3_file_path(project_uuid, file_path):
