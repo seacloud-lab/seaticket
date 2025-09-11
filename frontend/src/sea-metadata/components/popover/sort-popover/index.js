@@ -212,7 +212,7 @@ class SortPopover extends Component {
               onChange={(value) => this.onSelectColumn(value, index)}
               options={columnsOptions}
               searchable={true}
-              placeholder={context.translate('Search {column}')}
+              searchPlaceholder={context.translate('Search {column}')}
               noOptionsPlaceholder={gettext('No results')}
             />
           </div>
