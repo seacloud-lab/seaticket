@@ -21,7 +21,7 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
-from seahub.project.constants import WEB_CRAWL_COLUMNS
+from seahub.project.constants import WEB_CRAWL_COLUMNS, DISCOURSE_TOPICS_COLUMNS, DISCOURSE_REPLIES_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 
 
@@ -343,6 +343,31 @@ def init_seadb_table(seadb_api, project_uuid, username, connection_id):
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
 
+def init_discourse_forum_seadb_table(seadb_api, project_uuid, username, connection_id):
+    """Initialize SeaDB tables for Discourse Forum connection"""
+    # Create topics table
+    topics_table_name = f"{connection_id}_topics"
+    res = seadb_api.create_table(project_uuid, topics_table_name)
+    topics_table_id = res['table_id']
+    for column in DISCOURSE_TOPICS_COLUMNS:
+        mapped_column = {
+            'column_name': column['name'],
+            'column_type': column['type'],
+        }
+        seadb_api.add_column(project_uuid, topics_table_id, mapped_column)
+    
+    # Create replies table
+    replies_table_name = f"{connection_id}_replies"
+    res = seadb_api.create_table(project_uuid, replies_table_name)
+    replies_table_id = res['table_id']
+    for column in DISCOURSE_REPLIES_COLUMNS:
+        mapped_column = {
+            'column_name': column['name'],
+            'column_type': column['type'],
+        }
+        seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
+
+
 def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
     sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
     try:
@@ -374,6 +399,32 @@ def list_connection_view_records(seadb_api, project_uuid, connection_id, view, s
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection {connection_id}: {e}')
+        records = []
+    return records
+
+
+def list_discourse_forum_topics_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
+    """Query discourse forum topics from SeaDB"""
+    topics_table_name = f"{connection_id}_topics"
+    sql = f"SELECT * FROM `{topics_table_name}` ORDER BY bumped_at DESC LIMIT {limit} OFFSET {start}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for discourse topics {connection_id}: {e}')
+        records = []
+    return records
+
+
+def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, topic_id, username=None):
+    """Query discourse forum replies from SeaDB"""
+    replies_table_name = f"{connection_id}_replies"
+    sql = f"SELECT * FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for discourse replies {connection_id}: {e}')
         records = []
     return records
 
