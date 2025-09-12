@@ -24,7 +24,7 @@ const AllConnections = ({ projectUuid }) => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '40%' },
       { key: 'indexed_at', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
-      { key: 'is_active', name: gettext('Status'), type: CONNECTION_FIELD_TYPE.ACTIVE_STATUS, width: '10%', editable: true },
+      { key: 'is_active', name: gettext('Is active'), type: CONNECTION_FIELD_TYPE.ACTIVE_STATUS, width: '10%', editable: true },
       { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
     ].map(column => (
@@ -68,6 +68,11 @@ const AllConnections = ({ projectUuid }) => {
     });
   }, [projectUuid]);
 
+  const handleStatusActive = (status, row) => {
+    const { is_active: oldStatus, id } = row;
+    if (status === oldStatus) return;
+    modifyConnectionStatus(id, { 'is_active': status });
+  };
 
   useEffect(() => {
     reload();
@@ -106,6 +111,7 @@ const AllConnections = ({ projectUuid }) => {
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onUpdate={modifyConnectionStatus}
+        handleStatusActive={handleStatusActive}
       />
       {isShowStatusDialog && (
         <ConnectionStatusDialog

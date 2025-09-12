@@ -1,49 +1,12 @@
-import { useCallback, useMemo } from 'react';
-import ActiveStatusEditorComponent from '@/components/active-status-editor';
-import { gettext } from '@/constants';
+import TextFormatter from '../../components/cell-formatter/text-formatter';
+import Icon from '@/components/icon';
 
-const ActiveStatusEditor = ({
-  isRowActive,
-  value, column, row,
-  onUpdate, cancelActive,
-}) => {
+const ActiveStatusEditor = ({ value }) => {
 
-  const options = useMemo(() => {
-    return [
-      {
-        value: true,
-        label: (
-          <div className="label-container">
-            <span>{gettext('Active')}</span>
-          </div>
-        ),
-      }, {
-        value: false,
-        label: (
-          <div className="label-container">
-            <span>{gettext('Inactive')}</span>
-          </div>
-        ),
-      }
-    ];
-  }, []);
-
-  const currentOption = useMemo(() => {
-    return options.find(o => o.value === value) || options[0];
-  }, [value, options]);
-
-  const onChange = useCallback((v) => {
-    onUpdate && onUpdate({ [column.key]: v });
-  }, [column, onUpdate]);
+  const valueChild = <>{value ? <Icon symbol="check" /> : <Icon symbol="x" />}</>;
 
   return (
-    <ActiveStatusEditorComponent
-      isShowDropdownIcon={isRowActive}
-      currentOption={currentOption}
-      menuOptions={options}
-      onChangeOption={onChange}
-      closeShowDropdownIcon={cancelActive}
-    />
+    <TextFormatter value={valueChild} />
   );
 };
 

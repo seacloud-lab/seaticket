@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { IconButton } from '@/components';
+import { IconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row }) => {
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStatusActive }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -41,6 +41,20 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row }) => {
                 </DropdownItem>
               )
             }
+            {handleStatusActive && (
+              <>
+                {row.is_active && (
+                  <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(false, row))}>
+                    <span>{gettext('Deactivate')}</span>
+                  </DropdownItem>
+                )}
+                {!row.is_active && (
+                  <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(true, row))}>
+                    <span>{gettext('Active')}</span>
+                  </DropdownItem>
+                )}
+              </>
+            )}
           </DropdownMenu>
         </Dropdown>
       }
