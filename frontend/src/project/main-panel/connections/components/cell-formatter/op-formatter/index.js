@@ -43,14 +43,16 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStat
             }
             {handleStatusActive && (
               <>
-                <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(true, row))}>
-                  <span>{gettext('Active')}</span>
-                  {row.is_active && <Icon symbol='check' className='sea-qa-role-status-check' />}
-                </DropdownItem>
-                <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(false, row))}>
-                  <span>{gettext('Inactive')}</span>
-                  {!row.is_active && <Icon symbol='check' className='sea-qa-role-status-check' />}
-                </DropdownItem>
+                {row.is_active && (
+                  <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(false, row))}>
+                    <span>{gettext('Deactivate')}</span>
+                  </DropdownItem>
+                )}
+                {!row.is_active && (
+                  <DropdownItem className='active-status-dropdown-item' onClick={() => (handleStatusActive(true, row))}>
+                    <span>{gettext('Active')}</span>
+                  </DropdownItem>
+                )}
               </>
             )}
           </DropdownMenu>
