@@ -23,7 +23,7 @@ const ResolveType = ({ resolveType, updateResolveType }) => {
     setIsShowMenu(false);
   }, [resolveType, updateResolveType]);
 
-  const onClickSessionToggle = useCallback((e) => {
+  const onMenuToggle = useCallback((e) => {
     const { bottom } = displayValueRef.current.getBoundingClientRect();
     const overflowHeight = bottom + 6 + 82; // 6: margin, 82: panel height;
     menuTranslateY.current = overflowHeight > window.innerHeight ? (-(82 + 24 + 6)) : 0; // 24 is button height;
@@ -32,7 +32,7 @@ const ResolveType = ({ resolveType, updateResolveType }) => {
 
   return (
     <div className="sea-qa-ai-ask-chats-resolve-type-wrapper">
-      <div className="sea-qa-ai-ask-chats-resolve-type-button" ref={displayValueRef} onClick={onClickSessionToggle}>
+      <div className="sea-qa-ai-ask-chats-resolve-type-button" ref={displayValueRef} onClick={onMenuToggle}>
         <span className="sea-qa-ai-ask-chats-resolve-type-button-name">{AI_RESOLVE_TYPES.find(t => t.value === resolveType)?.label}</span>
         <IconButton className="pl-1" icon="down" />
       </div>
