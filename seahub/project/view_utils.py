@@ -1,15 +1,157 @@
 import logging
 from datetime import datetime, timezone, timedelta
+import pytz
+from dateutil.relativedelta import relativedelta
 
 from django.db.models import Q
 
-from seahub.project.constants import FilterPredicateTypes, FilterTermModifier
+from seahub.project.constants import FilterPredicateTypes, FilterTermModifier, PropertyTypes
 
 
 logger = logging.getLogger(__name__)
 
 
-class DateOperator(object):
+class ColumnFilterInvalidError(Exception):
+    def __init__(self, column_name, column_type, filter_predicate, support_filter_predicates, msg):
+        self.column_name = column_name
+        self.column_type = column_type
+        self.filter_predicate = filter_predicate
+        self.support_filter_predicates = support_filter_predicates
+        self.msg = msg
+
+
+class Operator(object):
+
+    def __init__(self, column, filter_item):
+        self.column = column
+        self.filter_item = filter_item
+
+        self.column_name = ''
+        self.filter_term = ''
+
+        self.filter_predicate = ''
+        self.filter_term_modifier = ''
+        self.column_type = ''
+        self.column_data = {}
+
+        self.init()
+
+    def init(self):
+        self.column_name = self.column.get('name', '')
+        self.column_type = self.column.get('type', '')
+        self.column_data = self.column.get('data', {})
+        self.filter_predicate = self.filter_item.get('filter_predicate', '')
+        self.filter_term = self.filter_item.get('filter_term', '')
+        self.filter_term_modifier = self.filter_item.get('filter_term_modifier', '')
+
+    def op_is(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            self.filter_term
+        )
+
+    def op_is_not(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '<>',
+            self.filter_term
+        )
+
+    def op_contains(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%%%s%%'" % (
+            self.column_name,
+            'like',
+            self.filter_term.replace('\\', '\\\\'), # special characters require translation
+        )
+
+    def op_does_not_contain(self):
+        if not self.filter_term:
+            return ''
+        return "`%s` %s '%%%s%%'" % (
+            self.column_name,
+            'not like',
+            self.filter_term.replace('\\', '\\\\') # special characters require translation
+        )
+
+    def op_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` = %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_not_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <> %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` < %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` > %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` >= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_is_empty(self):
+        return "`%(column_name)s` is null" % ({
+            'column_name': self.column_name
+        })
+
+    def op_is_not_empty(self):
+        return "`%(column_name)s` is not null" % ({
+            'column_name': self.column_name
+        })
+
+    def op_is_current_user_id(self):
+        if not self.filter_term:
+            return "(`%s`IS NULL AND `%s` IS NOT NULL)" % (
+                self.column_name,
+                self.column_name
+            )
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            self.filter_term
+        )
+
+
+class DateOperator(Operator):
     SUPPORT_FILTER_PREDICATE = [
         FilterPredicateTypes.IS,
         FilterPredicateTypes.IS_NOT,
@@ -21,6 +163,9 @@ class DateOperator(object):
         FilterPredicateTypes.NOT_EMPTY,
         FilterPredicateTypes.IS_WITHIN,
     ]
+    
+    def __init__(self, column, filter_item):
+        super(DateOperator, self).__init__(column, filter_item)
 
     def _get_end_day_of_month(self, year, month):
         days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -203,8 +348,8 @@ class DateOperator(object):
 
         return None, None
 
-    def is_need_filter_term(self, filter_term_modifier):
-        if filter_term_modifier in [
+    def is_need_filter_term(self):
+        if self.filter_term_modifier in [
             FilterTermModifier.NUMBER_OF_DAYS_AGO,
             FilterTermModifier.NUMBER_OF_DAYS_FROM_NOW,
             FilterTermModifier.THE_NEXT_NUMBERS_OF_DAYS,
@@ -213,8 +358,110 @@ class DateOperator(object):
         ]:
             return True
         return False
+    
+    def op_is(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not date:
+            return ""
+        next_date = self._format_date(date + timedelta(days=1))
+        target_date = self._format_date(date)
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` < '%(next_date)s'" % ({
+            "column_name": self.column_name,
+            "target_date": target_date,
+            "next_date": next_date
+        })
+
+    def op_is_within(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        start_date, end_date = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not (start_date, end_date ):
+            return ""
+        return "`%(column_name)s` >= '%(start_date)s' and `%(column_name)s` <= '%(end_date)s'" % ({
+            "column_name": self.column_name,
+            "start_date": self._format_date(start_date),
+            "end_date": self._format_date(end_date)
+        })
+
+    def op_is_before(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not target_date:
+            return ""
+        return "`%(column_name)s` < '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_after(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not target_date:
+            return ""
+        next_date = self._format_date(target_date + timedelta(days=1))
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": next_date,
+        })
+
+    def op_is_on_or_before(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not target_date:
+            return ""
+        return "`%(column_name)s` <= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_on_or_after(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not target_date:
+            return ""
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_not(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
+        if not target_date:
+            return ""
+        start_date = target_date - timedelta(days=1)
+        end_date = target_date + timedelta(days=1)
+        return "(`%(column_name)s` >= '%(end_date)s' or `%(column_name)s` <= '%(start_date)s' or `%(column_name)s` is null)" % (
+        {
+            "column_name": self.column_name,
+            "start_date": self._format_date(start_date),
+            "end_date": self._format_date(end_date)
+        })
 
 
+
+class TextOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.CONTAINS,
+        FilterPredicateTypes.NOT_CONTAIN,
+        FilterPredicateTypes.IS,
+        FilterPredicateTypes.IS_NOT,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.IS_CURRENT_USER_ID,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(TextOperator, self).__init__(column, filter_item)
+
+    
 class ViewFilter(object):
 
     def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
@@ -464,7 +711,255 @@ class ViewFilter(object):
 
         return q, sorts
 
-
 def filter_tickets_by_view(username, view):
     q, sorts = ViewFilter().filter_tickets_by_view(username, view)
     return q, sorts
+
+
+def _filter2sql(operator):
+    support_filter_predicates = operator.SUPPORT_FILTER_PREDICATE
+    filter_predicate = operator.filter_predicate
+    # no predicate, ignore
+    if not filter_predicate:
+        return ''
+    # only operator need modifier, date and no filter_term_modifier, ignore
+    if isinstance(operator, DateOperator) and not operator.filter_term_modifier:
+        return ''
+    if operator.filter_predicate not in support_filter_predicates:
+        raise ColumnFilterInvalidError(
+            operator.column_name,
+            operator.column_type,
+            operator.filter_predicate,
+            support_filter_predicates,
+            "Filter on %(column_name)s invalid: %(column_type)s type column '%(column_name)s' does not support '%(value)s', available predicates are %(available_predicates)s" % {
+                'column_type': operator.column_type,
+                'column_name': operator.column_name,
+                'value': operator.filter_predicate,
+                'available_predicates': support_filter_predicates,
+            }
+        )
+
+    if filter_predicate == FilterPredicateTypes.IS:
+        return operator.op_is()
+    if filter_predicate == FilterPredicateTypes.IS_NOT:
+        return operator.op_is_not()
+    if filter_predicate == FilterPredicateTypes.CONTAINS:
+        return operator.op_contains()
+    if filter_predicate == FilterPredicateTypes.NOT_CONTAIN:
+        return operator.op_does_not_contain()
+    if filter_predicate == FilterPredicateTypes.EMPTY:
+        return operator.op_is_empty()
+    if filter_predicate == FilterPredicateTypes.NOT_EMPTY:
+        return operator.op_is_not_empty()
+    if filter_predicate == FilterPredicateTypes.EQUAL:
+        return operator.op_equal()
+    if filter_predicate == FilterPredicateTypes.NOT_EQUAL:
+        return operator.op_not_equal()
+    if filter_predicate == FilterPredicateTypes.GREATER:
+        return operator.op_greater()
+    if filter_predicate == FilterPredicateTypes.GREATER_OR_EQUAL:
+        return operator.op_greater_or_equal()
+    if filter_predicate == FilterPredicateTypes.LESS:
+        return operator.op_less()
+    if filter_predicate == FilterPredicateTypes.LESS_OR_EQUAL:
+        return operator.op_less_or_equal()
+    if filter_predicate == FilterPredicateTypes.IS_ON_OR_AFTER:
+        return operator.op_is_on_or_after()
+    if filter_predicate == FilterPredicateTypes.IS_AFTER:
+        return operator.op_is_after()
+    if filter_predicate == FilterPredicateTypes.IS_ON_OR_BEFORE:
+        return operator.op_is_on_or_before()
+    if filter_predicate == FilterPredicateTypes.IS_BEFORE:
+        return operator.op_is_before()
+    if filter_predicate == FilterPredicateTypes.IS_WITHIN:
+        return operator.op_is_within()
+    if filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
+        return operator.op_is_current_user_id()
+    return ''
+
+
+
+def _get_operator_by_type(column_type):
+    if column_type in [
+        PropertyTypes.TEXT,
+    ]:
+        return TextOperator
+
+    if column_type in [
+        PropertyTypes.DATETIME,
+    ]:
+        return DateOperator
+
+    return None
+
+class SQLGenerator(object):
+
+    def __init__(self, table_name, columns, hidden_columns, view, start=0, limit=0, username=''):
+        self.table_name = table_name
+        self.view = view
+        self.columns = columns
+        self.hidden_columns = hidden_columns
+        self.start = start
+        self.limit = limit
+        self.username = username
+
+    def _get_column_by_key(self, col_key):
+        for col in self.columns:
+            if col.get('key') == col_key or col.get('name') == col_key:
+                return col
+        return None
+
+    def _get_column_by_name(self, col_name):
+        for col in self.columns:
+            if col.get('name') == col_name:
+                return col
+        return None
+
+    def sort_2_sql(self):
+        condition_sorts = self.view.get('sorts', [])
+        order_header = 'ORDER BY '
+        clauses = []
+        if condition_sorts:
+            for sort in condition_sorts:
+                column_key = sort.get('column_key', '')
+                column_name = sort.get('column_name', '')
+                sort_type = 'ASC' if sort.get('sort_type', 'DESC') == 'up' else 'DESC'
+                column = self._get_column_by_key(column_key)
+                if not column:
+                    column = self._get_column_by_name(column_name)
+                    if not column:
+                        if column_key in ['_ctime', '_mtime']:
+                            order_condition = '%s %s' % (column_key, sort_type)
+                            clauses.append(order_condition)
+                            continue
+                        else:
+                            continue
+
+                order_condition = '`%s` %s' % (column.get('name'), sort_type)
+                clauses.append(order_condition)
+        if not clauses:
+            return []
+        return "%s%s" % (
+            order_header,
+            ', '.join(clauses)
+        )
+
+    def _get_column_type(self, column):
+        column_type = column.get('type', '')
+
+        return column_type
+
+    def _generator_filters_sql(self, filters, filter_conjunction = 'And'):
+        if not filters:
+            return ''
+
+        filter_string_list = []
+        filter_conjunction_split = " %s " % filter_conjunction
+        for filter_item in filters:
+            column_key = filter_item.get('column_key')
+            column_name = filter_item.get('column_name')
+            # skip when the column key or name is missing
+            if not (column_key or column_name):
+                continue
+            column = column_key and self._get_column_by_key(column_key)
+            if not column:
+                column = column_name and self._get_column_by_name(column_name)
+            # skip when the column is deleted
+            if not column:
+                logger.warning('Column not found column_key: %s column_name: %s' % (column_key, column_name))
+                continue
+
+            if filter_item.get('filter_predicate') == 'include_me':
+                filter_item['filter_term'] = [self.username]
+            if filter_item.get('filter_predicate') == 'is_current_user_ID':
+                pass
+
+            column_type = self._get_column_type(column)
+            column['type'] = column_type
+            operator_cls = _get_operator_by_type(column_type)
+            if not operator_cls:
+                raise ValueError('filter: %s not support to sql' % filter_item)
+            else:
+                operator = operator_cls(column, filter_item)
+            sql_condition = _filter2sql(operator)
+            if not sql_condition:
+                continue
+            filter_string_list.append(sql_condition)
+
+        if filter_string_list:
+            return "%s" % (
+                filter_conjunction_split.join(filter_string_list)
+            )
+        return ''
+
+    def _basic_filters_sql(self):
+        basic_filters = self.view.get('basic_filters', [])
+        filter_conjunction = 'AND'
+        if not basic_filters:
+            return ''
+
+        filters = []
+        for filter_item in basic_filters:
+            pass
+
+        return self._generator_filters_sql(filters, filter_conjunction)
+
+    def _filters_sql(self):
+        filters = self.view.get('filters', [])
+        filter_conjunction = self.view.get('filter_conjunction', 'And')
+        return self._generator_filters_sql(filters, filter_conjunction)
+
+    def _filter_2_sql(self):
+        filter_header = 'WHERE'
+        basic_filters_sql = self._basic_filters_sql()
+        filters_sql = self._filters_sql()
+
+        if not basic_filters_sql and not filters_sql:
+            return ''
+
+        if basic_filters_sql and filters_sql:
+            return "%s (%s) AND (%s)" % (
+                filter_header,
+                basic_filters_sql,
+                filters_sql,
+            )
+
+        if basic_filters_sql and not filters_sql:
+            return "%s %s" % (
+                filter_header,
+                basic_filters_sql,
+            )
+
+        return "%s %s" % (
+                filter_header,
+                filters_sql,
+            )
+
+    def _limit_2_sql(self):
+        return '%s %s, %s' % (
+            "LIMIT",
+            self.start or 0,
+            self.limit or 100
+        )
+
+    def to_sql(self):
+        column_names = [column['name'] for column in self.columns]
+        sql_columns = [column_name for column_name in column_names if column_name not in self.hidden_columns]
+        column_join = ', '.join(['`%s`' % column_name for column_name in sql_columns])
+        sql = "SELECT %s FROM `%s`" % (column_join, self.table_name)
+        filter_clause = self._filter_2_sql()
+        sort_clause = self.sort_2_sql()
+        limit_clause = self._limit_2_sql()
+        if filter_clause:
+            sql = "%s %s" % (sql, filter_clause)
+        if sort_clause:
+            sql = "%s %s" % (sql, sort_clause)
+        if limit_clause:
+            sql = "%s %s" % (sql, limit_clause)
+        return sql
+
+
+def view_data_2_sql(table, columns, hidden_columns, view, start, limit, params):
+    """ view to sql """
+    sql_generator = SQLGenerator(table, columns, hidden_columns, view, start, limit, params)
+    return sql_generator.to_sql()

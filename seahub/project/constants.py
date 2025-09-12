@@ -151,7 +151,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': 'closed', 'type': 'view'}
         ]
     },
-    ConnectionType.SITE.value: {},
+    ConnectionType.SITE.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
     ConnectionType.DISCOURSE_FORUM.value: {},
     ConnectionType.EMAIL.value: {},
     ConnectionType.SEAFILE.value: {},

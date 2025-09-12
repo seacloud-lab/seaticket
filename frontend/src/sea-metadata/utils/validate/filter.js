@@ -16,7 +16,7 @@ const PREDICATES_REQUIRE_ARRAY_TERM = [
   FILTER_PREDICATE_TYPE.IS_NONE_OF,
 ];
 
-const TEXT_COLUMN_TYPES = [CellType.TEXT, CellType.FILE_NAME];
+const TEXT_COLUMN_TYPES = [CellType.TEXT, CellType.FILE_NAME, CellType.URL];
 
 const CHECK_EMPTY_PREDICATES = [FILTER_PREDICATE_TYPE.EMPTY, FILTER_PREDICATE_TYPE.NOT_EMPTY];
 
@@ -222,6 +222,9 @@ class ValidateFilter {
   static isValidTerm(term, predicate, modifier, filterColumn) {
     switch (filterColumn.type) {
       case CellType.TEXT:{
+        return this.isValidTermType(term, TERM_TYPE_MAP.STRING);
+      }
+      case CellType.URL: {
         return this.isValidTermType(term, TERM_TYPE_MAP.STRING);
       }
       case CellType.NUMBER:

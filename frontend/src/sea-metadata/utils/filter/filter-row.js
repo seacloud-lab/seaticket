@@ -30,6 +30,9 @@ const getFilterResult = (row, filter, { username, userId }) => {
     case CellType.TEXT: {
       return textFilter(cellValue, filter, userId);
     }
+    case CellType.URL: {
+      return textFilter(cellValue, filter, userId);
+    }
     case CellType.LAST_MODIFIER:
     case CellType.CREATOR: {
       return creatorFilter(cellValue, filter, username);
