@@ -202,7 +202,7 @@ class WebCrawlColumns(object):
         self.url = WebCrawlColumn('url', PropertyTypes.TEXT)
         self.title = WebCrawlColumn('title', PropertyTypes.TEXT)
         self.etag = WebCrawlColumn('etag', PropertyTypes.TEXT)
-        self.last_modified = WebCrawlColumn('last_modified', PropertyTypes.TEXT)
+        self.last_modified = WebCrawlColumn('last_modified', PropertyTypes.DATETIME)
 
 
 class WebCrawlColumn(object):
