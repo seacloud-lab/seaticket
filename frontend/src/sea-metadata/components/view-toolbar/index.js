@@ -10,7 +10,7 @@ import './index.css';
 const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
 
   const { collaborators } = useCollaborators();
-  const { isLoading, metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
+  const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
 
   const onHeaderClick = useCallback(() => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
@@ -18,7 +18,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
 
   const view = metadata?.view;
   const viewType = view?.type;
-  const readOnly = !isLoading && context.canModifyView ? !context.canModifyView(view) : true;
+  const readOnly = view && context.canModifyView ? !context.canModifyView(view) : true;
 
   return (
     <div className="sea-metadata-view-ribbon" onClick={onHeaderClick}>
@@ -28,7 +28,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
         <div className="sea-metadata-views"></div>
       )}
       <div className="sea-metadata-view-tools">
-        {!isLoading && (
+        {view && (
           <>
             {viewType === VIEW_TYPE.TABLE && (
               <TableViewToolbar
