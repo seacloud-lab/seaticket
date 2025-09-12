@@ -575,16 +575,6 @@ class ConnectionsView(object):
 
 class ConnectionsViewsManager(models.Manager):
 
-    def get_connection_view(self, connection_id, view_id):
-        connection_views = self.filter(connection_id=connection_id).first()
-        if not connection_views:
-            return None
-        
-        view_details = json.loads(connection_views.details)
-        for v in view_details['views']:
-            if v.get('_id') == view_id:
-                return v
-
     def get_record(self, project_uuid, connection_id):
         """
             get record from database, if not record, create it
