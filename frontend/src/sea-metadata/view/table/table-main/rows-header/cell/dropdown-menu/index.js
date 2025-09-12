@@ -15,7 +15,11 @@ import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
 
 import './index.css';
 
-const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColumnData, deleteColumn }, ref) => {
+const HeaderDropdownMenu = forwardRef(({
+  column, view,
+  renameColumn, modifyColumnData, deleteColumn,
+  onDropDownToggle,
+}, ref) => {
   const menuRef = createRef();
   const dropdownDomRef = createRef();
   const [isMenuShow, setMenuShow] = useState(false);
@@ -49,8 +53,11 @@ const HeaderDropdownMenu = forwardRef(({ column, view, renameColumn, modifyColum
     event && event.stopPropagation();
     const targetDom = event.target;
     if (targetDom.className === 'string' && targetDom.className.includes('disabled')) return;
+    if (!isMenuShow) {
+      onDropDownToggle && onDropDownToggle();
+    }
     setMenuShow(!isMenuShow);
-  }, [isMenuShow]);
+  }, [isMenuShow, onDropDownToggle]);
 
   const openSubMenu = useCallback(() => {
     setSubMenuShow(true);

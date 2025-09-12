@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { UncontrolledTooltip } from 'reactstrap';
 import Icon from '@/components/icon';
 import ResizeColumn from './resize-column';
-import DropdownMenu from './dropdown-menu';
+import HeaderDropdownMenu from './dropdown-menu';
 import { COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
 import { checkIsNameColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
@@ -34,6 +34,7 @@ const Cell = ({
   onMove,
   updateDraggingKey,
   updateDragOverKey,
+  onColumnSelectNone,
 }) => {
   const headerCellRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -144,6 +145,10 @@ const Cell = ({
     window.seaTableBody.clearHorizontalScroll();
   }, [updateDraggingKey, updateDragOverKey]);
 
+  const onDropDownToggle = useCallback(() => {
+    onColumnSelectNone && onColumnSelectNone(column);
+  }, [column, onColumnSelectNone]);
+
   const { key, name, type } = column;
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
@@ -191,13 +196,14 @@ const Cell = ({
         </div>
       </div>
       {canEditColumnInfo && (
-        <DropdownMenu
+        <HeaderDropdownMenu
           ref={dropdownRef}
           column={column}
           view={view}
           renameColumn={renameColumn}
           deleteColumn={deleteColumn}
           modifyColumnData={modifyColumnData}
+          onDropDownToggle={onDropDownToggle}
         />
       )}
       <ResizeColumn onDrag={onDraggingColumnWidth} onDragEnd={handleColumnWidth} />

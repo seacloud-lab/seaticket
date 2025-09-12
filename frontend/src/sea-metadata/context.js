@@ -2,6 +2,7 @@ import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
 import Translate from './utils/translate';
 import { CellType } from './constants';
+import { isFunction } from '@/utils/utils';
 
 class Context {
 
@@ -222,6 +223,15 @@ class Context {
   };
 
   // column
+  getColumns = () => {
+    if (isFunction(this.api.getColumns)) return this.api.getColumns();
+    return new Promise((resolve, reject) => {
+      resolve({
+        data: { columns: [] }
+      });
+    });
+  };
+
   insertColumn = (name, type, { key, data }) => {
     return this.api.insertColumn(name, type, { key, data });
   };
