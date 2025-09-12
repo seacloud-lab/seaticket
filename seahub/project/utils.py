@@ -366,7 +366,8 @@ def list_connection_view_records(seadb_api, project_uuid, connection_id, view, s
         return []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    sql = view_data_2_sql(connection_id, columns, view_copy, start, limit, username)
+    hidden_columns = view_copy.get('hidden_columns', [])
+    sql = view_data_2_sql(connection_id, columns, hidden_columns, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
