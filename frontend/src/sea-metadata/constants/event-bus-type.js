@@ -10,8 +10,6 @@ export const EVENT_BUS_TYPE = {
   QUERY_COLLABORATORS: 'query_collaborators',
   QUERY_COLLABORATOR: 'query_collaborator',
 
-  UPDATE_TABLE_ROWS: 'update_table_rows',
-
   // table
   LOCAL_DATA_CHANGED: 'local_table_changed',
   SERVER_DATA_CHANGED: 'server_table_changed',
@@ -43,6 +41,7 @@ export const EVENT_BUS_TYPE = {
   MOVE_ROW: 'move_row',
   DELETE_ROWS: 'delete_rows',
   EXPAND_ROW: 'expand_row',
+  UPDATE_TABLE_ROWS: 'update_table_rows',
 
   // metadata
   RELOAD_DATA: 'reload_data',
@@ -55,9 +54,6 @@ export const EVENT_BUS_TYPE = {
   MODIFY_HIDDEN_COLUMNS: 'modify_hidden_columns',
   MODIFY_SETTINGS: 'modify_settings',
 
-  // change
-  VIEW_CHANGED: 'view_changed',
-
   // column
   MODIFY_COLUMN_ORDER: 'modify_column_order',
 
@@ -66,22 +62,4 @@ export const EVENT_BUS_TYPE = {
   SAVED: 'saved',
   ERROR: 'error',
 
-  // view
-  TOGGLE_VIEW_TOOLBAR: 'toggle_view_toolbar',
-  RESET_VIEW: 'reset_view',
-  UPDATE_SERVER_VIEW: 'update_server_view',
-
-  // gallery
-  MODIFY_GALLERY_ZOOM_GEAR: 'modify_gallery_zoom_gear',
-  SWITCH_GALLERY_GROUP_BY: 'switch_gallery_group_by',
-
-  // kanban
-  TOGGLE_KANBAN_SETTINGS: 'toggle_kanban_settings',
-  OPEN_KANBAN_SETTINGS: 'open_kanban_settings',
-  CLOSE_KANBAN_SETTINGS: 'close_kanban_settings',
-
-  // tags
-  SELECT_TAGS: 'select_tags',
-  DELETE_TAGS: 'delete_tags',
-  MODIFY_TAGS_SORT: 'modify_tags_sort',
 };

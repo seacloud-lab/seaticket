@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useCollaborators } from './collaborators';
 import context from '../context';
 import Store from '../store';
@@ -10,7 +10,7 @@ import { getRowById } from '../utils/row';
 
 const MetadataContext = React.createContext(null);
 
-export const MetadataProvider = ({
+export const MetadataProvider = forwardRef(({
   viewID,
   api,
   tagsData,
@@ -20,7 +20,7 @@ export const MetadataProvider = ({
   t,
   children,
   ...params
-}) => {
+}, ref) => {
   const [isLoading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState({ rows: [], columns: [], view: {} });
   const [errorMessage, setErrorMessage] = useState(null);
@@ -253,6 +253,10 @@ export const MetadataProvider = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localStorageNamePrefix, viewID]);
 
+  useImperativeHandle(ref, () => ({
+    getData: () => metadata,
+  }), [metadata]);
+
   return (
     <MetadataContext.Provider
       value={{
@@ -288,7 +292,7 @@ export const MetadataProvider = ({
       {children}
     </MetadataContext.Provider>
   );
-};
+});
 
 export const useMetadata = () => {
   const context = useContext(MetadataContext);
