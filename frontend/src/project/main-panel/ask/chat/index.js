@@ -22,7 +22,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
-  const [resolveType, setResolveType] = useState('ask');
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -57,7 +56,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback((message) => {
+  const sendMessage = useCallback((resolveType, message) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -86,7 +85,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage, resolveType);
       }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, togglePageType, resolveType]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
@@ -237,8 +236,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           ref={messageInputRef}
           isReply={loading || isReply}
           readOnly={readOnly}
-          resolveType={resolveType}
-          setResolveType={setResolveType}
           sendMessage={sendMessage}
         />
       </div>

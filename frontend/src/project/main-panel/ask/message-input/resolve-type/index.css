@@ -1,0 +1,41 @@
+.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-chats-resolve-type-wrapper {
+  width: fit-content;
+  margin-left: 6px;
+  margin-bottom: 6px;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-ai-ask-chats-resolve-type-button {
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  padding: 2px 4px;
+  height: 24px;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-ai-ask-chats-resolve-type-button:hover {
+  background-color: #efefef;
+  border-radius: 3px;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-dropdown-menu {
+  box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-dropdown-menu .sea-qa-dropdown-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-icon-btn {
+  width: unset;
+  height: unset;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-icon-btn .sea-qa-icon-svg {
+  margin: 0;
+}
+
+.sea-qa-ai-ask-chats-resolve-type-wrapper .sea-qa-icon-btn:not(.disabled):not(.no-hover-bg):hover {
+  background-color: transparent
+}

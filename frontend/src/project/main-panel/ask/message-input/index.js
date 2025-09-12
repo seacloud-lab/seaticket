@@ -6,15 +6,15 @@ import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { getType, Utils } from '@/utils/utils';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_MESSAGE_TYPE } from '../constants';
+import { CHAT_MESSAGE_TYPE, AI_RESOLVE_TYPE } from '../constants';
+import ResolveType from './resolve-type';
 
 import './index.css';
 
-const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, resolveType, setResolveType }, ref) => {
+const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
-  const [isShowSessionToggle, setIsShowSessionToggle] = useState(false);
-  const [sessionTogglePanelTranslateY, setSessionTogglePanelTranslateY] = useState(0);
+  const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -60,8 +60,8 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, resolveType, 
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
     const text = inputRef.current.innerText;
-    sendMessage(text, []);
-  }, [sendMessage]);
+    sendMessage(resolveType, text, []);
+  }, [resolveType, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -130,25 +130,6 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, resolveType, 
 
   }), [setAsk, inputRef]);
 
-  const convertToAgent = useCallback(() => {
-    setResolveType('agent');
-    setIsShowSessionToggle(false);
-  }, [resolveType]);
-
-  const convertToAsk = useCallback(() => {
-    setResolveType('ask');
-    setIsShowSessionToggle(false);
-  }, [resolveType]);
-
-  const onClickSessionToggle = useCallback((e) => {
-    const inputWrapper = inputRef?.current?.parentNode?.parentNode?.parentNode;
-    if (!inputWrapper) return;
-    const { bottom } = inputWrapper.getBoundingClientRect();
-    const overflowHeight = bottom + 6 + 82; // 6: margin, 82: panel height;
-    setSessionTogglePanelTranslateY(overflowHeight > window.innerHeight ? (-(82 + 24 + 6)) : 0); // 24 is button height;
-    setIsShowSessionToggle(true);
-  }, [inputRef]);
-
   const disabled = isReply || readOnly;
 
   return (
@@ -171,28 +152,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, resolveType, 
             </div>
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
-            <div className='sea-qa-ai-ask-chats-toggle-session-wrapper'>
-              <div className='sea-qa-ai-ask-chats-toggle-session-button' onClick={onClickSessionToggle}>
-                <span className='sea-qa-ai-ask-chats-toggle-session-button-name'>{resolveType.charAt(0).toUpperCase() + resolveType.slice(1)}</span>
-                <IconButton className='pl-1' icon='down' />
-              </div>
-              {isShowSessionToggle && (
-                <div className='sea-qa-ai-ask-chats-toggle-session-panel' style={{ transform: `translateY(${sessionTogglePanelTranslateY}px)` }}>
-                  <ClickOutside onClickOutside={() => setIsShowSessionToggle(false)}>
-                    <div className='sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu'>
-                      <div onClick={convertToAgent} className='dropdown-item sea-qa-dropdown-item'>
-                        <span>{gettext('Agent')}</span>
-                        {resolveType === 'agent' && <IconButton icon='check'/>}
-                      </div>
-                      <div onClick={convertToAsk} className='dropdown-item sea-qa-dropdown-item'>
-                        <span>{gettext('Ask')}</span>
-                        {resolveType === 'ask' && <IconButton icon='check'/>}
-                      </div>
-                    </div>
-                  </ClickOutside>
-                </div>
-              )}
-            </div>
+            <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
             <IconButton
               disabled={disabled}
               icon="send"
