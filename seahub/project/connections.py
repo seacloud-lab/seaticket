@@ -407,7 +407,7 @@ class ProjectConnectionDetailsView(APIView):
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.SITE.value:
             try:
-                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
+                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Internal Server Error'

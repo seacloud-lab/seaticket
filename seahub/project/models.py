@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.core.cache import cache
-import datetime
 import logging
 import uuid
 import json
@@ -10,11 +9,9 @@ import random
 import string
 from copy import deepcopy
 
-from rest_framework import status
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
-from seahub.api2.utils import api_error
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
@@ -542,84 +539,68 @@ class ConnectionsView(object):
         self.init_view()            
 
     def init_view(self):
+        self.details = {
+            "_id": generate_views_unique_id(4),
+            "table_id": '0000',  # by default
+            "name": self.name,
+            "filters": [],
+            "groupbys": [],
+            "filter_conjunction": "Or",
+            "hidden_columns": [],
+            "type": self.type,
+        }
         if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
-            self.details = {
-                    "_id": generate_views_unique_id(4),
-                    "table_id": '0000',  # by default
-                    "name": self.name,
+            self.details.update({
                     'basic_filters': [
                         {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
                     ],
-                    "filters": [],
                     'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
-                    "groupbys": [],
-                    "filter_conjunction": "Or",
-                    "hidden_columns": [],
-                    "type": self.type,
-                }
+                })
         elif self.project_connection_type == ConnectionType.SITE.value:
-            self.details = {
-                    "_id": generate_views_unique_id(4),
-                    "table_id": '0000',
-                    "name": self.name,
+            self.details.update({
                     'basic_filters': [],
-                    "filters": [],
                     'sorts': [],
-                    "groupbys": [],
-                    "filter_conjunction": "Or",
-                    "hidden_columns": [],
-                    "type": self.type,
-                }
+                })
         self.details.update(self.config)
 
 
 class ConnectionsViewsManager(models.Manager):
 
-    def get_record(self, project_uuid, connection_id):
+    def get_record(self, project_uuid, connection_id, connection_type=ConnectionType.SITE.value):
         """
             get record from database, if not record, create it
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(connection_id=connection_id).first()
-
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
            
         if not record:
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=json.dumps(CONNECTION_DEFAULT_DETAILS[project_connection.type])
+                details=json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
             )
         return record
 
     # view op
-    def list_views(self, project_uuid, connection_id):
-        record = self.get_record(project_uuid, connection_id)
+    def list_views(self, project_uuid, connection_id, connection_type):
+        record = self.get_record(project_uuid, connection_id, connection_type)
         return json.loads(record.details)
 
-    def get_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def get_view(self, project_uuid, connection_id, view_id, connection_type):
+        record = self.get_record(project_uuid, connection_id, connection_type)
         view_details = json.loads(record.details)
         for v in view_details['views']:
             if v.get('_id') == view_id:
                 return v
         return None
 
-    def add_view(self, project_uuid, connection_id, view_name, view_type='table', view_data={}):
-        record = self.get_record(project_uuid, connection_id)
+    def add_view(self, project_uuid, connection_id, view_name, connection_type, view_type='table', view_data={}):
+        record = self.get_record(project_uuid, connection_id, connection_type)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        new_view = ConnectionsView(view_name, view_type, view_data, project_connection.type)
+        new_view = ConnectionsView(view_name, view_type, view_data, connection_type)
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
@@ -629,8 +610,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return new_view.details
 
-    def update_view(self, project_uuid, connection_id, view_id, view_dict):
-        record = self.get_record(project_uuid, connection_id)
+    def update_view(self, view_id, view_dict, record):
         view_dict.pop('_id', '')
         if 'name' in view_dict:
             exist_obj_names = record.views_names
@@ -644,8 +624,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def duplicate_view(self, view_id, record):
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
@@ -665,8 +644,7 @@ class ConnectionsViewsManager(models.Manager):
 
         return duplicate_view
 
-    def delete_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def delete_view(self, view_id, record):
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         views = view_details.get('views', [])
@@ -686,8 +664,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def move_view(self, project_uuid, connection_id, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
-        record = self.get_record(project_uuid, connection_id)
+    def move_view(self, record, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
 
@@ -798,7 +775,7 @@ class GitHubIssuesRecordManager(models.Manager):
 
     def get_records_by_view(self, project_uuid, connection_id, view_id, start, end):
         sorts = []
-        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
+        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, ConnectionType.GITHUB_ISSUE.value)
         basic_filters = view.get('basic_filters', [])
         sorts = view.get('sorts', [])
 
@@ -1171,15 +1148,11 @@ class TicketViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, view_id, folder_id=None):
-        record = self.get_record(project_uuid)
+    def duplicate_view(self, record, view_id, folder_id=None):
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
         duplicate_view = next((copy.deepcopy(view) for view in view_details['views'] if view.get('_id') == view_id), None)
-        if not duplicate_view:
-            return None
-
         duplicate_view['_id'] = new_view_id
         view_name = get_no_duplicate_obj_name(duplicate_view['name'], record.views_names)
         duplicate_view['name'] = view_name
