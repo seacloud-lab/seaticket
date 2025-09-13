@@ -22,6 +22,9 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
+from seahub.project.constants import WEB_CRAWL_COLUMNS, ConnectionType, GITHUB_ISSUES_TABLE, GITHUB_ISSUES_COLUMNS, \
+    GITHUB_ISSUES_COMMENTS_COLUMNS
+from seahub.project.view_utils import view_data_2_sql
 
 
 logger = logging.getLogger(__name__)
@@ -88,7 +91,7 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     """
     if not username or not workspace_owner or not ticket:
         return None
-    
+
     if ticket.creator == username:
         return PERMISSION_READ_WRITE
 
@@ -100,7 +103,7 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """
     if not username or not workspace_owner or not comment:
         return None
-    
+
     if comment.creator == username:
         return PERMISSION_READ_WRITE
 
@@ -381,11 +384,62 @@ def delete_project(project):
         logger.error(e)
 
 
+def init_seadb_table(seadb_api, project_uuid, username, connection_id,  connection_type):
+    if connection_type == ConnectionType.SITE.value:
+        res = seadb_api.create_table(project_uuid, connection_id)
+        table_id = res['table_id']
+        for column in WEB_CRAWL_COLUMNS:
+            mapped_column = {
+                'column_name': column['name'],
+                'column_type': column['type'],
+            }
+            seadb_api.add_column(project_uuid, table_id, mapped_column)
+    elif connection_type == ConnectionType.GITHUB_ISSUE.value:
+        issues_table_name = str(connection_id)+'_github_issues'
+        res = seadb_api.create_table(project_uuid, issues_table_name)
+
+        table_id = res['table_id']
+        for column in GITHUB_ISSUES_COLUMNS:
+            mapped_column = {
+                'column_name': column['name'],
+                'column_type': column['type'],
+            }
+            seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+        comments_table_name = str(connection_id)+'_issue_comments'
+        res = seadb_api.create_table(project_uuid, comments_table_name)
+        table_id = res['table_id']
+        for column in GITHUB_ISSUES_COMMENTS_COLUMNS:
+            mapped_column = {
+                'column_name': column['name'],
+                'column_type': column['type'],
+            }
+            seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+
 def get_current_table_metadata(tables, table_name):
     for table in tables:
         if table['name'] == table_name:
             return table
     return None
+
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    view_copy = view.copy()
+    hidden_columns = view_copy.get('hidden_columns', [])
+    sql = view_data_2_sql(table_name, columns, hidden_columns, view_copy, start, limit, username)
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection {table_name}: {e}')
+        records = []
+    return records
 
 
 def url_to_filename(url):

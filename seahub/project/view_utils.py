@@ -975,13 +975,25 @@ class SQLGenerator(object):
 
     def _basic_filters_sql(self):
         basic_filters = self.view.get('basic_filters', [])
-        filter_conjunction = 'AND'
+        filter_conjunction = 'OR'
         if not basic_filters:
             return ''
 
+        filters_list = basic_filters[0].get('filter_term')
         filters = []
-        for filter_item in basic_filters:
-            pass
+        for term in filters_list:
+            if term == 'open' or term == 'closed':
+                filters.append({
+                    'column_name': 'state',
+                    'filter_predicate': 'is',
+                    'filter_term': term
+                })
+            else:
+                filters.append({
+                    'column_name': 'state_reason',
+                    'filter_predicate': 'is',
+                    'filter_term': term
+                })
 
         return self._generator_filters_sql(filters, filter_conjunction)
 
