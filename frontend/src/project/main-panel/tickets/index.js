@@ -17,7 +17,7 @@ import { server } from '@/constants';
 import './index.css';
 
 const {
-  projectUuid, projectName, workspaceID, permission
+  projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
 
 const Page = () => {
@@ -25,7 +25,7 @@ const Page = () => {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
   const props = useMemo(() => ({
-    projectUuid, projectName, workspaceID, permission
+    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin
   }), []);
 
   const { isLoading, pageType, childrenPageType } = useTicketsPage();
