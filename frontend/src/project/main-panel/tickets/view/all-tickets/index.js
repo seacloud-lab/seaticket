@@ -19,6 +19,12 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
   const metadataRef = useRef(null);
   const currentTime = useRef(new Date());
 
+  const expandRow = useCallback((row) => {
+    const data = metadataRef.current.getData();
+    cacheData(data);
+    togglePageType(row._id);
+  }, [togglePageType, cacheData]);
+
   const columns = useMemo(() => [
     {
       type: CellType.RATE,
@@ -36,7 +42,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       is_name_column: true,
       frozen: true,
       is_required: true,
-      click: (row) => togglePageType(row._id)
+      click: expandRow
     }, {
       type: CellType.SINGLE_SELECT,
       key: 'status',
@@ -83,7 +89,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       name: gettext('Creator'),
       editable: false,
     },
-  ], [togglePageType]);
+  ], [expandRow]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
@@ -286,12 +292,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     });
     return list;
   }, [projectName, workspaceID]);
-
-  const expandRow = useCallback((row) => {
-    const data = metadataRef.current.getData();
-    cacheData(data);
-    togglePageType(row._id);
-  }, [togglePageType, cacheData]);
 
   if (isLoading || isTypesLoading) return null;
 
