@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import { connectionsAPI } from '@/project/api';
@@ -9,7 +9,7 @@ import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster } from '@/components';
+import { toaster, ModalHeader } from '@/components';
 import { processor } from '@seafile/seafile-editor';
 
 const SiteContentDialog = ({ title, content, onClose }) => {
@@ -27,8 +27,8 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
-      <ModalBody>
-        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
+      <ModalBody style={{ padding: 0 }}>
+        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '16px' }}>
           <div className="site-page-content" dangerouslySetInnerHTML={{ __html: innerHtml }}></div>
         </div>
       </ModalBody>
