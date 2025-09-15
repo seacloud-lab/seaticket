@@ -1,0 +1,29 @@
+.sea-qa-ai-ask-message-content:has(.sea-qa-ai-thought-process-btn) {
+  padding-top: 0;
+}
+
+.sea-qa-ai-thought-process-btn {
+  max-width: 100%;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  overflow: hidden;
+  color: #666;
+}
+
+.sea-qa-ai-thought-process-btn:hover {
+  cursor: pointer;
+  color: var(--bas-dark);
+}
+
+.sea-qa-ai-thought-process-btn .sea-qa-icon-svg-open-in-new {
+  height: 12px;
+  width: 12px;
+}
+
+.sea-qa-ai-thought-process-btn:hover .sea-qa-icon-svg-open-in-new {
+  cursor: pointer;
+  color: var(--bas-dark);
+}

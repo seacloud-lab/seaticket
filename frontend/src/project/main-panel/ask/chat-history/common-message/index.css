@@ -18,6 +18,7 @@
   border: unset;
   height: auto;
   width: 100%;
+  max-width: 100%;
 }
 
 .sea-qa-ai-ask-message-answer.rich-text .article>div[role=textbox]>:first-child,

@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
-import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
+import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { askAPI } from '../../../api';
 import ChatHistory from '../chat-history';
@@ -174,7 +174,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   useEffect(() => {
     if (loading) return;
-    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error }) => {
+    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error, resolveType }) => {
       modifyLocalSession(reply_session_id, { is_replying: false });
       if (reply_session_id !== sessionId) return;
       let newChatHistories = chatHistories.slice(0);
@@ -190,10 +190,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
-      const newChatData = [
+      let newChatData = [];
+      if (resolveType === AI_RESOLVE_TYPE.AGENT) {
+        newChatData.push({ type: CHAT_MESSAGE_TYPE.THOUGHT_PROCESS, value: memory });
+      }
+      newChatData = [
+        ...newChatData,
         { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
         { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
-        { type: CHAT_MESSAGE_TYPE.MEMORY, value: memory },
       ];
 
       newChatHistories[newChatHistories.length - 1]._id = userMessageId;
