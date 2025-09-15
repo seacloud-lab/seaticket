@@ -46,7 +46,7 @@ const Process = ({ value }) => {
                       </FormGroup>
                       <FormGroup className="sea-qa-ai-thought-process-key mb-0 sea-qa-ai-thought-process-key-level-3">
                         <Label>{gettext('Value')}</Label>
-                        {(message.content && !message.content[0]?.text) ? (
+                        {(message.content && message.content[0]?.text) ? (
                           <StepMarkdownViewer value={message.content[0]?.text} className="sea-qa-ai-thought-process-value" />
                         ) : (
                           <div className="sea-qa-ai-thought-process-value">
