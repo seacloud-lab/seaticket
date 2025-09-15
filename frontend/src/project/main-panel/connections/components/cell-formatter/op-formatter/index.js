@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { IconButton, Icon } from '@/components';
+import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
