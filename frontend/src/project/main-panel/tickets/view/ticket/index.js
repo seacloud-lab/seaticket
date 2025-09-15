@@ -28,7 +28,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
 
   const { typesData } = useTypes();
   const { updateCacheData } = useDataCache();
@@ -43,11 +43,14 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   const replyEditorRef = useRef(null);
   const containerRef = useRef(null);
+  const headerRef = useRef(null);
 
   const handleScroll = useCallback(Utils.throttle((event) => {
     if (!event) return;
-    setScrollTop(event.target.scrollTop);
-  }, 30), []);
+    const dom = headerRef.current.getDom();
+    const { height } = dom.getBoundingClientRect();
+    setIsShowStickyHeader(event.target.scrollTop > height);
+  }, 30), [headerRef]);
 
   // api
   const modifyTicket = useCallback((ticketID, data) => {
@@ -215,6 +218,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   return (
     <div className="sea-qa-project-ticket" onScroll={handleScroll}>
       <Header
+        ref={headerRef}
         readonly={!editable}
         title={title}
         id={id}
@@ -224,7 +228,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
         modifyTitle={onTitleChange}
       />
       <Header
-        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 94, 'd-flex': scrollTop >= 94 })}
+        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
         title={title}
         id={id}
         statusOption={statusOption}
