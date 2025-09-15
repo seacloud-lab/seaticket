@@ -23,7 +23,8 @@ from seahub.project.models import Projects, ProjectConnections, GitHubIssuesReco
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, init_seadb_table, \
-    get_file_from_s3_web_crawl, url_to_filename, init_discourse_forum_seadb_table, \
+    get_file_from_s3_web_crawl, url_to_filename
+from seahub.seadb_models.utils import init_seadb_table, init_discourse_forum_seadb_table, \
     list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
     list_connection_view_records
 from seahub.project.constants import ConnectionType, CrawlStatus
@@ -530,7 +531,6 @@ class ProjectConnectionRowDetailView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
             row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, topic_id, username)
-            # Remove the .to_dict() call since row_details are already dictionaries from SeaDB
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
