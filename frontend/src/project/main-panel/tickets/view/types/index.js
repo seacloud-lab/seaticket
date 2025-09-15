@@ -82,7 +82,7 @@ const AllTypes = ({ projectUuid }) => {
     modifyRow: (...params) => modifyType(...params),
     deleteRow: (...params) => deleteType(...params),
 
-  }), [projectUuid, columns, viewsData, createType, typesData]);
+  }), [projectUuid, columns, viewsData, createType, deleteType, typesData]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -170,14 +170,13 @@ const AllTypes = ({ projectUuid }) => {
       callback: () => {
         context.eventBus.dispatch('expand_row', row);
       }
+    }, {
+      label: gettext('Delete type'),
+      callback: () => {
+        deleteType && deleteType(row._id);
+        window.location.reload();
+      }
     });
-
-    if (context.canDeleteRow()) {
-      list.push({
-        label: gettext('Delete type'),
-        callback: () => deleteRows && deleteRows([row._id])
-      });
-    }
     return list;
   }, []);
 
