@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import { Button, Input } from 'reactstrap';
 import classnames from 'classnames';
 import { IconButton, toaster, Icon, Option } from '@/components';
@@ -8,7 +8,7 @@ import { validateTitle } from '@/utils/utils';
 
 import './index.css';
 
-const Header = ({
+const Header = forwardRef(({
   readonly = true,
   className,
   title: propsTitle,
@@ -17,9 +17,11 @@ const Header = ({
   typeOption,
   copyLink,
   modifyTitle,
-}) => {
+}, ref) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [title, setTitle] = useState(propsTitle);
+
+  const domRef = useRef(null);
 
   const handleCancelModify = useCallback(() => {
     setTitle(propsTitle);
@@ -63,8 +65,12 @@ const Header = ({
     setTitle(propsTitle);
   }, [readonly, propsTitle]);
 
+  useImperativeHandle(ref, () => ({
+    getDom: () => domRef.current,
+  }), [domRef]);
+
   return (
-    <div className={classnames('sea-qa-project-ticket-header', className)}>
+    <div className={classnames('sea-qa-project-ticket-header', className)} ref={domRef}>
       <div className="sea-qa-project-ticket-title-wrapper">
         <div className={classnames('sea-qa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
           <div className={classnames('sea-qa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
@@ -105,6 +111,6 @@ const Header = ({
       </div>
     </div>
   );
-};
+});
 
 export default Header;
