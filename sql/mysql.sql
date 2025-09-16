@@ -452,7 +452,7 @@ CREATE TABLE `tickets`  (
   `number` int(11) NOT NULL,
   `creator` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
+  `description` text NOT NULL,
   `status` varchar(50) DEFAULT NULL,
   `type` bigint(20) DEFAULT NULL,
   `priority` tinyint(1) NOT NULL DEFAULT 0,

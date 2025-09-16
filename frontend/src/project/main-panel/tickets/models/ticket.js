@@ -35,7 +35,7 @@ class Ticket {
     this.number = object.number || '';
 
     this.title = object.title || '';
-    this.description = object.description || '';
+    this.content = object.description || '';
     this.status = object.status || TICKET_STATUS.OPEN;
     this.type = String(object.type) || '';
     this.tags = object.tags || [];

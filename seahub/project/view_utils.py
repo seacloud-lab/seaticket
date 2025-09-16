@@ -696,7 +696,7 @@ class ViewFilter(object):
                     q = self.format_filter_predicate(
                         username, q, filter_conjunction, filter_obj, condition)
 
-                elif column_key == 'content':
+                elif column_key == 'description':
                     q = self.format_filter_predicate(
                         username, q, filter_conjunction, filter_obj, condition)
 
