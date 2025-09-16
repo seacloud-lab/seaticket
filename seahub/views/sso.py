@@ -159,7 +159,7 @@ def multi_saml_sso(request):
         }
     if request.method == "POST":
         login_email = request.POST.get('login', '')
-        remember_me = request.POST.get('remember_me', False)
+        remember_me = True if request.POST.get('remember_me', '') == 'on' else False 
         
         if not is_valid_email(login_email):
             render_data['error_msg'] = 'Email invalid.'
@@ -191,7 +191,7 @@ def multi_saml_sso(request):
             render_data['error_msg'] = 'Internal server error. Please contact system administrator.'
             return render(request, template_name, render_data)
 
-        request.session['remember_me'] = bool(remember_me)
+        request.session['remember_me'] = remember_me
         
         return HttpResponseRedirect('/org/custom/%s/saml/login/' % str(org_id))
 
