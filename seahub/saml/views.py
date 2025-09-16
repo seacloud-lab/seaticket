@@ -32,7 +32,7 @@ from seahub.profile.models import Profile
 from seahub.project.models import IdInOrgTuple
 from seahub.utils.licenseparse import user_number_over_limit
 from seahub.organizations.utils import can_org_use_saml
-from seahub.settings import LOGIN_REDIRECT_URL
+from seahub.settings import LOGIN_REDIRECT_URL, LOGIN_REMEMBER_DAYS
 from seahub.saml.signals import saml_sso_failed
 from seahub.organizations.models import Organization, OrgUser
 
@@ -435,6 +435,9 @@ def acs(request, org_id=None):
     request.user = user
     auth.login(request, user)
     _set_subject_id(request.saml_session, authn_response.session_info()["name_id"])
+    
+    if request.session.get('remember_me', False):
+        request.session.set_expiry(LOGIN_REMEMBER_DAYS * 24 * 60 * 60)
 
     if not relay_state:
         logger.warning('The RelayState parameter exists but is empty')
