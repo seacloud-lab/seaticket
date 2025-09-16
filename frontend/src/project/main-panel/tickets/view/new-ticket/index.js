@@ -89,7 +89,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 {gettext('Title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
-              <Input disabled={isSubmitting} value={title} onChange={onTitleChange} />
+              <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
             <div className="sea-qa-project-ticket-content mb-4">
               <Label>{gettext('Description')}</Label>
@@ -105,6 +105,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 isImageUploadOnly={false}
                 isSupportMultipleFiles={true}
                 editorApi={editorAPI}
+                defaultAutoFocus={false}
                 onSaveEditorValue={onDescriptionChange}
               />
             </div>
