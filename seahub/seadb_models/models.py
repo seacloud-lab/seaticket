@@ -72,8 +72,8 @@ DISCOURSE_TOPICS_COLUMNS = [
     DISCOURSE_TOPICS_TABLE.columns.views.to_dict(),
     DISCOURSE_TOPICS_TABLE.columns.category_id.to_dict(),
     DISCOURSE_TOPICS_TABLE.columns.bumped_at.to_dict(),
-    DISCOURSE_TOPICS_TABLE.columns.need_index.to_dict(),
     DISCOURSE_TOPICS_TABLE.columns.deleted.to_dict(),
+    DISCOURSE_TOPICS_TABLE.columns.updated_at.to_dict(),
 ]
 
 

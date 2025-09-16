@@ -22,8 +22,8 @@ from seahub.project.models import Projects, ProjectConnections, GitHubIssuesReco
     ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission, init_seadb_table, \
-    get_file_from_s3_web_crawl, url_to_filename
+    update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
+    url_to_filename
 from seahub.seadb_models.utils import init_seadb_table, init_discourse_forum_seadb_table, \
     list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
     list_connection_view_records
