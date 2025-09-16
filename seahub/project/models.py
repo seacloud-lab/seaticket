@@ -1337,7 +1337,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, type_id=None, priority=0):
+    def create_ticket(self, project_uuid, username, title, description, status, type_id=None, priority=0):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -1347,7 +1347,7 @@ class TicketsManager(models.Manager):
                     number=number,
                     creator=username,
                     title=title,
-                    content=content,
+                    description=description,
                     status=status,
                     type=type_id,
                     priority=priority,
@@ -1371,7 +1371,7 @@ class Tickets(models.Model):
     number = models.IntegerField()
     creator = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
-    content = models.TextField()
+    description = models.TextField()
     status = models.CharField(max_length=50, null=True)
     type = models.BigIntegerField(null=True)
     priority = models.SmallIntegerField(default=0)
@@ -1393,7 +1393,7 @@ class Tickets(models.Model):
             'project_uuid': str(self.project_uuid),
             'number': self.number,
             'title': self.title,
-            'content': self.content,
+            'description': self.description,
             'participants': [],
             'tags': [],
             'status': self.status,

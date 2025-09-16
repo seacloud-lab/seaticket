@@ -45,7 +45,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
     },
     {
       type: CellType.LONG_TEXT,
-      key: 'content',
+      key: 'description',
       name: gettext('Description'),
       editable: true,
       is_required: true,
