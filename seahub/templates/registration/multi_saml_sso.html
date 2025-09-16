@@ -25,6 +25,13 @@
         <p class="error hide"></p>
         {% endif %}
 
+        {% if remember_days > 0 %}
+        <label class="remember login-form-pass-member d-flex align-items-center">
+            <input type="checkbox" name="remember_me" class="vam remember-input" checked="checked" />
+            <span class="vam login-form-pass-member-text ml-1">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+        </label>
+        {% endif %}
+
         <button type="submit" class="submit btn btn-primary btn-block">{% trans "Log In" %}</button>
     </form>
     <div class="login-panel-bottom-container"></div>
