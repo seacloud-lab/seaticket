@@ -6,7 +6,7 @@
     "@gatsbyjs/reach-router": "2.0.1",
     "@seafile/resumablejs": "^1.1.16",
     "@seafile/seafile-calendar": "0.0.32",
-    "@seafile/seafile-editor": "2.0.32",
+    "@seafile/seafile-editor": "^2.0.34",
     "@uiw/codemirror-extensions-langs": "^4.19.4",
     "@uiw/react-codemirror": "^4.19.4",
     "autoprefixer": "7.1.6",
@@ -35,9 +35,9 @@
     "rmc-dialog": "1.1.1",
     "rmc-feedback": "2.0.0",
     "rmc-tabs": "1.2.29",
+    "slugid": "^2.0.0",
     "socket.io-client": "^2.2.0",
-    "unified": "7.0.0",
-    "slugid": "^2.0.0"
+    "unified": "7.0.0"
   },
   "scripts": {
     "start": "node scripts/start.js",
