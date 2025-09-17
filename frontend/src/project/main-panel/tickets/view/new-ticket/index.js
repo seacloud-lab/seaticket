@@ -5,7 +5,7 @@ import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAG
 import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
 import { toaster } from '../../../../../components';
 import { TICKET_PAGE_TYPE } from '../../constants';
-import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
+import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
@@ -121,6 +121,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             <AssigneesSettings isReadonly={isSubmitting} value={assignees} onChange={setAssignees} />
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
+            <RateSettings isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>
         </div>
       </div>
