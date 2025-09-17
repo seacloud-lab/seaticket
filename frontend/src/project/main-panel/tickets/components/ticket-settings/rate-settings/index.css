@@ -1,4 +1,4 @@
-.ticket-types-formatter {
+.ticket-rate-formatter {
   min-height: 38px;
   width: 100%;
   padding: 6px 0;
@@ -9,7 +9,7 @@
   cursor: pointer;
 }
 
-.ticket-types-formatter .option {
+.ticket-rate-formatter .option {
   margin-bottom: 4px;
   margin-top: 4px;
 }
