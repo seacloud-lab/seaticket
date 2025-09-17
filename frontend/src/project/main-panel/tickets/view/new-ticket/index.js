@@ -19,6 +19,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [assignees, setAssignees] = useState([]);
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
+  const [priority, setPriority] = useState(0);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,14 +67,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     const validTags = tags.map(tagId => Number(tagId));
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags: validTags }).then(res => {
+    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags: validTags, priority }).then(res => {
       togglePageType(res.data.ticket.number);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, description, type, assignees, tags]);
+  }, [title, description, type, assignees, tags, priority]);
 
   return (
     <div className="sea-qa-project-new-ticket">
@@ -121,7 +122,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             <AssigneesSettings isReadonly={isSubmitting} value={assignees} onChange={setAssignees} />
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
-            <RateSettings isReadonly={isSubmitting} value={type} onChange={setType} />
+            <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
           </div>
         </div>
       </div>

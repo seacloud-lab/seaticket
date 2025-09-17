@@ -7,9 +7,9 @@
   margin-bottom: 8px;
   border-radius: 3px;
   cursor: pointer;
+  font-size: 13px;
 }
 
-.ticket-rate-formatter .option {
-  margin-bottom: 4px;
-  margin-top: 4px;
+.ticket-rate-formatter .sea-qa-icon-svg-priority-01 {
+  fill: #ff8000;
 }
