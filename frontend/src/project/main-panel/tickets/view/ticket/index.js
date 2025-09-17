@@ -24,7 +24,7 @@ import Header from './header';
 
 import './index.css';
 
-const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
+const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
@@ -248,7 +248,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
             return (
               <Reply
                 key={reply.id}
-                readonly={!editable}
+                readonly={!(reply.creator === user.email || isAdmin)}
                 reply={reply}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}

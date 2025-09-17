@@ -84,6 +84,30 @@ def check_project_permission(username, workspace_owner, project=None):
     return None
 
 
+def check_ticket_permission(username, workspace_owner, ticket=None):
+    """Check ticket permission of a user.
+    """
+    if not username or not workspace_owner or not ticket:
+        return None
+    
+    if ticket.creator == username:
+        return PERMISSION_READ_WRITE
+
+    return check_project_permission(username, workspace_owner)
+
+
+def check_comment_permission(username, workspace_owner, comment=None):
+    """Check comment permission of a user.
+    """
+    if not username or not workspace_owner or not comment:
+        return None
+    
+    if comment.creator == username:
+        return PERMISSION_READ_WRITE
+
+    return check_project_admin_permission(username, workspace_owner)
+
+
 def get_project_owner(project):
     # return the owner name and the existence of such owner of project
     # if the owner is deleted, return true, else false

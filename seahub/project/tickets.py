@@ -20,7 +20,8 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects, Tickets, TicketReplies, \
     TicketTags, TicketAssignees, ProjectTags, ProjectTypes, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    replace_file_url_in_content, upload_files_to_s3
+    replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
+    check_comment_permission
 from seahub.project.constants import TICKET_STATUS
 
 
@@ -403,7 +404,7 @@ class TicketAPIView(APIView):
         """
         Permission:
         1. creator
-        2. group admin, can modify status
+        2. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -537,9 +538,9 @@ class TicketAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_ticket_permission(username, workspace.owner, ticket):
             error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)  
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # upload files
         if file_urls:
@@ -615,7 +616,7 @@ class TicketAPIView(APIView):
     def delete(self, request, project_uuid, ticket_number):
         """
         Permission:
-        1. group admin
+        1. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -630,7 +631,7 @@ class TicketAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -813,6 +814,7 @@ class TicketReplyAPIView(APIView):
         """
         Permission:
         1. creator
+        2. group admin
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -848,6 +850,7 @@ class TicketReplyAPIView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
 
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:
@@ -862,7 +865,7 @@ class TicketReplyAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if username != ticket_reply.creator:
+        if not check_comment_permission(username, workspace.owner, ticket_reply):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -901,7 +904,8 @@ class TicketReplyAPIView(APIView):
     def delete(self, request, project_uuid, ticket_number, reply_number):
         """
         Permission:
-        1. group admin
+        1. creator
+        2. group admin
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -914,12 +918,6 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        # permission check
-        username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:
             error_msg = 'Ticket not found.'
@@ -930,6 +928,12 @@ class TicketReplyAPIView(APIView):
         if not ticket_reply:
             error_msg = 'Reply not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        username = request.user.username
+        if not check_comment_permission(username, workspace.owner, ticket_reply):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             ticket_reply.deleted = True
