@@ -105,7 +105,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 isImageUploadOnly={false}
                 isSupportMultipleFiles={true}
                 editorApi={editorAPI}
-                defaultAutoFocus={false}
+                autoFocus={false}
                 onSaveEditorValue={onDescriptionChange}
               />
             </div>
