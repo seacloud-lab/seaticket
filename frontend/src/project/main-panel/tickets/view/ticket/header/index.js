@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
-import { Button, Input, UncontrolledTooltip } from 'reactstrap';
+import { Button, Input } from 'reactstrap';
 import classnames from 'classnames';
 import { IconButton, toaster, Icon, Option } from '@/components';
 import { gettext } from '@/constants';
@@ -78,16 +78,8 @@ const Header = forwardRef(({
               <Input value={title} autoFocus={true} className="sea-qa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
             ) : (
               <>
-                <span id='sea-qa-project-ticket-title' className="sea-qa-project-ticket-title">{title}</span>
+                <span title={title} className="sea-qa-project-ticket-title">{title}</span>
                 <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
-                <UncontrolledTooltip
-                  placement='bottom'
-                  target='sea-qa-project-ticket-title'
-                  fade={false}
-                  className='sea-metadata-tooltip'
-                >
-                  {title}
-                </UncontrolledTooltip>
               </>
             )}
             {!readonly && !isRenaming && (
