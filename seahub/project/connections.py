@@ -19,13 +19,15 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
-    DiscourseForumTopicsRecord, DiscourseForumRepliesRecord, ConnectionsViews
+    ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
-    update_github_issue_by_webhook, check_project_permission, init_seadb_table, url_to_filename, \
-    list_connection_view_records, get_file_from_s3_web_crawl
+    update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
+    url_to_filename
+from seahub.seadb_models.utils import init_seadb_table, init_discourse_forum_seadb_table, \
+    list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
+    list_connection_view_records
 from seahub.project.constants import ConnectionType, CrawlStatus
-
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -129,6 +131,9 @@ class ProjectConnectionsView(APIView):
             if connection_type == ConnectionType.SITE.value:
                 seadb_api = SeaDBAPI(request.user.username)
                 init_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
+            elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
+                seadb_api = SeaDBAPI(request.user.username)
+                init_discourse_forum_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -403,8 +408,8 @@ class ProjectConnectionDetailsView(APIView):
             records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            records = DiscourseForumTopicsRecord.objects.filter(connection_id=connection_id, deleted=False)[start:end]
-            records = [record.to_dict() for record in records]
+            seadb_api = SeaDBAPI(username)
+            records = list_discourse_forum_topics_records(seadb_api, project_uuid, connection_id, start, limit, username)
         elif project_connection.type == ConnectionType.SITE.value:
             try:
                 view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
@@ -524,10 +529,8 @@ class ProjectConnectionRowDetailView(APIView):
             if not topic_id:
                 error_msg = 'Missing topic_id.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = DiscourseForumRepliesRecord.objects.filter(
-                connection_id=connection_id, topic_id=topic_id
-            ).order_by("post_number")
-            row_details = [item.to_dict() for item in row_details]
+            seadb_api = SeaDBAPI(username)
+            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, topic_id, username)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)

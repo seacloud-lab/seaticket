@@ -233,6 +233,7 @@ WEB_CRAWL_COLUMNS = [
     WEB_CRAWL_TABLE.columns.deleted.to_dict(),
 ]
 
+
 class FilterPredicateTypes(object):
     CONTAINS = 'contains'
     NOT_CONTAIN = 'does_not_contain'
