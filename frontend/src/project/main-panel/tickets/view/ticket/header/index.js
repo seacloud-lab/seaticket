@@ -78,7 +78,7 @@ const Header = forwardRef(({
               <Input value={title} autoFocus={true} className="sea-qa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
             ) : (
               <>
-                <span className="sea-qa-project-ticket-title">{title}</span>
+                <span title={title} className="sea-qa-project-ticket-title">{title}</span>
                 <span className="sea-qa-project-ticket-number">{`#${id}`}</span>
               </>
             )}
