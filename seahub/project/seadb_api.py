@@ -161,3 +161,15 @@ class SeaDBAPI:
         url = f'{self.server_url}/api/v1/{base_id}/metadata'
         response = requests.get(url, headers=headers, timeout=self.timeout)
         return parse_response(response)
+
+    # Create column index
+    def create_column_index(self, base_id, table_id, columns):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/index'
+        data = {
+            'table_id': table_id,
+            'columns': columns,
+        }
+        response = requests.post(url, json=data, headers=headers, timeout=self.timeout)
+        return parse_response(response)

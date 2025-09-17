@@ -3,7 +3,8 @@ import logging
 from seahub.project.constants import WEB_CRAWL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.seadb_models.models import DISCOURSE_TOPICS_COLUMNS, DISCOURSE_REPLIES_COLUMNS
+from seahub.seadb_models.models import DISCOURSE_TOPICS_COLUMNS, DISCOURSE_REPLIES_COLUMNS, \
+    DISCOURSE_TOPICS_TABLE, DISCOURSE_REPLIES_TABLE
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,18 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, username, connecti
             'column_type': column['type'],
         }
         seadb_api.add_column(project_uuid, topics_table_id, mapped_column)
-    
+    # Create topic columns index for seadb
+    topics_table = DISCOURSE_TOPICS_TABLE
+    seadb_api.create_column_index(
+        project_uuid,
+        topics_table_id,
+        [
+            topics_table.columns.topic_id.name,
+            topics_table.columns.deleted.name,
+            topics_table.columns.updated_at.name,
+        ],
+    )
+
     # Create replies table
     replies_table_name = f"{connection_id}_ds_replies"
     res = seadb_api.create_table(project_uuid, replies_table_name)
@@ -44,7 +56,19 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, username, connecti
         }
         seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
 
+    # Create replies table index for seadb
+    replies_table = DISCOURSE_REPLIES_TABLE
+    seadb_api.create_column_index(
+        project_uuid,
+        replies_table_id,
+        [
+            replies_table.columns.topic_id.name,
+            replies_table.columns.post_number.name,
+            replies_table.columns.updated_at.name,
+        ],
+    )
 
+            
 def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
     sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
     try:
