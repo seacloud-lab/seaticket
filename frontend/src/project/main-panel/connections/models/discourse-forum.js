@@ -1,6 +1,6 @@
 class DiscourseForum {
   constructor(object) {
-    this._id = object.id || '';
+    this._id = object._pk || '';
     this.topic_id = object.topic_id || '';
     this.title = object.title || '';
     this.slug = object.slug || '';
