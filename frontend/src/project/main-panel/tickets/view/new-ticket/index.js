@@ -119,10 +119,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </div>
           </div>
           <div className="sea-qa-project-ticket-other-settings">
+            <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
             <AssigneesSettings isReadonly={isSubmitting} value={assignees} onChange={setAssignees} />
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
-            <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
           </div>
         </div>
       </div>
