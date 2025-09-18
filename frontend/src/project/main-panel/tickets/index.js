@@ -35,7 +35,7 @@ const Page = () => {
     return (<TagTickets { ...props } tagID={childrenPageType} />);
   }
   if (pageType === TICKET_PAGE_TYPE.TYPES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} />);
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
     return (<TypeTickets { ...props } typeID={childrenPageType}/>);
   }
   if (pageType === TICKET_PAGE_TYPE.ALL) {

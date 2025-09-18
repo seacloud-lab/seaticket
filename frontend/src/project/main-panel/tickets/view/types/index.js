@@ -8,7 +8,7 @@ import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
-const AllTypes = ({ projectUuid }) => {
+const AllTypes = ({ projectUuid, permission }) => {
   const { isLoading, typesData, createType, modifyType, deleteType, reload } = useTypes();
   const { pageType, togglePageType } = useTicketsPage();
 
@@ -173,8 +173,7 @@ const AllTypes = ({ projectUuid }) => {
     }, {
       label: gettext('Delete type'),
       callback: () => {
-        deleteType && deleteType(row._id);
-        window.location.reload();
+        deleteRows && deleteRows([row._id]);
       }
     });
     return list;
@@ -211,6 +210,7 @@ const AllTypes = ({ projectUuid }) => {
         viewID="0000"
         className="sea-types-metadata"
         api={api}
+        permission={permission}
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={['views', 'search', 'sorts']}
