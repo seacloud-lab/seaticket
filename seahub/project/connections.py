@@ -23,7 +23,7 @@ from seahub.project.models import Projects, ProjectConnections, GitHubIssuesReco
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
-    url_to_filename
+    url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_seadb_table, init_discourse_forum_seadb_table, \
     list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
     list_connection_view_records
@@ -488,6 +488,61 @@ class GithubWebhookView(APIView):
         params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
         try:
             update_github_issue_by_webhook(params)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+class DiscourseWebhookView(APIView):
+    throttle_classes = (UserRateThrottle,)
+
+    def verify_signature(self, signature, msg, secret):
+        if not signature:
+            return True
+
+        sha_name, signature = signature.split('=')
+        if sha_name != 'sha256':
+            return False
+
+        mac = hmac.new(secret.encode(), msg=msg, digestmod=hashlib.sha256)
+        return hmac.compare_digest(mac.hexdigest(), signature)
+
+    def post(self, request):
+        connection_id = request.query_params.get('connection_id')
+        if not connection_id:
+            error_msg = 'Missing connection_id.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection or not project_connection.is_active:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not project_connection.is_active:
+            return Response({'warning': 'connection is inactive,request ignored'}, status=status.HTTP_200_OK)
+
+        msg = request.body
+        config = decrypt_config(json.loads(project_connection.config))
+        secret = config.get('webhook_secret')
+        signature = request.headers.get('X-Discourse-Event-Signature')
+
+        if not self.verify_signature(signature, msg, secret):
+            error_msg = 'Signature verification failed.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        event = request.headers.get('X-Discourse-Event')
+        if not event:
+            error_msg = 'X-Discourse-Event header missing.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        payload = request.data
+
+        params = {'connection_id': connection_id, 'data': payload, 'event_type': event}
+        try:
+            update_discourse_topic_by_webhook(params)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

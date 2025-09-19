@@ -5,7 +5,7 @@ from .views import project_view
 
 from .apis import ProjectRelatedUsersView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
-    ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView
+    ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
@@ -38,6 +38,7 @@ urlpatterns = [
 
     #sync data
     re_path(r'webhook/github', GithubWebhookView.as_view(), name='github_webhook'),
+    re_path(r'webhook/discourse', DiscourseWebhookView.as_view(), name='discourse_webhook'),
 
     # connections
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v2.1-connections'),
