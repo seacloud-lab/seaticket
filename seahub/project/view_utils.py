@@ -537,6 +537,14 @@ class NumberOperator(Operator):
         })
 
 
+class SelectOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.IS,
+    ]
+    def __init__(self, column, filter_item):
+        super(SelectOperator, self).__init__(column, filter_item)
+
+
 class ViewFilter(object):
 
     def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
@@ -870,6 +878,16 @@ def _get_operator_by_type(column_type):
         PropertyTypes.FLOAT,
     ]:
         return NumberOperator
+
+    if column_type in [
+        PropertyTypes.SINGLE_SELECT
+    ]:
+        return SelectOperator
+
+    if column_type in [
+        PropertyTypes.MULTIPLE_SELECT
+    ]:
+        return SelectOperator
 
     return None
 

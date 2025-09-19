@@ -7,7 +7,7 @@ class GithubIssue {
     this.body = object.body || '';
     this.status = object.state || 'open';
     this.status_reason = object.state_reason || 'open';
-    this.labels = object.labels || '';
+    this.labels = object.labels || [];
     this.type = object.issue_type || '';
     this.author = object.author || '';
     this.assignees = object.assignees || '';
@@ -20,13 +20,10 @@ class GithubIssue {
     this.need_index = object.need_index || '';
     this.deleted = Boolean(object.deleted);
 
-    if (this.labels) {
-      try {
-        const value = JSON.parse(this.labels);
-        this.labels = value.join(', ');
-      } catch {
-        this.labels = '';
-      }
+    if (Array.isArray(this.labels) && this.labels.length > 0) {
+      this.labels = this.labels.join(', ');
+    } else {
+      this.labels = '';
     }
   }
 }

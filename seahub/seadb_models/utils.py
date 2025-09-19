@@ -131,21 +131,21 @@ def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, li
     return records
 
 
-def list_connection_view_records(seadb_api, project_uuid, connection_id, view, start, limit, username):
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, str(connection_id))
+    table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
         return []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     hidden_columns = view_copy.get('hidden_columns', [])
-    sql = view_data_2_sql(connection_id, columns, hidden_columns, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, columns, hidden_columns, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
-        logger.error(f'SeaDB query error for connection {connection_id}: {e}')
+        logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
     return records
 

@@ -18,7 +18,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
-from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
+from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
@@ -406,10 +406,18 @@ class ProjectConnectionDetailsView(APIView):
 
         seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
-            records = [record.to_dict() for record in records]
+            try:
+                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-            seadb_api = SeaDBAPI(username)
+            if not view:
+                error_msg = 'Connection view %s not found.' % view_id
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            table_name = str(connection_id)+'_github_issues'
             records = list_connection_view_records(
                 seadb_api, project_uuid, table_name, view, start, limit, username
             )
