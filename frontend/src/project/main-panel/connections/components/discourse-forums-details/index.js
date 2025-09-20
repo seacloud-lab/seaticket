@@ -1,6 +1,6 @@
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
-import { EmptyTip } from '@/components';
+import { EmptyTip, ModalHeader } from '@/components';
 import { mediaUrl } from '@/constants';
 
 import './index.css';
