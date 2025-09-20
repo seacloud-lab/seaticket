@@ -81,10 +81,41 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     );
   }, [name, type, config, onSubmit, onToggle]);
 
-  const step = STEPS[stepIndex];
   const typeOption = CONNECTION_TYPES.find(i => i.type === type);
-  const isGithub = type === CONNECTION_TYPE.GITHUB_ISSUE;
-  const customSteps = isGithub ? STEPS : [STEPS[0], STEPS[1]];
+  const isGithub = useMemo(() => type === CONNECTION_TYPE.GITHUB_ISSUE, [type]);
+  const isDiscourse = useMemo(() => type === CONNECTION_TYPE.DISCOURSE_FORUM, [type]);
+
+  const customSteps = useMemo(() => {
+    if (isGithub) {
+      return [
+        STEPS[0], // TYPE
+        STEPS[1], // CONFIG
+        STEPS[2] // GITHUB
+      ];
+    } else if (isDiscourse) {
+      return [
+        STEPS[0], // TYPE
+        STEPS[1], // CONFIG
+        STEPS[3] // DISCOURSE
+      ];
+    } else {
+      return STEPS.slice(0, 2);
+    }
+  }, [isGithub, isDiscourse]);
+
+  const step = customSteps[stepIndex];
+  const handleSubmitDiscourse = useCallback(() => {
+    setSubmitting(true);
+    onSubmit({ type, name: name.trim(), config }, () => {
+      setSubmitting(false);
+    },
+    true,
+    (newRecord) => {
+      setStepIndex(stepIndex + 1);
+      setNewRecord(newRecord);
+    }
+    );
+  }, [name, type, config, onSubmit, stepIndex]);
 
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-new-connection-dialog">
@@ -169,11 +200,23 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           <div className="sea-qa-project-new-connection-config">
             <FormGroup>
               <Label>{gettext('Connection URL')}</Label>
-              <CopyInput value={`${server}/webhook/github/connection_id=${newRecord.id}`} />
+              <CopyInput value={`${server}/webhook/github/?connection_id=${newRecord.id}`} />
             </FormGroup>
             <FormGroup>
               <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
               <TextInput value={config['webhook_secret']} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
+            </FormGroup>
+          </div>
+        )}
+        {isDiscourse && step.key === STEP.DISCOURSE && (
+          <div className="sea-qa-project-new-connection-config">
+            <FormGroup>
+              <Label>{gettext('Webhook URL')}</Label>
+              <CopyInput value={newRecord ? `${server}/webhook/discourse/?connection_id=${newRecord.id}` : gettext('Loading...')} />
+            </FormGroup>
+            <FormGroup>
+              <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
+              <TextInput value={config['webhook_secret'] || ''} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
             </FormGroup>
           </div>
         )}
@@ -187,7 +230,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
       </ModalFooter>
       }
-      {!isGithub &&
+      {isDiscourse &&
+      <ModalFooter>
+        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting}>{gettext('Next')}</Button>}
+        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+      </ModalFooter>
+      }
+      {!isGithub && !isDiscourse &&
       <ModalFooter>
         {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
         {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}

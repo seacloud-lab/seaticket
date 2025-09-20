@@ -203,6 +203,30 @@ def update_github_issue_by_webhook(params):
     resp.raise_for_status()
     return resp
 
+
+def update_discourse_topic_by_webhook(params):
+    connection_id = params.get('connection_id')
+    data = params.get('data')
+    event_type = params.get('event_type')
+
+    payload = {'exp': int(time.time()) + 300, }
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/discourse/')
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {
+        "Authorization": "Token %s" % token,
+        "X-Discourse-Event": event_type,
+    }
+    query_params = {'connection_id': connection_id}
+    resp = requests.post(
+        url,
+        params=query_params,
+        json=data,
+        headers=headers,
+    )
+    resp.raise_for_status()
+    return resp
+
+
 def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
