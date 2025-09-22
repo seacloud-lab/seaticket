@@ -4,12 +4,13 @@ import logging
 import jwt
 import time
 import requests
+import hashlib
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
-    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees
+    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees, ConnectionsViews, TicketViews
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -361,8 +362,10 @@ def delete_project(project):
         logger.error('delete project: %s error: %s', str(project_uuid), e)
 
     try:
+        ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         ProjectTags.objects.filter(project_uuid=project_uuid).delete()
         tickets = Tickets.objects.filter(project_uuid=project_uuid)
+        TicketViews.objects.filter(project_uuid=project_uuid)
         ticket_id_list = [ticket.id for ticket in tickets]
         tickets.delete()
         TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()

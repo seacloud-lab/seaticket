@@ -435,7 +435,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `created_at` datetime(6) NOT NULL,
   `last_sync_time` datetime(6) NULL,
   `indexed_at` datetime(6) NULL,
-  `project_id` int(11) NOT NULL,
+  `project_uuid` varchar(32) NOT NULL,
   `status` longtext NOT NULL,
   `deleted` tinyint(1) NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   KEY `project_connection_deleted_5n3d6`(`deleted`),
   KEY `project_connection_is_active` (`is_active`),
-  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `tickets`  (
@@ -488,7 +488,7 @@ CREATE TABLE `ticket_views`  (
   `project_uuid` varchar(32) NOT NULL,
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `ticket_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  KEY `ticket_views_project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `ticket_tags`  (
@@ -505,7 +505,7 @@ CREATE TABLE `connection_views`  (
   `connection_id` int(11),
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `connection_views_connection_id_568ecbbf_fk_project_uuid` FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  KEY `connection_views_connection_id`(`connection_id`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `project_tags`  (

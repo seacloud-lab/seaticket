@@ -317,7 +317,7 @@ class Projects(models.Model):
 
 
 class DeletedProjects(models.Model):
-    project_uuid = models.UUIDField(unique=True, default=uuid.uuid4)
+    project_uuid = models.UUIDField(unique=True)
 
     class Meta:
         db_table = 'deleted_projects'
@@ -495,7 +495,7 @@ class ProjectConnections(models.Model):
     """ Project connections table
     """
 
-    project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, to_field="uuid", db_column="project_uuid")
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     config = models.TextField()
@@ -528,15 +528,15 @@ class ProjectConnections(models.Model):
 
 
 class ConnectionsView(object):
-    
+
     def __init__(self, name, view_type='table', config={}, project_connection_type = ''):
         self.name = name
         self.type = view_type
         self.config = config
         self.details = {}
         self.project_connection_type = project_connection_type
-        
-        self.init_view()            
+
+        self.init_view()
 
     def init_view(self):
         self.details = {
@@ -572,7 +572,7 @@ class ConnectionsViewsManager(models.Manager):
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(connection_id=connection_id).first()
-           
+
         if not record:
             record = self.create(
                 project_uuid=project_uuid,
@@ -734,7 +734,7 @@ class ConnectionsViewsManager(models.Manager):
 
 
 class ConnectionsViews(models.Model):
-    project_uuid = models.CharField(max_length=32, db_index=True)
+    project_uuid = models.UUIDField(db_index=True)
     connection_id = models.IntegerField()
     details = models.TextField()
 
@@ -793,7 +793,7 @@ class GitHubIssuesRecordManager(models.Manager):
         if not sorts:
                 sorts = [{ 'column_key': 'created_at', 'sort_type': 'down' }]
         sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
-        
+
         return self.filter(q).order_by(', '.join(sorts))[start: end]
 
 
@@ -1273,7 +1273,7 @@ class TicketViewsManager(models.Manager):
 
 
 class TicketViews(models.Model):
-    project_uuid = models.CharField(max_length=32, db_index=True)
+    project_uuid = models.UUIDField(db_index=True)
     details = models.TextField()
 
     objects = TicketViewsManager()

@@ -370,7 +370,7 @@ class ProjectConnectionDetailsView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         # argument check
         view_id = request.GET.get('view_id', '')
         if not view_id:
@@ -403,7 +403,7 @@ class ProjectConnectionDetailsView(APIView):
             start = 0
             limit = 1000
         end = start + limit
-        
+
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
             records = [record.to_dict() for record in records]
@@ -417,7 +417,7 @@ class ProjectConnectionDetailsView(APIView):
                 logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
             if not view:
                 error_msg = 'Connection view %s not found.' % view_id
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
