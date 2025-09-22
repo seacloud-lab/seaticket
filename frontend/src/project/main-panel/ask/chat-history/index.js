@@ -8,7 +8,7 @@ import { CHAT_MESSAGE_TYPE } from '../constants';
 import './index.css';
 
 const ChatHistory = ({ chat }) => {
-  const { messages, isUserSpeak, type } = chat;
+  const { message, isUserSpeak, type } = chat;
   const ref = useRef(null);
 
   const getMessageHTML = useCallback(() => {
@@ -16,11 +16,16 @@ const ChatHistory = ({ chat }) => {
     return ref.current.getHTML();
   }, []);
 
-  if (!Array.isArray(messages) && messages.length === 0) return null;
+  const getAnswer = useCallback(() => {
+    if (!ref?.current) return '';
+    return ref.current.getAnswer();
+  }, []);
+
+  if (Object.keys(message).length === 0) return null;
   return (
     <MessageBox isUserSpeak={isUserSpeak}>
-      <CommonMessage messages={messages} ref={ref} />
-      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations messages={messages} getMessageHTML={getMessageHTML} />)}
+      <CommonMessage message={message} ref={ref} />
+      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations getAnswer={getAnswer} getMessageHTML={getMessageHTML} />)}
     </MessageBox>
   );
 };
