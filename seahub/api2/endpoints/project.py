@@ -395,6 +395,9 @@ class SearchView(APIView):
             count = 20
 
         connection_ids = request.data.get('connection_ids')
+        if not connection_ids:
+            error_msg = 'connection_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
