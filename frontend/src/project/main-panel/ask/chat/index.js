@@ -63,9 +63,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       return;
     }
     const newChatHistories = chatHistories.slice(0);
-    const messages = [{ type: CHAT_MESSAGE_TYPE.TEXT, value: validMessage }];
     newChatHistories.push(new ChatMessage({
-      messages: messages,
+      message: { [CHAT_MESSAGE_TYPE.TEXT]: validMessage },
       isUserSpeak: true,
     }));
     updateChatHistories(newChatHistories, false, () => {
@@ -111,7 +110,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         if (item.role === 'user') {
           return new ChatMessage({
             _id: item.id,
-            messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: item.content }],
+            message: { [CHAT_MESSAGE_TYPE.TEXT]: item.content },
             isUserSpeak: true,
           });
         }
@@ -130,13 +129,13 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           console.error(e);
           msgContent = { answer: item.content, sources: [] };
         }
-        const newChatData = [
-          { type: CHAT_MESSAGE_TYPE.ANSWER, value: msgContent.answer },
-          { type: CHAT_MESSAGE_TYPE.SOURCES, value: msgContent.sources },
-        ];
+        const newChatData = {
+          [CHAT_MESSAGE_TYPE.ANSWER]: msgContent.answer,
+          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
+        };
         return new ChatMessage({
           _id: item.id,
-          messages: newChatData,
+          message: newChatData,
           type: CHAT_MESSAGE_TYPE.GROUP
         });
       });
@@ -181,7 +180,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       if (error) {
         const errorMessage = Utils.getErrorMsg(error);
         newChatHistories.push(new ChatMessage({
-          messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: gettext(errorMessage) }],
+          message: { [CHAT_MESSAGE_TYPE.TEXT]: gettext(errorMessage) },
           type: CHAT_MESSAGE_TYPE.ERROR
         }));
         updateChatHistories(newChatHistories, false);
@@ -190,20 +189,17 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
-      let newChatData = [];
+      let newChatData = {
+        [CHAT_MESSAGE_TYPE.ANSWER]: answer,
+        [CHAT_MESSAGE_TYPE.SOURCES]: sources,
+      };
       if (resolveType === AI_RESOLVE_TYPE.AGENT) {
-        newChatData.push({ type: CHAT_MESSAGE_TYPE.THOUGHT_PROCESS, value: memory });
+        newChatData[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS] = memory;
       }
-      newChatData = [
-        ...newChatData,
-        { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
-        { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
-      ];
-
       newChatHistories[newChatHistories.length - 1]._id = userMessageId;
       newChatHistories.push(new ChatMessage({
         _id: aiReplyMessageId,
-        messages: newChatData,
+        message: newChatData,
         type: CHAT_MESSAGE_TYPE.GROUP
       }));
       updateChatHistories(newChatHistories, false);

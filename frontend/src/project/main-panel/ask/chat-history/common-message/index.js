@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef } from 'react';
+import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
@@ -8,10 +8,31 @@ import ThoughtProcess from '../thought-process';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ messages }, ref) => {
+const CommonMessage = forwardRef(({ message }, ref) => {
   const contentRef = useRef(null);
 
   const [answerType, setAnswerType] = useState('rich-text');
+
+  const answer = useMemo(() => {
+    if (Object.keys(message).length === 0) return '';
+    let value = message[CHAT_MESSAGE_TYPE.ANSWER];
+    const sources = message[CHAT_MESSAGE_TYPE.SOURCES];
+    if (value && sources.length > 0) {
+      const regex0 = /\[((?:Source|Reference|Document) \d+(?:, (?:Source|Reference|Document) \d+)*)\]/g;
+      value = value.replace(regex0, (match, content) => content.split(', ').map(item => `[${item}]`).join(''));
+
+      const regex = /\[(Reference|Source|Document)\s+(\d+)\]/g;
+      value = value.replace(regex, (match, text, orderString) => {
+        const order = Number(orderString);
+        const source = sources[order - 1];
+        if (!source) return '';
+        return `[${source.title || source.url}][${order}]`;
+      });
+      const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
+      value = value + `\n## ${gettext('Sources')}\n${sourcesString}` ;
+    }
+    return value;
+  }, [message]);
 
   const beforeAnswerRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
@@ -22,60 +43,22 @@ const CommonMessage = forwardRef(({ messages }, ref) => {
   useImperativeHandle(ref, () => ({
 
     getHTML: () => {
-      if (!Array.isArray(messages) || messages.length === 0) return '';
+      if (!answer) return '';
       return contentRef.current.innerHTML;
     },
 
-  }), [messages, contentRef]);
-
-  if (!Array.isArray(messages) || messages.length === 0) return null;
-  let thoughtProcessMessages = [];
-  let otherMessages = [];
-  messages.forEach(message => {
-    if (Object.prototype.toString.call(message).slice(8, -1) === 'Object' && message.type === CHAT_MESSAGE_TYPE.THOUGHT_PROCESS) {
-      thoughtProcessMessages.push(message);
-    } else {
-      otherMessages.push(message);
-    }
-  });
+    getAnswer: () => answer,
+  }), [message, answer, contentRef]);
 
   return (
     <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
-      <ThoughtProcess message={thoughtProcessMessages[0]} />
-      {otherMessages.map((message, messageIndex) => {
-        const messageType = Object.prototype.toString.call(message).slice(8, -1);
-        if (messageType === 'String') return (<Fragment key={`sea-qa-ai-ask-message-${messageIndex}`}>{message}</Fragment>);
-        if (messageType === 'Object') {
-          const { type, value } = message;
-          if (type === CHAT_MESSAGE_TYPE.TEXT) return (<Fragment key={`sea-qa-ai-ask-message-${messageIndex}`}>{value}</Fragment>);
-          if (type === CHAT_MESSAGE_TYPE.ANSWER) {
-            return (
-              <div className={classnames('sea-qa-ai-ask-message-answer', answerType)} key={`sea-qa-ai-ask-message-${messageIndex}`}>
-                <CustomizeMarkdownViewer value={value} showTOC={false} beforeRenderCallback={beforeAnswerRenderCallback} />
-              </div>
-            );
-          }
-          if (type === CHAT_MESSAGE_TYPE.SOURCES && value.length > 0) {
-            return (
-              <div className="sea-qa-ai-ask-message-sources" key={`sea-qa-ai-ask-message-${messageIndex}`}>
-                <h2 className="sea-qa-ai-ask-message-sources-title">{gettext('Sources')}</h2>
-                <div className="sea-qa-ai-ask-message-sources-container w-100">
-                  {value.map((v, index) => {
-                    return (
-                      <p className="sea-qa-ai-ask-message-source" key={index} title={v.title}>
-                        <span className="">{`[${index + 1}]`}&ensp;</span>
-                        <a href={v.url} rel="noreferrer" target="_blank">{v.title}</a>
-                      </p>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          }
-          return null;
-        }
-        return null;
-      })}
+      <ThoughtProcess message={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
+      {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
+      {answer && (
+        <div className={classnames('sea-qa-ai-ask-message-answer', answerType)}>
+          <CustomizeMarkdownViewer value={answer} showTOC={false} beforeRenderCallback={beforeAnswerRenderCallback} />
+        </div>
+      )}
     </div>
   );
 
