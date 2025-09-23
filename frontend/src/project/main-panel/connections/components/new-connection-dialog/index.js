@@ -60,13 +60,30 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       },
       newRecord.id
       );
+    } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      if (newRecord) {
+        if (!config.webhook_secret) {
+          onToggle();
+          return;
+        }
+        modifyConnection({ name: name.trim(), config }, () => {
+          setSubmitting(false);
+        },
+        newRecord.id
+        );
+      } else {
+        setSubmitting(true);
+        onSubmit({ type, name: name.trim(), config }, () => {
+          setSubmitting(false);
+        });
+      }
     } else {
       setSubmitting(true);
       onSubmit({ type, name: name.trim(), config }, () => {
         setSubmitting(false);
       });
     }
-  }, [name, type, config, onSubmit, onToggle]);
+  }, [name, type, config, onSubmit, onToggle, newRecord, modifyConnection]);
 
   const handleSubmitGithub = useCallback(() => {
     setSubmitting(true);
