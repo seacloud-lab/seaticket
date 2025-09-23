@@ -52,7 +52,7 @@ const CommonMessage = forwardRef(({ message }, ref) => {
 
   return (
     <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
-      <ThoughtProcess message={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
+      <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
       {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
       {answer && (
         <div className={classnames('sea-qa-ai-ask-message-answer', answerType)}>

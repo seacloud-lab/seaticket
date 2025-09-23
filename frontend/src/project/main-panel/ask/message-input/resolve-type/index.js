@@ -43,7 +43,7 @@ const ResolveType = ({ resolveType, updateResolveType }) => {
               {AI_RESOLVE_TYPES.map(type => {
                 const isSelected = resolveType === type.value;
                 return (
-                  <div onClick={() => resetResolveType(type.value)} className="dropdown-item sea-qa-dropdown-item">
+                  <div key={type.value} onClick={() => resetResolveType(type.value)} className="dropdown-item sea-qa-dropdown-item">
                     <span>{type.label}</span>
                     {isSelected && (<IconButton icon='check'/>)}
                   </div>
