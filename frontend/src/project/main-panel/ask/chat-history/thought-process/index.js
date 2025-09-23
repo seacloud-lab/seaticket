@@ -5,14 +5,14 @@ import ThoughtProcessDialog from './thought-process-dialog';
 
 import './index.css';
 
-const ThoughtProcess = ({ message }) => {
+const ThoughtProcess = ({ value }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
   const openDetails = useCallback(() => {
     setIsShowDetails(true);
   }, []);
 
-  if (!message) return null;
+  if (!value) return null;
 
   return (
     <>
@@ -21,7 +21,7 @@ const ThoughtProcess = ({ message }) => {
         <Icon symbol="open-in-new" />
       </div>
       {isShowDetails && (
-        <ThoughtProcessDialog value={message.value} onToggle={() => setIsShowDetails(false)} />
+        <ThoughtProcessDialog value={value} onToggle={() => setIsShowDetails(false)} />
       )}
     </>
   );
