@@ -153,6 +153,28 @@ class SeaDBAPI:
         }
         response = requests.delete(url, json=data, headers=headers, timeout=self.timeout)
         return parse_response(response)
+    
+    def add_column_option(self, base_id, option_data):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/column-options'
+        response = requests.post(url, json=option_data, headers=headers, timeout=self.timeout)
+        return parse_response(response)
+    
+
+    def delete_column_option(self, base_id, option_data):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/column-options'
+        response = requests.delete(url, json=option_data, headers=headers, timeout=self.timeout)
+        return parse_response(response)
+    
+    def update_column_option(self, base_id, option_data):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/column-options'
+        response = requests.put(url, json=option_data, headers=headers, timeout=self.timeout)
+        return parse_response(response)
 
     # metadata
     def get_base_metadata(self, base_id):

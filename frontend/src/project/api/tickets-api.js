@@ -96,9 +96,6 @@ class TicketsAPI {
     Object.keys(update).forEach(key => {
       let value = update[key];
       if (value && typeof value === 'object') {
-        if (key === 'tags') {
-          value = value.map(v => Number(v));
-        }
         value = JSON.stringify(value);
       }
       if (value === null) {

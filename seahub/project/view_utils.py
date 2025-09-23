@@ -11,260 +11,6 @@ from seahub.seadb_models.models import PropertyTypes, FormulaResultType, Duratio
 
 logger = logging.getLogger(__name__)
 
-class ViewFilter(object):
-
-    def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
-        value = filter_obj['filter_term']
-        filter_predicate = filter_obj['filter_predicate']
-        current_filter = Q()
-
-        try:
-            if filter_predicate == FilterPredicateTypes.HAS_ALL_OF or \
-                    filter_predicate == FilterPredicateTypes.HAS_ANY_OF or \
-                    filter_predicate == FilterPredicateTypes.IS_ANY_OF:
-                current_filter = Q(**{f'{condition}__in': value})
-
-            elif filter_predicate == FilterPredicateTypes.HAS_NONE_OF or \
-                    filter_predicate == FilterPredicateTypes.IS_NONE_OF:
-                current_filter = ~Q(**{f'{condition}__in': value})
-
-            elif filter_predicate == FilterPredicateTypes.IS_EXACTLY or \
-                    filter_predicate == FilterPredicateTypes.IS or \
-                    filter_predicate == FilterPredicateTypes.EQUAL or \
-                    filter_predicate == FilterPredicateTypes.IS_WITHIN:
-                current_filter = Q(**{condition: value})
-
-            elif filter_predicate == FilterPredicateTypes.IS_NOT or \
-                    filter_predicate == FilterPredicateTypes.NOT_EQUAL:
-                current_filter = ~Q(**{condition: value})
-
-            elif filter_predicate == FilterPredicateTypes.CONTAINS:
-                current_filter = Q(**{f'{condition}__icontains': value})
-
-            elif filter_predicate == FilterPredicateTypes.NOT_CONTAIN:
-                current_filter = ~Q(**{f'{condition}__icontains': value})
-
-            elif filter_predicate == FilterPredicateTypes.LESS or \
-                    filter_predicate == FilterPredicateTypes.IS_BEFORE:
-                current_filter = Q(**{f'{condition}__lt': value})
-
-            elif filter_predicate == FilterPredicateTypes.GREATER or \
-                    filter_predicate == FilterPredicateTypes.IS_AFTER:
-                current_filter = Q(**{f'{condition}__gt': value})
-
-            elif filter_predicate == FilterPredicateTypes.LESS_OR_EQUAL or \
-                    filter_predicate == FilterPredicateTypes.IS_ON_OR_BEFORE:
-                current_filter = Q(**{f'{condition}__lte': value})
-
-            elif filter_predicate == FilterPredicateTypes.GREATER_OR_EQUAL or \
-                    filter_predicate == FilterPredicateTypes.IS_ON_OR_AFTER:
-                current_filter = Q(**{f'{condition}__gte': value})
-
-            elif filter_predicate == FilterPredicateTypes.EMPTY:
-                if filter_obj.get('empty_only_null', False):
-                    current_filter = Q(
-                        **{f'{condition}__isnull': True})
-                elif filter_obj.get('empty_only_zero', False):
-                    current_filter = Q(
-                        **{f'{condition}': 0})
-                else:
-                    current_filter = Q(
-                        **{f'{condition}__isnull': True}) | Q(**{condition: ''})
-
-            elif filter_predicate == FilterPredicateTypes.NOT_EMPTY:
-                if filter_obj.get('empty_only_null', False):
-                    current_filter = Q(
-                        **{f'{condition}__isnull': False})
-                elif filter_obj.get('empty_only_zero', False):
-                    current_filter = ~Q(
-                        **{f'{condition}': 0})
-                else:
-                    current_filter = Q(
-                        **{f'{condition}__isnull': False}) & ~Q(**{condition: ''})
-
-            elif filter_predicate == FilterPredicateTypes.INCLUDE_ME or \
-                    filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
-                current_filter = Q(**{f'{condition}__in': [username]})
-
-            else:
-                current_filter = Q(**{condition: value})
-        except Exception as e:
-            logger.error(e)
-
-        if filter_conjunction.lower() == 'or':
-            q = q | current_filter
-        else:
-            q = q & current_filter
-
-        return q
-
-    def filter_tickets_by_view(self, username, view):
-        from seahub.project.models import TicketTags, TicketParticipants, TicketAssignees
-
-        basic_filters = view.get('basic_filters', [])
-        filters = view.get('filters', [])
-        filter_conjunction = view.get('filter_conjunction', 'OR')
-        sorts = view.get('sorts', [])
-        basic_q = Q()
-        q = Q()
-
-        for filter_obj in basic_filters:
-            try:
-                basic_filter_conjunction = 'and'
-                column_key = filter_obj.get('column_key')
-                value = filter_obj['filter_term']
-                filter_predicate = filter_obj['filter_predicate']
-                condition = column_key
-                if column_key == 'status' or column_key == 'type':
-                    if value == []:
-                        continue
-                    basic_q = self.format_filter_predicate(
-                        username, basic_q, basic_filter_conjunction, filter_obj, condition)
-                elif column_key == 'tags':
-                    if value == []:
-                        continue
-                    tags = TicketTags.objects.filter(tag_id__in=value)
-                    if tags:
-                        ticket_ids = [tag.ticket_id for tag in tags]
-                        condition = 'id'
-                        filter_obj['filter_term'] = ticket_ids
-                        basic_q = self.format_filter_predicate(
-                            username, basic_q, basic_filter_conjunction, filter_obj, condition)
-            except Exception as e:
-                logger.error(e)
-
-        for filter_obj in filters:
-            try:
-                column_key = filter_obj.get('column_key')
-                value = filter_obj['filter_term']
-                filter_predicate = filter_obj['filter_predicate']
-                condition = column_key
-                if column_key == 'type':
-                    if value == '':
-                        value = None
-                    elif isinstance(value, list):
-                        try:
-                            value = [int(v) for v in value]
-                        except ValueError:
-                            pass
-                    else:
-                        try:
-                            value = int(value)
-                        except ValueError:
-                            pass
-                    filter_obj['filter_term'] = value
-                    filter_obj['empty_only_null'] = True
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'assignees':
-                    if value == '':
-                        value = None
-                    assignees = TicketAssignees.objects.filter(
-                        assignee__in=value)
-                    ticket_ids = [assignee.ticket_id for assignee in assignees]
-                    condition = 'id'
-                    filter_obj['filter_term'] = ticket_ids
-                    if filter_predicate == FilterPredicateTypes.IS_EXACTLY:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_ANY_OF
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'participants':
-                    if value == '':
-                        value = None
-                    participants = TicketParticipants.objects.filter(
-                        participant__in=value)
-                    ticket_ids = [
-                        participant.ticket_id for participant in participants]
-                    condition = 'id'
-                    filter_obj['filter_term'] = ticket_ids
-                    if filter_predicate == FilterPredicateTypes.IS_EXACTLY:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_ANY_OF
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'priority':
-                    if value == '':
-                        value = 0
-                    try:
-                        filter_obj['filter_term'] = int(value)
-                    except ValueError:
-                        pass
-                    filter_obj['empty_only_zero'] = True
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'creator':
-                    if filter_predicate == FilterPredicateTypes.CONTAINS:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_ANY_OF
-                    elif filter_predicate == FilterPredicateTypes.NOT_CONTAIN:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_NONE_OF
-                    elif filter_predicate == FilterPredicateTypes.IS:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_ANY_OF
-                    elif filter_predicate == FilterPredicateTypes.IS_NOT:
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.HAS_NONE_OF
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'created_at':
-                    filter_term_modifier = filter_obj['filter_term_modifier']
-                    start_date, end_date = DateOperator().get_date(filter_term_modifier, value)
-                    filter_obj['filter_term'] = start_date
-                    date_period_filter_conjunction = filter_conjunction
-
-                    if filter_predicate == FilterPredicateTypes.IS:
-                        end_date = start_date + timedelta(days=1)
-                        date_period_filter_conjunction = 'and'
-                    elif filter_predicate == FilterPredicateTypes.IS_NOT:
-                        end_date = start_date + timedelta(days=1)
-                        start_date, end_date = end_date, start_date
-                        filter_obj['filter_term'] = start_date
-                        date_period_filter_conjunction = 'or'
-                    if filter_predicate == FilterPredicateTypes.IS_WITHIN:
-                        date_period_filter_conjunction = 'and'
-
-                    if end_date is not None:
-                        date_q = Q()
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.GREATER_OR_EQUAL
-                        date_q = self.format_filter_predicate(
-                            username, date_q, date_period_filter_conjunction, filter_obj, condition)
-                        filter_obj['filter_predicate'] = FilterPredicateTypes.LESS_OR_EQUAL
-                        filter_obj['filter_term'] = end_date
-                        date_q = self.format_filter_predicate(
-                            username, date_q, date_period_filter_conjunction, filter_obj, condition)
-                        if filter_conjunction.lower() == 'or':
-                            q = q | date_q
-                        else:
-                            q = q & date_q
-                    else:
-                        q = self.format_filter_predicate(
-                            username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'title':
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-                elif column_key == 'description':
-                    q = self.format_filter_predicate(
-                        username, q, filter_conjunction, filter_obj, condition)
-
-            except Exception as e:
-                logger.error(e)
-
-        q = basic_q & q
-        sorts = [
-            f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts if sort.get('column_key')]
-        if not sorts:
-            sorts = ['-number']
-
-        return q, sorts
-
-def filter_tickets_by_view(username, view):
-    q, sorts = ViewFilter().filter_tickets_by_view(username, view)
-    return q, sorts
-
-
 class SQLGeneratorOptionInvalidError(Exception):
     pass
 
@@ -590,6 +336,7 @@ class MultipleSelectOperator(Operator):
         FilterPredicateTypes.IS_EXACTLY,
         FilterPredicateTypes.EMPTY,
         FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.IS_ANY_OF,
     ]
 
     def __init__(self, column, filter_item):
@@ -646,6 +393,21 @@ class MultipleSelectOperator(Operator):
         return "`%(column_name)s` is exactly (%(option_names_str)s)" % ({
             "column_name": self.column_name,
             "option_names_str": option_names_str
+        })
+    
+    def op_is_any_of(self):
+        filter_term = self.filter_term
+        if not filter_term:
+            return ''
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
+        filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        option_names = ["'%s'" % (op_name) for op_name in filter_term]
+        if not option_names:
+            return ""
+        return "`%(column_name)s` in (%(option_names)s)" % ({
+            "column_name": self.column_name,
+            "option_names": ", ".join(option_names)
         })
 
 
@@ -1205,6 +967,10 @@ def _filter2sql(operator):
         return operator.op_include_me()
     if filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
         return operator.op_is_current_user_id()
+    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
+        return operator.op_is_any_of()
+    if filter_predicate == FilterPredicateTypes.HAS_ANY_OF:
+        return operator.op_has_any_of()
     return ''
 
 
@@ -1218,7 +984,7 @@ def _get_operator_by_type(column_type):
         PropertyTypes.GEOLOCATION
     ]:
         return TextOperator
-
+    
     if column_type in [
         PropertyTypes.DURATION,
         PropertyTypes.NUMBER,
@@ -1267,7 +1033,7 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, view, start=0, limit=0, username=''):
+    def __init__(self, table_name, columns, view, start=0, limit=0, username='', include_deleted=False):
         self.table_name = table_name
         self.view = view
         self.columns = columns
@@ -1275,6 +1041,7 @@ class SQLGenerator(object):
         self.start = start
         self.limit = limit
         self.username = username
+        self.include_deleted = include_deleted
 
     def _get_column_by_key(self, col_key):
         for col in self.columns:
@@ -1320,7 +1087,6 @@ class SQLGenerator(object):
     def _generator_filters_sql(self, filters, filter_conjunction = 'And'):
         if not filters:
             return ''
-
         filter_string_list = []
         filter_conjunction_split = " %s " % filter_conjunction
         for filter_item in filters:
@@ -1359,11 +1125,33 @@ class SQLGenerator(object):
 
     def _basic_filters_sql(self):
         basic_filters = self.view.get('basic_filters', [])
-        filter_conjunction = 'AND'
         if not basic_filters:
             return ''
 
-        return self._generator_filters_sql(basic_filters, filter_conjunction)
+        filters_list = basic_filters[0].get('filter_term')
+        filters = []
+        if not self.include_deleted:
+            filter_conjunction = 'OR'
+            for term in filters_list:
+                if term == 'open' or term == 'closed':
+                    filters.append({
+                        'column_name': 'state',
+                        'filter_predicate': 'is',
+                        'filter_term': term
+                    })
+                else:
+                    filters.append({
+                        'column_name': 'state_reason',
+                        'filter_predicate': 'is',
+                        'filter_term': term
+                    })
+            return self._generator_filters_sql(filters, filter_conjunction)
+        else:
+            filter_conjunction = 'AND'
+            for filter_item in basic_filters:
+                filters.append(filter_item)
+
+        return self._generator_filters_sql(filters, filter_conjunction)
 
     def _filters_sql(self):
         filters = self.view.get('filters', [])
@@ -1407,6 +1195,11 @@ class SQLGenerator(object):
         column_join = ', '.join(['`%s`' % column_name for column_name in self.column_names])
         sql = f"SELECT {column_join} FROM `{self.table_name}`"
         filter_clause = self._filter_2_sql()
+        if self.include_deleted:
+            if filter_clause:
+                filter_clause = "%s AND `deleted` = False" % filter_clause
+            else:
+                filter_clause = "WHERE `deleted` = False"
         sort_clause = self.sort_2_sql()
         limit_clause = self._limit_2_sql()
         if filter_clause:
@@ -1418,9 +1211,9 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, view, start, limit):
+def view_data_2_sql(table, columns, view, start, limit, include_deleted=False):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, start, limit)
+    sql_generator = SQLGenerator(table, columns, view, start, limit, include_deleted=include_deleted)
     sql = sql_generator.to_sql()
     return sql
 
@@ -1429,3 +1222,4 @@ def sort_data_2_sql(table, columns, sorts):
     """ sorts to sql """
     sql_generator = SQLGenerator(table, columns, {'sorts': sorts})
     return sql_generator.sort_2_sql()
+

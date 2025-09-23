@@ -3,7 +3,6 @@ from django.core.cache import cache
 import logging
 import uuid
 import json
-import time
 import copy
 import random
 import string
@@ -1040,6 +1039,44 @@ class TicketView(object):
 
 class TicketViewsManager(models.Manager):
 
+    def update_init_view_details(self, project_uuid, details):
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_tickets_columns
+        seadb_api = SeaDBAPI('seaqa-web')
+        columns = get_tickets_columns(seadb_api, project_uuid)
+        views = details.get('views', [])
+        for v in views:
+            basic_filters = v.get('basic_filters', [])
+            for basic_filter in basic_filters:
+                column_key = basic_filter['column_key']
+
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    column_name = column['name']
+                    basic_filter['column_key'] = column['key']
+                    if column_name in ['status', 'type', 'tags']:
+                        data = column.get('data', {})
+                        if data:
+                            options = data.get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+            v['basic_filters'] = basic_filters
+
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item['column_key']
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    item['column_key'] = column['key']
+            v['sorts'] = sorts
+            details['views'] = views
+        return details
+
     def get_record(self, project_uuid):
         """
             get record from database, if not record, create it
@@ -1047,9 +1084,10 @@ class TicketViewsManager(models.Manager):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(project_uuid=project_uuid).first()
         if not record:
+            details = self.update_init_view_details(project_uuid, TICKET_DEFAULT_DETAILS)
             record = self.create(
                 project_uuid=project_uuid,
-                details=json.dumps(TICKET_DEFAULT_DETAILS)
+                details=json.dumps(details)
             )
         return record
 
@@ -1124,6 +1162,7 @@ class TicketViewsManager(models.Manager):
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
+        view_details = self.update_init_view_details(project_uuid, view_details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
         if folder_id:
             folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)

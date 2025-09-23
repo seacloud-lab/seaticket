@@ -3,9 +3,9 @@ import logging
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
-from seahub.project.utils import get_current_table_metadata
+from seahub.project.utils import get_current_table_metadata, get_project_related_users
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable
 
 logger = logging.getLogger(__name__)
 
@@ -290,6 +290,60 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
         ]
     )
 
+def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
+    sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection tickets: {e}')
+        records = []
+    return records
+
+def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
+    """Initialize SeaDB tables for Ticket"""
+    # Create tickets table
+    res = seadb_api.create_table(project_uuid, 'tickets')
+    tickets_table_id = res['table_id']
+    for column in TicketsTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column["column_data"] = column.data
+        seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
+    # Create tickets table index for seadb
+    seadb_api.create_column_index(
+        project_uuid,
+        tickets_table_id,
+        [TicketsTable.deleted.name],
+    )
+
+    # Create replies table
+    res = seadb_api.create_table(project_uuid, 'ticket_replies')
+    replies_table_id = res['table_id']
+    for column in TicketRepliesTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column["column_data"] = column.data
+        seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
+
+    # Create replies table index for seadb
+    index_columns = [
+        TicketRepliesTable.creator.name,
+        TicketRepliesTable.deleted.name,
+    ]
+    for column in index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            replies_table_id,
+            [column],
+        )
+
 
 def get_connection_table_name(connection):
     connection_id = connection.id
@@ -315,6 +369,35 @@ def get_connection_columns(seadb_api, project_uuid, connection):
         return []
     columns = table_metadata.get('columns') or []
     return columns
+
+def get_tickets_columns(seadb_api, project_uuid):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    return columns
+
+def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    view_copy = view.copy()
+    hidden_columns = view_copy.get('hidden_columns', [])
+    hidden_columns.append('client_token')
+    display_columns = [column for column in columns if column['name'] not in hidden_columns]
+    sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, include_deleted=True)
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection tickets: {e}')
+        records = []
+    return records, display_columns
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
     connection_type = connection.type
