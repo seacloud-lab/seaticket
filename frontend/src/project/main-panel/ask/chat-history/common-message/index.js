@@ -18,16 +18,18 @@ const CommonMessage = forwardRef(({ message }, ref) => {
     let value = message[CHAT_MESSAGE_TYPE.ANSWER];
     const sources = message[CHAT_MESSAGE_TYPE.SOURCES];
     if (value && sources.length > 0) {
-      const regex0 = /\[((?:Source|Reference|Document) \d+(?:, (?:Source|Reference|Document) \d+)*)\]/g;
-      value = value.replace(regex0, (match, content) => content.split(', ').map(item => `[${item}]`).join(''));
-
-      const regex = /\[(Reference|Source|Document)\s+(\d+)\]/g;
-      value = value.replace(regex, (match, text, orderString) => {
-        const order = Number(orderString);
-        const source = sources[order - 1];
-        if (!source) return '';
-        return `[${source.title || source.url}][${order}]`;
-      });
+      const regex = /(\[[^\]]+\]),\s*(?=\[[^\]]+\])/g; // [Reference 1], [Reference 2], [Reference 3] => [Reference 1][Reference 2][Reference 3]
+      const regex0 = /\[((?:Source|Reference|Document) \d+(?:, (?:Source|Reference|Document) \d+)*)\]/g; // [Reference 1, Reference 2, Reference 3] ==> [Reference 1][Reference 2][Reference 3]
+      const regex1 = /\[(Reference|Source|Document)\s+(\d+)\]/g;
+      value = value
+        .replace(regex, '$1')
+        .replace(regex0, (match, content) => content.split(', ').map(item => `[${item}]`).join(''))
+        .replace(regex1, (match, text, orderString) => {
+          const order = Number(orderString);
+          const source = sources[order - 1];
+          if (!source) return '';
+          return `[${source.title || source.url}][${order}]`;
+        });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n## ${gettext('Sources')}\n${sourcesString}` ;
     }
