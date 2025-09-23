@@ -365,7 +365,7 @@ def delete_project(project):
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         ProjectTags.objects.filter(project_uuid=project_uuid).delete()
         tickets = Tickets.objects.filter(project_uuid=project_uuid)
-        TicketViews.objects.filter(project_uuid=project_uuid)
+        TicketViews.objects.filter(project_uuid=project_uuid).delete()
         ticket_id_list = [ticket.id for ticket in tickets]
         tickets.delete()
         TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()
