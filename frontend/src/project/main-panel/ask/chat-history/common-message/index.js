@@ -18,13 +18,24 @@ const CommonMessage = forwardRef(({ message }, ref) => {
     let value = message[CHAT_MESSAGE_TYPE.ANSWER];
     const sources = message[CHAT_MESSAGE_TYPE.SOURCES];
     if (value && sources.length > 0) {
-      const regex = /(\[[^\]]+\]),\s*(?=\[[^\]]+\])/g; // [Reference 1], [Reference 2], [Reference 3] => [Reference 1][Reference 2][Reference 3]
-      const regex0 = /\[((?:Source|Reference|Document) \d+(?:, (?:Source|Reference|Document) \d+)*)\]/g; // [Reference 1, Reference 2, Reference 3] ==> [Reference 1][Reference 2][Reference 3]
-      const regex1 = /\[(Reference|Source|Document)\s+(\d+)\]/g;
+
+      const regex = /([\[\(])(Reference|Source|Document|Docs|Doc)\s*(\d+(?:\s*,\s*(?:\d+|(?:Reference|Source|Document|Docs|Doc)\s*\d+))*)\s*([\]\)])/gi;
+
+      // [Reference 1], [Reference 2], [Reference 3] => [Reference 1][Reference 2][Reference 3]
+      const removeComma = /(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
+
+      // [Reference 1] => [Source title][1]
+      const reference2Md = /\[(Reference)\s+(\d+)\]/g;
+
       value = value
-        .replace(regex, '$1')
-        .replace(regex0, (match, content) => content.split(', ').map(item => `[${item}]`).join(''))
-        .replace(regex1, (match, text, orderString) => {
+        .replace(regex, (match, openBracket, refType, ordersPart, closeBracket) => {
+          const orders = ordersPart.split(',').map(orderPart => {
+            return orderPart.replace(/(Reference|Source|Document|Docs|Doc)\s*/gi, '').trim();
+          }).filter(num => num !== '');
+          return orders.map(order => `[Reference ${order}]`).join('');
+        })
+        .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
+        .replace(reference2Md, (match, text, orderString) => {
           const order = Number(orderString);
           const source = sources[order - 1];
           if (!source) return '';
