@@ -95,9 +95,10 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           type: CellType.TEXT, key: 'title', name: gettext('Title'),
           editable: false, is_name_column: true, frozen: true,
         },
-        { type: CellType.TEXT, key: 'slug', name: gettext('Slug'), editable: false, is_required: true },
+        { type: CellType.NUMBER, key: 'topic_id', name: gettext('Topic ID'), editable: false },
         { type: CellType.NUMBER, key: 'views', name: gettext('Views count'), editable: false },
-        { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
+        { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
+        { type: CellType.DATE, key: 'created_at', name: gettext('Created at'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false }
       ];
     }
     if (connectionType === CONNECTION_TYPE.SITE) {
@@ -214,9 +215,49 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     };
   }, [projectUuid, connectionID, connection, columns]);
 
-  const createContextMenuOptions = useCallback(() => {
+  const createContextMenuOptions = useCallback(({
+    isGroupView,
+    selectedRange,
+    selectedPosition,
+    table,
+    rowMetrics,
+    rowGetterByIndex,
+  }) => {
+    // handle selected multiple cells
+    if (selectedRange) {
+      return [];
+    }
+
+    // handle selected rows
+    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+    if (selectedRowIds.length > 1) {
+      return [];
+    }
+
+    // handle selected cell
+    if (!selectedPosition) return [];
+    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+    if (!row) return [];
+
+    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return [{
+        label: gettext('Open original page'),
+        callback: () => {
+          const discourseBaseUrl = connection.config?.url;
+          if (!discourseBaseUrl || !row.slug || !row.topic_id) {
+            toaster.danger(gettext('Missing required information to open original page'));
+            return;
+          }
+          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+          const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+          window.open(originalPageUrl, '_blank', 'noopener,noreferrer');
+        }
+      }];
+    }
+
     return [];
-  }, []);
+  }, [connection]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
@@ -274,7 +315,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
-        createContextMenuOptions={createContextMenuOptions}
+        {...(connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM && { createContextMenuOptions })}
         permission={permission}
         isViewComputedOnServer={isGithubIssuesView}
         toggleView={isMultiView ? updateViewID : undefined}
