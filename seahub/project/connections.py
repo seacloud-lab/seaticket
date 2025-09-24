@@ -24,7 +24,7 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
     url_to_filename, update_discourse_topic_by_webhook
-from seahub.seadb_models.utils import init_seadb_table, init_discourse_forum_seadb_table, \
+from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
     list_connection_view_records
 from seahub.project.constants import ConnectionType, CrawlStatus
@@ -130,10 +130,10 @@ class ProjectConnectionsView(APIView):
         try:
             if connection_type == ConnectionType.SITE.value:
                 seadb_api = SeaDBAPI(request.user.username)
-                init_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
+                init_site_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
                 seadb_api = SeaDBAPI(request.user.username)
-                init_discourse_forum_seadb_table(seadb_api, project.uuid, request.user.username, connection_id)
+                init_discourse_forum_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()

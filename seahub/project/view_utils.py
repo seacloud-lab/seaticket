@@ -5,7 +5,8 @@ from dateutil.relativedelta import relativedelta
 
 from django.db.models import Q
 
-from seahub.project.constants import FilterPredicateTypes, FilterTermModifier, PropertyTypes
+from seahub.project.constants import FilterPredicateTypes, FilterTermModifier
+from seahub.seadb_models.models import PropertyTypes
 
 
 logger = logging.getLogger(__name__)
@@ -163,7 +164,7 @@ class DateOperator(Operator):
         FilterPredicateTypes.NOT_EMPTY,
         FilterPredicateTypes.IS_WITHIN,
     ]
-    
+
     def __init__(self, column, filter_item):
         super(DateOperator, self).__init__(column, filter_item)
 
@@ -358,7 +359,7 @@ class DateOperator(Operator):
         ]:
             return True
         return False
-    
+
     def op_is(self):
         if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
             return ''
@@ -461,7 +462,7 @@ class TextOperator(Operator):
     def __init__(self, column, filter_item):
         super(TextOperator, self).__init__(column, filter_item)
 
-    
+
 class ViewFilter(object):
 
     def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
@@ -517,7 +518,7 @@ class ViewFilter(object):
                         **{f'{condition}__isnull': True})
                 elif filter_obj.get('empty_only_zero', False):
                     current_filter = Q(
-                        **{f'{condition}': 0})                        
+                        **{f'{condition}': 0})
                 else:
                     current_filter = Q(
                         **{f'{condition}__isnull': True}) | Q(**{condition: ''})
