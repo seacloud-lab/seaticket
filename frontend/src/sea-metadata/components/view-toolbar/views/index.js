@@ -18,14 +18,25 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, viewID, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
+  const { isLoading, viewsData, viewID, defaultDisplayQuantity, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
 
-  const displayViews = useMemo(() => {
+  const matchViews = useMemo(() => {
     if (isLoading) return [];
     const { navigation, views } = viewsData;
     if (!navigation || !views) return [];
     return navigation.map(n => views.find(v => v._id === n._id));
   }, [isLoading, viewsData, view]);
+
+  const displayViews = useMemo(() => {
+    return matchViews.slice(0, defaultDisplayQuantity);
+  }, [defaultDisplayQuantity, matchViews]);
+
+  const displaySwitchView = useMemo(() => {
+    return {
+      _id: 'all',
+      name: 'All ' + matchViews.length + ' views',
+    };
+  }, [matchViews]);
 
   const openViewNameDialog = useCallback((isRename) => {
     isRenameRef.current = Boolean(isRename);
@@ -137,6 +148,17 @@ const Views = ({ view, toggleView }) => {
               />
             );
           })}
+          {matchViews.length > defaultDisplayQuantity && (
+            <ViewItem
+              type="switch"
+              view={displaySwitchView}
+              viewID={viewID}
+              moveAble={moveAble}
+              onMove={moveView}
+              allViews={{ matchViews, displayViews }}
+              toggleView={toggleView}
+            />
+          )}
         </div>
         {(canScrollPrev || canScrollNext) && (
           <div className="sea-metadata-views-nav-scroll-control mr-2">
