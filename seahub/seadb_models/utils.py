@@ -2,8 +2,8 @@ import logging
 
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable
-
+from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
+    GithubIssueCommentsTable
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,38 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
             web_crawl_table.deleted.name,
         ]
     )
+
+def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
+    issues_table_name = str(connection_id) + '_github_issues'
+    res = seadb_api.create_table(project_uuid, issues_table_name)
+    table_id = res['table_id']
+    github_issues_table = GithubIssuesTable
+    github_issue_comments_table = GithubIssueCommentsTable
+    for column in github_issues_table.get_fields():
+
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+
+        if hasattr(column, 'data') and column.data is not None:
+            mapped_column['column_data'] = column.data
+
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    # add columns index
+    need_index_columns = ["state", "state_reason", "labels", "title", "author", "created_at", "closed_at"]
+    seadb_api.create_column_index(project_uuid, table_id, need_index_columns)
+
+    comments_table_name = str(connection_id) + '_issue_comments'
+    res = seadb_api.create_table(project_uuid, comments_table_name)
+    table_id = res['table_id']
+    for column in github_issue_comments_table.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
 
 
 def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):

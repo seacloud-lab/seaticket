@@ -244,3 +244,57 @@ class FilterTermModifier(object):
     THIS_WEEK = 'this_week'
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
+
+
+class SelectTypes:
+    state = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "open"
+        },
+        {
+          "id": "0002",
+          "name": "closed"
+        }
+      ]
+    }
+
+    state_reason = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "completed"
+        },
+        {
+          "id": "0002",
+          "name": "not_planned"
+        },
+        {
+          "id": "0003",
+          "name": "duplicate"
+        },
+        {
+          "id": "0004",
+          "name": "reopened"
+        }
+      ]
+    }
+
+    issue_type = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "Bug",
+        },
+        {
+          "id": "0002",
+          "name": "Feature"
+        },
+        {
+          "id": "0003",
+          "name": "Task"
+        }
+      ]
+    }
+
