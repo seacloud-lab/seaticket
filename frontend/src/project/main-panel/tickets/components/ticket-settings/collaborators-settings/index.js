@@ -7,10 +7,11 @@ import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 
-const AssigneesSettings = ({
+const CollaboratorsSettings = ({
   isReadonly,
   value,
   className = 'mb-4',
+  title = gettext('Collaborators'),
   onChange,
 }) => {
   const [isShowAssigneesEditor, setIsShowAssigneesEditor] = useState(false);
@@ -43,7 +44,7 @@ const AssigneesSettings = ({
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{gettext('Assignees')}</Label>
+        <Label>{title}</Label>
         <div className="collaborators-formatter" onClick={openAssigneesEditor} ref={assigneesRef}>
           {value.length > 0 ? value.map(assignee => {
             if (!assignee) return null;
@@ -79,4 +80,4 @@ const AssigneesSettings = ({
   );
 };
 
-export default AssigneesSettings;
+export default CollaboratorsSettings;

@@ -5,8 +5,8 @@ import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAG
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
 import { TICKET_PAGE_TYPE } from '../../constants';
-import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
-import { Utils } from '@/utils/utils';
+import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
@@ -120,7 +120,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           </div>
           <div className="sea-qa-project-ticket-other-settings">
             <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
-            <AssigneesSettings isReadonly={isSubmitting} value={assignees} onChange={setAssignees} />
+            <CollaboratorsSettings isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>
