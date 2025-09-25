@@ -120,7 +120,7 @@ export const checkIsColumnSupportPreview = (column) => {
 };
 
 export const checkIsColumnEditable = (column) => {
-  if (!column) return false;
+  if (!column || column.key === 'priority') return false;
   return !!column.editable;
 };
 
