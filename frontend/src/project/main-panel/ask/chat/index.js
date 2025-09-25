@@ -56,7 +56,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback((resolveType, message) => {
+  const sendMessage = useCallback(({ resolveType, message, ticket }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -72,7 +72,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     });
 
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, sessionId, validMessage, resolveType);
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, ticket });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -81,7 +81,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       newSessionProblem.current = '';
       togglePageType(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage, resolveType);
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, ticket });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
@@ -238,6 +238,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           ref={messageInputRef}
           isReply={loading || isReply}
           readOnly={readOnly}
+          projectUuid={projectUuid}
           sendMessage={sendMessage}
         />
       </div>

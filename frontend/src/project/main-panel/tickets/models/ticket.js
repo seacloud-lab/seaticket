@@ -141,8 +141,16 @@ class TicketForTickets {
   }
 }
 
+class TicketForAI {
+  constructor(object) {
+    this._id = String(object.number) || '';
+    this.title = object.title || '';
+  }
+}
+
 export default Ticket;
 export {
   TicketForTickets,
+  TicketForAI,
   Reply,
 };

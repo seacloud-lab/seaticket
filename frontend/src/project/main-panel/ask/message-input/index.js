@@ -8,14 +8,16 @@ import { getType, Utils } from '@/utils/utils';
 import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE, AI_RESOLVE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
+import Ticket from './ticket';
 
 import './index.css';
 
-const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
+const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
   const [value, setValue] = useState('');
+  const [ticket, setTicket] = useState(null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -66,8 +68,8 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage(resolveType, value, []);
-  }, [resolveType, value, sendMessage]);
+    sendMessage({ resolveType, message: value, ticket: ticket?._id });
+  }, [resolveType, value, ticket, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -162,7 +164,10 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
             <div ref={previewContentRef} className="message-input message-input-preview"></div>
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
-            <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
+            <div className="sea-qa-ai-ask-chat-operations-container-left">
+              <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
+              <Ticket projectUuid={projectUuid} value={ticket} onChange={setTicket} />
+            </div>
             <IconButton
               disabled={disabled}
               icon="send"

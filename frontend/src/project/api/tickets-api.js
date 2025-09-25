@@ -59,6 +59,14 @@ class TicketsAPI {
     }
   }
 
+  listProjectTicketsBySearch(projectUuid, query = '', signal) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/search-tickets/';
+    const params = {
+      query,
+    };
+    return this.req.get(url, { params: params, signal: signal });
+  }
+
   listProjectTickets(projectUuid, { view_id = '0000', start = 0, limit = 100 }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     const params = {
