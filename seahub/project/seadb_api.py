@@ -139,6 +139,8 @@ class SeaDBAPI:
             'column_name': column['column_name'],
             'column_type': column['column_type'],
         }
+        if column.get('column_data'):
+            data['column_data'] = column['column_data']
         response = requests.post(url, json=data, headers=headers, timeout=self.timeout)
         return parse_response(response)
 

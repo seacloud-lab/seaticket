@@ -537,6 +537,14 @@ class NumberOperator(Operator):
         })
 
 
+class SelectOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.IS,
+    ]
+    def __init__(self, column, filter_item):
+        super(SelectOperator, self).__init__(column, filter_item)
+
+
 class ViewFilter(object):
 
     def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
@@ -871,6 +879,16 @@ def _get_operator_by_type(column_type):
     ]:
         return NumberOperator
 
+    if column_type in [
+        PropertyTypes.SINGLE_SELECT
+    ]:
+        return SelectOperator
+
+    if column_type in [
+        PropertyTypes.MULTIPLE_SELECT
+    ]:
+        return SelectOperator
+
     return None
 
 class SQLGenerator(object):
@@ -975,13 +993,25 @@ class SQLGenerator(object):
 
     def _basic_filters_sql(self):
         basic_filters = self.view.get('basic_filters', [])
-        filter_conjunction = 'AND'
+        filter_conjunction = 'OR'
         if not basic_filters:
             return ''
 
+        filters_list = basic_filters[0].get('filter_term')
         filters = []
-        for filter_item in basic_filters:
-            pass
+        for term in filters_list:
+            if term == 'open' or term == 'closed':
+                filters.append({
+                    'column_name': 'state',
+                    'filter_predicate': 'is',
+                    'filter_term': term
+                })
+            else:
+                filters.append({
+                    'column_name': 'state_reason',
+                    'filter_predicate': 'is',
+                    'filter_term': term
+                })
 
         return self._generator_filters_sql(filters, filter_conjunction)
 

@@ -2,7 +2,7 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
-import { connectionsAPI } from '@/project/api';
+import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
@@ -44,6 +44,44 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const parseChecklistFromBody = (bodyText) => {
+    if (!bodyText) return { total: 0, completed: 0 };
+    const regex = /^\s*[-*]\s*\[( |x|X)\]/gm;
+    const matches = bodyText.match(regex) || [];
+    const total = matches.length;
+    const completed = matches.filter(item => /\[x\]/i.test(item)).length;
+    return { total, completed };
+  };
+
+  const createTicketFromRow = useCallback(async (rowData) => {
+    setIsSubmitting(true);
+
+    const bodyText = rowData.body || 'body is empty';
+    const checklist = parseChecklistFromBody(bodyText);
+    const descriptionData = {
+      text: bodyText,
+      preview: bodyText.substring(0, 100) + '...',
+      images: [],
+      links: [],
+      checklist
+    };
+
+    const ticketData = {
+      title: `${rowData.title || ''}`,
+      description: descriptionData,
+      author: `${rowData.author || ''}`,
+      status: `${rowData.status_reason || ''}`
+    };
+
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(res => {
+      setIsSubmitting(false);
+    }).catch(error => {
+      setIsSubmitting(false);
+    });
+  }, [projectUuid]);
+
 
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
@@ -256,8 +294,15 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       }];
     }
 
+    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE){
+      return [{
+        label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
+        callback: () => createTicketFromRow(row),
+        disabled: isSubmitting
+      }];
+    }
     return [];
-  }, [connection]);
+  }, [connection, isSubmitting, createTicketFromRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
@@ -315,7 +360,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
-        {...(connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM && { createContextMenuOptions })}
+        createContextMenuOptions={createContextMenuOptions} 
         permission={permission}
         isViewComputedOnServer={isServerComputableView}
         toggleView={isMultiView ? updateViewID : undefined}

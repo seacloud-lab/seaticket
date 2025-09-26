@@ -18,14 +18,14 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
-from seahub.project.models import Projects, ProjectConnections, GitHubIssuesRecord, decrypt_config, \
+from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
     url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
-    list_discourse_forum_replies_records, \
+    init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_discourse_forum_topics_records_by_view
 from seahub.project.constants import ConnectionType, CrawlStatus
 from seahub.project.seadb_api import SeaDBAPI
@@ -134,6 +134,9 @@ class ProjectConnectionsView(APIView):
             elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
                 seadb_api = SeaDBAPI(request.user.username)
                 init_discourse_forum_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.GITHUB_ISSUE.value:
+                seadb_api = SeaDBAPI(request.user.username)
+                init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -404,9 +407,23 @@ class ProjectConnectionDetailsView(APIView):
             limit = 1000
         end = start + limit
 
+        seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
-            records = [record.to_dict() for record in records]
+            try:
+                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            if not view:
+                error_msg = 'Connection view %s not found.' % view_id
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            table_name = str(connection_id)+'_github_issues'
+            records = list_connection_view_records(
+                seadb_api, project_uuid, table_name, view, start, limit, username
+            )
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             try:
                 view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
@@ -419,7 +436,6 @@ class ProjectConnectionDetailsView(APIView):
                 error_msg = 'Connection view %s not found.' % view_id
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            seadb_api = SeaDBAPI(username)
             records = list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username)
         elif project_connection.type == ConnectionType.SITE.value:
             try:
@@ -433,7 +449,6 @@ class ProjectConnectionDetailsView(APIView):
                 error_msg = 'Connection view %s not found.' % view_id
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            seadb_api = SeaDBAPI(username)
             records = list_connection_view_records(
                 seadb_api, project_uuid, connection_id, view, start, limit, username
             )
@@ -485,18 +500,25 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         event = request.headers.get('X-GitHub-Event')
-        if event != 'issues':
+        if event != 'issues' and event != 'issue_comment':
             return Response({'success': True}, status=status.HTTP_200_OK)
 
         payload = request.data
-        issue_data = payload.get('issue')
         action = payload.get('action')
 
-        if not issue_data and not issue_data.get('id'):
-            error_msg = 'issue_data invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if event == 'issues':
+            update_data = payload.get('issue')
+            if not update_data and not update_data.get('id'):
+                error_msg = 'issue_data invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        elif event == 'issue_comment':
+            update_data = payload
+            if not update_data and not update_data.get('comment'):
+                error_msg = 'comment_data invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        params = {'connection_id': connection_id, 'action': action, 'issue_data': issue_data}
+        params = {'connection_id': connection_id, 'action': action, 'event': event, 'update_data': update_data}
+
         try:
             update_github_issue_by_webhook(params)
         except Exception as e:

@@ -2,8 +2,8 @@ import logging
 
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable
-
+from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
+    GithubIssueCommentsTable
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,130 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
         ]
     )
 
+def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
+    issues_table_name = str(connection_id) + '_github_issues'
+    res = seadb_api.create_table(project_uuid, issues_table_name)
+    table_id = res['table_id']
+    github_issues_table = GithubIssuesTable
+    github_issue_comments_table = GithubIssueCommentsTable
+    for column in github_issues_table.get_fields():
+
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+
+        if hasattr(column, 'data') and column.data is not None:
+            mapped_column['column_data'] = column.data
+
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    # add columns index
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.issue_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.state.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.state_reason.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.labels.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.title.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.author.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.created_at.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.closed_at.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.deleted.name
+        ],
+    )
+
+    comments_table_name = str(connection_id) + '_issue_comments'
+    res = seadb_api.create_table(project_uuid, comments_table_name)
+    table_id = res['table_id']
+    for column in github_issue_comments_table.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issue_comments_table.issue_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issue_comments_table.comment_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.deleted.name
+        ],
+    )
 
 def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     """Initialize SeaDB tables for Discourse Forum connection"""
@@ -131,21 +255,21 @@ def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, li
     return records
 
 
-def list_connection_view_records(seadb_api, project_uuid, connection_id, view, start, limit, username):
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
-    table_metadata = get_current_table_metadata(tables_metadata, str(connection_id))
+    table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
         return []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     hidden_columns = view_copy.get('hidden_columns', [])
-    sql = view_data_2_sql(connection_id, columns, hidden_columns, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, columns, hidden_columns, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
-        logger.error(f'SeaDB query error for connection {connection_id}: {e}')
+        logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
     return records
 

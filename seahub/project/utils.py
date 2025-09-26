@@ -88,7 +88,7 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     """
     if not username or not workspace_owner or not ticket:
         return None
-    
+
     if ticket.creator == username:
         return PERMISSION_READ_WRITE
 
@@ -100,7 +100,7 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """
     if not username or not workspace_owner or not comment:
         return None
-    
+
     if comment.creator == username:
         return PERMISSION_READ_WRITE
 
