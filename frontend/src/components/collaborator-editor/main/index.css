@@ -16,6 +16,14 @@
   padding: 10px 0;
 }
 
+.collaborator-editor-popover .collaborator-editor-content.empty {
+  padding: 10px;
+}
+
+.collaborator-editor-popover .collaborator-editor-content.empty .tip-default {
+  font-size: 14px;
+}
+
 .collaborator-editor-popover .collaborator-editor-content .collaborator-editor-option {
   border-radius: 2px;
   display: flex;

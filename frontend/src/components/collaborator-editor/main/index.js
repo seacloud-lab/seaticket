@@ -1,4 +1,5 @@
 import { forwardRef, useState, useRef, useMemo, useCallback, useImperativeHandle, useEffect } from 'react';
+import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Collaborator from '../../collaborator/collaborator';
 import { searchCollaborators } from '../../../utils/search';
@@ -177,9 +178,13 @@ const Main = forwardRef(({
           onChange={onSearchValueChange}
         />
       </div>
-      <div className="collaborator-editor-content" style={{ maxHeight }} ref={displayCollaboratorsRef}>
+      <div
+        className={classnames('collaborator-editor-content', { 'empty': displayCollaborators.current.length === 0 })}
+        style={{ maxHeight }}
+        ref={displayCollaboratorsRef}
+      >
         {displayCollaborators.current.length === 0 ? (
-          <div className="tip-default p-4">{emptyTip}</div>
+          <div className="tip-default">{emptyTip}</div>
         ) : (
           <>
             {displayCollaborators.current.map((c, i) => {

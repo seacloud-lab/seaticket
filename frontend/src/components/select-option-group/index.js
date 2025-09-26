@@ -135,7 +135,7 @@ class OptionGroup extends Component {
     this.filterOptions = this.props.getFilterOptions(searchVal);
     if (this.filterOptions.length === 0) {
       return (
-        <div className="none-search-result">{noOptionsPlaceholder}</div>
+        <div className="none-search-result tip-default">{noOptionsPlaceholder}</div>
       );
     }
     return this.filterOptions.map((opt, i) => {
