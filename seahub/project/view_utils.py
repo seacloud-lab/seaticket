@@ -44,6 +44,7 @@ class Operator(object):
         self.filter_predicate = self.filter_item.get('filter_predicate', '')
         self.filter_term = self.filter_item.get('filter_term', '')
         self.filter_term_modifier = self.filter_item.get('filter_term_modifier', '')
+        self.case_sensitive = self.filter_item.get('case_sensitive') or False
 
     def op_is(self):
         if not self.filter_term:
@@ -68,7 +69,7 @@ class Operator(object):
             return ""
         return "`%s` %s '%%%s%%'" % (
             self.column_name,
-            'like',
+            'like' if self.case_sensitive is True else 'ilike',
             self.filter_term.replace('\\', '\\\\'), # special characters require translation
         )
 
@@ -77,7 +78,7 @@ class Operator(object):
             return ''
         return "`%s` %s '%%%s%%'" % (
             self.column_name,
-            'not like',
+            'not like' if self.case_sensitive is True else 'not ilike',
             self.filter_term.replace('\\', '\\\\') # special characters require translation
         )
 
