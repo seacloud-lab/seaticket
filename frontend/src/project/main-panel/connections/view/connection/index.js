@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
+import { processor } from '@seafile/seafile-editor';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
@@ -10,10 +11,20 @@ import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader } from '@/components';
-import { processor } from '@seafile/seafile-editor';
+
+const SERVER_COMPUTABLE_CONNECTION_TYPE = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.DISCOURSE_FORUM
+];
+
+const MULTIPLE_VIEWS_CONNECTION_TYPE = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.DISCOURSE_FORUM
+];
 
 const SiteContentDialog = ({ title, content, onClose }) => {
-
   const [innerHtml, setInnerHtml] = useState('');
 
   useEffect(() => {
@@ -24,6 +35,7 @@ const SiteContentDialog = ({ title, content, onClose }) => {
       setInnerHtml(innerHtml);
     });
   }, [content]);
+
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
@@ -204,7 +216,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       });
     };
 
-    if ([CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type)) {
+    if (SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type)) {
       return {
         getMetadata,
         getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
@@ -342,7 +354,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   useEffect(() => {
     if (isLoadingConnection) return;
-    const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection.type);
+    const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection.type);
     if (!isMultiView) {
       updateViewID('');
     }
@@ -350,8 +362,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   if (isLoading || isLoadingConnection) return null;
 
-  const isServerComputableView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type);
-  const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type);
+  const isServerComputableView = SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type);
+  const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection?.type);
 
   return (
     <CollaboratorsProvider>
@@ -360,7 +372,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
-        createContextMenuOptions={createContextMenuOptions} 
+        createContextMenuOptions={createContextMenuOptions}
         permission={permission}
         isViewComputedOnServer={isServerComputableView}
         toggleView={isMultiView ? updateViewID : undefined}
