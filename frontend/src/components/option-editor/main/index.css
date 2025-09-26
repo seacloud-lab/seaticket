@@ -24,6 +24,14 @@
   padding: 10px 0;
 }
 
+.option-editor-popover .option-editor-content.empty {
+  padding: 10px;
+}
+
+.option-editor-popover .option-editor-content.empty .tip-default {
+  font-size: 14px;
+}
+
 .option-editor-popover .option-editor-content .option-editor-option {
   border-radius: 2px;
   display: flex;
