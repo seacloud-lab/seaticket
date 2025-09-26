@@ -150,16 +150,32 @@ def list_connection_view_records(seadb_api, project_uuid, connection_id, view, s
     return records
 
 
-def list_discourse_forum_topics_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
-    """Query discourse forum topics from SeaDB"""
+def list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username):
+    """Query discourse forum topics from SeaDB with view filters using SQLGenerator"""
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    
+    # Discourse topics table name follows pattern: {connection_id}_ds_topics
     topics_table_name = f"{connection_id}_ds_topics"
-    sql = f"SELECT * FROM `{topics_table_name}` ORDER BY bumped_at DESC LIMIT {limit} OFFSET {start}"
+    table_metadata = get_current_table_metadata(tables_metadata, topics_table_name)
+    
+    if not table_metadata:
+        return []
+    
+    columns = table_metadata.get('columns') or []
+    view_copy = view.copy()
+    hidden_columns = view_copy.get('hidden_columns', [])
+    
+    # Use the existing SQLGenerator through view_data_2_sql
+    sql = view_data_2_sql(topics_table_name, columns, hidden_columns, view_copy, start, limit, username)
+    
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for discourse topics {connection_id}: {e}')
         records = []
+    
     return records
 
 

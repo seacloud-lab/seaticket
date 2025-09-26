@@ -463,6 +463,80 @@ class TextOperator(Operator):
         super(TextOperator, self).__init__(column, filter_item)
 
 
+class NumberOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.EQUAL,
+        FilterPredicateTypes.NOT_EQUAL,
+        FilterPredicateTypes.LESS,
+        FilterPredicateTypes.GREATER,
+        FilterPredicateTypes.LESS_OR_EQUAL,
+        FilterPredicateTypes.GREATER_OR_EQUAL,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(NumberOperator, self).__init__(column, filter_item)
+
+    def op_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` = %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_not_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <> %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` < %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` > %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` >= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_is_empty(self):
+        return "`%(column_name)s` is null" % ({
+            'column_name': self.column_name
+        })
+
+    def op_is_not_empty(self):
+        return "`%(column_name)s` is not null" % ({
+            'column_name': self.column_name
+        })
+
+
 class ViewFilter(object):
 
     def format_filter_predicate(self, username, q, filter_conjunction, filter_obj, condition):
@@ -790,6 +864,12 @@ def _get_operator_by_type(column_type):
         PropertyTypes.DATETIME,
     ]:
         return DateOperator
+
+    if column_type in [
+        PropertyTypes.INT,
+        PropertyTypes.FLOAT,
+    ]:
+        return NumberOperator
 
     return None
 
