@@ -62,8 +62,77 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     # add columns index
-    need_index_columns = ["state", "state_reason", "labels", "title", "author", "created_at", "closed_at"]
-    seadb_api.create_column_index(project_uuid, table_id, need_index_columns)
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.issue_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.state.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.state_reason.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.labels.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.title.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.author.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.created_at.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.closed_at.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.deleted.name
+        ],
+    )
 
     comments_table_name = str(connection_id) + '_issue_comments'
     res = seadb_api.create_table(project_uuid, comments_table_name)
@@ -75,6 +144,29 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         }
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issue_comments_table.issue_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issue_comments_table.comment_id.name
+        ],
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            github_issues_table.deleted.name
+        ],
+    )
 
 def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     """Initialize SeaDB tables for Discourse Forum connection"""

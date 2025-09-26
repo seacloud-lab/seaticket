@@ -1,6 +1,3 @@
-from seahub.project.constants import SelectTypes
-
-
 class PropertyTypes:
     TEXT = 'text'
     DATETIME = 'datetime'
@@ -9,6 +6,59 @@ class PropertyTypes:
     SINGLE_SELECT = 'single-select'
     MULTIPLE_SELECT = 'multiple-select'
     BOOL = 'bool'
+
+
+class SelectTypes:
+    state = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "open"
+        },
+        {
+          "id": "0002",
+          "name": "closed"
+        }
+      ]
+    }
+
+    state_reason = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "completed"
+        },
+        {
+          "id": "0002",
+          "name": "not_planned"
+        },
+        {
+          "id": "0003",
+          "name": "duplicate"
+        },
+        {
+          "id": "0004",
+          "name": "reopened"
+        }
+      ]
+    }
+
+    issue_type = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "Bug",
+        },
+        {
+          "id": "0002",
+          "name": "Feature"
+        },
+        {
+          "id": "0003",
+          "name": "Task"
+        }
+      ]
+    }
 
 
 class MappedColumn(object):

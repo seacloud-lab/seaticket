@@ -296,14 +296,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
     if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE){
       return [{
-        label: isSubmitting ? gettext('Creating ticket...') : gettext('Create new ticket'),
-        callback: () => createTicketFromRow(selectedRow),
+        label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
+        callback: () => createTicketFromRow(row),
         disabled: isSubmitting
       }];
     }
-
     return [];
-  }, [connection]);
+  }, [connection, isSubmitting, createTicketFromRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
@@ -361,7 +360,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
-        {...(connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM && { createContextMenuOptions })}
+        createContextMenuOptions={createContextMenuOptions} 
         permission={permission}
         isViewComputedOnServer={isServerComputableView}
         toggleView={isMultiView ? updateViewID : undefined}

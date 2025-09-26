@@ -436,7 +436,6 @@ class ProjectConnectionDetailsView(APIView):
                 error_msg = 'Connection view %s not found.' % view_id
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            seadb_api = SeaDBAPI(username)
             records = list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username)
         elif project_connection.type == ConnectionType.SITE.value:
             try:
@@ -450,7 +449,6 @@ class ProjectConnectionDetailsView(APIView):
                 error_msg = 'Connection view %s not found.' % view_id
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            seadb_api = SeaDBAPI(username)
             records = list_connection_view_records(
                 seadb_api, project_uuid, connection_id, view, start, limit, username
             )
