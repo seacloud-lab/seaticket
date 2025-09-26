@@ -171,6 +171,7 @@ const Main = forwardRef(({
       <div className="collaborator-editor-search-wrapper">
         <SearchInput
           isShowSearchIcon={false}
+          autoFocus={true}
           value={searchValue}
           size={28}
           placeholder={placeholder}

@@ -191,6 +191,7 @@ const Main = forwardRef(({
         <div className="option-editor-search-wrapper">
           <SearchInput
             isShowSearchIcon={false}
+            autoFocus={true}
             value={searchValue}
             size={28}
             placeholder={placeholder}
