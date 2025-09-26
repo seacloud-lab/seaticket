@@ -25,8 +25,8 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
     url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
-    list_discourse_forum_topics_records, list_discourse_forum_replies_records, \
-    list_connection_view_records
+    list_discourse_forum_replies_records, \
+    list_connection_view_records, list_discourse_forum_topics_records_by_view
 from seahub.project.constants import ConnectionType, CrawlStatus
 from seahub.project.seadb_api import SeaDBAPI
 
@@ -408,8 +408,19 @@ class ProjectConnectionDetailsView(APIView):
             records = GitHubIssuesRecord.objects.get_records_by_view(project_uuid, connection_id, view_id, start, limit)
             records = [record.to_dict() for record in records]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            try:
+                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            if not view:
+                error_msg = 'Connection view %s not found.' % view_id
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
             seadb_api = SeaDBAPI(username)
-            records = list_discourse_forum_topics_records(seadb_api, project_uuid, connection_id, start, limit, username)
+            records = list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username)
         elif project_connection.type == ConnectionType.SITE.value:
             try:
                 view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)

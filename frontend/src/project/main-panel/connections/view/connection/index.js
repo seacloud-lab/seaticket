@@ -166,7 +166,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       });
     };
 
-    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.SITE) {
+    if ([CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type)) {
       return {
         getMetadata,
         getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
@@ -297,7 +297,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   useEffect(() => {
     if (isLoadingConnection) return;
-    const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE].includes(connection.type);
+    const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection.type);
     if (!isMultiView) {
       updateViewID('');
     }
@@ -305,8 +305,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   if (isLoading || isLoadingConnection) return null;
 
-  const isGithubIssuesView = connection?.type === CONNECTION_TYPE.GITHUB_ISSUE;
-  const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE].includes(connection?.type);
+  const isServerComputableView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type);
+  const isMultiView = [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.SITE, CONNECTION_TYPE.DISCOURSE_FORUM].includes(connection?.type);
 
   return (
     <CollaboratorsProvider>
@@ -317,7 +317,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         localStorageNamePrefix={localStorageName}
         {...(connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM && { createContextMenuOptions })}
         permission={permission}
-        isViewComputedOnServer={isGithubIssuesView}
+        isViewComputedOnServer={isServerComputableView}
         toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
         t={t}
