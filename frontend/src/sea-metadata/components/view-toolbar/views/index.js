@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { IconButton, CustomizeNameDialog } from '@/components';
 import { useViewsData } from '@/sea-metadata/hooks';
-import { gettext } from '@/constants';
 import ViewItem from './view-item';
 import context from '@/sea-metadata/context';
 import { isFunction } from '@/utils/utils';
 
 import './index.css';
+
+const gettext = window.gettext;
 
 const Views = ({ view, toggleView }) => {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -34,7 +35,7 @@ const Views = ({ view, toggleView }) => {
   const displaySwitchView = useMemo(() => {
     return {
       _id: 'all',
-      name: 'All ' + matchViews.length + ' views',
+      name: gettext('All %s views').replace('%s', matchViews.length),
     };
   }, [matchViews]);
 
