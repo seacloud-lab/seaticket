@@ -11,10 +11,10 @@ export const ViewsDataProvider = forwardRef(({
   viewID,
   toggleView,
   children,
+  visibleViewsCount = 5,
 }, ref) => {
   const [isLoading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState({});
-  const defaultDisplayQuantity = 5;
 
   const insertView = useCallback((name) => {
     return context.insertView(name).then(res => {
@@ -111,7 +111,7 @@ export const ViewsDataProvider = forwardRef(({
         isLoading,
         viewID,
         viewsData,
-        defaultDisplayQuantity,
+        visibleViewsCount,
         insertView,
         deleteView,
         modifyView,

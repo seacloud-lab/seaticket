@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { IconButton, CustomizeNameDialog } from '@/components';
 import { useViewsData } from '@/sea-metadata/hooks';
+import { gettext } from '@/constants';
 import ViewItem from './view-item';
+import AllViews from './all-views';
 import context from '@/sea-metadata/context';
 import { isFunction } from '@/utils/utils';
 
 import './index.css';
-
-const gettext = window.gettext;
 
 const Views = ({ view, toggleView }) => {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -19,9 +19,9 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, viewID, defaultDisplayQuantity, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
+  const { isLoading, viewsData, viewID, visibleViewsCount, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
 
-  const matchViews = useMemo(() => {
+  const allViews = useMemo(() => {
     if (isLoading) return [];
     const { navigation, views } = viewsData;
     if (!navigation || !views) return [];
@@ -29,15 +29,13 @@ const Views = ({ view, toggleView }) => {
   }, [isLoading, viewsData, view]);
 
   const displayViews = useMemo(() => {
-    return matchViews.slice(0, defaultDisplayQuantity);
-  }, [defaultDisplayQuantity, matchViews]);
+    return allViews.slice(0, visibleViewsCount);
+  }, [visibleViewsCount, allViews]);
 
-  const displaySwitchView = useMemo(() => {
-    return {
-      _id: 'all',
-      name: gettext('All %s views').replace('%s', matchViews.length),
-    };
-  }, [matchViews]);
+  const isSelected = useMemo(() => {
+    if (viewID && !displayViews.find(v => v._id === viewID)) return true;
+    return false;
+  }, [displayViews, viewID]);
 
   const openViewNameDialog = useCallback((isRename) => {
     isRenameRef.current = Boolean(isRename);
@@ -149,14 +147,12 @@ const Views = ({ view, toggleView }) => {
               />
             );
           })}
-          {matchViews.length > defaultDisplayQuantity && (
-            <ViewItem
-              type="switch"
-              view={displaySwitchView}
+          {allViews.length > visibleViewsCount && (
+            <AllViews
               viewID={viewID}
-              moveAble={moveAble}
+              allViews={allViews}
+              isSelected={isSelected}
               onMove={moveView}
-              allViews={{ matchViews, displayViews }}
               toggleView={toggleView}
             />
           )}
