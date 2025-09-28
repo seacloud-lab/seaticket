@@ -56,6 +56,11 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     });
   }, [connections]);
 
+  const updateConnectionRecord = useCallback((id, newRecord) => {
+    if (!id || !newRecord) return;
+    setConnections(prev => prev.map(record => record.id === id ? newRecord : record));
+  }, []);
+
   const deleteConnectionRecord = useCallback(() => {
     connectionsAPI.deleteConnection(projectUuid, activeConnectionRef.current.id).then(res => {
       const activeConnectionIndex = connections.findIndex(c => c.id === activeConnectionRef.current.id);
@@ -176,6 +181,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       isDataLoaded: isDataLoaded.current,
       isLoading,
       connections,
+      updateConnectionRecord,
       modifyConnectionStatus,
       handleDelete,
       handleModify,

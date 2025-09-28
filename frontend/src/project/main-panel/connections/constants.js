@@ -19,6 +19,7 @@ export const CONNECTION_FIELD_TYPE = {
   EMPTY: 'empty',
   ACTIVE_STATUS: 'active_status',
   NUMBER: 'number',
+  SYNC_STATUS: 'sync_status',
 };
 
 export const CONNECTION_FIELDS = {
