@@ -13,10 +13,14 @@ from django.utils.translation import gettext as _
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.group.utils import is_group_member
-from seahub.utils import send_html_email, get_site_name
-from seahub.group.models import Group
-from seahub.organizations.models import OrgUser, OrgGroup
-from seahub.group.utils import is_group_admin_or_owner_by_group
+from seahub.utils import send_html_email, is_org_context, \
+    get_site_name, render_error, redirect_to_login
+from seahub.group.models import Group, GroupUser, GroupInviteLinkModel
+from seahub.organizations.models import Organization, OrgUser, OrgGroup
+from seahub.group.utils import is_group_admin_or_owner_by_group, get_group_members
+from seahub.settings import SEAQA_WEB_SERVICE_URL, GROUP_MEMBER_LIMIT, PERSONAL_GROUP_LIMIT
+from seahub.api2.utils import get_groups
+from seahub.admin_log.signals import org_admin_operation
 
 
 # Get an instance of a logger
@@ -103,3 +107,75 @@ def send_group_member_add_mail(request, group, from_user, to_user):
 
     subject = _('You are invited to join a group on %s') % get_site_name()
     send_html_email(subject, 'group/add_member_email.html', c, None, [to_user])
+
+
+def group_invite(request, token):
+    """
+    reigsterd user add to group
+    """
+    GROUP_MEMBER_ADD = 'group_member_add'
+
+    next_url = request.GET.get('next', '/')
+    redirect_to = SEAQA_WEB_SERVICE_URL.rstrip('/') + '/' + next_url.lstrip('/')
+    group_invite_link = GroupInviteLinkModel.objects.filter(token=token).first()
+    if not group_invite_link:
+        return render_error(request, _('Group invite link does not exist'))
+
+    try:
+        group_org_id = Organization.objects.get_org_id_by_group(group_invite_link.group_id)
+    except Exception as e:
+        logger.error(f'get org id by group failed. {e}')
+        return render_error(request, 'Internal Server Error')
+
+    email = request.user.username
+    if not email:  #AnonymousUser
+        if not group_org_id:
+            return redirect_to_login(request)
+        else:
+            return org_register(request, group_org_id)
+
+    if is_group_member(group_invite_link.group_id, email):
+        return HttpResponseRedirect(redirect_to)
+
+    # org user but not same org
+    if request.user.org and request.user.org.org_id != group_org_id:
+        return render_error(request, _('You cannot join this group'))
+
+    # non-org user but group is in org
+    if not request.user.org and group_org_id > 0:
+        return render_error(request, _('You cannot join this group'))
+
+    group_members = []
+    try:
+        group_members = get_group_members(group_invite_link.group_id)
+    except Exception as e:
+        logger.error(f'get group members failed. {e}')
+        return render_error(request, 'Internal Server Error')
+
+    if group_members and len(group_members) >= GROUP_MEMBER_LIMIT:
+        return render_error(request, _('Number of group members exceeds limit.'))
+
+    # personal group limit
+    if is_org_context(request):
+        org_id = request.user.org.org_id
+        user_groups = OrgGroup.objects.get_org_groups_by_user(org_id, email)
+    else:
+        user_groups = get_groups(email)
+
+    if len(user_groups) >= PERSONAL_GROUP_LIMIT:
+        error_msg = _('Number of groups exceeds the %s limit.') % PERSONAL_GROUP_LIMIT
+        return render_error(request, error_msg)
+
+    try:
+        GroupUser.objects.group_add_member(group_invite_link.group_id, email)
+        org_admin_operation.send(sender=None,
+            admin_name=request.user.username,
+            operation=GROUP_MEMBER_ADD,
+            detail=detail,
+            org_id=org_id,
+        )
+    except Exception as e:
+        logger.error(f'group invite add user failed. {e}')
+        return render_error(request, 'Internal Server Error')
+
+    return HttpResponseRedirect(redirect_to)

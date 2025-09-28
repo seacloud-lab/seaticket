@@ -88,6 +88,9 @@ class HeaderDropdownMenu extends React.Component {
           {showGroupOptions &&
             <CustomizeDropdownItem onClick={this.props.openGroupMember}>{gettext('Group members')}</CustomizeDropdownItem>
           }
+          {isOrgContext && isOwnerOrAdmin && showGroupOptions &&
+            <CustomizeDropdownItem onClick={this.openInviteDialog}>{gettext('Invite members')}</CustomizeDropdownItem>
+          }
           {isOwnerOrAdmin && showGroupOptions &&
             <CustomizeDropdownItem onClick={this.onManageMembersToggle}>{gettext('Manage members')}</CustomizeDropdownItem>
           }
