@@ -79,6 +79,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
 
   const loadMore = useCallback(async () => {
     if (!metadata.hasMore) return;
+    if (isLoadingMore) return;
     setLoadingMore(true);
 
     try {
@@ -91,10 +92,11 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
       return;
     }
 
-  }, [metadata, store]);
+  }, [isLoadingMore, metadata, store]);
 
   const loadAll = useCallback(async (maxLoadNumber, callback) => {
     if (!metadata.hasMore) return;
+    if (isLoadingMore) return;
     setLoadingMore(true);
     const rowsCount = metadata.row_ids.length;
     const loadNumber = rowsCount % MAX_LOAD_NUMBER !== 0 ? MAX_LOAD_NUMBER - rowsCount % MAX_LOAD_NUMBER : MAX_LOAD_NUMBER;
@@ -113,7 +115,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
       typeof callback === 'function' && callback(store.data.hasMore);
       setLoadingMore(false);
     }
-  }, [metadata, store]);
+  }, [isLoadingMore, metadata, store]);
 
   const getAdjacentRowsIds = useCallback((rowIds) => {
     const rowIdsLen = metadata.row_ids.length;
