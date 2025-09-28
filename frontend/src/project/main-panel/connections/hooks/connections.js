@@ -111,6 +111,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   }, []);
 
   const loadMore = useCallback(() => {
+    if (!hasMoreRef.current) return;
+    if (isLoading) return;
     setLoading(true);
     connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
@@ -140,7 +142,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [projectUuid]);
+  }, [isLoading, projectUuid]);
 
   const load = useCallback(() => {
     if (!hasMoreRef.current) return;
