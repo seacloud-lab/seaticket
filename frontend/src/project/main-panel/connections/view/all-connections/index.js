@@ -85,7 +85,7 @@ const AllConnections = ({ projectUuid }) => {
   return (
     <>
       <CustomizeTable
-        className="sea-qa-project-connections-table p-4"
+        className="sea-qa-project-connections-table"
         columns={columns}
         rows={connections}
         emptyTip={
