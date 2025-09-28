@@ -168,12 +168,7 @@ TEMPLATES = [
 
 
 LANGUAGES = [
-    ('de', 'Deutsch'),
     ('en', 'English'),
-    ('es', 'Español'),
-    ('fr', 'Français'),
-    ('ru', 'Русский'),
-    ('pt', 'Portuguese'),
     ('zh-cn', '简体中文'),
 ]
 

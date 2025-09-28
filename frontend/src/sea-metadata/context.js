@@ -53,7 +53,6 @@ class Context {
   };
 
   destroy = () => {
-    console.log('de');
     this.username = '';
     this.settings = {};
     this.api = null;
