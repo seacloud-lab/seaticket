@@ -2,17 +2,16 @@ import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext, mediaUrl, GitHubAppURL } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, IconTooltip } from '@/components';
 import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
+import GitHubIntegrationSelector from '../cell-editor/github-integration-selector';
 
 import './index.css';
 
-const { server } = window.app.pageOptions;
-
-const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
+const NewConnectionDialog = ({ onSubmit, githubOauth, projectUuid, onToggle, modifyConnection }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [type, setType] = useState(CONNECTION_TYPES[0].type);
   const [name, setName] = useState('');
@@ -42,11 +41,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
-    return customColumns.length > 0 ? customColumns.every(c => {
+    const isRequiredValid = customColumns.length > 0 ? customColumns.every(c => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns]);
+    if (!isRequiredValid) return false;
+    if (type !== CONNECTION_TYPE.GITHUB_ISSUE) return isRequiredValid;
+    return config.access_token || config.installation_id;
+  }, [name, config, customColumns, type]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -136,7 +138,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     }
   }, [isGithub, isDiscourse]);
 
-  const step = customSteps[stepIndex];
   const handleSubmitDiscourse = useCallback(() => {
     setSubmitting(true);
     onSubmit({ type, name: name.trim(), config }, () => {
@@ -150,6 +151,54 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     );
   }, [name, type, config, onSubmit, stepIndex]);
 
+  const renderEditor = useCallback((column) => {
+    const { key, type, placeholder, defaultValue } = column;
+    const value = config[key] !== undefined ? config[key] : (defaultValue || '');
+    if (type === CONNECTION_FIELD_TYPE.PASSWORD) {
+      return (
+        <PasswordInput
+          value={value}
+          placeholder={placeholder}
+          enableCheckStrength={false}
+          disabled={isSubmitting}
+          onChange={(newValue) => onConfigChange(key, newValue)}
+        />
+      );
+    }
+    if (type === CONNECTION_FIELD_TYPE.NUMBER) {
+      return (
+        <Input
+          type="number"
+          value={value}
+          placeholder={placeholder}
+          disabled={isSubmitting}
+          onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
+          min="1"
+          max="20"
+        />
+      );
+    }
+    if (type === CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION) {
+      return (
+        <GitHubIntegrationSelector
+          githubOauth={githubOauth}
+          projectUuid={projectUuid}
+          value={value}
+          onChange={(newValue) => onConfigChange(key, newValue)}
+        />
+      );
+    }
+    return (
+      <TextInput
+        disabled={isSubmitting}
+        placeholder={placeholder}
+        value={value}
+        onChange={(newValue) => onConfigChange(key, newValue)}
+      />
+    );
+  }, [isSubmitting, config, githubOauth, projectUuid, onConfigChange]);
+
+  const step = customSteps[stepIndex];
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-new-connection-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Add connection')}</ModalHeader>
@@ -187,30 +236,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type, placeholder, helpText, defaultValue } = c;
-              const value = config[key] !== undefined ? config[key] : (defaultValue || '');
+              const { key, helpText, type: columnType } = c;
               return (
                 <FormGroup key={key}>
                   <Label>
                     {c.name}
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
                     {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
+                    {githubOauth && columnType === CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION && (
+                      <IconTooltip icon="github" tip={gettext('Jump to GitHub app')} className="ml-0" onClick={() => location.href = GitHubAppURL} />
+                    )}
                   </Label>
-                  {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
-                    <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
-                  ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
-                    <Input
-                      type="number"
-                      value={value}
-                      placeholder={placeholder}
-                      disabled={isSubmitting}
-                      onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
-                      min="1"
-                      max="20"
-                    />
-                  ) : (
-                    <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
-                  )}
+                  {renderEditor(c)}
                 </FormGroup>
               );
             })}
@@ -241,32 +278,32 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           </div>
         )}
       </ModalBody>
-      {isGithub &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>}
-        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
-      </ModalFooter>
-      }
-      {isDiscourse &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting}>{gettext('Next')}</Button>}
-        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
-      </ModalFooter>
-      }
-      {!isGithub && !isDiscourse &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
-        {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
-      </ModalFooter>
-      }
+      {isGithub && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+          {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting || !isValid || !name}>{gettext('Next')}</Button>}
+          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+        </ModalFooter>
+      )}
+      {isDiscourse && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+          {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting || !isValid || !name}>{gettext('Next')}</Button>}
+          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+        </ModalFooter>
+      )}
+      {!isGithub && !isDiscourse && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
+          {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
+        </ModalFooter>
+      )}
     </Modal>
   );
 };

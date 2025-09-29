@@ -15,7 +15,7 @@ import SelfQuery from '@/utils/self-query';
 
 import './index.css';
 
-const AllConnections = ({ projectUuid }) => {
+const AllConnections = ({ projectUuid, githubOauth }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 

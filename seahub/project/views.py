@@ -10,7 +10,7 @@ from seahub.project.models import Workspaces, Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL
+from seahub.settings import MEDIA_URL, GITHUB_APP_URL
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 
@@ -50,6 +50,12 @@ def project_view(request, workspace_id, project_name, children_id = ''):
     except:
         project_settings = '{}'
 
+    github_oauth = project.github_oauth
+    if github_oauth:
+        github_oauth = json.loads(github_oauth)
+        github_oauth.pop('access_token')
+        github_oauth = json.dumps(github_oauth)
+
     is_project_admin = check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
 
@@ -63,8 +69,10 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'media_url': MEDIA_URL,
         'icon': json.dumps(icon),
         'settings': project_settings,
+        'github_oauth': github_oauth,
         'is_project_admin': is_project_admin,
-        'permission': permission if permission else PERMISSION_READ
+        'permission': permission if permission else PERMISSION_READ,
+        'github_app_url': GITHUB_APP_URL,
     }
 
     return render(request, 'project_view_react.html', return_dict)

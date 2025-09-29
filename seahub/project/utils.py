@@ -9,6 +9,9 @@ import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
+from django.shortcuts import redirect
+
+from seahub.github_app.github_app_utils import available_installations_by_token
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
     Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees, ConnectionsViews, TicketViews
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
@@ -26,7 +29,11 @@ from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_
 
 
 logger = logging.getLogger(__name__)
-
+APP_ID = '2027684'
+PRIVATE_KEY_PATH = '/data/dev/seaqa-indexer/seaqa_indexer/seaqa-test.2025-09-28.private-key (1).pem'
+CLIENT_ID = 'Ov23lifkJd74oZJOE073'
+CLIENT_SECRET = '21746ebb2e776c3090d835b75c995ed78f0c8a86'
+REDIRECT_URI = "http://localhost:5000/oauth/callback"
 
 def check_project_limit(workspace, request):
     from seahub.settings import PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
@@ -204,6 +211,11 @@ def update_github_issue_by_webhook(params):
     )
     resp.raise_for_status()
     return resp
+
+def access_auth_token_by_oauth(access_token):
+    installation_info = available_installations_by_token(access_token)
+    return installation_info
+
 
 
 def update_discourse_topic_by_webhook(params):

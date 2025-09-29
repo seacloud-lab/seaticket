@@ -12,7 +12,7 @@ import { connectionsAPI } from '../../../api';
 
 const ConnectionsContext = React.createContext(null);
 
-export const ConnectionsProvider = ({ projectUuid, children }) => {
+export const ConnectionsProvider = ({ projectUuid, githubOauth, children }) => {
   const [isLoading, setLoading] = useState(false);
   const [connections, setConnections] = useState([]);
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
@@ -201,11 +201,15 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
           {activeConnectionRef.current ?
             <ModifyConnectionDialog
               record={activeConnectionRef.current}
+              githubOauth={githubOauth}
+              projectUuid={projectUuid}
               onToggle={closeConnectionDialog}
               onSubmit={modifyConnection}
             />
             :
             <NewConnectionDialog
+              githubOauth={githubOauth}
+              projectUuid={projectUuid}
               onToggle={closeConnectionDialog}
               onSubmit={createConnection}
               modifyConnection={modifyConnection}

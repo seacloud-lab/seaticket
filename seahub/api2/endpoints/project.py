@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
+from seahub.github_app.views import github_oauth_auth
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
@@ -274,6 +275,7 @@ class ProjectView(APIView):
         icon = request.data.get('icon')
         settings = request.data.get('settings')
         password = request.data.get('password')
+        github_oauth = request.data('github_oauth')
 
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -318,6 +320,8 @@ class ProjectView(APIView):
                 for k,v in update_settings.items():
                     project_settings[k] = v
                 project.settings = json.dumps(project_settings)
+            if github_oauth:
+                project.github_oauth = github_oauth
             project.modifier = username
             project.save()
         except OperationalError:

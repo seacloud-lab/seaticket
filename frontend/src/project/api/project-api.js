@@ -79,6 +79,12 @@ class ProjectAPI {
     return this.req.put(url, form);
   }
 
+  // github
+  getGitHubIntegrationOrganizations = (projectUuid) => {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/github-integration/';
+    return this.req.get(url);
+  };
+
 }
 
 const projectAPI = new ProjectAPI();

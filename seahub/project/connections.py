@@ -4,7 +4,12 @@ import hashlib
 import logging
 import json
 import datetime
+import time
+from urllib.parse import urlparse
 
+import jwt
+import requests
+from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
@@ -17,13 +22,14 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
+from seahub.settings import SEAQA_INDEXER_SERVER_URL
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
 from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
     add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
-    url_to_filename, update_discourse_topic_by_webhook
+    url_to_filename, update_discourse_topic_by_webhook, access_auth_token_by_oauth
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
@@ -463,7 +469,7 @@ class GithubWebhookView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         event = request.headers.get('X-GitHub-Event')
-        if event != 'issues' and event != 'issue_comment':
+        if event != 'issues' and event != 'issue_comment' and event != 'installation':
             return Response({'success': True}, status=status.HTTP_200_OK)
 
         payload = request.data
@@ -685,3 +691,28 @@ class ProjectConnectionsStatusView(APIView):
             last_sync_status = connection_status.get('last_sync_status', '')
             connections_status[record.id] = last_sync_status
         return Response(connections_status)
+
+class GitHubIntegrationViews(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid):
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        installation_info = []
+        if project.github_oauth is not None:
+            github_oauth = json.loads(project.github_oauth)
+            access_token = github_oauth.get('access_token')
+            installation_info = access_auth_token_by_oauth(access_token)
+
+        return Response({'records': installation_info}, status=status.HTTP_200_OK)

@@ -286,6 +286,7 @@ class Projects(models.Model):
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
     settings = models.TextField(null=True)
+    github_oauth = models.TextField(max_length=50, null=True)
 
     objects = ProjectsManager()
 
@@ -312,6 +313,13 @@ class Projects(models.Model):
                 'deleted': self.deleted,
                 'delete_time': self.delete_time if self.delete_time else '',
             })
+
+        if self.github_oauth:
+            self.github_oauth = json.loads(self.github_oauth)
+            self.github_oauth.pop('access_token')
+        result.update({
+            'github_oauth': self.github_oauth,
+        })
         return result
 
     @property

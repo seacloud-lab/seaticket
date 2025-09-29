@@ -15,12 +15,13 @@ import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const { projectName, projectUuid, workspaceID, settings: initSettings } = window.app.pageOptions;
+const { projectName, projectUuid, workspaceID, settings: initSettings, githubOauth: initGithubOauth } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
   const [settings, setSettings] = useState({});
+  const [githubOauth, setGithubOauth] = useState(null);
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
@@ -74,6 +75,17 @@ const Project = () => {
     });
   }, [settings]);
 
+  const modifyGithubOauth = useCallback((value, callback) => {
+    projectAPI.updateProject(workspaceID, projectName, { github_oauth: value }).then(res => {
+      setGithubOauth(value);
+      callback && callback();
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback({ error });
+    });
+  }, []);
+
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -100,15 +112,30 @@ const Project = () => {
     setSettings(settings);
   }, []);
 
+  useEffect(() => {
+    let githubOauth = null;
+    if (initGithubOauth) {
+      try {
+        githubOauth = JSON.parse(initGithubOauth);
+        if (Object.keys(githubOauth) === 0) {
+          githubOauth = null;
+        }
+      } catch {
+        githubOauth = null;
+      }
+    }
+    setGithubOauth(githubOauth);
+  }, []);
+
   return (
     <I18nextProvider i18n={i18n}>
       <div className="sea-qa-project">
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <ConnectionsProvider projectUuid={projectUuid} >
+          <ConnectionsProvider projectUuid={projectUuid} githubOauth={githubOauth}>
             <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} modifySettings={modifySettings} />
-            <MainPanel activeBar={activeBar} settings={settings} />
+            <MainPanel activeBar={activeBar} settings={settings} githubOauth={githubOauth} modifyGithubOauth={modifyGithubOauth} />
           </ConnectionsProvider>
         )}
       </div>

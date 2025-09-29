@@ -45,6 +45,7 @@ export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShow
 
 // project
 export const workspaceID = window.app.pageOptions.workspaceID;
+export const GitHubAppURL = window.app.pageOptions.GitHubAppURL;
 
 export const cloudMode = window.app.pageOptions.cloudMode;
 export const isOrgContext = window.app.pageOptions.isOrgContext;

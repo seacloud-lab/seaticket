@@ -40,6 +40,9 @@ urlpatterns = [
     ### PWA ###
     re_path('', include('pwa.urls')),
 
+    ### GitHub App ###
+    re_path(r'^github/', include('seahub.github_app.urls')),
+
     ### Misc ###
     re_path(r'^image-view/(?P<filename>.*)$', image_view, name='image_view'),
     re_path(r'^custom-css/$', custom_css_view, name='custom_css'),

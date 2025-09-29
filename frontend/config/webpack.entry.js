@@ -11,6 +11,7 @@ const entryFiles = {
   exclamationCircleIcon: '/icon-page/exclamation-circle',
   moreIcon: '/icon-page/more',
   downIcon: '/icon-page/down',
+  GitHubOauthAuth: '/github-oauth-auth',
 };
 
 const getEntries = (isEnvDevelopment) => {

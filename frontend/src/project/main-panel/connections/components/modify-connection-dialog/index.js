@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
-import { gettext } from '@/constants';
+import { gettext, GitHubAppURL } from '@/constants';
 import { validateName } from '@/utils/validate';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, IconTooltip } from '@/components';
+import GitHubIntegrationSelector from '../cell-editor/github-integration-selector';
 
-const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
+const ModifyConnectionDialog = ({ record, githubOauth, projectUuid, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
   const [config, setConfig] = useState(record?.config || {});
   const [isChanged, setChanged] = useState(false);
@@ -19,11 +20,14 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
-    return customColumns.length > 0 ? customColumns.every(c => {
+    const isRequiredValid = customColumns.length > 0 ? customColumns.every(c => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns]);
+    if (!isRequiredValid) return false;
+    if (type !== CONNECTION_TYPE.GITHUB_ISSUE) return isRequiredValid;
+    return config.access_token || config.installation_id;
+  }, [name, type, config, customColumns]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -61,6 +65,52 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     onSubmit({ name: message, config: validConfig }, () => setSubmitting(false));
   }, [record, name, config, onSubmit, onToggle]);
 
+  const renderEditor = useCallback((column) => {
+    const { key, type, placeholder, defaultValue, can_edit_multiple_times } = column;
+    const value = config[key] !== undefined ? config[key] : (defaultValue || '');
+    if (type === CONNECTION_FIELD_TYPE.PASSWORD) {
+      return (
+        <>
+          {!can_edit_multiple_times ? (
+            <Input value="********" disabled={true} />
+          ) : (
+            <PasswordInput value={value} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
+          )}
+        </>
+      );
+    }
+    if (type === CONNECTION_FIELD_TYPE.NUMBER) {
+      return (
+        <Input
+          type="number"
+          value={value}
+          placeholder={placeholder}
+          disabled={isSubmitting}
+          onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
+          min="1"
+          max="20"
+        />
+      );
+    }
+    if (type === CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION) {
+      return (
+        <GitHubIntegrationSelector
+          githubOauth={githubOauth}
+          projectUuid={projectUuid}
+          value={value}
+          onChange={(newValue) => onConfigChange(key, newValue)}
+        />
+      );
+    }
+    return (
+      <TextInput
+        value={value}
+        onChange={(newValue) => onConfigChange(key, newValue)}
+        disabled={isSubmitting}
+      />
+    );
+  }, [isSubmitting, config, githubOauth, projectUuid, onConfigChange]);
+
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false}>
       <ModalHeader toggle={onToggle}>{gettext('Edit connection')}</ModalHeader>
@@ -73,8 +123,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
         {customColumns.map(c => {
-          const { key, type, can_edit_multiple_times = true, placeholder, helpText, defaultValue } = c;
-          const value = config[key] !== undefined ? config[key] : (defaultValue || '');
+          const { key, type: columnType, helpText } = c;
 
           return (
             <FormGroup key={key}>
@@ -82,28 +131,11 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
                 {c.name}
                 {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
                 {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
+                {githubOauth && columnType === CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION && (
+                  <IconTooltip icon="github" tip={gettext('Jump to GitHub app')} className="ml-0" onClick={() => location.href = GitHubAppURL} />
+                )}
               </Label>
-              {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
-                <>
-                  {!can_edit_multiple_times ? (
-                    <Input value="********" disabled={true} />
-                  ) : (
-                    <PasswordInput value={value} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
-                  )}
-                </>
-              ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
-                <Input
-                  type="number"
-                  value={value}
-                  placeholder={placeholder}
-                  disabled={isSubmitting}
-                  onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
-                  min="1"
-                  max="20"
-                />
-              ) : (
-                <TextInput value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
-              )}
+              {renderEditor(c)}
             </FormGroup>
           );
         })}

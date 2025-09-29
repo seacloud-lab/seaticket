@@ -21,6 +21,7 @@ export const CONNECTION_FIELD_TYPE = {
   EMPTY: 'empty',
   NUMBER: 'number',
   SYNC_STATUS: 'sync_status',
+  GITHUB_INSTALLATION: 'github_app',
 };
 
 export const CONNECTION_FIELDS = {
@@ -71,9 +72,14 @@ export const CONNECTION_FIELDS = {
       key: 'access_token',
       name: gettext('Access token'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
       is_custom: true,
       helpText: gettext('Your personal access token in GitHub Developer Settings')
+    }, {
+      key: 'installation_id',
+      name: gettext('GitHub installation'),
+      type: CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION,
+      is_custom: true,
+      helpText: gettext('GiuHub installation')
     }, {
       key: 'webhook_secret',
       name: gettext('Webhook secret (optional)'),

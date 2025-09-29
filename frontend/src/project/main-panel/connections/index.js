@@ -9,18 +9,18 @@ const {
   projectUuid, projectName, workspaceID, permission
 } = window.app.pageOptions;
 
-const Page = () => {
+const Page = ({ githubOauth }) => {
   const { isLoading, pageType } = useConnectionsPage();
   if (isLoading) return null;
-  if (pageType === CONNECTION_PAGE_TYPE.ALL) return (<AllConnections projectUuid={projectUuid} projectName={projectName} />);
+  if (pageType === CONNECTION_PAGE_TYPE.ALL) return (<AllConnections projectUuid={projectUuid} projectName={projectName} githubOauth={githubOauth} />);
   return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} />);
 };
 
-const Index = ({ title }) => {
+const Index = ({ title, githubOauth }) => {
   return (
     <ConnectionsPageProvider workspaceID={workspaceID} projectName={projectName}>
       <TopBar title={title} />
-      <Page />
+      <Page githubOauth={githubOauth} />
     </ConnectionsPageProvider>
   );
 };

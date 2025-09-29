@@ -6,7 +6,7 @@ from .views import project_view
 from .apis import ProjectRelatedUsersView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
-    ProjectConnectionsStatusView, ProjectConnectionLogView
+    ProjectConnectionsStatusView, ProjectConnectionLogView, GitHubIntegrationViews
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
@@ -34,6 +34,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/(?P<children_id>\d+)/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/github-integration/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
     # user: related users
@@ -57,6 +58,9 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v2.1-connection-view'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
+
+    # github integration
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/github-integration/$', GitHubIntegrationViews.as_view(), name='api-v2.1-github-integration'),
 
     # ticket
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),

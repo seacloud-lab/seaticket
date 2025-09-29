@@ -41,7 +41,10 @@ const SidePanel = ({ activeBar, toggleBar, settings, modifySettings }) => {
             <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
             {isProjectAdmin && (
-              <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleSettings} />
+              <>
+                <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleSettings} />
+                <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
+              </>
             )}
           </div>
         </div>

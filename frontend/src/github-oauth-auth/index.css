@@ -1,0 +1,58 @@
+#wrapper {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.sea-qa-github-oauth-auth {
+  width: 100%;
+  height: 100%;
+  overflow: hidden auto;
+  background-color: #E9EBEF !important;
+  display: flex;
+  justify-content: center;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-container {
+  width: 80%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-header {
+  padding-bottom: 42px;
+  padding-top: 36px;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-header .top-logo img {
+  height: 40px;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-body {
+  width: 600px;
+  background-color: #FFF;
+  padding: 30px 48px;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-permission-list-content {
+  padding-left: 14px;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-op-btns {
+  margin: 36px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-use-other {
+  text-align: center;
+}
+
+.sea-qa-github-oauth-auth .sea-qa-github-oauth-auth-footer {
+  margin: 12px 0 36px 0;
+  color: #828181;
+}
