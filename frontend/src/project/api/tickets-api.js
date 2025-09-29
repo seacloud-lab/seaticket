@@ -60,7 +60,7 @@ class TicketsAPI {
   }
 
   listProjectTicketsBySearch(projectUuid, query = '', signal) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/search-tickets/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/search/';
     const params = {
       query,
     };

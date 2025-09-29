@@ -62,7 +62,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/(?P<reply_number>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/search-tickets/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-search-tickets'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-tickets-search'),
 
     # tags
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
