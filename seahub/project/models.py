@@ -551,10 +551,8 @@ class ConnectionsView(object):
         }
         if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
             self.details.update({
-                    'basic_filters': [
-                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
-                    ],
-                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                    'basic_filters': [],
+                    'sorts': [],
                 })
         elif self.project_connection_type == ConnectionType.SITE.value:
             self.details.update({
