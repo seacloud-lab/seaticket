@@ -13,11 +13,16 @@ class SelectTypes:
       "options": [
         {
           "id": "0001",
-          "name": "open"
+          "name": "open",
+          "color": "#1A7F37",
+          "textColor": "#FFFFFF",
+
         },
         {
           "id": "0002",
-          "name": "closed"
+          "name": "closed",
+          "color": "#8250DF",
+          "textColor": "#FFFFFF"
         }
       ]
     }
@@ -26,19 +31,27 @@ class SelectTypes:
       "options": [
         {
           "id": "0001",
-          "name": "completed"
+          "name": "completed",
+          "color": "#8250DF",
+          "textColor": "#FFFFFF"
         },
         {
           "id": "0002",
-          "name": "not_planned"
+          "name": "not_planned",
+          "color": "#59636E",
+          "textColor": "#FFFFFF"
         },
         {
           "id": "0003",
-          "name": "duplicate"
+          "name": "duplicate",
+          "color": "#59636E",
+          "textColor": "#FFFFFF"
         },
         {
           "id": "0004",
-          "name": "reopened"
+          "name": "reopened",
+          "color": "#1A7F37",
+          "textColor": "#FFFFFF"
         }
       ]
     }
@@ -48,14 +61,20 @@ class SelectTypes:
         {
           "id": "0001",
           "name": "Bug",
+          "color": "#DC556A",
+          "textColor":"#9A6700"
         },
         {
           "id": "0002",
-          "name": "Feature"
+          "name": "Feature",
+          "color":"#3C8FE4",
+          "textColor":"#9A6700"
         },
         {
           "id": "0003",
-          "name": "Task"
+          "name": "Task",
+          "color":"#FFF8C5",
+          "textColor":"#0969DA"
         }
       ]
     }
