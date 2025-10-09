@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/utils';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader } from '@/components';
 
 const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
@@ -14,7 +14,19 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const type = useMemo(() => record.type, [record]);
-  const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
+  const columns = useMemo(() => {
+    const _columns = CONNECTION_FIELDS[type] || [];
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return [..._columns, {
+        key: 'webhook_secret',
+        name: gettext('Webhook secret (optional)'),
+        type: CONNECTION_FIELD_TYPE.TEXT,
+        is_required: false,
+        is_custom: true,
+      }];
+    }
+    return _columns;
+  }, [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
 
   const isValid = useMemo(() => {
