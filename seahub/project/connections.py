@@ -407,6 +407,7 @@ class ProjectConnectionDetailsView(APIView):
             limit = 1000
         end = start + limit
 
+        columns = []
         seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             try:
@@ -421,7 +422,7 @@ class ProjectConnectionDetailsView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
             table_name = str(connection_id)+'_github_issues'
-            records = list_connection_view_records(
+            records, columns = list_connection_view_records(
                 seadb_api, project_uuid, table_name, view, start, limit, username
             )
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
@@ -457,6 +458,7 @@ class ProjectConnectionDetailsView(APIView):
 
         return Response({
             'records': records,
+            'columns': columns,
             'name': project_connection.name,
             'type': project_connection.type,
         })

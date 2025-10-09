@@ -271,7 +271,7 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records
+    return records, columns
 
 
 def list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username):
