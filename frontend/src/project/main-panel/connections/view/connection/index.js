@@ -11,6 +11,7 @@ import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader } from '@/components';
+import { isDarkColor } from '@/utils/utils';
 
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
@@ -137,7 +138,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return {};
   }, [connection]);
 
-  const columns = useMemo(() => {
+  const initColumns = useMemo(() => {
     const connectionType = connection?.type;
     if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return [
@@ -177,7 +178,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         },
         { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
         { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
-        { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
+        { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
       ];
@@ -200,8 +201,23 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { type, records } = res.data;
         let rows = [];
+        let columns = initColumns;
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
+          const dbColumns = res?.data?.columns || [];
+          const dbLabelsColum = dbColumns.find(c => c.name === 'labels');
+          const labelsColumIndex = columns.findIndex(c => c.key === 'labels');
+          if (dbLabelsColum && labelsColumIndex > -1) {
+            let options = dbLabelsColum?.data?.options || [];
+            options = options.map(o => {
+              if (o.textColor) return o;
+              return {
+                ...o,
+                textColor: isDarkColor(o.color) ? '#FFF' : '#212529',
+              };
+            });
+            columns[labelsColumIndex].data = { ...dbLabelsColum.data, options };
+          }
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
         } else if (type === CONNECTION_TYPE.SITE) {
@@ -263,7 +279,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         });
       },
     };
-  }, [projectUuid, connectionID, connection, columns]);
+  }, [projectUuid, connectionID, connection, initColumns]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

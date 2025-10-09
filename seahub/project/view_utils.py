@@ -541,6 +541,8 @@ class NumberOperator(Operator):
 class SelectOperator(Operator):
     SUPPORT_FILTER_PREDICATE = [
         FilterPredicateTypes.IS,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
     ]
     def __init__(self, column, filter_item):
         super(SelectOperator, self).__init__(column, filter_item)
