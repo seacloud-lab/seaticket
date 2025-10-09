@@ -260,7 +260,7 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
-        return []
+        return [], []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     hidden_columns = view_copy.get('hidden_columns', [])
@@ -271,7 +271,7 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records
+    return records, columns
 
 
 def list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username):

@@ -19,12 +19,6 @@ class GithubIssue {
     this.connection_id = object.connection_id || '';
     this.need_index = object.need_index || '';
     this.deleted = Boolean(object.deleted);
-
-    if (Array.isArray(this.labels) && this.labels.length > 0) {
-      this.labels = this.labels.join(', ');
-    } else {
-      this.labels = '';
-    }
   }
 }
 
