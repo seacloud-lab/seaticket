@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 def init_site_seadb_table(seadb_api, project_uuid, connection_id):
-    res = seadb_api.create_table(project_uuid, connection_id)
+    site_table_name = WebCrawlTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, site_table_name)
     table_id = res['table_id']
     web_crawl_table = WebCrawlTable
     for column in web_crawl_table.get_fields():
@@ -44,11 +45,11 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
-    issues_table_name = str(connection_id) + '_github_issues'
+    github_issues_table = GithubIssuesTable
+    issues_table_name = github_issues_table.gen_table_name(connection_id)
+    github_issue_comments_table = GithubIssueCommentsTable
     res = seadb_api.create_table(project_uuid, issues_table_name)
     table_id = res['table_id']
-    github_issues_table = GithubIssuesTable
-    github_issue_comments_table = GithubIssueCommentsTable
     for column in github_issues_table.get_fields():
 
         mapped_column = {
@@ -134,7 +135,7 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         ],
     )
 
-    comments_table_name = str(connection_id) + '_issue_comments'
+    comments_table_name = github_issue_comments_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, comments_table_name)
     table_id = res['table_id']
     for column in github_issue_comments_table.get_fields():
@@ -171,10 +172,10 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
 def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     """Initialize SeaDB tables for Discourse Forum connection"""
     # Create topics table
-    topics_table_name = f"{connection_id}_ds_topics"
+    discourse_topics_table = DiscourseTopicsTable
+    topics_table_name = discourse_topics_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, topics_table_name)
     topics_table_id = res['table_id']
-    discourse_topics_table = DiscourseTopicsTable
     for column in discourse_topics_table.get_fields():
         mapped_column = {
             'column_name': column.name,
@@ -207,10 +208,10 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
     # Create replies table
-    replies_table_name = f"{connection_id}_ds_replies"
+    discourse_replies_table = DiscourseRepliesTable
+    replies_table_name = discourse_replies_table.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, replies_table_name)
     replies_table_id = res['table_id']
-    discourse_replies_table = DiscourseRepliesTable
     for column in discourse_replies_table.get_fields():
         mapped_column = {
             'column_name': column.name,
@@ -244,17 +245,6 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
-    sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
-    try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
-    except Exception as e:
-        logger.error(f'SeaDB query error for connection {connection_id}: {e}')
-        records = []
-    return records
-
-
 def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
@@ -274,43 +264,12 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     return records, columns
 
 
-def list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username):
-    """Query discourse forum topics from SeaDB with view filters using SQLGenerator"""
-    metadata = seadb_api.get_base_metadata(project_uuid)
-    tables_metadata = metadata.get('tables') or []
-    
-    # Discourse topics table name follows pattern: {connection_id}_ds_topics
-    topics_table_name = f"{connection_id}_ds_topics"
-    table_metadata = get_current_table_metadata(tables_metadata, topics_table_name)
-    
-    if not table_metadata:
-        return []
-    
-    columns = table_metadata.get('columns') or []
-    view_copy = view.copy()
-    hidden_columns = view_copy.get('hidden_columns', [])
-    
-    # Use the existing SQLGenerator through view_data_2_sql
-    sql = view_data_2_sql(topics_table_name, columns, hidden_columns, view_copy, start, limit, username)
-    
+def list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username=None):
+    sql = f"SELECT * FROM `{table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
-        logger.error(f'SeaDB query error for discourse topics {connection_id}: {e}')
-        records = []
-    
-    return records
-
-
-def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, topic_id, username=None):
-    """Query discourse forum replies from SeaDB"""
-    replies_table_name = f"{connection_id}_ds_replies"
-    sql = f"SELECT * FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
-    try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
-    except Exception as e:
-        logger.error(f'SeaDB query error for discourse replies {connection_id}: {e}')
+        logger.error(f'SeaDB query error for discourse replies {table_name}: {e}')
         records = []
     return records

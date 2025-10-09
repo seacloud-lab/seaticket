@@ -26,8 +26,9 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
     url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
-    list_connection_view_records, list_discourse_forum_topics_records_by_view
+    list_connection_view_records
 from seahub.project.constants import ConnectionType, CrawlStatus
+from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, DiscourseRepliesTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -407,20 +408,19 @@ class ProjectConnectionDetailsView(APIView):
             limit = 1000
         end = start + limit
 
-        columns = []
+        try:
+            view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not view:
+            error_msg = 'Connection view %s not found.' % view_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
         seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            try:
-                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-            if not view:
-                error_msg = f'Connection view {view_id} not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             basic_filters = view.get('basic_filters', [])
             for basic_filter in basic_filters:
                 column_key = basic_filter.get('column_key', '')
@@ -431,40 +431,15 @@ class ProjectConnectionDetailsView(APIView):
                     basic_filter['column_name'] = 'state'
                     del basic_filter['column_key']
             view['basic_filters'] = basic_filters
-            table_name = str(connection_id)+'_github_issues'
-            records, columns = list_connection_view_records(
-                seadb_api, project_uuid, table_name, view, start, limit, username
-            )
+            table_name = GithubIssuesTable.gen_table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            try:
-                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-            if not view:
-                error_msg = 'Connection view %s not found.' % view_id
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            records = list_discourse_forum_topics_records_by_view(seadb_api, project_uuid, connection_id, view, start, limit, username)
+            table_name = DiscourseTopicsTable.gen_table_name(connection_id)
         elif project_connection.type == ConnectionType.SITE.value:
-            try:
-                view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            table_name = WebCrawlTable.gen_table_name(connection_id)
 
-            if not view:
-                error_msg = 'Connection view %s not found.' % view_id
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            records = list_connection_view_records(
-                seadb_api, project_uuid, connection_id, view, start, limit, username
-            )
-        else:
-            records = []
+        records, columns = list_connection_view_records(
+            seadb_api, project_uuid, table_name, view, start, limit, username
+        )
 
         return Response({
             'records': records,
@@ -630,7 +605,8 @@ class ProjectConnectionRowDetailView(APIView):
                 error_msg = 'Missing topic_id.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
-            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, topic_id, username)
+            table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
