@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Tooltip } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, UncontrolledTooltip } from 'reactstrap';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '@/components';
@@ -18,7 +18,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [name, setName] = useState('');
   const [config, setConfig] = useState({});
   const [isSubmitting, setSubmitting] = useState(false);
-  const [tooltipOpen, setTooltipOpen] = useState({});
   const [newRecord, setNewRecord] = useState(null);
 
   const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
@@ -173,12 +172,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
             {customColumns.map(c => {
               const { key, type, placeholder, helpText } = c;
               const value = config[key] || '';
-              const toggleTooltip = () => {
-                setTooltipOpen(prev => ({
-                  ...prev,
-                  [key]: !prev[key]
-                }));
-              };
               return (
                 <FormGroup key={key}>
                   <Label>
@@ -192,14 +185,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                           className="mr-1 help-icon"
                           style={{ cursor: 'pointer' }}
                         />
-                        <Tooltip
-                          placement="top"
-                          isOpen={tooltipOpen[key]}
+                        <UncontrolledTooltip
                           target={`help-icon-${key}`}
-                          toggle={toggleTooltip}
+                          placement="right"
+                          fade={false}
+                          className="sea-metadata-tooltip"
                         >
                           {helpText}
-                        </Tooltip>
+                        </UncontrolledTooltip>
                       </>
                     ) : null}
                   </Label>
