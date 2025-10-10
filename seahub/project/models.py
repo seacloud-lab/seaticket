@@ -551,7 +551,10 @@ class ConnectionsView(object):
         }
         if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
             self.details.update({
-                    'basic_filters': [],
+                    'basic_filters': [
+                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    ],
                     'sorts': [],
                 })
         elif self.project_connection_type == ConnectionType.SITE.value:
@@ -769,78 +772,6 @@ class ConnectionsViews(models.Model):
         return self.folders_ids + self.views_ids
 
 
-class GitHubIssuesRecordManager(models.Manager):
-
-    def get_records_by_view(self, project_uuid, connection_id, view_id, start, end):
-        sorts = []
-        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, ConnectionType.GITHUB_ISSUE.value)
-        basic_filters = view.get('basic_filters', [])
-        sorts = view.get('sorts', [])
-
-        q = Q(deleted=False) & Q(connection_id=connection_id)
-
-        for basic_filter in basic_filters:
-                if basic_filter.get('column_key') == 'status':
-                        value = basic_filter['filter_term']
-                        if not value:
-                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
-                        elif 'open' in value:
-                                value = value + ['']
-                        q = q & Q(state__in=value)
-
-        if not sorts:
-                sorts = [{ 'column_key': 'created_at', 'sort_type': 'down' }]
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
-
-        return self.filter(q).order_by(', '.join(sorts))[start: end]
-
-
-class GitHubIssuesRecord(models.Model):
-    """ GitHub issues table"""
-
-    issue_id = models.BigIntegerField()
-    issue_number = models.IntegerField()
-    title = models.TextField(null=True, blank=True)
-    body = models.TextField(null=True, blank=True)
-    state = models.CharField(max_length=20, null=True, blank=True)
-    labels = models.TextField(null=True, blank=True)
-    author = models.CharField(max_length=255, null=True, blank=True)
-    url = models.CharField(max_length=1024, null=True, blank=True)
-    created_at = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
-    closed_at = models.DateTimeField(null=True, blank=True)
-    comments = models.IntegerField(null=True, blank=True)
-    connection_id = models.CharField(max_length=64)
-    need_index = models.BooleanField(default=False)
-    deleted = models.BooleanField(default=False)
-
-    objects = GitHubIssuesRecordManager()
-
-    class Meta:
-        db_table = 'github_issues'
-        unique_together = [('issue_id', 'connection_id')]
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'issue_id': self.issue_id,
-            'issue_number': self.issue_number,
-            'title': self.title,
-            'body': self.body,
-            'state': self.state,
-            'labels': self.labels,
-            'author': self.author,
-            'url': self.url,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'closed_at': self.closed_at,
-            'comments': self.comments,
-            'connection_id': self.connection_id,
-            'need_index': self.need_index,
-            'deleted': self.deleted,
-        }
-
-
 class TicketRepliesManager(models.Manager):
 
     def list_replies(self, ticket_id, start, end):
@@ -1020,6 +951,7 @@ class TicketView(object):
             "name": self.name,
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
             ],
             "filters": [],

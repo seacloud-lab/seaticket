@@ -176,22 +176,22 @@ export const CONNECTION_PAGE_TYPE = {
   NEW: 'new',
 };
 
-export const GITHUB_STATUS = {
+export const GITHUB_STATE = {
   OPEN: 'open',
   CLOSED: 'closed',
-  REOPEN: 're_open',
-  COMPLETED: 'completed',
-  NOT_PLANNED: 'not_planned',
-  DUPLICATE: 'duplicate',
 };
 
-export const GITHUB_STATUS_OPTIONS = [
-  { id: GITHUB_STATUS.OPEN, value: GITHUB_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: GITHUB_STATUS.CLOSED, value: GITHUB_STATUS.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: GITHUB_STATUS.COMPLETED, value: GITHUB_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: GITHUB_STATUS.NOT_PLANNED, value: GITHUB_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
-  { id: GITHUB_STATUS.DUPLICATE, value: GITHUB_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+export const GITHUB_STATE_OPTIONS = [
+  { id: GITHUB_STATE.OPEN, value: GITHUB_STATE.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
+  { id: GITHUB_STATE.CLOSED, value: GITHUB_STATE.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
 ];
+
+export const GITHUB_STATE_REASON_NAME_MAP = {
+  'reopened': gettext('Reopen'),
+  'completed': gettext('Completed'),
+  'not_planned': gettext('Not planned'),
+  'duplicate': gettext('Duplicate'),
+};
 
 export const SUPPORT_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,

@@ -543,9 +543,29 @@ class SelectOperator(Operator):
         FilterPredicateTypes.IS,
         FilterPredicateTypes.EMPTY,
         FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.IS_ANY_OF,
     ]
     def __init__(self, column, filter_item):
         super(SelectOperator, self).__init__(column, filter_item)
+
+    def _get_option_by_key(self, key):
+        options = self.column.get('data', {}).get('options', [])
+        for op in options:
+            if op.get('id') == key or op.get('name') == key:
+                return op.get('name')
+        return ''
+
+    def op_is_any_of(self):
+        filter_term = self.filter_term
+        if not filter_term:
+            return ''
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
+        filter_term = [self._get_option_by_key(f) for f in filter_term]
+        option_names = [f'\'{op_name}\'' for op_name in filter_term if op_name]
+        if not option_names:
+            return ""
+        return f'`{self.column_name}` in ({", ".join(option_names)})'
 
 
 class ViewFilter(object):
@@ -861,6 +881,8 @@ def _filter2sql(operator):
         return operator.op_is_within()
     if filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
         return operator.op_is_current_user_id()
+    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
+        return operator.op_is_any_of()
     return ''
 
 
@@ -996,27 +1018,11 @@ class SQLGenerator(object):
 
     def _basic_filters_sql(self):
         basic_filters = self.view.get('basic_filters', [])
-        filter_conjunction = 'OR'
+        filter_conjunction = 'AND'
         if not basic_filters:
             return ''
 
-        filters_list = basic_filters[0].get('filter_term')
-        filters = []
-        for term in filters_list:
-            if term == 'open' or term == 'closed':
-                filters.append({
-                    'column_name': 'state',
-                    'filter_predicate': 'is',
-                    'filter_term': term
-                })
-            else:
-                filters.append({
-                    'column_name': 'state_reason',
-                    'filter_predicate': 'is',
-                    'filter_term': term
-                })
-
-        return self._generator_filters_sql(filters, filter_conjunction)
+        return self._generator_filters_sql(basic_filters, filter_conjunction)
 
     def _filters_sql(self):
         filters = self.view.get('filters', [])
