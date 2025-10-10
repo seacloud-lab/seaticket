@@ -1,7 +1,9 @@
 import React, { Fragment } from 'react';
+import classnames from 'classnames';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG, FILTER_PREDICATE_SHOW, FILTER_TERM_MODIFIER_SHOW } from '../../../../constants';
+import { isWhiteColor } from '@/utils/utils';
 
 class FilterItemUtils {
 
@@ -54,7 +56,14 @@ class FilterItemUtils {
       value: { columnOption: option },
       label: (
         <div className="select-option-name multiple-option-name">
-          <div className="multiple-select-option" style={{ background: option.color, color: option.textColor }} title={option.name} aria-label={option.name}>{option.name}</div>
+          <div
+            className={classnames('multiple-select-option', { 'multiple-select-option-white': isWhiteColor(option.color) })}
+            style={{ background: option.color, color: option.textColor }}
+            title={option.name}
+            aria-label={option.name}
+          >
+            {option.name}
+          </div>
           <div className="multiple-check-icon">
             {filterTerm.indexOf(option.id) > -1 && (<Icon symbol="check-mark" />)}
           </div>

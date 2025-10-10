@@ -6,7 +6,7 @@ import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
+import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE, GITHUB_STATUS_REASON_NAME_MAP } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
@@ -58,6 +58,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [typesData, setTypesData] = useState(null);
 
   const parseChecklistFromBody = (bodyText) => {
     if (!bodyText) return { total: 0, completed: 0 };
@@ -177,7 +178,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           }
         },
         { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('State'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
@@ -217,6 +220,33 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
               };
             });
             columns[labelsColumIndex].data = { ...dbLabelsColum.data, options };
+          }
+          const dbTypeColumn = dbColumns.find(c => c.name === 'issue_type');
+          const typeColumIndex = columns.findIndex(c => c.key === 'type');
+          if (dbTypeColumn && typeColumIndex > -1) {
+            const options = dbTypeColumn?.data?.options || [];
+            columns[typeColumIndex].data = { ...dbTypeColumn.data, options };
+            const _typesData = options.map(o => ({ ...o, _id: o.name }));
+            setTypesData({
+              rows: _typesData,
+              id_row_map: _typesData.reduce((pre, cur) => {
+                pre[cur._id] = cur;
+                return pre;
+              }, {})
+            });
+          }
+          const dbStateReasonColumn = dbColumns.find(c => c.name === 'state_reason');
+          const stateReasonColumnIndex = columns.findIndex(c => c.key === 'state_reason');
+          if (dbStateReasonColumn && stateReasonColumnIndex > -1) {
+            let options = dbStateReasonColumn?.data?.options || [];
+            options = options.map(o => {
+              return {
+                ...o,
+                id: o.name,
+                name: GITHUB_STATUS_REASON_NAME_MAP[o.name],
+              };
+            });
+            columns[stateReasonColumnIndex].data = { ...dbStateReasonColumn.data, options };
           }
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
@@ -391,6 +421,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
         isViewComputedOnServer={isServerComputableView}
+        typesData={typesData}
         toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
         t={t}

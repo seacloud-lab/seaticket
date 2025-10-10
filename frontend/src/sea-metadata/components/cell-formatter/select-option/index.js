@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { isWhiteColor } from '@/utils/utils';
 
 import './index.css';
 
 const SelectOption = ({ option, fontSize }) => {
   const style = useMemo(() => {
-    return {
+    let _style = {
       display: 'inline-block',
       padding: '0px 10px',
       height: '20px',
@@ -17,6 +18,11 @@ const SelectOption = ({ option, fontSize }) => {
       backgroundColor: option.color,
       color: option.textColor || null,
     };
+    if (isWhiteColor(option.color)) {
+      _style['border'] = '1px solid #d1d9e0b3';
+      _style['lineHeight'] = '18px';
+    }
+    return _style;
   }, [option, fontSize]);
 
   return (

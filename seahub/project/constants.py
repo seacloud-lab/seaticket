@@ -37,24 +37,24 @@ class ConnectionField(object):
 
 
 CONNECTION_FIELDS = {
-    ConnectionType.EMAIL: [
+    ConnectionType.EMAIL.value: [
         ConnectionField('host', True, False).to_dict(),
         ConnectionField('username', True, False).to_dict(),
         ConnectionField('password', True, False).to_dict(),
     ],
-    ConnectionType.GITHUB_ISSUE: [
+    ConnectionType.GITHUB_ISSUE.value: [
         ConnectionField('repository', True, False).to_dict(),
         ConnectionField('access_token', True, False).to_dict(),
         ConnectionField('webhook_secret', False, False).to_dict(),
     ],
-    ConnectionType.DISCOURSE_FORUM: [
+    ConnectionType.DISCOURSE_FORUM.value: [
         ConnectionField('url', True, False).to_dict(),
     ],
-    ConnectionType.SITE: [
+    ConnectionType.SITE.value: [
         ConnectionField('url', True, False).to_dict(),
         ConnectionField('sitemap_url', False, False).to_dict(),
     ],
-    ConnectionType.SEAFILE: [
+    ConnectionType.SEAFILE.value: [
         ConnectionField('server_url', True, False).to_dict(),
         ConnectionField('api_token', True, False).to_dict(),
     ]
@@ -85,6 +85,7 @@ TICKET_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
@@ -99,6 +100,7 @@ TICKET_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
@@ -124,6 +126,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'type': 'table',
                 'basic_filters': [
                     {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
@@ -136,7 +139,8 @@ CONNECTION_DEFAULT_DETAILS = {
                 'name': _('Closed'),
                 'type': 'table',
                 'basic_filters': [
-                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']}
+                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',

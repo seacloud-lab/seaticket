@@ -36,7 +36,7 @@ class ConnectionViewsAPI(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
@@ -67,7 +67,7 @@ class ConnectionViewsAPI(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
@@ -122,7 +122,7 @@ class ConnectionViewAPI(APIView):
             logger.exception(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         if not view:
             error_msg = f'View {view_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -136,7 +136,7 @@ class ConnectionViewAPI(APIView):
         if not view_data:
             error_msg = 'view_data is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -186,7 +186,7 @@ class ConnectionViewAPI(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
@@ -224,7 +224,7 @@ class ConnectionViewsDuplicateView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
@@ -293,7 +293,7 @@ class ConnectionViewsMoveView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'

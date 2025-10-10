@@ -2,14 +2,13 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import SelectOption from '../select-option';
+import { getOption } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
 const SingleSelectFormatter = ({ value, options, fontSize, className, column, row, children: emptyFormatter }) => {
 
-  const option = useMemo(() => {
-    return options.find(item => item.id === value || item.name === value);
-  }, [options, value]);
+  const option = useMemo(() => getOption(options, value), [options, value]);
 
   if (column.key === 'name' && !option && options.length === 0) {
     const newOption = {

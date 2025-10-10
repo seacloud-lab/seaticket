@@ -418,9 +418,19 @@ class ProjectConnectionDetailsView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
             if not view:
-                error_msg = 'Connection view %s not found.' % view_id
+                error_msg = f'Connection view {view_id} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+            basic_filters = view.get('basic_filters', [])
+            for basic_filter in basic_filters:
+                column_key = basic_filter.get('column_key', '')
+                if column_key == 'type':
+                    basic_filter['column_name'] = 'issue_type'
+                    del basic_filter['column_key']
+                elif column_key == 'status':
+                    basic_filter['column_name'] = 'state'
+                    del basic_filter['column_key']
+            view['basic_filters'] = basic_filters
             table_name = str(connection_id)+'_github_issues'
             records, columns = list_connection_view_records(
                 seadb_api, project_uuid, table_name, view, start, limit, username

@@ -61,20 +61,20 @@ class SelectTypes:
         {
           "id": "0001",
           "name": "Bug",
-          "color": "#DC556A",
-          "textColor":"#9A6700"
+          "color": "#ffebe9",
+          "textColor": "#d1242f"
         },
         {
           "id": "0002",
           "name": "Feature",
-          "color":"#3C8FE4",
-          "textColor":"#9A6700"
+          "color": "#ddf4ff",
+          "textColor": "#0969da"
         },
         {
           "id": "0003",
           "name": "Task",
-          "color":"#FFF8C5",
-          "textColor":"#0969DA"
+          "color": "#fff8c5",
+          "textColor": "#9a6700"
         }
       ]
     }
