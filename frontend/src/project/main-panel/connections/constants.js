@@ -18,6 +18,7 @@ export const CONNECTION_FIELD_TYPE = {
   CONNECTION_NAME: 'connection_name',
   EMPTY: 'empty',
   ACTIVE_STATUS: 'active_status',
+  NUMBER: 'number',
 };
 
 export const CONNECTION_FIELDS = {
@@ -105,6 +106,15 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true
+    }, {
+      key: 'sync_years',
+      name: gettext('Sync recent years of active data'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
+      is_custom: true,
+      placeholder: '5',
+      defaultValue: 5,
+      helpText: gettext('Specify how many years of recent active data to sync during synchronization.')
     },
   ],
   [CONNECTION_TYPE.SITE]: [
