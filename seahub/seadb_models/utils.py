@@ -273,3 +273,15 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, to
         logger.error(f'SeaDB query error for discourse replies {table_name}: {e}')
         records = []
     return records
+
+
+def list_github_issue_comments_records(seadb_api, project_uuid, table_name, issue_id, username=None):
+    """Query github issue comments from SeaDB"""
+    sql = f"SELECT * FROM `{table_name}` WHERE topic_id = {issue_id} ORDER BY post_number ASC"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for issue comments {table_name}: {e}')
+        records = []
+    return records
