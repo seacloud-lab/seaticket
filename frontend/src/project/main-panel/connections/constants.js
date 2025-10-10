@@ -176,17 +176,17 @@ export const CONNECTION_PAGE_TYPE = {
   NEW: 'new',
 };
 
-export const GITHUB_STATUS = {
+export const GITHUB_STATE = {
   OPEN: 'open',
   CLOSED: 'closed',
 };
 
-export const GITHUB_STATUS_OPTIONS = [
-  { id: GITHUB_STATUS.OPEN, value: GITHUB_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: GITHUB_STATUS.CLOSED, value: GITHUB_STATUS.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
+export const GITHUB_STATE_OPTIONS = [
+  { id: GITHUB_STATE.OPEN, value: GITHUB_STATE.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
+  { id: GITHUB_STATE.CLOSED, value: GITHUB_STATE.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
 ];
 
-export const GITHUB_STATUS_REASON_NAME_MAP = {
+export const GITHUB_STATE_REASON_NAME_MAP = {
   'reopened': gettext('Reopen'),
   'completed': gettext('Completed'),
   'not_planned': gettext('Not planned'),

@@ -6,7 +6,7 @@ import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE, GITHUB_STATUS_REASON_NAME_MAP } from '../../constants';
+import { GITHUB_STATE_OPTIONS, CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
@@ -178,7 +178,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           }
         },
         { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('State'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('State'), data: { options: GITHUB_STATE_OPTIONS }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
@@ -243,7 +243,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
               return {
                 ...o,
                 id: o.name,
-                name: GITHUB_STATUS_REASON_NAME_MAP[o.name],
+                name: GITHUB_STATE_REASON_NAME_MAP[o.name],
               };
             });
             columns[stateReasonColumnIndex].data = { ...dbStateReasonColumn.data, options };
