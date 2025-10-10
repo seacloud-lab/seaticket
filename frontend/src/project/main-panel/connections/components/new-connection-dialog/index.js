@@ -20,7 +20,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [newRecord, setNewRecord] = useState(null);
 
-  const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
+  const columns = useMemo(() => {
+    const _columns = CONNECTION_FIELDS[type] || [];
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return _columns.slice(0, -1);
+    }
+    return _columns;
+  }, [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
 
   const isValid = useMemo(() => {
@@ -213,7 +219,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <CopyInput value={`${server}/webhook/github/?connection_id=${newRecord.id}`} />
             </FormGroup>
             <FormGroup>
-              <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
+              <Label>{gettext('Webhook secret (optional)')}</Label>
               <TextInput value={config['webhook_secret']} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
             </FormGroup>
           </div>
