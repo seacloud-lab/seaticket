@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import Icon from '@components/icon';
 import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../constants';
 
@@ -15,7 +16,10 @@ const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
       onClick={enableClick ? () => expandRow(row) : () => {}}
     >
       <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon" />
-      <span className="connection-name">{value}</span>
+      <div className="connection-name-wrapper">
+        <span className="connection-name">{value}</span>
+        {!row.is_active && <Icon symbol="inactive" className="inactive-icon"/>}
+      </div>
     </div>
   );
 };
