@@ -108,13 +108,12 @@ export const CONNECTION_FIELDS = {
       is_custom: true
     }, {
       key: 'sync_years',
-      name: gettext('Sync recent years of active data'),
+      name: gettext('Only sync topics updated within following number of years'),
       type: CONNECTION_FIELD_TYPE.NUMBER,
       is_required: false,
       is_custom: true,
       placeholder: '5',
       defaultValue: 5,
-      helpText: gettext('Only sync topics updated within following number of years')
     },
   ],
   [CONNECTION_TYPE.SITE]: [
