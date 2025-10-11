@@ -216,7 +216,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                   {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                     <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
                   ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
-                    <Input 
+                    <Input
                       type="number"
                       value={value}
                       placeholder={placeholder}
