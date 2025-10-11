@@ -114,7 +114,7 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
       placeholder: '5',
       defaultValue: 5,
-      helpText: gettext('Specify how many years of recent active data to sync during synchronization.')
+      helpText: gettext('Only sync topics updated within following number of years')
     },
   ],
   [CONNECTION_TYPE.SITE]: [
