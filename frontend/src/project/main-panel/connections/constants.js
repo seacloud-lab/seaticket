@@ -18,6 +18,7 @@ export const CONNECTION_FIELD_TYPE = {
   CONNECTION_NAME: 'connection_name',
   EMPTY: 'empty',
   ACTIVE_STATUS: 'active_status',
+  NUMBER: 'number',
 };
 
 export const CONNECTION_FIELDS = {
@@ -105,6 +106,14 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true
+    }, {
+      key: 'sync_years',
+      name: gettext('Only sync topics updated within following number of years'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
+      is_custom: true,
+      placeholder: '5',
+      defaultValue: 5,
     },
   ],
   [CONNECTION_TYPE.SITE]: [

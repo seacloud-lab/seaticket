@@ -29,6 +29,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, [type]);
   const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
 
+  const initializeConfig = useCallback((newType) => {
+    const fields = CONNECTION_FIELDS[newType] || [];
+    const defaultConfig = {};
+    fields.forEach(field => {
+      if (field.defaultValue !== undefined) {
+        defaultConfig[field.key] = field.defaultValue;
+      }
+    });
+    return defaultConfig;
+  }, []);
+
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
@@ -45,9 +56,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const onTypeChange = useCallback((newType) => {
     if (type === newType) return;
-    setConfig({});
+    setConfig(initializeConfig(newType));
     setType(newType);
-  }, [type]);
+  }, [type, initializeConfig]);
 
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
@@ -176,8 +187,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type, placeholder, helpText } = c;
-              const value = config[key] || '';
+              const { key, type, placeholder, helpText, defaultValue } = c;
+              const value = config[key] !== undefined ? config[key] : (defaultValue || '');
               return (
                 <FormGroup key={key}>
                   <Label>
@@ -204,6 +215,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                   </Label>
                   {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                     <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
+                  ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
+                    <Input
+                      type="number"
+                      value={value}
+                      placeholder={placeholder}
+                      disabled={isSubmitting}
+                      onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
+                      min="1"
+                      max="20"
+                    />
                   ) : (
                     <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
                   )}
