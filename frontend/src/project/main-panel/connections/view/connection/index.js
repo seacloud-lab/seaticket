@@ -2,7 +2,7 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { processor } from '@seafile/seafile-editor';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
-import DiscourseForumsDetails from '../../components/discourse-forums-details';
+import RowDetailsDialog from '../../components/row-details-dialog';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
@@ -365,11 +365,10 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
-    console.log('expand row', row, connection);
-    // if (row && row.url) {
-    //   window.open(row.url);
-    //   return;
-    // }
+    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+      window.open(row.url);
+      return;
+    }
     const params = {};
     if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       params['topic_id'] = row.topic_id;
@@ -433,7 +432,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && <DiscourseForumsDetails rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {rowDetails && <RowDetailsDialog rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}
