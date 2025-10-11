@@ -1,23 +1,60 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import EmptyTip from '../../empty-tip';
 import Loading from '../../loading';
 import Row from './row';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, ...params }) => {
+const ROW_HEIGHT = 40;
+const RENDER_MORE_NUMBER = 10;
 
-  const onScroll = useCallback((event) => {
+const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, ...params }) => {
+  const [startRenderIndex, setStartRenderIndex] = useState(0);
+  const [endRenderIndex, setEndRenderIndex] = useState(Math.min(Math.ceil(window.innerHeight / ROW_HEIGHT) + RENDER_MORE_NUMBER, rows.length));
+
+  const tableRef = useRef(null);
+  const rowsCountRef = useRef(0);
+
+  const onScroll = useCallback(Utils.throttle(() => {
     if (isLoading) return;
     if (!loadMore) return;
-    const clientHeight = event.target.clientHeight;
-    const scrollHeight = event.target.scrollHeight;
-    const scrollTop = event.target.scrollTop;
+    const clientHeight = tableRef.current.clientHeight;
+    const scrollHeight = tableRef.current.scrollHeight;
+    const scrollTop = tableRef.current.scrollTop;
+
+    const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - RENDER_MORE_NUMBER);
+    const end = Math.min(Math.ceil((scrollTop + clientHeight) / ROW_HEIGHT) + RENDER_MORE_NUMBER, rows.length);
+
+    if (Math.abs(start - startRenderIndex) > 5 || start < 5) {
+      setStartRenderIndex(start);
+    }
+    if (Math.abs(end - endRenderIndex) > 5 || end > rows.length - 5) {
+      setEndRenderIndex(end);
+    }
+
     const isBottom = (clientHeight + scrollTop + 1) >= scrollHeight;
     if (!isBottom) return;
     loadMore();
-  }, [isLoading, loadMore]);
+  }, 100), [isLoading, loadMore, rows.length]);
+
+  useEffect(() => {
+    if (!tableRef.current) return;
+    if (!Array.isArray(rows)) return;
+    if (rowsCountRef.current === rows.length) return;
+    rowsCountRef.current = rows.length;
+    const contentScrollTop = tableRef.current.scrollTop;
+    const start = Math.max(0, Math.floor(contentScrollTop / ROW_HEIGHT) - RENDER_MORE_NUMBER);
+    const height = tableRef.current.clientHeight;
+    const end = Math.min(Math.ceil((contentScrollTop + height) / ROW_HEIGHT) + RENDER_MORE_NUMBER, rowsCountRef.current);
+    if (start !== startRenderIndex) {
+      setStartRenderIndex(start);
+    }
+    if (end !== endRenderIndex) {
+      setEndRenderIndex(end);
+    }
+  }, [rows]);
 
   if (!Array.isArray(rows) || rows.length === 0) {
     if (typeof(emptyTip) === 'string') return (<EmptyTip text={emptyTip} />);
@@ -25,14 +62,20 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, ...param
   }
 
   return (
-    <div className="sea-custom-table" onScroll={onScroll}>
+    <div className="sea-custom-table" onScroll={onScroll} ref={tableRef}>
       <div className="sea-custom-table-row sea-custom-table-row-title">
         {columns.map(column => {
           const { key, name, width } = column;
           return (<div className="sea-custom-table-cell" key={key} style={{ width }}>{name}</div>);
         })}
       </div>
-      {rows.map(row => (<Row key={row.id} row={row} columns={columns} { ...params } />))}
+      {startRenderIndex > 0 && (
+        <div style={{ height: startRenderIndex * ROW_HEIGHT, width: '100%', flexShrink: 0 }}></div>
+      )}
+      {rows.slice(startRenderIndex, endRenderIndex).map(row => (<Row key={row.id} row={row} columns={columns} { ...params } />))}
+      {(rows.length - endRenderIndex) > 0 && (
+        <div style={{ height: (rows.length - endRenderIndex) * ROW_HEIGHT, width: '100%', flexShrink: 0 }}></div>
+      )}
       {isLoading && (
         <div className="sea-custom-table-row sea-custom-table-row-loading">
           <Loading />
