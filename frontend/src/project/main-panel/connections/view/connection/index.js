@@ -365,16 +365,23 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
-    if (row && row.url) {
-      window.open(row.url);
-      return;
+    console.log('expand row', row, connection);
+    // if (row && row.url) {
+    //   window.open(row.url);
+    //   return;
+    // }
+    const params = {};
+    if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      params['topic_id'] = row.topic_id;
     }
-    const params = { topic_id: row.topic_id };
+    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      params['issue_id'] = row.issue_id;
+    }
     connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
       setRowDetailsTitle(row.title);
       setRowDetails(res.data.row_details);
     });
-  }, [projectUuid, connectionID]);
+  }, [projectUuid, connectionID, connection]);
 
   const onRowDetailsClose = useCallback(() => {
     setRowDetails(null);
