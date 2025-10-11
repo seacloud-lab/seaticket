@@ -1,4 +1,6 @@
 import dayjs from '@/utils/dayjs';
+import { CONNECTION_TYPE } from '../constants';
+import { isObject } from '@/utils/type-detection';
 
 class Connection {
   constructor(object) {
@@ -11,7 +13,7 @@ class Connection {
     this.indexed_at = object.indexed_at || '';
     this.last_sync_time = object.last_sync_time || '';
     this.project_id = object.project_id || '';
-    this.status = object.status || {};
+    this.status = object.status || '{}';
     this.is_active = object.is_active || '';
 
     // update
@@ -20,6 +22,17 @@ class Connection {
     }
     this.indexed_at = this.indexed_at ? dayjs(this.indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
     this.last_sync_time = this.last_sync_time ? dayjs(this.last_sync_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+
+    if (this.status) {
+      try {
+        this.status = JSON.parse(this.status);
+        if (this.type === CONNECTION_TYPE.DISCOURSE_FORUM && isObject(this.status.total_records)) {
+          this.status.total_records = this.status.total_records?.topics || 0;
+        }
+      } catch {
+        this.status = {};
+      }
+    }
   }
 }
 
