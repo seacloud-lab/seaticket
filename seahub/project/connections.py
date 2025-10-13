@@ -654,24 +654,22 @@ class ProjectConnectionsStatusView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            current_page = int(request.GET.get('page', '1'))
-            per_page = int(request.GET.get('per_page', '100'))
-        except ValueError:
-            current_page = 1
-            per_page = 100
         
-        start = (current_page - 1) * per_page
-        end = start + per_page
-        records = ProjectConnections.objects.filter(project=project, deleted=False)[start:end]
-        connections_status = []
+        connection_ids = request.GET.get('connection_ids')
+        if not connection_ids:
+            error_msg = 'Missing connection_ids.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        connection_ids = connection_ids.split(',')
+        records = ProjectConnections.objects.filter(project=project, deleted=False, id__in=connection_ids)
+        connections_status = {}
         for record in records:
-            status = record.status or '{}'
-            status = json.loads(status)
-            last_sync_status = status.get('last_sync_status', '')
-            connections_status.append({
-                'id': record.id,
-                'last_sync_status': last_sync_status,
-            })
+            connection_status = record.status or '{}'
+            try:
+                connection_status = json.loads(connection_status)
+            except Exception as e:
+                logger.error(e)
+                connection_status = {}
+            last_sync_status = connection_status.get('last_sync_status', '')
+            connections_status[record.id] = last_sync_status
         return Response(connections_status)

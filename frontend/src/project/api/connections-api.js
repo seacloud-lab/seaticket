@@ -95,12 +95,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  queryConnectionsStatus(projectUuid, options = {}) {
-    const { page, perPage } = options;
-    let url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
-    const params = [];
-    if (page != null) params.push('page=' + encodeURIComponent(page));
-    if (perPage != null) params.push('per_page=' + encodeURIComponent(perPage));
+  queryConnectionsStatus(projectUuid, connectionIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
+    const params = {
+      connection_ids: connectionIds,
+    };
     return this.req.get(url, { params: params });
   }
 
