@@ -55,15 +55,13 @@ const SyncStatusFormatter = ({ row, getRowStatus, modifyLocalRow }) => {
         }
       });
     }, 3000);
-  }, [syncStatus, row.id, modifyLocalRow]);
-
-  useEffect(() => {
-    if (!timerRef.current) return;
     return () => {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, []);
+  }, [syncStatus, row.id, modifyLocalRow]);
 
   return formatStatus(syncStatus);
 };
