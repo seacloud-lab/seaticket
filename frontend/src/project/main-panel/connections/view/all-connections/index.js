@@ -27,7 +27,7 @@ const AllConnections = ({ projectUuid }) => {
     api: (ids) => connectionsAPI.queryConnectionsStatus(projectUuid, ids).then(res => res.data || {}),
     callback: modifyLocalConnectionSyncStatus,
     endCondition: (v) => CONNECTION_SYNC_COMPLETED_STATUS.includes(v),
-    // maxRetries: 5,
+    maxRetries: 50,
   }), [projectUuid, modifyLocalConnectionSyncStatus]);
 
   const columns = useMemo(() => {
