@@ -2,7 +2,8 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { processor } from '@seafile/seafile-editor';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
-import RowDetailsDialog from '../../components/row-details-dialog';
+import DiscourseForumsDetails from '../../components/discourse-forums-details';
+import GithubIssueDetails from '../../components/github-issue-details';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
@@ -52,8 +53,10 @@ const SiteContentDialog = ({ title, content, onClose }) => {
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
-  const [rowDetails, setRowDetails] = useState(null);
-  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
+  const [discourseForumsDetails, setDiscourseForumsDetails] = useState(null);
+  const [discourseForumsDetailsTitle, setDiscourseForumsDetailsTitle] = useState('');
+  const [githubIssueDetails, setGithubIssueDetails] = useState(null);
+  const [githubIssueDetailsTitle, setGithubIssueDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
@@ -369,22 +372,20 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       window.open(row.url);
       return;
     }
-    const params = {};
+
     if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      params['topic_id'] = row.topic_id;
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { topic_id: row.topic_id }).then((res) => {
+        setDiscourseForumsDetailsTitle(row.title);
+        setDiscourseForumsDetails(res.data.row_details);
+      });
     }
     if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      params['issue_id'] = row.issue_id;
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { issue_id: row.issue_id }).then((res) => {
+        setGithubIssueDetailsTitle(row.title);
+        setGithubIssueDetails(res.data.row_details);
+      });
     }
-    connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-      setRowDetailsTitle(row.title);
-      setRowDetails(res.data.row_details);
-    });
   }, [projectUuid, connectionID, connection]);
-
-  const onRowDetailsClose = useCallback(() => {
-    setRowDetails(null);
-  }, []);
 
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
@@ -432,7 +433,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && <RowDetailsDialog rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}
+      {githubIssueDetails && <GithubIssueDetails rowDetailsTitle={githubIssueDetailsTitle} rowDetails={githubIssueDetails} onClose={() => {setGithubIssueDetails(null);}} />}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}
