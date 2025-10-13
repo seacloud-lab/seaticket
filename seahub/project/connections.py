@@ -630,3 +630,48 @@ class ProjectConnectionRowDetailView(APIView):
         return Response({
             'row_details': row_details,
         })
+
+
+class ProjectConnectionsStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid):
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            current_page = int(request.GET.get('page', '1'))
+            per_page = int(request.GET.get('per_page', '100'))
+        except ValueError:
+            current_page = 1
+            per_page = 100
+        
+        start = (current_page - 1) * per_page
+        end = start + per_page
+        records = ProjectConnections.objects.filter(project=project, deleted=False)[start:end]
+        connections_status = []
+        for record in records:
+            status = record.status or '{}'
+            status = json.loads(status)
+            last_sync_status = status.get('last_sync_status', '')
+            connections_status.append({
+                'id': record.id,
+                'last_sync_status': last_sync_status,
+            })
+        return Response(connections_status)

@@ -95,6 +95,15 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  queryConnectionsStatus(projectUuid, options = {}) {
+    const { page, perPage } = options;
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
+    const params = [];
+    if (page != null) params.push('page=' + encodeURIComponent(page));
+    if (perPage != null) params.push('per_page=' + encodeURIComponent(perPage));
+    return this.req.get(url, { params: params });
+  }
+
   triggerSync(projectUuid, connectionID) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/sync/';
     return this.req.post(url);
