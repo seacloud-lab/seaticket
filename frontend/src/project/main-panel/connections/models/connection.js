@@ -26,9 +26,6 @@ class Connection {
     if (this.status) {
       try {
         this.status = JSON.parse(this.status);
-        if (this.type === CONNECTION_TYPE.DISCOURSE_FORUM && isObject(this.status.total_records)) {
-          this.status.total_records = this.status.total_records?.topics || 0;
-        }
       } catch {
         this.status = {};
       }
