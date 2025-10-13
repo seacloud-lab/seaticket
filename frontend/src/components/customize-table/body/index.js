@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import EmptyTip from '../../empty-tip';
 import Loading from '../../loading';
-import Row from './row';
+import Rows from './rows';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
@@ -74,7 +74,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
       {startRenderIndex > 0 && (
         <div style={{ height: startRenderIndex * rowHeight, width: '100%', flexShrink: 0 }}></div>
       )}
-      {rows.slice(startRenderIndex, endRenderIndex).map(row => (<Row key={row.id} row={row} columns={columns} rowHeight={rowHeight} { ...params } />))}
+      <Rows rows={rows.slice(startRenderIndex, endRenderIndex)} columns={columns} rowHeight={rowHeight} { ...params } />
       {(rows.length - endRenderIndex) > 0 && (
         <div style={{ height: (rows.length - endRenderIndex) * rowHeight, width: '100%', flexShrink: 0 }}></div>
       )}

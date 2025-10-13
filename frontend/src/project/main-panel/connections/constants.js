@@ -19,6 +19,7 @@ export const CONNECTION_FIELD_TYPE = {
   EMPTY: 'empty',
   ACTIVE_STATUS: 'active_status',
   NUMBER: 'number',
+  SYNC_STATUS: 'sync_status',
 };
 
 export const CONNECTION_FIELDS = {
@@ -213,3 +214,23 @@ export const SUPPORT_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
 ];
+
+export const CONNECTION_SYNC_STATUS = {
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  CRAWLING: 'crawling',
+  PENDING: 'pending',
+};
+
+export const CONNECTION_SYNC_STATUS_NAME = {
+  [CONNECTION_SYNC_STATUS.COMPLETED]: gettext('Completed'),
+  [CONNECTION_SYNC_STATUS.FAILED]: gettext('Failed'),
+  [CONNECTION_SYNC_STATUS.CRAWLING]: gettext('Crawling'),
+  [CONNECTION_SYNC_STATUS.PENDING]: gettext('Pending')
+};
+
+export const CONNECTION_SYNC_COMPLETED_STATUS = [
+  CONNECTION_SYNC_STATUS.COMPLETED,
+  CONNECTION_SYNC_STATUS.FAILED,
+];
+
