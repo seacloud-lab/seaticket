@@ -95,14 +95,6 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  queryConnectionsStatus(projectUuid, connectionIds) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
-    const params = {
-      connection_ids: connectionIds,
-    };
-    return this.req.get(url, { params: params });
-  }
-
   triggerSync(projectUuid, connectionID) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/sync/';
     return this.req.post(url);
@@ -121,6 +113,14 @@ class ConnectionsAPI {
   getConnectionRowDetail(projectUuid, connectionID, params) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
 
+    return this.req.get(url, { params: params });
+  }
+
+  queryConnectionsStatus(projectUuid, connectionIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
+    const params = {
+      connection_ids: connectionIds.join(','),
+    };
     return this.req.get(url, { params: params });
   }
 

@@ -31,6 +31,12 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     ));
   }, []);
 
+  const modifyLocalConnectionSyncStatus = useCallback((update) => {
+    setConnections(prev => prev.map(record => update[record.id] ?
+      ({ ...record, status: { ...record.status, last_sync_status: update[record.id] } }) : record
+    ));
+  }, []);
+
   const modifyConnectionStatus = useCallback((connectionId, update) => {
     connectionsAPI.updateConnectionStatus(projectUuid, connectionId, update).then(() => {
       modifyLocalConnectionRecord(connectionId, update);
@@ -59,11 +65,6 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       resetSubmittingState && resetSubmittingState();
     });
   }, [connections]);
-
-  const updateConnectionRecord = useCallback((id, newRecord) => {
-    if (!id || !newRecord) return;
-    setConnections(prev => prev.map(record => record.id === id ? newRecord : record));
-  }, []);
 
   const deleteConnectionRecord = useCallback(() => {
     connectionsAPI.deleteConnection(projectUuid, activeConnectionRef.current.id).then(res => {
@@ -185,8 +186,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       isDataLoaded: isDataLoaded.current,
       isLoading,
       connections,
-      updateConnectionRecord,
       modifyLocalConnectionRecord,
+      modifyLocalConnectionSyncStatus,
       modifyConnectionStatus,
       handleDelete,
       handleModify,

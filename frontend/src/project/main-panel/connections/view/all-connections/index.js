@@ -7,22 +7,28 @@ import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import createFormatter from '../../components/cell-formatter';
-import { CONNECTION_FIELD_TYPE } from '../../constants';
+import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_COMPLETED_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
 import { Connection } from '../../models';
+import SelfQuery from '@/utils/self-query';
 
 import './index.css';
 
 const AllConnections = ({ projectUuid }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
 
-  const activeRecordRef = useRef(null);
-
-
   const { isLoading, isDataLoaded, connections, reload, loadMore, handleModify, handleDelete,
-    modifyConnectionStatus, modifyLocalConnectionRecord
+    modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
   } = useConnections();
   const { togglePageType, updatePageName } = useConnectionsPage();
+
+  const activeRecordRef = useRef(null);
+  const selfQuery = useMemo(() => new SelfQuery({
+    api: (ids) => connectionsAPI.queryConnectionsStatus(projectUuid, ids).then(res => res.data || {}),
+    callback: modifyLocalConnectionSyncStatus,
+    endCondition: (v) => CONNECTION_SYNC_COMPLETED_STATUS.includes(v),
+    // maxRetries: 5,
+  }), [projectUuid, modifyLocalConnectionSyncStatus]);
 
   const columns = useMemo(() => {
     return [
@@ -86,8 +92,16 @@ const AllConnections = ({ projectUuid }) => {
     modifyConnectionStatus(id, { 'is_active': status });
   };
 
+  const rowsDidMount = useCallback((rows) => {
+    const synchronizingRows = rows.filter(r => !CONNECTION_SYNC_COMPLETED_STATUS.includes(r?.status?.last_sync_status)).map(r => r.id);
+    selfQuery.start(synchronizingRows);
+  }, [selfQuery]);
+
   useEffect(() => {
     reload();
+    return () => {
+      selfQuery.clear();
+    };
   }, []);
 
   if (!isDataLoaded) return null;
@@ -124,6 +138,7 @@ const AllConnections = ({ projectUuid }) => {
         onManualSync={onManualSync}
         onUpdate={modifyConnectionStatus}
         handleStatusActive={handleStatusActive}
+        rowsDidMount={rowsDidMount}
         getRowStatus={getConnectionStatus}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
