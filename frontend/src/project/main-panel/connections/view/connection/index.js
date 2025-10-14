@@ -195,11 +195,11 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     if (connectionType === CONNECTION_TYPE.SEAFILE) {
       return [
         {
-          type: CellType.TEXT, key: 'path', name: gettext('Path'),
+          type: CellType.TEXT, key: 'filename', name: gettext('File name'),
           editable: false, is_name_column: true, frozen: true
         },
-        { type: CellType.TEXT, key: 'filename', name: gettext('Filename'), editable: false, is_required: true },
-        { type: CellType.DATE, key: 'mtime', name: gettext('Mtime'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
+        { type: CellType.TEXT, key: 'path', name: gettext('Parent folder'), editable: false, is_required: true },
+        { type: CellType.DATE, key: 'mtime', name: gettext('Last modified time'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
       ];
     }
     return [];
