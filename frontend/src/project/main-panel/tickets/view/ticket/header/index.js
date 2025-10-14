@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { IconButton, toaster, Icon, Option } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
-import { validateTitle } from '@/utils/utils';
+import { validateTitle } from '@/utils/validate';
 
 import './index.css';
 

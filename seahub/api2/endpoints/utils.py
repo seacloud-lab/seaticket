@@ -94,18 +94,6 @@ def get_user_name_dict(email_list):
 
     return user_name_dict
 
-def get_repo_dict(repo_id_list):
-    repo_id_list = set(repo_id_list)
-    repo_dict = {}
-    for repo_id in repo_id_list:
-        if repo_id not in repo_dict:
-            repo_dict[repo_id] = ''
-            repo = seafile_api.get_repo(repo_id)
-            if repo:
-                repo_dict[repo_id] = repo
-
-    return repo_dict
-
 
 def get_group_dict(group_id_list):
     group_id_list = set(group_id_list)

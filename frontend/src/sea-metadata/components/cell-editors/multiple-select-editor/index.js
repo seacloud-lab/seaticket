@@ -1,16 +1,13 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import CommonAddTool from '../../../../components/common-add-tool';
-import SearchInput from '../../../../components/search-input';
+import { CommonAddTool, SearchInput, Icon } from '@/components';
 import DeleteOption from './delete-options';
-import { isFunction } from '../../../../utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { getColumnOptionIdsByNames } from '../../../utils/cell';
 import { getColumnOptions, generateNewOption } from '../../../utils/column';
-import { KeyCodes } from '../../../../constants';
-import { gettext } from '../../../../utils/constants';
+import { KeyCodes, gettext } from '@/constants';
 import context from '@/sea-metadata/context';
-import { Icon } from '@/components';
 
 const MultipleSelectEditor = forwardRef(({
   height,

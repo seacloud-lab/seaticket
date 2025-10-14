@@ -2,10 +2,10 @@ import { forwardRef, useState, useRef, useMemo, useCallback, useImperativeHandle
 import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Collaborator from '../../collaborator/collaborator';
-import { searchCollaborators } from '../../../utils/search';
+import { searchCollaborators } from '@/utils/search';
 import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
-import { isFunction } from '@utils/utils';
+import { isFunction } from '@utils/type-detection';
 
 import './index.css';
 

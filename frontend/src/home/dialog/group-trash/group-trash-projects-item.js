@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, ModalPortal, ProjectIcon } from '../../../components';
-import { Utils } from '../../../utils/utils';
-import { gettext } from '../../../constants/config';
-import { seaQAAPI } from '../../../api/web-api';
-import RestoreProjectDialog from '../restore-project-dialog';
+import { toaster, ModalPortal, ProjectIcon } from '@/components';
+import { Utils } from '@/utils/utils';
+import { gettext } from '@/constants/config';
+import homeAPI from '../../api';
+import { RestoreProjectDialog } from '@/components';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const propTypes = {
@@ -41,7 +41,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
     const { item, groupID } = this.props;
     const { name, uuid } = item;
     this.setState({ isRestoring: true });
-    seaQAAPI.restoreGroupTrashProject(uuid, groupID).then(() => {
+    homeAPI.restoreGroupTrashProject(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
       this.props.restoreProject(item);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);

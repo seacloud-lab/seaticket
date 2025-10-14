@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { toaster, ProjectIcon } from '../../../components';
-import { seaQAAPI } from '../../../api/web-api';
-import { gettext } from '../../../constants';
-import { Utils } from '../../../utils/utils';
+import { toaster, ProjectIcon } from '@/components';
+import homeAPI from '../../api';
+import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-
 
 function DeletedGroupBaseItem(props) {
 
@@ -17,7 +16,7 @@ function DeletedGroupBaseItem(props) {
     const { name, uuid } = baseItem;
     setLoading(true);
     try {
-      await seaQAAPI.restoreGroupTrashProject(uuid, groupID);
+      await homeAPI.restoreGroupTrashProject(uuid, groupID);
       setLoading(false);
       props.restoreProject(baseItem);
       const msg = gettext('Successfully restored {name}.').replace('{name}', name);

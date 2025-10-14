@@ -141,7 +141,7 @@ class ValidateFilter {
     // Filter predicate should support: is_empty/is_not_empty(excludes checkbox and bool)
     if (CHECK_EMPTY_PREDICATES.includes(predicate)) return true;
 
-    if (array_type === CellType.SINGLE_SELECT || array_type === CellType.DEPARTMENT_SINGLE_SELECT) {
+    if (array_type === CellType.SINGLE_SELECT) {
       return this.validatePredicate(predicate, { type: CellType.MULTIPLE_SELECT });
     }
     if (COLLABORATOR_COLUMN_TYPES.includes(array_type)) {

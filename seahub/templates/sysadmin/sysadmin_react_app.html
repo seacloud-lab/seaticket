@@ -12,13 +12,9 @@
 		config: {},
 		pageOptions: {
       is_show_unit: {% if is_show_unit %} true {% else %} false {% endif %},
-			constance_enabled: {% if constance_enabled %} true {% else %} false {% endif %},
 			multi_tenancy: {% if multi_tenancy %} true {% else %} false {% endif %},
 			multi_institution: {% if multi_institution %} true {% else %} false {% endif %},
-			sysadmin_extra_enabled: {% if sysadmin_extra_enabled %} true {% else %} false {% endif %},
-			enable_guest_invitation: {% if enable_guest_invitation %} true {% else %} false {% endif %},
 			is_default_admin: {% if is_default_admin %} true {% else %} false {% endif %},
-      enable_work_weixin: {% if enable_work_weixin %} true {% else %} false {% endif %},
       trashReposExpireDays: {{ trash_repos_expire_days }},
       send_email_on_adding_system_member: {% if send_email_on_adding_system_member %} true {% else %} false {% endif %},
       two_factor_auth_enabled: {% if two_factor_auth_enabled %} true {% else %} false {% endif %},
@@ -40,11 +36,9 @@
         "can_view_system_info": {% if user.admin_permissions.can_view_system_info %} true {% else %} false {% endif %},
         "can_view_statistic": {% if user.admin_permissions.can_view_statistic %} true {% else %} false {% endif %},
         "can_config_system": {% if user.admin_permissions.can_config_system %} true {% else %} false {% endif %},
-        "can_manage_library": {% if user.admin_permissions.can_manage_library %} true {% else %} false {% endif %},
         "can_manage_user": {% if user.admin_permissions.can_manage_user %} true {% else %} false {% endif %},
         "can_update_user": {% if user.admin_permissions.can_update_user %} true {% else %} false {% endif %},
         "can_manage_group": {% if user.admin_permissions.can_manage_group %} true {% else %} false {% endif %},
-        "can_manage_external_link": {% if user.admin_permissions.can_manage_external_link %} true {% else %} false {% endif %},
         "can_view_user_log": {% if user.admin_permissions.can_view_user_log %} true {% else %} false {% endif %},
         "can_view_admin_log": {% if user.admin_permissions.can_view_admin_log %} true {% else %} false {% endif %},
         "can_view_audit_log": {% if user.admin_permissions.can_view_audit_log %} true {% else %} false {% endif %},
@@ -55,9 +49,7 @@
 		}
 	};
   window.app.pageOptions.trashCleanExpireDays = '{{trash_clean_expire_days}}';
-  window.app.pageOptions.enableAddressBookV2 = {% if enable_address_book_v2 %} true {% else %} false {% endif %};
   window.app.pageOptions.canUseAdvancedPerms = {% if user.permissions.can_use_advanced_permissions %} true {% else %} false {% endif %};
-  window.app.pageOptions.enableSeatableAI = {% if enable_seatable_ai %} true {% else %} false {% endif %};
 </script>
 {% render_bundle 'sysAdmin' 'js' %}
 {% endblock %}

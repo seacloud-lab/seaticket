@@ -74,10 +74,10 @@ class OrgAdminProjectsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        project_list = [get_project_info(d) for d in projects_queryset]
+        projects = [get_project_info(d) for d in projects_queryset]
 
         return Response({
-            'project_list': project_list,
+            'projects': projects,
             'count': project_count
         })
 
@@ -151,7 +151,7 @@ class OrgAdminTrashProjectsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'project_list': [get_project_info(d, include_deleted=True) for d in projects_queryset],
+            'projects': [get_project_info(d, include_deleted=True) for d in projects_queryset],
             'count': projects_count
         })
 
@@ -213,4 +213,44 @@ class OrgAdminTrashProjectView(APIView):
         org_admin_operation.send(sender=None, admin_name=request.user.username, operation=BASE_RESTORE, detail=detail, org_id=org_id)
 
         return Response({'success': True})
+
+
+class OrgAdminSearchProjectsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle, OrgAdminRateThrottle)
+    permission_classes = (IsProVersion, IsOrgAdminUser)
+
+    def get(self, request, org_id):
+        error, _ = _check_org(org_id)
+        if error:
+            return error
+
+        # argument check
+        query_str = request.GET.get('query', '').strip()
+        if not query_str:
+            error_msg = 'query invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 20))
+        except Exception as e:
+            error_msg = 'per_page or page invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        start = (page - 1) * per_page
+        end = page * per_page
+
+        try:
+            projects_count = Projects.objects.search_project_count_in_org(org_id, query_str)
+            projects_queryset = Projects.objects.search_project_in_org(org_id, query_str, start, end)
+        except Exception as e:
+            logger.error('get search projects error: %s', e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'projects': [get_project_info(project, include_deleted=False) for project in projects_queryset],
+            'count': projects_count
+        })
 

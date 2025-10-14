@@ -88,7 +88,6 @@ class FilterItem extends React.Component {
   initSelectOptions = (props) => {
     const { filter, filterColumn, value } = props;
     let { filterPredicateList, filterTermModifierList } = getColumnOptions(filterColumn, value);
-    // The value of the calculation formula column does not exist in the shared view
     this.filterPredicateOptions = filterPredicateList ? filterPredicateList.map(predicate => {
       return FilterItemUtils.generatorPredicateOption(predicate);
     }).filter(item => item) : [];

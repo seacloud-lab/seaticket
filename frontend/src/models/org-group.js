@@ -9,7 +9,6 @@ class OrgGroupInfo {
     this.creatorContactEmail = object.creator_contact_email;
     this.ctime = dayjs(object.ctime).format('YYYY-MM-DD HH:mm:ss');
     this.size = object.size;
-    this.departmentId = object.department_id;
   }
 }
 

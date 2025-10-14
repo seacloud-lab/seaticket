@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Router } from '@gatsbyjs/reach-router';
-import { seaQAAPI } from '../../../api/web-api';
+import homeAPI from '../../api';
 import Workspace from '../../models/workspace';
 import AllWorkspaces from './all-workspaces';
 import WorkspaceInMainPanel from './workspace-in-main-panel';
-
-import '../../../css/project-search.css';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;
@@ -30,7 +28,7 @@ class MainPanel extends React.Component {
   }
 
   loadWorkspaceList = () => {
-    seaQAAPI.listWorkspaces().then(res => {
+    homeAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => {
         return new Workspace(item);
       });
@@ -65,7 +63,7 @@ class MainPanel extends React.Component {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
       if (project.workspace_id === workspace.id) {
-        workspace.project_list.push(project);
+        workspace.projects.push(project);
         break;
       }
     }
@@ -76,7 +74,7 @@ class MainPanel extends React.Component {
     let newWorkspaceList = this.state.workspaceList.slice();
     newWorkspaceList = newWorkspaceList.map(item => {
       if (project.workspace_id === item.id) {
-        item.project_list.push(project);
+        item.projects.push(project);
       }
       return item;
     });
@@ -87,33 +85,11 @@ class MainPanel extends React.Component {
     let workspaceList = this.state.workspaceList.slice(0);
     for (let i = 0; i < workspaceList.length; i++) {
       if (workspaceList[i].id === deletedWorkspaceID) {
-        workspaceList[i].project_list = newTableList;
+        workspaceList[i].projects = newTableList;
         break;
       }
     }
     this.setState({ workspaceList });
-  };
-
-  onAddGroupSharedProject = (groupID, project) => {
-    let workspaceList = this.state.workspaceList.slice();
-    for (let workspace of workspaceList) {
-      if (workspace.group_id === groupID) {
-        workspace.group_shared_projects.push(project);
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
-  };
-
-  onLeaveGroupSharedProject = (groupID, project) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].group_id === groupID) {
-        workspaceList[i].group_shared_projects = workspaceList[i].group_shared_projects.filter((item) => item.id !== project.id);
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
   };
 
   render() {
@@ -129,8 +105,6 @@ class MainPanel extends React.Component {
             onDeleteGroup={this.onDeleteGroup}
             onDeleteProject={this.onDeleteProject}
             onCopyProject={this.onCopyProject}
-            onAddGroupSharedProject={this.onAddGroupSharedProject}
-            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
             onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
@@ -143,8 +117,6 @@ class MainPanel extends React.Component {
             onDeleteGroup={this.onDeleteGroup}
             onDeleteProject={this.onDeleteProject}
             onCopyProject={this.onCopyProject}
-            onAddGroupSharedProject={this.onAddGroupSharedProject}
-            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
             onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />
@@ -157,8 +129,6 @@ class MainPanel extends React.Component {
             onDeleteGroup={this.onDeleteGroup}
             onDeleteProject={this.onDeleteProject}
             onCopyProject={this.onCopyProject}
-            onAddGroupSharedProject={this.onAddGroupSharedProject}
-            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
             onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
           />

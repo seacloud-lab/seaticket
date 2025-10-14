@@ -48,8 +48,6 @@ cscope*
 docs/_build/*
 deps
 
-seahub/thumbnail/thumb/*
-
 .virtualenv
 .dumbjump
 .projectile

@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
-import os
-import json
-import re
-import urllib.request, urllib.error, urllib.parse
 
 from django.conf import settings
 from django.urls import reverse
@@ -16,10 +12,8 @@ from urllib.parse import quote
 from django.utils.translation import gettext as _
 
 from seahub.auth import REDIRECT_FIELD_NAME
-from seahub.group.utils import validate_group_name, BadGroupNameError, \
-    ConflictGroupNameError, is_group_member
-from seahub.utils import send_html_email, is_org_context, \
-    get_site_name
+from seahub.group.utils import is_group_member
+from seahub.utils import send_html_email, get_site_name
 from seahub.group.models import Group
 from seahub.organizations.models import OrgUser, OrgGroup
 from seahub.group.utils import is_group_admin_or_owner_by_group

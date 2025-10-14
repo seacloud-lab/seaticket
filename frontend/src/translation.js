@@ -12,7 +12,6 @@ gettext('Max number of members');
 gettext('Last login');
 gettext('Select a group');
 gettext('No options available');
-gettext('Shared');
 gettext('Group Info');
 gettext('Run condition');
 gettext('No installed plugins');

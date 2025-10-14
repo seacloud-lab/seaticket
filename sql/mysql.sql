@@ -219,18 +219,6 @@ CREATE TABLE `organization_organization` (
   UNIQUE KEY `url_prefix` (`url_prefix`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `organizations_org_corp_auth` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `org_id` int(11) DEFAULT NULL,
-  `corp_id` varchar(255) DEFAULT NULL,
-  `corp_name` varchar(255) NOT NULL,
-  `permanent_code` varchar(255) NOT NULL,
-  `extra_data` longtext NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `org_id` (`org_id`),
-  UNIQUE KEY `corp_id` (`corp_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 CREATE TABLE `organizations_orgadminsettings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
@@ -306,7 +294,6 @@ CREATE TABLE `session_log` (
 CREATE TABLE `social_auth_usersocialauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
-  `provider` varchar(32) NOT NULL,
   `uid` varchar(255) NOT NULL,
   `extra_data` longtext NOT NULL,
   PRIMARY KEY (`id`),

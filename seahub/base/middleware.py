@@ -110,41 +110,29 @@ class UserPermissionMiddleware(MiddlewareMixin):
                 'api/v2.1/admin/favicon',
                 'api/v2.1/admin/login-background-image',
             ],
-            'can_manage_library': [
-                'sys/seafadmin/transfer',
-                'sys/seafadmin/delete',
-                'api/v2.1/admin/libraries',
-                'api/v2.1/admin/system-library',
-                'api/v2.1/admin/default-library',
-                'api/v2.1/admin/trash-libraries',
-            ],
             'can_manage_user': [
-                'sys/useradmin',
-                'sys/useradmin/export-excel',
-                'sys/useradmin/ldap',
-                'sys/useradmin/ldap/imported',
-                'sys/useradmin/admins',
-                'useradmin/add',
-                'useradmin/remove',
-                'useradmin/removetrial',
-                'useradmin/search',
-                'useradmin/removeadmin',
-                'useradmin/info',
-                'useradmin/toggle_status',
-                'useradmin/toggle_role',
-                'useradmin', # for 'useradmin/(?P<email>[^/]+)/set_quota',
-                'useradmin/password/reset',
-                'useradmin/batchmakeadmin',
-                'useradmin/batchadduser',
+                'sys/users',
+                'sys/users/export-excel',
+                'sys/users/ldap',
+                'sys/users/ldap/imported',
+                'sys/users/admins',
+                'users/add',
+                'users/remove',
+                'users/removetrial',
+                'users/search',
+                'users/removeadmin',
+                'users/info',
+                'users/toggle_status',
+                'users/toggle_role',
+                'users', # for 'users/(?P<email>[^/]+)/set_quota',
+                'users/password/reset',
+                'users/batchmakeadmin',
+                'users/batchadduser',
                 'api/v2.1/admin/users/batch',
             ],
             'can_manage_group': [
-                'sys/groupadmin/export-excel',
+                'sys/groups/export-excel',
                 'api/v2.1/admin/groups',
-            ],
-            'can_manage_external_link': [
-                'sys/external-links/',
-                'api/v2.1/admin/external-links',
             ],
             'can_view_user_log': [
                 'sys/loginadmin',
@@ -186,17 +174,12 @@ class UserPermissionMiddleware(MiddlewareMixin):
         elif permission == 'can_config_system':
             if not request.user.admin_permissions.can_config_system():
                 return HttpResponseForbidden()
-        elif permission == 'can_manage_library':
-            if not request.user.admin_permissions.can_manage_library():
                 return HttpResponseForbidden()
         elif permission == 'can_manage_user':
             if not request.user.admin_permissions.can_manage_user():
                 return HttpResponseForbidden()
         elif permission == 'can_manage_group':
             if not request.user.admin_permissions.can_manage_group():
-                return HttpResponseForbidden()
-        elif permission == 'can_manage_external_link':
-            if not request.user.admin_permissions.can_manage_external_link():
                 return HttpResponseForbidden()
         elif permission == 'can_view_user_log':
             if not request.user.admin_permissions.can_view_user_log():

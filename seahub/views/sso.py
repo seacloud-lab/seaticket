@@ -30,7 +30,7 @@ def sso(request):
         if not url_has_allowed_host_and_scheme(url=next_page, allowed_hosts=request.get_host()):
             next_page = settings.LOGIN_REDIRECT_URL
     else:
-        next_page = reverse('project')
+        next_page = reverse('projects_list')
 
     if getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False):
         return HttpResponseRedirect(next_page)
@@ -54,12 +54,6 @@ def sso(request):
 
     if getattr(settings, 'ENABLE_CAS', False):
         return HttpResponseRedirect(reverse('cas_ng_login') + next_param)
-
-    if getattr(settings, 'ENABLE_WORK_WEIXIN', False):
-        return HttpResponseRedirect(reverse('work_weixin_oauth_login') + next_param)
-
-    if getattr(settings, 'ENABLE_DINGTALK', False):
-        return HttpResponseRedirect(reverse('dingtalk_login') + next_param)
 
     if getattr(settings, 'ENABLE_TSINGHUA_AUTH', False):
         return HttpResponseRedirect(reverse('tsinghua_login'))

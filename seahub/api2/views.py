@@ -155,10 +155,10 @@ class AccountInfo(APIView):
         if getattr(settings, 'MULTI_INSTITUTION', False):
             info['is_inst_admin'] = request.user.inst_admin
 
-        project_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(email)
+        project_updates_email_interval = UserOptions.objects.get_project_updates_email_interval(email)
         info[
             'project_updates_email_interval'] = project_updates_email_interval if project_updates_email_interval is not None else 0
-        project_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(email)
+        project_collaborate_email_interval = UserOptions.objects.get_project_collaborate_email_interval(email)
         info[
             'project_collaborate_email_interval'] = project_collaborate_email_interval if project_collaborate_email_interval is not None else 0
         return info
@@ -208,13 +208,13 @@ class AccountInfo(APIView):
 
         if project_updates_email_interval is not None:
             if project_updates_email_interval <= 0:
-                UserOptions.objects.unset_dtable_updates_email_interval(username)
+                UserOptions.objects.unset_project_updates_email_interval(username)
             else:
-                UserOptions.objects.set_dtable_updates_email_interval(
+                UserOptions.objects.set_project_updates_email_interval(
                     username, project_updates_email_interval)
 
         if project_collaborate_email_interval is not None:
-            UserOptions.objects.set_dtable_collaborate_email_interval(
+            UserOptions.objects.set_project_collaborate_email_interval(
                 username, project_collaborate_email_interval)
 
         return Response(self._get_account_info(request))

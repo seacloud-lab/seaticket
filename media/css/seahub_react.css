@@ -140,13 +140,6 @@ li {
   color: #ffad5c;
 }
 
-.tr-drag-effect {
-  /* just for drag&drop item */
-  background-image: url('../img/grippy_large.png');
-  background-repeat: no-repeat;
-  background-position: 0px;
-}
-
 .text-decoration-underline {
   text-decoration: underline !important;
 }
@@ -1050,12 +1043,6 @@ a.table-sort-op:focus {
   margin: 0 auto;
   width: 24px;
   height: 24px;
-}
-
-/* thumbnail */
-.thumbnail {
-  max-width: 24px;
-  max-height: 24px;
 }
 
 @media (max-width: 767px) {

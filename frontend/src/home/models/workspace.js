@@ -4,17 +4,10 @@ class Workspace {
     this.id = obj.id || '';
     this.name = obj.name || '';
     this.type = obj.type || '';
-    this.project_list = obj.project_list || [];
-
-    // type === shared
-    this.shared_project_list = obj.shared_project_list || [];
-
-    // type === group
+    this.projects = obj.projects || [];
     this.group_id = obj.group_id || '';
     this.group_owner = obj.group_owner || '';
-    this.group_shared_projects = obj.group_shared_projects || [];
     this.is_admin = obj.is_admin || false;
-    this.department_id = obj.department_id || '';
   }
 
 }

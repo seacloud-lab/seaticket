@@ -18,11 +18,9 @@ from constance import config
 
 from seahub.settings import SITE_TITLE, SITE_NAME, ENABLE_BRANDING_CSS, \
     LOGO_PATH, BRANDING_CSS, LOGO_WIDTH, LOGO_HEIGHT,\
-    SITE_ROOT, ENABLE_GUEST_INVITATION, \
-    FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
+    SITE_ROOT, FAVICON_PATH, APPLE_TOUCH_ICON_PATH, FAVICON_NOTIFICATION_PATH, \
     MEDIA_ROOT, SHOW_LOGOUT_ICON, CUSTOM_LOGO_PATH, CUSTOM_FAVICON_PATH, CUSTOM_FAVICON_NOTIFICATION_PATH, \
-    LOGIN_BG_IMAGE_PATH, SHARE_LINK_PASSWORD_MIN_LENGTH, \
-    CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
+    LOGIN_BG_IMAGE_PATH, CUSTOM_LOGIN_BG_PATH, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, \
     ENABLE_SIGNUP, CN_FORCE_USER_AGREE_TERMS
 
 from seahub.constants import DEFAULT_ADMIN
@@ -33,17 +31,10 @@ from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils import is_pro_version
 
 try:
-    from seahub.settings import ENABLE_SYSADMIN_EXTRA
-except ImportError:
-    ENABLE_SYSADMIN_EXTRA = False
-
-try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
     MULTI_TENANCY = False
 
-from seahub.org_dingtalk.settings import ENABLE_ORG_DINGTALK
-from seahub.work_weixin.settings import ENABLE_WORK_WEIXIN
 from seahub.organizations.settings import ENABLE_ORG_LOGO
 SEAQA_VERSION = getattr(dj_settings, 'SEAQA_VERSION', 'Dev')
 
@@ -118,23 +109,17 @@ def base(request):
         'org': org,
         'site_name': get_site_name(),
         'enable_signup': ENABLE_SIGNUP,
-        'share_link_password_min_length': SHARE_LINK_PASSWORD_MIN_LENGTH,
         'events_enabled': False,
-        'sysadmin_extra_enabled': ENABLE_SYSADMIN_EXTRA,
         'multi_tenancy': MULTI_TENANCY,
         'multi_institution': getattr(dj_settings, 'MULTI_INSTITUTION', False),
         'search_repo_id': search_repo_id,
         'SITE_ROOT': SITE_ROOT,
         'CSRF_COOKIE_NAME': dj_settings.CSRF_COOKIE_NAME,
-        'constance_enabled': dj_settings.CONSTANCE_ENABLED,
         'LOGIN_URL': dj_settings.LOGIN_URL,
         'trash_clean_expire_days': dj_settings.TRASH_CLEAN_AFTER_DAYS,
-        'enable_guest_invitation': ENABLE_GUEST_INVITATION,
         'show_logout_icon': SHOW_LOGOUT_ICON,
         'is_pro': True if is_pro_version() else False,
         'service_url': get_service_url().rstrip('/'),
-        'enable_org_dingtalk': ENABLE_ORG_DINGTALK,
-        'enable_work_weixin': ENABLE_WORK_WEIXIN,
         'avatar_url': avatar_url if avatar_url else '',
         'is_mobile': request.is_mobile,
         'is_tablet': request.is_tablet,

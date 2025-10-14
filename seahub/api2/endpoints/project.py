@@ -86,8 +86,6 @@ class WorkspacesView(APIView):
 
         workspace_list = list()
         if detail == 'false':
-            workspace_list.append(dict(id='', name='starred', type='starred'))
-            workspace_list.append(dict(id='', name='shared', type='shared'))
             workspace_list_for_group = []
             for workspace in workspaces:
                 owner = workspace.owner
@@ -111,7 +109,7 @@ class WorkspacesView(APIView):
             return Response({'workspace_list': workspace_list}, status=status.HTTP_200_OK)
 
         try:
-            project_list = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
+            projects = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -120,7 +118,7 @@ class WorkspacesView(APIView):
 
         # group and personal tables
         workspace_id2project_list = {}
-        for project in project_list:
+        for project in projects:
             project_info = project.to_dict()
             if project.workspace.id in workspace_id2project_list:
                 workspace_id2project_list[project.workspace.id].append(project_info)
@@ -140,12 +138,12 @@ class WorkspacesView(APIView):
                 res['group_id'] = group_id
                 res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
                 res['is_admin'] = group_id in admin_group_ids
-                res['project_list'] = workspace_id2project_list.get(workspace.id, [])
+                res['projects'] = workspace_id2project_list.get(workspace.id, [])
                 workspace_list_for_group.append(res)
             else:
                 res['name'] = 'personal'
                 res['type'] = 'personal'
-                res['project_list'] = workspace_id2project_list.get(workspace.id, [])
+                res['projects'] = workspace_id2project_list.get(workspace.id, [])
                 workspace_list.append(res)
         workspace_list_for_group = sorted(workspace_list_for_group, key=lambda x: group_id_list.index(x.get('group_id')))
         workspace_list.extend(workspace_list_for_group)

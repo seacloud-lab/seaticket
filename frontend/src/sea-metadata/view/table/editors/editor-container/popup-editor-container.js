@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ClickOutside from '@/components/click-outside';
 import Editor from './editor';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
 import eventBus from '@/utils/event-bus';
 import { getColumnOriginName } from '../../../../utils/column';

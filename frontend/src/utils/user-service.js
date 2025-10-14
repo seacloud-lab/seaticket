@@ -1,4 +1,4 @@
-import { seaQAAPI } from '../api/web-api';
+import userAPI from '@/api/user-api';
 import { toaster } from '../components';
 import { Utils } from './utils';
 
@@ -8,21 +8,6 @@ export default class UserService {
     this.waitingQueryEmails = [];
     this.waitingExecCallbacks = [];
     this.emailUserMap = {};
-  }
-
-  getRelatedUsers(workspaceID, fileName, params, callback) {
-    seaQAAPI.getProjectRelatedUsers(workspaceID, fileName, params).then(res => {
-      res.data.user_list.forEach(user => {
-        this.emailUserMap[user.email] = user;
-      });
-      if (callback) callback(this.emailUserMap);
-    }).catch((error) => {
-      if (error.response.status === 403) {
-        return;
-      }
-      const errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
   }
 
   getEmailUserMap() {
@@ -54,7 +39,7 @@ export default class UserService {
       return;
     }
     this.pendingTimer = setTimeout(() => {
-      seaQAAPI.listUserInfo(this.waitingQueryEmails).then(res => {
+      userAPI.listUserInfo(this.waitingQueryEmails).then(res => {
         const { user_list } = res.data;
         user_list.forEach(user => {
           this.emailUserMap[user.email] = user;

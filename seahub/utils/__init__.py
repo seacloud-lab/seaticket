@@ -198,17 +198,6 @@ from seahub.utils.file_types import *
 
 PREVIEW_FILEEXT = {
     IMAGE: ('gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'psd', 'webp', 'svg'),
-    DOCUMENT: ('doc', 'docx', 'ppt', 'pptx', 'odt', 'fodt', 'odp', 'fodp', 'odg', 'xlsx', 'ods'),
-    SPREADSHEET: ('xls', 'xlsx', 'ods', 'fods'),
-    DRAW: ('draw',),
-    PDF: ('pdf', 'ai'),
-    MARKDOWN: ('markdown', 'md'),
-    VIDEO: ('mp4', 'ogv', 'webm', 'mov'),
-    AUDIO: ('mp3', 'oga', 'ogg'),
-    #'3D': ('stl', 'obj'),
-    XMIND: ('xmind',),
-    CDOC: ('cdoc',),
-    SEADOC: ('sdoc',),
 }
 
 def gen_fileext_type_map():
@@ -331,33 +320,6 @@ def send_html_email(subject, con_template, con_context, from_email, to_email,
                        to_email, headers=headers)
     msg.content_subtype = "html"
     msg.send()
-
-def gen_dir_share_link(token):
-    """Generate directory share link.
-    """
-    return gen_shared_link(token, 'd')
-
-def gen_file_share_link(token):
-    """Generate file share link.
-    """
-    return gen_shared_link(token, 'f')
-
-def gen_shared_link(token, s_type):
-    service_url = get_service_url()
-    assert service_url is not None
-
-    service_url = service_url.rstrip('/')
-    if s_type == 'f':
-        return '%s/f/%s/' % (service_url, token)
-    else:
-        return '%s/d/%s/' % (service_url, token)
-
-def gen_shared_upload_link(token):
-    service_url = get_service_url()
-    assert service_url is not None
-
-    service_url = service_url.rstrip('/')
-    return '%s/u/d/%s/' % (service_url, token)
 
 
 def show_delete_days(request):
@@ -616,22 +578,6 @@ uuid_re = re.compile(r'[0-9a-f]{8}(-?[0-9a-f]{4}){3}-?[0-9a-f]{12}', re.IGNORECA
 
 def is_valid_uuid(uuid_str):
     return True if uuid_re.match(uuid_str) is not None else False
-
-def setup_logger(logname):
-    """
-    setup logger for work weixin, weixin oauth
-    """
-    logdir = os.path.join(os.environ.get('LOG_DIR', ''))
-    log_file = os.path.join(logdir, logname)
-    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='MIDNIGHT', interval=1, backupCount=7)
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-    handler.setFormatter(formatter)
-    handler.addFilter(logging.Filter(logname))
-
-    logger = logging.getLogger(logname)
-    logger.addHandler(handler)
-
-    return logger
 
 SESSION_KEY_SLIDE_CAPTCHA_VERIFIED_TIME = 'slide-captcha-verified-time'
 

@@ -8,7 +8,6 @@ import time
 from django import template
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
-from django.utils import translation, formats
 from django.utils.dateformat import DateFormat
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext, ngettext
@@ -20,8 +19,6 @@ from seahub.profile.settings import NICKNAME_CACHE_TIMEOUT, NICKNAME_CACHE_PREFI
     CONTACT_CACHE_PREFIX
 from seahub.shortcuts import get_first_object_or_none
 from seahub.utils import normalize_cache_key
-from seahub.utils.html import avoid_wrapping
-from seahub.utils.file_size import get_file_size_unit
 
 register = template.Library()
 
@@ -276,38 +273,3 @@ def trim(value, length):
 @register.filter(name='strip_slash')
 def strip_slash(value):
     return value.strip('/')
-
-@register.filter(is_safe=True)
-def seahub_filesizeformat(bytes):
-    """
-    Formats the value like a 'human-readable' file size (i.e. 13 KB, 4.1 MB,
-    102 bytes, etc).
-    """
-    try:
-        bytes = float(bytes)
-    except (TypeError, ValueError, UnicodeDecodeError):
-        value = ngettext("%(size)d byte", "%(size)d bytes", 0) % {'size': 0}
-        return avoid_wrapping(value)
-
-    filesize_number_format = lambda value: formats.number_format(round(value, 1), 1)
-
-    KB = get_file_size_unit('KB')
-    MB = get_file_size_unit('MB')
-    GB = get_file_size_unit('GB')
-    TB = get_file_size_unit('TB')
-    PB = get_file_size_unit('PB')
-
-    if bytes < KB:
-        value = ngettext("%(size)d byte", "%(size)d bytes", bytes) % {'size': bytes}
-    elif bytes < MB:
-        value = gettext("%s KB") % filesize_number_format(bytes / KB)
-    elif bytes < GB:
-        value = gettext("%s MB") % filesize_number_format(bytes / MB)
-    elif bytes < TB:
-        value = gettext("%s GB") % filesize_number_format(bytes / GB)
-    elif bytes < PB:
-        value = gettext("%s TB") % filesize_number_format(bytes / TB)
-    else:
-        value = gettext("%s PB") % filesize_number_format(bytes / PB)
-
-    return avoid_wrapping(value)

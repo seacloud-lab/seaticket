@@ -7,10 +7,6 @@
 {% endblock %}
 
 {% block private_style %}
-.login-form-weixin-line {
-    width: 30%;
-    border-bottom: 1px solid #a6a6a6;
-}
 .sms-org-register {
     position: relative;
 }
@@ -56,24 +52,6 @@
             {% endif %}
             <button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
         </form>
-
-        {% if enable_weixin %}
-        <div class="mt-5">
-            <span class="d-flex align-items-center justify-content-center">
-                <span class="mr-2 login-form-weixin-line"></span>
-                <span style="color: #a6a6a6">
-                    {% trans "Signup with" %}
-                </span>
-                <span class="ml-2 login-form-weixin-line"></span>
-            </span>
-            <div class="d-flex justify-content-center mt-4">
-                <a href="{{ SITE_ROOT }}weixin/oauth-login/?next={% if next %}{{ next|urlencode }}{% else %}{{ SITE_ROOT }}{% endif %}">
-                    <img src="{{MEDIA_URL}}img/weixin.png" width="32" alt="" title="{% if LANGUAGE_CODE == 'zh-cn' %}微信{% else %}WeChat{% endif %}" />
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
         <div class="login-panel-bottom-container">
             {# language will be shown here #}
         </div>
@@ -216,15 +194,6 @@ $('#signup-form').on('submit', function(){
             }
         {% endif %}
 });
-
-{% if cn_force_check_user_agreement %}
-$('a[href*="weixin/oauth-login"]').on('click', function(event) {
-  if (!$('.user-terms-input').prop('checked')) {
-    showUserTermsTip();
-    event.preventDefault();
-  }
-});
-{% endif %}
 
 // for refresh page
 if (window.history.replaceState) {

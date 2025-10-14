@@ -1,0 +1,11 @@
+.admin-edit-inline-small-btn {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+}
+
+.admin-edit-inline-small-btn .sea-qa-icon-svg {
+  width: 13px;
+  height: 13px;
+}

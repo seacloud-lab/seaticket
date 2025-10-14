@@ -1,11 +1,10 @@
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { getCellValueByColumn, canEditCell } from '../../../utils/cell';
 import { getGroupByPath } from '../../../utils/view';
 import { getColumnByIndex, checkIsColumnEditable } from '../../../utils/column';
 import { SUPPORT_PREVIEW_COLUMN_TYPES, seaTableZIndexes } from '../../../constants';
 import { getGroupRowByIndex } from './group-metrics';
 import context from '../../../context';
-
 
 const SELECT_DIRECTION = {
   UP: 'upwards',

@@ -8,7 +8,7 @@ import { getValidFilters } from '../../utils/filter';
 import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { VIEW_TYPE } from '../../constants';
-import { getType } from '@/utils/utils';
+import { getType } from '@/utils/type-detection';
 import { useTypesData } from '@/sea-metadata/hooks';
 
 const FilterSetter = ({

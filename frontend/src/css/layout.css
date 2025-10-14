@@ -291,8 +291,7 @@ img:not([src]) {
   opacity: 0;
 }
 
-.cur-view-path.draft-review-nav,
-.cur-view-path.share-upload-nav {
+.cur-view-path.draft-review-nav {
   padding: 0 1rem;
 }
 

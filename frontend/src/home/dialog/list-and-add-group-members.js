@@ -2,11 +2,11 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { IconButton, SearchInput, toaster } from '../../components';
-import { Utils } from '../../utils/utils';
-import { cloudMode, gettext, isOrgContext } from '../../constants/config';
-import { seaQAAPI } from '../../api/web-api';
-import UserSelect from '../../components/user-select';
+import { SearchInput, toaster } from '@/components';
+import { Utils } from '@/utils/utils';
+import { cloudMode, gettext, isOrgContext } from '@/constants/config';
+import homeAPI from '../api';
+import UserSelect from '@/components/user-select';
 import GroupMembers from './group-members';
 
 
@@ -14,7 +14,6 @@ const propTypes = {
   groupID: PropTypes.number.isRequired,
   isOwner: PropTypes.bool.isRequired,
   toggleManageMembersDialog: PropTypes.func.isRequired,
-  toggleDepartmentDetailDialog: PropTypes.func,
   isAdmin: PropTypes.bool.isRequired,
   loadWorkspaceList: PropTypes.func.isRequired
 };
@@ -53,7 +52,7 @@ class ListAndAddGroupMembers extends React.Component {
     for (let i = 0; i < this.state.selectedOption.length; i++) {
       emails.push(this.state.selectedOption[i].email);
     }
-    seaQAAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
+    homeAPI.addGroupMembers(this.props.groupID, emails).then((res) => {
       this.props.loadWorkspaceList();
       const newMembers = res.data.success;
       this.setState({
@@ -75,7 +74,7 @@ class ListAndAddGroupMembers extends React.Component {
   };
 
   listGroupMembers = () => {
-    seaQAAPI.listGroupMembers(this.props.groupID).then((res) => {
+    homeAPI.listGroupMembers(this.props.groupID).then((res) => {
       this.setState({
         groupMembers: res.data
       });
@@ -95,11 +94,6 @@ class ListAndAddGroupMembers extends React.Component {
 
   toggle = () => {
     this.props.toggleManageMembersDialog();
-  };
-
-  toggleDepartmentDetailDialog = () => {
-    this.toggle();
-    this.props.toggleDepartmentDetailDialog();
   };
 
   changeMember = (targetMember) => {
@@ -152,9 +146,6 @@ class ListAndAddGroupMembers extends React.Component {
             className={classnames('add-members-select', { 'org-add-members-select': isOrgContext }, { 'user-select-right-btn': showDeptBtn })}
             selectedUsers={selectedOption}
           />
-          {showDeptBtn && (
-            <IconButton icon="add-members" className="toggle-detail-btn no-hover-bg d-none" onClick={this.toggleDepartmentDetailDialog} />
-          )}
           {selectedOption ?
             <Button color="secondary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
             <Button color="secondary" disabled>{gettext('Submit')}</Button>

@@ -10,7 +10,6 @@ import Badge from '../badge';
 import './index.css';
 
 const NORMAL = 'NORMAL';
-const SHARE = 'SHARE';
 // tslint:disable-next-line:no-empty
 function noop() { }
 const queue = [];
@@ -65,7 +64,6 @@ function createActionSheet(flag, config, callback) {
     options,
     destructiveButtonIndex,
     cancelButtonIndex,
-    cancelButtonText,
     badges = []
   } = props;
   const titleMsg = [
@@ -155,53 +153,6 @@ function createActionSheet(flag, config, callback) {
         </div>
       );
       break;
-    case SHARE:
-      mode = 'share';
-      const multipleLine =
-        (options.length && Array.isArray(options[0])) || false;
-      const createList = (item, index, rowIndex = 0) => (
-        <div
-          className={`${prefixCls}-share-list-item`}
-          role="button"
-          key={index}
-          onClick={() => cb(index, rowIndex)}
-        >
-          <div className={`${prefixCls}-share-list-item-icon`}>{item.icon}</div>
-          <div className={`${prefixCls}-share-list-item-title`}>
-            {item.title}
-          </div>
-        </div>
-      );
-      children = (
-        <div {...getDataAttr(props)}>
-          {titleMsg}
-          <div className={`${prefixCls}-share`}>
-            {multipleLine ? (
-              options.map((item, index) => (
-                <div key={index} className={`${prefixCls}-share-list`}>
-                  {item.map((ii, ind) => createList(ii, ind, index))}
-                </div>
-              ))
-            ) : (
-              <div className={`${prefixCls}-share-list`}>
-                {options.map((item, index) => createList(item, index))}
-              </div>
-            )}
-            <TouchFeedback
-              activeClassName={`${prefixCls}-share-cancel-button-active`}
-            >
-              <div
-                className={`${prefixCls}-share-cancel-button`}
-                role="button"
-                onClick={() => cb(-1)}
-              >
-                {cancelButtonText}
-              </div>
-            </TouchFeedback>
-          </div>
-        </div>
-      );
-      break;
     default:
       break;
   }
@@ -233,9 +184,6 @@ function createActionSheet(flag, config, callback) {
 export default {
   showActionSheetWithOptions(config, callback = noop) {
     createActionSheet(NORMAL, config, callback);
-  },
-  showShareActionSheetWithOptions(config, callback = noop) {
-    createActionSheet(SHARE, config, callback);
   },
   close() {
     queue.forEach(q => q());

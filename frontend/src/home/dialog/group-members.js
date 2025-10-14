@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
-import { IconButton, ActiveStatusEditor, toaster } from '../../components';
-import { Utils } from '../../utils/utils';
-import { gettext, username } from '../../constants/config';
-import { seaQAAPI } from '../../api/web-api';
-import { getRoleOptions } from '../../utils/role-status-utils';
+import { IconButton, ActiveStatusEditor, toaster } from '@/components';
+import { Utils } from '@/utils/utils';
+import { gettext, username } from '@/constants/config';
+import homeAPI from '../api';
+import { getRoleOptions } from '@/utils/role-status-utils';
 
 const propTypes = {
   groupMembers: PropTypes.array.isRequired,
@@ -80,7 +80,7 @@ class Member extends React.PureComponent {
 
   onChangeUserRole = (role) => {
     let isAdmin = role === 'Admin' ? 'True' : 'False';
-    seaQAAPI.setGroupAdmin(this.props.groupID, this.props.memberItem.email, isAdmin).then((res) => {
+    homeAPI.setGroupAdmin(this.props.groupID, this.props.memberItem.email, isAdmin).then((res) => {
       this.props.changeMember(res.data);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);
@@ -95,7 +95,7 @@ class Member extends React.PureComponent {
 
   deleteMember = (name) => {
     const { memberItem } = this.props;
-    seaQAAPI.deleteGroupMember(this.props.groupID, name).then((res) => {
+    homeAPI.deleteGroupMember(this.props.groupID, name).then((res) => {
       this.props.deleteMember(memberItem);
     }).catch(error => {
       let errMsg = Utils.getErrorMsg(error, true);

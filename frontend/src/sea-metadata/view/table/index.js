@@ -2,7 +2,8 @@ import React, { cloneElement, isValidElement, useCallback, useEffect, useMemo, u
 import { toKeyCode } from 'is-hotkey';
 import toaster from '@/components/toaster';
 import TableMain from './table-main';
-import { Utils, isFunction } from '@/utils/utils';
+import { Utils } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, MAX_LOAD_NUMBER } from '../../constants';

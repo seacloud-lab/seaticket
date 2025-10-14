@@ -80,10 +80,6 @@ class GroupMembers(APIView):
             elif is_admin:
                 role = 'Admin'
 
-            # filter empty-user from bug that made an empty-group-owner when creating department
-            if role == 'Owner' and email == '':
-                continue
-
             if email in users_info:
                 nickname = users_info.get(email)[1]
                 contact_email = users_info.get(email)[0]
@@ -252,7 +248,6 @@ class GroupMember(APIView):
                 else:
                     GroupUser.objects.filter(
                         group_id=group_id, user_name=email).delete()
-                # remove repo-group share info of all 'email' owned repos
                 return Response({'success': True})
             except Exception as e:
                 logger.error(e)

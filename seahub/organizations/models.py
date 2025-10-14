@@ -13,7 +13,6 @@ from .settings import ORG_MEMBER_QUOTA_DEFAULT
 from seahub.api2.utils import to_python_boolean
 from seahub.constants import ORG_DEFAULT
 from seahub.role_permissions.utils import get_available_roles, get_enabled_role_permissions_by_role
-from seahub.utils.file_size import get_quota_from_string
 from django.core.cache import cache
 from seahub.group.models import Group, GroupUser
 
@@ -339,50 +338,6 @@ class OrgQuota(models.Model):
 
     class Meta:
         db_table = 'organizations_org_quota'
-
-
-class OrgCorpAuthManager(models.Manager):
-
-    def add_corp(self, org_id, corp_id, corp_name, permanent_code, extra_data):
-        return self.create(
-            org_id=org_id,
-            corp_id=corp_id,
-            corp_name=corp_name,
-            permanent_code=permanent_code,
-            extra_data=extra_data,
-        )
-
-    def get_by_org_id(self, org_id):
-        if not org_id:
-            return None
-        return self.filter(org_id=org_id).first()
-
-    def get_by_corp_id(self, corp_id):
-        if not corp_id:
-            return None
-        return self.filter(corp_id=corp_id).first()
-
-
-class OrgCorpAuth(models.Model):
-    """ org work weixin, org dingding
-    """
-    org_id = models.IntegerField(unique=True, null=True)
-    corp_id = models.CharField(max_length=255, unique=True, null=True)
-    corp_name = models.CharField(max_length=255)
-    permanent_code = models.CharField(max_length=255)
-    extra_data = models.TextField()
-
-    objects = OrgCorpAuthManager()
-
-    class Meta:
-        db_table = 'organizations_org_corp_auth'
-
-    def to_dict(self):
-        return {
-            'org_id': self.org_id,
-            'corp_id': self.corp_id,
-            'corp_name': self.corp_name,
-        }
 
 
 class OrgSAMLConfigManager(models.Manager):

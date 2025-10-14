@@ -70,7 +70,7 @@
                             <a href="{% url 'org_user_admin'%}" title="{% trans "Admin" %}" class="item">{% trans "Team admin" %}</a>
                             {% endif %}
                             {% if request.user.inst_admin %}
-                            <a href="{% url "institutions:useradmin" %}" title="{% trans "Admin" %}" class="item">{% trans "Admin" %}</a>
+                            <a href="{% url "institutions:users" %}" title="{% trans "Admin" %}" class="item">{% trans "Admin" %}</a>
                             {% endif %}
                             {% endblock %}
                             <a href="{{ SITE_ROOT }}accounts/logout/" class="item" id="logout">{% trans "Log out" %}</a>

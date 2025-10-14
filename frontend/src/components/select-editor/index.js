@@ -1,0 +1,113 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { gettext } from '../../constants';
+import CustomizeSelect from '../customize-select';
+import IconButton from '../icon-button';
+
+import './index.css';
+
+const propTypes = {
+  isTextMode: PropTypes.bool.isRequired, // there will be two mode. first: text and select. second: just select
+  isEditIconShow: PropTypes.bool.isRequired,
+  options: PropTypes.array.isRequired,
+  currentOption: PropTypes.string.isRequired,
+  translateOption: PropTypes.func.isRequired,
+  translateExplanation: PropTypes.func,
+  onOptionChanged: PropTypes.func.isRequired,
+  toggleItemFreezed: PropTypes.func,
+};
+
+class SelectEditor extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      isEditing: false,
+      options: []
+    };
+    this.options = [];
+  }
+
+  componentDidMount() {
+    document.addEventListener('click', this.onHideSelect);
+    this.setOptions();
+  }
+
+  setOptions = () => {
+    this.options = [];
+    const options = this.props.options;
+    for (let i = 0, length = options.length; i < length; i++) {
+      let option = {};
+      option.value = options[i];
+      option.label = <div>{this.props.translateOption(options[i])}{ this.props.translateExplanation && <div className="permission-editor-explanation">{this.props.translateExplanation(options[i])}</div>}</div>;
+      this.options.push(option);
+    }
+
+    this.setState({
+      options: this.options
+    });
+  };
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.onHideSelect);
+  }
+
+  onEditPermission = (e) => {
+    e.nativeEvent.stopImmediatePropagation();
+    this.setState({ isEditing: true });
+    this.props.toggleItemFreezed && this.props.toggleItemFreezed(true);
+  };
+
+  onOptionChanged = (value) => {
+    let permission = value;
+    if (permission !== this.props.currentOption) {
+      this.props.onOptionChanged(permission);
+    }
+    this.setState({ isEditing: false });
+    this.props.toggleItemFreezed && this.props.toggleItemFreezed(false);
+  };
+
+  onSelectHandler = (e) => {
+    e.nativeEvent.stopImmediatePropagation();
+  };
+
+  onHideSelect = () => {
+    if (this.state.isEditing) {
+      this.setState({ isEditing: false });
+      this.props.toggleItemFreezed && this.props.toggleItemFreezed(false);
+    }
+  };
+
+  render() {
+    let { currentOption, isTextMode } = this.props;
+
+    // scence1: isTextMode (text)editor-icon --> select
+    // scence2: !isTextMode select
+    return (
+      <div className="permission-editor" onClick={this.onSelectHandler}>
+        {(!isTextMode || this.state.isEditing) &&
+          <CustomizeSelect
+            options={this.state.options}
+            className="permission-editor-select"
+            classNamePrefix="permission-editor"
+            placeholder={this.props.translateOption(currentOption)}
+            onChange={this.onOptionChanged}
+            value={currentOption}
+          />
+        }
+        {(isTextMode && !this.state.isEditing) &&
+          <div>
+            {this.props.translateOption(currentOption)}
+            {this.props.isEditIconShow && (
+              <IconButton icon="rename" title={gettext('Edit')} className="attr-action-icon" onClick={this.onEditPermission} />
+            )}
+          </div>
+        }
+      </div>
+    );
+  }
+}
+
+SelectEditor.propTypes = propTypes;
+
+export default SelectEditor;

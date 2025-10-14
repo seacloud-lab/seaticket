@@ -6,8 +6,6 @@ from django.conf import settings
 
 from seahub.base.accounts import User, AuthBackend
 from seahub.profile.models import Profile
-from seahub.utils.file_size import get_quota_from_string
-from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.registration.models import notify_admins_on_activate_request, \
         notify_admins_on_register_complete
 from seahub.role_permissions.models import UserRole

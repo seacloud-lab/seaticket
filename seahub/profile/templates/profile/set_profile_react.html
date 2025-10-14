@@ -65,33 +65,6 @@ window.app.pageOptions = {
 
   useExternalTeamAdmin: {% if use_external_team_admin %} true {% else %} false {% endif %},
 
-  enableWorkWeixin: {% if enable_work_weixin %} true {% else %} false {% endif %},
-  {% if enable_work_weixin %}
-  workWeixinConnected: {% if work_weixin_connected %} true {% else %} false {% endif %},
-  {% endif %}
-
-  enableDingtalk: {% if enable_dingtalk %} true {% else %} false {% endif %},
-  {% if enable_dingtalk %}
-  dingtalkConnected: {% if dingtalk_connected %} true {% else %} false {% endif %},
-  {% endif %}
-
-  enableOrgWorkWeixin: {% if enable_org_work_weixin %} true {% else %} false {% endif %},
-  {% if enable_org_work_weixin %}
-  orgWorkWeixinConnected: {% if org_work_weixin_connected %} true {% else %} false {% endif %},
-  orgWorkWeixinLicenseStatus: {{ org_work_weixin_license_status }},
-  {% endif %}
-
-  enableWeixin: {% if enable_weixin %} true {% else %} false {% endif %},
-  {% if enable_weixin %}
-  weixinConnected: {% if weixin_connected %} true {% else %} false {% endif %},
-  weixinOfficialAccountsFollowed: {% if weixin_official_accounts_followed %} true {% else %} false {% endif %},
-  {% endif %}
-
-  enableOrgDingtalk: {% if enable_org_dingtalk %} true {% else %} false {% endif %},
-  {% if enable_org_dingtalk %}
-  orgDingtalkConnected: {% if org_dingtalk_connected %} true {% else %} false {% endif %},
-  {% endif %}
-
   enableSAML: {% if enable_saml %} true {% else %} false {% endif %},
   {% if enable_saml %}
   samlConnected: {% if saml_connected %} true {% else %} false {% endif %},
@@ -110,10 +83,6 @@ window.app.pageOptions = {
 
   cloudMode: {% if cloud_mode %} true {% else %} false {% endif %},
   isOrgContext: {% if org is not None %} true {% else %} false {% endif %},
-
-  {% if org is not None %}
-  orgCorpBindType: "{{ org_corp_bind_type|escapejs }}",
-  {% endif %}
 };
 </script>
 {% render_bundle 'settings' 'js' %}

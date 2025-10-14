@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
-import { CustomizeDropdownMoreToggle, Icon, CustomizeNameDialog, CommonOperationConfirmationDialog } from '@/components';
+import { Dropdown } from 'reactstrap';
+import { CustomizeDropdownMoreToggle, CustomizeNameDialog, CommonOperationConfirmationDialog,
+  CustomizeDropdownMenu, CustomizeDropdownItem
+} from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { useAskPage, useSessions } from '../../hooks';
 
@@ -51,19 +53,16 @@ const Session = ({ session, permission, isSelected }) => {
         {permission === PERMISSION_TYPES.READ_WRITE && (
           <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
             <CustomizeDropdownMoreToggle isOpen={isOpen} className={classnames('sea-qa-ai-ask-session-more-op-btn', { 'd-flex': isOpen })} />
-            <DropdownMenu
-              className="position-fixed sea-qa-dropdown-menu dropdown-menu"
-              modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
-            >
-              <DropdownItem onClick={openRename}>
-                <Icon symbol="rename" className="item-icon" />
-                <span>{gettext('Rename')}</span>
-              </DropdownItem>
-              <DropdownItem onClick={openDelete}>
-                <Icon symbol="delete" className="item-icon" />
-                <span>{gettext('Delete')}</span>
-              </DropdownItem>
-            </DropdownMenu>
+            <CustomizeDropdownMenu fixed={true}>
+              <CustomizeDropdownItem onClick={openRename}>
+                <CustomizeDropdownItem.Icon symbol="rename" />
+                <CustomizeDropdownItem.Text>{gettext('Rename')}</CustomizeDropdownItem.Text>
+              </CustomizeDropdownItem>
+              <CustomizeDropdownItem onClick={openDelete}>
+                <CustomizeDropdownItem.Icon symbol="delete" />
+                <CustomizeDropdownItem.Text>{gettext('Delete')}</CustomizeDropdownItem.Text>
+              </CustomizeDropdownItem>
+            </CustomizeDropdownMenu>
           </Dropdown>
         )}
       </div>

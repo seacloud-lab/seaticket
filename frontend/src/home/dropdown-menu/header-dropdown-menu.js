@@ -1,13 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { enableAddressBookV2 } from '../../constants/config';
+import { Dropdown, DropdownToggle } from 'reactstrap';
 import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 import './header-dropdown-menu.css';
-import { Icon } from '../../components';
+import { Icon, CustomizeDropdownMenu, CustomizeDropdownItem } from '../../components';
 
 const gettext = window.gettext;
-const { isOrgContext } = window.app.pageOptions;
 
 class HeaderDropdownMenu extends React.Component {
 
@@ -44,17 +42,12 @@ class HeaderDropdownMenu extends React.Component {
     this.props.onLeaveGroupToggle(workspace);
   };
 
-  openInviteDialog = () => {
-    this.props.toggleGroupInviteDialog();
-  };
-
   openTrashDialog = () => {
     this.props.toggleGroupTrashDialog();
   };
 
   render() {
-    const { isOwner, isPersonal, isAdmin, isOwnerOrAdmin, workspace, isDepart, showGroupOptions } = this.props;
-    const isDepartV2Group = enableAddressBookV2 && workspace.department_id;
+    const { isOwner, isPersonal, isAdmin, isOwnerOrAdmin, workspace, showGroupOptions } = this.props;
 
     let showAddProject = false;
     if (canAddProject && isPersonal && !disableAddingPersonalProjects) {
@@ -85,35 +78,32 @@ class HeaderDropdownMenu extends React.Component {
           <Icon symbol="add" />
           <Icon symbol="down" />
         </DropdownToggle>
-        <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu drop-list">
+        <CustomizeDropdownMenu className="drop-list">
           {showAddProject &&
-            <DropdownItem onClick={this.props.showVirtualProject}>{gettext('Add a blank project')}</DropdownItem>
+            <CustomizeDropdownItem onClick={this.props.showVirtualProject}>{gettext('Add a blank project')}</CustomizeDropdownItem>
           }
           {isOwner && showGroupOptions &&
-            <DropdownItem onClick={this.onRenameToggle}>{gettext('Rename')}</DropdownItem>
+            <CustomizeDropdownItem onClick={this.onRenameToggle}>{gettext('Rename')}</CustomizeDropdownItem>
           }
-          {(!isDepart || isDepartV2Group) && showGroupOptions &&
-            <DropdownItem onClick={this.props.openGroupMember}>{gettext('Group members')}</DropdownItem>
-          }
-          {!isDepart && isOwnerOrAdmin && !isDepartV2Group && showGroupOptions &&
-            <DropdownItem onClick={this.onManageMembersToggle}>{gettext('Manage members')}</DropdownItem>
-          }
-          {!isOrgContext && isOwnerOrAdmin && !isDepartV2Group && showGroupOptions &&
-            <DropdownItem onClick={this.openInviteDialog}>{gettext('Invite members')}</DropdownItem>
-          }
-          {isOwner && showGroupOptions &&
-            <DropdownItem onClick={this.onTransferGroupToggle}>{gettext('Transfer')}</DropdownItem>
-          }
-          {isOwner && showGroupOptions &&
-            <DropdownItem onClick={this.onDeleteGroupToggle.bind(workspace)}>{gettext('Delete group')}</DropdownItem>
-          }
-          {!isDepart && !isOwner && !isDepartV2Group && showGroupOptions &&
-            <DropdownItem onClick={this.onLeaveGroupToggle.bind(workspace)}>{gettext('Leave group')}</DropdownItem>
+          {showGroupOptions &&
+            <CustomizeDropdownItem onClick={this.props.openGroupMember}>{gettext('Group members')}</CustomizeDropdownItem>
           }
           {isOwnerOrAdmin && showGroupOptions &&
-            <DropdownItem onClick={this.openTrashDialog}>{gettext('Trash')}</DropdownItem>
+            <CustomizeDropdownItem onClick={this.onManageMembersToggle}>{gettext('Manage members')}</CustomizeDropdownItem>
           }
-        </DropdownMenu>
+          {isOwner && showGroupOptions &&
+            <CustomizeDropdownItem onClick={this.onTransferGroupToggle}>{gettext('Transfer')}</CustomizeDropdownItem>
+          }
+          {isOwner && showGroupOptions &&
+            <CustomizeDropdownItem onClick={this.onDeleteGroupToggle.bind(workspace)}>{gettext('Delete group')}</CustomizeDropdownItem>
+          }
+          {!isOwner && showGroupOptions &&
+            <CustomizeDropdownItem onClick={this.onLeaveGroupToggle.bind(workspace)}>{gettext('Leave group')}</CustomizeDropdownItem>
+          }
+          {isOwnerOrAdmin && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.openTrashDialog}>{gettext('Trash')}</CustomizeDropdownItem>
+          )}
+        </CustomizeDropdownMenu>
       </Dropdown>
     );
   }

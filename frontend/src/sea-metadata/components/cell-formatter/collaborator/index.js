@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Icon from '../../../../components/icon';
+import { Icon } from '@/components';
 
 import './index.css';
 
@@ -20,21 +20,20 @@ const Collaborator = ({ enableDelete = false, collaborator, onDelete }) => {
         )}
       </div>
     );
-  } else {
-    return (
-      <div className="sea-metadata-ui collaborator-item" title={collaborator.name}>
-        <span className="collaborator-avatar">
-          <img className="collaborator-avatar-icon" alt={collaborator.name} src={collaborator.avatar_url} />
-        </span>
-        <span className="collaborator-name">{collaborator.name}</span>
-        {enableDelete && (
-          <span className="collaborator-remove" onClick={onDelete}>
-            <Icon symbol="delete" />
-          </span>
-        )}
-      </div>
-    );
   }
+  return (
+    <div className="sea-metadata-ui collaborator-item" title={collaborator.name}>
+      <span className="collaborator-avatar">
+        <img className="collaborator-avatar-icon" alt={collaborator.name} src={collaborator.avatar_url} />
+      </span>
+      <span className="collaborator-name">{collaborator.name}</span>
+      {enableDelete && (
+        <span className="collaborator-remove" onClick={onDelete}>
+          <Icon symbol="delete" />
+        </span>
+      )}
+    </div>
+  );
 };
 
 Collaborator.propTypes = {

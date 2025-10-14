@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import toaster from '../toaster';
-import { Utils } from '../../utils/utils';
-import { isEnter, isEsc } from '../../utils/hotkey';
-import { isWorkWeChat } from '../../utils/wechat-utils';
-import { seaQAAPI } from '../../api/web-api';
-import { siteRoot, gettext, avatarURL, isOrgContext, useExternalTeamAdmin } from '../../constants';
+import { Utils } from '@/utils/utils';
+import { isEnter, isEsc } from '@/utils/hotkey';
+import { isWorkWeChat } from '@/utils/wechat-utils';
+import userAPI from '@/api/user-api';
+import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 import IconBtn from '../icon-button';
 
 import './index.css';
@@ -22,7 +22,6 @@ class Account extends Component {
     super(props);
     this.state = {
       showInfo: false,
-      enableSubscription: false,
       userName: '',
       contactEmail: '',
       isStaff: false,
@@ -92,7 +91,7 @@ class Account extends Component {
 
   onClickAccount = () => {
     if (this.isFirstMounted) {
-      seaQAAPI.getAccountInfo().then(resp => {
+      userAPI.getAccountInfo().then(resp => {
         this.setState({
           userName: resp.data.name,
           contactEmail: resp.data.email,
@@ -100,7 +99,6 @@ class Account extends Component {
           isInstAdmin: resp.data.is_inst_admin,
           isOrgStaff: resp.data.is_org_staff === 1 ? true : false,
           showInfo: !this.state.showInfo,
-          enableSubscription: resp.data.enable_subscription,
           bigDataTotalRows: resp.data.big_data_total_rows,
           bigDataRowLimit: resp.data.big_data_row_limit > 0 ? resp.data.big_data_row_limit : '--',
           bigDataRowUsageRate: resp.data.big_data_row_usage_rate,
@@ -163,12 +161,12 @@ class Account extends Component {
         };
       } else if (isOrgStaff) {
         data = {
-          url: useExternalTeamAdmin ? `${siteRoot}external-team-admin/` : `${siteRoot}org/orgmanage/`,
+          url: useExternalTeamAdmin ? `${siteRoot}external-team-admin/` : `${siteRoot}org/manage/`,
           text: gettext('Team admin')
         };
       } else if (isInstAdmin) {
         data = {
-          url: `${siteRoot}inst/useradmin/`,
+          url: `${siteRoot}inst/users/`,
           text: gettext('Institution admin')
         };
       }
@@ -197,7 +195,6 @@ class Account extends Component {
           </div>
         </div>
         <a href={siteRoot + 'profile/'} className="item">{gettext('Personal settings')}</a>
-        {(this.state.enableSubscription && !isOrgContext) && <a href={siteRoot + 'subscription/'} className="item">{'付费管理'}</a>}
         {this.renderMenu()}
         {!this.isWorkWX && <a href={siteRoot + 'accounts/logout/'} className="item">{gettext('Log out')}</a>}
       </div>

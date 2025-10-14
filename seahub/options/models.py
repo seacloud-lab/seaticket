@@ -6,7 +6,6 @@ import logging
 from django.db import models
 
 from seahub.base.fields import LowerCaseCharField
-from seahub.utils import is_pro_version
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -36,9 +35,9 @@ KEY_DEFAULT_REPO = "default_repo"
 KEY_WEBDAV_SECRET = "webdav_secret"
 KEY_FILE_UPDATES_EMAIL_INTERVAL = "file_updates_email_interval"
 KEY_FILE_UPDATES_LAST_EMAILED_TIME = "file_updates_last_emailed_time"
-KEY_DTABLE_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
-KEY_DTABLE_UPDATES_LAST_EMAILED_TIME = "dtable_updates_last_emailed_time"
-KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL = 'project_collaborate_email_interval'
+KEY_PROJECT_UPDATES_EMAIL_INTERVAL = "project_updates_email_interval"
+KEY_PROJECT_UPDATES_LAST_EMAILED_TIME = "project_updates_last_emailed_time"
+KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL = 'project_collaborate_email_interval'
 
 
 class CryptoOptionNotSetError(Exception):
@@ -82,127 +81,6 @@ class UserOptionsManager(models.Manager):
         """Remove user's option.
         """
         super(UserOptionsManager, self).filter(email=username, option_key=k).delete()
-
-    def enable_server_crypto(self, username):
-        """
-        
-        Arguments:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_SERVER_CRYPTO,
-                                    VAL_SERVER_CRYPTO_ENABLED)
-        
-    def disable_server_crypto(self, username):
-        """
-        
-        Arguments:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_SERVER_CRYPTO,
-                                    VAL_SERVER_CRYPTO_DISABLED)
-
-    def is_server_crypto(self, username):
-        """Client crypto is deprecated, always return ``True``.
-        """
-        return True
-
-    def enable_user_guide(self, username):
-        """
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_USER_GUIDE,
-                                    VAL_USER_GUIDE_ON)
-
-    def disable_user_guide(self, username):
-        """
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_USER_GUIDE,
-                                    VAL_USER_GUIDE_OFF)
-
-    def is_user_guide_enabled(self, username):
-        """Return ``True`` if user need guide, otherwise ``False``.
-
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        rst = super(UserOptionsManager, self).filter(
-            email=username, option_key=KEY_USER_GUIDE)
-        rst_len = len(rst)
-        if rst_len <= 0:
-            # Assume ``user_guide`` is enabled if this optoin is not set.
-            return True
-        elif rst_len == 1:
-            return bool(int(rst[0].option_val))
-        else:
-            for i in range(rst_len - 1):
-                rst[i].delete()
-            return bool(int(rst[rst_len - 1].option_val))
-
-    def enable_sub_lib(self, username):
-        """
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_SUB_LIB,
-                                    VAL_SUB_LIB_ENABLED)
-
-    def disable_sub_lib(self, username):
-        """
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        return self.set_user_option(username, KEY_SUB_LIB,
-                                    VAL_SUB_LIB_DISABLED)
-
-    def is_sub_lib_enabled(self, username):
-        """Return ``True`` if is not pro version AND sub lib enabled, otherwise ``False``.
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        if is_pro_version():
-            return False
-
-        try:
-            user_option = super(UserOptionsManager, self).get(
-                email=username, option_key=KEY_SUB_LIB)
-            return bool(int(user_option.option_val))
-        except UserOptions.DoesNotExist:
-            return False
-
-    def set_default_repo(self, username, repo_id):
-        """Set a user's default library.
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        - `repo_id`:
-        """
-        return self.set_user_option(username, KEY_DEFAULT_REPO, repo_id)
-
-    def get_default_repo(self, username):
-        """Get a user's default library.
-
-        Returns repo_id if default library is found, otherwise ``None``.
-        
-        Arguments:
-        - `self`:
-        - `username`:
-        """
-        return self.get_user_option(username, KEY_DEFAULT_REPO)
 
     def passwd_change_required(self, username):
         """Check whether user need to change password.
@@ -273,47 +151,12 @@ class UserOptionsManager(models.Manager):
             decoded = None
         return decoded
 
-    def set_file_updates_email_interval(self, username, seconds):
-        return self.set_user_option(username, KEY_FILE_UPDATES_EMAIL_INTERVAL,
-                                    str(seconds))
-    def get_file_updates_email_interval(self, username):
-        val = self.get_user_option(username, KEY_FILE_UPDATES_EMAIL_INTERVAL)
-        if not val:
-            return None
-        try:
-            return int(val)
-        except ValueError:
-            logger.error('Failed to convert string %s to int' % val)
-            return None
-
-    def unset_file_updates_email_interval(self, username):
-        return self.unset_user_option(username, KEY_FILE_UPDATES_EMAIL_INTERVAL)
-
-    def set_file_updates_last_emailed_time(self, username, time_dt):
-        return self.set_user_option(
-            username, KEY_FILE_UPDATES_LAST_EMAILED_TIME,
-            time_dt.strftime("%Y-%m-%d %H:%M:%S"))
-
-    def get_file_updates_last_emailed_time(self, username):
-        val = self.get_user_option(username, KEY_FILE_UPDATES_LAST_EMAILED_TIME)
-        if not val:
-            return None
-
-        try:
-            return datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
-        except Exception:
-            logger.error('Failed to convert string %s to datetime obj' % val)
-            return None
-
-    def unset_file_updates_last_emailed_time(self, username):
-        return self.unset_user_option(username, KEY_FILE_UPDATES_LAST_EMAILED_TIME)
-
-    def set_dtable_updates_email_interval(self, username, seconds):
-        return self.set_user_option(username, KEY_DTABLE_UPDATES_EMAIL_INTERVAL,
+    def set_project_updates_email_interval(self, username, seconds):
+        return self.set_user_option(username, KEY_PROJECT_UPDATES_EMAIL_INTERVAL,
                                     str(seconds))
 
-    def get_dtable_updates_email_interval(self, username):
-        val = self.get_user_option(username, KEY_DTABLE_UPDATES_EMAIL_INTERVAL)
+    def get_project_updates_email_interval(self, username):
+        val = self.get_user_option(username, KEY_PROJECT_UPDATES_EMAIL_INTERVAL)
         if not val:
             return None
         try:
@@ -322,20 +165,15 @@ class UserOptionsManager(models.Manager):
             logger.error('Failed to convert string %s to int', val)
             return None
 
-    def unset_dtable_updates_email_interval(self, username):
-        return self.unset_user_option(username, KEY_DTABLE_UPDATES_EMAIL_INTERVAL)
+    def unset_project_updates_email_interval(self, username):
+        return self.unset_user_option(username, KEY_PROJECT_UPDATES_EMAIL_INTERVAL)
 
-    def set_dtable_updates_last_emailed_time(self, username, time_dt):
-        return self.set_user_option(
-            username, KEY_DTABLE_UPDATES_LAST_EMAILED_TIME,
-            time_dt.strftime("%Y-%m-%d %H:%M:%S"))
-
-    def set_dtable_collaborate_email_interval(self, username, seconds):
-        return self.set_user_option(username, KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL,
+    def set_project_collaborate_email_interval(self, username, seconds):
+        return self.set_user_option(username, KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL,
                                     str(seconds))
 
-    def get_dtable_collaborate_email_interval(self, username):
-        val = self.get_user_option(username, KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL)
+    def get_project_collaborate_email_interval(self, username):
+        val = self.get_user_option(username, KEY_PROJECT_COLLABORATE_EMAIL_INTERVAL)
         if not val:
             return None
         try:
@@ -343,9 +181,6 @@ class UserOptionsManager(models.Manager):
         except ValueError:
             logger.error('Failed to convert string %s to int', val)
             return None
-
-    def unset_dtable_collaborate_email_interval(self, username):
-        return self.unset_user_option(username, KEY_DTABLE_COLLABORATE_EMAIL_INTERVAL)
 
 
 class UserOptions(models.Model):

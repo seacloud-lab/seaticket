@@ -13,7 +13,6 @@ class AddUserForm(forms.Form):
     """
     email = forms.EmailField()
     name = forms.CharField(max_length=64, required=False)
-    department = forms.CharField(max_length=512, required=False)
 
     role = forms.ChoiceField(choices=[ (i, i) for i in get_available_roles() ])
 
