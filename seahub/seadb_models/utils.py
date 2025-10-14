@@ -3,7 +3,7 @@ import logging
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable
+    GithubIssueCommentsTable, SeafileTable
 
 logger = logging.getLogger(__name__)
 
@@ -241,6 +241,44 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
         replies_table_id,
         [
             discourse_replies_table.updated_at.name,
+        ]
+    )
+
+
+def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
+    seafile_table_name = SeafileTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, seafile_table_name)
+    table_id = res['table_id']
+    for column in SeafileTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            SeafileTable.path.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            SeafileTable.filename.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            SeafileTable.deleted.name,
         ]
     )
 

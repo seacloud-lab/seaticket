@@ -26,10 +26,10 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
     url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
-    list_connection_view_records, list_github_issue_record_details
+    list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
 from seahub.project.constants import ConnectionType, CrawlStatus
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
-    DiscourseRepliesTable, GithubIssueCommentsTable
+    DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -129,16 +129,16 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         connection_id = record.id
+        seadb_api = SeaDBAPI(request.user.username)
         try:
             if connection_type == ConnectionType.SITE.value:
-                seadb_api = SeaDBAPI(request.user.username)
                 init_site_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
-                seadb_api = SeaDBAPI(request.user.username)
                 init_discourse_forum_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-                seadb_api = SeaDBAPI(request.user.username)
                 init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.SEAFILE.value:
+                init_seafile_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
@@ -437,6 +437,8 @@ class ProjectConnectionDetailsView(APIView):
             table_name = DiscourseTopicsTable.gen_table_name(connection_id)
         elif project_connection.type == ConnectionType.SITE.value:
             table_name = WebCrawlTable.gen_table_name(connection_id)
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_name = SeafileTable.gen_table_name(connection_id)
 
         records, columns = list_connection_view_records(
             seadb_api, project_uuid, table_name, view, start, limit, username
@@ -654,12 +656,12 @@ class ProjectConnectionsStatusView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         connection_ids = request.GET.get('connection_ids')
         if not connection_ids:
             error_msg = 'Missing connection_ids.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         connection_ids = connection_ids.split(',')
         records = ProjectConnections.objects.filter(project=project, deleted=False, id__in=connection_ids)
         connections_status = {}

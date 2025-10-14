@@ -7,7 +7,6 @@ class DiscourseForum {
     this.views = object.views || 0;
     this.bumped_at = object.bumped_at || '';
     this.connection_id = object.connection_id || '';
-    this.need_index = object.need_index || '';
     this.deleted = Boolean(object.deleted);
     this.created_at = object.created_at || '';
   }
