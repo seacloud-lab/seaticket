@@ -8,6 +8,7 @@ import { EmptyTip, IconButton, Loading, Paginator, ProjectIcon } from '../../../
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -83,7 +84,7 @@ class Item extends Component {
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>{file_size}</td>
         </tr>
       </Fragment>

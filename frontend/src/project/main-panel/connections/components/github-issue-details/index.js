@@ -2,6 +2,7 @@ import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader } from '@/components';
 import { mediaUrl } from '@/constants';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 import './index.css';
 
@@ -22,7 +23,7 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose }) => {
                   </div>
                   <div className='sea-qa-github-issue-reply-item-author-name'>{detail.author}</div>
                 </div>
-                <div className='sea-qa-github-issue-reply-item-author-time'>{dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}</div>
+                <div className='sea-qa-github-issue-reply-item-author-time' title={formatWithTimezone(detail.created_at)}>{dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}</div>
               </div>
               <div className='sea-qa-github-issue-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.body }}></div>
             </div>

@@ -8,6 +8,7 @@ import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants'
 import { Utils } from '../../utils/utils';
 import RestoreProjectDialog from '../../home/dialog/restore-project-dialog';
 import EmptyProjectTrashDialog from '../../home/dialog/empty-project-trash-dialog';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -126,7 +127,7 @@ class Item extends React.Component {
           </td>
           <td>{item.uuid}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.delete_time)}>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>

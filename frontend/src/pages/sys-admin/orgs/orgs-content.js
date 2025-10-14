@@ -8,6 +8,7 @@ import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import UserLink from '../user-link';
 import { getRoleOptions } from '../../../utils/role-status-utils';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const { availableRoles } = window.sysadmin.pageOptions;
 
@@ -158,7 +159,7 @@ class Item extends Component {
               closeShowDropdownIcon={this.handleMouseLeave}
             />
           </td>
-          <td>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.ctime)}>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             <IconButton
               className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}
