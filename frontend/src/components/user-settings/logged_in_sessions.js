@@ -9,6 +9,7 @@ import ModalPortal from '../modal-portal';
 import Loading from '../loading';
 import LogOutSessionDialog from '../dialog/log-out-session-dialog';
 import OpMenu from '../dialog/op-menu';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -140,7 +141,7 @@ class Item extends Component {
           <td>{browser_info}</td>
           <td>{os_info}</td>
           <td>{remote_address}</td>
-          <td>{op_time ? dayjs(op_time).format('YYYY-MM-DD HH:mm:ss') : '--'}</td>
+          <td title={op_time ? formatWithTimezone(op_time) : ''}>{op_time ? dayjs(op_time).format('YYYY-MM-DD HH:mm:ss') : '--'}</td>
           <td align={'center'}>
             {this.state.isOpIconShown && is_online && !is_self &&
               <OpMenu

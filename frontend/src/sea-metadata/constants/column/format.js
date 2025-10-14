@@ -1,4 +1,8 @@
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import CellType from './type';
+
+dayjs.extend(relativeTime);
 
 const DATE_COLUMN_OPTIONS = [
   CellType.CTIME,
@@ -17,8 +21,18 @@ const COLLABORATOR_COLUMN_TYPES = [
 
 // date
 const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
-const DEFAULT_SHOOTING_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const UTC_FORMAT_DEFAULT = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
+const DEFAULT_TIMEZONE_FORMAT = 'MMMM D, YYYY, h:mm:ss A';
+
+const formatWithTimezone = (date) => {
+  if (!date) return '';
+  const formattedDate = dayjs(date).format(DEFAULT_TIMEZONE_FORMAT);
+  const offset = dayjs(date).utcOffset();
+  const hours = Math.abs(Math.floor(offset / 60));
+  const sign = offset >= 0 ? '+' : '-';
+  return `${formattedDate} GMT${sign}${hours}`;
+};
+
 const DATE_UNIT = {
   YEAR: 'year',
   MONTH: 'month',
@@ -91,7 +105,6 @@ export {
   DATE_COLUMN_OPTIONS,
   NUMERIC_COLUMNS_TYPES,
   DEFAULT_DATE_FORMAT,
-  DEFAULT_SHOOTING_TIME_FORMAT,
   UTC_FORMAT_DEFAULT,
   DATE_UNIT,
   DATE_FORMAT_MAP,
@@ -102,4 +115,6 @@ export {
   MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP,
   SINGLE_CELL_VALUE_COLUMN_TYPE_MAP,
   DEFAULT_RATE_DATA,
+  DEFAULT_TIMEZONE_FORMAT,
+  formatWithTimezone,
 };

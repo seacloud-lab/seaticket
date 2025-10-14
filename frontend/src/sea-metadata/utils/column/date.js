@@ -70,28 +70,18 @@ const getDateDisplayString = (date, format) => {
       return `${formatDateList[2]}/${formatDateList[1]}/${formatDateList[0]} ${formatValuesList[1]}`;
     }
     case 'M/D/YYYY':
-      return dateObj.format('M/D/YYYY');
     case 'M/D/YYYY HH:mm':
-      return dateObj.format('M/D/YYYY HH:mm');
     case 'M/D/YYYY HH:mm:ss':
-      return dateObj.format('M/D/YYYY HH:mm:ss');
     case 'YYYY-MM-DD':
-      return dateObj.format('YYYY-MM-DD');
     case 'YYYY-MM-DD HH:mm':
-      return dateObj.format('YYYY-MM-DD HH:mm');
-    case 'YYYY-MM-DD HH:mm:ss': {
-      return dateObj.format('YYYY-MM-DD HH:mm:ss');
-    }
-    case 'DD.MM.YYYY':
-      return dateObj.format('DD.MM.YYYY');
-    case 'DD.MM.YYYY HH:mm':
-      return dateObj.format('DD.MM.YYYY HH:mm');
-    case 'DD.MM.YYYY HH:mm:ss':
-      return dateObj.format('DD.MM.YYYY HH:mm:ss');
+    case 'YYYY-MM-DD HH:mm:ss': 
     case 'YYYY':
-      return dateObj.format('YYYY');
     case 'YYYY-MM':
-      return dateObj.format('YYYY-MM');
+    case 'DD.MM.YYYY':
+    case 'DD.MM.YYYY HH:mm':
+    case 'DD.MM.YYYY HH:mm:ss': {
+      return dateObj.format(format);
+    }
     default:
       // Compatible with older versions: if format is null, use defaultFormat
       return dateObj.format('YYYY-MM-DD');

@@ -13,6 +13,7 @@ import ProjectOpMenu from './project-op-menu';
 import ProjectNav from './project-nav';
 import AllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareProjectDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-project-dialog';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 import '../../../css/system-dtable.css';
 
@@ -214,8 +215,16 @@ class Item extends Component {
           </td>
           <td>{item.uuid}</td>
           <td>{item.owner}</td>
-          <td><span className="pl-2 d-block">{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</span></td>
-          <td><span className="pl-2 d-block">{dayjs(item.updated_at).format('YYYY-MM-DD HH:mm:ss')}</span></td>
+          <td>
+            <span className="pl-2 d-block" title={formatWithTimezone(item.created_at)}>
+              {dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}
+            </span>
+          </td>
+          <td>
+            <span className="pl-2 d-block" title={formatWithTimezone(item.updated_at)}>
+              {dayjs(item.updated_at).format('YYYY-MM-DD HH:mm:ss')}
+            </span>
+          </td>
           <td>
             {this.state.isOpIconShown &&
               <ProjectOpMenu

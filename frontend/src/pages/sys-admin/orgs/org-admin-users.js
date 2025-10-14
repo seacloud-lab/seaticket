@@ -9,6 +9,7 @@ import { Utils } from '../../../utils/utils';
 import { gettext, loginUrl, siteRoot, username, mediaUrl } from '../../../constants';
 import { getStatusOptions } from '../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
@@ -203,7 +204,7 @@ class Item extends Component {
               closeShowDropdownIcon={this.handleMouseLeave}
             />
           </td>
-          <td>
+          <td title={formatWithTimezone(item.create_time) + ' / ' + formatWithTimezone(item.last_login)}>
             {dayjs(item.create_time).format('YYYY-MM-DD HH:mm:ss')}{' / '}{item.last_login ? dayjs(item.last_login).fromNow() : '--'}
           </td>
           <td>

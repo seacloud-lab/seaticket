@@ -1,6 +1,4 @@
 import dayjs from '@/utils/dayjs';
-import { CONNECTION_TYPE } from '../constants';
-import { isObject } from '@/utils/type-detection';
 
 class Connection {
   constructor(object) {

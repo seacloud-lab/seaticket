@@ -5,7 +5,8 @@ import { gettext } from '../../../../constants';
 import dayjs from '../../../../utils/dayjs';
 import ProjectOpMenu from '../../projects/project-op-menu';
 import DTableAllExternalLinksDialog from '../../../dtable/dialog/all-external-links-dialog';
-import { ProjectIcon, CommonOperationConfirmationDialog } from '../../../../components'
+import { ProjectIcon, CommonOperationConfirmationDialog } from '../../../../components';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
@@ -122,7 +123,7 @@ class BaseItem extends React.Component {
           <td>{item.uuid}</td>
           <td>{item.rows_count}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown &&
               <ProjectOpMenu

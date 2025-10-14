@@ -6,6 +6,7 @@ import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import RestoreProjectDialog from '../restore-project-dialog';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
@@ -66,7 +67,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
           <td>
             <div className="trash-project-name text-truncate" onClick={this.toggleRestoreDialog}>{item.name}</div>
           </td>
-          <td>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.delete_time)}>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isRestoring ? (
               <span className="loading-icon loading-tip" />
