@@ -8,7 +8,7 @@ import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { GITHUB_STATE_OPTIONS, CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP } from '../../constants';
-import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
+import { GithubIssue, DiscourseForum, WebCrawl, Seafile } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader } from '@/components';
@@ -17,13 +17,15 @@ import { isDarkColor } from '@/utils/utils';
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.SEAFILE
 ];
 
 const MULTIPLE_VIEWS_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.SEAFILE,
 ];
 
 const SiteContentDialog = ({ title, content, onClose }) => {
@@ -189,6 +191,17 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
       ];
     }
+
+    if (connectionType === CONNECTION_TYPE.SEAFILE) {
+      return [
+        {
+          type: CellType.TEXT, key: 'path', name: gettext('Path'),
+          editable: false, is_name_column: true, frozen: true
+        },
+        { type: CellType.TEXT, key: 'filename', name: gettext('Filename'), editable: false, is_required: true },
+        { type: CellType.DATE, key: 'mtime', name: gettext('Mtime'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
+      ];
+    }
     return [];
   }, [connection, handleClickSiteTitle]);
 
@@ -255,6 +268,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
         } else if (type === CONNECTION_TYPE.SITE) {
           rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
+        } else if (type === CONNECTION_TYPE.SEAFILE) {
+          rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
         }
         return {
           data: {

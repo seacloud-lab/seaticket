@@ -17,7 +17,6 @@ class GithubIssue {
     this.closed_at = object.closed_at || '';
     this.comments = object.comments || '';
     this.connection_id = object.connection_id || '';
-    this.need_index = object.need_index || '';
     this.deleted = Boolean(object.deleted);
   }
 }
