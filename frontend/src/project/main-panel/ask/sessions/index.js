@@ -1,16 +1,13 @@
 import React from 'react';
-import { gettext, PERMISSION_TYPES } from '@/constants';
-import { useAskPage, useSessions } from '../hooks';
-import { Button } from 'reactstrap';
-import { EmptyTip, Icon, IconButton } from '@/components';
-import { ASK_PAGE_TYPE } from '../constants';
+import { gettext } from '@/constants';
+import { useSessions } from '../hooks';
+import { EmptyTip, IconButton } from '@/components';
 import Session from './session';
 
 import './index.css';
 
 const Sessions = ({ sessionId, permission }) => {
   const { sessions, closeShowSessions } = useSessions();
-  const { togglePageType } = useAskPage();
 
   return (
     <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 300 }}>
@@ -29,14 +26,6 @@ const Sessions = ({ sessionId, permission }) => {
           );
         })}
       </div>
-      {permission === PERMISSION_TYPES.READ_WRITE && (
-        <div className="sea-qa-ai-ask-sessions-footer">
-          <Button color="primary" className="sea-qa-ai-ask-add-session-btn" onClick={() => togglePageType(ASK_PAGE_TYPE.NEW)}>
-            <Icon symbol="add" className="mr-2" />
-            {gettext('New chat')}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
