@@ -57,7 +57,7 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
             'column_type': column.type,
         }
 
-        if hasattr(column, 'data') and column.data is not None:
+        if column.data:
             mapped_column['column_data'] = column.data
 
         seadb_api.add_column(project_uuid, table_id, mapped_column)
@@ -143,6 +143,8 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
             'column_name': column.name,
             'column_type': column.type,
         }
+        if column.data:
+            mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     seadb_api.create_column_index(
@@ -181,6 +183,8 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
             'column_name': column.name,
             'column_type': column.type,
         }
+        if column.data:
+            mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, topics_table_id, mapped_column)
     # Create topic columns index for seadb
     seadb_api.create_column_index(
@@ -217,6 +221,8 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
             'column_name': column.name,
             'column_type': column.type,
         }
+        if column.data:
+            mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
 
     # Create replies table index for seadb
