@@ -12,7 +12,7 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
+import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
@@ -102,6 +102,15 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   const toggleStatus = useCallback((status = '') => {
     modifyTicket(ticket.id, { status }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
+  const onPriorityChange = useCallback((priority = 0) => {
+    modifyTicket(ticket.id, { priority }).then(res => {
       // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -210,7 +219,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies = [], assignees = [], type, tags } = ticket;
+  const { id, status, title, creator, replies = [], assignees = [], type, tags, priority } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
@@ -283,6 +292,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
+          <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <AssigneesSettings isReadonly={!editable} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
