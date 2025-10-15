@@ -1,0 +1,101 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Icon, IconButton, SubDropdown } from '@/components';
+import { gettext } from '@/constants';
+import context from '../../../context';
+import { isFunction } from '@/utils/type-detection';
+
+const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubOpen, setIsSubOpen] = useState(false);
+  const [subMenuKey, setSubMenuKey] = useState('');
+
+  const rowIds = useMemo(() => rows.map(r => r._id), [rows]);
+
+  const handleDeleteRows = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    deleteRows && deleteRows(rowIds);
+    selectNone();
+  }, [deleteRows, rowIds, selectNone]);
+
+  const onMoreToggle = useCallback((event) => {
+    event && event.preventDefault();
+    event && event.stopPropagation();
+    event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    setIsOpen(!isOpen);
+  }, [isOpen]);
+
+  const openSubMenu = useCallback((event, subMenu) => {
+    event && event.stopPropagation();
+    event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    setSubMenuKey(subMenu.key);
+    setIsSubOpen(true);
+  }, []);
+
+  const onSubMenuToggle = useCallback((event, subMenu) => {
+    event && event.stopPropagation();
+    event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    setIsSubOpen(!isSubOpen);
+    setSubMenuKey(subMenu?.key || '');
+  }, [isSubOpen]);
+
+  return (
+    <div className="sea-metadata-views sea-metadata-rows-tools">
+      <div className="sea-qa-icon-btn sea-metadata-rows-tool-btn pl-2 pr-2 mr-2" onClick={selectNone}>
+        <Icon symbol="x" className="mr-2" />
+        <span className="color-default">{gettext('{count} selected').replace('{count}', rowIds.length)}</span>
+      </div>
+      {context.canDeleteRow() && (
+        <IconButton icon="delete" title={gettext('Delete')} className="mr-2" onClick={handleDeleteRows} />
+      )}
+
+      {isFunction(createTools) && createTools({ rows, modifyRows }).map(tool => {
+        const { key, name, icon, callback, children } = tool;
+        if (key !== 'more') {
+          return (<IconButton icon={icon} key={key} title={name} className="mr-2" onClick={callback} />);
+        }
+        if (!Array.isArray(children) || children.length === 0) return null;
+        return (
+          <Dropdown
+            key={key}
+            isOpen={isOpen}
+            className="sea-metadata-manage-dropdown"
+            toggle={onMoreToggle}
+          >
+            <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn sea-metadata-view-tool-operation-btn" tag="div">
+              <Icon symbol="more" />
+            </DropdownToggle>
+            <DropdownMenu
+              className="position-fixed"
+              modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
+            >
+              {children.map(item => {
+                const { key: childKey, name: childName, callback: childCallback } = item;
+                if (Array.isArray(item.children) && item.children.length > 0) {
+                  return (
+                    <SubDropdown
+                      key={childKey}
+                      isOpen={isSubOpen && subMenuKey === childKey}
+                      menu={item}
+                      onShow={openSubMenu}
+                      onToggle={onSubMenuToggle}
+                    />
+                  );
+                }
+                return (
+                  <DropdownItem key={childKey} onMouseEnter={onSubMenuToggle} onClick={(event) => childCallback && childCallback(event)}>
+                    {childName}
+                  </DropdownItem>
+                );
+              })}
+            </DropdownMenu>
+          </Dropdown>
+        );
+      })}
+    </div>
+
+  );
+};
+
+export default RowsToolbar;

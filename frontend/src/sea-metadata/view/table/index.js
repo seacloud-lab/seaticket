@@ -7,7 +7,7 @@ import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, MAX_LOAD_NUMBER } from '../../constants';
 import context from '../../context';
-import { useMetadata, useCollaborators, useTagsData } from '../../hooks';
+import { useMetadata, useCollaborators, useTagsData, useSelectedRows } from '../../hooks';
 
 import './index.css';
 
@@ -36,6 +36,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
     createContextMenuOptions,
     insertColumn,
   } = useMetadata();
+  const { updateSelectedRowIds } = useSelectedRows();
 
   const { tagsData } = useTagsData();
 
@@ -217,6 +218,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           onGridKeyUp={onHotKeyUp}
           createContextMenuOptions={createContextMenuOptions}
           onRowExpand={onRowExpand}
+          updateSelectedRowIds={updateSelectedRowIds}
         />
       </div>
       {isShowRowExpand && isValidElement(children) && (

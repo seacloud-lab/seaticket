@@ -39,6 +39,7 @@ import UploadFile from './upload-file';
 import ColorSelectorPopover from './color-selector-popover';
 import CustomizeTable from './customize-table';
 import CustomizeNameDialog from './customize-name-dialog';
+import SubDropdown from './sub-dropdown';
 
 export {
   CenteredError, CenteredLoading,
@@ -79,4 +80,5 @@ export {
   ColorSelectorPopover,
   CustomizeTable,
   CustomizeNameDialog,
+  SubDropdown,
 };

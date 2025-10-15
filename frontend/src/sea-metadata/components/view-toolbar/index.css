@@ -53,3 +53,11 @@
 .sea-metadata-view-tools .sea-metadata-view-tool-hide-column.active {
   background-color: #d7e8ff !important;
 }
+
+.sea-metadata-views.sea-metadata-rows-tools {
+  padding-left: 10px;
+}
+
+.sea-qa-icon-btn.sea-metadata-rows-tool-btn {
+  width: auto;
+}

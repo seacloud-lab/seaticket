@@ -6,9 +6,12 @@ import { getOption } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
-const SingleSelectFormatter = ({ value, options, fontSize, className, column, row, children: emptyFormatter }) => {
-
+const SingleSelectFormatter = ({ value, options, fontSize, className, column, row, onClick, children: emptyFormatter }) => {
   const option = useMemo(() => getOption(options, value), [options, value]);
+  const props = {
+    className: classnames('sea-metadata-ui cell-formatter-container single-select-formatter', className),
+    onClick: column?.click && onClick ? onClick : () => {},
+  };
 
   if (column.key === 'name' && !option && options.length === 0) {
     const newOption = {
@@ -18,17 +21,19 @@ const SingleSelectFormatter = ({ value, options, fontSize, className, column, ro
       id: row._id,
     };
     return (
-      <div className={classnames('sea-metadata-ui cell-formatter-container single-select-formatter', className)}>
+      <div { ...props }>
         <SelectOption option={newOption} fontSize={fontSize} />
       </div>
     );
   }
 
-  if (!option) return emptyFormatter || null;
-
   return (
-    <div className={classnames('sea-metadata-ui cell-formatter-container single-select-formatter', className)}>
-      <SelectOption option={option} fontSize={fontSize} />
+    <div { ...props }>
+      {option ? (
+        <SelectOption option={option} fontSize={fontSize} />
+      ) : (
+        <>{emptyFormatter || null}</>
+      )}
     </div>
   );
 };

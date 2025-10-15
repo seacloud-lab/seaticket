@@ -5,7 +5,7 @@ import {
   ViewsDataProvider, useViewsData,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
-import { CellType } from './constants';
+import { CellType, VIEW_TOOL } from './constants';
 import context from './context';
 import SeaMetadata from './render';
 
@@ -19,4 +19,5 @@ export {
   ViewsDataProvider, useViewsData,
   ViewToolBar, View,
   CellType, context,
+  VIEW_TOOL,
 };

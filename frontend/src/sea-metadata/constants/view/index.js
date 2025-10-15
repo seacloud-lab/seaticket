@@ -97,4 +97,24 @@ export const VIEW_INCOMPATIBLE_PROPERTIES = [
 
 export const VIEW_TYPES_SUPPORT_SHOW_DETAIL = [VIEW_TYPE.GALLERY, VIEW_TYPE.KANBAN];
 
-export const VIEW_TOOLS = ['views', 'search', 'filters', 'sorts', 'groupbys', 'order_and_hidden'];
+export const VIEW_TOOL = {
+  VIEWS: 'views',
+  ROWS_TOOLS: 'rows_tools',
+  SEARCH: 'search',
+  FILTERS: 'filters',
+  SORTS: 'sorts',
+  GROUPBYS: 'groupbys',
+  ORDER_HIDDEN: 'order_and_hidden',
+  MANAGE: 'manage'
+};
+
+export const VIEW_TOOLS = [
+  VIEW_TOOL.VIEWS,
+  VIEW_TOOL.ROWS_TOOLS,
+  VIEW_TOOL.SEARCH,
+  VIEW_TOOL.FILTERS,
+  VIEW_TOOL.SORTS,
+  VIEW_TOOL.GROUPBYS,
+  VIEW_TOOL.ORDER_HIDDEN,
+  VIEW_TOOL.MANAGE,
+];

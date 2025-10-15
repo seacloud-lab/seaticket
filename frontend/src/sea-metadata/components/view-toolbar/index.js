@@ -1,20 +1,50 @@
 import React, { useCallback } from 'react';
 import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS } from '../../constants';
 import TableViewToolbar from './table-view-toolbar';
-import { useCollaborators, useMetadata } from '../../hooks';
+import { useCollaborators, useMetadata, useSelectedRows } from '../../hooks';
 import context from '../../context';
 import Views from './views';
+import RowsToolbar from './rows-toolbar';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
+const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
 
   const { collaborators } = useCollaborators();
-  const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows } = useMetadata();
+  const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder,
+    searchRows, deleteRows, modifyRows,
+  } = useMetadata();
+  const { selectedRowIds } = useSelectedRows();
 
-  const onHeaderClick = useCallback(() => {
+  const selectNone = useCallback((event) => {
+    event && event.stopPropagation();
+    event && event.nativeEvent && event.nativeEvent.stopImmediatePropagation();
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
   }, []);
+
+  const onHeaderClick = useCallback(() => {
+    selectNone();
+  }, [selectNone]);
+
+  const renderLeftTools = useCallback((view) => {
+    if (selectedRowIds.length > 0 && tools.includes('rows_tools')) {
+      const rows = getRowsByIds(metadata, selectedRowIds);
+      return (
+        <RowsToolbar
+          rows={rows}
+          selectNone={selectNone}
+          deleteRows={deleteRows}
+          modifyRows={modifyRows}
+          createTools={createRowsTools}
+        />
+      );
+    }
+    if (tools.includes('views')) {
+      return (<Views view={view} toggleView={toggleView} />);
+    }
+    return (<div className="sea-metadata-views"></div>);
+  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows]);
 
   const view = metadata?.view;
   const viewType = view?.type;
@@ -22,11 +52,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, toggleView }) => {
 
   return (
     <div className="sea-metadata-view-ribbon" onClick={onHeaderClick}>
-      {tools.includes('views') ? (
-        <Views view={view} toggleView={toggleView} />
-      ) : (
-        <div className="sea-metadata-views"></div>
-      )}
+      {renderLeftTools(view)}
       <div className="sea-metadata-view-tools">
         {view && (
           <>

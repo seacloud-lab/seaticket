@@ -3,7 +3,7 @@ import { useTags, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import TagDialog from './components/tag-dialog';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
@@ -224,7 +224,7 @@ const AllTags = ({ projectUuid, permission }) => {
         localStorageNamePrefix={localStorageName}
         permission={permission}
         createContextMenuOptions={createContextMenuOptions}
-        viewTools={['views', 'search', 'sorts']}
+        viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
         isViewComputedOnServer={false}
         t={t}
       >

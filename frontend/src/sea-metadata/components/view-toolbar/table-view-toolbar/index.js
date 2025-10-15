@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
-import { VIEW_TOOLS } from '../../../constants';
+import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
@@ -21,10 +21,10 @@ const TableViewToolbar = ({
 
   return (
     <>
-      {tools.includes('search') && (
+      {tools.includes(VIEW_TOOL.SEARCH) && (
         <Searcher onChange={searchRows} />
       )}
-      {tools.includes('filters') && (
+      {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
           wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-filter"
           filtersClassName="sea-metadata-filters"
@@ -39,7 +39,7 @@ const TableViewToolbar = ({
           viewType={viewType}
         />
       )}
-      {tools.includes('sorts') && (
+      {tools.includes(VIEW_TOOL.SORTS) && (
         <SortSetter
           wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-sort"
           target="sea-metadata-sort-popover"
@@ -50,7 +50,7 @@ const TableViewToolbar = ({
           modifySorts={modifySorts}
         />
       )}
-      {tools.includes('groupbys') && (
+      {tools.includes(VIEW_TOOL.GROUPBYS) && (
         <GroupbySetter
           wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-groupby"
           target="sea-metadata-groupby-popover"
@@ -60,7 +60,7 @@ const TableViewToolbar = ({
           modifyGroupbys={modifyGroupbys}
         />
       )}
-      {tools.includes('order_and_hidden') && (
+      {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && (
         <HideColumnSetter
           wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-hide-column"
           target="sea-metadata-hide-column-popover"
@@ -71,7 +71,9 @@ const TableViewToolbar = ({
           modifyColumnOrder={modifyColumnOrder}
         />
       )}
-      <ManageSetter />
+      {tools.includes(VIEW_TOOL.MANAGE) && (
+        <ManageSetter />
+      )}
     </>
   );
 };
