@@ -21,6 +21,7 @@ from seahub.group.utils import is_group_admin_or_owner_by_group, get_group_membe
 from seahub.settings import SEAQA_WEB_SERVICE_URL, GROUP_MEMBER_LIMIT, PERSONAL_GROUP_LIMIT
 from seahub.api2.utils import get_groups
 from seahub.admin_log.signals import org_admin_operation
+from seahub.admin_log.models import GROUP_MEMBER_ADD
 
 
 # Get an instance of a logger
@@ -111,10 +112,8 @@ def send_group_member_add_mail(request, group, from_user, to_user):
 
 def group_invite(request, token):
     """
-    reigsterd user add to group
+    user add to group
     """
-    GROUP_MEMBER_ADD = 'group_member_add'
-
     next_url = request.GET.get('next', '/')
     redirect_to = SEAQA_WEB_SERVICE_URL.rstrip('/') + '/' + next_url.lstrip('/')
     group_invite_link = GroupInviteLinkModel.objects.filter(token=token).first()
@@ -132,7 +131,9 @@ def group_invite(request, token):
         if not group_org_id:
             return redirect_to_login(request)
         else:
-            return org_register(request, group_org_id)
+            request.session['group_id'] = group_invite_link.group_id
+            request.session['org_id'] = group_org_id
+            return HttpResponseRedirect(reverse('org-invite-register'))
 
     if is_group_member(group_invite_link.group_id, email):
         return HttpResponseRedirect(redirect_to)
@@ -168,10 +169,13 @@ def group_invite(request, token):
 
     try:
         GroupUser.objects.group_add_member(group_invite_link.group_id, email)
+        org_admin_op_detail = {
+            "username": email,
+        }
         org_admin_operation.send(sender=None,
-            admin_name=request.user.username,
+            admin_name='',
             operation=GROUP_MEMBER_ADD,
-            detail=detail,
+            detail=org_admin_op_detail,
             org_id=org_id,
         )
     except Exception as e:
