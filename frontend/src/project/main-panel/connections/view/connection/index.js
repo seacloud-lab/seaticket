@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
+import copy from 'copy-to-clipboard';
 import { processor } from '@seafile/seafile-editor';
 import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
@@ -329,6 +330,45 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     };
   }, [projectUuid, connectionID, connection, initColumns]);
 
+  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+    if (rows.length > 1) return [];
+    const row = rows[0];
+    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      const discourseBaseUrl = connection.config?.url;
+      if (!discourseBaseUrl) return [];
+      return [{
+        key: 'copy',
+        icon: 'copy',
+        name: gettext('Copy original page link'),
+        callback: () => {
+          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+          const url = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+          copy(url);
+          toaster.success(gettext('The original page link has been copied'));
+        }
+      }];
+    }
+    if (connection?.type === CONNECTION_TYPE.SITE) {
+      if (!row?.url) return [];
+      return [
+        {
+          key: 'copy',
+          icon: 'copy',
+          name: gettext('Copy original page link'),
+          callback: (event) => {
+            event && event.stopPropagation();
+            event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+            const url = row.url;
+            copy(url);
+            toaster.success(gettext('The original page link has been copied'));
+          },
+        }
+      ];
+    }
+
+    return [];
+  }, [connection]);
+
   const createContextMenuOptions = useCallback(({
     isGroupView,
     selectedRange,
@@ -375,6 +415,15 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
         callback: () => createTicketFromRow(row),
         disabled: isSubmitting
+      }];
+    }
+
+    if (connection?.type === CONNECTION_TYPE.SITE) {
+      return [{
+        label: gettext('Open original page'),
+        callback: () => {
+          window.open(row.url, '_blank', 'noopener,noreferrer');
+        }
       }];
     }
     return [];
@@ -440,6 +489,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
+        createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
         isViewComputedOnServer={isServerComputableView}

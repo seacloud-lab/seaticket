@@ -74,7 +74,7 @@ const getDateDisplayString = (date, format) => {
     case 'M/D/YYYY HH:mm:ss':
     case 'YYYY-MM-DD':
     case 'YYYY-MM-DD HH:mm':
-    case 'YYYY-MM-DD HH:mm:ss': 
+    case 'YYYY-MM-DD HH:mm:ss':
     case 'YYYY':
     case 'YYYY-MM':
     case 'DD.MM.YYYY':
