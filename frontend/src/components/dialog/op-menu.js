@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Utils } from '../../utils/utils';
-import CustomizeDropdownMoreToggle from '../customize-dropdown-toggle';
+import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
 
 const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,

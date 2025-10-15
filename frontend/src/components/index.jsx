@@ -18,7 +18,9 @@ import Paginator from './paginator';
 import ModalPortal from './modal-portal';
 import Radio from './radio';
 import CustomizeGroupSelect from './customize-group-select';
-import CustomizeDropdownMoreToggle from './customize-dropdown-toggle';
+import CustomizeDropdownMenu from './customize-dropdown-menu';
+import CustomizeDropdownItem from './customize-dropdown-item';
+import CustomizeDropdownMoreToggle from './customize-dropdown-more-toggle';
 import CustomizePopover from './customize-popover';
 import CustomizeMarkdownViewer from './customize-markdown-viewer';
 import Progress from './mobile/progress';
@@ -58,6 +60,8 @@ export {
   ModalPortal,
   Radio,
   CustomizeGroupSelect,
+  CustomizeDropdownMenu,
+  CustomizeDropdownItem,
   CustomizeDropdownMoreToggle,
   CustomizePopover,
   CustomizeMarkdownViewer,

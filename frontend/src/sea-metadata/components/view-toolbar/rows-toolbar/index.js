@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { Icon, IconButton, SubDropdown } from '@/components';
+import { Dropdown } from 'reactstrap';
+import { Icon, IconButton, SubDropdown,
+  CustomizeDropdownMoreToggle, CustomizeDropdownItem, CustomizeDropdownMenu
+} from '@/components';
 import { gettext } from '@/constants';
 import context from '../../../context';
 import { isFunction } from '@/utils/type-detection';
@@ -63,13 +65,8 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) 
             className="sea-metadata-manage-dropdown"
             toggle={onMoreToggle}
           >
-            <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn sea-metadata-view-tool-operation-btn" tag="div">
-              <Icon symbol="more" />
-            </DropdownToggle>
-            <DropdownMenu
-              className="position-fixed"
-              modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
-            >
+            <CustomizeDropdownMoreToggle />
+            <CustomizeDropdownMenu fixed={true}>
               {children.map(item => {
                 const { key: childKey, name: childName, callback: childCallback } = item;
                 if (Array.isArray(item.children) && item.children.length > 0) {
@@ -84,12 +81,12 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) 
                   );
                 }
                 return (
-                  <DropdownItem key={childKey} onMouseEnter={onSubMenuToggle} onClick={(event) => childCallback && childCallback(event)}>
+                  <CustomizeDropdownItem key={childKey} onMouseEnter={onSubMenuToggle} onClick={(event) => childCallback && childCallback(event)}>
                     {childName}
-                  </DropdownItem>
+                  </CustomizeDropdownItem>
                 );
               })}
-            </DropdownMenu>
+            </CustomizeDropdownMenu>
           </Dropdown>
         );
       })}

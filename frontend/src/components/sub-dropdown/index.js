@@ -1,7 +1,12 @@
 import React from 'react';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import Icon from '../icon';
+import { Dropdown } from 'reactstrap';
 import { hasOwnProperty } from '@/utils/object-utils';
+import CustomizeDropdownMenu from '../customize-dropdown-menu';
+import CustomizeDropdownItem from '../customize-dropdown-item';
+import SubDropdownToggle from './sub-dropdown-toggle';
+
+const Icon = CustomizeDropdownItem.Icon;
+const Text = CustomizeDropdownItem.Text;
 
 const SubDropdown = ({
   menu,
@@ -13,42 +18,38 @@ const SubDropdown = ({
   return (
     <Dropdown
       direction={direction}
-      className="w-100"
+      className="w-100 d-flex"
       isOpen={isOpen}
       toggle={onToggle}
       onMouseMove={(e) => e.stopPropagation()}
     >
-      <DropdownToggle
-        tag="div"
-        className="dropdown-item font-weight-normal rounded-0 d-flex align-items-center rotate-icon-270"
+      <SubDropdownToggle
+        text={menu.name}
+        className={menu.className}
+        icon="down"
         onMouseEnter={(event) => onShow && onShow(event, menu)}
         onClick={(event) => onToggle && onToggle(event, menu)}
-      >
-        <span className="mr-auto">{menu.name}</span>
-        <Icon className="item-icon" symbol="down" />
-      </DropdownToggle>
-      <DropdownMenu
-        className="position-fixed"
-        style={{ marginLeft: -16 }}
-        modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
-      >
+      />
+      <CustomizeDropdownMenu fixed={true} style={{ marginLeft: -16 }}>
         {menu.children.map((item) => {
-          const { key, name, icon, callback } = item;
+          const { key, name, icon, className, callback } = item;
           if (key === 'divider') {
-            return <DropdownItem key={key} divider />;
+            return <CustomizeDropdownItem key={key} divider />;
           }
           return (
-            <DropdownItem key={key} onClick={callback ? callback : null}>
-              {hasOwnProperty(item, 'icon') && (
+            <CustomizeDropdownItem className={className} key={key} onClick={callback ? callback : null}>
+              {hasOwnProperty(item, 'icon') ? (
                 <>
                   {icon ? (<Icon symbol={icon} className="mr-2" />) : (<span className="mr-2" style={{ height: 16, width: 16, display: 'inline-block' }}></span>)}
+                  <Text>{name}</Text>
                 </>
+              ) : (
+                <>{name}</>
               )}
-              <span>{name}</span>
-            </DropdownItem>
+            </CustomizeDropdownItem>
           );
         })}
-      </DropdownMenu>
+      </CustomizeDropdownMenu>
     </Dropdown>
   );
 };

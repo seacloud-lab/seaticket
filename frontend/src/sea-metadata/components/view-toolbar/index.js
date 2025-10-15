@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS } from '../../constants';
+import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS, VIEW_TOOL } from '../../constants';
 import TableViewToolbar from './table-view-toolbar';
 import { useCollaborators, useMetadata, useSelectedRows } from '../../hooks';
 import context from '../../context';
@@ -28,7 +28,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
   }, [selectNone]);
 
   const renderLeftTools = useCallback((view) => {
-    if (selectedRowIds.length > 0 && tools.includes('rows_tools')) {
+    if (selectedRowIds.length > 0 && tools.includes(VIEW_TOOL.ROWS_TOOLS)) {
       const rows = getRowsByIds(metadata, selectedRowIds);
       return (
         <RowsToolbar
@@ -40,7 +40,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
         />
       );
     }
-    if (tools.includes('views')) {
+    if (tools.includes(VIEW_TOOL.VIEWS)) {
       return (<Views view={view} toggleView={toggleView} />);
     }
     return (<div className="sea-metadata-views"></div>);
