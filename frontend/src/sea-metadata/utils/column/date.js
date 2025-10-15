@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { getColumnType } from './core';
-import { DATE_COLUMN_OPTIONS, DATE_FORMAT_MAP, DEFAULT_DATE_FORMAT } from '../../constants';
+import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT } from '../../constants';
 
 /**
  * Check whether is date column:
@@ -11,22 +11,6 @@ import { DATE_COLUMN_OPTIONS, DATE_FORMAT_MAP, DEFAULT_DATE_FORMAT } from '../..
  * @returns true/false, bool
  */
 const isDateColumn = (column) => DATE_COLUMN_OPTIONS.includes(getColumnType(column));
-
-/**
- * Check whether the format is supported in date column
- * @param {string} format
- * @returns bool
- */
-const isSupportDateColumnFormat = (format) => {
-  if (!format) {
-    return false;
-  }
-  return (
-    format === DATE_FORMAT_MAP.YYYY_MM_DD
-    || format === DATE_FORMAT_MAP.YYYY_MM_DD_HH_MM
-    || format === DATE_FORMAT_MAP.YYYY_MM_DD_HH_MM_SS
-  );
-};
 
 const getDateColumnFormat = (column) => {
   let format = (column && column.data && column.data.format) ? column.data.format : DEFAULT_DATE_FORMAT;
@@ -74,7 +58,7 @@ const getDateDisplayString = (date, format) => {
     case 'M/D/YYYY HH:mm:ss':
     case 'YYYY-MM-DD':
     case 'YYYY-MM-DD HH:mm':
-    case 'YYYY-MM-DD HH:mm:ss': 
+    case 'YYYY-MM-DD HH:mm:ss':
     case 'YYYY':
     case 'YYYY-MM':
     case 'DD.MM.YYYY':
@@ -88,4 +72,4 @@ const getDateDisplayString = (date, format) => {
   }
 };
 
-export { isDateColumn, isSupportDateColumnFormat, getDateColumnFormat, getDateDisplayString };
+export { isDateColumn, getDateColumnFormat, getDateDisplayString };

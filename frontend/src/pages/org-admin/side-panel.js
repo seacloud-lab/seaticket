@@ -48,15 +48,15 @@ class SidePanel extends React.Component {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={`nav-link ellipsis ${this.getActiveClass('users') || this.getActiveClass('admins')}`} to={siteRoot + 'org/useradmin/'} onClick={() => this.tabItemClick('users')} >
-                    <Icon symbol="mine" />
-                    <span className="nav-text">{gettext('Users')}</span>
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <Link className={`nav-link ellipsis ${this.getActiveClass('projects') || this.getActiveClass('trash')}`} to={siteRoot + 'org/projectadmin/'} onClick={() => this.tabItemClick('projects')}>
                     <Icon symbol="home" />
                     <span className="nav-text">{gettext('Projects')}</span>
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={`nav-link ellipsis ${this.getActiveClass('users') || this.getActiveClass('admins')}`} to={siteRoot + 'org/useradmin/'} onClick={() => this.tabItemClick('users')} >
+                    <Icon symbol="mine" />
+                    <span className="nav-text">{gettext('Users')}</span>
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -68,7 +68,7 @@ class SidePanel extends React.Component {
                 {enableMultiSAML && canUseSAML &&
                   <li className="nav-item">
                     <Link className={`nav-link ellipsis ${this.getActiveClass('SAML config')}`} to={siteRoot + 'org/saml-config/'} onClick={() => this.tabItemClick('SAML config')} >
-                      <Icon symbol="settings" />
+                      <Icon symbol="saml-config" />
                       <span className="nav-text">{gettext('SAML config')}</span>
                     </Link>
                   </li>
