@@ -218,8 +218,10 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
               <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
-              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('Problem solving')}</div>
-              <div className="sea-qa-ai-ask-chats-tip-description">{gettext('Describe your problem, assistant will try to solve it by searching your knowledge bases.')}</div>
+              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
+              <div className="sea-qa-ai-ask-chats-tip-description">
+                {gettext('You can say "Help solving the following issue: <issue description>" to let AI solving the issue by searching knowledge bases.')}
+              </div>
             </div>
           )}
           {!loading && chatHistories.map((chat, chatIndex) => {
