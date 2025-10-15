@@ -219,6 +219,11 @@ export const TICKET_COLUMNS = [
     name: gettext('Create time'),
     editable: false,
   }, {
+    type: CellType.MTIME,
+    key: 'updated_at',
+    name: gettext('Last updated time'),
+    editable: false,
+  }, {
     type: CellType.CREATOR,
     key: 'creator',
     name: gettext('Creator'),
