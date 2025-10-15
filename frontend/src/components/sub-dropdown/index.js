@@ -20,7 +20,7 @@ const SubDropdown = ({
       direction={direction}
       className="w-100 d-flex"
       isOpen={isOpen}
-      toggle={onToggle}
+      // toggle={onToggle}
       onMouseMove={(e) => e.stopPropagation()}
     >
       <SubDropdownToggle
