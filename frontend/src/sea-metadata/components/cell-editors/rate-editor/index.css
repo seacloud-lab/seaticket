@@ -49,10 +49,5 @@
 }
 
 .sea-metadata-rate-item .sea-qa-icon-svg {
-  fill: inherit;
   font-size: 16px;
-}
-
-.sea-metadata-rate-item .sea-qa-icon-svg.sea-qa-icon-svg-priority-01 {
-  fill: #ff8000;
 }

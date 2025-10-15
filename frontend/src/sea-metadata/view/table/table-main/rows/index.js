@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { HorizontalScrollbar } from '../../../../components/scrollbar';
 import EmptyTip from '@/components/empty-tip';
-import { isMobile } from '@/utils/utils';
+import { isFunction, isMobile } from '@/utils/utils';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { addClassName, removeClassName, getEventClassName } from '@/utils/dom';
 import { getColOverScanEndIdx, getColOverScanStartIdx } from '../../utils/grid';
@@ -379,6 +379,11 @@ class Rows extends Component {
     }
   };
 
+  updateSelectedRowIds = (rowIds) => {
+    if (!isFunction(this.props.updateSelectedRowIds)) return;
+    this.props.updateSelectedRowIds(rowIds);
+  };
+
   selectNone = () => {
     this.setState({
       selectedRange: {
@@ -389,6 +394,7 @@ class Rows extends Component {
 
     // clear selected rows
     this.onDeselectAllRows();
+    this.updateSelectedRowIds([]);
   };
 
   selectCell = (cellPosition) => {
@@ -486,6 +492,9 @@ class Rows extends Component {
     RowMetrics.selectRow(rowId, updatedRowMetrics);
     this.setState({
       rowMetrics: updatedRowMetrics,
+    }, () => {
+      const ids = Object.keys(updatedRowMetrics.idSelectedRowMap);
+      this.updateSelectedRowIds(ids);
     });
   };
 
@@ -499,6 +508,9 @@ class Rows extends Component {
     RowMetrics.selectRowsById(rowIds, updatedRowMetrics);
     this.setState({
       rowMetrics: updatedRowMetrics,
+    }, () => {
+      const ids = Object.keys(updatedRowMetrics.idSelectedRowMap);
+      this.updateSelectedRowIds(ids);
     });
   };
 
@@ -511,6 +523,9 @@ class Rows extends Component {
     RowMetrics.deselectRow(rowId, updatedRowMetrics);
     this.setState({
       rowMetrics: updatedRowMetrics,
+    }, () => {
+      const ids = Object.keys(updatedRowMetrics.idSelectedRowMap);
+      this.updateSelectedRowIds(ids);
     });
   };
 
@@ -538,6 +553,8 @@ class Rows extends Component {
     RowMetrics.selectRowsById(selectedRowIds, updatedRowMetrics);
     this.setState({
       rowMetrics: updatedRowMetrics,
+    }, () => {
+      this.updateSelectedRowIds(selectedRowIds);
     });
   };
 
@@ -551,6 +568,8 @@ class Rows extends Component {
     this.setState({
       rowMetrics: updatedRowMetrics,
       lastRowIdxUiSelected: { groupRowIndex: -1, rowIndex: -1 },
+    }, () => {
+      this.updateSelectedRowIds([]);
     });
   };
 
@@ -608,7 +627,9 @@ class Rows extends Component {
     const { rowMetrics } = this.state;
     const rowId = row._id;
     if (!RowMetrics.isRowSelected(rowId, rowMetrics)) {
-      this.setState({ rowMetrics: this.createRowMetrics() });
+      this.setState({ rowMetrics: this.createRowMetrics() }, () => {
+        this.updateSelectedRowIds([]);
+      });
     }
 
     // select cell when click out of selectRange

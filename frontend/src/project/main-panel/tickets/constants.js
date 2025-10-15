@@ -1,4 +1,5 @@
 import { gettext } from '@/constants';
+import { CellType } from '@/sea-metadata';
 
 export const TICKET_STATUS = {
   OPEN: 'open',
@@ -159,3 +160,68 @@ export const TICKET_PAGE_TYPE = {
 export const TICKET_CHILDREN_PAGE_TYPE = {
   ALL: 'all',
 };
+
+export const TICKET_COLUMNS = [
+  {
+    type: CellType.RATE,
+    key: 'priority',
+    name: gettext('Priority'),
+    editable: true,
+    frozen: true,
+    width: 33,
+    data: { type: 'rate' }
+  }, {
+    type: CellType.TEXT,
+    key: 'title',
+    name: gettext('Title'),
+    editable: true,
+    is_name_column: true,
+    frozen: true,
+    is_required: true,
+  }, {
+    type: CellType.SINGLE_SELECT,
+    key: 'status',
+    name: gettext('Status'),
+    editable: true,
+    data: { options: TICKET_STATUS_OPTIONS },
+    is_required: true,
+  }, {
+    type: CellType.TYPE,
+    key: 'type',
+    name: gettext('Type'),
+    editable: true,
+    modify_data_able: true,
+  }, {
+    type: CellType.LONG_TEXT,
+    key: 'description',
+    name: gettext('Description'),
+    editable: true,
+    is_required: true,
+  }, {
+    type: CellType.COLLABORATOR,
+    key: 'assignees',
+    name: gettext('Assignees'),
+    editable: true,
+  }, {
+    type: CellType.TAGS,
+    key: 'tags',
+    name: gettext('Tags'),
+    editable: true,
+    modify_data_able: true,
+  }, {
+    type: CellType.COLLABORATOR,
+    key: 'participants',
+    name: gettext('Participants'),
+    editable: false,
+  }, {
+    type: CellType.CTIME,
+    key: 'created_at',
+    name: gettext('Create time'),
+    editable: false,
+  }, {
+    type: CellType.CREATOR,
+    key: 'creator',
+    name: gettext('Creator'),
+    editable: false,
+  },
+];

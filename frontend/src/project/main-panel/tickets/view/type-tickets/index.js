@@ -1,87 +1,32 @@
 import React, { useCallback, useMemo } from 'react';
 import copy from 'copy-to-clipboard';
 import { typesAPI, ticketsAPI } from '../../../../api';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useTypes, useTicketsPage } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
+import { TICKET_PAGE_TYPE, TICKET_COLUMNS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
+import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
   const { isLoading: isTypesLoading, typesData, createType } = useTypes();
 
-  const columns = useMemo(() => [
-    {
-      type: CellType.TEXT,
-      key: 'title',
-      name: gettext('Title'),
-      editable: true,
-      is_name_column: true,
-      frozen: true,
-      is_required: true,
-      click: (row) => togglePageType(row._id)
-    },
-    {
-      type: CellType.SINGLE_SELECT,
-      key: 'status',
-      name: gettext('Status'),
-      editable: true,
-      data: { options: TICKET_STATUS_OPTIONS },
-      is_required: true,
-    },
-    {
-      type: CellType.SINGLE_SELECT,
-      key: 'type',
-      name: gettext('Type'),
-      editable: true,
-      modify_data_able: true,
-      data: { options: typesData.rows },
-    },
-    {
-      type: CellType.LONG_TEXT,
-      key: 'description',
-      name: gettext('Description'),
-      editable: true,
-      is_required: true,
-    },
-    {
-      type: CellType.COLLABORATOR,
-      key: 'assignees',
-      name: gettext('Assignees'),
-      editable: true,
-    },
-    {
-      type: CellType.TAGS,
-      key: 'tags',
-      name: gettext('Tags'),
-      editable: true,
-      modify_data_able: true,
-    },
-    {
-      type: CellType.COLLABORATOR,
-      key: 'participants',
-      name: gettext('Participants'),
-      editable: false,
-    },
-    {
-      type: CellType.CTIME,
-      key: 'created_at',
-      name: gettext('Create time'),
-      editable: false,
-    },
-    {
-      type: CellType.CREATOR,
-      key: 'creator',
-      name: gettext('Creator'),
-      editable: false,
-    },
-  ], [togglePageType]);
+  const columns = useMemo(() => {
+    const columnsUpdate = {
+      'title': { click: (row) => togglePageType(row._id) },
+    };
+    return TICKET_COLUMNS.map(c => {
+      const columnUpdate = columnsUpdate[c.key];
+      if (columnUpdate) return { ...c, ...columnUpdate };
+      return c;
+    });
+  }, [togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -142,6 +87,18 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
   }), [projectUuid, childrenPageType, columns, viewsData]);
+
+  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+    let tools = [];
+    if (rows.length === 1) {
+      const row = rows[0];
+      const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
+      tools.push(tool);
+    }
+    const moreTool = generatorRowsMoreTool({ rows, modifyRows });
+    tools.push(moreTool);
+    return tools;
+  }, [workspaceID, projectName]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -271,10 +228,11 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
       viewID="0000"
       api={api}
       localStorageNamePrefix={localStorageName}
+      createRowsTools={createRowsTools}
       createContextMenuOptions={createContextMenuOptions}
       expandRow={(row) => togglePageType(row._id)}
       toggleView={() => {}}
-      viewTools={['search', 'sorts']}
+      viewTools={[VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       isViewComputedOnServer={false}
 
       // types

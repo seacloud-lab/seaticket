@@ -7,3 +7,7 @@
   overflow: hidden;
   flex: 1;
 }
+
+.sea-metadata .color-default {
+  color: var(--bs-body-color);
+}

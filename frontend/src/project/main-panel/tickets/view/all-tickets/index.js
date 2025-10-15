@@ -2,13 +2,14 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import copy from 'copy-to-clipboard';
 import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import { useTags, useTypes, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS } from '../../constants';
+import { TICKET_COLUMNS, TICKET_PAGE_TYPE } from '../../constants';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
+import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
@@ -25,71 +26,16 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     togglePageType(row._id);
   }, [togglePageType, cacheData]);
 
-  const columns = useMemo(() => [
-    {
-      type: CellType.RATE,
-      key: 'priority',
-      name: gettext('Priority'),
-      editable: true,
-      frozen: true,
-      width: 33,
-      data: { type: 'rate' }
-    }, {
-      type: CellType.TEXT,
-      key: 'title',
-      name: gettext('Title'),
-      editable: true,
-      is_name_column: true,
-      frozen: true,
-      is_required: true,
-      click: expandRow
-    }, {
-      type: CellType.SINGLE_SELECT,
-      key: 'status',
-      name: gettext('Status'),
-      editable: true,
-      data: { options: TICKET_STATUS_OPTIONS },
-      is_required: true,
-    }, {
-      type: CellType.TYPE,
-      key: 'type',
-      name: gettext('Type'),
-      editable: true,
-      modify_data_able: true,
-    }, {
-      type: CellType.LONG_TEXT,
-      key: 'description',
-      name: gettext('Description'),
-      editable: true,
-      is_required: true,
-    }, {
-      type: CellType.COLLABORATOR,
-      key: 'assignees',
-      name: gettext('Assignees'),
-      editable: true,
-    }, {
-      type: CellType.TAGS,
-      key: 'tags',
-      name: gettext('Tags'),
-      editable: true,
-      modify_data_able: true,
-    }, {
-      type: CellType.COLLABORATOR,
-      key: 'participants',
-      name: gettext('Participants'),
-      editable: false,
-    }, {
-      type: CellType.CTIME,
-      key: 'created_at',
-      name: gettext('Create time'),
-      editable: false,
-    }, {
-      type: CellType.CREATOR,
-      key: 'creator',
-      name: gettext('Creator'),
-      editable: false,
-    },
-  ], [expandRow]);
+  const columns = useMemo(() => {
+    const columnsUpdate = {
+      'title': { click: expandRow },
+    };
+    return TICKET_COLUMNS.map(c => {
+      const columnUpdate = columnsUpdate[c.key];
+      if (columnUpdate) return { ...c, ...columnUpdate };
+      return c;
+    });
+  }, [expandRow]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
@@ -186,6 +132,18 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       Rows: gettext('Tickets'),
     };
   }, []);
+
+  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+    let tools = [];
+    if (rows.length === 1) {
+      const row = rows[0];
+      const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
+      tools.push(tool);
+    }
+    const moreTool = generatorRowsMoreTool({ rows, modifyRows });
+    tools.push(moreTool);
+    return tools;
+  }, [workspaceID, projectName]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -305,6 +263,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       localStorageNamePrefix={localStorageName}
       permission={permission}
       createContextMenuOptions={createContextMenuOptions}
+      createRowsTools={createRowsTools}
       expandRow={expandRow}
       toggleView={updateViewID}
       tagsData={tagsData}
