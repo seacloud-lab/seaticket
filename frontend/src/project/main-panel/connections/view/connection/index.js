@@ -184,9 +184,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           }
         },
         { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('State'), data: { options: GITHUB_STATE_OPTIONS }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'state', name: gettext('State'), data: { options: GITHUB_STATE_OPTIONS }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
-        { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), data: { options: [] }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'issue_type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
@@ -438,13 +438,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
 
     if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { topic_id: row.topic_id }).then((res) => {
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         setDiscourseForumsDetailsTitle(row.title);
         setDiscourseForumsDetails(res.data.row_details);
       });
     }
     if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { issue_id: row.issue_id }).then((res) => {
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         setGithubIssueDetailsTitle(row.title);
         setGithubIssueDetails(res.data.row_details);
       });

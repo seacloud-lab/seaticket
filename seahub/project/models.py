@@ -611,7 +611,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return new_view.details
 
-    def update_view(self, view_id, view_dict, record):
+    def update_view(self, view_id, view_dict, record, connection_type):
         view_dict.pop('_id', '')
         if 'name' in view_dict:
             exist_obj_names = record.views_names
@@ -619,6 +619,15 @@ class ConnectionsViewsManager(models.Manager):
         view_details = json.loads(record.details)
         for v in view_details['views']:
             if v.get('_id') == view_id:
+                if 'hidden_columns' in view_dict:
+                    old_show_columns = v.get('show_columns')
+                    old_hidden_columns = v.get('hidden_columns')
+                    hidden_columns = set(view_dict.get('hidden_columns'))
+                    universal_columns = set(old_show_columns + old_hidden_columns)
+                    show_columns = list(universal_columns - hidden_columns)
+                    if connection_type == ConnectionType.SITE.value and 'url' not in show_columns:
+                        show_columns.append('url')
+                    view_dict['show_columns'] = show_columns
                 v.update(view_dict)
                 break
         record.details = json.dumps(view_details)

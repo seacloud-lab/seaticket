@@ -161,7 +161,7 @@ class ConnectionViewAPI(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            ConnectionsViews.objects.update_view(view_id, view_data, record)
+            ConnectionsViews.objects.update_view(view_id, view_data, record, connection.type)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'

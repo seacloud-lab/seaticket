@@ -297,35 +297,43 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    hidden_columns = view_copy.get('hidden_columns', [])
-    sql = view_data_2_sql(table_name, columns, hidden_columns, view_copy, start, limit, username)
+    show_columns = view_copy.get('show_columns', [])
+    need_columns = []
+    for column in columns:
+        if column.get('name') in show_columns:
+            need_columns.append(column)
+    sql = view_data_2_sql(table_name, need_columns, show_columns, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records, columns
+    return records, need_columns
 
 
-def list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username=None):
-    sql = f"SELECT * FROM `{table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username=None):
+    topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
+        topics_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topic_id = topics_res.get('results')[0].get('topic_id')
+        replies_sql = f"SELECT author,content,updated_at FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+        replies_res = seadb_api.query_rows(project_uuid, replies_sql)
+        records = replies_res.get('results', [])
     except Exception as e:
-        logger.error(f'SeaDB query error for discourse replies {table_name}: {e}')
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
         records = []
     return records
 
 
-def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, issue_id, username=None):
+def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username=None):
     """Query github issue comments from SeaDB"""
-    issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE issue_id = {issue_id}"
-    comments_sql = f"SELECT author, body, created_at, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+    issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results', [])
+        issue_id = issue_record[0].get('issue_id')
+        comments_sql = f"SELECT author, body, created_at, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record.extend(comments_record)

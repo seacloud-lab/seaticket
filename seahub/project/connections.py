@@ -596,13 +596,14 @@ class ProjectConnectionRowDetailView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         row_details = []
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            topic_id = request.GET.get('topic_id')
-            if not topic_id:
-                error_msg = 'Missing topic_id.'
+            _pk = request.GET.get('_pk')
+            if not _pk:
+                error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
-            table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username)
+            topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+            replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
@@ -614,14 +615,14 @@ class ProjectConnectionRowDetailView(APIView):
             except Exception as e:
                 logger.error(e)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            issue_id = request.GET.get('issue_id')
-            if not issue_id:
-                error_msg = 'Missing issue_id.'
+            _pk = request.GET.get('_pk')
+            if not _pk:
+                error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
             issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
             comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-            row_details = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, issue_id, username)
+            row_details = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username)
         return Response({
             'row_details': row_details,
         })
