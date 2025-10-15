@@ -1,5 +1,5 @@
 import { getColumnByKey } from '../utils/column';
-import { VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE } from '../constants';
+import { VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE, ROW_HEIGHT_TYPE } from '../constants';
 
 class View {
 
@@ -21,6 +21,9 @@ class View {
     // group
     this.groupbys = object.groupbys || [];
     this.groups = object.groups;
+
+    // row height
+    this.row_height = object.row_height || ROW_HEIGHT_TYPE.DEFAULT;
 
     // hidden columns
     this.hidden_columns = object.hidden_columns || [];

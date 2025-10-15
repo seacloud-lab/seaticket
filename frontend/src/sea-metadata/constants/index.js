@@ -6,6 +6,7 @@ export * from './column';
 export * from './filter';
 export * from './group';
 export * from './grid-header';
+export * from './grid-body';
 export * from './reg';
 export * from './select-option';
 export * from './sort';

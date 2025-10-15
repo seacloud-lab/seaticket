@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter } from '../../data-process-setter';
+import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter, RowHeightSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
   readOnly, view, collaborators, fixedColumnCount,
-  modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows
+  modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
   const viewColumns = useMemo(() => {
@@ -60,6 +60,15 @@ const TableViewToolbar = ({
           modifyGroupbys={modifyGroupbys}
         />
       )}
+      {tools.includes(VIEW_TOOL.ROW_HEIGHT) && (
+        <RowHeightSetter
+          wrapperClass="sea-metadata-view-tool-operation-btn"
+          target="sea-metadata-row-height-popover"
+          readOnly={readOnly}
+          rowHeight={view.row_height}
+          modifyRowHeight={modifyRowHeight}
+        />
+      )}
       {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && (
         <HideColumnSetter
           wrapperClass="sea-metadata-view-tool-hide-column mr-2"
@@ -85,6 +94,7 @@ TableViewToolbar.propTypes = {
   modifyFilters: PropTypes.func,
   modifySorts: PropTypes.func,
   modifyGroupbys: PropTypes.func,
+  modifyRowHeight: PropTypes.func,
   modifyHiddenColumns: PropTypes.func,
   modifyColumnOrder: PropTypes.func,
 };

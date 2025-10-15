@@ -66,6 +66,10 @@ export const MetadataProvider = forwardRef(({
     storeRef.current.modifyGroupbys(groupbys);
   }, [storeRef]);
 
+  const modifyRowHeight = useCallback((rowHeight) => {
+    storeRef.current.modifyRowHeight(rowHeight);
+  }, [storeRef]);
+
   const modifyHiddenColumns = useCallback((hiddenColumns) => {
     storeRef.current.modifyHiddenColumns(hiddenColumns);
   }, [storeRef]);
@@ -285,6 +289,7 @@ export const MetadataProvider = forwardRef(({
         modifyFilters,
         modifySorts,
         modifyGroupbys,
+        modifyRowHeight,
         modifyHiddenColumns,
         insertRow,
         modifyRowByRowExpand,
