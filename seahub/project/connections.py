@@ -27,7 +27,7 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
-from seahub.project.constants import ConnectionType, CrawlStatus
+from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
@@ -328,7 +328,9 @@ class ProjectConnectionSyncView(APIView):
         if project_connection.last_sync_time:
             now = datetime.datetime.now(datetime.timezone.utc)
             time_diff = now - project_connection.last_sync_time
-            cooldown_seconds = 24 * 60 * 60
+            cooldown_seconds = MANUAL_SYNC_INTERVAL
+            if connection_type == ConnectionType.SITE:
+                cooldown_seconds = MANUAL_CRAWL_INTERVAL
             if time_diff.total_seconds() < cooldown_seconds:
                 next_sync_utc = project_connection.last_sync_time + datetime.timedelta(seconds=cooldown_seconds)
                 error_msg = {
@@ -336,15 +338,6 @@ class ProjectConnectionSyncView(APIView):
                     'next_time': next_sync_utc
                 }
                 return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
-
-        # update connection status
-        try:
-            connection_status['last_sync_status'] = CrawlStatus.PENDING
-            ProjectConnections.objects.update_status(project_connection.id, connection_status)
-        except Exception as e:
-            logger.error(f'update connection {project_connection.id} status error: {e}')
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
             params = {
