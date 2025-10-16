@@ -494,7 +494,7 @@ class QAView(APIView):
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'agent_memory': agent_memory,
+            'agent_memory': agent_memory[1:],
         })
 
 
