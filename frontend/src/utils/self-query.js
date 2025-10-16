@@ -4,7 +4,8 @@ class SelfQuery {
     callback,
     endCondition,
     interval = 3000,
-    maxRetries = 200
+    maxRetries = 200,
+    onEnd,
   }) {
     this.api = api;
     this.callback = callback;
@@ -12,6 +13,7 @@ class SelfQuery {
 
     this.maxRetries = maxRetries || 200;
     this.interval = interval || 3000;
+    this.onEnd = onEnd || (() => {});
 
     this.id2retries = {};
     this.ids = [];
@@ -54,6 +56,9 @@ class SelfQuery {
         this.callback(results);
         this.ids = queriedIds.filter(id => !endIds.includes(id));
 
+        if (endIds.length > 0) {
+          this.onEnd(endIds);
+        }
         this._executeConcurrentQuery();
       }).catch(error => {
         this._executeConcurrentQuery();

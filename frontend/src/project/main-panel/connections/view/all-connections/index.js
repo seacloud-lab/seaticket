@@ -28,13 +28,24 @@ const AllConnections = ({ projectUuid }) => {
     callback: modifyLocalConnectionSyncStatus,
     endCondition: (v) => CONNECTION_SYNC_COMPLETED_STATUS.includes(v),
     maxRetries: 50,
-  }), [projectUuid, modifyLocalConnectionSyncStatus]);
+    onEnd: async (endIds) => {
+      for (const id of endIds) {
+        try {
+          const res = await connectionsAPI.getConnection(projectUuid, id);
+          const fresh = new Connection(res.data.record);
+          modifyLocalConnectionRecord(id, { last_sync_time: fresh.last_sync_time });
+        } catch (e) {
+          toaster.danger(e);
+        }
+      }
+    }
+  }), [projectUuid, modifyLocalConnectionSyncStatus, modifyLocalConnectionRecord]);
 
   const columns = useMemo(() => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '30%' },
       { key: 'sync_status', name: gettext('Sync status'), type: CONNECTION_FIELD_TYPE.SYNC_STATUS, width: '20%' },
-      { key: 'indexed_at', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
+      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
       { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
     ].map(column => (
