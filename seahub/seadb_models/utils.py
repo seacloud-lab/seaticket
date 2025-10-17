@@ -1,5 +1,6 @@
 import logging
 
+from seahub.project.constants import ConnectionType
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
@@ -289,7 +290,7 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
@@ -297,8 +298,7 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    hidden_columns = view_copy.get('hidden_columns', [])
-    sql = view_data_2_sql(table_name, columns, hidden_columns, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, columns, all_need_column_names, view_copy, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
@@ -308,24 +308,28 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     return records, columns
 
 
-def list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username=None):
-    sql = f"SELECT * FROM `{table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username=None):
+    topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
+        topics_res = seadb_api.query_rows(project_uuid, topics_sql)
+        topic_id = topics_res.get('results')[0].get('topic_id')
+        replies_sql = f"SELECT author,content,updated_at FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+        replies_res = seadb_api.query_rows(project_uuid, replies_sql)
+        records = replies_res.get('results', [])
     except Exception as e:
-        logger.error(f'SeaDB query error for discourse replies {table_name}: {e}')
+        logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
         records = []
     return records
 
 
-def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, issue_id, username=None):
+def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username=None):
     """Query github issue comments from SeaDB"""
-    issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE issue_id = {issue_id}"
-    comments_sql = f"SELECT author, body, created_at, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+    issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results', [])
+        issue_id = issue_record[0].get('issue_id')
+        comments_sql = f"SELECT author, body, created_at, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record.extend(comments_record)

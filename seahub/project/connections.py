@@ -27,7 +27,8 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
-from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
+from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
+    ALL_NEED_COLUMN_NAMES
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
@@ -426,15 +427,19 @@ class ProjectConnectionDetailsView(APIView):
                     del basic_filter['column_key']
             view['basic_filters'] = basic_filters
             table_name = GithubIssuesTable.gen_table_name(connection_id)
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.GITHUB_ISSUE.value]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.DISCOURSE_FORUM.value]
         elif project_connection.type == ConnectionType.SITE.value:
             table_name = WebCrawlTable.gen_table_name(connection_id)
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SITE.value]
         elif project_connection.type == ConnectionType.SEAFILE.value:
             table_name = SeafileTable.gen_table_name(connection_id)
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SEAFILE.value]
 
         records, columns = list_connection_view_records(
-            seadb_api, project_uuid, table_name, view, start, limit, username
+            seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names
         )
 
         return Response({
@@ -596,13 +601,14 @@ class ProjectConnectionRowDetailView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         row_details = []
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            topic_id = request.GET.get('topic_id')
-            if not topic_id:
-                error_msg = 'Missing topic_id.'
+            _pk = request.GET.get('_pk')
+            if not _pk:
+                error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
-            table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, table_name, topic_id, username)
+            topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+            replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
@@ -614,14 +620,14 @@ class ProjectConnectionRowDetailView(APIView):
             except Exception as e:
                 logger.error(e)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            issue_id = request.GET.get('issue_id')
-            if not issue_id:
-                error_msg = 'Missing issue_id.'
+            _pk = request.GET.get('_pk')
+            if not _pk:
+                error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             seadb_api = SeaDBAPI(username)
             issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
             comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-            row_details = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, issue_id, username)
+            row_details = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username)
         return Response({
             'row_details': row_details,
         })
