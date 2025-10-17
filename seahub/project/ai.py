@@ -12,9 +12,11 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Workspaces, Projects, ChatSessions, \
-    ChatMessages
+    ChatMessages, ProjectConnections
 from seahub.project.utils import check_project_permission, ask_ai_question, \
-    create_ticket_info
+    convert_record_to_ticket
+from seahub.project.constants import ConnectionType
+from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 
 
 logger = logging.getLogger(__name__)
@@ -97,7 +99,7 @@ class QAView(APIView):
         })
 
 
-class AICreateTicketView(APIView):
+class ConvertRecordToTicket(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -111,7 +113,7 @@ class AICreateTicketView(APIView):
         if not project_uuid:
             error_msg = 'project_uuid invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         # resource check
         project = Projects.objects.get_project_by_uuid(
             project_uuid, include_deleted=False)
@@ -135,18 +137,58 @@ class AICreateTicketView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not connection:
+            error_msg = f'Connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        record_detail = ''
+        default_title = ''
+        match connection.type:
+            case ConnectionType.DISCOURSE_FORUM.value:
+                discourse_db_api = DiscourseSeaDBAPI(project_uuid)
+                topics = discourse_db_api.get_topics_by_connection_id(
+                    connection_id, record_id
+                )
+                title = topics[0].get('title', '') if topics else ''
+                default_title = title
+                replies = discourse_db_api.get_replies_by_topic(
+                    connection_id, record_id
+                )
+                body_content = ''
+                for reply in replies:
+                    if not reply.get('content'):
+                        continue
+
+                    content_to_add = reply.get('content')
+                    if body_content:
+                        content_to_add = '\n\n' + content_to_add
+                    if len(body_content) + len(content_to_add) > 600:
+                        break
+                    body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Body: {body_content}
+                """
+        if not record_detail:
+            error_msg = 'Record detail not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
         params = {
-            'connection_id': connection_id,
-            'record_id': record_id,
             'username': username,
+            'record_detail': record_detail
         }
         try:
-            title, description = create_ticket_info(params)
+            ai_title, ai_description = convert_record_to_ticket(params)
+            if not ai_title:
+                ai_title = default_title
         except Exception as e:
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({
-            'title': title,
-            'description': description,
+            'title': ai_title,
+            'description': ai_description,
         })

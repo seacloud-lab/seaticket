@@ -256,11 +256,11 @@ def ask_ai_question(params):
     return ai_answer, agent_memory, sources
 
 
-def create_ticket_info(params):
+def convert_record_to_ticket(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/create-ticket-info')
+    url = urljoin(SEAQA_AI_SERVER_URL, '/convert-record-to-ticket')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)

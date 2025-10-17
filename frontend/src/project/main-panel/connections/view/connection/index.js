@@ -499,7 +499,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           setTicketData(null);
           setTicketDialogOpen(true);
           setTicketLoading(true);
-          connectionsAPI.createTicketInfo(projectUuid, connectionID, row.topic_id).then(res => {
+          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row.topic_id).then(res => {
             setTicketData(res.data);
           }).finally(() => {
             setTicketLoading(false);
