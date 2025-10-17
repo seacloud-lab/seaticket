@@ -918,11 +918,11 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, column_names, view, start=0, limit=0, username=''):
+    def __init__(self, table_name, columns, view, start=0, limit=0, username=''):
         self.table_name = table_name
         self.view = view
         self.columns = columns
-        self.column_names = column_names
+        self.column_names = [column['name'] for column in self.columns]
         self.start = start
         self.limit = limit
         self.username = username
@@ -1064,7 +1064,7 @@ class SQLGenerator(object):
 
     def to_sql(self):
         column_join = ', '.join(['`%s`' % column_name for column_name in self.column_names])
-        sql = "SELECT %s FROM `%s`" % (column_join, self.table_name)
+        sql = f"SELECT {column_join} FROM `{self.table_name}`"
         filter_clause = self._filter_2_sql()
         sort_clause = self.sort_2_sql()
         limit_clause = self._limit_2_sql()
@@ -1077,7 +1077,7 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, column_names, view, start, limit):
+def view_data_2_sql(table, columns, view, start, limit):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, column_names, view, start, limit)
+    sql_generator = SQLGenerator(table, columns, view, start, limit)
     return sql_generator.to_sql()

@@ -8,7 +8,7 @@ class GithubIssue {
     this.state = object.state || 'open';
     this.state_reason = object.state_reason || '';
     this.labels = object.labels || [];
-    this.type = object.issue_type || '';
+    this.issue_type = object.issue_type || '';
     this.author = object.author || '';
     this.assignees = object.assignees || '';
     this.url = object.url || '';

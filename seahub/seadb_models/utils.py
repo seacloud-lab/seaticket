@@ -1,6 +1,6 @@
 import logging
 
-from seahub.project.constants import ConnectionType
+from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
@@ -290,22 +290,40 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names):
+def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
+    connection_id = connection.id
+    connection_type = connection.type
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.SITE.value:
+        table_name = WebCrawlTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.SEAFILE.value:
+        table_name = SeafileTable.gen_table_name(connection_id)
+
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
         return [], []
     columns = table_metadata.get('columns') or []
+    display_all_column_names = CONNECTION_DISPLAY_ALL_COLUMNS[connection_type]
+    display_all_columns = []
+    for name in display_all_column_names:
+        column = next((column for column in columns if column['name'] == name), None)
+        if column:
+            display_all_columns.append(column)
+    
     view_copy = view.copy()
-    sql = view_data_2_sql(table_name, columns, all_need_column_names, view_copy, start, limit)
+    sql = view_data_2_sql(table_name, display_all_columns, view_copy, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records, columns
+    return records, display_all_columns
 
 
 def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username=None):

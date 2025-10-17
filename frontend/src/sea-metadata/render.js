@@ -66,7 +66,7 @@ const SeaMetadata = forwardRef(({
   viewID,
   permission = PERMISSION_TYPES.READ_ONLY,
   isViewComputedOnServer = true,
-  settings = { lang, server, mediaUrl },
+  settings,
   t,
   ...params
 }, ref) => {
@@ -77,7 +77,7 @@ const SeaMetadata = forwardRef(({
   useEffect(() => {
     context.init({
       username,
-      settings,
+      settings: { lang, server, mediaUrl, ...settings, },
       permission,
       isViewComputedOnServer,
       api,

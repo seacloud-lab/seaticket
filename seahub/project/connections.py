@@ -27,8 +27,7 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
-from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
-    ALL_NEED_COLUMN_NAMES
+from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
@@ -401,7 +400,6 @@ class ProjectConnectionDetailsView(APIView):
         except:
             start = 0
             limit = 1000
-        end = start + limit
 
         try:
             view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
@@ -419,27 +417,16 @@ class ProjectConnectionDetailsView(APIView):
             basic_filters = view.get('basic_filters', [])
             for basic_filter in basic_filters:
                 column_key = basic_filter.get('column_key', '')
-                if column_key == 'type':
+                if column_key == 'issue_type':
                     basic_filter['column_name'] = 'issue_type'
                     del basic_filter['column_key']
-                elif column_key == 'status':
+                elif column_key == 'state':
                     basic_filter['column_name'] = 'state'
                     del basic_filter['column_key']
-            view['basic_filters'] = basic_filters
-            table_name = GithubIssuesTable.gen_table_name(connection_id)
-            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.GITHUB_ISSUE.value]
-        elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.DISCOURSE_FORUM.value]
-        elif project_connection.type == ConnectionType.SITE.value:
-            table_name = WebCrawlTable.gen_table_name(connection_id)
-            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SITE.value]
-        elif project_connection.type == ConnectionType.SEAFILE.value:
-            table_name = SeafileTable.gen_table_name(connection_id)
-            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SEAFILE.value]
 
+            view['basic_filters'] = basic_filters  
         records, columns = list_connection_view_records(
-            seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names
+            seadb_api, project_uuid, project_connection, view, start, limit
         )
 
         return Response({
