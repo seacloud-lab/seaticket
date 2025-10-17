@@ -137,7 +137,6 @@ CONNECTION_DEFAULT_DETAILS = {
                 'filters': [],
                 'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
                 'groupbys': [],
-                'show_columns':['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at'],
                 'hidden_columns': [],
             }, {
                 '_id': 'closed',
@@ -152,7 +151,6 @@ CONNECTION_DEFAULT_DETAILS = {
                 'filters': [],
                 'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
                 'groupbys': [],
-                'show_columns':['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at'],
                 'hidden_columns': [],
             }
         ],
@@ -173,7 +171,6 @@ CONNECTION_DEFAULT_DETAILS = {
                 'filters': [],
                 'sorts': [],
                 'groupbys': [],
-                'show_columns':['_pk', 'url', 'title', 'last_modified'],
                 'hidden_columns': [],
             }
         ],
@@ -193,7 +190,6 @@ CONNECTION_DEFAULT_DETAILS = {
                 'filters': [],
                 'sorts': [],
                 'groupbys': [],
-                'show_columns':['_pk', 'title', 'views', 'bumped_at', 'created_at'],
                 'hidden_columns': [],
             }
         ],

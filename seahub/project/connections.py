@@ -426,15 +426,19 @@ class ProjectConnectionDetailsView(APIView):
                     del basic_filter['column_key']
             view['basic_filters'] = basic_filters
             table_name = GithubIssuesTable.gen_table_name(connection_id)
+            all_need_column_names = ['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at']
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+            all_need_column_names = ['_pk', 'title', 'views', 'bumped_at', 'created_at']
         elif project_connection.type == ConnectionType.SITE.value:
             table_name = WebCrawlTable.gen_table_name(connection_id)
+            all_need_column_names = ['_pk', 'url', 'title', 'last_modified']
         elif project_connection.type == ConnectionType.SEAFILE.value:
             table_name = SeafileTable.gen_table_name(connection_id)
+            all_need_column_names = ['path', 'filename', 'mtime', 'updated_at']
 
         records, columns = list_connection_view_records(
-            seadb_api, project_uuid, table_name, view, start, limit, username
+            seadb_api, project_uuid, table_name, view, start, limit, username, project_connection.type, all_need_column_names
         )
 
         return Response({

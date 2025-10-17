@@ -1,5 +1,6 @@
 import logging
 
+from seahub.project.constants import ConnectionType
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
@@ -289,7 +290,7 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username):
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username, connection_type, all_need_column_names):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
@@ -297,12 +298,16 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    show_columns = view_copy.get('show_columns', [])
+    hidden_columns = view_copy.get('hidden_columns', [])
+    need_column_names = list(set(all_need_column_names) - set(hidden_columns))
+    if connection_type == ConnectionType.SITE.value and 'url' not in need_column_names:
+        need_column_names.append('url')
+
     need_columns = []
     for column in columns:
-        if column.get('name') in show_columns:
+        if column.get('name') in need_column_names:
             need_columns.append(column)
-    sql = view_data_2_sql(table_name, need_columns, show_columns, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, need_columns, need_column_names, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
