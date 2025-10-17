@@ -5,7 +5,7 @@ class GithubIssue {
     this.issue_number = object.issue_number || '';
     this.title = object.title || '';
     this.body = object.body || '';
-    this.status = object.state || 'open';
+    this.state = object.state || 'open';
     this.state_reason = object.state_reason || '';
     this.labels = object.labels || [];
     this.type = object.issue_type || '';
