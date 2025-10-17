@@ -7,7 +7,7 @@ import GroupContainer from './group-container';
 import Row from '../row';
 import { checkIsColumnFrozen, checkIsNameColumn, isColumnSupportDirectEdit, checkIsColumnEditable } from '../../../../../utils/column';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
-import { CellType, GROUP_HEADER_HEIGHT, GROUP_ROW_TYPE, GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH, EVENT_BUS_TYPE } from '../../../../../constants';
+import { CellType, GROUP_HEADER_HEIGHT, GROUP_ROW_TYPE, GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH, EVENT_BUS_TYPE, ROW_HEIGHT_MAP } from '../../../../../constants';
 import RowMetrics from '../../../utils/row-metrics';
 import { isSelectedCellSupportOpenEditor } from '../../../utils/selected-cell-utils';
 import { getColumnScrollPosition, getColVisibleEndIdx, getColVisibleStartIdx } from '../../../utils/rows-body-utils';
@@ -15,7 +15,6 @@ import { addClassName, removeClassName } from '../../../../../../utils/dom';
 import { createGroupMetrics, getGroupRowByIndex, isNestedGroupRow } from '../../../utils/group-metrics';
 import context from '@/sea-metadata/context';
 
-const ROW_HEIGHT = 33;
 const GROUP_OVER_SCAN_ROWS = 10;
 const MAX_ANIMATION_ROWS = 50;
 const LOCAL_FOLDED_GROUP_KEY = 'path_folded_group';
@@ -197,7 +196,7 @@ class GroupBody extends Component {
   };
 
   getRowHeight = () => {
-    return ROW_HEIGHT;
+    return ROW_HEIGHT_MAP[this.props.rowHeight] + 1;
   };
 
   getRowTop = (groupRowIndex) => {

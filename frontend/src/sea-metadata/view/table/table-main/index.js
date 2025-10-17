@@ -64,6 +64,7 @@ const TableMain = ({
         groups={metadata.view.groups}
         groupbys={metadata.view.groupbys}
         rowsCount={metadata?.view?.rows?.length || 0}
+        rowHeight={metadata.view.row_height}
         table={metadata}
         tagsData={tagsData}
         collaborators={collaborators}

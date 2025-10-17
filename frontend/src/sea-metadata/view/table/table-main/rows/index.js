@@ -779,6 +779,7 @@ Rows.propTypes = {
   hasMore: PropTypes.bool,
   isLoadingMore: PropTypes.bool,
   groupOffsetLeft: PropTypes.number,
+  rowHeight: PropTypes.string,
   gridUtils: PropTypes.object,
   rowIds: PropTypes.array,
   rowsCount: PropTypes.number,

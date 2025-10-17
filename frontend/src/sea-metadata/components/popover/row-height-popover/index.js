@@ -7,7 +7,7 @@ import { ROW_HEIGHT_TYPE } from '../../../constants/grid-body';
 
 import './index.css';
 
-const RowHeightPopover = ({ hidePopover, onChange, readOnly, target, rowHeight }) => {
+const RowHeightPopover = ({ hidePopover, onChange, target, rowHeight }) => {
   return (
     <CustomizePopover
       target={target}
