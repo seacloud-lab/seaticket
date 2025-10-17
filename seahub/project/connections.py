@@ -439,7 +439,7 @@ class ProjectConnectionDetailsView(APIView):
             all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SEAFILE.value]
 
         records, columns = list_connection_view_records(
-            seadb_api, project_uuid, table_name, view, start, limit, username, project_connection.type, all_need_column_names
+            seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names
         )
 
         return Response({

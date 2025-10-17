@@ -290,7 +290,7 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, username, connection_type, all_need_column_names):
+def list_connection_view_records(seadb_api, project_uuid, table_name, view, start, limit, all_need_column_names):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
@@ -298,13 +298,7 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    hidden_columns = view_copy.get('hidden_columns', [])
-    need_column_names = list(set(all_need_column_names) - set(hidden_columns))
-
-    if connection_type == ConnectionType.SITE.value and 'url' not in need_column_names:
-        need_column_names.append('url')
-
-    sql = view_data_2_sql(table_name, columns, need_column_names, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, columns, all_need_column_names, view_copy, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])

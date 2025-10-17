@@ -1077,7 +1077,7 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, column_names, view, start, limit, params):
+def view_data_2_sql(table, columns, column_names, view, start, limit):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, column_names, view, start, limit, params)
+    sql_generator = SQLGenerator(table, columns, column_names, view, start, limit)
     return sql_generator.to_sql()
