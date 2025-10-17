@@ -62,7 +62,7 @@ const TableViewToolbar = ({
       )}
       {tools.includes(VIEW_TOOL.ROW_HEIGHT) && (
         <RowHeightSetter
-          wrapperClass="sea-metadata-view-tool-operation-btn"
+          wrapperClass="sea-metadata-view-tool-row-height mr-2"
           target="sea-metadata-row-height-popover"
           readOnly={readOnly}
           rowHeight={view.row_height}
