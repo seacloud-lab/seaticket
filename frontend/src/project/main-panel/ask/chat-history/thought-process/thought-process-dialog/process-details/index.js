@@ -39,7 +39,7 @@ const ProcessDetails = ({ value }) => {
 
   // for final answer
   const finalAnswerStep = value.find(step =>
-    step.is_final_answer
+    step.is_final_answer || step.error?.type === 'AgentMaxStepsError'
   );
 
   return (
@@ -128,7 +128,7 @@ const ProcessDetails = ({ value }) => {
       {expandedStates.actionSteps && (
         <div className="sea-qa-ai-thought-process-content">
           {value.map((step, index) =>
-            !step.is_final_answer && (
+            !step.is_final_answer && step.tool_calls.length > 0 && (
               <div key={index} className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-1">
                 <div
                   className="sea-qa-ai-thought-process-order"
@@ -180,32 +180,74 @@ const ProcessDetails = ({ value }) => {
                     </div>
 
                     {/* Observations Section */}
-                    <div>
-                      <div
-                        className="sea-qa-ai-thought-process-order"
-                        onClick={() => toggleExpand('observations', index)}
-                      >
-                        <IconButton
-                          icon={expandedStates[`observations${index}`] ? 'up' : 'down'}
-                          className={classnames('no-hover-bg', { 'rotate-icon-270': !expandedStates[`observations${index}`] })}
-                        />
-                        <span className="sea-qa-ai-thought-process-order-title">
-                          {gettext('Observation')}
-                        </span>
-                      </div>
+                    {step.error ?
+                      <div>
+                        <div
+                          className="sea-qa-ai-thought-process-order"
+                          onClick={() => toggleExpand('observations', index)}
+                        >
+                          <IconButton
+                            icon={expandedStates[`observations${index}`] ? 'up' : 'down'}
+                            className={classnames('no-hover-bg', { 'rotate-icon-270': !expandedStates[`observations${index}`] })}
+                          />
+                          <span className="sea-qa-ai-thought-process-order-title">
+                            {gettext('Error')}
+                          </span>
+                        </div>
 
-                      {expandedStates[`observations${index}`] && (
-                        <FormGroup className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
-                          <div className="sea-qa-ai-thought-process-value">
-                            {step.observations ? (
-                              <StepMarkdownViewer value={step.observations} className="sea-qa-ai-thought-process-value" />
-                            ) : (
-                              <span className="sea-qa-tip-default">{gettext('Empty')}</span>
-                            )}
-                          </div>
-                        </FormGroup>
-                      )}
-                    </div>
+                        {expandedStates[`observations${index}`] && (
+                          <>
+                            <div className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
+                              <Label>{gettext('Error type')}</Label>
+                              <div className="sea-qa-ai-thought-process-value">
+                                {step.error.type || gettext('Empty')}
+                              </div>
+                            </div>
+                            <div className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
+                              <Label>{gettext('Error message')}</Label>
+                              <div className="sea-qa-ai-thought-process-value">
+                                {step.error.message || gettext('Empty')}
+                              </div>
+                            </div>
+                            <div className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
+                              <Label>{gettext('Step output')}</Label>
+                              <div className="sea-qa-ai-thought-process-value">
+                                {step.action_output ? (
+                                  <StepMarkdownViewer value={JSON.stringify(step.action_output)} className="sea-qa-ai-thought-process-value" />
+                                ) : (
+                                  <span className="sea-qa-tip-default">{gettext('Empty')}</span>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div> :
+                      <div>
+                        <div
+                          className="sea-qa-ai-thought-process-order"
+                          onClick={() => toggleExpand('observations', index)}
+                        >
+                          <IconButton
+                            icon={expandedStates[`observations${index}`] ? 'up' : 'down'}
+                            className={classnames('no-hover-bg', { 'rotate-icon-270': !expandedStates[`observations${index}`] })}
+                          />
+                          <span className="sea-qa-ai-thought-process-order-title">
+                            {gettext('Observation')}
+                          </span>
+                        </div>
+
+                        {expandedStates[`observations${index}`] && (
+                          <FormGroup className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
+                            <div className="sea-qa-ai-thought-process-value">
+                              {step.observations ? (
+                                <StepMarkdownViewer value={step.observations} className="sea-qa-ai-thought-process-value" />
+                              ) : (
+                                <span className="sea-qa-tip-default">{gettext('Empty')}</span>
+                              )}
+                            </div>
+                          </FormGroup>
+                        )}
+                      </div>}
 
                     {/* Other information Section */}
                     <div>
@@ -286,13 +328,13 @@ const ProcessDetails = ({ value }) => {
                   className={classnames('no-hover-bg', { 'rotate-icon-270': !expandedStates.finalAnswerObservations })}
                 />
                 <span className="sea-qa-ai-thought-process-order-title">
-                  {gettext('Observation')}
+                  {finalAnswerStep.error?.type === 'AgentMaxStepsError' ? gettext('Result_reached_max_steps') : gettext('Result')}
                 </span>
               </div>
               {expandedStates.finalAnswerObservations && (
                 <div className="sea-qa-ai-thought-process-value">
-                  {finalAnswerStep.observations ? (
-                    <StepMarkdownViewer value={finalAnswerStep.observations} className="sea-qa-ai-thought-process-value" />
+                  {finalAnswerStep.observations || finalAnswerStep.action_output ? (
+                    <StepMarkdownViewer value={finalAnswerStep.observations || JSON.stringify(finalAnswerStep.action_output)} className="sea-qa-ai-thought-process-value" />
                   ) : (
                     <span className="sea-qa-tip-default">{gettext('Empty')}</span>
                   )}
@@ -312,7 +354,7 @@ const ProcessDetails = ({ value }) => {
                 </span>
               </div>
               {expandedStates.finalAnswerOtherInfo && (
-                <div className="sea-qa-ai-thought-process-value">
+                <div className="sea-qa-ai-thought-process-content">
                   <div className="sea-qa-ai-thought-process-key sea-qa-ai-thought-process-key-level-2">
                     <Label>{gettext('Input tokens')}</Label>
                     <div className="sea-qa-ai-thought-process-value">
