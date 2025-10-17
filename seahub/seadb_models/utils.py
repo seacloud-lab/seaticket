@@ -300,21 +300,18 @@ def list_connection_view_records(seadb_api, project_uuid, table_name, view, star
     view_copy = view.copy()
     hidden_columns = view_copy.get('hidden_columns', [])
     need_column_names = list(set(all_need_column_names) - set(hidden_columns))
+
     if connection_type == ConnectionType.SITE.value and 'url' not in need_column_names:
         need_column_names.append('url')
 
-    need_columns = []
-    for column in columns:
-        if column.get('name') in need_column_names:
-            need_columns.append(column)
-    sql = view_data_2_sql(table_name, need_columns, need_column_names, view_copy, start, limit, username)
+    sql = view_data_2_sql(table_name, columns, need_column_names, view_copy, start, limit, username)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records, need_columns
+    return records, columns
 
 
 def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username=None):

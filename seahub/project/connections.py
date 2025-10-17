@@ -27,7 +27,8 @@ from seahub.project.utils import check_project_admin_permission, add_init_crawl_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table
-from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
+from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL, \
+    ALL_NEED_COLUMN_NAMES
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
@@ -426,16 +427,16 @@ class ProjectConnectionDetailsView(APIView):
                     del basic_filter['column_key']
             view['basic_filters'] = basic_filters
             table_name = GithubIssuesTable.gen_table_name(connection_id)
-            all_need_column_names = ['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at']
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.GITHUB_ISSUE.value]
         elif project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            all_need_column_names = ['_pk', 'title', 'views', 'bumped_at', 'created_at']
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.DISCOURSE_FORUM.value]
         elif project_connection.type == ConnectionType.SITE.value:
             table_name = WebCrawlTable.gen_table_name(connection_id)
-            all_need_column_names = ['_pk', 'url', 'title', 'last_modified']
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SITE.value]
         elif project_connection.type == ConnectionType.SEAFILE.value:
             table_name = SeafileTable.gen_table_name(connection_id)
-            all_need_column_names = ['path', 'filename', 'mtime', 'updated_at']
+            all_need_column_names = ALL_NEED_COLUMN_NAMES[ConnectionType.SEAFILE.value]
 
         records, columns = list_connection_view_records(
             seadb_api, project_uuid, table_name, view, start, limit, username, project_connection.type, all_need_column_names
