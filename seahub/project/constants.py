@@ -273,7 +273,7 @@ class FilterTermModifier(object):
 
 ALL_NEED_COLUMN_NAMES = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at'],
-    ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'bumped_at', 'created_at'],
+    ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
     ConnectionType.SEAFILE.value: ['path', 'filename', 'mtime', 'updated_at'],
 }
