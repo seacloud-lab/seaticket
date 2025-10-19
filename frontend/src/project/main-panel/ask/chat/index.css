@@ -37,22 +37,6 @@
    padding: 16px calc(100% / 7);
 }
 
-.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat {
-  width: 100% !important;
-}
-
-.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat.user-input-chat {
-  margin-left: 0 !important;
-}
-
-.sea-qa-ai-ask-wrapper .sea-qa-ai-ask-chat:not(.user-input-chat) .sea-qa-ai-ask-chat-message-content {
-  max-width: 300px;
-}
-
-.sea-qa-ai-ask-wrapper.large .sea-qa-ai-ask-chat:not(.user-input-chat) .sea-qa-ai-ask-chat-message-content {
-  max-width: 400px;
-}
-
 .sea-qa-ai-ask-chat {
   display: flex;
   flex-direction: column;
