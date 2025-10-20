@@ -1,572 +1,15 @@
+import re
 import logging
-from datetime import datetime, timezone, timedelta
-import pytz
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from django.db.models import Q
 
 from seahub.project.constants import FilterPredicateTypes, FilterTermModifier
-from seahub.seadb_models.models import PropertyTypes
+from seahub.seadb_models.models import PropertyTypes, FormulaResultType, DurationFormatsType
 
 
 logger = logging.getLogger(__name__)
-
-
-class ColumnFilterInvalidError(Exception):
-    def __init__(self, column_name, column_type, filter_predicate, support_filter_predicates, msg):
-        self.column_name = column_name
-        self.column_type = column_type
-        self.filter_predicate = filter_predicate
-        self.support_filter_predicates = support_filter_predicates
-        self.msg = msg
-
-
-class Operator(object):
-
-    def __init__(self, column, filter_item):
-        self.column = column
-        self.filter_item = filter_item
-
-        self.column_name = ''
-        self.filter_term = ''
-
-        self.filter_predicate = ''
-        self.filter_term_modifier = ''
-        self.column_type = ''
-        self.column_data = {}
-
-        self.init()
-
-    def init(self):
-        self.column_name = self.column.get('name', '')
-        self.column_type = self.column.get('type', '')
-        self.column_data = self.column.get('data', {})
-        self.filter_predicate = self.filter_item.get('filter_predicate', '')
-        self.filter_term = self.filter_item.get('filter_term', '')
-        self.filter_term_modifier = self.filter_item.get('filter_term_modifier', '')
-        self.case_sensitive = self.filter_item.get('case_sensitive') or False
-
-    def op_is(self):
-        if not self.filter_term:
-            return ""
-        return "`%s` %s '%s'" % (
-            self.column_name,
-            '=',
-            self.filter_term
-        )
-
-    def op_is_not(self):
-        if not self.filter_term:
-            return ""
-        return "`%s` %s '%s'" % (
-            self.column_name,
-            '<>',
-            self.filter_term
-        )
-
-    def op_contains(self):
-        if not self.filter_term:
-            return ""
-        return "`%s` %s '%%%s%%'" % (
-            self.column_name,
-            'like' if self.case_sensitive is True else 'ilike',
-            self.filter_term.replace('\\', '\\\\'), # special characters require translation
-        )
-
-    def op_does_not_contain(self):
-        if not self.filter_term:
-            return ''
-        return "`%s` %s '%%%s%%'" % (
-            self.column_name,
-            'not like' if self.case_sensitive is True else 'not ilike',
-            self.filter_term.replace('\\', '\\\\') # special characters require translation
-        )
-
-    def op_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` = %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_not_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` <> %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_less(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` < %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_less_or_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` <= %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_greater(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` > %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_greater_or_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` >= %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_is_empty(self):
-        return "`%(column_name)s` is null" % ({
-            'column_name': self.column_name
-        })
-
-    def op_is_not_empty(self):
-        return "`%(column_name)s` is not null" % ({
-            'column_name': self.column_name
-        })
-
-    def op_is_current_user_id(self):
-        if not self.filter_term:
-            return "(`%s`IS NULL AND `%s` IS NOT NULL)" % (
-                self.column_name,
-                self.column_name
-            )
-        return "`%s` %s '%s'" % (
-            self.column_name,
-            '=',
-            self.filter_term
-        )
-
-
-class DateOperator(Operator):
-    SUPPORT_FILTER_PREDICATE = [
-        FilterPredicateTypes.IS,
-        FilterPredicateTypes.IS_NOT,
-        FilterPredicateTypes.IS_AFTER,
-        FilterPredicateTypes.IS_BEFORE,
-        FilterPredicateTypes.IS_ON_OR_BEFORE,
-        FilterPredicateTypes.IS_ON_OR_AFTER,
-        FilterPredicateTypes.EMPTY,
-        FilterPredicateTypes.NOT_EMPTY,
-        FilterPredicateTypes.IS_WITHIN,
-    ]
-
-    def __init__(self, column, filter_item):
-        super(DateOperator, self).__init__(column, filter_item)
-
-    def _get_end_day_of_month(self, year, month):
-        days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
-            days[1] = 29
-
-        return days[month - 1]
-
-    def _format_date(self, dt):
-        if dt:
-            return dt.strftime("%Y-%m-%d")
-
-    def _format_to_utc_date(self, dt):
-        if dt:
-            end_date = dt.astimezone(pytz.UTC)
-
-            return end_date.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
-
-    def get_date(self, filter_term_modifier, filter_term=None):
-        today = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0)
-        year = today.year
-
-        if filter_term_modifier == FilterTermModifier.TODAY:
-            return today, None
-
-        if filter_term_modifier == FilterTermModifier.TOMORROW:
-            tomorrow = today + timedelta(days=1)
-            return tomorrow, None
-
-        if filter_term_modifier == FilterTermModifier.YESTERDAY:
-            yesterday = today - timedelta(days=1)
-            return yesterday, None
-
-        if filter_term_modifier == FilterTermModifier.ONE_WEEK_AGO:
-            one_week_ago = today - timedelta(days=7)
-            return one_week_ago, None
-
-        if filter_term_modifier == FilterTermModifier.ONE_WEEK_FROM_NOW:
-            one_week_from_now = today + timedelta(days=7)
-            return one_week_from_now, None
-
-        if filter_term_modifier == FilterTermModifier.ONE_MONTH_AGO:
-            one_month_ago = today - relativedelta(months=1)
-            return one_month_ago, None
-
-        if filter_term_modifier == FilterTermModifier.ONE_MONTH_FROM_NOW:
-            one_month_from_now = today + relativedelta(months=1)
-            return one_month_from_now, None
-
-        if filter_term_modifier == FilterTermModifier.NUMBER_OF_DAYS_AGO:
-            try:
-                filter_term = int(filter_term)
-            except:
-                logger.debug(
-                    "filter_term is invalid, please assign an integer value of days to filter_term")
-                return None, None
-            try:
-                days_ago = today - timedelta(days=filter_term)
-            except Exception as e:
-                logger.error(e)
-                return None, None
-            return days_ago, None
-
-        if filter_term_modifier == FilterTermModifier.NUMBER_OF_DAYS_FROM_NOW:
-            try:
-                filter_term = int(filter_term)
-            except:
-                logger.debug(
-                    "filter_term is invalid, please assign an integer value of days to filter_term")
-                return None, None
-            try:
-                days_after = today + timedelta(days=filter_term)
-            except Exception as e:
-                logger.error(e)
-                return None, None
-            return days_after, None
-
-        if filter_term_modifier == FilterTermModifier.EXACT_DATE:
-            try:
-                return datetime.strptime(filter_term, "%Y-%m-%d"), None
-            except Exception as e:
-                logger.error(e)
-                return None, None
-
-        if filter_term_modifier == FilterTermModifier.THE_PAST_WEEK:
-            week_day = today.isoweekday()  # 1-7
-            start_date = today - timedelta(days=(week_day + 6))
-            end_date = today - timedelta(days=week_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THIS_WEEK:
-            week_day = today.isoweekday()
-            start_date = today - timedelta(days=week_day - 1)
-            end_date = today + timedelta(days=7 - week_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_NEXT_WEEK:
-            week_day = today.isoweekday()
-            start_date = today + timedelta(days=8 - week_day)
-            end_date = today + timedelta(days=14 - week_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_PAST_MONTH:
-            one_month_ago = today - relativedelta(months=1)
-            one_month_ago_year = one_month_ago.year
-            one_month_ago_month = one_month_ago.month
-            one_month_age_end_day = self._get_end_day_of_month(
-                one_month_ago_year, one_month_ago_month)
-            start_date = datetime(one_month_ago_year, one_month_ago_month, 1)
-            end_date = datetime(one_month_ago_year,
-                                one_month_ago_month, one_month_age_end_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THIS_MONTH:
-            current_month = today.month
-            current_year = today.year
-            current_month_end_day = self._get_end_day_of_month(
-                current_year, current_month)
-            start_date = datetime(current_year, current_month, 1)
-            end_date = datetime(current_year, current_month,
-                                current_month_end_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_NEXT_MONTH:
-            next_month = today + relativedelta(months=1)
-            next_month_year = next_month.year
-            next_month_month = next_month.month
-            next_month_end_day = self._get_end_day_of_month(
-                next_month_year, next_month_month)
-            start_date = datetime(next_month_year, next_month_month, 1)
-            end_date = datetime(
-                next_month_year, next_month_month, next_month_end_day)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_PAST_YEAR:
-            last_year = year - 1
-            start_date = datetime(last_year, 1, 1)
-            end_date = datetime(last_year, 12, 31)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THIS_YEAR:
-            start_date = datetime(year, 1, 1)
-            end_date = datetime(year, 12, 31)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_NEXT_YEAR:
-            next_year = year + 1
-            start_date = datetime(next_year, 1, 1)
-            end_date = datetime(next_year, 12, 31)
-            return start_date, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_NEXT_NUMBERS_OF_DAYS:
-            try:
-                filter_term = int(filter_term)
-            except:
-                logger.debug(
-                    "filter_term is invalid, please assign an integer value of days to filter_term")
-                return None, None
-            try:
-                end_date = today + timedelta(days=filter_term)
-            except Exception as e:
-                logger.error(e)
-                return None, None
-            return today, end_date
-
-        if filter_term_modifier == FilterTermModifier.THE_PAST_NUMBERS_OF_DAYS:
-            try:
-                filter_term = int(filter_term)
-            except:
-                logger.debug(
-                    "filter_term is invalid, please assign an integer value of days to filter_term")
-                return None, None
-            try:
-                start_date = today - timedelta(days=filter_term)
-            except Exception as e:
-                logger.error(e)
-                return None, None
-            return start_date, today
-
-        return None, None
-
-    def is_need_filter_term(self):
-        if self.filter_term_modifier in [
-            FilterTermModifier.NUMBER_OF_DAYS_AGO,
-            FilterTermModifier.NUMBER_OF_DAYS_FROM_NOW,
-            FilterTermModifier.THE_NEXT_NUMBERS_OF_DAYS,
-            FilterTermModifier.THE_PAST_NUMBERS_OF_DAYS,
-            FilterTermModifier.EXACT_DATE
-        ]:
-            return True
-        return False
-
-    def op_is(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not date:
-            return ""
-        next_date = self._format_date(date + timedelta(days=1))
-        target_date = self._format_date(date)
-        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` < '%(next_date)s'" % ({
-            "column_name": self.column_name,
-            "target_date": target_date,
-            "next_date": next_date
-        })
-
-    def op_is_within(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        start_date, end_date = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not (start_date, end_date ):
-            return ""
-        return "`%(column_name)s` >= '%(start_date)s' and `%(column_name)s` <= '%(end_date)s'" % ({
-            "column_name": self.column_name,
-            "start_date": self._format_date(start_date),
-            "end_date": self._format_date(end_date)
-        })
-
-    def op_is_before(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not target_date:
-            return ""
-        return "`%(column_name)s` < '%(target_date)s' and `%(column_name)s` is not null" % ({
-            "column_name": self.column_name,
-            "target_date": self._format_date(target_date)
-        })
-
-    def op_is_after(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not target_date:
-            return ""
-        next_date = self._format_date(target_date + timedelta(days=1))
-        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
-            "column_name": self.column_name,
-            "target_date": next_date,
-        })
-
-    def op_is_on_or_before(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not target_date:
-            return ""
-        return "`%(column_name)s` <= '%(target_date)s' and `%(column_name)s` is not null" % ({
-            "column_name": self.column_name,
-            "target_date": self._format_date(target_date)
-        })
-
-    def op_is_on_or_after(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not target_date:
-            return ""
-        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
-            "column_name": self.column_name,
-            "target_date": self._format_date(target_date)
-        })
-
-    def op_is_not(self):
-        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
-            return ''
-        target_date, _ = self.get_date(self.filter_term_modifier, self.filter_term)
-        if not target_date:
-            return ""
-        start_date = target_date - timedelta(days=1)
-        end_date = target_date + timedelta(days=1)
-        return "(`%(column_name)s` >= '%(end_date)s' or `%(column_name)s` <= '%(start_date)s' or `%(column_name)s` is null)" % (
-        {
-            "column_name": self.column_name,
-            "start_date": self._format_date(start_date),
-            "end_date": self._format_date(end_date)
-        })
-
-
-
-class TextOperator(Operator):
-    SUPPORT_FILTER_PREDICATE = [
-        FilterPredicateTypes.CONTAINS,
-        FilterPredicateTypes.NOT_CONTAIN,
-        FilterPredicateTypes.IS,
-        FilterPredicateTypes.IS_NOT,
-        FilterPredicateTypes.EMPTY,
-        FilterPredicateTypes.NOT_EMPTY,
-        FilterPredicateTypes.IS_CURRENT_USER_ID,
-    ]
-
-    def __init__(self, column, filter_item):
-        super(TextOperator, self).__init__(column, filter_item)
-
-
-class NumberOperator(Operator):
-    SUPPORT_FILTER_PREDICATE = [
-        FilterPredicateTypes.EQUAL,
-        FilterPredicateTypes.NOT_EQUAL,
-        FilterPredicateTypes.LESS,
-        FilterPredicateTypes.GREATER,
-        FilterPredicateTypes.LESS_OR_EQUAL,
-        FilterPredicateTypes.GREATER_OR_EQUAL,
-        FilterPredicateTypes.EMPTY,
-        FilterPredicateTypes.NOT_EMPTY,
-    ]
-
-    def __init__(self, column, filter_item):
-        super(NumberOperator, self).__init__(column, filter_item)
-
-    def op_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` = %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_not_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` <> %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_less(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` < %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_less_or_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` <= %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_greater(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` > %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_greater_or_equal(self):
-        if not self.filter_term and self.filter_term != 0:
-            return ''
-        return "`%(column_name)s` >= %(value)s" % ({
-            'column_name': self.column_name,
-            'value': self.filter_term
-        })
-
-    def op_is_empty(self):
-        return "`%(column_name)s` is null" % ({
-            'column_name': self.column_name
-        })
-
-    def op_is_not_empty(self):
-        return "`%(column_name)s` is not null" % ({
-            'column_name': self.column_name
-        })
-
-
-class SelectOperator(Operator):
-    SUPPORT_FILTER_PREDICATE = [
-        FilterPredicateTypes.IS,
-        FilterPredicateTypes.EMPTY,
-        FilterPredicateTypes.NOT_EMPTY,
-        FilterPredicateTypes.IS_ANY_OF,
-    ]
-    def __init__(self, column, filter_item):
-        super(SelectOperator, self).__init__(column, filter_item)
-
-    def _get_option_by_key(self, key):
-        options = self.column.get('data', {}).get('options', [])
-        for op in options:
-            if op.get('id') == key or op.get('name') == key:
-                return op.get('name')
-        return ''
-
-    def op_is_any_of(self):
-        filter_term = self.filter_term
-        if not filter_term:
-            return ''
-        if not isinstance(filter_term, list):
-            filter_term = [filter_term, ]
-        filter_term = [self._get_option_by_key(f) for f in filter_term]
-        option_names = [f'\'{op_name}\'' for op_name in filter_term if op_name]
-        if not option_names:
-            return ""
-        return f'`{self.column_name}` in ({", ".join(option_names)})'
-
 
 class ViewFilter(object):
 
@@ -822,6 +265,873 @@ def filter_tickets_by_view(username, view):
     return q, sorts
 
 
+class SQLGeneratorOptionInvalidError(Exception):
+    pass
+
+
+class DateTimeQueryInvalidError(Exception):
+    def __init__(self, column_name):
+        self.column_name = column_name
+
+
+class ColumnFilterInvalidError(Exception):
+    def __init__(self, column_name, column_type, filter_predicate, support_filter_predicates, msg):
+        self.column_name = column_name
+        self.column_type = column_type
+        self.filter_predicate = filter_predicate
+        self.support_filter_predicates = support_filter_predicates
+        self.msg = msg
+
+
+class Operator(object):
+
+    def __init__(self, column, filter_item):
+        self.column = column
+        self.filter_item = filter_item
+
+        self.column_name = ''
+        self.filter_term = ''
+
+        self.filter_predicate = ''
+        self.filter_term_modifier = ''
+        self.column_type = ''
+        self.column_data = {}
+
+        self.init()
+
+    def init(self):
+        self.column_name = self.column.get('name', '')
+        self.column_type = self.column.get('type', '')
+        self.column_data = self.column.get('data', {})
+        self.filter_predicate = self.filter_item.get('filter_predicate', '')
+        self.filter_term = self.filter_item.get('filter_term', '')
+        self.filter_term_modifier = self.filter_item.get('filter_term_modifier', '')
+        self.case_sensitive = self.filter_item.get('case_sensitive', False)
+
+    def op_is(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            self.filter_term
+        )
+
+    def op_is_not(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '<>',
+            self.filter_term
+        )
+
+    def op_contains(self):
+        if not self.filter_term:
+            return ""
+        return "`%s` %s '%%%s%%'" % (
+            self.column_name,
+            'like' if self.case_sensitive is True else 'ilike',
+            self.filter_term.replace('\\', '\\\\') # special characters require translation
+        )
+
+    def op_does_not_contain(self):
+        if not self.filter_term:
+            return ''
+        return "`%s` %s '%%%s%%'" % (
+            self.column_name,
+            'not like' if self.case_sensitive is True else 'not ilike',
+            self.filter_term.replace('\\', '\\\\') # special characters require translation
+        )
+
+    def op_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` = %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_not_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <> %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` < %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_less_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` <= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` > %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_greater_or_equal(self):
+        if not self.filter_term and self.filter_term != 0:
+            return ''
+        return "`%(column_name)s` >= %(value)s" % ({
+            'column_name': self.column_name,
+            'value': self.filter_term
+        })
+
+    def op_is_empty(self):
+        return "`%(column_name)s` is null" % ({
+            'column_name': self.column_name
+        })
+
+    def op_is_not_empty(self):
+        return "`%(column_name)s` is not null" % ({
+            'column_name': self.column_name
+        })
+
+    def op_is_current_user_id(self):
+        if not self.filter_term:
+            return "(`%s`IS NULL AND `%s` IS NOT NULL)" % (
+                self.column_name,
+                self.column_name
+            )
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            self.filter_term
+        )
+
+
+class TextOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.CONTAINS,
+        FilterPredicateTypes.NOT_CONTAIN,
+        FilterPredicateTypes.IS,
+        FilterPredicateTypes.IS_NOT,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.IS_CURRENT_USER_ID,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(TextOperator, self).__init__(column, filter_item)
+
+
+class NumberOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.EQUAL,
+        FilterPredicateTypes.NOT_EQUAL,
+        FilterPredicateTypes.GREATER,
+        FilterPredicateTypes.GREATER_OR_EQUAL,
+        FilterPredicateTypes.LESS,
+        FilterPredicateTypes.LESS_OR_EQUAL,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(NumberOperator, self).__init__(column, filter_item)
+        if self.column_type == PropertyTypes.DURATION:
+            self.filter_term = self._duration2number()
+
+    def _duration2number(self):
+        filter_term = self.filter_term
+        column_data = self.column.get('data', {})
+        if filter_term == 0 or filter_term == '0':
+            return 0
+        if not filter_term:
+            return ''
+
+        duration_format = column_data.get('duration_format')
+        if duration_format not in [
+            DurationFormatsType.H_MM,
+            DurationFormatsType.H_MM_SS,
+            DurationFormatsType.H_MM_SS_S,
+            DurationFormatsType.H_MM_SS_SS,
+            DurationFormatsType.H_MM_SS_SSS
+        ]:
+            return ''
+        try:
+            return int(filter_term)
+        except:
+            duration_str = filter_term
+
+        is_negtive = duration_str[0] == '-'
+        duration_time = duration_str
+        if is_negtive:
+            duration_time = duration_str[1:]
+
+        duration_time_split_list = re.split('[:：]', duration_time)
+        hours, minutes, seconds = 0, 0, 0
+        if duration_format == DurationFormatsType.H_MM:
+            try:
+                hours = int(duration_time_split_list[0])
+            except:
+                hours = 0
+            try:
+                minutes = int(duration_time_split_list[1])
+            except:
+                minutes = 0
+
+        else:
+            try:
+                hours = int(duration_time_split_list[0])
+            except:
+                hours = 0
+            try:
+                minutes = int(duration_time_split_list[1])
+            except:
+                minutes = 0
+            try:
+                seconds = int(duration_time_split_list[2])
+            except:
+                seconds = 0
+
+        if (not hours) and (not minutes) and (not seconds):
+            return ''
+
+        total_time = 3600 * hours + 60 * minutes + seconds
+        return -total_time if is_negtive else total_time
+
+
+class SingleSelectOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.IS_ANY_OF,
+        FilterPredicateTypes.IS_NONE_OF,
+        FilterPredicateTypes.IS,
+        FilterPredicateTypes.IS_NOT,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(SingleSelectOperator, self).__init__(column, filter_item)
+
+    def _get_option_name_by_key(self, key):
+        options = self.column.get('data', {}).get('options', [])
+        for op in options:
+            if op.get('id') == key or op.get('name') == key:
+                return op.get('name')
+        return ''
+
+    def op_is(self):
+        if not self.filter_term:
+            return ''
+        filter_term = self._get_option_name_by_key(self.filter_term)
+        if not filter_term:
+            return ''
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            filter_term
+        )
+
+    def op_is_not(self):
+        if not self.filter_term:
+            return ''
+        filter_term = self._get_option_name_by_key(self.filter_term)
+        if not filter_term:
+            return ''
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '<>',
+            filter_term
+        )
+
+    def op_is_any_of(self):
+        filter_term = self.filter_term
+        if not filter_term:
+            return ''
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
+        filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        option_names = ["'%s'" % (op_name) for op_name in filter_term]
+        if not option_names:
+            return ""
+        return "`%(column_name)s` in (%(option_names)s)" % ({
+            "column_name": self.column_name,
+            "option_names": ", ".join(option_names)
+        })
+
+    def op_is_none_of(self):
+        filter_term = self.filter_term
+        if not filter_term:
+            return ''
+        if not isinstance(filter_term, list):
+            filter_term = [filter_term, ]
+        filter_term = [self._get_option_name_by_key(f) for f in filter_term]
+        option_names = ["'%s'" % (op_name) for op_name in filter_term]
+        if not option_names:
+            return ""
+        return "`%(column_name)s` not in (%(option_names)s)" % ({
+            "column_name": self.column_name,
+            "option_names": ", ".join(option_names)
+        })
+
+
+class MultipleSelectOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.HAS_ANY_OF,
+        FilterPredicateTypes.HAS_NONE_OF,
+        FilterPredicateTypes.HAS_ALL_OF,
+        FilterPredicateTypes.IS_EXACTLY,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+    ]
+
+    def __init__(self, column, filter_item):
+        super(MultipleSelectOperator, self).__init__(column, filter_item)
+
+    def _get_option_name_by_key(self, key):
+        options = self.column.get('data', {}).get('options', [])
+        if not options:
+            return key
+        for op in options:
+            if op.get('id') == key or op.get('name') == key:
+                return op.get('name')
+        raise SQLGeneratorOptionInvalidError('option is invalid')
+
+    def op_has_any_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        option_names = ["'%s'" % op_name for op_name in filter_term]
+        option_names_str = ', '.join(option_names)
+        return "`%(column_name)s` in (%(option_names_str)s)" % ({
+            "column_name": self.column_name,
+            "option_names_str": option_names_str
+        })
+
+    def op_has_none_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        option_names = ["'%s'" % op_name for op_name in filter_term]
+        option_names_str = ', '.join(option_names)
+        return "`%(column_name)s` has none of (%(option_names_str)s)" % ({
+            "column_name": self.column_name,
+            "option_names_str": option_names_str
+        })
+
+    def op_has_all_of(self):
+        if not self.filter_term:
+            return ""
+        filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        option_names = ["'%s'" % op_name for op_name in filter_term]
+        option_names_str = ', '.join(option_names)
+        return "`%(column_name)s` has all of (%(option_names_str)s)" % ({
+            "column_name": self.column_name,
+            "option_names_str": option_names_str
+        })
+
+    def op_is_exactly(self):
+        if not self.filter_term:
+            return ""
+        filter_term = [self._get_option_name_by_key(f) for f in self.filter_term]
+        option_names = ["'%s'" % op_name for op_name in filter_term]
+        option_names_str = ', '.join(option_names)
+        return "`%(column_name)s` is exactly (%(option_names_str)s)" % ({
+            "column_name": self.column_name,
+            "option_names_str": option_names_str
+        })
+
+
+class DateOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.IS,
+        FilterPredicateTypes.IS_NOT,
+        FilterPredicateTypes.IS_AFTER,
+        FilterPredicateTypes.IS_BEFORE,
+        FilterPredicateTypes.IS_ON_OR_BEFORE,
+        FilterPredicateTypes.IS_ON_OR_AFTER,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.IS_WITHIN,
+    ]
+
+
+    def __init__(self, column, filter_item):
+        super(DateOperator, self).__init__(column, filter_item)
+
+    def _get_end_day_of_month(self, year, month):
+        days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0):
+            days[1] = 29
+
+        return days[month - 1]
+
+    def _format_date(self, dt):
+        if dt:
+            return dt.strftime("%Y-%m-%d")
+
+    def _other_date(self):
+        filter_term_modifier = self.filter_term_modifier
+        filter_term = self.filter_term
+        today = datetime.today()
+        year = today.year
+
+        if filter_term_modifier == FilterTermModifier.TODAY:
+            return today, None
+
+        if filter_term_modifier == FilterTermModifier.TOMORROW:
+            tomorrow = today + timedelta(days=1)
+            return tomorrow, None
+
+        if filter_term_modifier == FilterTermModifier.YESTERDAY:
+            yesterday = today - timedelta(days=1)
+            return yesterday, None
+
+        if filter_term_modifier == FilterTermModifier.ONE_WEEK_AGO:
+            one_week_ago = today - timedelta(days=7)
+            return one_week_ago, None
+
+        if filter_term_modifier == FilterTermModifier.ONE_WEEK_FROM_NOW:
+            one_week_from_now = today + timedelta(days=7)
+            return one_week_from_now, None
+
+        if filter_term_modifier == FilterTermModifier.ONE_MONTH_AGO:
+            one_month_ago = today - relativedelta(months=1)
+            return one_month_ago, None
+
+        if filter_term_modifier == FilterTermModifier.ONE_MONTH_FROM_NOW:
+            one_month_from_now = today + relativedelta(months=1)
+            return one_month_from_now, None
+
+        if filter_term_modifier == FilterTermModifier.NUMBER_OF_DAYS_AGO:
+            try:
+                filter_term = int(filter_term)
+            except:
+                logger.debug("filter_term is invalid, please assign an integer value of days to filter_term")
+                return None, None
+            try:
+                days_ago = today - timedelta(days=filter_term)
+            except OverflowError:
+                raise DateTimeQueryInvalidError(self.column_name)
+            return days_ago, None
+
+        if filter_term_modifier == FilterTermModifier.NUMBER_OF_DAYS_FROM_NOW:
+            try:
+                filter_term = int(filter_term)
+            except:
+                logger.debug("filter_term is invalid, please assign an integer value of days to filter_term")
+                return None, None
+            try:
+                days_after = today + timedelta(days=filter_term)
+            except OverflowError:
+                raise DateTimeQueryInvalidError(self.column_name)
+            return days_after, None
+
+        if filter_term_modifier == FilterTermModifier.EXACT_DATE:
+            try:
+                return datetime.strptime(filter_term, "%Y-%m-%d").date(), None
+            except ValueError:
+                raise DateTimeQueryInvalidError(self.column_name)
+            except:
+                logger.debug("filter_term is invalid, please assign an date value to filter_term, such as YYYY-MM-DD")
+                return None, None
+
+        if filter_term_modifier == FilterTermModifier.THE_PAST_WEEK:
+            week_day = today.isoweekday()  # 1-7
+            start_date = today - timedelta(days=(week_day + 6))
+            end_date = today - timedelta(days=week_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THIS_WEEK:
+            week_day = today.isoweekday()
+            start_date = today - timedelta(days=week_day - 1)
+            end_date = today + timedelta(days=7 - week_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_NEXT_WEEK:
+            week_day = today.isoweekday()
+            start_date = today + timedelta(days=8 - week_day)
+            end_date = today + timedelta(days=14 - week_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_PAST_MONTH:
+            one_month_ago = today - relativedelta(months=1)
+            one_month_ago_year = one_month_ago.year
+            one_month_ago_month = one_month_ago.month
+            one_month_age_end_day = self._get_end_day_of_month(one_month_ago_year, one_month_ago_month)
+            start_date = datetime(one_month_ago_year, one_month_ago_month, 1)
+            end_date = datetime(one_month_ago_year, one_month_ago_month, one_month_age_end_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THIS_MONTH:
+            current_month = today.month
+            current_year = today.year
+            current_month_end_day = self._get_end_day_of_month(current_year, current_month)
+            start_date = datetime(current_year, current_month, 1)
+            end_date = datetime(current_year, current_month, current_month_end_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_NEXT_MONTH:
+            next_month = today + relativedelta(months=1)
+            next_month_year = next_month.year
+            next_month_month = next_month.month
+            next_month_end_day = self._get_end_day_of_month(next_month_year, next_month_month)
+            start_date = datetime(next_month_year, next_month_month, 1)
+            end_date = datetime(next_month_year, next_month_month, next_month_end_day)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_PAST_YEAR:
+            last_year = year - 1
+            start_date = datetime(last_year, 1, 1)
+            end_date = datetime(last_year, 12, 31)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THIS_YEAR:
+            start_date = datetime(year, 1, 1)
+            end_date = datetime(year, 12, 31)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_NEXT_YEAR:
+            next_year = year + 1
+            start_date = datetime(next_year, 1, 1)
+            end_date = datetime(next_year, 12, 31)
+            return start_date, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_NEXT_NUMBERS_OF_DAYS:
+            try:
+                filter_term = int(filter_term)
+            except:
+                logger.debug("filter_term is invalid, please assign an integer value of days to filter_term")
+                return None, None
+            try:
+                end_date = today + timedelta(days=filter_term)
+            except OverflowError:
+                raise DateTimeQueryInvalidError(self.column_name)
+            return today, end_date
+
+        if filter_term_modifier == FilterTermModifier.THE_PAST_NUMBERS_OF_DAYS:
+            try:
+                filter_term = int(filter_term)
+            except:
+                logger.debug("filter_term is invalid, please assign an integer value of days to filter_term")
+                return None, None
+            try:
+                start_date = today - timedelta(days=filter_term)
+            except OverflowError:
+                raise DateTimeQueryInvalidError(self.column_name)
+            return start_date, today
+
+        return None, None
+
+    def is_need_filter_term(self):
+        filter_term_modifier = self.filter_term_modifier
+        if filter_term_modifier in [
+            FilterTermModifier.NUMBER_OF_DAYS_AGO,
+            FilterTermModifier.NUMBER_OF_DAYS_FROM_NOW,
+            FilterTermModifier.THE_NEXT_NUMBERS_OF_DAYS,
+            FilterTermModifier.THE_PAST_NUMBERS_OF_DAYS,
+            FilterTermModifier.EXACT_DATE
+        ]:
+            return True
+        return False
+
+    def op_is(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        date, _ = self._other_date()
+        if not date:
+            return ""
+        next_date = self._format_date(date + timedelta(days=1))
+        target_date = self._format_date(date)
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` < '%(next_date)s'" % ({
+            "column_name": self.column_name,
+            "target_date": target_date,
+            "next_date": next_date
+        })
+
+    def op_is_within(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        start_date, end_date = self._other_date()
+        if not (start_date, end_date ):
+            return ""
+        return "`%(column_name)s` >= '%(start_date)s' and `%(column_name)s` <= '%(end_date)s'" % ({
+            "column_name": self.column_name,
+            "start_date": self._format_date(start_date),
+            "end_date": self._format_date(end_date)
+        })
+
+    def op_is_before(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self._other_date()
+        if not target_date:
+            return ""
+        return "`%(column_name)s` < '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_after(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self._other_date()
+        if not target_date:
+            return ""
+        next_date = self._format_date(target_date + timedelta(days=1))
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": next_date,
+        })
+
+    def op_is_on_or_before(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self._other_date()
+        if not target_date:
+            return ""
+        return "`%(column_name)s` <= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_on_or_after(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self._other_date()
+        if not target_date:
+            return ""
+        return "`%(column_name)s` >= '%(target_date)s' and `%(column_name)s` is not null" % ({
+            "column_name": self.column_name,
+            "target_date": self._format_date(target_date)
+        })
+
+    def op_is_not(self):
+        if self.is_need_filter_term() and not self.filter_term and self.filter_term != 0:
+            return ''
+        target_date, _ = self._other_date()
+        if not target_date:
+            return ""
+        start_date = target_date - timedelta(days=1)
+        end_date = target_date + timedelta(days=1)
+        return "(`%(column_name)s` >= '%(end_date)s' or `%(column_name)s` <= '%(start_date)s' or `%(column_name)s` is null)" % (
+        {
+            "column_name": self.column_name,
+            "start_date": self._format_date(start_date),
+            "end_date": self._format_date(end_date)
+        })
+
+
+class CheckBoxOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.IS,
+    ]
+
+    def op_is(self):
+        if not self.filter_term:
+            return "(`%(column_name)s` = %(value)s or `%(column_name)s` is null)" % ({
+                "column_name": self.column_name,
+                "value": self.filter_term
+            })
+
+        return "`%(column_name)s` = %(value)s" % ({
+            "column_name": self.column_name,
+            "value": self.filter_term
+        })
+
+
+class CollaboratorOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.HAS_ALL_OF,
+        FilterPredicateTypes.IS_EXACTLY,
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+        FilterPredicateTypes.HAS_ANY_OF,
+        FilterPredicateTypes.HAS_NONE_OF,
+        FilterPredicateTypes.INCLUDE_ME,
+    ]
+
+    def op_has_any_of(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ""
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        collaborator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        filter_term_str = ", ".join(collaborator_list)
+        return "`%(column_name)s` in (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_all_of(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ""
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        collaborator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        filter_term_str = ", ".join(collaborator_list)
+        return "`%(column_name)s` has all of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_has_none_of(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ""
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        collaborator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        filter_term_str = ", ".join(collaborator_list)
+        return "`%(column_name)s` has none of (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_is_exactly(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ""
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        collaborator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        filter_term_str = ", ".join(collaborator_list)
+        return "`%(column_name)s` is exactly (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_include_me(self):
+        return self.op_has_any_of()
+
+
+class CreatorOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.CONTAINS,
+        FilterPredicateTypes.NOT_CONTAIN,
+        FilterPredicateTypes.IS,
+        FilterPredicateTypes.IS_NOT,
+        FilterPredicateTypes.INCLUDE_ME,
+    ]
+
+    def op_is(self):
+        term = self.filter_term
+        if not term:
+            return ""
+        if isinstance(self.filter_term, list):
+            term = term[0]
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '=',
+            term,
+        )
+
+    def op_is_not(self):
+        term = self.filter_term
+        if not term:
+            return ""
+        if isinstance(self.filter_term, list):
+            term = term[0]
+        return "`%s` %s '%s'" % (
+            self.column_name,
+            '<>',
+            term
+        )
+
+    def op_contains(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ''
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        creator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        filter_term_str = ", ".join(creator_list)
+        return "`%(column_name)s` in (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": filter_term_str
+        })
+
+    def op_does_not_contain(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ''
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        creator_list = ["'%s'" % collaborator for collaborator in select_collaborators]
+        return "`%(column_name)s` not in (%(filter_term_str)s)" % ({
+            "column_name": self.column_name,
+            "filter_term_str": ', '.join(creator_list)
+        })
+
+    def op_include_me(self):
+        select_collaborators = self.filter_term
+        if not select_collaborators:
+            return ''
+        if not isinstance(select_collaborators, list):
+            select_collaborators = [select_collaborators, ]
+        creator = select_collaborators[0] if select_collaborators else ''
+        return "%s %s '%s'" % (
+            self.column_name,
+            '=',
+            creator
+        )
+
+
+class FileOperator(Operator):
+    SUPPORT_FILTER_PREDICATE = [
+        FilterPredicateTypes.EMPTY,
+        FilterPredicateTypes.NOT_EMPTY,
+    ]
+    def __init__(self, column, filter_item):
+        super(FileOperator, self).__init__(column, filter_item)
+
+
+class ArrayOperator(object):
+
+    def __new__(cls, column, filter_item):
+        column_data = column.get('data', {})
+        column_name = column.get('name', '')
+
+        array_type, array_data = column_data.get('array_type', ''), column_data.get('array_data')
+        linked_column = {
+            'name': column_name,
+            'type': array_type,
+            'data': array_data
+        }
+
+        if array_type == FormulaResultType.STRING:
+            new_column = {
+                'name': column_name,
+                'type': PropertyTypes.TEXT,
+            }
+            return TextOperator(new_column, filter_item)
+
+        if array_type == FormulaResultType.BOOL:
+            new_column = {
+                'name': column_name,
+                'type': PropertyTypes.CHECKBOX,
+            }
+            return CheckBoxOperator(new_column, filter_item)
+
+        if array_type == PropertyTypes.SINGLE_SELECT:
+            return MultipleSelectOperator(linked_column, filter_item)
+
+        if array_type in [PropertyTypes.CREATOR, PropertyTypes.LAST_MODIFIER]:
+            return CollaboratorOperator(linked_column, filter_item)
+
+        operator = _get_operator_by_type(array_type)
+        return operator(linked_column, filter_item)
+
+
 def _filter2sql(operator):
     support_filter_predicates = operator.SUPPORT_FILTER_PREDICATE
     filter_predicate = operator.filter_predicate
@@ -869,6 +1179,12 @@ def _filter2sql(operator):
         return operator.op_less()
     if filter_predicate == FilterPredicateTypes.LESS_OR_EQUAL:
         return operator.op_less_or_equal()
+    if filter_predicate == FilterPredicateTypes.IS_EXACTLY:
+        return operator.op_is_exactly()
+    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
+        return operator.op_is_any_of()
+    if filter_predicate == FilterPredicateTypes.IS_NONE_OF:
+        return operator.op_is_none_of()
     if filter_predicate == FilterPredicateTypes.IS_ON_OR_AFTER:
         return operator.op_is_on_or_after()
     if filter_predicate == FilterPredicateTypes.IS_AFTER:
@@ -879,42 +1195,75 @@ def _filter2sql(operator):
         return operator.op_is_before()
     if filter_predicate == FilterPredicateTypes.IS_WITHIN:
         return operator.op_is_within()
+    if filter_predicate == FilterPredicateTypes.HAS_ALL_OF:
+        return operator.op_has_all_of()
+    if filter_predicate == FilterPredicateTypes.HAS_ANY_OF:
+        return operator.op_has_any_of()
+    if filter_predicate == FilterPredicateTypes.HAS_NONE_OF:
+        return operator.op_has_none_of()
+    if filter_predicate == FilterPredicateTypes.INCLUDE_ME:
+        return operator.op_include_me()
     if filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
         return operator.op_is_current_user_id()
-    if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
-        return operator.op_is_any_of()
     return ''
 
 
-
 def _get_operator_by_type(column_type):
+
     if column_type in [
         PropertyTypes.TEXT,
+        PropertyTypes.URL,
+        PropertyTypes.AUTO_NUMBER,
+        PropertyTypes.EMAIL,
+        PropertyTypes.GEOLOCATION
     ]:
         return TextOperator
 
     if column_type in [
-        PropertyTypes.DATETIME,
-    ]:
-        return DateOperator
-
-    if column_type in [
+        PropertyTypes.DURATION,
+        PropertyTypes.NUMBER,
+        PropertyTypes.RATE,
         PropertyTypes.INT,
         PropertyTypes.FLOAT,
     ]:
         return NumberOperator
 
-    if column_type in [
-        PropertyTypes.SINGLE_SELECT
-    ]:
-        return SelectOperator
+    if column_type == PropertyTypes.CHECKBOX:
+        return CheckBoxOperator
 
     if column_type in [
-        PropertyTypes.MULTIPLE_SELECT
+        PropertyTypes.DATE,
+        PropertyTypes.DATETIME,
     ]:
-        return SelectOperator
+        return DateOperator
+
+    if column_type == PropertyTypes.SINGLE_SELECT:
+        return SingleSelectOperator
+
+    if column_type == PropertyTypes.MULTIPLE_SELECT:
+        return MultipleSelectOperator
+
+    if column_type == PropertyTypes.COLLABORATOR:
+        return CollaboratorOperator
+
+    if column_type in [
+        PropertyTypes.CREATOR,
+        PropertyTypes.LAST_MODIFIER,
+    ]:
+        return CreatorOperator
+
+    if column_type in [
+        PropertyTypes.FILE,
+        PropertyTypes.IMAGE,
+        PropertyTypes.LONG_TEXT,
+    ]:
+        return FileOperator
+
+    if column_type == PropertyTypes.LINK:
+        return ArrayOperator
 
     return None
+
 
 class SQLGenerator(object):
 
@@ -952,12 +1301,7 @@ class SQLGenerator(object):
                 if not column:
                     column = self._get_column_by_name(column_name)
                     if not column:
-                        if column_key in ['_ctime', '_mtime']:
-                            order_condition = '%s %s' % (column_key, sort_type)
-                            clauses.append(order_condition)
-                            continue
-                        else:
-                            continue
+                        continue
 
                 order_condition = '`%s` %s' % (column.get('name'), sort_type)
                 clauses.append(order_condition)
@@ -995,16 +1339,13 @@ class SQLGenerator(object):
 
             if filter_item.get('filter_predicate') == 'include_me':
                 filter_item['filter_term'] = [self.username]
-            if filter_item.get('filter_predicate') == 'is_current_user_ID':
-                pass
 
             column_type = self._get_column_type(column)
             column['type'] = column_type
             operator_cls = _get_operator_by_type(column_type)
             if not operator_cls:
                 raise ValueError('filter: %s not support to sql' % filter_item)
-            else:
-                operator = operator_cls(column, filter_item)
+            operator = operator_cls(column, filter_item)
             sql_condition = _filter2sql(operator)
             if not sql_condition:
                 continue
@@ -1080,4 +1421,11 @@ class SQLGenerator(object):
 def view_data_2_sql(table, columns, view, start, limit):
     """ view to sql """
     sql_generator = SQLGenerator(table, columns, view, start, limit)
-    return sql_generator.to_sql()
+    sql = sql_generator.to_sql()
+    return sql
+
+
+def sort_data_2_sql(table, columns, sorts):
+    """ sorts to sql """
+    sql_generator = SQLGenerator(table, columns, {'sorts': sorts})
+    return sql_generator.sort_2_sql()
