@@ -84,6 +84,10 @@ class SearchInput extends Component {
     );
   };
 
+  getSearchValue = () => {
+    return this.state.searchValue || '';
+  };
+
   render() {
     const { placeholder, autoFocus, className, inputClassName, onKeyDown, disabled, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
     const { searchValue } = this.state;

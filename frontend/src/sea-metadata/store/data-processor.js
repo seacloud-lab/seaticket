@@ -374,26 +374,25 @@ class DataProcessor {
           table.view.rows = table.rows.map(r => r._id);
         } else {
           const regValue = getSearchRule(value);
-          const copyRegValue = regValue.map(item => ({ ...item }));
           const columns = table.view.columns.filter(c => SUPPORT_SEARCH_COLUMNS.includes(c.type));
           let viewRows = [];
 
           for (let i = 0; i < table.rows.length; i++) {
             const row = table.rows[i];
+            const copyRegValue = regValue.map(item => ({ ...item }));
             for (let j = 0; j < columns.length; j++) {
               const column = columns[j];
               const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData, typesData });
-              let flag = false;
               for (let k = 0; k < copyRegValue.length; k++) {
                 const reg = copyRegValue[k].reg;
                 const isMatched = reg.test(cellValue);
                 if (isMatched) {
-                  viewRows.push(row._id);
-                  flag = true;
-                  break;
+                  copyRegValue[k].isMatched = true;
                 }
               }
-              if (flag) break;
+            }
+            if (copyRegValue.every(item => item.isMatched)) {
+              viewRows.push(row._id);
             }
           }
           table.view.rows = viewRows;

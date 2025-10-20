@@ -3,7 +3,7 @@ import { getRowById, getRowsByIds } from '../utils/row';
 import { getColumnByKey, normalizeColumns } from '../utils/column';
 import {
   Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE,
-  UNDO_OPERATION_TYPE,
+  UNDO_OPERATION_TYPE, RE_SEARCH_ROWS_OPERATION,
 } from './operations';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import DataProcessor from './data-processor';
@@ -98,6 +98,7 @@ class Store {
     this.startIndex = this.startIndex + loadedCount;
     DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
   }
 
   async updateRowData(newRowId) {
@@ -128,10 +129,15 @@ class Store {
 
     if (LOCAL_APPLY_OPERATION_TYPE.includes(op_type)) {
       this.localOperator.applyOperation(operation);
-      return;
+    } else {
+      this.addPendingOperations(operation, undoRedoHandler);
     }
 
-    this.addPendingOperations(operation, undoRedoHandler);
+    if (op_type === OPERATION_TYPE.MODIFY_FILTERS) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.CLEAR_SEARCH_ROWS);
+    } else if (RE_SEARCH_ROWS_OPERATION.includes(op_type)) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+    }
   }
 
   addPendingOperations(operation, undoRedoHandler) {
