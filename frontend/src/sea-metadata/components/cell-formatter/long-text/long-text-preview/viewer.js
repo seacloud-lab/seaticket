@@ -4,7 +4,7 @@ import { MarkdownViewer } from '@seafile/seafile-editor';
 import WechatViewer from './wechat-viewer';
 
 // Windows old Wechat (3.0 or earlier) inner core is chrome 53 and don't support ECMA6, can't use seafile-editor markdownViewer
-// Windows new Wechat (lastest version 3.3.5) support seafile-editor markdownViewer
+// Windows new Wechat (latest version 3.3.5) support seafile-editor markdownViewer
 // so use dangerouslySetInnerHTML to preview
 const Viewer = React.memo(({ value, showTOC }) => {
 
