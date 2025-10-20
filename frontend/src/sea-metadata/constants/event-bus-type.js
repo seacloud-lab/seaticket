@@ -62,4 +62,9 @@ export const EVENT_BUS_TYPE = {
   SAVED: 'saved',
   ERROR: 'error',
 
+  // search
+  START_SEARCH_ROWS: 'start_search_rows',
+  CLEAR_SEARCH_ROWS: 'clear_search_rows',
+  RE_SEARCH_ROWS: 're_search_rows',
+
 };

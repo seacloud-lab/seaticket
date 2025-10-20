@@ -7,6 +7,7 @@ import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { getRowById } from '../utils/row';
+import { isModF } from '@/utils/hotkey';
 
 const MetadataContext = React.createContext(null);
 
@@ -196,6 +197,13 @@ export const MetadataProvider = forwardRef(({
     storeRef.current.searchRows(searchValue);
   }, [storeRef]);
 
+  const onKeydown = useCallback((event) => {
+    if (isModF(event) && (!event.target || event.target.className.indexOf('modal') < 0)) {
+      event.preventDefault();
+      context.eventBus && context.eventBus.dispatch(EVENT_BUS_TYPE.START_SEARCH_ROWS);
+    }
+  }, []);
+
   useEffect(() => {
     if (isLoading) return;
     storeRef.current.tagsData = tagsData;
@@ -210,6 +218,13 @@ export const MetadataProvider = forwardRef(({
     if (isLoading) return;
     storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
   }, [isLoading, collaborators, collaboratorsCache]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onKeydown);
+    return () => {
+      document.removeEventListener('keydown', onKeydown);
+    };
+  }, [onKeydown]);
 
   // init
   useEffect(() => {
