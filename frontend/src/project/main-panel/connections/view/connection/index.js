@@ -102,7 +102,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     });
   }, [projectUuid]);
 
-
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
     // open dialog first with loading state
@@ -186,7 +185,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
         { type: CellType.SINGLE_SELECT, key: 'state', name: gettext('State'), data: { options: GITHUB_STATE_OPTIONS }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
-        { type: CellType.SINGLE_SELECT, key: 'type', name: gettext('Type'), data: { options: [] }, editable: false },
+        { type: CellType.SINGLE_SELECT, key: 'issue_type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
@@ -205,6 +204,17 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
     return [];
   }, [connection, handleClickSiteTitle]);
+
+  const settings = useMemo(() => {
+    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return {
+        statusColumnKey: 'state',
+        typeColumnKey: 'issue_type',
+        tagsColumnKey: 'labels',
+      };
+    }
+    return {};
+  }, [connection]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -239,7 +249,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
             columns[labelsColumIndex].data = { ...dbLabelsColum.data, options };
           }
           const dbTypeColumn = dbColumns.find(c => c.name === 'issue_type');
-          const typeColumIndex = columns.findIndex(c => c.key === 'type');
+          const typeColumIndex = columns.findIndex(c => c.key === 'issue_type');
           if (dbTypeColumn && typeColumIndex > -1) {
             const options = dbTypeColumn?.data?.options || [];
             columns[typeColumIndex].data = { ...dbTypeColumn.data, options };
@@ -496,6 +506,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         typesData={typesData}
         toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
+        settings={settings}
         t={t}
       />
       {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}

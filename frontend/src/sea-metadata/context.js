@@ -8,7 +8,11 @@ class Context {
 
   constructor() {
     this.username = '';
-    this.settings = {};
+    this.settings = {
+      statusColumnKey: 'status',
+      typeColumnKey: 'type',
+      tagsColumnKey: 'tags',
+    };
     this.api = null;
     this.localStorage = null;
     this.permission = 'r';
@@ -28,7 +32,10 @@ class Context {
     t,
   }) => {
     this.username = username;
-    this.settings = settings;
+    this.settings = {
+      ...this.settings,
+      ...settings,
+    };
     this.api = api;
     this.permission = permission;
     this.isViewComputedOnServer = isViewComputedOnServer;
@@ -62,9 +69,9 @@ class Context {
     this.translate = (key) => key;
   };
 
-  getSetting = (key) => {
+  getSetting = (key, defaultValue = '') => {
     if (this.settings[key] === false) return this.settings[key];
-    return this.settings[key] || '';
+    return this.settings[key] || defaultValue;
   };
 
   setSetting = (key, value) => {

@@ -552,8 +552,8 @@ class ConnectionsView(object):
         if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
             self.details.update({
                     'basic_filters': [
-                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': []},
-                        {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                     ],
                     'sorts': [],
                 })
@@ -590,9 +590,18 @@ class ConnectionsViewsManager(models.Manager):
     def get_view(self, project_uuid, connection_id, view_id, connection_type):
         record = self.get_record(project_uuid, connection_id, connection_type)
         view_details = json.loads(record.details)
-        for v in view_details['views']:
-            if v.get('_id') == view_id:
-                return v
+        for view in view_details['views']:
+            if view.get('_id') == view_id:
+                if connection_type == ConnectionType.GITHUB_ISSUE.value:
+                    basic_filters = view.get('basic_filters', [])
+                    for basic_filter in basic_filters:
+                        column_key = basic_filter.get('column_key', '')
+                        if column_key == 'type' or column_key == 'issue_type':
+                            basic_filter['column_key'] = 'issue_type'
+                        elif column_key == 'status' or column_key == 'state':
+                            basic_filter['column_key'] = 'state'
+                    view['basic_filters'] = basic_filters
+                return view
         return None
 
     def add_view(self, project_uuid, connection_id, view_name, connection_type, view_type='table', view_data={}):

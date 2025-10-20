@@ -129,8 +129,8 @@ CONNECTION_DEFAULT_DETAILS = {
                 'name': _('Open'),
                 'type': 'table',
                 'basic_filters': [
-                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
-                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
@@ -143,8 +143,8 @@ CONNECTION_DEFAULT_DETAILS = {
                 'name': _('Closed'),
                 'type': 'table',
                 'basic_filters': [
-                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
-                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                    {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
@@ -271,7 +271,7 @@ class FilterTermModifier(object):
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
 
-ALL_NEED_COLUMN_NAMES = {
+CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'closed_at', 'created_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
