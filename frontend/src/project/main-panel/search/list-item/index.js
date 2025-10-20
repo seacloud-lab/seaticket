@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import dayjs from 'dayjs';
+import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../connections/constants';
 import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
@@ -15,7 +16,10 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
   }, [url]);
 
   const renderDetail = () => {
-    return content.replace(new RegExp(searchValue, 'ig'), (match) => `<span class="font-weight-bold">${match}</span>`);
+    const isMarkdown = true;
+    const previewTextNeedSlice = false;
+    const { previewText } = getPreviewContent(content, isMarkdown, previewTextNeedSlice);
+    return previewText.replace(new RegExp(searchValue, 'ig'), (match) => `<span class="font-weight-bold">${match}</span>`);
   };
 
   return (
