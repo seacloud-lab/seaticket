@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
 import { RowHeightPopover } from '../popover';
+import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
 
 const RowHeightSetter = ({ readOnly, wrapperClass, rowHeight, target, modifyRowHeight }) => {
@@ -31,6 +32,8 @@ const RowHeightSetter = ({ readOnly, wrapperClass, rowHeight, target, modifyRowH
         onKeyDown={onKeyDown}
         tabIndex={0}
         id={target}
+        title={gettext('Set row height')}
+        aria-label={gettext('Set row height')}
       />
       {isShowSetter && (
         <RowHeightPopover

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import CustomizePopover from '@/components/customize-popover';
 import { Icon } from '@/components';
@@ -8,6 +8,12 @@ import { ROW_HEIGHT_TYPE } from '../../../constants/grid-body';
 import './index.css';
 
 const RowHeightPopover = ({ hidePopover, onChange, target, rowHeight }) => {
+
+  const onChangeRowHeight = useCallback((height) => {
+    onChange(height);
+    hidePopover();
+  }, [onChange, hidePopover]);
+
   return (
     <CustomizePopover
       target={target}
@@ -20,9 +26,9 @@ const RowHeightPopover = ({ hidePopover, onChange, target, rowHeight }) => {
       ]}
     >
       <div className="sea-metadata-row-height-wrapper">
-        <div className="sea-metadata-row-height-header">{gettext('Set row height')}</div>
+        <div className="sea-metadata-row-height-header">{gettext('Select row height')}</div>
         {Object.values(ROW_HEIGHT_TYPE).map((item, index) => (
-          <div className="sea-metadata-row-height-item" onClick={() => onChange(item)} key={index}>
+          <div className="sea-metadata-row-height-item" onClick={() => onChangeRowHeight(item)} key={index}>
             <span className="sea-metadata-row-height-item-left">
               <Icon className="sea-metadata-icon" symbol={`row-height-${item}`} title={item}/>
               <span className="ml-2">{item}</span>
