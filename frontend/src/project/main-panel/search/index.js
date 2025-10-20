@@ -52,8 +52,8 @@ const Search = ({ title }) => {
       const CancelToken = axios.CancelToken;
       const source = CancelToken.source();
       sourceRef.current = source;
-      const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      searchAPI.search(workspaceID, projectUuid, value, showConnnectionIds, source.token).then(res => {
+      const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
+      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, source.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);
