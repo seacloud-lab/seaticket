@@ -11,6 +11,7 @@ from django.shortcuts import render
 from urllib.parse import quote
 from django.utils.translation import gettext as _
 
+from seahub.auth.decorators import login_required
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.group.utils import is_group_member
 from seahub.utils import send_html_email, is_org_context, \
@@ -110,10 +111,12 @@ def send_group_member_add_mail(request, group, from_user, to_user):
     send_html_email(subject, 'group/add_member_email.html', c, None, [to_user])
 
 
+@login_required
 def group_invite(request, token):
     """
-    user add to group
+    reigsterd user add to group
     """
+    email = request.user.username
     next_url = request.GET.get('next', '/')
     redirect_to = SEAQA_WEB_SERVICE_URL.rstrip('/') + '/' + next_url.lstrip('/')
     group_invite_link = GroupInviteLinkModel.objects.filter(token=token).first()
@@ -125,15 +128,6 @@ def group_invite(request, token):
     except Exception as e:
         logger.error(f'get org id by group failed. {e}')
         return render_error(request, 'Internal Server Error')
-
-    email = request.user.username
-    if not email:  #AnonymousUser
-        if not group_org_id:
-            return redirect_to_login(request)
-        else:
-            request.session['group_id'] = group_invite_link.group_id
-            request.session['org_id'] = group_org_id
-            return HttpResponseRedirect(reverse('org-invite-register'))
 
     if is_group_member(group_invite_link.group_id, email):
         return HttpResponseRedirect(redirect_to)

@@ -190,13 +190,6 @@ CREATE TABLE `group_invite_link` (
   KEY `group_invite_link_group_id_4b619114` (`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `registration_registrationprofile` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `emailuser_id` int(11) NOT NULL,
-  `activation_key` varchar(40) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `id_in_org_tuple` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `virtual_id` varchar(255) NOT NULL,

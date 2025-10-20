@@ -24,13 +24,8 @@ from seahub.registration.forms import SmsRegistrationForm
 from seahub.utils.ip import get_remote_ip
 from seahub.api2.utils import get_api_token
 from seahub.organizations.models import Organization, OrgUser
-from seahub.admin_log.models import USER_ADD, GROUP_MEMBER_ADD
-from seahub.admin_log.signals import org_admin_operation
-from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
-from seahub.group.utils import get_group_members
-from seahub.group.models import Group, GroupUser
 from seahub.settings import USER_STRONG_PASSWORD_REQUIRED, USER_PASSWORD_MIN_LENGTH, \
-    USER_PASSWORD_STRENGTH_LEVEL, GROUP_MEMBER_LIMIT
+    USER_PASSWORD_STRENGTH_LEVEL
 SESSION_KEY_SMS_REGISTRATION_PHONE = 'sms-registration-phone'
 SESSION_KEY_SMS_REGISTRATION_LOCK_TIME = 'sms-registration-lock-time'
 SMS_REGISTRATION_SMS_TYPE = 'sms-registration'
@@ -521,122 +516,5 @@ def sms_register(request, backend, success_url=None, form_class=None,
     context['phone'] = phone
     context['error_msg'] = error_msg
     context['send_button_disabled'] = send_button_disabled
-
-    return render(request, template_name, context)
-
-
-def org_invite_register(request, backend, success_url=None, form_class=None,
-             disallowed_url='registration_disallowed',
-             template_name='registration/registration_form.html',
-             extra_context=None, redirect_field_name=REDIRECT_FIELD_NAME):
-
-    # if not settings.ENABLE_SIGNUP or settings.USE_PHONE_REGISTRATION_BY_DEFAULT:
-    #     raise Http404
-
-    org_id = request.session.get('org_id')
-    group_id = request.session.get('group_id')
-    if not org_id or not group_id:
-        raise Http404
-    org_id = int(org_id)
-    group_id = int(group_id)
-    org = Organization.objects.get_org_by_id(org_id)
-
-    if ORG_MEMBER_QUOTA_ENABLED:
-        org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
-        org_active_members = len([m for m in org_members if m.is_active])
-        from seahub.organizations.models import OrgMemberQuota
-        org_members_quota = OrgMemberQuota.objects.get_quota(request.user.org.org_id)
-        if org_members_quota is not None and org_active_members >= org_members_quota:
-            err_msg = 'Failed. You can only invite %d members.' % org_members_quota
-            return render_error(request, err_msg)
-
-    group_members = get_group_members(group_id)
-    if group_members and len(group_members) >= GROUP_MEMBER_LIMIT:
-        return render_error(request, _('Number of group members exceeds limit.'))
-
-    if settings.ACTIVATE_AFTER_REGISTRATION:
-        success_url = settings.SITE_ROOT
-
-    redirect_to = request.GET.get(redirect_field_name)
-    if redirect_to:
-        success_url = redirect_to
-
-    backend = get_backend(backend)
-    if not backend.registration_allowed(request):
-        return redirect(disallowed_url)
-    if form_class is None:
-        form_class = backend.get_form_class(request)
-
-    if request.method == 'POST':
-        form = form_class(data=request.POST, files=request.FILES)
-        if form.is_valid():
-            new_user = backend.register(request, **form.cleaned_data)
-
-            from seahub.organizations.views import set_org_user
-            set_org_user(org_id, new_user.username)
-            GroupUser.objects.group_add_member(group_id, new_user.username)
-
-            try:
-                org_admin_op_detail = {
-                    "username": new_user.username,
-                }
-                org_admin_operation.send(sender=None, admin_name='',
-                    operation=USER_ADD, detail=org_admin_op_detail, org_id=org_id)
-                org_admin_op_detail = {
-                    "username": new_user.username,
-                }
-                org_admin_operation.send(sender=None,
-                    admin_name='',
-                    operation=GROUP_MEMBER_ADD,
-                    detail=org_admin_op_detail,
-                    org_id=org_id,
-                )
-            except:
-                pass
-            try:
-                del request.session['group_id']
-                del request.session['org_id']
-            except:
-                pass
-
-            if success_url is None:
-                to, args, kwargs = backend.post_registration_redirect(request, new_user)
-                response = redirect(to, *args, **kwargs)
-            else:
-                response = redirect(success_url)
-
-            source = request.COOKIES.get('REGISTRATION_SOURCE', '')
-            invitation_token = request.COOKIES.get('INVITATION_TOKEN', '')
-            try:
-                record_registration_logs(new_user, source, invitation_token)
-            except Exception as e:
-                logger.warning('Failed to record registration log, error: %s' % e)
-
-            response.delete_cookie('REGISTRATION_SOURCE')
-            response.delete_cookie('INVITATION_TOKEN')
-            return response
-    else:
-        userid = request.GET.get('userid', '')
-        form = form_class(initial={'userid': userid})
-
-    if extra_context is None:
-        extra_context = {}
-
-    context = {}
-    for key, value in list(extra_context.items()):
-        context[key] = callable(value) and value() or value
-
-    src = request.GET.get('src', '')
-    if src:
-        form = form_class(initial={'email': src})
-
-    context['form'] = form
-    context['strong_pwd_required'] = USER_STRONG_PASSWORD_REQUIRED
-
-    login_bg_image_path = get_login_bg_image_path()
-    context['login_bg_image_path'] = login_bg_image_path
-    context['enable_weixin'] = weixin_check()
-    context['redirect_to'] = redirect_to or reverse('projects_list')
-    context[redirect_field_name] = redirect_to or reverse('projects_list')
 
     return render(request, template_name, context)

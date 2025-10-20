@@ -11,7 +11,7 @@ from django.views.generic import TemplateView
 from django.conf import settings
 
 from .views import activate
-from .views import register, org_register, sms_register, org_invite_register
+from .views import register, org_register, sms_register
 from .forms import RegistrationForm, SmsRegistrationForm
 from seahub.base.generic import DirectTemplateView
 from seahub.two_factor.views.login import TwoFactorVerifyView
@@ -47,10 +47,6 @@ urlpatterns = [
     re_path(r'^sms-register/$', sms_register,
         {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': SmsRegistrationForm},
         name='sms_register'),
-
-    re_path(r'^org-invite-register/$', org_invite_register,
-        {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': form_class},
-        name='org-invite-register'),
 
     # re_path(r'^org/(?P<org_id>\d+)/register/$', org_register,
     #     {'backend': 'seahub.registration.backend.RegistrationBackend', 'form_class': form_class},

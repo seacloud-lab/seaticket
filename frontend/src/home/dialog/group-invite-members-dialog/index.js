@@ -92,6 +92,9 @@ class GroupInviteMembersDialog extends React.Component {
                   <Icon symbol="delete" />
                 </Button>
               </div>
+              <div className="no-link-tip mb-4">
+                {gettext('Users in your team can join the group via group invitation link. If the user has not registered yet, you should ask your team admin to add the user first.')}
+              </div>
             </>
             :
             <>
