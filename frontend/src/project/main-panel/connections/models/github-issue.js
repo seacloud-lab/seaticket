@@ -15,7 +15,7 @@ class GithubIssue {
     this.created_at = object.created_at || '';
     this.updated_at = object.updated_at || '';
     this.closed_at = object.closed_at || '';
-    this.comments = object.comments || '';
+    this.comments_count = object.comments_count || '';
     this.connection_id = object.connection_id || '';
     this.deleted = Boolean(object.deleted);
   }
