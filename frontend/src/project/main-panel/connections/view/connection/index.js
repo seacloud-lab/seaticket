@@ -187,6 +187,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'issue_type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
+        { type: CellType.TEXT, key: 'comments_count', name: gettext('Total comments'), editable: false},
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
       ];
