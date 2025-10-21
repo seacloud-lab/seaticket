@@ -2575,7 +2575,7 @@ msgstr ""
 
 #: frontend/src/pages/org-admin/org-search-users.js:168
 #: frontend/src/pages/org-admin/org-user-item.js:180
-msgid "ResetPwd"
+msgid "Reset password"
 msgstr ""
 
 #: frontend/src/pages/org-admin/org-search-users.js:225

@@ -282,7 +282,7 @@
     "Replace file {filename}?": "Skipta \u00fat skr\u00e1nni {filename}?",
     "Replacing it will overwrite its content.": "\u00datskipting mun yfirskrifa efni \u00feess.",
     "Reset Password": "Endursetja Lykilor\u00f0",
-    "ResetPwd": "Endursetja Lykilor\u00f0",
+    "Reset password": "Endursetja Lykilor\u00f0",
     "Restore": "Endurheimta",
     "Restore Library": "Endurvekja Safn",
     "Revoke Admin": "Taka kerfisstj\u00f3rar\u00e9ttindi af",

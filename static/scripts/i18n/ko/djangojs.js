@@ -493,7 +493,7 @@
     "Request a review": "\uac80\ud1a0 \uc694\uccad",
     "Reset Password": "\uc554\ud638 \uc7ac\uc124\uc815",
     "Reset library password": "\ub77c\uc774\ube0c\ub7ec\ub9ac \uc554\ud638 \ucd08\uae30\ud654",
-    "ResetPwd": "\uc554\ud638\uc7ac\uc124\uc815",
+    "Reset password": "\uc554\ud638\uc7ac\uc124\uc815",
     "Restore": "\ubcf5\uc6d0",
     "Restore Library": "\ub77c\uc774\ube0c\ub7ec\ub9ac \ubcf5\uad6c",
     "Restored file": "\ud30c\uc77c\uc744 \ubcf5\uc6d0\ud588\uc2b5\ub2c8\ub2e4",

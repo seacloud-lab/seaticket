@@ -392,7 +392,7 @@
     "Replace file {filename}?": "Ers\u00e4tt filen {filename}?",
     "Replacing it will overwrite its content.": "Att byta ut dem kommer skriva \u00f6ver inneh\u00e5llet.",
     "Reset Password": "\u00c5terst\u00e4ll L\u00f6senord",
-    "ResetPwd": "ResetPwd",
+    "Reset password": "Reset password",
     "Restore": "L\u00e4s tillbaka",
     "Restore Library": "\u00c5terst\u00e4ll bibliotek",
     "Restored file": "\u00c5terst\u00e4llt fil",

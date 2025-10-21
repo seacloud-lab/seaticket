@@ -246,7 +246,7 @@
     "Rename File": "Preimenuj datoteko",
     "Renamed or Moved files": "Preimenovane ali premaknjene datoteke",
     "Reset Password": "Ponastavitev gesla",
-    "ResetPwd": "Spremen.Geslo",
+    "Reset password": "Spremen.Geslo",
     "Restore": "Obnovi",
     "Restore Library": "Obnovi knji\u017enico",
     "Revoke Admin": "Odstrani iz admin",

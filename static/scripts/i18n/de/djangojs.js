@@ -538,7 +538,7 @@
     "Reset": "Zur\u00fccksetzen",
     "Reset Password": "Passwort zur\u00fccksetzen",
     "Reset library password": "Passwort der Bibliothek zur\u00fccksetzen",
-    "ResetPwd": "Passwort zur\u00fccksetzen",
+    "Reset password": "Passwort zur\u00fccksetzen",
     "Restore": "Wiederherstellen",
     "Restore Library": "Bibliothek wiederherstellen",
     "Restored file": "Wiederhergestellte Datei",

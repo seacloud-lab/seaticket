@@ -538,7 +538,7 @@
     "Reset": "Restablecer",
     "Reset Password": "Reestablecer contrase\u00f1a",
     "Reset library password": "Reestablecer contrase\u00f1a de la biblioteca",
-    "ResetPwd": "Restaurar contrase\u00f1a",
+    "Reset password": "Restaurar contrase\u00f1a",
     "Restore": "Restaurar",
     "Restore Library": "Restaurar biblioteca",
     "Restored file": "Archivo restaurado",

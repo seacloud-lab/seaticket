@@ -329,7 +329,7 @@
     "Replace file {filename}?": "\u8986\u84cb\u6587\u4ef6 {filename} \uff1f",
     "Replacing it will overwrite its content.": "\u66ff\u63db\u5b83\u6703\u8986\u84cb\u5df2\u6709\u5167\u5bb9\u3002",
     "Reset Password": "\u91cd\u7f6e\u5bc6\u78bc",
-    "ResetPwd": "\u91cd\u7f6e\u5bc6\u78bc",
+    "Reset password": "\u91cd\u7f6e\u5bc6\u78bc",
     "Restore": "\u9084\u539f",
     "Restore Library": "\u9084\u539f\u8cc7\u6599\u5eab",
     "Revoke Admin": "\u53d6\u6d88\u7ba1\u7406\u54e1",

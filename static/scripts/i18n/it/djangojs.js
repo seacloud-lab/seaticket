@@ -460,7 +460,7 @@
     "Replacing it will overwrite its content.": "Sotituirlo sovrascriver\u00e0 il suo contenuto.",
     "Request a review": "Richiedi una recensione",
     "Reset Password": "Cambia Password",
-    "ResetPwd": "Ripristina Password",
+    "Reset password": "Ripristina Password",
     "Restore": "Ripristina",
     "Restore Library": "Ripristina Libreria",
     "Restored file": "File recuperato",
