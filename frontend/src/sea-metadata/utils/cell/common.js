@@ -2,7 +2,7 @@ import { CellType, DEFAULT_DATE_FORMAT } from '../../constants';
 import DateUtils from '../date';
 import { getCellValueByColumn } from './core';
 import {
-  getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionName, getCollaboratorsName, getColumnOptionNamesByIds,
+  getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionDisplayName, getCollaboratorsName, getColumnOptionNamesByIds,
   getColumnOptionIdsByNames, getTagsDisplayString, getColumnOptions,
   getTypeDisplayString,
 } from '../column';
@@ -22,7 +22,7 @@ export const getCellValueDisplayString = (row, column, { collaborators = [], tag
     case CellType.SINGLE_SELECT: {
       const options = getColumnOptions(column);
       if (!Array.isArray(options) || options.length === 0) return '';
-      return getOptionName(options, cellValue);
+      return getOptionDisplayName(options, cellValue);
     }
     case CellType.MULTIPLE_SELECT: {
       const options = getColumnOptions(column);
@@ -89,7 +89,7 @@ export const getCellValueStringResult = (row, column, { collaborators = [] } = {
     case CellType.SINGLE_SELECT: {
       const options = getColumnOptions(column);
       if (!Array.isArray(options) || options.length === 0) return '';
-      return getOptionName(options, cellValue);
+      return getOptionDisplayName(options, cellValue);
     }
     case CellType.MULTIPLE_SELECT: {
       const options = getColumnOptions(column);

@@ -61,12 +61,18 @@ class Context {
 
   destroy = () => {
     this.username = '';
-    this.settings = {};
+    this.settings = {
+      statusColumnKey: 'status',
+      typeColumnKey: 'type',
+      tagsColumnKey: 'tags',
+    };
     this.api = null;
     this.localStorage = null;
-    this.eventBus = null;
     this.permission = 'r';
+    this.isViewComputedOnServer = true;
+    this.collaboratorsCache = {};
     this.translate = (key) => key;
+    this.eventBus = eventBus;
   };
 
   getSetting = (key, defaultValue = '') => {

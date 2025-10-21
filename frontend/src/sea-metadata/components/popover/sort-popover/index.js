@@ -139,9 +139,10 @@ class SortPopover extends Component {
   createColumnsOptions = (columns = []) => {
     const sortableColumns = columns.filter(column => this.checkColumnEnableSortRule(column));
     return sortableColumns.map((column) => {
-      const { type, name } = column;
+      const { type, display_name: name } = column;
       return {
         value: { column },
+        name: name,
         label: (
           <Fragment>
             <span className="sea-metadata-filter-header-icon">

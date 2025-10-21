@@ -215,7 +215,7 @@ class DataProcessor {
 
   static updateRowsWithModifyColumnData(table, column, operation) {
     const { old_data, new_data } = operation;
-    const columnOriginalName = getColumnOriginName(column);
+    const columnName = getColumnOriginName(column);
     const columnType = column.type;
     const oldColumn = { ...column, data: old_data };
     const newColumn = { ...column, data: new_data };
@@ -229,11 +229,11 @@ class DataProcessor {
           const newOptions = new_data?.options || [];
           const oldOption = getOption(oldOptions, cellValue);
           const newOption = getOption(newOptions, oldOption?.id);
-          row[columnOriginalName] = newOption ? newOption.name : null;
+          row[columnName] = newOption ? newOption.name : null;
         } else if (columnType === CellType.MULTIPLE_SELECT) {
           const oldOptionIds = getColumnOptionIdsByNames(oldColumn, cellValue);
           const newOptionNames = getColumnOptionNamesByIds(newColumn, oldOptionIds);
-          row[columnOriginalName] = newOptionNames ? newOptionNames : null;
+          row[columnName] = newOptionNames ? newOptionNames : null;
         }
         const id = getRowIdFromRow(row);
         table.id_row_map[id] = row;

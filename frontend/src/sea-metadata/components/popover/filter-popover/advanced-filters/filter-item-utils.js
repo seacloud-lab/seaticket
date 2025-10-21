@@ -4,14 +4,16 @@ import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG, FILTER_PREDICATE_SHOW, FILTER_TERM_MODIFIER_SHOW } from '../../../../constants';
 import { isWhiteColor } from '@/utils/utils';
+import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 
 class FilterItemUtils {
 
   static generatorColumnOption(column) {
     if (!column) return null;
-    const { type, name } = column;
+    const { type, display_name: name } = column;
     return {
       value: { column },
+      name: name,
       label: (
         <>
           <span className="sea-metadata-filter-header-icon">
@@ -38,11 +40,12 @@ class FilterItemUtils {
   }
 
   static generatorSingleSelectOption(option, selectedOption) {
+    const name = getOptionDisplayNameByOption(option);
     return {
       value: { columnOption: option },
       label: (
         <div className="select-option-name single-option-name">
-          <div className="single-select-option" style={{ background: option.color, color: option.textColor || null }} title={option.name} aria-label={option.name}>{option.name}</div>
+          <div className="single-select-option" style={{ background: option.color, color: option.textColor || null }} title={name} aria-label={name}>{name}</div>
           <div className="single-check-icon">
             {selectedOption?.id === option.id && (<Icon symbol="check-mark" />)}
           </div>

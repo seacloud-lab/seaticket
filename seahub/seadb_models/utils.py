@@ -291,11 +291,10 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
-def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
+def get_connection_table_name(connection):
     connection_id = connection.id
     connection_type = connection.type
-    metadata = seadb_api.get_base_metadata(project_uuid)
-    tables_metadata = metadata.get('tables') or []
+    table_name = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = GithubIssuesTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
@@ -305,10 +304,26 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     elif connection_type == ConnectionType.SEAFILE.value:
         table_name = SeafileTable.gen_table_name(connection_id)
 
+    return table_name
+
+def get_connection_columns(seadb_api, project_uuid, connection):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_name = get_connection_table_name(connection)
     table_metadata = get_current_table_metadata(tables_metadata, str(table_name))
     if not table_metadata:
-        return [], []
+        return []
     columns = table_metadata.get('columns') or []
+    return columns
+
+def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
+    connection_type = connection.type
+    table_name = get_connection_table_name(connection)
+    columns = get_connection_columns(seadb_api, project_uuid, connection)
+
+    if not columns:
+        return [], []
+
     display_names = set(CONNECTION_DISPLAY_ALL_COLUMNS[connection_type])
     extra_query_names = set(CONNECTION_MUST_RETURN_COLUMNS[connection_type])
     display_all_columns = []
@@ -320,6 +335,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
             display_all_columns.append(column)
         elif name in extra_query_names:
             extra_query_columns.append(column)
+    
 
     view_copy = view.copy()
     sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, start, limit)

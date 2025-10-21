@@ -402,7 +402,7 @@ class ProjectConnectionDetailsView(APIView):
             limit = 1000
 
         try:
-            view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, project_connection.type)
+            view = ConnectionsViews.objects.get_view(project_uuid, project_connection, view_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

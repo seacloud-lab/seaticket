@@ -2,14 +2,15 @@ import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
-import { getColumnOptions } from '@/sea-metadata/utils/column';
+import { getColumnOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 
 const StatusFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
 
   const options = useMemo(() => {
     const columnOptions = getColumnOptions(column);
     return columnOptions.map(o => {
-      const { name, id } = o;
+      const { id } = o;
+      const name = getOptionDisplayNameByOption(o);
       return {
         value: id,
         label: (

@@ -1,12 +1,14 @@
+import { isDarkColor } from '@/utils/utils';
+import { CellType } from '../constants';
+
 class Column {
   constructor(object) {
     this.key = object.key || '';
-    this.origin_key = object.origin_key || '';
     this.name = object.name || '';
+    this.display_name = object.display_name || this.name || '';
     this.type = object.type || '';
     this.data = object.data || null;
     this.width = object.width || 200;
-    this.data = object.data || {};
 
     this.is_required = object.is_required || false;
     this.is_predefined = object.is_predefined || true;
@@ -20,6 +22,18 @@ class Column {
 
     this.sort_able = object.sort_able === false ? false : true;
     this.filter_able = object.filter_able === false ? false : true;
+
+    // update single-select/multiple-select options
+    if (this.type === CellType.SINGLE_SELECT || this.type === CellType.MULTIPLE_SELECT) {
+      const options = this.data?.options || [];
+      this.data = {
+        ...this.data,
+        options: options.map(o => {
+          if (!o.textColor) return { ...o, textColor: isDarkColor(o.color) ? '#FFF' : '#212529' };
+          return o;
+        })
+      };
+    }
   }
 
 }

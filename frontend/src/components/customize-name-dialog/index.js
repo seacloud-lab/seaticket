@@ -41,7 +41,7 @@ const CustomizeNameDialog = ({
       <ModalHeader toggle={onToggle}>{title || gettext('New')}</ModalHeader>
       <ModalBody>
         <Input value={value} autoFocus onChange={onValueChange} />
-        {errorMessage && <Alert>{errorMessage}</Alert>}
+        {errorMessage && <Alert color='danger' className="mt-2">{errorMessage}</Alert>}
       </ModalBody>
       <ModalFooter>
         <button className="btn btn-secondary" onClick={onToggle}>{gettext('Cancel')}</button>

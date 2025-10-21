@@ -149,7 +149,7 @@ const Cell = ({
     onColumnSelectNone && onColumnSelectNone(column);
   }, [column, onColumnSelectNone]);
 
-  const { key, name, type } = column;
+  const { key, display_name: name, type } = column;
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
 
@@ -164,7 +164,7 @@ const Cell = ({
         >
           <div className="sea-metadata-table-column-content">
             <span className="mr-2" id={`header-icon-${key}`}>
-              <Icon symbol={'priority-column'} className="sea-metadata-icon sea-metadata-column-icon" />
+              <Icon symbol="priority-column" className="sea-metadata-icon sea-metadata-column-icon" />
             </span>
             <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
               {gettext('Priority')}
