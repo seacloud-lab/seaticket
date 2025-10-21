@@ -74,7 +74,7 @@ class Row extends React.Component {
   getFrozenCells = () => {
     const {
       columns, lastFrozenColumnKey, groupRowIndex, index: rowIndex, row,
-      cellMetaData, isGroupView, height, columnColor
+      cellMetaData, isGroupView, isLastRow, height, columnColor
     } = this.props;
     const frozenColumns = getFrozenColumns(columns);
     if (frozenColumns.length === 0) return null;
@@ -106,6 +106,7 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
+          rowHeightClassName={`sea-metadata-table-row-height-${(isGroupView && isLastRow) ? height - 2 : height - 1}-cell`}
           bgColor={bgColor}
         />
       );
@@ -138,7 +139,7 @@ class Row extends React.Component {
   getColumnCells = () => {
     const {
       columns, colOverScanStartIdx, colOverScanEndIdx, groupRowIndex, index: rowIndex,
-      row, cellMetaData, isGroupView, height, columnColor
+      row, cellMetaData, isGroupView, isLastRow, height, columnColor
     } = this.props;
     const rowId = row._id;
     const rendererColumns = columns.slice(colOverScanStartIdx, colOverScanEndIdx);
@@ -168,6 +169,7 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
+          rowHeightClassName={`sea-metadata-table-row-height-${(isGroupView && isLastRow) ? height - 2 : height - 1}-cell`}
           bgColor={bgColor}
         />
       );
