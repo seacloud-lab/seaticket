@@ -61,8 +61,6 @@ class QAView(APIView):
 
         workspace = project.workspace
 
-        user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
-
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
