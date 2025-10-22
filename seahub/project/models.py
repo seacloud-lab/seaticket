@@ -506,6 +506,7 @@ class ProjectConnections(models.Model):
     indexed_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     is_active = models.BooleanField(default=True, null=False, db_index=True)
+    log_details = models.TextField(null=True)
 
     objects = ProjectConnectionsManager()
 
