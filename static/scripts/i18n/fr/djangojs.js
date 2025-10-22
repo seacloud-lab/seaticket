@@ -514,7 +514,7 @@
     "Reset": "R\u00e9initialiser",
     "Reset Password": "R\u00e9initialisation du mot de passe",
     "Reset library password": "R\u00e9initialisation du mot de passe de la biblioth\u00e8que",
-    "ResetPwd": "R\u00e9initialisation mot de passe",
+    "Reset password": "R\u00e9initialisation mot de passe",
     "Restore": "Restaurer",
     "Restore Library": "Restaurer la biblioth\u00e8que",
     "Restored file": "Fichier restaur\u00e9",

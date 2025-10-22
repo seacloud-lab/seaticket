@@ -205,7 +205,7 @@
     "Rename File": "\u30d5\u30a1\u30a4\u30eb\u3092\u6539\u540d",
     "Renamed or Moved files": "\u30d5\u30a1\u30a4\u30eb\u306f\u3001\u6539\u540d\u3055\u308c\u305f\u304b\u79fb\u52d5\u3055\u308c\u305f",
     "Reset Password": "\u30d1\u30b9\u30ef\u30fc\u30c9\u306e\u518d\u8a2d\u5b9a",
-    "ResetPwd": "ResetPwd",
+    "Reset password": "Reset password",
     "Restore": "\u5fa9\u5143",
     "Restore Library": "\u30e9\u30a4\u30d6\u30e9\u30ea\u306e\u5fa9\u5143",
     "Revoke Admin": "\u7ba1\u7406\u6a29\u9650\u306e\u53d6\u308a\u5916\u3057",

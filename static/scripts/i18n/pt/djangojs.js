@@ -321,7 +321,7 @@
     "Replace file {filename}?": "Substituir arquivo {filename}?",
     "Replacing it will overwrite its content.": "Substitu\u00ed-lo ir\u00e1 sobreescrever seu conte\u00fado.",
     "Reset Password": "Resetar senha",
-    "ResetPwd": "Restaurar senha",
+    "Reset password": "Restaurar senha",
     "Restore": "Restaurar",
     "Restore Library": "Restaurar Biblioteca",
     "Revoke Admin": "Administrador revogado",

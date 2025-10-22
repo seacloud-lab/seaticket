@@ -223,7 +223,7 @@
     "Replace": "Thay th\u1ebf",
     "Replacing it will overwrite its content.": "Thay th\u1ebf s\u1ebd ghi \u0111\u00e8 n\u1ed9i dung.",
     "Reset Password": "\u0110\u00e3 \u0111\u1ed5i M\u1eadt kh\u1ea9u",
-    "ResetPwd": "Thay \u0111\u1ed5i m\u1eadt kh\u1ea9u",
+    "Reset password": "Thay \u0111\u1ed5i m\u1eadt kh\u1ea9u",
     "Restore": "Kh\u00f4i ph\u1ee5c",
     "Restore Library": "Kh\u00f4i ph\u1ee5c th\u01b0 vi\u1ec7n",
     "Revoke Admin": "H\u1ee7y b\u1ecf quy\u1ec1n Admin",

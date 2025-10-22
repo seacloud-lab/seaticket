@@ -232,7 +232,7 @@
     "Replace": "De\u011fi\u015ftir",
     "Replacing it will overwrite its content.": "De\u011fi\u015ftirirseniz, i\u00e7eri dosyan\u0131n \u00fczerine yazacak.",
     "Reset Password": "\u015eifre S\u0131f\u0131rla",
-    "ResetPwd": "\u015eifreyi S\u0131f\u0131rla",
+    "Reset password": "\u015eifreyi S\u0131f\u0131rla",
     "Restore": "Eski durumuna getir",
     "Restore Library": "K\u00fct\u00fcphaneyi Geri Y\u00fckle",
     "Revoke Admin": "Y\u00f6neticiyi \u0130ptal et",

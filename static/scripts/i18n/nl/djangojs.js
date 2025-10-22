@@ -325,7 +325,7 @@
     "Replace file {filename}?": "Bestand {filename} vervangen?",
     "Replacing it will overwrite its content.": "Vervanging zal huidige inhoud overschrijven.",
     "Reset Password": "Wachtwoord reset",
-    "ResetPwd": "ResetPwd",
+    "Reset password": "Reset password",
     "Restore": "Terughalen",
     "Restore Library": "Bibliotheek herstellen",
     "Revoke Admin": "Intrekken Admin",

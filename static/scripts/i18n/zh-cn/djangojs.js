@@ -397,7 +397,7 @@
     "Resend after {count}s": "{count}\u79d2\u540e\u91cd\u65b0\u53d1\u9001",
     "Reset": "\u91cd\u7f6e",
     "Reset Password": "\u91cd\u7f6e\u5bc6\u7801",
-    "ResetPwd": "\u91cd\u7f6e\u5bc6\u7801",
+    "Reset password": "\u91cd\u7f6e\u5bc6\u7801",
     "Resetting user's password, please wait for a moment.": "\u91cd\u7f6e\u7528\u6237\u5bc6\u7801\uff0c\u8bf7\u7a0d\u7b49\u3002",
     "Restore": "\u6062\u590d",
     "Restore Table": "\u6062\u590d\u8868\u683c",

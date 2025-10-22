@@ -165,7 +165,7 @@ class Item extends Component {
                 <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>
-                  <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>
+                  <DropdownItem onClick={this.toggleResetPW}>{gettext('Reset password')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             )}
