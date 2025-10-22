@@ -310,19 +310,19 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     display_names = set(CONNECTION_DISPLAY_ALL_COLUMNS[connection_type])
-    hidden_names = set(CONNECTION_EXTRA_QUERY_COLUMNS[connection_type])
+    extra_query_names = set(CONNECTION_EXTRA_QUERY_COLUMNS[connection_type])
     display_all_columns = []
-    hidden_all_columns = []
+    extra_query_columns = []
 
     for column in columns:
         name = column['name']
         if name in display_names:
             display_all_columns.append(column)
-        elif name in hidden_names:
-            hidden_all_columns.append(column)
+        elif name in extra_query_names:
+            extra_query_columns.append(column)
 
     view_copy = view.copy()
-    sql = view_data_2_sql(table_name, display_all_columns + hidden_all_columns, view_copy, start, limit)
+    sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
