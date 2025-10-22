@@ -59,7 +59,7 @@ class AskAPI {
   }
 
   askQuestion(params) {
-    const url = this.server + '/api/v2.1/qa/';
+    const url = this.server + '/api/v2.1/ai/qa/';
     return this._sendPostRequest(url, params);
   }
   // chat sessions api
