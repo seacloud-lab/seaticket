@@ -1,6 +1,7 @@
 import logging
 
-from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS
+from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
+    CONNECTION_HIDDEN_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
@@ -308,15 +309,20 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     if not table_metadata:
         return [], []
     columns = table_metadata.get('columns') or []
-    display_all_column_names = CONNECTION_DISPLAY_ALL_COLUMNS[connection_type]
+    display_names = set(CONNECTION_DISPLAY_ALL_COLUMNS[connection_type])
+    hidden_names = set(CONNECTION_HIDDEN_ALL_COLUMNS[connection_type])
     display_all_columns = []
-    for name in display_all_column_names:
-        column = next((column for column in columns if column['name'] == name), None)
-        if column:
+    hidden_all_columns = []
+
+    for column in columns:
+        name = column['name']
+        if name in display_names:
             display_all_columns.append(column)
-    
+        elif name in hidden_names:
+            hidden_all_columns.append(column)
+
     view_copy = view.copy()
-    sql = view_data_2_sql(table_name, display_all_columns, view_copy, start, limit)
+    sql = view_data_2_sql(table_name, display_all_columns + hidden_all_columns, view_copy, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
