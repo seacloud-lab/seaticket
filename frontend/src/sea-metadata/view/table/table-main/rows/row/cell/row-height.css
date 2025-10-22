@@ -254,6 +254,10 @@
 	background-color: #f5f5f5;
 }
 
+.sea-metadata-table-row:hover .cell-selected .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article {
+	background-color: #fff;
+}
+
 .sea-metadata-table-long-text-cell.sea-metadata-table-row-height-128-cell {
 	padding: 6px 8px !important;
 }
