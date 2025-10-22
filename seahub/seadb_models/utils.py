@@ -1,7 +1,7 @@
 import logging
 
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
-    CONNECTION_EXTRA_QUERY_COLUMNS
+    CONNECTION_MUST_RETURN_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
@@ -310,7 +310,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         return [], []
     columns = table_metadata.get('columns') or []
     display_names = set(CONNECTION_DISPLAY_ALL_COLUMNS[connection_type])
-    extra_query_names = set(CONNECTION_EXTRA_QUERY_COLUMNS[connection_type])
+    extra_query_names = set(CONNECTION_MUST_RETURN_COLUMNS[connection_type])
     display_all_columns = []
     extra_query_columns = []
 
