@@ -278,6 +278,6 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.SEAFILE.value: ['path', 'filename', 'mtime', 'updated_at'],
 }
 
-CONNECTION_HIDDEN_ALL_COLUMNS = {
+CONNECTION_EXTRA_QUERY_COLUMNS = {
     ConnectionType.DISCOURSE_FORUM.value: ['slug'],
 }
