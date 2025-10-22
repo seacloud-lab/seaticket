@@ -71,8 +71,9 @@ class QAView(APIView):
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
-            'username': username,
             'resolve_type': resolve_type,
+            'username': username,
+            'session_id': session.id
         }
 
         try:
@@ -83,6 +84,7 @@ class QAView(APIView):
             sources = []
             agent_memory = {}
 
+        user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
         ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
 
         return Response({
@@ -91,7 +93,7 @@ class QAView(APIView):
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'agent_memory': agent_memory[1:],
+            'agent_memory': agent_memory,
         })
 
 
