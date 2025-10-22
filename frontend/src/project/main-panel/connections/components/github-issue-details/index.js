@@ -1,16 +1,24 @@
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
-import { EmptyTip, ModalHeader } from '@/components';
+import { EmptyTip, ModalHeader, Icon } from '@/components';
 import { mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
-const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose }) => {
+const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitchRows }) => {
 
   return (
     <Modal className='sea-qa-github-issue-details-container' isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
-      <ModalHeader toggle={onClose}>{rowDetailsTitle}</ModalHeader>
+      <ModalHeader toggle={onClose}>
+        <div className="d-flex align-items-center">
+          <div className="row-expand-direct-icons mr-2">
+            <span className="direct-icon rotate-icon-180"><Icon symbol="down" /></span>
+            <span className="direct-icon" onClick={() => {handleSwitchRows(1);}}><Icon symbol="down" /></span>
+          </div>
+          {rowDetailsTitle}
+        </div>
+      </ModalHeader>
       <ModalBody>
         <div className='sea-qa-github-issue-row-details'>
           {!rowDetails.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
