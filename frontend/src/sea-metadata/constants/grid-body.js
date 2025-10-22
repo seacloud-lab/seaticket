@@ -14,8 +14,16 @@ const ROW_HEIGHT_MAP = {
   [ROW_HEIGHT_TYPE.QUADRUPLE]: 128
 };
 
+const ROW_HEIGHT_CLASS_MAP = {
+  32: 'sea-metadata-table-row-height-32-cell',
+  56: 'sea-metadata-table-row-height-56-cell',
+  88: 'sea-metadata-table-row-height-88-cell',
+  128: 'sea-metadata-table-row-height-128-cell',
+};
+
 export {
   ROW_HEIGHT_TYPE,
   ROW_HEIGHT_DEFAULT,
   ROW_HEIGHT_MAP,
+  ROW_HEIGHT_CLASS_MAP
 };

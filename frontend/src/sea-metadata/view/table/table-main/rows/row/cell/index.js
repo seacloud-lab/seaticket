@@ -164,6 +164,7 @@ const Cell = React.memo(({
         value={cellValue}
         column={column}
         row={row}
+        rowHeightClassName={rowHeightClassName}
         onChange={modifyRow}
         onClick={isCellSelected && column.click ? column.click : null}
       />

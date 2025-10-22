@@ -60,9 +60,9 @@
 }
 
 /* 56 - long-text */
-.sea-metadata-table-row-height-56-cell.sea-metadata-table-long-text-cell {
-  padding-top: unset !important;
-  padding-bottom: unset !important;
+.sea-metadata-table-long-text-cell.sea-metadata-table-row-height-56-cell {
+	padding-top: 6px !important;
+	padding-bottom: 6px !important;
 }
 
 .sea-metadata-table-row-height-56-cell .sea-metadata-long-text-formatter {
@@ -75,6 +75,8 @@
   display: -webkit-box;
   text-overflow: -o-ellipsis-lastline;
   white-space: pre-wrap;
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
 }
 
 /* 56 - tags */
@@ -155,9 +157,9 @@
 }
 
 /* 88 - long-text*/
-.sea-metadata-table-row-height-88-cell.sea-metadata-table-long-text-cell {
-  padding-top: unset !important;
-  padding-bottom: unset !important;
+.sea-metadata-table-long-text-cell.sea-metadata-table-row-height-88-cell {
+	padding-top: 6px !important;
+	padding-bottom: 6px !important;
 }
 
 .sea-metadata-table-row-height-88-cell .sea-metadata-long-text-formatter {
@@ -166,6 +168,8 @@
   display: -webkit-box;
   text-overflow: -o-ellipsis-lastline;
   white-space: pre-wrap;
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
 }
 
 /* 88 - tags */
@@ -246,18 +250,30 @@
 }
 
 /* 128 - long-text*/
-.sea-metadata-table-row-height-128-cell.sea-metadata-table-long-text-cell {
-  padding-top: unset !important;
-  padding-bottom: unset !important;
+.sea-metadata-table-row:hover .sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article {
+	background-color: #f5f5f5;
+}
+
+.sea-metadata-table-long-text-cell.sea-metadata-table-row-height-128-cell {
+	padding: 6px 8px !important;
 }
 
 .sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter {
-  -webkit-line-clamp: 6;
-  -webkit-box-orient: vertical;
-  word-wrap: break-word;
-  display: -webkit-box;
-  text-overflow: -o-ellipsis-lastline;
-  white-space: pre-wrap;
+	padding: 0px !important;
+	overflow: auto !important;
+}
+
+.sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container {
+	padding: 0px
+}
+
+.sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article {
+	border: 0px;
+	padding: 16px
+}
+
+.sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article > :first-child {
+	white-space: nowrap !important;
 }
 
 /* 128 - tags */
