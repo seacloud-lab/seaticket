@@ -424,7 +424,6 @@ class SearchView(APIView):
 
         return Response({'results': results})
 
-
 class ChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
