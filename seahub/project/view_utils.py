@@ -523,7 +523,7 @@ class SingleSelectOperator(Operator):
     def _get_option_name_by_key(self, key):
         options = self.column.get('data', {}).get('options', [])
         for op in options:
-            if op.get('id') == key or op.get('name') == key:
+            if op.get('id') == key:
                 return op.get('name')
         return ''
 
@@ -1278,7 +1278,7 @@ class SQLGenerator(object):
 
     def _get_column_by_key(self, col_key):
         for col in self.columns:
-            if col.get('key') == col_key or col.get('name') == col_key:
+            if col.get('key') == col_key:
                 return col
         return None
 

@@ -413,18 +413,6 @@ class ProjectConnectionDetailsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         seadb_api = SeaDBAPI(username)
-        if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            basic_filters = view.get('basic_filters', [])
-            for basic_filter in basic_filters:
-                column_key = basic_filter.get('column_key', '')
-                if column_key == 'issue_type':
-                    basic_filter['column_name'] = 'issue_type'
-                    del basic_filter['column_key']
-                elif column_key == 'state':
-                    basic_filter['column_name'] = 'state'
-                    del basic_filter['column_key']
-
-            view['basic_filters'] = basic_filters  
         records, columns = list_connection_view_records(
             seadb_api, project_uuid, project_connection, view, start, limit
         )
