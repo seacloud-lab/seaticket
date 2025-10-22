@@ -271,9 +271,16 @@ class FilterTermModifier(object):
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
 
+
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'url', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
     ConnectionType.SEAFILE.value: ['path', 'filename', 'mtime', 'updated_at'],
+}
+
+
+# These columns are must returned to the front end to make some frontend functions work
+CONNECTION_MUST_RETURN_COLUMNS = {
+    ConnectionType.DISCOURSE_FORUM.value: ['slug'],
 }
