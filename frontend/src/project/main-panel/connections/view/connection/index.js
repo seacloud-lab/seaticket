@@ -84,13 +84,13 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       tags: [],
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
-      toaster.success(gettext('Successfully created ticket.'));
+      toaster.success(gettext('Ticket created'));
       setTimeout(toggle, 500);
     });
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 800 }}>
+    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
       <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
       <ModalBody>
         <div className="d-flex">
@@ -123,14 +123,11 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
               </FormGroup>
             </Form>
           </div>
-          <div style={{ flex: 1, padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-            <p>{gettext('Describe your instructions of how to create related tickets')}</p>
-          </div>
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
         <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
+        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>
   );
@@ -273,7 +270,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
         { type: CellType.SINGLE_SELECT, key: 'issue_type', name: gettext('Type'), data: { options: [] }, editable: false },
         { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
-        { type: CellType.TEXT, key: 'comments_count', name: gettext('Total comments'), editable: false},
+        { type: CellType.TEXT, key: 'comments_count', name: gettext('Total comments'), editable: false },
         { type: CellType.CTIME, key: 'updated_at', name: gettext('Last updated'), editable: false },
         { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
         { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
