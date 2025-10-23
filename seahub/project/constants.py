@@ -13,6 +13,8 @@ IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 
 MANUAL_SYNC_INTERVAL = 10 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
+AI_CHAT_TICKET_PREFIX_PROMPT = 'I will provide a Json-like issue record with title, descriptions and some replies, please help me to resolve my problem:\n\n'
+
 # connection types
 class ConnectionType(Enum):
     EMAIL = 'email'
