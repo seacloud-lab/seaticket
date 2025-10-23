@@ -6,7 +6,7 @@ import CellOperationBtn from './operation-btn';
 import { isFunction } from '@utils/utils';
 import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
-import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
+import { TABLE_SUPPORT_EDIT_TYPE_MAP, ROW_HEIGHT_CLASS_MAP } from '../../../../../../constants';
 import context from '../../../../../../context';
 
 import './index.css';
@@ -19,8 +19,9 @@ const Cell = React.memo(({
   rowIndex,
   cellMetaData,
   highlightClassName,
-  rowHeightClassName,
+  isGroupView,
   isLastCell,
+  isLastRow,
   isLastFrozenCell,
   isCellSelected,
   bgColor,
@@ -34,9 +35,19 @@ const Cell = React.memo(({
     return true;
   }, [column, row]);
 
+  const heightClassName = useMemo(() => {
+    if (isGroupView) {
+      if (isLastRow) {
+        return ROW_HEIGHT_CLASS_MAP[height - 2];
+      }
+      return ROW_HEIGHT_CLASS_MAP[height - 1];
+    }
+    return ROW_HEIGHT_CLASS_MAP[height];
+  }, [height, isGroupView, isLastRow]);
+
   const className = useMemo(() => {
     const { type } = column;
-    return classnames('sea-metadata-table-cell', `sea-metadata-table-${type}-cell`, highlightClassName, rowHeightClassName, {
+    return classnames('sea-metadata-table-cell', `sea-metadata-table-${type}-cell`, highlightClassName, heightClassName, {
       'table-cell-uneditable': !canEditable,
       'table-cell-clickable': column.click,
       'last-cell': isLastCell,
@@ -45,7 +56,7 @@ const Cell = React.memo(({
       // 'dragging-file-to-cell': ,
       // 'row-comment-cell': ,
     });
-  }, [canEditable, column, rowHeightClassName, highlightClassName, isLastCell, isLastFrozenCell, isCellSelected]);
+  }, [canEditable, column, highlightClassName, isLastCell, isLastFrozenCell, isCellSelected, heightClassName]);
   const style = useMemo(() => {
     const { left, width } = column;
     let value = {
@@ -161,10 +172,10 @@ const Cell = React.memo(({
     <div key={`${row._id}-${column.key}`} {...containerProps}>
       <Formatter
         isCellSelected={isCellSelected}
+        isShowMarkdownViewer={heightClassName === ROW_HEIGHT_CLASS_MAP[128]}
         value={cellValue}
         column={column}
         row={row}
-        rowHeightClassName={rowHeightClassName}
         onChange={modifyRow}
         onClick={isCellSelected && column.click ? column.click : null}
       />
@@ -201,6 +212,8 @@ Cell.propTypes = {
   isCellSelected: PropTypes.bool,
   isLastCell: PropTypes.bool,
   isLastFrozenCell: PropTypes.bool,
+  isLastRow: PropTypes.bool,
+  isGroupView: PropTypes.bool,
   cellMetaData: PropTypes.object,
   row: PropTypes.object.isRequired,
   groupRowIndex: PropTypes.number,
@@ -213,7 +226,6 @@ Cell.propTypes = {
   modifyRowViaButton: PropTypes.func,
   reloadCurrentRow: PropTypes.func,
   highlightClassName: PropTypes.string,
-  rowHeightClassName: PropTypes.string,
   bgColor: PropTypes.string,
 };
 

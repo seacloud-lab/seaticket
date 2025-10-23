@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import Cell from './cell';
 import ActionsCell from './actions-cell';
 import { getFrozenColumns } from '../../../../../utils/column';
-import { seaTableZIndexes, ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
+import { seaTableZIndexes } from '../../../../../constants';
 
 import './index.css';
 
@@ -98,6 +98,8 @@ class Row extends React.Component {
           isCellSelected={isCellSelected}
           isLastCell={isLastCell}
           isLastFrozenCell={isLastFrozenCell}
+          isLastRow={isLastRow}
+          isGroupView={isGroupView}
           height={isGroupView ? height : height - 1}
           column={column}
           cellMetaData={cellMetaData}
@@ -106,7 +108,6 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
-          rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
         />
       );
@@ -160,6 +161,8 @@ class Row extends React.Component {
           rowIndex={rowIndex}
           isCellSelected={isCellSelected}
           isLastCell={isLastCell}
+          isLastRow={isLastRow}
+          isGroupView={isGroupView}
           height={isGroupView ? height : height - 1}
           column={column}
           needBindEvents={needBindEvents}
@@ -169,7 +172,6 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
-          rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
         />
       );

@@ -6,11 +6,10 @@ import Icon from '../../../../components/icon';
 import ModalPortal from '../../../../components/modal-portal';
 import LongTextPreview from './long-text-preview';
 import MarkdownViewer from './long-text-preview/viewer';
-import { ROW_HEIGHT_CLASS_MAP } from '../../../constants/grid-body';
 
 import './index.css';
 
-const LongTextFormatter = ({ value: oldValue, className, previewClassName, rowHeightClassName, children: emptyFormatter, }) => {
+const LongTextFormatter = ({ value: oldValue, className, previewClassName, isShowMarkdownViewer, children: emptyFormatter, }) => {
   const [isPreview, setPreview] = useState(false);
 
   const ref = useRef(null);
@@ -124,10 +123,10 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, rowHe
       onMouseLeave={onMouseLeave}
       ref={ref}
     >
-      {rowHeightClassName === ROW_HEIGHT_CLASS_MAP[128] && (
+      {isShowMarkdownViewer && (
         <MarkdownViewer value={markdownContent} showTOC={false} />
       )}
-      {rowHeightClassName !== ROW_HEIGHT_CLASS_MAP[128] && (
+      {!isShowMarkdownViewer && (
         <>
           {renderLinks()}
           {renderCheckList()}
@@ -153,7 +152,7 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, rowHe
 LongTextFormatter.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   className: PropTypes.string,
-  rowHeightClassName: PropTypes.string,
+  isShowMarkdownViewer: PropTypes.bool,
   previewClassName: PropTypes.string,
   children: PropTypes.any,
 };
