@@ -478,83 +478,18 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         setDiscourseForumsDetailsTitle(row.title);
-        res.data.row_details = [
-          {
-            'author': 'cgomesu',
-            'body': '- Changing the user language to Brazilian Portuguese (`pt_BR`) causes the Change Password page (`/accounts/password/change/`) to not load correctly\r\n- It seems to be a character escaping issue:\r\n  ![image](https://github.com/user-attachments/assets/bd2033e3-4c2c-4170-b5c2-3cd4e38b9e3a)\r\n- Steps to reproduce:\r\n  1. go to user settings (`/profile`)\r\n  2. change language to Brazilian Portuguese (`pt_BR`)\r\n  3. try to update your password (atualizar senha, `/accounts/password/change/`)\r\n  4. the change password page won\'t load',
-            'created_at': '2024-12-12T03:32:43+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': 'Thank you for reporting this issue. I am using the latest version of seahub code and cannot reproduce your issue. You can test it again using the latest main branch code.\r\n![lang](https://github.com/user-attachments/assets/032a8ba9-a82a-44a7-a717-42a52c5d25e4)\r\n![page](https://github.com/user-attachments/assets/d2d87c65-1b2f-4943-89cd-1af23142acb3)\r\n',
-            'created_at': '2025-01-06T18:31:02+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': 'Based on the information in your screenshot, you can try writing 179 and 180 lines of code on one line without breaking lines.',
-            'created_at': '2025-01-06T18:32:27+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'cgomesu',
-            'body': 'hi, @Michael18811380328. the code was already patched locally. I forgot to mention that the issue was happening with seafile version `11.0.13` (community edition). in your print screen, it seems your browser continues to show the language content in English, despite the lang attribute being set to Brazilian Portuguese.',
-            'created_at': '2025-01-06T21:28:56+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': '@cgomesu Thanks for your feedback.\r\n\r\n> in your print screen, it seems your browser continues to show the language content in English, despite the lang attribute being set to Brazilian Portuguese.\r\n\r\nWhen I change the language to Brazilian Portuguese, there may be some browser cache, so the screenshot is still old.',
-            'created_at': '2025-01-07T12:05:44+08:00',
-            'issue_id': 2733808266
-          }
-        ];
         setDiscourseForumsDetails(res.data.row_details);
       });
     }
     if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
       connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         setGithubIssueDetailsTitle(row.title);
-        res.data.row_details = [
-          {
-            'author': 'cgomesu',
-            'body': '- Changing the user language to Brazilian Portuguese (`pt_BR`) causes the Change Password page (`/accounts/password/change/`) to not load correctly\r\n- It seems to be a character escaping issue:\r\n  ![image](https://github.com/user-attachments/assets/bd2033e3-4c2c-4170-b5c2-3cd4e38b9e3a)\r\n- Steps to reproduce:\r\n  1. go to user settings (`/profile`)\r\n  2. change language to Brazilian Portuguese (`pt_BR`)\r\n  3. try to update your password (atualizar senha, `/accounts/password/change/`)\r\n  4. the change password page won\'t load',
-            'created_at': '2024-12-12T03:32:43+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': 'Thank you for reporting this issue. I am using the latest version of seahub code and cannot reproduce your issue. You can test it again using the latest main branch code.\r\n![lang](https://github.com/user-attachments/assets/032a8ba9-a82a-44a7-a717-42a52c5d25e4)\r\n![page](https://github.com/user-attachments/assets/d2d87c65-1b2f-4943-89cd-1af23142acb3)\r\n',
-            'created_at': '2025-01-06T18:31:02+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': 'Based on the information in your screenshot, you can try writing 179 and 180 lines of code on one line without breaking lines.',
-            'created_at': '2025-01-06T18:32:27+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'cgomesu',
-            'body': 'hi, @Michael18811380328. the code was already patched locally. I forgot to mention that the issue was happening with seafile version `11.0.13` (community edition). in your print screen, it seems your browser continues to show the language content in English, despite the lang attribute being set to Brazilian Portuguese.',
-            'created_at': '2025-01-06T21:28:56+08:00',
-            'issue_id': 2733808266
-          },
-          {
-            'author': 'Michael18811380328',
-            'body': '@cgomesu Thanks for your feedback.\r\n\r\n> in your print screen, it seems your browser continues to show the language content in English, despite the lang attribute being set to Brazilian Portuguese.\r\n\r\nWhen I change the language to Brazilian Portuguese, there may be some browser cache, so the screenshot is still old.',
-            'created_at': '2025-01-07T12:05:44+08:00',
-            'issue_id': 2733808266
-          }
-        ];
         setGithubIssueDetails(res.data.row_details);
       });
     }
   }, [projectUuid, connectionID, connection]);
 
   const handleExpandRow = useCallback((row) => {
-    console.log(row);
     currentRowRef.current = row._id;
     if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
       window.open(row.url);
@@ -568,16 +503,17 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     const index = rowsData.findIndex(r => r._id === currentRowRef.current);
     if (index === -1) return;
 
-    const nextIndex = index + 1;
-    if (nextIndex <= rowsData.length - 1) {
-      currentRowRef.current = rowsData[nextIndex]._id;
-      // getRowDetails(nextRow);
-      console.log(nextIndex, rowsData.length - 1);
+    let newIndex = index + count;
+    if (newIndex > rowsData.length - 1) {
+      newIndex = 0;
     }
-
-  }, [projectUuid, connectionID, connection]);
-
-  const onPrev = useCallback(() => {
+    if (newIndex < 0) {
+      newIndex = rowsData.length - 1;
+    }
+    const currentRow = rowsData[newIndex];
+    currentRowRef.current = currentRow._id;
+    console.log('cur-row', currentRow);
+    // getRowDetails(currentRow);
 
   }, [projectUuid, connectionID, connection]);
 
@@ -629,7 +565,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}
+      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} handleSwitchRows={handleSwitchRows} />}
       {githubIssueDetails && <GithubIssueDetails rowDetailsTitle={githubIssueDetailsTitle} rowDetails={githubIssueDetails} onClose={() => {setGithubIssueDetails(null);}} handleSwitchRows={handleSwitchRows} />}
       {siteDetails && (
         <SiteContentDialog
