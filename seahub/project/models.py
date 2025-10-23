@@ -567,55 +567,98 @@ class ConnectionsView(object):
 
 class ConnectionsViewsManager(models.Manager):
 
-    def get_record(self, project_uuid, connection_id, connection_type=ConnectionType.SITE.value):
+    def update_init_view_details(self, project_uuid, connection, details):
+        connection_type = connection.type
+        if connection_type == ConnectionType.GITHUB_ISSUE.value:
+            from seahub.project.seadb_api import SeaDBAPI
+            from seahub.seadb_models.utils import get_connection_columns
+            seadb_api = SeaDBAPI('seaqa-web')
+            columns = get_connection_columns(seadb_api, project_uuid, connection)
+            views = details.get('views', [])
+            for v in views:
+                basic_filters = v.get('basic_filters', [])
+                for basic_filter in basic_filters:
+                    column_key = basic_filter['column_key']
+
+                    # old version column key is status or type
+                    if column_key == 'status':
+                        column_key = 'state'
+                    if column_key == 'type':
+                        column_key = 'issue_type'
+                    column = next((column for column in columns if column['name'] == column_key), None)
+                    if column:
+                        column_name = column['name']
+                        basic_filter['column_key'] = column['key']
+                        if column_name in ['state', 'issue_type']:
+                            options = column.get('data', {}).get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+                v['basic_filters'] = basic_filters
+
+                sorts = v.get('sorts', [])
+                for item in sorts:
+                    column_key = item['column_key']
+                    column = next((column for column in columns if column['name'] == column_key), None)
+                    if column:
+                        item['column_key'] = column['key']
+                v['sorts'] = sorts
+
+            details['views'] = views
+        return details
+
+
+    def get_record(self, project_uuid, connection):
         """
             get record from database, if not record, create it
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
+        connection_id = connection.id
+        connection_type = connection.type
+
         record = self.filter(connection_id=connection_id).first()
 
         if not record:
+            details = json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
+            details = self.update_init_view_details(project_uuid, connection, details)
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
+                details=details
             )
         return record
 
     # view op
-    def list_views(self, project_uuid, connection_id, connection_type):
-        record = self.get_record(project_uuid, connection_id, connection_type)
+    def list_views(self, project_uuid, connection):
+        record = self.get_record(project_uuid, connection)
         return json.loads(record.details)
 
-    def get_view(self, project_uuid, connection_id, view_id, connection_type):
-        record = self.get_record(project_uuid, connection_id, connection_type)
+    def get_view(self, project_uuid, connection, view_id):
+        record = self.get_record(project_uuid, connection)
         view_details = json.loads(record.details)
         for view in view_details['views']:
             if view.get('_id') == view_id:
-                if connection_type == ConnectionType.GITHUB_ISSUE.value:
-                    basic_filters = view.get('basic_filters', [])
-                    for basic_filter in basic_filters:
-                        column_key = basic_filter.get('column_key', '')
-                        if column_key == 'type' or column_key == 'issue_type':
-                            basic_filter['column_key'] = 'issue_type'
-                        elif column_key == 'status' or column_key == 'state':
-                            basic_filter['column_key'] = 'state'
-                    view['basic_filters'] = basic_filters
                 return view
         return None
 
-    def add_view(self, project_uuid, connection_id, view_name, connection_type, view_type='table', view_data={}):
-        record = self.get_record(project_uuid, connection_id, connection_type)
+    def add_view(self, project_uuid, connection, view_name, view_type='table', view_data={}):
+        record = self.get_record(project_uuid, connection)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
 
+        connection_type = connection.type
         new_view = ConnectionsView(view_name, view_type, view_data, connection_type)
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
         navigation.append(new_view_nav)
+        view_details = self.update_init_view_details(project_uuid, connection, view_details)
         record.details = json.dumps(view_details)
         record.save()
         return new_view.details

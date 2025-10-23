@@ -11,7 +11,7 @@ import FilterCalendar from '../filter-calendar';
 import RateItem from '../../../../cell-editors/rate-editor/rate-item';
 import { RATE_LIST } from '../../../../cell-editors/rate-editor/constants';
 import { gettext } from '@/constants';
-import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions } from '../../../../../utils/column';
+import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '../../../../../utils/column';
 import {
   getFilterByColumn, getUpdatedFilterBySelectSingle, getUpdatedFilterBySelectMultiple, getUpdatedFilterByCreator, getUpdatedFilterByCollaborator,
   getColumnOptions, getUpdatedFilterByPredicate,
@@ -440,7 +440,7 @@ class FilterItem extends React.Component {
           const style = selectedOption ?
             { background: selectedOption.color, color: selectedOption.textColor || null } :
             { background: DELETED_OPTION_BACKGROUND_COLOR };
-          const selectedOptionName = selectedOption ? selectedOption.name : DELETED_OPTION_TIPS;
+          const selectedOptionName = selectedOption ? getOptionDisplayNameByOption(selectedOption) : DELETED_OPTION_TIPS;
           selectedOptionDom = { label: (
             <span className={className} style={style} title={selectedOptionName} aria-label={selectedOptionName}>{selectedOptionName}</span>
           ) };

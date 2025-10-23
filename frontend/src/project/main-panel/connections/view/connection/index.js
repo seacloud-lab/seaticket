@@ -2,18 +2,17 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { processor, getPreviewContent } from '@seafile/seafile-editor';
-import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
+import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
 import GithubIssueDetails from '../../components/github-issue-details';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATE_OPTIONS, CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP } from '../../constants';
+import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl, Seafile } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader, Loading } from '@/components';
-import { isDarkColor } from '@/utils/utils';
 
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
@@ -227,80 +226,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return {};
   }, [connection]);
 
-  const initColumns = useMemo(() => {
-    const connectionType = connection?.type;
-    if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true,
-        },
-        { type: CellType.NUMBER, key: 'topic_id', name: gettext('Topic ID'), editable: false },
-        { type: CellType.NUMBER, key: 'views', name: gettext('Views count'), editable: false },
-        { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
-        { type: CellType.DATE, key: 'created_at', name: gettext('Created at'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false }
-      ];
-    }
-    if (connectionType === CONNECTION_TYPE.SITE) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true, expand_able: true,
-          click: (row) => {
-            handleClickSiteTitle(row);
-          }
-        },
-        { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
-        { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false, sort_able: true, filter_able: true },
-      ];
-    }
-    if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true,
-          click: (row) => {
-            if (row && row.url) {
-              window.open(row.url);
-            }
-          }
-        },
-        { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-        { type: CellType.SINGLE_SELECT, key: 'state', name: gettext('State'), data: { options: GITHUB_STATE_OPTIONS }, editable: false },
-        { type: CellType.SINGLE_SELECT, key: 'state_reason', name: gettext('State reason'), data: { options: [] }, editable: false },
-        { type: CellType.SINGLE_SELECT, key: 'issue_type', name: gettext('Type'), data: { options: [] }, editable: false },
-        { type: CellType.MULTIPLE_SELECT, key: 'labels', name: gettext('Labels'), data: { options: [] }, editable: false },
-        { type: CellType.TEXT, key: 'comments_count', name: gettext('Total comments'), editable: false },
-        { type: CellType.CTIME, key: 'updated_at', name: gettext('Last updated'), editable: false },
-        { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
-        { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-      ];
-    }
-
-    if (connectionType === CONNECTION_TYPE.SEAFILE) {
-      return [
-        {
-          type: CellType.TEXT, key: 'filename', name: gettext('File name'),
-          editable: false, is_name_column: true, frozen: true
-        },
-        { type: CellType.TEXT, key: 'path', name: gettext('Parent folder'), editable: false, is_required: true },
-        { type: CellType.DATE, key: 'mtime', name: gettext('Last modified time'), data: { format: 'YYYY-MM-DD HH:mm:ss' }, editable: false },
-      ];
-    }
-    return [];
-  }, [connection, handleClickSiteTitle]);
-
-  const settings = useMemo(() => {
-    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      return {
-        statusColumnKey: 'state',
-        typeColumnKey: 'issue_type',
-        tagsColumnKey: 'labels',
-      };
-    }
-    return {};
-  }, [connection]);
-
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
     views: [
@@ -316,29 +241,15 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { type, records } = res.data;
         let rows = [];
-        let columns = initColumns;
+        let columns = res?.data?.columns || [];
+        let notDisplayColumnNames = ['_pk'];
+        let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
-          const dbColumns = res?.data?.columns || [];
-          const dbLabelsColum = dbColumns.find(c => c.name === 'labels');
-          const labelsColumIndex = columns.findIndex(c => c.key === 'labels');
-          if (dbLabelsColum && labelsColumIndex > -1) {
-            let options = dbLabelsColum?.data?.options || [];
-            options = options.map(o => {
-              if (o.textColor) return o;
-              return {
-                ...o,
-                textColor: isDarkColor(o.color) ? '#FFF' : '#212529',
-              };
-            });
-            columns[labelsColumIndex].data = { ...dbLabelsColum.data, options };
-          }
-          const dbTypeColumn = dbColumns.find(c => c.name === 'issue_type');
-          const typeColumIndex = columns.findIndex(c => c.key === 'issue_type');
-          if (dbTypeColumn && typeColumIndex > -1) {
-            const options = dbTypeColumn?.data?.options || [];
-            columns[typeColumIndex].data = { ...dbTypeColumn.data, options };
-            const _typesData = options.map(o => ({ ...o, _id: o.name }));
+          const typeColum = columns.find(c => c.name === 'issue_type');
+          if (typeColum) {
+            const options = typeColum.data?.options || [];
+            const _typesData = options.map(o => ({ ...o, _id: o.id }));
             setTypesData({
               rows: _typesData,
               id_row_map: _typesData.reduce((pre, cur) => {
@@ -346,27 +257,40 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
                 return pre;
               }, {})
             });
+            context.setSetting('typeColumnKey', typeColum.key);
           }
-          const dbStateReasonColumn = dbColumns.find(c => c.name === 'state_reason');
-          const stateReasonColumnIndex = columns.findIndex(c => c.key === 'state_reason');
-          if (dbStateReasonColumn && stateReasonColumnIndex > -1) {
-            let options = dbStateReasonColumn?.data?.options || [];
-            options = options.map(o => {
-              return {
-                ...o,
-                id: o.name,
-                name: GITHUB_STATE_REASON_NAME_MAP[o.name],
-              };
-            });
-            columns[stateReasonColumnIndex].data = { ...dbStateReasonColumn.data, options };
+
+          const stateColumnIndex = columns.findIndex(c => c.name === 'state');
+          if (stateColumnIndex > -1) {
+            const stateColumn = columns[stateColumnIndex];
+            context.setSetting('statusColumnKey', stateColumn.key);
+            let options = stateColumn.data?.options || [];
+            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
+            columns[stateColumnIndex].data = { ...stateColumn.data, options };
           }
+
+          const stateReasonColumnIndex = columns.findIndex(c => c.name === 'state_reason');
+          if (stateReasonColumnIndex > -1) {
+            const stateReasonColumn = columns[stateReasonColumnIndex];
+            let options = stateReasonColumn.data?.options || [];
+            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
+            columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
+          }
+          notDisplayColumnNames.push('url');
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
         } else if (type === CONNECTION_TYPE.SITE) {
           rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
+          columnConfig['title'] = {
+            ...columnConfig['title'],
+            click: (row) => {
+              handleClickSiteTitle(row);
+            }
+          };
         } else if (type === CONNECTION_TYPE.SEAFILE) {
           rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
         }
+        columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
           data: {
             rows,
@@ -423,7 +347,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         });
       },
     };
-  }, [projectUuid, connectionID, connection, initColumns]);
+  }, [projectUuid, connectionID, connection]);
 
   const createRowsTools = useCallback(({ rows, modifyRows }) => {
     if (rows.length > 1) return [];
@@ -603,7 +527,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         typesData={typesData}
         toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
-        settings={settings}
         t={t}
       />
       {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}

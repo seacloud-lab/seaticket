@@ -178,38 +178,6 @@ class GridUtils {
     this.api.modifyRows(updateRowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste);
   }
 
-  getLinkedRowsIdsByNameColumn(linkedTableRows, linkColumnKey, cellValue, linkItem) {
-    if (!Array.isArray(linkedTableRows) || linkedTableRows.length === 0) {
-      return [];
-    }
-    const cellValueStr = String(cellValue);
-
-    // 1、If all string match the corresponding row, return this row
-    const linkedRow = linkedTableRows.find(row => row['0000']?.trim() === cellValueStr.trim()) || null;
-    if (linkedRow) {
-      linkItem[linkColumnKey] = [{ display_value: cellValueStr, row_id: linkedRow._id }];
-      return [linkedRow._id];
-    }
-
-    // 2、If the string contains a comma, split into multiple substrings to match the corresponding rows
-    let linkedRowsIds = [];
-    if (cellValueStr.includes(',') || cellValueStr.includes('，')) {
-      const copiedNames = cellValueStr.split(/[,，]/).map(item => item.trim()).filter((value, index, self) => self.indexOf(value) === index);
-      if (!Array.isArray(copiedNames) || copiedNames.length === 0) {
-        return [];
-      }
-      linkItem[linkColumnKey] = [];
-      copiedNames.forEach((copiedName) => {
-        const linkedRow = linkedTableRows.find(row => row['0000']?.trim() === copiedName) || null;
-        if (linkedRow) {
-          linkItem[linkColumnKey].push({ display_value: copiedName, row_id: linkedRow._id });
-          linkedRowsIds.push(linkedRow._id);
-        }
-      });
-    }
-    return linkedRowsIds;
-  }
-
   getUpdateDraggedRows(draggedRange, shownColumns, rows, idRowMap, groupMetrics) {
     let rowIds = [];
     let updatedOriginalRows = {};
@@ -251,7 +219,7 @@ class GridUtils {
           const value = draggedRangeMatrix[j - startColumnIdx][idx];
           const rule = rules[cellKey];
           const fillingValue = rule({ n: fillingIndex - 1, value });
-          const oldValue = dragRow[columnName];
+          const oldValue = getCellValueByColumn(dragRow, column);
           if (isCellValueChanged(fillingValue, oldValue, type)) {
             updatedOriginalRows[dragRowId] = Object.assign({}, updatedOriginalRows[dragRowId], { [columnName]: fillingValue });
             oldOriginalRows[dragRowId] = Object.assign({}, oldOriginalRows[dragRowId], { [columnName]: oldValue });

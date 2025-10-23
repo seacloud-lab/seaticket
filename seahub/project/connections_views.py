@@ -43,7 +43,7 @@ class ConnectionViewsAPI(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            views = ConnectionsViews.objects.list_views(project_uuid, connection_id, connection.type)
+            views = ConnectionsViews.objects.list_views(project_uuid, connection)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -81,7 +81,7 @@ class ConnectionViewsAPI(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            new_view = ConnectionsViews.objects.add_view(project_uuid, connection_id, view_name, connection.type, view_type, view_data)
+            new_view = ConnectionsViews.objects.add_view(project_uuid, connection, view_name, view_type, view_data)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'add view failed')
         except Exception as e:
@@ -117,7 +117,7 @@ class ConnectionViewAPI(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id, connection.type)
+            view = ConnectionsViews.objects.get_view(project_uuid, connection, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -155,7 +155,7 @@ class ConnectionViewAPI(APIView):
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid, connection_id, connection.type)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection)
         if view_id not in record.views_ids:
             error_msg = f'view_id {view_id} does not exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -192,7 +192,7 @@ class ConnectionViewAPI(APIView):
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid, connection_id, connection.type)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection)
         # check view exist
         if view_id not in record.views_ids:
             error_msg = f'view_id {view_id} does not exists.'
@@ -237,7 +237,7 @@ class ConnectionViewsDuplicateView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid, connection_id, connection.type)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection)
         if view_id not in record.views_ids:
             error_msg = 'view_id %s does not exists.' % view_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -299,7 +299,7 @@ class ConnectionViewsMoveView(APIView):
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        record = ConnectionsViews.objects.get_record(project_uuid, connection_id, connection.type)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection)
         # check dragged view exist
         if source_view_id and source_view_id not in record.views_ids:
             return api_error(status.HTTP_400_BAD_REQUEST, f'source_view_id {source_view_id} does not exists.')

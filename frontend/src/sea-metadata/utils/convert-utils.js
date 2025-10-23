@@ -1,5 +1,5 @@
 import {
-  getDateDisplayString, getNumberDisplayString, formatStringToNumber, getOptionName, getCollaboratorsName, getFloatNumber, getColumnOptionNamesByIds,
+  getDateDisplayString, getNumberDisplayString, formatStringToNumber, getOptionDisplayName, getCollaboratorsName, getFloatNumber, getColumnOptionNamesByIds,
   getOption, checkIsPredefinedOption, getColumnOptionNameById,
   getTagsDisplayString,
 } from './column';
@@ -101,13 +101,13 @@ function convert2SingleSelect(cellValue, oldCellValue, fromColumn, targetColumn,
   switch (fromColumnType) {
     case CellType.SINGLE_SELECT: {
       const fromOptions = getColumnOptions(fromColumn);
-      fromOptionName = getOptionName(fromOptions, cellValue) || '';
+      fromOptionName = getOptionDisplayName(fromOptions, cellValue) || '';
       break;
     }
     case CellType.MULTIPLE_SELECT: {
       const copiedOptions = getColumnOptions(fromColumn);
       const copiedCellVal = cellValue[0];
-      fromOptionName = getOptionName(copiedOptions, copiedCellVal) || '';
+      fromOptionName = getOptionDisplayName(copiedOptions, copiedCellVal) || '';
       break;
     }
     case CellType.TEXT: {
@@ -190,7 +190,7 @@ function convert2Text(cellValue, oldCellValue, fromColumn, { collaborators, tags
     }
     case CellType.SINGLE_SELECT: {
       const options = getColumnOptions(fromColumn);
-      return getOptionName(options, cellValue) || null;
+      return getOptionDisplayName(options, cellValue) || null;
     }
     case CellType.COLLABORATOR: {
       return getCollaboratorsName(collaborators, cellValue);

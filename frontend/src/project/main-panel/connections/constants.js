@@ -1,4 +1,5 @@
 import { gettext } from '@/constants';
+import { CellType } from '@/sea-metadata';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -192,15 +193,10 @@ export const CONNECTION_PAGE_TYPE = {
   NEW: 'new',
 };
 
-export const GITHUB_STATE = {
-  OPEN: 'open',
-  CLOSED: 'closed',
+export const GITHUB_STATE_OPTION_NAME_MAP = {
+  'open': gettext('Open'),
+  'closed': gettext('Closed'),
 };
-
-export const GITHUB_STATE_OPTIONS = [
-  { id: GITHUB_STATE.OPEN, value: GITHUB_STATE.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: GITHUB_STATE.CLOSED, value: GITHUB_STATE.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-];
 
 export const GITHUB_STATE_REASON_NAME_MAP = {
   'reopened': gettext('Reopen'),
@@ -234,4 +230,113 @@ export const CONNECTION_SYNC_COMPLETED_STATUS = [
   CONNECTION_SYNC_STATUS.COMPLETED,
   CONNECTION_SYNC_STATUS.FAILED,
 ];
+
+export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
+  [CONNECTION_TYPE.GITHUB_ISSUE]: {
+    'title': {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      is_predefined: true,
+      click: (row) => {
+        if (row && row.url) {
+          window.open(row.url);
+        }
+      }
+    },
+    'author': {
+      display_name: gettext('Author'),
+      is_predefined: true,
+    },
+    'state': {
+      display_name: gettext('State'),
+      is_predefined: true,
+    },
+    'state_reason': {
+      display_name: gettext('State reason'),
+      is_predefined: true,
+    },
+    'issue_type': {
+      display_name: gettext('Type'),
+      is_predefined: true,
+    },
+    'labels': {
+      display_name: gettext('Labels'),
+      is_predefined: true,
+    },
+    'comments_count': {
+      display_name: gettext('Total comments'),
+      type: CellType.NUMBER,
+      is_predefined: true,
+    },
+    'updated_at': {
+      display_name: gettext('Last updated'),
+      type: CellType.MTIME,
+      is_predefined: true,
+    },
+    'closed_at': {
+      display_name: gettext('Closed at'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      is_predefined: true,
+    },
+    'created_at': {
+      display_name: gettext('Create time'),
+      type: CellType.CTIME,
+      is_predefined: true,
+    },
+  },
+  [CONNECTION_TYPE.DISCOURSE_FORUM]: {
+    'title': {
+      display_name: gettext('Title'),
+      editable: false, is_name_column: true, frozen: true,
+    },
+    'topic_id': {
+      display_name: gettext('Topic ID'),
+      type: CellType.NUMBER,
+    },
+    'views': {
+      display_name: gettext('Views count'),
+      type: CellType.NUMBER,
+    },
+    'bumped_at': {
+      display_name: gettext('Last activity'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    'created_at': {
+      display_name: gettext('Created at'),
+      type: CellType.CTIME,
+    }
+  },
+  [CONNECTION_TYPE.SITE]: {
+    'title': {
+      display_name: gettext('Title'),
+      editable: false, is_name_column: true, frozen: true, expand_able: true,
+    },
+    'url': {
+      display_name: gettext('URL'),
+      type: CellType.URL,
+    },
+    'last_modified': {
+      display_name: gettext('Last modify time'),
+      type: CellType.MTIME,
+      sort_able: true, filter_able: true
+    }
+  },
+  [CONNECTION_TYPE.SEAFILE]: {
+    'filename': {
+      display_name: gettext('File name'),
+      editable: false, is_name_column: true, frozen: true,
+    },
+    'path': {
+      display_name: gettext('Parent folder'),
+      type: CellType.TEXT,
+    },
+    'mtime': {
+      display_name: gettext('Last modified time'),
+      type: CellType.MTIME,
+    }
+  }
+};
 

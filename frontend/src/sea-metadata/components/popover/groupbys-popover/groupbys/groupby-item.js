@@ -64,9 +64,10 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
   const columnsOptions = useMemo(() => {
     if (!Array.isArray(columns) || columns.length === 0) return [];
     return columns.map(column => {
-      const { type, name } = column;
+      const { type, display_name: name } = column;
       return {
         value: { column },
+        name,
         label: (
           <>
             <span className="sea-metadata-filter-header-icon">

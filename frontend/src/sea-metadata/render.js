@@ -36,6 +36,12 @@ const Main = forwardRef(({
     getData: () => metadataRef.current.getData(),
   }), []);
 
+  useEffect(() => {
+    return () => {
+      context.destroy();
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <div className={classnames('sea-metadata', className)}>

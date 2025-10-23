@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { isWhiteColor } from '@/utils/utils';
+import { getOptionDisplayNameByOption } from '../../../utils/column';
 
 import './index.css';
 
@@ -25,9 +26,11 @@ const SelectOption = ({ option, fontSize }) => {
     return _style;
   }, [option, fontSize]);
 
+  const optionName = getOptionDisplayNameByOption(option);
+
   return (
-    <div className="sea-metadata-ui-select-option text-truncate" style={style} title={option.name}>
-      {option.name}
+    <div className="sea-metadata-ui-select-option text-truncate" style={style} title={optionName}>
+      {optionName}
     </div>
   );
 };
