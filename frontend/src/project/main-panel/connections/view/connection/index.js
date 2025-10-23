@@ -512,8 +512,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
     const currentRow = rowsData[newIndex];
     currentRowRef.current = currentRow._id;
-    console.log('cur-row', currentRow);
-    // getRowDetails(currentRow);
+    getRowDetails(currentRow);
 
   }, [projectUuid, connectionID, connection]);
 
