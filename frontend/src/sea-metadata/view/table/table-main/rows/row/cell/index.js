@@ -172,7 +172,7 @@ const Cell = React.memo(({
     <div key={`${row._id}-${column.key}`} {...containerProps}>
       <Formatter
         isCellSelected={isCellSelected}
-        isShowMarkdownViewer={heightClassName === ROW_HEIGHT_CLASS_MAP[128]}
+        height={height}
         value={cellValue}
         column={column}
         row={row}
