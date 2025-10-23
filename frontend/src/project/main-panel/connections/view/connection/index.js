@@ -433,7 +433,17 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           setTicketDialogOpen(true);
           setTicketLoading(true);
           connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row.topic_id).then(res => {
-            setTicketData(res.data);
+            const data = res.data || {};
+            const discourseBaseUrl = connection.config?.url;
+            let relatedUrl = '';
+            if (discourseBaseUrl && row.slug && row.topic_id) {
+              const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+              relatedUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+            }
+            const prefix = data.description || '';
+            const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+            data.description = prefix ? `${prefix}\n\n${suffix}` : suffix;
+            setTicketData(data);
           }).finally(() => {
             setTicketLoading(false);
           });
