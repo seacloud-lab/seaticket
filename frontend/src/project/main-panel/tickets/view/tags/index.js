@@ -16,7 +16,8 @@ const AllTags = ({ projectUuid, permission }) => {
     {
       type: CellType.TAG,
       key: 'name',
-      name: gettext('Tag'),
+      name: 'name',
+      display_name: gettext('Tag'),
       editable: false,
       is_name_column: true,
       frozen: true,
@@ -25,14 +26,16 @@ const AllTags = ({ projectUuid, permission }) => {
     {
       type: CellType.TEXT,
       key: 'description',
-      name: gettext('Description'),
+      name: 'description',
+      display_name: gettext('Description'),
       editable: true,
       is_required: false,
     },
     {
       type: CellType.NUMBER,
       key: 'tickets_count',
-      name: gettext('Tickets count'),
+      name: 'tickets_count',
+      display_name: gettext('Tickets count'),
       editable: false,
     },
   ], [pageType, togglePageType]);
