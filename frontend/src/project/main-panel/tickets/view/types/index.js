@@ -16,7 +16,8 @@ const AllTypes = ({ projectUuid, permission }) => {
     {
       type: CellType.SINGLE_SELECT,
       key: 'name',
-      name: gettext('Type'),
+      name: 'name',
+      display_name: gettext('Type'),
       editable: false,
       is_name_column: true,
       frozen: true,
@@ -25,7 +26,8 @@ const AllTypes = ({ projectUuid, permission }) => {
     {
       type: CellType.NUMBER,
       key: 'tickets_count',
-      name: gettext('Tickets count'),
+      name: 'tickets_count',
+      display_name: gettext('Tickets count'),
       editable: false,
     },
   ], [pageType, togglePageType]);
