@@ -325,7 +325,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         return [], []
 
     display_names = set(CONNECTION_DISPLAY_ALL_COLUMNS[connection_type])
-    extra_query_names = set(CONNECTION_MUST_RETURN_COLUMNS[connection_type])
+    extra_query_names = set(CONNECTION_MUST_RETURN_COLUMNS.get(connection_type, []))
     display_all_columns = []
     extra_query_columns = []
 
