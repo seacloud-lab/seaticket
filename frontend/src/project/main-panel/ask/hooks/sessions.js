@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { askAPI } from '@/project/api';
+import { chatAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ChatSession } from '../models';
@@ -19,7 +19,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const { togglePageType, pageType } = useAskPage();
 
   const createSession = useCallback((name) => {
-    return askAPI.createChatSession(projectUuid, name).then(res => {
+    return chatAPI.createChatSession(projectUuid, name).then(res => {
       const session = new ChatSession(res.data.session);
       const newSessions = [session, ...sessions];
       setSessions(newSessions);
@@ -28,7 +28,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   }, [projectUuid, sessions]);
 
   const modifySession = useCallback((sessionId, { name }) => {
-    return askAPI.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
+    return chatAPI.modifyChatSession(projectUuid, sessionId, { session_name: name }).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       let session = newSessions[sessionIdx];
@@ -39,7 +39,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   }, [projectUuid, sessions]);
 
   const deleteSession = useCallback((sessionId) => {
-    return askAPI.deleteChatSession(projectUuid, sessionId).then(res => {
+    return chatAPI.deleteChatSession(projectUuid, sessionId).then(res => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       newSessions.splice(sessionIdx, 1);
@@ -70,9 +70,8 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     session.problem = null;
     newSessions[sessionIdx] = session;
     setSessions(newSessions);
-    askAPI.askQuestion({
+    chatAPI.sendChatMessage({
       project_uuid: projectUuid,
-      workspace_id: workspaceID,
       query: problem,
       session_uuid: sessionId,
       resolve_type: resolveType,
@@ -101,7 +100,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     setLoading(true);
     const isShowSessions = localStorage.getItem(localStorageKeyRef.current) || 'true';
     setIsShowSessions(isShowSessions === 'true' ? true : false);
-    askAPI.listChatSessions(projectUuid).then(res => {
+    chatAPI.listChatSessions(projectUuid).then(res => {
       let sessions = res.data.sessions;
       if (Array.isArray(sessions) && sessions.length > 0) {
         sessions = sessions.map(session => new ChatSession(session));
@@ -123,9 +122,9 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   }, [isShowSessions]);
 
   useEffect(() => {
-    const unsubscribeAskQuestion = eventBus.subscribe(EVENT_BUS_TYPE.ASK_QUESTION, solveProblem);
+    const unsubscribeSendChatMessage = eventBus.subscribe(EVENT_BUS_TYPE.ASK_QUESTION, solveProblem);
     return () => {
-      unsubscribeAskQuestion();
+      unsubscribeSendChatMessage();
     };
   }, [sessions, solveProblem]);
 

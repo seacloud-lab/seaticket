@@ -11,11 +11,11 @@ import './index.css';
 const CommonMessage = forwardRef(({ message }, ref) => {
   const contentRef = useRef(null);
 
-  const [answerType, setAnswerType] = useState('rich-text');
+  const [aiMessageType, setAIMessageType] = useState('rich-text');
 
-  const answer = useMemo(() => {
+  const aiReply = useMemo(() => {
     if (Object.keys(message).length === 0) return '';
-    let value = message[CHAT_MESSAGE_TYPE.ANSWER];
+    let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
     const originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     let sources = Array.isArray(originSources) ? originSources.slice(0) : [];
     if (value && sources.length > 0) {
@@ -69,29 +69,29 @@ const CommonMessage = forwardRef(({ message }, ref) => {
     return value;
   }, [message]);
 
-  const beforeAnswerRenderCallback = useCallback((value) => {
+  const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
-      setAnswerType('text');
+      setAIMessageType('text');
     }
   }, []);
 
   useImperativeHandle(ref, () => ({
 
     getHTML: () => {
-      if (!answer) return '';
+      if (!aiReply) return '';
       return contentRef.current.innerHTML;
     },
 
-    getAnswer: () => answer,
-  }), [message, answer, contentRef]);
+    getAIReply: () => aiReply,
+  }), [message, aiReply, contentRef]);
 
   return (
     <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
       <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
       {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
-      {answer && (
-        <div className={classnames('sea-qa-ai-ask-message-answer', answerType)}>
-          <CustomizeMarkdownViewer value={answer} showTOC={false} beforeRenderCallback={beforeAnswerRenderCallback} />
+      {aiReply && (
+        <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
+          <CustomizeMarkdownViewer value={aiReply} showTOC={false} beforeRenderCallback={beforeAIReplyRenderCallback} />
         </div>
       )}
     </div>

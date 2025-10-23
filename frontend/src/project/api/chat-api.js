@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
 
-class AskAPI {
+class ChatAPI {
 
   init({ server, username, password, token }) {
     this.server = server;
@@ -58,8 +58,8 @@ class AskAPI {
     }
   }
 
-  askQuestion(params) {
-    const url = this.server + '/api/v2.1/ai/qa/';
+  sendChatMessage(params) {
+    const url = this.server + '/api/v2.1/ai/chat/';
     return this._sendPostRequest(url, params);
   }
   // chat sessions api
@@ -101,8 +101,8 @@ class AskAPI {
 
 }
 
-const askAPI = new AskAPI();
+const chatAPI = new ChatAPI();
 const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
-askAPI.initForUsage({ siteRoot, xcsrfHeaders });
+chatAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
-export { askAPI };
+export { chatAPI };

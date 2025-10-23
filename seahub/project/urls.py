@@ -17,7 +17,7 @@ from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import QAView, ConvertRecordToTicket
+from .ai import ChatView, ConvertRecordToTicket
 
 
 urlpatterns = [
@@ -82,7 +82,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-duplicate-view/$', TicketViewsDuplicateView.as_view(), name='api-v2.1-project-ticket-view-duplicate'),
 
     # ai
-    re_path(r'^api/v2.1/ai/qa/$', QAView.as_view(), name='api-v2.1-qa'),
+    re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
 
 ]
