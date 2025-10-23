@@ -3,7 +3,7 @@ import copy from 'copy-to-clipboard';
 import { typesAPI, ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTypes, useTicketsPage } from '../../hooks';
+import { useTypes, useTicketsPage, useTags } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_COLUMNS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
@@ -16,6 +16,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
   const { isLoading: isTypesLoading, typesData, createType } = useTypes();
+  const { tagsData } = useTags();
 
   const columns = useMemo(() => {
     const columnsUpdate = {
@@ -238,6 +239,8 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
       // types
       typesData={typesData}
       createType={createType}
+
+      tagsData={tagsData}
 
       t={t}
     />
