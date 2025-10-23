@@ -119,7 +119,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                 { value: action.result, formatter: StepMarkdownViewer }
               ]
             }, {
-              name: gettext('Other information'),
+              name: gettext('Statistics'),
               children: [
                 { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
                 { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
@@ -133,21 +133,22 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     });
 
     // final answer
-    if (propsValue.final_answer){
+    if (propsValue.final_answer?.result){
       let result = propsValue.final_answer.result;
       if (result && isObject(result)) {
         result = JSON.stringify(result);
       }
 
       value.push({
-        name: gettext('Final answer'),
+        name: gettext('Answer generation'),
         children: [
           {
             name: propsValue.final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
-            value: result,
-            formatter: result ? StepMarkdownViewer : null,
+            children: [
+              { value: result, formatter: result ? StepMarkdownViewer : null }
+            ]
           }, {
-            name: gettext('Other information'),
+            name: gettext('Statistics'),
             children: [
               { name: gettext('Input tokens'), value: propsValue.final_answer.token_usage?.input_tokens || 0 },
               { name: gettext('Output tokens'), value: propsValue.final_answer.token_usage?.output_tokens || 0 },
@@ -158,6 +159,46 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
         ]
       });
     }
+
+    value.push({
+      name: gettext('Statistics'),
+      children: [
+        {
+          name: gettext('Token usages'),
+          children: [
+            {
+              name: gettext('Input tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.input_tokens.action_steps },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.input_tokens.answer_generation },
+                { name: gettext('Total'), value: propsValue.static.token_usage.input_tokens.total }
+              ]
+            }, {
+              name: gettext('Output tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.output_tokens.action_steps },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.output_tokens.answer_generation },
+                { name: gettext('Total'), value: propsValue.static.token_usage.output_tokens.total }
+              ]
+            }, {
+              name: gettext('Total tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.total_tokens.action_steps },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.total_tokens.answer_generation },
+                { name: gettext('Total'), value: propsValue.static.token_usage.total_tokens.total }
+              ]
+            }
+          ]
+        }, {
+          name: gettext('Time usage'),
+          children: [
+            { name: gettext('Action steps'), value: `${propsValue.static.time_usage.action_steps} s` },
+            { name: gettext('Answer generation'), value: `${propsValue.static.time_usage.answer_generation} s` },
+            { name: gettext('Total'), value: `${propsValue.static.time_usage.total} s` },
+          ]
+        }
+      ]
+    });
 
     setValue(value);
     setLoading(false);
