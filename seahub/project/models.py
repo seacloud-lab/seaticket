@@ -623,12 +623,12 @@ class ConnectionsViewsManager(models.Manager):
         record = self.filter(connection_id=connection_id).first()
 
         if not record:
-            details = json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
+            details = CONNECTION_DEFAULT_DETAILS[connection_type]
             details = self.update_init_view_details(project_uuid, connection, details)
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=details
+                details=json.dumps(details)
             )
         return record
 
