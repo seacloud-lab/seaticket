@@ -823,7 +823,7 @@ msgstr ""
 
 #: seahub/templates/base.html:12 seahub/templates/base_clean.html:11
 #: seahub/templates/base_for_react.html:11
-msgid "SeaQA - As simple as Excel, with the power of a database"
+msgid "SeaQA - Solving resolving with AI"
 msgstr ""
 
 #: seahub/templates/base.html:14 seahub/templates/base.html:23
