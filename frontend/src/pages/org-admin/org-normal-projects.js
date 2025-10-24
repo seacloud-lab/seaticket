@@ -6,7 +6,7 @@ import { toaster, ModalPortal, CommonOperationConfirmationDialog, Paginator, Pro
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,

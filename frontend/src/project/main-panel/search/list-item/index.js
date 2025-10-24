@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../connections/constants';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 

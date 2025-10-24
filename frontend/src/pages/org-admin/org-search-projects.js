@@ -8,7 +8,7 @@ import { Utils } from '../../utils/utils';
 import { gettext, siteRoot, loginUrl, mediaUrl } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import MainPanelTopbar from './main-panel-topbar';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const { orgID } = window.org.pageOptions;
 

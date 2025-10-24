@@ -8,7 +8,7 @@ import { orgID, gettext, trashCleanExpireDays, mediaUrl } from '../../constants'
 import { Utils } from '../../utils/utils';
 import RestoreProjectDialog from '../../home/dialog/restore-project-dialog';
 import EmptyProjectTrashDialog from '../../home/dialog/empty-project-trash-dialog';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,

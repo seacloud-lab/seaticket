@@ -2,7 +2,7 @@ import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader } from '@/components';
 import { mediaUrl } from '@/constants';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 

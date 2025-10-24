@@ -8,7 +8,7 @@ import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 
 const contentTypes = {

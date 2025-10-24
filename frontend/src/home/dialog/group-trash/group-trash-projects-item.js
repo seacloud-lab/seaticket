@@ -6,7 +6,7 @@ import { Utils } from '../../../utils/utils';
 import { gettext } from '../../../constants/config';
 import { seaQAAPI } from '../../../api/web-api';
 import RestoreProjectDialog from '../restore-project-dialog';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const propTypes = {
   item: PropTypes.object.isRequired,

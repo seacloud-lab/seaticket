@@ -13,7 +13,7 @@ import ProjectOpMenu from './project-op-menu';
 import ProjectNav from './project-nav';
 import AllExternalLinksDialog from '../../../home/dialog/all-external-links-dialog';
 import SysAdminShareProjectDialog from '../../../components/dialog/sysadmin-dialog/sysadmin-share-project-dialog';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import '../../../css/system-dtable.css';
 

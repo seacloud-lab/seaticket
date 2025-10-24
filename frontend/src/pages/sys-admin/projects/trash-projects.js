@@ -13,7 +13,7 @@ import { Utils } from '../../../utils/utils';
 import ModalPortal from '../../../components/modal-portal';
 import RestoreProjectDialog from '../../../components/dialog/sysadmin-dialog/restore-project-dialog';
 import ProjectTrashOpMenu from './project-trash-op-menu';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import '../../../css/system-dtable.css';
 
