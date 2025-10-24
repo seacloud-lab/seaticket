@@ -33,6 +33,7 @@ const propTypes = {
   onUnsetPasswordToggle: PropTypes.func,
   onModifyPasswordToggle: PropTypes.func,
   onDeleteProjectToggle: PropTypes.func,
+  onAPITokenToggle: PropTypes.func,
   onCopyProjectToggle: PropTypes.func,
   onAddProject: PropTypes.func,
   onUpdateProject: PropTypes.func,
@@ -70,6 +71,7 @@ class WorkspaceContainer extends Component {
               isOwner={isOwner}
               isAdmin={isAdmin}
               workspace={this.props.workspace}
+              onAPITokenToggle={this.props.onAPITokenToggle}
               onSetPasswordToggle={this.props.onSetPasswordToggle}
               onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
               onModifyPasswordToggle={this.props.onModifyPasswordToggle}

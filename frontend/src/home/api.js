@@ -283,6 +283,31 @@ class HomeAPI {
     return this.req.delete(url);
   }
 
+  listProjectAPITokens(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/api-tokens/';
+    return this.req.get(url);
+  }
+
+  createProjectAPIToken(projectUuid, appName, permission = 'rw') {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/api-tokens/';
+    return this.req.post(url, {
+      app_name: appName,
+      permission: permission
+    });
+  }
+
+  deleteProjectAPIToken(projectUuid, tokenId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/api-tokens/' + tokenId + '/';
+    return this.req.delete(url);
+  }
+
+  updateProjectAPIToken(projectUuid, tokenId, permission) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/api-tokens/' + tokenId + '/';
+    return this.req.put(url, {
+      permission: permission
+    });
+  }
+
 }
 
 const homeAPI = new HomeAPI();
