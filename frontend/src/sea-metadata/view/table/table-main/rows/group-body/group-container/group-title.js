@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
-import { getOption, getColumnOptions, getTypesOptions } from '@/sea-metadata/utils/column';
+import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 import { CellType, DELETED_OPTION_BACKGROUND_COLOR } from '@/sea-metadata/constants';
 import { RATE_MAP } from '@/sea-metadata/components/cell-editors/rate-editor/constants';
 import RateItem from '@/sea-metadata/components/cell-editors/rate-editor/rate-item';
@@ -44,7 +44,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
             color: selectedOption.textColor
           } :
           { backgroundColor: DELETED_OPTION_BACKGROUND_COLOR };
-        const optionName = selectedOption ? selectedOption.name : deletedOptionTip;
+        const optionName = selectedOption ? getOptionDisplayNameByOption(selectedOption) : deletedOptionTip;
         return (<div className="sea-metadata-single-select-option" style={style} key={cellValue} title={optionName}>{optionName}</div>);
       }
       case CellType.MULTIPLE_SELECT: {

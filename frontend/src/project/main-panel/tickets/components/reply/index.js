@@ -181,8 +181,8 @@ const Reply = ({
         </div>
         {isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
-            title={gettext('Delete reply')}
-            message={gettext('Are you sure you want to delete the reply ?')}
+            title={gettext('Delete comment')}
+            message={gettext('Are you sure you want to delete the comment ?')}
             executeOperation={() => onDelete(reply)}
             confirmBtnText={gettext('Delete')}
             toggleDialog={() => setIsShowDeleteDialog(false)}

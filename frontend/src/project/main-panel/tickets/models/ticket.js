@@ -35,7 +35,7 @@ class Ticket {
     this.number = object.number || '';
 
     this.title = object.title || '';
-    this.content = object.content || '';
+    this.content = object.description || '';
     this.status = object.status || TICKET_STATUS.OPEN;
     this.type = String(object.type) || '';
     this.tags = object.tags || [];
@@ -62,7 +62,7 @@ class Ticket {
     this.reply_updated_at = this.reply_updated_at ? dayjs(this.reply_updated_at).fromNow() : '--';
 
     if (this.replies) {
-      this.replies = this.replies.map(reply => new Reply(reply));
+      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
     }
 
     if (this.tags) {
@@ -109,7 +109,7 @@ class TicketForTickets {
     this.number = object.number || '';
 
     this.title = object.title || '';
-    this.content = object.content || '';
+    this.description = object.description || '';
     this.status = object.status || TICKET_STATUS.OPEN;
     this.type = String(object.type) || '';
     this.tags = object.tags || [];
@@ -128,7 +128,7 @@ class TicketForTickets {
     this.updated_at = object.updated_at || '';
 
     if (this.replies) {
-      this.replies = this.replies.map(reply => new Reply(reply));
+      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
     }
 
     if (this.reply_count || this.reply_count === '0') {

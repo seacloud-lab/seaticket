@@ -16,7 +16,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
   const displayColumns = useMemo(() => {
     if (!searchValue) return Array.isArray(columns) ? columns : [];
     const validSearchValueValue = searchValue.trim().toLocaleLowerCase();
-    return columns.filter(column => column.name.toLocaleLowerCase().indexOf(validSearchValueValue) > -1);
+    return columns.filter(column => column.display_name.toLocaleLowerCase().indexOf(validSearchValueValue) > -1);
   }, [searchValue, columns]);
 
   const popoverRef = useRef(null);

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Label } from 'reactstrap';
 import { gettext } from '@/constants';
@@ -8,6 +8,7 @@ import TypeFilter from './type-filter';
 import TagsFilter from './tags-filter';
 import { getColumnByKey } from '@/sea-metadata/utils/column';
 import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -16,29 +17,33 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
   const { tagsData } = useTagsData();
   const { typesData } = useTypesData();
 
+  const statusColumnKey = useMemo(() => context.getSetting('statusColumnKey', 'status'));
+  const typeColumnKey = useMemo(() => context.getSetting('typeColumnKey', 'type'));
+  const tagsColumnKey = useMemo(() => context.getSetting('tagsColumnKey', 'tags'));
+
   const onStatusChange = useCallback((newValue) => {
-    const filterIndex = filters.findIndex(filter => filter.column_key === 'status');
+    const filterIndex = filters.findIndex(filter => filter.column_key === statusColumnKey);
     const filter = filters[filterIndex];
     const newFilters = filters.slice(0);
     newFilters[filterIndex] = { ...filter, filter_term: newValue };
     onChange && onChange(newFilters);
-  }, [filters, onChange]);
+  }, [filters, statusColumnKey, onChange]);
 
   const onTagsChange = useCallback((newValue) => {
-    const filterIndex = filters.findIndex(filter => filter.column_key === 'tags');
+    const filterIndex = filters.findIndex(filter => filter.column_key === tagsColumnKey);
     const filter = filters[filterIndex];
     const newFilters = filters.slice(0);
     newFilters[filterIndex] = { ...filter, filter_term: newValue };
     onChange && onChange(newFilters);
-  }, [filters, onChange]);
+  }, [filters, tagsColumnKey, onChange]);
 
   const onTypeChange = useCallback((newValue) => {
-    const filterIndex = filters.findIndex(filter => filter.column_key === 'type');
+    const filterIndex = filters.findIndex(filter => filter.column_key === typeColumnKey);
     const filter = filters[filterIndex];
     const newFilters = filters.slice(0);
     newFilters[filterIndex] = { ...filter, filter_term: newValue };
     onChange && onChange(newFilters);
-  }, [filters, onChange]);
+  }, [filters, typeColumnKey, onChange]);
 
   return (
     <FormGroup className="filter-group-basic filter-group p-4">
@@ -48,13 +53,13 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
           {filters.map(filter => {
             const { column_key, filter_term } = filter;
             const column = getColumnByKey(columns, column_key);
-            if (column && column_key === 'status') {
+            if (column && column_key === statusColumnKey) {
               return (<StatusFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
             }
-            if (column && column_key === 'type' && typesData) {
+            if (column && column_key === typeColumnKey && typesData) {
               return (<TypeFilter readOnly={readOnly} value={filter_term} key={column_key} onChange={onTypeChange} />);
             }
-            if (column && column_key === 'tags' && tagsData) {
+            if (column && column_key === tagsColumnKey && tagsData) {
               return (<TagsFilter readOnly={readOnly} value={filter_term} key={column_key} onChange={onTagsChange} />);
             }
             return null;

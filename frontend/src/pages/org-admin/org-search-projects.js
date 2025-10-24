@@ -8,6 +8,7 @@ import { Utils } from '../../utils/utils';
 import { gettext, siteRoot, loginUrl, mediaUrl } from '../../constants';
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import MainPanelTopbar from './main-panel-topbar';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const { orgID } = window.org.pageOptions;
 
@@ -101,7 +102,7 @@ class Item extends Component {
           <td>
             <Link to={this.linkedTo(item)}>{item.owner}</Link>
           </td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>

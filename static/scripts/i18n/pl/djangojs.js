@@ -337,7 +337,7 @@
     "Replace file {filename}?": "Zamieni\u0107 plik {filename}?",
     "Replacing it will overwrite its content.": "Zast\u0105pienie go spowoduje nadpisanie jego zawarto\u015bci.",
     "Reset Password": "Zresetuj has\u0142o",
-    "ResetPwd": "Resetuj has\u0142o",
+    "Reset password": "Resetuj has\u0142o",
     "Restore": "Przywr\u00f3\u0107",
     "Restore Library": "Przywr\u00f3\u0107 bibliotek\u0119",
     "Revoke Admin": "Odwo\u0142aj admina",

@@ -64,7 +64,7 @@ class AdvancedFilters extends Component {
     const { columns } = this.props;
     return columns.filter(column => {
       let { type } = column;
-      return Object.prototype.hasOwnProperty.call(FILTER_COLUMN_OPTIONS, type);
+      return Object.prototype.hasOwnProperty.call(FILTER_COLUMN_OPTIONS, type) && column.filter_able;
     });
   };
 

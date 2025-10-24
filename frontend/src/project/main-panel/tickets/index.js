@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TagsProvider, TypesProvider, TicketsPageProvider, useTicketsPage } from './hooks';
+import { TagsProvider, TypesProvider, TicketsPageProvider, useTicketsPage, DataCacheProvider } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
 import TagTickets from './view/tag-tickets';
@@ -17,7 +17,7 @@ import { server } from '@/constants';
 import './index.css';
 
 const {
-  projectUuid, projectName, workspaceID, permission
+  projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
 
 const Page = () => {
@@ -25,7 +25,7 @@ const Page = () => {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
   const props = useMemo(() => ({
-    projectUuid, projectName, workspaceID, permission
+    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin
   }), []);
 
   const { isLoading, pageType, childrenPageType } = useTicketsPage();
@@ -35,7 +35,7 @@ const Page = () => {
     return (<TagTickets { ...props } tagID={childrenPageType} />);
   }
   if (pageType === TICKET_PAGE_TYPE.TYPES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} />);
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
     return (<TypeTickets { ...props } typeID={childrenPageType}/>);
   }
   if (pageType === TICKET_PAGE_TYPE.ALL) {
@@ -49,19 +49,21 @@ const Page = () => {
 
 const Index = ({ title }) => {
   return (
-    <CollaboratorsProvider
-      listUserInfo={(...params) => ticketsAPI.listUserInfo(...params)}
-      getCollaborators={() => ticketsAPI.listProjectRelatedUsers(projectUuid)}
-    >
-      <TypesProvider projectUuid={projectUuid}>
-        <TagsProvider projectUuid={projectUuid}>
-          <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
-            <TicketTopBar title={title} />
-            <Page />
-          </TicketsPageProvider>
-        </TagsProvider>
-      </TypesProvider>
-    </CollaboratorsProvider>
+    <DataCacheProvider>
+      <CollaboratorsProvider
+        listUserInfo={(...params) => ticketsAPI.listUserInfo(...params)}
+        getCollaborators={() => ticketsAPI.listProjectRelatedUsers(projectUuid)}
+      >
+        <TypesProvider projectUuid={projectUuid}>
+          <TagsProvider projectUuid={projectUuid}>
+            <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
+              <TicketTopBar title={title} />
+              <Page />
+            </TicketsPageProvider>
+          </TagsProvider>
+        </TypesProvider>
+      </CollaboratorsProvider>
+    </DataCacheProvider>
   );
 };
 

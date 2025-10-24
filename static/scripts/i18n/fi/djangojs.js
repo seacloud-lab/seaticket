@@ -360,7 +360,7 @@
     "Replace file {filename}?": "Korvaa tiedosto {filename}?",
     "Replacing it will overwrite its content.": "Korvaaminen kirjoittaa sis\u00e4ll\u00f6n yli.",
     "Reset Password": "Nollaa salasana",
-    "ResetPwd": "Nollaa salasana",
+    "Reset password": "Nollaa salasana",
     "Restore": "Palauta",
     "Restore Library": "Palauta Kirjasto",
     "Revoke Admin": "Kumoa yll\u00e4pit\u00e4j\u00e4",

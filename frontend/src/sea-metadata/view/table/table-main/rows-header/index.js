@@ -6,7 +6,7 @@ import InsertColumn from './insert-column';
 import { isMobile } from '@/utils/utils';
 import { checkIsColumnFrozen, recalculateColumnMetricsByResizeColumn, getFrozenColumns } from '../../../../utils/column';
 import { isEmptyObject } from '../../../../utils/common';
-import { GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
+import { EVENT_BUS_TYPE, GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
   seaTableZIndexes,
 } from '../../../../constants';
 import context from '@/sea-metadata/context';
@@ -93,6 +93,10 @@ const RowsHeader = ({
     setDragOverCellKey(cellKey);
   }, [dragOverColumnKey]);
 
+  const onColumnSelectNone = () => {
+    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+  };
+
   const frozenColumns = getFrozenColumns(columnMetrics.columns);
   const displayColumns = columnMetrics.columns.slice(colOverScanStartIdx, colOverScanEndIdx);
   const frozenColumnsWidth = frozenColumns.reduce((total, c) => total + c.width, groupOffsetLeft + SEQUENCE_COLUMN_WIDTH);
@@ -136,6 +140,7 @@ const RowsHeader = ({
                 onMove={modifyColumnOrder}
                 updateDraggingKey={updateDraggingKey}
                 updateDragOverKey={updateDragOverKey}
+                onColumnSelectNone={onColumnSelectNone}
                 {...props}
               />
             );
@@ -161,6 +166,7 @@ const RowsHeader = ({
               onMove={modifyColumnOrder}
               updateDraggingKey={updateDraggingKey}
               updateDragOverKey={updateDragOverKey}
+              onColumnSelectNone={onColumnSelectNone}
               {...props}
             />
           );

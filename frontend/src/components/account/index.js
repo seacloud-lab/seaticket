@@ -27,9 +27,6 @@ class Account extends Component {
       contactEmail: '',
       isStaff: false,
       isOrgStaff: false,
-      quotaTotal: '',
-      quotaUsage: '',
-      usageRate: ''
     };
     this.isFirstMounted = true;
   }
@@ -104,12 +101,6 @@ class Account extends Component {
           isOrgStaff: resp.data.is_org_staff === 1 ? true : false,
           showInfo: !this.state.showInfo,
           enableSubscription: resp.data.enable_subscription,
-          quotaUsage: Utils.bytesToSize(resp.data.usage),
-          quotaTotal: Utils.bytesToSize(resp.data.total),
-          usageRate: resp.data.space_usage,
-          rowUsage: resp.data.row_usage,
-          rowTotal: resp.data.row_total > 0 ? resp.data.row_total : '--',
-          rowUsageRate: resp.data.row_usage_rate,
           bigDataTotalRows: resp.data.big_data_total_rows,
           bigDataRowLimit: resp.data.big_data_row_limit > 0 ? resp.data.big_data_row_limit : '--',
           bigDataRowUsageRate: resp.data.big_data_row_usage_rate,
@@ -198,18 +189,6 @@ class Account extends Component {
           <div className="txt">{this.state.userName}</div>
         </div>
         <div className="item">
-          <div className="account-info">
-            <p>{gettext('Storage used')}{': '}{this.state.quotaUsage} / {this.state.quotaTotal}</p>
-            <div id="quota-bar">
-              <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: this.state.usageRate }}></span>
-            </div>
-          </div>
-          <div className="account-info">
-            <p>{gettext('Rows used')}{': '}{this.state.rowUsage} / {this.state.rowTotal}</p>
-            <div id="quota-bar">
-              <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: this.state.rowUsageRate }}></span>
-            </div>
-          </div>
           <div className="account-info row-used">
             <p>{gettext('API calls count')}{': '}{this.state.apiCallsCount} / {this.state.apiCallsLimit > 0 ? this.state.apiCallsLimit : '--'} </p>
             <div id="quota-bar">

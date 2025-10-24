@@ -4,6 +4,8 @@ import TopBar from '../top-bar';
 import Sessions from './sessions';
 import Chat from './chat';
 import { AskPageProvider, SessionsProvider, useAskPage, useSessions } from './hooks';
+import { PERMISSION_TYPES } from '@/constants';
+import { ASK_PAGE_TYPE } from './constants';
 
 import './index.css';
 
@@ -12,7 +14,7 @@ const {
 } = window.app.pageOptions;
 
 const Main = ({ title }) => {
-  const { isLoading: isAskPageLoading, pageType } = useAskPage();
+  const { isLoading: isAskPageLoading, pageType, togglePageType } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
 
   const isLoading = isAskPageLoading || isSessionsLoading;
@@ -21,7 +23,14 @@ const Main = ({ title }) => {
     <>
       <TopBar className="pr-3">
         <div className="w-100 text-truncate">{title}</div>
-        {!isLoading && (<IconButton icon="history" onClick={toggleIsShowSessions} />)}
+        {!isLoading && (
+          <div className="d-flex">
+            {permission === PERMISSION_TYPES.READ_WRITE && (
+              <IconButton icon="new-chat" onClick={() => togglePageType(ASK_PAGE_TYPE.NEW)} style={{ marginRight: '10px' }} />
+            )}
+            <IconButton icon="history" onClick={toggleIsShowSessions} />
+          </div>
+        )}
       </TopBar>
       <div className="ask-main-container">
         {isLoading ? (

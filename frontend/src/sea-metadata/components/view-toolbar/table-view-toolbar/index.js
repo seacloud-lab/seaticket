@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
-import { VIEW_TOOLS } from '../../../constants';
+import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
-  readOnly, view, collaborators,
+  readOnly, view, collaborators, fixedColumnCount,
   modifyFilters, modifySorts, modifyGroupbys, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
@@ -21,12 +21,12 @@ const TableViewToolbar = ({
 
   return (
     <>
-      {tools.includes('search') && (
+      {tools.includes(VIEW_TOOL.SEARCH) && (
         <Searcher onChange={searchRows} />
       )}
-      {tools.includes('filters') && (
+      {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
-          wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-filter"
+          wrapperClass="sea-metadata-view-tool-filter mr-2"
           filtersClassName="sea-metadata-filters"
           target="sea-metadata-filter-popover"
           readOnly={readOnly}
@@ -39,9 +39,9 @@ const TableViewToolbar = ({
           viewType={viewType}
         />
       )}
-      {tools.includes('sorts') && (
+      {tools.includes(VIEW_TOOL.SORTS) && (
         <SortSetter
-          wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-sort"
+          wrapperClass="sea-metadata-view-tool-sort mr-2"
           target="sea-metadata-sort-popover"
           readOnly={readOnly}
           sorts={view.sorts}
@@ -50,9 +50,9 @@ const TableViewToolbar = ({
           modifySorts={modifySorts}
         />
       )}
-      {tools.includes('groupbys') && (
+      {tools.includes(VIEW_TOOL.GROUPBYS) && (
         <GroupbySetter
-          wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-groupby"
+          wrapperClass="sea-metadata-view-tool-groupby mr-2"
           target="sea-metadata-groupby-popover"
           readOnly={readOnly}
           columns={viewColumns}
@@ -60,18 +60,20 @@ const TableViewToolbar = ({
           modifyGroupbys={modifyGroupbys}
         />
       )}
-      {tools.includes('order_and_hidden') && (
+      {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && (
         <HideColumnSetter
-          wrapperClass="sea-metadata-view-tool-operation-btn sea-metadata-view-tool-hide-column"
+          wrapperClass="sea-metadata-view-tool-hide-column mr-2"
           target="sea-metadata-hide-column-popover"
           readOnly={readOnly}
-          columns={viewColumns.slice(1)}
+          columns={viewColumns.slice(fixedColumnCount)}
           hiddenColumns={view.hidden_columns || []}
           modifyHiddenColumns={modifyHiddenColumns}
           modifyColumnOrder={modifyColumnOrder}
         />
       )}
-      <ManageSetter />
+      {tools.includes(VIEW_TOOL.MANAGE) && (
+        <ManageSetter />
+      )}
     </>
   );
 };

@@ -15,6 +15,7 @@ import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import { getRoleOptions } from '../../../utils/role-status-utils';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 import '../../../css/system-org.css';
 
@@ -169,7 +170,7 @@ class Item extends Component {
           <td>
             {item.storage_usage > 0 ? Utils.bytesToSize(item.storage_usage) : '--'}
           </td>
-          <td>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.ctime)}>{dayjs(item.ctime).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             <IconButton
               className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}

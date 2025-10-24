@@ -26,6 +26,7 @@ const getFilterResult = (row, filter, { username, userId }) => {
       cellValue = DateUtils.format(cellValue, DATE_FORMAT_MAP.YYYY_MM_DD);
       return dateFilter(cellValue, filter);
     }
+    case CellType.URL:
     case CellType.FILE_NAME:
     case CellType.TEXT: {
       return textFilter(cellValue, filter, userId);

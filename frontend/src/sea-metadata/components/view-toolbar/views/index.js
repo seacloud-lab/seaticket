@@ -4,6 +4,7 @@ import { IconButton, CustomizeNameDialog } from '@/components';
 import { useViewsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 import ViewItem from './view-item';
+import AllViews from './all-views';
 import context from '@/sea-metadata/context';
 import { isFunction } from '@/utils/utils';
 
@@ -18,14 +19,23 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, viewID, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
+  const { isLoading, viewsData, viewID, visibleViewsCount, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
 
-  const displayViews = useMemo(() => {
+  const allViews = useMemo(() => {
     if (isLoading) return [];
     const { navigation, views } = viewsData;
     if (!navigation || !views) return [];
     return navigation.map(n => views.find(v => v._id === n._id));
   }, [isLoading, viewsData, view]);
+
+  const displayViews = useMemo(() => {
+    return allViews.slice(0, visibleViewsCount);
+  }, [visibleViewsCount, allViews]);
+
+  const isSelected = useMemo(() => {
+    if (viewID && !displayViews.find(v => v._id === viewID)) return true;
+    return false;
+  }, [displayViews, viewID]);
 
   const openViewNameDialog = useCallback((isRename) => {
     isRenameRef.current = Boolean(isRename);
@@ -137,6 +147,15 @@ const Views = ({ view, toggleView }) => {
               />
             );
           })}
+          {allViews.length > visibleViewsCount && (
+            <AllViews
+              viewID={viewID}
+              allViews={allViews}
+              isSelected={isSelected}
+              onMove={moveView}
+              toggleView={toggleView}
+            />
+          )}
         </div>
         {(canScrollPrev || canScrollNext) && (
           <div className="sea-metadata-views-nav-scroll-control mr-2">

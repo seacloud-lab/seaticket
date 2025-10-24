@@ -16,7 +16,7 @@ from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import login as auth_login
 from seahub.utils import render_error, is_valid_email
 from seahub.utils.auth import get_login_bg_image_path
-from seahub.settings import SSO_SECRET_KEY, SITE_ROOT
+from seahub.settings import SSO_SECRET_KEY, SITE_ROOT, LOGIN_REMEMBER_DAYS
 from seahub.base.accounts import User
 from seahub.base.accounts import AuthBackend
 from seahub.profile.models import Profile
@@ -153,10 +153,14 @@ def multi_saml_sso(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
     template_name = 'registration/multi_saml_sso.html'
-    render_data = {'login_bg_image_path': get_login_bg_image_path()}
-
+    render_data = {
+        'login_bg_image_path': get_login_bg_image_path(),
+        'remember_days': LOGIN_REMEMBER_DAYS,
+        }
     if request.method == "POST":
         login_email = request.POST.get('login', '')
+        remember_me = True if request.POST.get('remember_me', '') == 'on' else False 
+        
         if not is_valid_email(login_email):
             render_data['error_msg'] = 'Email invalid.'
             return render(request, template_name, render_data)
@@ -187,6 +191,8 @@ def multi_saml_sso(request):
             render_data['error_msg'] = 'Internal server error. Please contact system administrator.'
             return render(request, template_name, render_data)
 
+        request.session['remember_me'] = remember_me
+        
         return HttpResponseRedirect('/org/custom/%s/saml/login/' % str(org_id))
 
     if request.method == "GET":

@@ -6,17 +6,21 @@ import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { getType, Utils } from '@/utils/utils';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_MESSAGE_TYPE } from '../constants';
+import { CHAT_MESSAGE_TYPE, AI_RESOLVE_TYPE } from '../constants';
+import ResolveType from './resolve-type';
 
 import './index.css';
 
 const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
+  const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
+  const [value, setValue] = useState('');
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
   const rangeRef = useRef(null);
+  const previewContentRef = useRef(null);
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
@@ -24,6 +28,11 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
     };
     inputUtils.onPaste(event, callBack);
   }, [inputUtils]);
+
+  const onValueChange = useCallback((event) => {
+    const value = event.target.value;
+    setValue(value);
+  }, []);
 
   const inputFocus = useCallback(() => {
     // set cursor at end
@@ -49,7 +58,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
       if (mType === 'Object' && m.type === CHAT_MESSAGE_TYPE.TEXT) text += m.value;
     });
 
-    inputRef.current.innerText = text;
+    setValue(text);
 
     inputFocus();
   }, [readOnly, inputRef, inputFocus]);
@@ -57,20 +66,14 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    const text = inputRef.current.innerText;
-    sendMessage(text, []);
-  }, [sendMessage]);
+    sendMessage(resolveType, value, []);
+  }, [resolveType, value, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
       const selection = window.getSelection();
       rangeRef.current = selection.getRangeAt(0);
     }
-
-    if (event.keyCode === Utils.keyCodes.backspace && inputRef.current.textContent === '') {
-      inputRef.current.innerText = '';
-    }
-
   }, []);
 
   const onKeyDown = useCallback((event) => {
@@ -103,6 +106,12 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
     inputRef.current && inputRef.current.focus();
   }, []);
 
+  useEffect(() => {
+    if (inputRef.current && previewContentRef.current) {
+      previewContentRef.current.textContent = value;
+    }
+  }, [value]);
+
   useImperativeHandle(ref, () => ({
 
     clearInput: () => {
@@ -121,12 +130,12 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
     },
 
     getProblem: () => {
-      return inputRef?.current?.innerText || '';
+      return value || '';
     },
 
     inputWrapper: inputRef?.current.parentNode.parentNode.parentNode,
 
-  }), [setAsk, inputRef]);
+  }), [value, setAsk, inputRef]);
 
   const disabled = isReply || readOnly;
 
@@ -135,21 +144,25 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
           <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
-            <div
+            <textarea
               autoFocus
-              className="message-input"
+              className="message-input-value message-input"
               ref={inputRef}
+              value={value}
               onKeyDown={onKeyDown}
               onKeyUp={onKeyUp}
               onMouseUp={onMouseUp}
               onPaste={onPaste}
+              onChange={onValueChange}
               placeholder={gettext('What problem you want to solve?')}
               tabIndex={-1}
-              contentEditable={!disabled}
-            >
-            </div>
+              rows={1}
+              disabled={disabled}
+            />
+            <div ref={previewContentRef} className="message-input message-input-preview"></div>
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
+            <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
             <IconButton
               disabled={disabled}
               icon="send"

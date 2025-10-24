@@ -1,89 +1,62 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import copy from 'copy-to-clipboard';
+import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
-import SeaMetadata, { CellType } from '@/sea-metadata';
-import { useTags, useTypes, useTicketsPage } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_STATUS_OPTIONS } from '../../constants';
+import SeaMetadata from '@/sea-metadata';
+import { useTags, useTypes, useTicketsPage, useDataCache } from '../../hooks';
+import { TICKET_COLUMNS, TICKET_PAGE_TYPE } from '../../constants';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
+import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
   const { typesData, createType, isLoading: isTypesLoading } = useTypes();
+  const { cachedData, cacheData, clearCacheData } = useDataCache();
+  const metadataRef = useRef(null);
+  const currentTime = useRef(new Date());
 
-  const columns = useMemo(() => [
-    {
-      type: CellType.RATE,
-      key: 'priority',
-      name: gettext('Priority'),
-      editable: true,
-      frozen: true,
-      width: 33,
-      data: { type: 'rate' }
-    }, {
-      type: CellType.TEXT,
-      key: 'title',
-      name: gettext('Title'),
-      editable: true,
-      is_name_column: true,
-      frozen: true,
-      is_required: true,
-      click: (row) => togglePageType(row._id)
-    }, {
-      type: CellType.SINGLE_SELECT,
-      key: 'status',
-      name: gettext('Status'),
-      editable: true,
-      data: { options: TICKET_STATUS_OPTIONS },
-      is_required: true,
-    }, {
-      type: CellType.TYPE,
-      key: 'type',
-      name: gettext('Type'),
-      editable: true,
-    }, {
-      type: CellType.LONG_TEXT,
-      key: 'content',
-      name: gettext('Description'),
-      editable: true,
-      is_required: true,
-    }, {
-      type: CellType.COLLABORATOR,
-      key: 'assignees',
-      name: gettext('Assignees'),
-      editable: true,
-    }, {
-      type: CellType.TAGS,
-      key: 'tags',
-      name: gettext('Tags'),
-      editable: true,
-      modify_data_able: true,
-    }, {
-      type: CellType.COLLABORATOR,
-      key: 'participants',
-      name: gettext('Participants'),
-      editable: false,
-    }, {
-      type: CellType.CTIME,
-      key: 'created_at',
-      name: gettext('Create time'),
-      editable: false,
-    }, {
-      type: CellType.CREATOR,
-      key: 'creator',
-      name: gettext('Creator'),
-      editable: false,
-    },
-  ], [togglePageType, typesData]);
+  const expandRow = useCallback((row) => {
+    const data = metadataRef.current.getData();
+    cacheData(data);
+    togglePageType(row._id);
+  }, [togglePageType, cacheData]);
+
+  const columns = useMemo(() => {
+    const columnsUpdate = {
+      'title': { click: expandRow },
+    };
+    return TICKET_COLUMNS.map(c => {
+      const columnUpdate = columnsUpdate[c.key];
+      if (columnUpdate) return { ...c, ...columnUpdate };
+      return c;
+    });
+  }, [expandRow]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
+      const { view_id } = params[0];
+      if (cachedData && cachedData.view?._id === view_id && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
+        return new Promise((resolve, reject) => {
+          const rows = cachedData.rows;
+          resolve({
+            data: {
+              rows: rows,
+              columns,
+            }
+          });
+        }).then(res => {
+          clearCacheData();
+          return res;
+        });
+      }
       return ticketsAPI.listProjectTickets(projectUuid, ...params).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
+        clearCacheData();
         return {
           data: {
             rows,
@@ -93,26 +66,46 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       });
     },
 
-    getViews: () => ticketsAPI.listViews(projectUuid),
+    getViews: () => {
+      if (cachedData && cachedData.views && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
+        return new Promise((resolve, reject) => {
+          resolve({
+            data: cachedData.views
+          });
+        });
+      }
+      return ticketsAPI.listViews(projectUuid);
+    },
 
     // view
-    getView: (viewID) => ticketsAPI.getView(projectUuid, viewID).then(res => {
-      const view = res?.data?.view;
-      const basic_filters = view?.basic_filters || [];
-      if (basic_filters.length === 3) return { data: { view } };
-      return {
-        data: {
-          view: {
-            ...view,
-            basic_filters: [
-              basic_filters.find(f => f.column_key === 'status') || { column_key: 'status', filter_predicate: 'is_any_of', filter_term: [] },
-              basic_filters.find(f => f.column_key === 'type') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
-              basic_filters.find(f => f.column_key === 'tags') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
-            ]
+    getView: (viewID) => {
+      if (cachedData && cachedData.view?._id === viewID && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
+        return new Promise((resolve, reject) => {
+          resolve({
+            data: {
+              view: cachedData.view
+            }
+          });
+        });
+      }
+      return ticketsAPI.getView(projectUuid, viewID).then(res => {
+        const view = res?.data?.view;
+        const basic_filters = view?.basic_filters || [];
+        if (basic_filters.length === 3) return { data: { view } };
+        return {
+          data: {
+            view: {
+              ...view,
+              basic_filters: [
+                basic_filters.find(f => f.column_key === 'status') || { column_key: 'status', filter_predicate: 'is_any_of', filter_term: [] },
+                basic_filters.find(f => f.column_key === 'type') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
+                basic_filters.find(f => f.column_key === 'tags') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
+              ]
+            }
           }
-        }
-      };
-    }),
+        };
+      });
+    },
     insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
     modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
     deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
@@ -127,7 +120,30 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, columns, updateViewID]);
+  }), [projectUuid, columns, cachedData, updateViewID, clearCacheData]);
+
+  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tickets`, [projectUuid]);
+
+  const t = useMemo(() => {
+    return {
+      row: gettext('ticket'),
+      rows: gettext('tickets'),
+      Row: gettext('Ticket'),
+      Rows: gettext('Tickets'),
+    };
+  }, []);
+
+  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+    let tools = [];
+    if (rows.length === 1) {
+      const row = rows[0];
+      const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
+      tools.push(tool);
+    }
+    const moreTool = generatorRowsMoreTool({ rows, modifyRows });
+    tools.push(moreTool);
+    return tools;
+  }, [workspaceID, projectName]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -235,29 +251,20 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return list;
   }, [projectName, workspaceID]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tickets`, [projectUuid]);
-
-  const t = useMemo(() => {
-    return {
-      row: gettext('ticket'),
-      rows: gettext('tickets'),
-      Row: gettext('Ticket'),
-      Rows: gettext('Tickets'),
-    };
-  }, []);
-
   if (isLoading || isTypesLoading) return null;
 
   return (
     <SeaMetadata
+      ref={metadataRef}
       viewID={viewID}
       api={api}
       t={t}
-      groupHeaderColSpan={2}
+      fixedColumnCount={2}
       localStorageNamePrefix={localStorageName}
       permission={permission}
       createContextMenuOptions={createContextMenuOptions}
-      expandRow={(row) => togglePageType(row._id)}
+      createRowsTools={createRowsTools}
+      expandRow={expandRow}
       toggleView={updateViewID}
       tagsData={tagsData}
       createTag={createTag}

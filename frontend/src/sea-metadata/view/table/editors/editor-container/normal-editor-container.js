@@ -10,7 +10,6 @@ import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../.
 import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
-import { checkIsPredefinedColumn } from '../../../../utils/column';
 
 class NormalEditorContainer extends React.Component {
 
@@ -221,7 +220,7 @@ class NormalEditorContainer extends React.Component {
       const original = this.getEditor().getOldValue();
       oldValue = original[Object.keys(original)[0]];
     }
-    const oldRowData = checkIsPredefinedColumn(column) ? { [columnKey]: oldValue } : { [columnName]: oldValue };
+    const oldRowData = { [columnName]: oldValue };
     const originalOldRowData = { [columnKey]: originalOldCellValue }; // { [column.key]: cellValue }
     return { oldRowData, originalOldRowData };
   };
@@ -253,7 +252,7 @@ class NormalEditorContainer extends React.Component {
     }
 
     this.changeCommitted = true;
-    const updates = checkIsPredefinedColumn(column) ? { [columnKey]: value } : { [columnName]: value };
+    const updates = { [columnName]: value };
     const { oldRowData, originalOldRowData } = this.getOldRowData(originalOldCellValue);
 
     // updates used for update remote row data

@@ -29,15 +29,20 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
 
   const applyDeleteTypes = useCallback((typeIDs) => {
     if (!Array.isArray(typeIDs) || typeIDs.length === 0) return;
-    let newData = deepCopy(typesData);
-    newData.rows = newData.rows.filter(r => !typeIDs.includes(r._id));
-    newData.row_ids = newData.row_ids.filter(r => !typeIDs.includes(r));
-    typeIDs.forEach(typeID => {
-      if (newData.id_row_map[typeID]) {
-        delete newData.id_row_map[typeID];
-      }
+    setTypesData(prevData => {
+      const newData = {
+        ...prevData,
+        rows: prevData.rows.filter(r => !typeIDs.includes(r._id)),
+        row_ids: prevData.row_ids.filter(r => !typeIDs.includes(r)),
+        id_row_map: { ...prevData.id_row_map }
+      };
+      typeIDs.forEach(typeID => {
+        if (newData.id_row_map[typeID]) {
+          delete newData.id_row_map[typeID];
+        }
+      });
+      return newData;
     });
-    setTypesData(newData);
   }, [typesData]);
 
   const applyModifyTypes = useCallback((update = {}) => {

@@ -1,4 +1,5 @@
 import { gettext } from '@/constants';
+import { CellType } from '@/sea-metadata';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -18,6 +19,8 @@ export const CONNECTION_FIELD_TYPE = {
   CONNECTION_NAME: 'connection_name',
   EMPTY: 'empty',
   ACTIVE_STATUS: 'active_status',
+  NUMBER: 'number',
+  SYNC_STATUS: 'sync_status',
 };
 
 export const CONNECTION_FIELDS = {
@@ -71,6 +74,12 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_custom: true,
       helpText: gettext('Your personal access token in GitHub Developer Settings')
+    }, {
+      key: 'webhook_secret',
+      name: gettext('Webhook secret (optional)'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_custom: true,
     }
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
@@ -99,6 +108,14 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true
+    }, {
+      key: 'sync_years',
+      name: gettext('Only sync topics updated within following number of years'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
+      is_custom: true,
+      placeholder: '5',
+      defaultValue: 5,
     },
   ],
   [CONNECTION_TYPE.SITE]: [
@@ -176,25 +193,150 @@ export const CONNECTION_PAGE_TYPE = {
   NEW: 'new',
 };
 
-export const GITHUB_STATUS = {
-  OPEN: 'open',
-  CLOSED: 'closed',
-  REOPEN: 're_open',
-  COMPLETED: 'completed',
-  NOT_PLANNED: 'not_planned',
-  DUPLICATE: 'duplicate',
+export const GITHUB_STATE_OPTION_NAME_MAP = {
+  'open': gettext('Open'),
+  'closed': gettext('Closed'),
 };
 
-export const GITHUB_STATUS_OPTIONS = [
-  { id: GITHUB_STATUS.OPEN, value: GITHUB_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: GITHUB_STATUS.CLOSED, value: GITHUB_STATUS.CLOSED, name: gettext('Closed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: GITHUB_STATUS.COMPLETED, value: GITHUB_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: GITHUB_STATUS.NOT_PLANNED, value: GITHUB_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
-  { id: GITHUB_STATUS.DUPLICATE, value: GITHUB_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
-];
+export const GITHUB_STATE_REASON_NAME_MAP = {
+  'reopened': gettext('Reopen'),
+  'completed': gettext('Completed'),
+  'not_planned': gettext('Not planned'),
+  'duplicate': gettext('Duplicate'),
+};
 
 export const SUPPORT_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.SEAFILE,
 ];
+
+export const CONNECTION_SYNC_STATUS = {
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  CRAWLING: 'crawling',
+  PENDING: 'pending',
+};
+
+export const CONNECTION_SYNC_STATUS_NAME = {
+  [CONNECTION_SYNC_STATUS.COMPLETED]: gettext('Completed'),
+  [CONNECTION_SYNC_STATUS.FAILED]: gettext('Failed'),
+  [CONNECTION_SYNC_STATUS.CRAWLING]: gettext('Crawling'),
+  [CONNECTION_SYNC_STATUS.PENDING]: gettext('Pending')
+};
+
+export const CONNECTION_SYNC_COMPLETED_STATUS = [
+  CONNECTION_SYNC_STATUS.COMPLETED,
+  CONNECTION_SYNC_STATUS.FAILED,
+];
+
+export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
+  [CONNECTION_TYPE.GITHUB_ISSUE]: {
+    'title': {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      is_predefined: true,
+      click: (row) => {
+        if (row && row.url) {
+          window.open(row.url);
+        }
+      }
+    },
+    'author': {
+      display_name: gettext('Author'),
+      is_predefined: true,
+    },
+    'state': {
+      display_name: gettext('State'),
+      is_predefined: true,
+    },
+    'state_reason': {
+      display_name: gettext('State reason'),
+      is_predefined: true,
+    },
+    'issue_type': {
+      display_name: gettext('Type'),
+      is_predefined: true,
+    },
+    'labels': {
+      display_name: gettext('Labels'),
+      is_predefined: true,
+    },
+    'comments_count': {
+      display_name: gettext('Total comments'),
+      type: CellType.NUMBER,
+      is_predefined: true,
+    },
+    'updated_at': {
+      display_name: gettext('Last updated'),
+      type: CellType.MTIME,
+      is_predefined: true,
+    },
+    'closed_at': {
+      display_name: gettext('Closed at'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      is_predefined: true,
+    },
+    'created_at': {
+      display_name: gettext('Create time'),
+      type: CellType.CTIME,
+      is_predefined: true,
+    },
+  },
+  [CONNECTION_TYPE.DISCOURSE_FORUM]: {
+    'title': {
+      display_name: gettext('Title'),
+      editable: false, is_name_column: true, frozen: true,
+    },
+    'topic_id': {
+      display_name: gettext('Topic ID'),
+      type: CellType.NUMBER,
+    },
+    'views': {
+      display_name: gettext('Views count'),
+      type: CellType.NUMBER,
+    },
+    'bumped_at': {
+      display_name: gettext('Last activity'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
+    'created_at': {
+      display_name: gettext('Created at'),
+      type: CellType.CTIME,
+    }
+  },
+  [CONNECTION_TYPE.SITE]: {
+    'title': {
+      display_name: gettext('Title'),
+      editable: false, is_name_column: true, frozen: true, expand_able: true,
+    },
+    'url': {
+      display_name: gettext('URL'),
+      type: CellType.URL,
+    },
+    'last_modified': {
+      display_name: gettext('Last modify time'),
+      type: CellType.MTIME,
+      sort_able: true, filter_able: true
+    }
+  },
+  [CONNECTION_TYPE.SEAFILE]: {
+    'filename': {
+      display_name: gettext('File name'),
+      editable: false, is_name_column: true, frozen: true,
+    },
+    'path': {
+      display_name: gettext('Parent folder'),
+      type: CellType.TEXT,
+    },
+    'mtime': {
+      display_name: gettext('Last modified time'),
+      type: CellType.MTIME,
+    }
+  }
+};
+

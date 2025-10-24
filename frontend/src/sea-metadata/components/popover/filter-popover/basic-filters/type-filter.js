@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 import { useTypesData } from '@/sea-metadata/hooks';
+import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 
 const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
 
@@ -10,7 +11,8 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
 
   const options = useMemo(() => {
     return typesData && typesData.rows ? typesData.rows.map(type => {
-      const { _id, name } = type;
+      const { _id } = type;
+      const name = getOptionDisplayNameByOption(type);
       return {
         ...type,
         value: _id,

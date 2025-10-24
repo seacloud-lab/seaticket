@@ -164,7 +164,7 @@
     "Rename": "Reanomena",
     "Rename File": "Reanomena el fitxer",
     "Renamed or Moved files": "Fitxers moguts o reanomenats",
-    "ResetPwd": "ReiniContra",
+    "Reset password": "ReiniContra",
     "Restore": "Restaura",
     "Restore Library": "Restaura la llibreria",
     "Revoke Admin": "Revoca el perm\u00eds d'administrador",

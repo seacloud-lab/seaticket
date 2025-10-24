@@ -3,32 +3,34 @@ import { useTypes, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import TypeDialog from './components/type-dialog';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
-const AllTypes = ({ projectUuid }) => {
+const AllTypes = ({ projectUuid, permission }) => {
   const { isLoading, typesData, createType, modifyType, deleteType, reload } = useTypes();
-  const { toggleChildrenPageType } = useTicketsPage();
+  const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
       type: CellType.SINGLE_SELECT,
       key: 'name',
-      name: gettext('Type'),
+      name: 'name',
+      display_name: gettext('Type'),
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => toggleChildrenPageType(row._id)
+      click: (row) => togglePageType(pageType, row._id)
     },
     {
       type: CellType.NUMBER,
       key: 'tickets_count',
-      name: gettext('Tickets count'),
+      name: 'tickets_count',
+      display_name: gettext('Tickets count'),
       editable: false,
     },
-  ], [toggleChildrenPageType]);
+  ], [pageType, togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -82,7 +84,7 @@ const AllTypes = ({ projectUuid }) => {
     modifyRow: (...params) => modifyType(...params),
     deleteRow: (...params) => deleteType(...params),
 
-  }), [projectUuid, columns, viewsData, createType, typesData]);
+  }), [projectUuid, columns, viewsData, createType, deleteType, typesData]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -170,14 +172,12 @@ const AllTypes = ({ projectUuid }) => {
       callback: () => {
         context.eventBus.dispatch('expand_row', row);
       }
+    }, {
+      label: gettext('Delete type'),
+      callback: () => {
+        deleteRows && deleteRows([row._id]);
+      }
     });
-
-    if (context.canDeleteRow()) {
-      list.push({
-        label: gettext('Delete type'),
-        callback: () => deleteRows && deleteRows([row._id])
-      });
-    }
     return list;
   }, []);
 
@@ -212,9 +212,10 @@ const AllTypes = ({ projectUuid }) => {
         viewID="0000"
         className="sea-types-metadata"
         api={api}
+        permission={permission}
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
-        viewTools={['views', 'search', 'sorts']}
+        viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
         isViewComputedOnServer={false}
         t={t}
       >

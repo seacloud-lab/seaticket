@@ -12,7 +12,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import './index.css';
 
 const TicketTopBar = ({ title }) => {
-  const { pageType, togglePageType, childrenPageType, toggleChildrenPageType } = useTicketsPage();
+  const { pageType, togglePageType, childrenPageType } = useTicketsPage();
   const { tagsData } = useTags();
   const { typesData } = useTypes();
 
@@ -46,7 +46,7 @@ const TicketTopBar = ({ title }) => {
           <IconButton
             icon="down"
             className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
-            onClick={() => toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL)}
+            onClick={() => togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL)}
           />
           <span className="text-truncate" title={customTitle}>{customTitle}</span>
         </>
@@ -68,7 +68,7 @@ const TicketTopBar = ({ title }) => {
           <IconButton
             icon="down"
             className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
-            onClick={() => toggleChildrenPageType(TICKET_CHILDREN_PAGE_TYPE.ALL)}
+            onClick={() => togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL)}
           />
           <span className="text-truncate" title={customTitle}>{customTitle}</span>
         </>

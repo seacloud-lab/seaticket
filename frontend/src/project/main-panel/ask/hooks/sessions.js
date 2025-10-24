@@ -77,7 +77,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
       session_uuid: sessionId,
       resolve_type: resolveType,
     }).then(res => {
-      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data });
+      eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data, resolveType });
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error });
     });

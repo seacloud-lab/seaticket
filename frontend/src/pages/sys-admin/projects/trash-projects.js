@@ -13,6 +13,7 @@ import { Utils } from '../../../utils/utils';
 import ModalPortal from '../../../components/modal-portal';
 import RestoreProjectDialog from '../../../components/dialog/sysadmin-dialog/restore-project-dialog';
 import ProjectTrashOpMenu from './project-trash-op-menu';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 import '../../../css/system-dtable.css';
 
@@ -114,7 +115,7 @@ class Item extends Component {
           </td>
           <td>{item.uuid}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.delete_time)}>{dayjs(item.delete_time).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {this.state.isOpIconShown &&
               <ProjectTrashOpMenu

@@ -1,6 +1,6 @@
 import React, { cloneElement, isValidElement, useCallback, useState } from 'react';
 
-const Row = ({ row, columns, onModify, onDelete, onMore, expandRow, onManualSync, onUpdate }) => {
+const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
   const [isActive, setActive] = useState(false);
 
   const onMouseEnter = useCallback(() => {
@@ -16,14 +16,14 @@ const Row = ({ row, columns, onModify, onDelete, onMore, expandRow, onManualSync
   }, [row, onUpdate]);
 
   return (
-    <div className="sea-custom-table-row" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} >
+    <div className="sea-custom-table-row" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ height: rowHeight }}>
       {columns.map(column => {
         const { key, width, is_custom, type, formatter } = column;
         const value = is_custom ? row['config']?.[key] : row[key];
         const valueFormatter = isValidElement(formatter) && cloneElement(formatter, {
           isRowActive: isActive,
           value, column, row,
-          onModify, onDelete, onMore, expandRow, onManualSync,
+          ...params,
           onUpdate: handleUpdate,
           cancelActive: onMouseLeave,
         });

@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
+import dayjs from 'dayjs';
+import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../connections/constants';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 import './index.css';
 
@@ -13,15 +16,10 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
   }, [url]);
 
   const renderDetail = () => {
-    const bumpedDate = bumped_at.split(' ')[0];
-    if (!content) {
-      return bumpedDate;
-    }
-    const boldContent = content.replace(new RegExp(searchValue, 'ig'), (match) => `<span class="font-weight-bold">${match}</span>`);
-    if (!bumped_at) {
-      return boldContent;
-    }
-    return `${bumpedDate} - ${boldContent}`;
+    const isMarkdown = true;
+    const previewTextNeedSlice = false;
+    const { previewText } = getPreviewContent(content, isMarkdown, previewTextNeedSlice);
+    return previewText.replace(new RegExp(searchValue, 'ig'), (match) => `<span class="font-weight-bold">${match}</span>`);
   };
 
   return (
@@ -32,7 +30,14 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
       <div className="list-item-content">
         <div className="list-item-title">{title || ''}</div>
         <div className="list-item-path">{subtitle || ''}</div>
-        <div className="list-item-detail" dangerouslySetInnerHTML={{ __html: renderDetail() }}></div>
+        {bumped_at &&
+          <div className="list-item-time" title={formatWithTimezone(bumped_at)}>
+            {dayjs(bumped_at).format('YYYY-MM-DD HH:mm:ss')}
+          </div>
+        }
+        {content &&
+          <div className="list-item-detail" dangerouslySetInnerHTML={{ __html: renderDetail() }}></div>
+        }
       </div>
     </div>
   );

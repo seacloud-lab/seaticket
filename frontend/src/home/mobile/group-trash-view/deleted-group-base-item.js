@@ -5,6 +5,7 @@ import { toaster, ProjectIcon } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 
 function DeletedGroupBaseItem(props) {
@@ -36,7 +37,7 @@ function DeletedGroupBaseItem(props) {
         <ProjectIcon bgColor={baseItem.color} icon={baseItem.icon} />
       </div>
       <div className="base-item-title text-truncate">{baseItem.name}</div>
-      <div className="base-item-delete-time">
+      <div className="base-item-delete-time" title={formatWithTimezone(baseItem.delete_time)}>
         {dayjs(baseItem.delete_time).format('YYYY-MM-DD HH:mm:ss')}
       </div>
       <div className="restore-base-button text-truncate">

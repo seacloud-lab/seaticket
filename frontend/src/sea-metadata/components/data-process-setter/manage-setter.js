@@ -18,7 +18,7 @@ const ManageSetter = () => {
       className="sea-metadata-manage-dropdown"
       toggle={() => setIsOpen(!isOpen)}
     >
-      <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn sea-metadata-view-tool-operation-btn" tag="div">
+      <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn mr-2" tag="div">
         <Icon symbol="manage" />
       </DropdownToggle>
       <DropdownMenu

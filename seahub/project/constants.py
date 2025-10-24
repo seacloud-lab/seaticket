@@ -9,6 +9,10 @@ ORG_STORAGE_SIZE_CACHE_TIMEOUT = 60 * 60 * 24
 
 IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
+
+MANUAL_SYNC_INTERVAL = 10 * 60
+MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
+
 # connection types
 class ConnectionType(Enum):
     EMAIL = 'email'
@@ -37,24 +41,24 @@ class ConnectionField(object):
 
 
 CONNECTION_FIELDS = {
-    ConnectionType.EMAIL: [
+    ConnectionType.EMAIL.value: [
         ConnectionField('host', True, False).to_dict(),
         ConnectionField('username', True, False).to_dict(),
         ConnectionField('password', True, False).to_dict(),
     ],
-    ConnectionType.GITHUB_ISSUE: [
+    ConnectionType.GITHUB_ISSUE.value: [
         ConnectionField('repository', True, False).to_dict(),
         ConnectionField('access_token', True, False).to_dict(),
         ConnectionField('webhook_secret', False, False).to_dict(),
     ],
-    ConnectionType.DISCOURSE_FORUM: [
+    ConnectionType.DISCOURSE_FORUM.value: [
         ConnectionField('url', True, False).to_dict(),
     ],
-    ConnectionType.SITE: [
+    ConnectionType.SITE.value: [
         ConnectionField('url', True, False).to_dict(),
         ConnectionField('sitemap_url', False, False).to_dict(),
     ],
-    ConnectionType.SEAFILE: [
+    ConnectionType.SEAFILE.value: [
         ConnectionField('server_url', True, False).to_dict(),
         ConnectionField('api_token', True, False).to_dict(),
     ]
@@ -85,6 +89,7 @@ TICKET_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
@@ -99,6 +104,7 @@ TICKET_DEFAULT_DETAILS = {
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
             'columns_keys': [],
@@ -123,7 +129,8 @@ CONNECTION_DEFAULT_DETAILS = {
                 'name': _('Open'),
                 'type': 'table',
                 'basic_filters': [
-                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
@@ -136,7 +143,8 @@ CONNECTION_DEFAULT_DETAILS = {
                 'name': _('Closed'),
                 'type': 'table',
                 'basic_filters': [
-                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']}
+                    {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                    {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 ],
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
@@ -151,69 +159,66 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': 'closed', 'type': 'view'}
         ]
     },
-    ConnectionType.SITE.value: {},
-    ConnectionType.DISCOURSE_FORUM.value: {},
+    ConnectionType.SITE.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
+    ConnectionType.DISCOURSE_FORUM.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
+    ConnectionType.SEAFILE.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
     ConnectionType.EMAIL.value: {},
-    ConnectionType.SEAFILE.value: {},
 }
 
-
-# web crawl table
-class PropertyTypes:
-    TEXT = 'text'
-    DATETIME = 'datetime'
-    INT = 'int64'
-    FLOAT = 'float64'
-    SINGLE_SELECT = 'single-select'
-    MULTIPLE_SELECT = 'multiple-select'
-    BOOL = 'bool'
-
-
-class WebCrawlTable(object):
-    def __init__(self, table_id, name):
-        self.id = table_id
-        self.name = name
-
-    @property
-    def columns(self):
-        return WebCrawlColumns()
-
-
-class WebCrawlColumns(object):
-    def __init__(self):
-        self.url = WebCrawlColumn('url', PropertyTypes.TEXT)
-        self.title = WebCrawlColumn('title', PropertyTypes.TEXT)
-        self.etag = WebCrawlColumn('etag', PropertyTypes.TEXT)
-        self.last_modified = WebCrawlColumn('last_modified', PropertyTypes.TEXT)
-
-
-class WebCrawlColumn(object):
-    def __init__(self, name, type, data=None):
-        self.name = name
-        self.type = type
-        self.data = data
-
-    def to_dict(self, data=None):
-        column_data = {
-            'name': self.name,
-            'type': self.type,
-        }
-        if self.data:
-            column_data['data'] = self.data
-
-        if data:
-            column_data['data'] = data
-
-        return column_data
-
-
-WEB_CRAWL_TABLE = WebCrawlTable('0000', 'Table1')
-WEB_CRAWL_COLUMNS = [
-    WEB_CRAWL_TABLE.columns.url.to_dict(),
-    WEB_CRAWL_TABLE.columns.title.to_dict(),
-    WEB_CRAWL_TABLE.columns.etag.to_dict(),
-    WEB_CRAWL_TABLE.columns.last_modified.to_dict(),
-]
 
 class FilterPredicateTypes(object):
     CONTAINS = 'contains'
@@ -265,3 +270,18 @@ class FilterTermModifier(object):
     THIS_WEEK = 'this_week'
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
+
+
+CONNECTION_DISPLAY_ALL_COLUMNS = {
+    ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
+    ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
+    ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
+    ConnectionType.SEAFILE.value: ['path', 'filename', 'mtime', 'updated_at'],
+}
+
+
+# These columns are must returned to the front end to make some frontend functions work
+CONNECTION_MUST_RETURN_COLUMNS = {
+    ConnectionType.GITHUB_ISSUE.value: ['url'],
+    ConnectionType.DISCOURSE_FORUM.value: ['slug'],
+}

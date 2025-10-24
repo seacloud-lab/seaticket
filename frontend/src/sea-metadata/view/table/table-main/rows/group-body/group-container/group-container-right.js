@@ -15,7 +15,7 @@ class GroupContainerRight extends Component {
   render() {
     const {
       group, isExpanded, columns, summaryConfigs, rightPaneWidth, leftPaneWidth, height,
-      groupOffsetLeft, lastFrozenColumnKey, groupHeaderColSpan,
+      groupOffsetLeft, lastFrozenColumnKey, fixedColumnCount,
     } = this.props;
     const groupContainerRightStyle = {
       left: leftPaneWidth,
@@ -32,7 +32,7 @@ class GroupContainerRight extends Component {
           group={group}
           isExpanded={isExpanded}
           columns={columns}
-          groupHeaderColSpan={groupHeaderColSpan}
+          fixedColumnCount={fixedColumnCount}
           summaryConfigs={summaryConfigs}
         />
       </div>

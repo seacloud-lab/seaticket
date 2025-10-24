@@ -8,6 +8,7 @@ import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { loginUrl, gettext, mediaUrl } from '../../constants';
 import MainPanelTopbar from './main-panel-topbar';
 import OrgAdminGroupNav from '../../components/org-admin-group-nav';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 
 const { orgID } = window.org.pageOptions;
@@ -89,7 +90,7 @@ class Item extends Component {
           <td>{item.name}</td>
           <td>{item.uuid}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={isItemMenuShow} toggle={this.toggleOperationMenu}>

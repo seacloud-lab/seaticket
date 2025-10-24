@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useCollaborators } from './collaborators';
 import context from '../context';
 import Store from '../store';
@@ -7,10 +7,11 @@ import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { getRowById } from '../utils/row';
+import { isModF } from '@/utils/hotkey';
 
 const MetadataContext = React.createContext(null);
 
-export const MetadataProvider = ({
+export const MetadataProvider = forwardRef(({
   viewID,
   api,
   tagsData,
@@ -20,7 +21,7 @@ export const MetadataProvider = ({
   t,
   children,
   ...params
-}) => {
+}, ref) => {
   const [isLoading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState({ rows: [], columns: [], view: {} });
   const [errorMessage, setErrorMessage] = useState(null);
@@ -196,6 +197,13 @@ export const MetadataProvider = ({
     storeRef.current.searchRows(searchValue);
   }, [storeRef]);
 
+  const onKeydown = useCallback((event) => {
+    if (isModF(event) && (!event.target || event.target.className.indexOf('modal') < 0)) {
+      event.preventDefault();
+      context.eventBus && context.eventBus.dispatch(EVENT_BUS_TYPE.START_SEARCH_ROWS);
+    }
+  }, []);
+
   useEffect(() => {
     if (isLoading) return;
     storeRef.current.tagsData = tagsData;
@@ -210,6 +218,13 @@ export const MetadataProvider = ({
     if (isLoading) return;
     storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
   }, [isLoading, collaborators, collaboratorsCache]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onKeydown);
+    return () => {
+      document.removeEventListener('keydown', onKeydown);
+    };
+  }, [onKeydown]);
 
   // init
   useEffect(() => {
@@ -253,6 +268,10 @@ export const MetadataProvider = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localStorageNamePrefix, viewID]);
 
+  useImperativeHandle(ref, () => ({
+    getData: () => metadata,
+  }), [metadata]);
+
   return (
     <MetadataContext.Provider
       value={{
@@ -288,7 +307,7 @@ export const MetadataProvider = ({
       {children}
     </MetadataContext.Provider>
   );
-};
+});
 
 export const useMetadata = () => {
   const context = useContext(MetadataContext);

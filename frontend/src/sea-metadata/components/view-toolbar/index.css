@@ -18,19 +18,6 @@
   padding: 0 8px;
 }
 
-.sea-metadata-view-tools .sea-metadata-view-tool-operation-btn {
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: .5rem;
-}
-
-.sea-metadata-view-tools .sea-metadata-view-tool-operation-btn:hover {
-  background-color: var(--bs-hover-bg);
-  cursor: pointer;
-}
-
 .sea-metadata-view-tools .sea-metadata-view-tool-filter.active:hover,
 .sea-metadata-view-tools .sea-metadata-view-tool-sort.active:hover,
 .sea-metadata-view-tools .sea-metadata-view-tool-groupby.active:hover,
@@ -52,4 +39,12 @@
 
 .sea-metadata-view-tools .sea-metadata-view-tool-hide-column.active {
   background-color: #d7e8ff !important;
+}
+
+.sea-metadata-views.sea-metadata-rows-tools {
+  padding-left: 10px;
+}
+
+.sea-qa-icon-btn.sea-metadata-rows-tool-btn {
+  width: auto;
 }

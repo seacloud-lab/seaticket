@@ -62,9 +62,6 @@ const Search = ({ title }) => {
       const CancelToken = axios.CancelToken;
       const source = CancelToken.source();
       sourceRef.current = source;
-
-      const showConnnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-
       let timeFrom = null;
       let timeTo = null;
       if (filterDate.value) {
@@ -72,8 +69,8 @@ const Search = ({ title }) => {
         timeFrom = isCustom ? filterDate.start?.unix() : filterDate.from;
         timeTo = isCustom ? filterDate.end?.unix() : filterDate.to;
       }
-
-      searchAPI.search(workspaceID, projectUuid, value, showConnnectionIds, timeFrom, timeTo, source.token).then(res => {
+      const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
+      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, source.token).then(res => {
         const results = res.data?.results || [];
         setResults(results.map(result => new SearchResult(result)));
         setSearching(false);

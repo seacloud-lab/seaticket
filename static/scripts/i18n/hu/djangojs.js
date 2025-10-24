@@ -379,7 +379,7 @@
     "Replace file {filename}?": "Fel\u00fcl\u00edrja: {filename}?",
     "Replacing it will overwrite its content.": "A cser\u00e9je a tartalom fel\u00fcl\u00edr\u00e1s\u00e1val j\u00e1r.",
     "Reset Password": "Jelsz\u00f3 \u00e1t\u00e1ll\u00edt\u00e1sa",
-    "ResetPwd": "\u00daj jelsz\u00f3",
+    "Reset password": "\u00daj jelsz\u00f3",
     "Restore": "Vissza\u00e1ll\u00edt\u00e1s",
     "Restore Library": "K\u00f6tet vissza\u00e1ll\u00edt\u00e1sa",
     "Revoke Admin": "Admin jog elv\u00e9tele",

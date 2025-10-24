@@ -21,6 +21,11 @@
   width: min-content;
 }
 
+.sea-metadata-filters .sea-metadata-filters-list .multiple-select-option.multiple-select-option-white {
+  border: 1px solid #d1d9e0b3;
+  line-height: 18px;
+}
+
 .sea-metadata-selector-single-select .sea-qa-select-option,
 .sea-metadata-selector-multiple-select .sea-qa-select-option {
   height: 30px;

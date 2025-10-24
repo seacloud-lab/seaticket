@@ -70,7 +70,7 @@ class OrgSamlConfigInput extends Component {
               <InputGroup>
                 <Input type={inputType} value={value} onChange={this.onInputChange} onFocus={this.toggleBtns}/>
                 {this.props.domainVerified && (
-                  <Button color="success" className="border-0">{gettext('Verified')}</Button>
+                  <Button color="primary" className="border-0">{gettext('Verified')}</Button>
                 )}
               </InputGroup>
               {this.props.isCertificate &&

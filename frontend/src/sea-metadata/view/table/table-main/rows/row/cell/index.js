@@ -7,7 +7,6 @@ import { isFunction } from '@utils/utils';
 import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
-import { checkIsPredefinedColumn } from '../../../../../../utils/column';
 import context from '../../../../../../context';
 
 import './index.css';
@@ -129,7 +128,7 @@ const Cell = React.memo(({
 
   const getOldRowData = useCallback((originalOldCellValue) => {
     const { key: columnKey, name: columnName } = column;
-    const oldRowData = checkIsPredefinedColumn(column) ? { [columnKey]: originalOldCellValue } : { [columnName]: originalOldCellValue };
+    const oldRowData = { [columnName]: originalOldCellValue };
     const originalOldRowData = { [columnKey]: originalOldCellValue }; // { [column.key]: cellValue }
     return { oldRowData, originalOldRowData };
   }, [column]);
@@ -141,7 +140,7 @@ const Cell = React.memo(({
     if (!isCellValueChanged(originalOldCellValue, updated[columnKey], columnType)) return;
     const rowId = row._id;
     const key = Object.keys(updated)[0];
-    const updates = checkIsPredefinedColumn(column) ? updated : { [columnName]: updated[key] };
+    const updates = { [columnName]: updated[key] };
     const { oldRowData, originalOldRowData } = getOldRowData(originalOldCellValue);
     // updates used for update remote row data
     // originalUpdates used for update local row data
@@ -176,8 +175,8 @@ const Cell = React.memo(({
     height, bgColor } = props;
   const { row: newRow, highlightClassName: newHighlightClassName, height: newHeight, column: newColumn, bgColor: newBgColor } = nextProps;
   // the modification of column is not currently supported, only the modification of cell data is considered
-  const oldValue = oldRow[column.name] || oldRow[column.key];
-  const newValue = newRow[column.name] || newRow[column.key];
+  const oldValue = getCellValueByColumn(oldRow, column);
+  const newValue = getCellValueByColumn(newRow, column);
   const isChanged = (
     isCellValueChanged(oldValue, newValue, column.type) ||
     oldRow._last_modifier !== newRow._last_modifier ||

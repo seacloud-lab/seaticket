@@ -12,25 +12,26 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { AssigneesSettings, TagsSettings, TypeSettings } from '../../components/ticket-settings';
+import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useTypes } from '../../hooks';
+import { useDataCache, useTypes } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Header from './header';
 
 import './index.css';
 
-const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
+const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isLoading, setLoading] = useState(true);
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
 
   const { typesData } = useTypes();
+  const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
     return {
@@ -42,20 +43,24 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   const replyEditorRef = useRef(null);
   const containerRef = useRef(null);
+  const headerRef = useRef(null);
 
   const handleScroll = useCallback(Utils.throttle((event) => {
     if (!event) return;
-    setScrollTop(event.target.scrollTop);
-  }, 30), []);
+    const dom = headerRef.current.getDom();
+    const { height } = dom.getBoundingClientRect();
+    setIsShowStickyHeader(event.target.scrollTop > height);
+  }, 30), [headerRef]);
 
   // api
   const modifyTicket = useCallback((ticketID, data) => {
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, data).then(res => {
       const newTicket = ticket._update(data);
+      updateCacheData('rows', String(ticketID), data);
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [projectUuid, ticket]);
+  }, [projectUuid, ticket, updateCacheData]);
 
   const createReply = useCallback((ticketID, reply) => {
     return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
@@ -104,6 +109,15 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
     });
   }, [ticket, modifyTicket]);
 
+  const onPriorityChange = useCallback((priority = 0) => {
+    modifyTicket(ticket.id, { priority }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
   const onAssigneesChange = useCallback((assignees = []) => {
     modifyTicket(ticket.id, { assignees }).then(res => {
       // todo
@@ -123,17 +137,16 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   }, [ticket, modifyTicket]);
 
   const onTagsChange = useCallback((tags) => {
-    return ticketsAPI.modifyProjectTicket(projectUuid, ticket.id, { tags }).then(res => {
-      const newTicket = ticket._update({ tags: deepCopy(tags) });
-      setTicket(deepCopy(newTicket));
+    return modifyTicket(ticket.id, { tags }).then(res => {
+      // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket]);
+  }, [ticket, modifyTicket]);
 
-  const onContentChange = useCallback((content, callback) => {
-    modifyTicket(ticket.id, { content }).then(res => {
+  const onDescriptionChange = useCallback((description, callback) => {
+    modifyTicket(ticket.id, { description }).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -206,7 +219,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies = [], assignees = [], type, tags } = ticket;
+  const { id, status, title, creator, replies = [], assignees = [], type, tags, priority } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
@@ -214,6 +227,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
   return (
     <div className="sea-qa-project-ticket" onScroll={handleScroll}>
       <Header
+        ref={headerRef}
         readonly={!editable}
         title={title}
         id={id}
@@ -223,7 +237,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
         modifyTitle={onTitleChange}
       />
       <Header
-        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': scrollTop < 94, 'd-flex': scrollTop >= 94 })}
+        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
         title={title}
         id={id}
         statusOption={statusOption}
@@ -237,13 +251,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
-            onModify={onContentChange}
+            onModify={onDescriptionChange}
           />
           {replies.map(reply => {
             return (
               <Reply
                 key={reply.id}
-                readonly={!editable}
+                readonly={!(reply.creator === user.email || isAdmin)}
                 reply={reply}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
@@ -278,6 +292,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission }) => {
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
+          <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <AssigneesSettings isReadonly={!editable} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />

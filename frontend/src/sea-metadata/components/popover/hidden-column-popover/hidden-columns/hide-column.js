@@ -96,7 +96,7 @@ const HideColumnItem = ({
         placeholder={(
           <>
             <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[column.type]} />
-            <span className="text-truncate">{column.name}</span>
+            <span className="text-truncate">{column.display_name}</span>
           </>
         )}
         onChange={update}

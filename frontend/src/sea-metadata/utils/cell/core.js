@@ -1,6 +1,4 @@
 import { CellType } from '../../constants';
-import { checkIsPredefinedColumn } from '../column';
-
 
 /**
  * @param {any} value
@@ -22,6 +20,6 @@ export const isValidCellValue = (value, column) => {
  */
 export const getCellValueByColumn = (row, column) => {
   if (!row || !column) return null;
-  const { key, name } = column;
-  return checkIsPredefinedColumn(column) ? row[key] : row[name];
+  const { name } = column;
+  return row[name];
 };

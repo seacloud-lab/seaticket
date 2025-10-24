@@ -33,10 +33,9 @@ class GroupHeaderRight extends Component {
   getGroupSummaries = () => {
     const {
       group, isExpanded, columns, groupOffsetLeft, lastFrozenColumnKey, summaryConfigs,
-      groupHeaderColSpan,
+      fixedColumnCount,
     } = this.props;
-    const summaryColumns = columns.slice(groupHeaderColSpan); // get column from 2 index
-    console.log(summaryColumns, groupHeaderColSpan, columns);
+    const summaryColumns = columns.slice(fixedColumnCount); // get column from 2 index
     const firstColumnWidth = columns[0] ? columns[1].width : 0;
     let offsetLeft = 0;
     return summaryColumns.map((column, index) => {

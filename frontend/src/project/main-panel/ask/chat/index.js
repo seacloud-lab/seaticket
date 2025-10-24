@@ -1,9 +1,9 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
-import { CenteredLoading, Icon, toaster, IconButton, ClickOutside } from '@/components';
+import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
-import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
+import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { askAPI } from '../../../api';
 import ChatHistory from '../chat-history';
@@ -22,9 +22,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
-  const [resolveType, setResolveType] = useState('ask');
-  const [isShowSessionToggle, setIsShowSessionToggle] = useState(false);
-  const [sessionTogglePanelTranslateY, setSessionTogglePanelTranslateY] = useState(0);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -41,16 +38,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     if (sessionId === ASK_PAGE_TYPE.NEW) return null;
     return sessions.find(s => s._id === sessionId);
   }, [sessionId, sessions]);
-
-  const convertToAgent = useCallback(() => {
-    setResolveType('agent');
-    setIsShowSessionToggle(false);
-  }, [resolveType]);
-
-  const convertToAsk = useCallback(() => {
-    setResolveType('ask');
-    setIsShowSessionToggle(false);
-  }, [resolveType]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -69,16 +56,15 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback((message) => {
+  const sendMessage = useCallback((resolveType, message) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
       return;
     }
     const newChatHistories = chatHistories.slice(0);
-    const messages = [{ type: CHAT_MESSAGE_TYPE.TEXT, value: validMessage }];
     newChatHistories.push(new ChatMessage({
-      messages: messages,
+      message: { [CHAT_MESSAGE_TYPE.TEXT]: validMessage },
       isUserSpeak: true,
     }));
     updateChatHistories(newChatHistories, false, () => {
@@ -98,7 +84,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage, resolveType);
       }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, togglePageType, resolveType]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
@@ -124,7 +110,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         if (item.role === 'user') {
           return new ChatMessage({
             _id: item.id,
-            messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: item.content }],
+            message: { [CHAT_MESSAGE_TYPE.TEXT]: item.content },
             isUserSpeak: true,
           });
         }
@@ -143,13 +129,13 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           console.error(e);
           msgContent = { answer: item.content, sources: [] };
         }
-        const newChatData = [
-          { type: CHAT_MESSAGE_TYPE.ANSWER, value: msgContent.answer },
-          { type: CHAT_MESSAGE_TYPE.SOURCES, value: msgContent.sources },
-        ];
+        const newChatData = {
+          [CHAT_MESSAGE_TYPE.ANSWER]: msgContent.answer,
+          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
+        };
         return new ChatMessage({
           _id: item.id,
-          messages: newChatData,
+          message: newChatData,
           type: CHAT_MESSAGE_TYPE.GROUP
         });
       });
@@ -187,31 +173,33 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   useEffect(() => {
     if (loading) return;
-    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error }) => {
+    const unsubscribeAIReply = eventBus.subscribe(EVENT_BUS_TYPE.AI_REPLY, (reply_session_id, { data, error, resolveType }) => {
       modifyLocalSession(reply_session_id, { is_replying: false });
       if (reply_session_id !== sessionId) return;
       let newChatHistories = chatHistories.slice(0);
       if (error) {
         const errorMessage = Utils.getErrorMsg(error);
         newChatHistories.push(new ChatMessage({
-          messages: [{ type: CHAT_MESSAGE_TYPE.TEXT, value: gettext(errorMessage) }],
+          message: { [CHAT_MESSAGE_TYPE.TEXT]: gettext(errorMessage) },
           type: CHAT_MESSAGE_TYPE.ERROR
         }));
         updateChatHistories(newChatHistories, false);
         return;
       }
-      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
+      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
-      const newChatData = [
-        { type: CHAT_MESSAGE_TYPE.ANSWER, value: answer },
-        { type: CHAT_MESSAGE_TYPE.SOURCES, value: sources },
-      ];
-
+      let newChatData = {
+        [CHAT_MESSAGE_TYPE.ANSWER]: answer,
+        [CHAT_MESSAGE_TYPE.SOURCES]: sources,
+      };
+      if (resolveType === AI_RESOLVE_TYPE.AGENT) {
+        newChatData[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS] = memory;
+      }
       newChatHistories[newChatHistories.length - 1]._id = userMessageId;
       newChatHistories.push(new ChatMessage({
         _id: aiReplyMessageId,
-        messages: newChatData,
+        message: newChatData,
         type: CHAT_MESSAGE_TYPE.GROUP
       }));
       updateChatHistories(newChatHistories, false);
@@ -220,13 +208,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       unsubscribeAIReply();
     };
   }, [loading, sessionId, chatHistories, modifyLocalSession]);
-
-  const onClickSessionToggle = useCallback((e) => {
-    const { bottom } = messageInputRef.current.inputWrapper.getBoundingClientRect();
-    const overflowHeight = bottom + 6 + 82; // 6: margin, 82: panel height
-    setSessionTogglePanelTranslateY(overflowHeight > window.innerHeight ? (window.innerHeight - overflowHeight - 95) : 0);
-    setIsShowSessionToggle(true);
-  }, [messageInputRef]);
 
   const isEmpty = chatHistories.length === 0 && !loading;
 
@@ -237,8 +218,10 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
               <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
-              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('Problem solving')}</div>
-              <div className="sea-qa-ai-ask-chats-tip-description">{gettext('Describe your problem, assistant will try to solve it by searching your knowledge bases.')}</div>
+              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
+              <div className="sea-qa-ai-ask-chats-tip-description">
+                {gettext('You can say "Help solving the following issue: <issue description>" to let AI solving the issue by searching knowledge bases.')}
+              </div>
             </div>
           )}
           {!loading && chatHistories.map((chat, chatIndex) => {
@@ -257,28 +240,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           readOnly={readOnly}
           sendMessage={sendMessage}
         />
-        <div className='sea-qa-ai-ask-chats-toggle-session-wrapper'>
-          <div className='sea-qa-ai-ask-chats-toggle-session-button'>
-            <span className='sea-qa-ai-ask-chats-toggle-session-button-name'>{resolveType.charAt(0).toUpperCase() + resolveType.slice(1)}</span>
-            <IconButton icon='down' onClick={onClickSessionToggle} />
-          </div>
-          {isShowSessionToggle && (
-            <div className='sea-qa-ai-ask-chats-toggle-session-panel' style={{ transform: `translateY(${sessionTogglePanelTranslateY}px)` }}>
-              <ClickOutside onClickOutside={() => setIsShowSessionToggle(false)}>
-                <div className='sea-qa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu'>
-                  <div onClick={convertToAgent} className='dropdown-item sea-qa-dropdown-item'>
-                    <span>{gettext('Agent')}</span>
-                    {resolveType === 'agent' && <IconButton icon='check-mark'/>}
-                  </div>
-                  <div onClick={convertToAsk} className='dropdown-item sea-qa-dropdown-item'>
-                    <span>{gettext('Ask')}</span>
-                    {resolveType === 'ask' && <IconButton icon='check-mark'/>}
-                  </div>
-                </div>
-              </ClickOutside>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

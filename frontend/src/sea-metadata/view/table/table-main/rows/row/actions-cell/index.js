@@ -58,14 +58,14 @@ class ActionsCell extends Component {
         onMouseEnter={this.onCellMouseEnter}
         onMouseLeave={this.onCellMouseLeave}
       >
-        {!isSelected && <div className="sea-metadata-table-column-content row-index text-truncate">{index + 1}</div>}
-        <div className='sea-metadata-table-column-content actions-checkbox'>
-          <div className='select-cell-checkbox-container' onClick={this.props.onSelectRow}>
+        {!isSelected && (<div className="sea-metadata-table-column-content row-index text-truncate">{index + 1}</div>)}
+        <div className="sea-metadata-table-column-content actions-checkbox">
+          <div className="select-cell-checkbox-container" onClick={this.props.onSelectRow}>
             <input
               id={`select-cell-checkbox-${rowId}`}
-              className='select-cell-checkbox'
-              type='checkbox'
-              name='row-selection'
+              className="select-cell-checkbox"
+              type="checkbox"
+              name="row-selection"
               checked={isSelected || false}
               readOnly
             />

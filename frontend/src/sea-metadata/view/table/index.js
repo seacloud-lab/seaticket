@@ -7,11 +7,11 @@ import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, MAX_LOAD_NUMBER } from '../../constants';
 import context from '../../context';
-import { useMetadata, useCollaborators, useTagsData } from '../../hooks';
+import { useMetadata, useCollaborators, useTagsData, useSelectedRows } from '../../hooks';
 
 import './index.css';
 
-const Table = ({ groupHeaderColSpan, expandRow, children }) => {
+const Table = ({ fixedColumnCount, expandRow, children }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [isShowRowExpand, setIsShowRowExpand] = useState(false);
 
@@ -36,6 +36,7 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
     createContextMenuOptions,
     insertColumn,
   } = useMetadata();
+  const { updateSelectedRowIds } = useSelectedRows();
 
   const { tagsData } = useTagsData();
 
@@ -79,6 +80,7 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
 
   const loadMore = useCallback(async () => {
     if (!metadata.hasMore) return;
+    if (isLoadingMore) return;
     setLoadingMore(true);
 
     try {
@@ -91,10 +93,11 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
       return;
     }
 
-  }, [metadata, store]);
+  }, [isLoadingMore, metadata, store]);
 
   const loadAll = useCallback(async (maxLoadNumber, callback) => {
     if (!metadata.hasMore) return;
+    if (isLoadingMore) return;
     setLoadingMore(true);
     const rowsCount = metadata.row_ids.length;
     const loadNumber = rowsCount % MAX_LOAD_NUMBER !== 0 ? MAX_LOAD_NUMBER - rowsCount % MAX_LOAD_NUMBER : MAX_LOAD_NUMBER;
@@ -113,7 +116,7 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
       typeof callback === 'function' && callback(store.data.hasMore);
       setLoadingMore(false);
     }
-  }, [metadata, store]);
+  }, [isLoadingMore, metadata, store]);
 
   const getAdjacentRowsIds = useCallback((rowIds) => {
     const rowIdsLen = metadata.row_ids.length;
@@ -191,7 +194,7 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
           isGroupView={isGroupView}
           isLoadingMore={isLoadingMore}
           isShowRowExpandBtn={Boolean(expandRow)}
-          groupHeaderColSpan={groupHeaderColSpan}
+          fixedColumnCount={fixedColumnCount}
           loadMore={loadMore}
           metadata={metadata}
           tagsData={tagsData}
@@ -215,6 +218,7 @@ const Table = ({ groupHeaderColSpan, expandRow, children }) => {
           onGridKeyUp={onHotKeyUp}
           createContextMenuOptions={createContextMenuOptions}
           onRowExpand={onRowExpand}
+          updateSelectedRowIds={updateSelectedRowIds}
         />
       </div>
       {isShowRowExpand && isValidElement(children) && (

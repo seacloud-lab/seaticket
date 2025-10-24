@@ -1,0 +1,60 @@
+.sea-qa-github-issue-details-container .modal-body {
+  padding: 0px;
+}
+
+.sea-qa-github-issue-details-container .sea-qa-github-issue-row-details {
+  min-height: 40vh;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 0 16px;
+}
+
+.sea-qa-github-issue-details-container .sea-qa-github-issue-row-details .empty-tip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sea-qa-github-issue-details-container .sea-qa-github-issue-row-details .sea-qa-github-issue-reply-item {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-content {
+  padding-left: 42px;
+  padding-bottom: 16px;
+  word-wrap: break-word;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-content :last-child {
+  margin-bottom: 0px;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper .sea-qa-github-issue-reply-item-author-info-left {
+  display: flex;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper .sea-qa-github-issue-reply-item-author-info-left .sea-qa-github-issue-reply-item-author-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper .sea-qa-github-issue-reply-item-author-info-left .sea-qa-github-issue-reply-item-author-avatar img {
+  border-radius: 50%;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper .sea-qa-github-issue-reply-item-author-info-left .sea-qa-github-issue-reply-item-author-name {
+  padding-left: 10px;
+  font-weight: 500;
+}
+
+.sea-qa-github-issue-reply-item .sea-qa-github-issue-reply-item-author-info-wrapper .sea-qa-github-issue-reply-item-author-time {
+  color: #666;
+}

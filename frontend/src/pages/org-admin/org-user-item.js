@@ -177,7 +177,7 @@ class UserItem extends React.Component {
                 <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick} />
                 <DropdownMenu className="sea-qa-dropdown-menu dropdown-menu">
                   {currentTab === 'users' && <DropdownItem onClick={this.toggleDeleteDialog}>{gettext('Delete')}</DropdownItem>}
-                  {currentTab === 'users' && <DropdownItem onClick={this.toggleResetPW}>{gettext('ResetPwd')}</DropdownItem>}
+                  {currentTab === 'users' && <DropdownItem onClick={this.toggleResetPW}>{gettext('Reset password')}</DropdownItem>}
                   {currentTab === 'admins' && <DropdownItem onClick={this.toggleRevokeAdmin}>{gettext('Revoke admin')}</DropdownItem>}
                 </DropdownMenu>
               </Dropdown>

@@ -1,0 +1,68 @@
+@import url('../view-item/index.css');
+.sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item {
+  height: 24px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item:hover {
+  background-color: #efefef;
+}
+
+.sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item.active::before {
+  display: none;
+}
+
+.sea-metadata-view-dropdown-menu .all-views-search-wrapper {
+  padding: 8px 16px;
+}
+
+.sea-metadata-view-dropdown-menu .all-views-list-wrapper {
+  max-height: 240px;
+  min-height: 100px;
+  overflow-y: auto;
+  width: 300px;
+}
+
+.all-views-list-wrapper .dropdown-item.view-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.all-views-list-wrapper .dropdown-item.view-item.sea-metadata-view-item-next-position-before::before {
+  content: '';
+  border: 0.5px solid #555;
+  border-radius: 1px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+}
+
+.all-views-list-wrapper .dropdown-item.view-item.sea-metadata-view-item-next-position-after::after {
+  content: '';
+  border: 0.5px solid #555;
+  border-radius: 1px;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+}
+
+.all-views-list-wrapper .dropdown-item.view-item .view-item-left .sea-qa-icon-svg:hover {
+  cursor: grab;
+}
+
+.all-views-list-wrapper .dropdown-item.view-item .view-item-right .sea-qa-icon-svg {
+  margin-right: 0;
+}
+
+.all-views-list-wrapper .all-views-empty-tip {
+  padding-left: 16px;
+}
+
+.all-views-list-wrapper .tip-default {
+  font-size: 14px;
+}

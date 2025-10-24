@@ -5,7 +5,8 @@ from .views import project_view
 
 from .apis import ProjectRelatedUsersView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
-    ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView
+    ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
+    ProjectConnectionsStatusView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
@@ -13,8 +14,9 @@ from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTi
 from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
-from .connections_views import ConnectionViewsAPI, ConnectionViewView, \
+from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
+from .ai import QAView, ConvertRecordToTicket
 
 
 urlpatterns = [
@@ -38,6 +40,7 @@ urlpatterns = [
 
     #sync data
     re_path(r'webhook/github', GithubWebhookView.as_view(), name='github_webhook'),
+    re_path(r'webhook/discourse', DiscourseWebhookView.as_view(), name='discourse_webhook'),
 
     # connections
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v2.1-connections'),
@@ -45,10 +48,11 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/sync/$', ProjectConnectionSyncView.as_view(), name='api-v2.1-connection-sync'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v2.1-connection-details'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/row-detail/$', ProjectConnectionRowDetailView.as_view(), name='api-v2.1-connection-row-detail'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/query-status/$', ProjectConnectionsStatusView.as_view(), name='api-v2.1-connection-status'),
 
     # connection views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewView.as_view(), name='api-v2.1-connection-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v2.1-connection-view'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
 
@@ -74,6 +78,10 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/(?P<view_id>.+)/$', TicketViewView.as_view(), name='api-v2.1-project-ticket-view'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-move-views/$', TicketViewsMoveView.as_view(), name='api-v2.1-project-ticket-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-duplicate-view/$', TicketViewsDuplicateView.as_view(), name='api-v2.1-project-ticket-view-duplicate'),
+
+    # ai
+    re_path(r'^api/v2.1/ai/qa/$', QAView.as_view(), name='api-v2.1-qa'),
+    re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
 
 ]
 

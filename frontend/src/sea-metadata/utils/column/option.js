@@ -1,4 +1,5 @@
 import { SELECT_OPTION_COLORS } from '../../constants';
+import { checkIsPredefinedColumn } from './common';
 
 /**
  * Get options from single-select/multiple-select column.
@@ -24,12 +25,12 @@ const getOption = (options, optionId) => {
 };
 
 const checkIsPredefinedOption = (column, optionId) => {
-  const { is_predefined } = column;
+  const isPredefined = checkIsPredefinedColumn(column);
+  if (!isPredefined) return false;
   const options = getColumnOptions(column);
-  if (!is_predefined) return false;
   const option = getOption(options, optionId);
   if (!option) return false;
-  return Boolean(option.is_predefined);
+  return isPredefined;
 };
 
 
@@ -43,6 +44,29 @@ const getOptionName = (options, targetOptionId) => {
   if (!targetOptionId || !Array.isArray(options)) return '';
   const targetOption = getOption(options, targetOptionId);
   return targetOption ? targetOption.name : '';
+};
+
+/**
+ * Get option name of the given id
+ * @param {array} options e.g. [ { id, color, name, ... } ]
+ * @param {string} targetOptionId option id
+ * @returns option name, string
+ */
+const getOptionDisplayNameByOption = (option) => {
+  if (!option) return '';
+  return option.display_name || option.name || '';
+};
+
+/**
+ * Get option name of the given id
+ * @param {array} options e.g. [ { id, color, name, ... } ]
+ * @param {string} targetOptionId option id
+ * @returns option name, string
+ */
+const getOptionDisplayName = (options, targetOptionId) => {
+  if (!targetOptionId || !Array.isArray(options)) return '';
+  const targetOption = getOption(options, targetOptionId);
+  return getOptionDisplayNameByOption(targetOption);
 };
 
 /**
@@ -67,7 +91,8 @@ const getColumnOptionNameById = (column, optionId) => {
  * @returns options name, array
  */
 const getColumnOptionNamesByIds = (column, optionIds) => {
-  if (column.is_predefined) return optionIds;
+  const isPredefined = checkIsPredefinedColumn(column);
+  if (isPredefined) return optionIds;
   if (!Array.isArray(optionIds) || optionIds.length === 0) return [];
   const options = getColumnOptions(column);
   if (!Array.isArray(options) || options.length === 0) return [];
@@ -81,7 +106,8 @@ const getColumnOptionNamesByIds = (column, optionIds) => {
  * @returns options id, array
  */
 const getColumnOptionIdsByNames = (column, names) => {
-  if (column.is_predefined) return names;
+  const isPredefined = checkIsPredefinedColumn(column);
+  if (isPredefined) return names;
   if (!Array.isArray(names) || names.length === 0) return [];
   const options = getColumnOptions(column);
   if (!Array.isArray(options) || options.length === 0) return [];
@@ -265,6 +291,8 @@ export {
   checkIsPredefinedOption,
   getOption,
   getOptionName,
+  getOptionDisplayName,
+  getOptionDisplayNameByOption,
   getColumnOptionNameById,
   getColumnOptionNamesByIds,
   getColumnOptionIdsByNames,

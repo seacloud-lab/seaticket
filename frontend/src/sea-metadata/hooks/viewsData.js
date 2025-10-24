@@ -1,16 +1,18 @@
 /* eslint-disable react/prop-types */
+import React, { forwardRef, useCallback, useContext, useEffect, useState, useImperativeHandle } from 'react';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import context from '../context';
 
 const ViewsDataContext = React.createContext(null);
 
-export const ViewsDataProvider = ({
+export const ViewsDataProvider = forwardRef(({
   viewID,
   toggleView,
   children,
-}) => {
+  visibleViewsCount = 5,
+}, ref) => {
   const [isLoading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState({});
 
@@ -99,12 +101,17 @@ export const ViewsDataProvider = ({
     });
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    getData: () => viewsData,
+  }), [viewsData]);
+
   return (
     <ViewsDataContext.Provider
       value={{
         isLoading,
         viewID,
         viewsData,
+        visibleViewsCount,
         insertView,
         deleteView,
         modifyView,
@@ -116,7 +123,7 @@ export const ViewsDataProvider = ({
       {children}
     </ViewsDataContext.Provider>
   );
-};
+});
 
 export const useViewsData = () => {
   const context = useContext(ViewsDataContext);

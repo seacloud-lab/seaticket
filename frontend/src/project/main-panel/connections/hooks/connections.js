@@ -25,18 +25,28 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const activeConnectionRef = useRef(null);
   const isDataLoaded = useRef(false);
 
+  const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
+    setConnections(prev => prev.map(record =>
+      record.id === connectionId ? { ...record, ...update } : record
+    ));
+  }, []);
+
+  const modifyLocalConnectionSyncStatus = useCallback((update) => {
+    setConnections(prev => prev.map(record => update[record.id] ?
+      ({ ...record, status: { ...record.status, last_sync_status: update[record.id] } }) : record
+    ));
+  }, []);
+
   const modifyConnectionStatus = useCallback((connectionId, update) => {
     connectionsAPI.updateConnectionStatus(projectUuid, connectionId, update).then(() => {
-      setConnections(prev => prev.map(record =>
-        record.id === connectionId ? { ...record, ...update } : record
-      ));
+      modifyLocalConnectionRecord(connectionId, update);
       if (Object.keys(update).includes('is_active')) {
         toaster.success(update.is_active ? gettext('Activated') : gettext('Deactivated'));
       }
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
     });
-  }, []);
+  }, [modifyLocalConnectionRecord]);
 
   const closeConnectionDialog = useCallback(() => {
     setIsShowRecordDialog(false);
@@ -111,6 +121,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   }, []);
 
   const loadMore = useCallback(() => {
+    if (!hasMoreRef.current) return;
+    if (isLoading) return;
     setLoading(true);
     connectionsAPI.listConnections(projectUuid, pageRef.current, pageCountRef.current).then(res => {
       const moreConnections = res.data.records.map(r => new Connection(r));
@@ -140,7 +152,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [projectUuid]);
+  }, [isLoading, projectUuid]);
 
   const load = useCallback(() => {
     if (!hasMoreRef.current) return;
@@ -174,6 +186,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       isDataLoaded: isDataLoaded.current,
       isLoading,
       connections,
+      modifyLocalConnectionRecord,
+      modifyLocalConnectionSyncStatus,
       modifyConnectionStatus,
       handleDelete,
       handleModify,

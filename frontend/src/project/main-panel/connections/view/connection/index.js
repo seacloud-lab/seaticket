@@ -1,19 +1,34 @@
 import { useMemo, useCallback, useState, useEffect } from 'react';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
-import SeaMetadata, { CellType, CollaboratorsProvider } from '@/sea-metadata';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import copy from 'copy-to-clipboard';
+import { processor, getPreviewContent } from '@seafile/seafile-editor';
+import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import DiscourseForumsDetails from '../../components/discourse-forums-details';
-import { connectionsAPI } from '@/project/api';
+import GithubIssueDetails from '../../components/github-issue-details';
+import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
-import { GITHUB_STATUS_OPTIONS, CONNECTION_TYPE } from '../../constants';
-import { GithubIssue, DiscourseForum, WebCrawl } from '../../models';
+import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { GithubIssue, DiscourseForum, WebCrawl, Seafile } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster } from '@/components';
-import { processor } from '@seafile/seafile-editor';
+import { toaster, ModalHeader, Loading } from '@/components';
+
+const SERVER_COMPUTABLE_CONNECTION_TYPE = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.SEAFILE
+];
+
+const MULTIPLE_VIEWS_CONNECTION_TYPE = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.SEAFILE,
+];
 
 const SiteContentDialog = ({ title, content, onClose }) => {
-
   const [innerHtml, setInnerHtml] = useState('');
 
   useEffect(() => {
@@ -24,11 +39,12 @@ const SiteContentDialog = ({ title, content, onClose }) => {
       setInnerHtml(innerHtml);
     });
   }, [content]);
+
   return (
     <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
-      <ModalBody>
-        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '0.5rem 1rem' }}>
+      <ModalBody style={{ padding: 0 }}>
+        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '16px' }}>
           <div className="site-page-content" dangerouslySetInnerHTML={{ __html: innerHtml }}></div>
         </div>
       </ModalBody>
@@ -36,14 +52,137 @@ const SiteContentDialog = ({ title, content, onClose }) => {
   );
 };
 
+const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || '');
+      setDescription(initialData.description || '');
+    } else {
+      setTitle('');
+      setDescription('');
+    }
+  }, [initialData]);
+
+  const handleSubmit = () => {
+    const { previewText, images, links, checklist } = getPreviewContent(description);
+    const content = {
+      text: description,
+      preview: previewText,
+      images,
+      links,
+      checklist,
+    };
+    const ticketData = {
+      title: title,
+      description: content,
+      type: '',
+      assignees: [],
+      tags: [],
+    };
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
+      toaster.success(gettext('Ticket created'));
+      setTimeout(toggle, 500);
+    });
+  };
+
+  return (
+    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
+      <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
+      <ModalBody>
+        <div className="d-flex">
+          <div style={{ flex: 2, paddingRight: '1rem' }}>
+            {isLoading && <Loading/>}
+            <Form>
+              <FormGroup>
+                <Label for="ticketTitle">{gettext('Title')}</Label>
+                <Input
+                  type="text"
+                  name="title"
+                  id="ticketTitle"
+                  value={title}
+                  readOnly={isLoading}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{ marginBottom: '1rem' }}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label for="ticketDescription">{gettext('Description')}</Label>
+                <Input
+                  type="textarea"
+                  name="description"
+                  id="ticketDescription"
+                  value={description}
+                  readOnly={isLoading}
+                  onChange={(e) => setDescription(e.target.value)}
+                  style={{ height: '250px' }}
+                />
+              </FormGroup>
+            </Form>
+          </div>
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
+        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
+
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
-  const [rowDetails, setRowDetails] = useState(null);
-  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
+  const [discourseForumsDetails, setDiscourseForumsDetails] = useState(null);
+  const [discourseForumsDetailsTitle, setDiscourseForumsDetailsTitle] = useState('');
+  const [githubIssueDetails, setGithubIssueDetails] = useState(null);
+  const [githubIssueDetailsTitle, setGithubIssueDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [typesData, setTypesData] = useState(null);
+  const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [ticketData, setTicketData] = useState(null);
+  const [isTicketLoading, setTicketLoading] = useState(false);
+
+  const parseChecklistFromBody = (bodyText) => {
+    if (!bodyText) return { total: 0, completed: 0 };
+    const regex = /^\s*[-*]\s*\[( |x|X)\]/gm;
+    const matches = bodyText.match(regex) || [];
+    const total = matches.length;
+    const completed = matches.filter(item => /\[x\]/i.test(item)).length;
+    return { total, completed };
+  };
+
+  const createTicketFromRow = useCallback(async (rowData) => {
+    setIsSubmitting(true);
+
+    const bodyText = rowData.body || 'body is empty';
+    const checklist = parseChecklistFromBody(bodyText);
+    const descriptionData = {
+      text: bodyText,
+      preview: bodyText.substring(0, 100) + '...',
+      images: [],
+      links: [],
+      checklist
+    };
+
+    const ticketData = {
+      title: `${rowData.title || ''}`,
+      description: descriptionData,
+      author: `${rowData.author || ''}`,
+      status: `${rowData.status_reason || ''}`
+    };
+
+    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(res => {
+      setIsSubmitting(false);
+    }).catch(error => {
+      setIsSubmitting(false);
+    });
+  }, [projectUuid]);
 
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
@@ -87,53 +226,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return {};
   }, [connection]);
 
-  const columns = useMemo(() => {
-    const connectionType = connection?.type;
-    if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true,
-        },
-        { type: CellType.TEXT, key: 'slug', name: gettext('Slug'), editable: false, is_required: true },
-        { type: CellType.NUMBER, key: 'views', name: gettext('Views count'), editable: false },
-        { type: CellType.DATE, key: 'bumped_at', name: gettext('Last activity'), data: { format: 'YYYY-MM-DD' }, editable: false },
-      ];
-    }
-    if (connectionType === CONNECTION_TYPE.SITE) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true, expand_able: true,
-          click: (row) => {
-            handleClickSiteTitle(row);
-          }
-        },
-        { type: CellType.URL, key: 'url', name: gettext('URL'), editable: false },
-        { type: CellType.MTIME, key: 'last_modified', name: gettext('Last modify time'), editable: false },
-      ];
-    }
-    if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
-      return [
-        {
-          type: CellType.TEXT, key: 'title', name: gettext('Title'),
-          editable: false, is_name_column: true, frozen: true,
-          click: (row) => {
-            if (row && row.url) {
-              window.open(row.url);
-            }
-          }
-        },
-        { type: CellType.TEXT, key: 'author', name: gettext('Author'), editable: false, is_required: true },
-        { type: CellType.SINGLE_SELECT, key: 'status', name: gettext('Status'), data: { options: GITHUB_STATUS_OPTIONS }, editable: false },
-        { type: CellType.TEXT, key: 'labels', name: gettext('Labels'), editable: false },
-        { type: CellType.DATE, key: 'closed_at', name: gettext('Closed at'), data: { format: 'YYYY-MM-DD' }, editable: false },
-        { type: CellType.CTIME, key: 'created_at', name: gettext('Create time'), editable: false },
-      ];
-    }
-    return [];
-  }, [connection, handleClickSiteTitle]);
-
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
     views: [
@@ -149,23 +241,66 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { type, records } = res.data;
         let rows = [];
+        let columns = res?.data?.columns || [];
+        let notDisplayColumnNames = ['_pk'];
+        let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
+          const typeColum = columns.find(c => c.name === 'issue_type');
+          if (typeColum) {
+            const options = typeColum.data?.options || [];
+            const _typesData = options.map(o => ({ ...o, _id: o.id }));
+            setTypesData({
+              rows: _typesData,
+              id_row_map: _typesData.reduce((pre, cur) => {
+                pre[cur._id] = cur;
+                return pre;
+              }, {})
+            });
+            context.setSetting('typeColumnKey', typeColum.key);
+          }
+
+          const stateColumnIndex = columns.findIndex(c => c.name === 'state');
+          if (stateColumnIndex > -1) {
+            const stateColumn = columns[stateColumnIndex];
+            context.setSetting('statusColumnKey', stateColumn.key);
+            let options = stateColumn.data?.options || [];
+            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
+            columns[stateColumnIndex].data = { ...stateColumn.data, options };
+          }
+
+          const stateReasonColumnIndex = columns.findIndex(c => c.name === 'state_reason');
+          if (stateReasonColumnIndex > -1) {
+            const stateReasonColumn = columns[stateReasonColumnIndex];
+            let options = stateReasonColumn.data?.options || [];
+            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
+            columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
+          }
+          notDisplayColumnNames.push('url');
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
         } else if (type === CONNECTION_TYPE.SITE) {
           rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
+          columnConfig['title'] = {
+            ...columnConfig['title'],
+            click: (row) => {
+              handleClickSiteTitle(row);
+            }
+          };
+        } else if (type === CONNECTION_TYPE.SEAFILE) {
+          rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
         }
+        columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
           data: {
             rows,
-            columns,
+            columns: columns,
           }
         };
       });
     };
 
-    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    if (SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type)) {
       return {
         getMetadata,
         getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
@@ -212,29 +347,150 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         });
       },
     };
-  }, [projectUuid, connectionID, connection, columns]);
+  }, [projectUuid, connectionID, connection]);
 
-  const createContextMenuOptions = useCallback(() => {
+  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+    if (rows.length > 1) return [];
+    const row = rows[0];
+    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      const discourseBaseUrl = connection.config?.url;
+      if (!discourseBaseUrl) return [];
+      return [{
+        key: 'copy',
+        icon: 'copy',
+        name: gettext('Copy original page link'),
+        callback: () => {
+          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+          const url = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+          copy(url);
+          toaster.success(gettext('The original page link has been copied'));
+        }
+      }];
+    }
+    if (connection?.type === CONNECTION_TYPE.SITE) {
+      if (!row?.url) return [];
+      return [
+        {
+          key: 'copy',
+          icon: 'copy',
+          name: gettext('Copy original page link'),
+          callback: (event) => {
+            event && event.stopPropagation();
+            event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+            const url = row.url;
+            copy(url);
+            toaster.success(gettext('The original page link has been copied'));
+          },
+        }
+      ];
+    }
+
     return [];
-  }, []);
+  }, [connection]);
+
+  const createContextMenuOptions = useCallback(({
+    isGroupView,
+    selectedRange,
+    selectedPosition,
+    table,
+    rowMetrics,
+    rowGetterByIndex,
+  }) => {
+    // handle selected multiple cells
+    if (selectedRange) {
+      return [];
+    }
+
+    // handle selected rows
+    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+    if (selectedRowIds.length > 1) {
+      return [];
+    }
+
+    // handle selected cell
+    if (!selectedPosition) return [];
+    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+    if (!row) return [];
+
+    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return [{
+        label: gettext('Open original page'),
+        callback: () => {
+          const discourseBaseUrl = connection.config?.url;
+          if (!discourseBaseUrl || !row.slug || !row.topic_id) {
+            toaster.danger(gettext('Missing required information to open original page'));
+            return;
+          }
+          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+          const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+          window.open(originalPageUrl, '_blank', 'noopener,noreferrer');
+        }
+      }, {
+        label: gettext('Create related ticket'),
+        callback: () => {
+          setTicketData(null);
+          setTicketDialogOpen(true);
+          setTicketLoading(true);
+          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row.topic_id).then(res => {
+            const data = res.data || {};
+            const discourseBaseUrl = connection.config?.url;
+            let relatedUrl = '';
+            if (discourseBaseUrl && row.slug && row.topic_id) {
+              const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+              relatedUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+            }
+            const prefix = data.description || '';
+            const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+            data.description = prefix ? `${prefix}\n\n${suffix}` : suffix;
+            setTicketData(data);
+          }).finally(() => {
+            setTicketLoading(false);
+          });
+        }
+      }];
+    }
+
+    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE){
+      return [{
+        label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
+        callback: () => createTicketFromRow(row),
+        disabled: isSubmitting
+      }];
+    }
+
+    if (connection?.type === CONNECTION_TYPE.SITE) {
+      return [{
+        label: gettext('Open original page'),
+        callback: () => {
+          window.open(row.url, '_blank', 'noopener,noreferrer');
+        }
+      }];
+    }
+    return [];
+  }, [connection, isSubmitting, createTicketFromRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const handleExpandRow = useCallback((row) => {
-    if (row && row.url) {
+    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
       window.open(row.url);
       return;
     }
-    const params = { topic_id: row.topic_id };
-    connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-      setRowDetailsTitle(row.title);
-      setRowDetails(res.data.row_details);
-    });
-  }, [projectUuid, connectionID]);
 
-  const onRowDetailsClose = useCallback(() => {
-    setRowDetails(null);
-  }, []);
+    if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
+        setDiscourseForumsDetailsTitle(row.title);
+        setDiscourseForumsDetails(res.data.row_details);
+      });
+    }
+    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
+        setGithubIssueDetailsTitle(row.title);
+        setGithubIssueDetails(res.data.row_details);
+      });
+    }
+  }, [projectUuid, connectionID, connection]);
 
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
@@ -256,35 +512,49 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   useEffect(() => {
     if (isLoadingConnection) return;
-    if (connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+    const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection.type);
+    if (!isMultiView) {
       updateViewID('');
     }
-  }, [isLoadingConnection, connection]);
+  }, [isLoadingConnection, connection, viewID, updateViewID]);
 
   if (isLoading || isLoadingConnection) return null;
 
-  const isGithubIssuesView = connection?.type === CONNECTION_TYPE.GITHUB_ISSUE;
+  const isServerComputableView = SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type);
+  const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection?.type);
 
   return (
     <CollaboratorsProvider>
       <SeaMetadata
-        viewID={isGithubIssuesView ? viewID : '0000'}
+        viewID={isMultiView ? viewID : '0000'}
         api={api}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
+        createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
-        isViewComputedOnServer={isGithubIssuesView}
-        toggleView={isGithubIssuesView ? updateViewID : undefined}
+        isViewComputedOnServer={isServerComputableView}
+        typesData={typesData}
+        toggleView={isMultiView ? updateViewID : undefined}
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && <DiscourseForumsDetails rowDetailsTitle={rowDetailsTitle} rowDetails={rowDetails} onClose={onRowDetailsClose} />}
+      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}
+      {githubIssueDetails && <GithubIssueDetails rowDetailsTitle={githubIssueDetailsTitle} rowDetails={githubIssueDetails} onClose={() => {setGithubIssueDetails(null);}} />}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}
           content={siteDetails.content}
           onClose={() => setSiteDetails(null)}
+        />
+      )}
+      {isTicketDialogOpen && (
+        <CreateTicketDialog
+          projectUuid={projectUuid}
+          initialData={ticketData}
+          isLoading={isTicketLoading}
+          isOpen={isTicketDialogOpen}
+          toggle={() => setTicketDialogOpen(false)}
         />
       )}
     </CollaboratorsProvider>

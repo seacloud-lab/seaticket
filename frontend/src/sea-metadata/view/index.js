@@ -5,7 +5,7 @@ import { useMetadata } from '../hooks';
 import { VIEW_TYPE } from '../constants';
 
 const View = ({
-  groupHeaderColSpan,
+  fixedColumnCount,
   expandRow,
   children
 }) => {
@@ -16,20 +16,20 @@ const View = ({
     const viewType = metadata?.view?.type;
     switch (viewType) {
       case VIEW_TYPE.TABLE: {
-        return (<Table groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />);
+        return (<Table fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />);
       }
       default: {
-        return (<Table groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />);
+        return (<Table fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />);
       }
     }
-  }, [groupHeaderColSpan, children]);
+  }, [fixedColumnCount, children]);
 
   if (isLoading) return (<CenteredLoading />);
 
   return (
     <div className="sea-metadata-wrapper">
       <div className="sea-metadata-main">
-        {errorMessage ? <div className="d-center-middle error">{errorMessage}</div> : renderView(metadata)}
+        {errorMessage ? <div className="d-center-middle sea-qa-tip-danger">{errorMessage}</div> : renderView(metadata)}
       </div>
     </div>
   );

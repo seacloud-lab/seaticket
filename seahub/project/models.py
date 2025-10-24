@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.core.cache import cache
-import datetime
 import logging
 import uuid
 import json
@@ -10,11 +9,9 @@ import random
 import string
 from copy import deepcopy
 
-from rest_framework import status
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
-from seahub.api2.utils import api_error
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
@@ -320,7 +317,7 @@ class Projects(models.Model):
 
 
 class DeletedProjects(models.Model):
-    project_uuid = models.UUIDField(unique=True, default=uuid.uuid4)
+    project_uuid = models.UUIDField(unique=True)
 
     class Meta:
         db_table = 'deleted_projects'
@@ -498,7 +495,7 @@ class ProjectConnections(models.Model):
     """ Project connections table
     """
 
-    project = models.ForeignKey(Projects, on_delete=models.CASCADE, db_index=True)
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, to_field="uuid", db_column="project_uuid")
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=255)
     config = models.TextField()
@@ -531,93 +528,142 @@ class ProjectConnections(models.Model):
 
 
 class ConnectionsView(object):
-    
+
     def __init__(self, name, view_type='table', config={}, project_connection_type = ''):
         self.name = name
         self.type = view_type
         self.config = config
         self.details = {}
         self.project_connection_type = project_connection_type
-        
-        self.init_view()            
+
+        self.init_view()
 
     def init_view(self):
+        self.details = {
+            "_id": generate_views_unique_id(4),
+            "table_id": '0000',  # by default
+            "name": self.name,
+            "filters": [],
+            "groupbys": [],
+            "filter_conjunction": "Or",
+            "hidden_columns": [],
+            "type": self.type,
+        }
         if self.project_connection_type == ConnectionType.GITHUB_ISSUE.value:
-            self.details = {
-                    "_id": generate_views_unique_id(4),
-                    "table_id": '0000',  # by default
-                    "name": self.name,
+            self.details.update({
                     'basic_filters': [
-                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                        {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'issue_type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                     ],
-                    "filters": [],
-                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
-                    "groupbys": [],
-                    "filter_conjunction": "Or",
-                    "hidden_columns": [],
-                    "type": self.type,
-                }
-            self.details.update(self.config)
+                    'sorts': [],
+                })
+        elif self.project_connection_type == ConnectionType.SITE.value:
+            self.details.update({
+                    'basic_filters': [],
+                    'sorts': [],
+                })
+        self.details.update(self.config)
 
 
 class ConnectionsViewsManager(models.Manager):
 
-    def get_record(self, project_uuid, connection_id):
+    def update_init_view_details(self, project_uuid, connection, details):
+        connection_type = connection.type
+        if connection_type == ConnectionType.GITHUB_ISSUE.value:
+            from seahub.project.seadb_api import SeaDBAPI
+            from seahub.seadb_models.utils import get_connection_columns
+            seadb_api = SeaDBAPI('seaqa-web')
+            columns = get_connection_columns(seadb_api, project_uuid, connection)
+            views = details.get('views', [])
+            for v in views:
+                basic_filters = v.get('basic_filters', [])
+                for basic_filter in basic_filters:
+                    column_key = basic_filter['column_key']
+
+                    # old version column key is status or type
+                    if column_key == 'status':
+                        column_key = 'state'
+                    if column_key == 'type':
+                        column_key = 'issue_type'
+                    column = next((column for column in columns if column['name'] == column_key), None)
+                    if column:
+                        column_name = column['name']
+                        basic_filter['column_key'] = column['key']
+                        if column_name in ['state', 'issue_type']:
+                            options = column.get('data', {}).get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+                v['basic_filters'] = basic_filters
+
+                sorts = v.get('sorts', [])
+                for item in sorts:
+                    column_key = item['column_key']
+                    column = next((column for column in columns if column['name'] == column_key), None)
+                    if column:
+                        item['column_key'] = column['key']
+                v['sorts'] = sorts
+
+            details['views'] = views
+        return details
+
+
+    def get_record(self, project_uuid, connection):
         """
             get record from database, if not record, create it
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
+        connection_id = connection.id
+        connection_type = connection.type
+
         record = self.filter(connection_id=connection_id).first()
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-           
         if not record:
+            details = json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
+            details = self.update_init_view_details(project_uuid, connection, details)
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=json.dumps(CONNECTION_DEFAULT_DETAILS[project_connection.type])
+                details=details
             )
         return record
 
     # view op
-    def list_views(self, project_uuid, connection_id):
-        record = self.get_record(project_uuid, connection_id)
+    def list_views(self, project_uuid, connection):
+        record = self.get_record(project_uuid, connection)
         return json.loads(record.details)
 
-    def get_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def get_view(self, project_uuid, connection, view_id):
+        record = self.get_record(project_uuid, connection)
         view_details = json.loads(record.details)
-        for v in view_details['views']:
-            if v.get('_id') == view_id:
-                return v
+        for view in view_details['views']:
+            if view.get('_id') == view_id:
+                return view
         return None
 
-    def add_view(self, project_uuid, connection_id, view_name, view_type='table', view_data={}):
-        record = self.get_record(project_uuid, connection_id)
+    def add_view(self, project_uuid, connection, view_name, view_type='table', view_data={}):
+        record = self.get_record(project_uuid, connection)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        new_view = ConnectionsView(view_name, view_type, view_data, project_connection.type)
+        connection_type = connection.type
+        new_view = ConnectionsView(view_name, view_type, view_data, connection_type)
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
         navigation.append(new_view_nav)
+        view_details = self.update_init_view_details(project_uuid, connection, view_details)
         record.details = json.dumps(view_details)
         record.save()
         return new_view.details
 
-    def update_view(self, project_uuid, connection_id, view_id, view_dict):
-        record = self.get_record(project_uuid, connection_id)
+    def update_view(self, view_id, view_dict, record):
         view_dict.pop('_id', '')
         if 'name' in view_dict:
             exist_obj_names = record.views_names
@@ -631,8 +677,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def duplicate_view(self, view_id, record):
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
@@ -652,8 +697,7 @@ class ConnectionsViewsManager(models.Manager):
 
         return duplicate_view
 
-    def delete_view(self, project_uuid, connection_id, view_id):
-        record = self.get_record(project_uuid, connection_id)
+    def delete_view(self, view_id, record):
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         views = view_details.get('views', [])
@@ -673,8 +717,7 @@ class ConnectionsViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def move_view(self, project_uuid, connection_id, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
-        record = self.get_record(project_uuid, connection_id)
+    def move_view(self, record, source_view_id, source_folder_id, target_view_id, target_folder_id, is_above_folder):
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
 
@@ -744,7 +787,7 @@ class ConnectionsViewsManager(models.Manager):
 
 
 class ConnectionsViews(models.Model):
-    project_uuid = models.CharField(max_length=32, db_index=True)
+    project_uuid = models.UUIDField(db_index=True)
     connection_id = models.IntegerField()
     details = models.TextField()
 
@@ -779,78 +822,6 @@ class ConnectionsViews(models.Model):
     @property
     def folders_views_ids(self):
         return self.folders_ids + self.views_ids
-
-
-class GitHubIssuesRecordManager(models.Manager):
-
-    def get_records_by_view(self, project_uuid, connection_id, view_id, start, end):
-        sorts = []
-        view = ConnectionsViews.objects.get_view(project_uuid, connection_id, view_id)
-        basic_filters = view.get('basic_filters', [])
-        sorts = view.get('sorts', [])
-
-        q = Q(deleted=False) & Q(connection_id=connection_id)
-
-        for basic_filter in basic_filters:
-                if basic_filter.get('column_key') == 'status':
-                        value = basic_filter['filter_term']
-                        if not value:
-                                value = ['', 'open', 'completed', 'not_planned', 'duplicate']
-                        elif 'open' in value:
-                                value = value + ['']
-                        q = q & Q(state__in=value)
-
-        if not sorts:
-                sorts = [{ 'column_key': 'created_at', 'sort_type': 'down' }]
-        sorts = [f'-{sort["column_key"]}' if sort['sort_type'] == 'down' else sort['column_key'] for sort in sorts]
-        
-        return self.filter(q).order_by(', '.join(sorts))[start: end]
-
-
-class GitHubIssuesRecord(models.Model):
-    """ GitHub issues table"""
-
-    issue_id = models.BigIntegerField()
-    issue_number = models.IntegerField()
-    title = models.TextField(null=True, blank=True)
-    body = models.TextField(null=True, blank=True)
-    state = models.CharField(max_length=20, null=True, blank=True)
-    labels = models.TextField(null=True, blank=True)
-    author = models.CharField(max_length=255, null=True, blank=True)
-    url = models.CharField(max_length=1024, null=True, blank=True)
-    created_at = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
-    closed_at = models.DateTimeField(null=True, blank=True)
-    comments = models.IntegerField(null=True, blank=True)
-    connection_id = models.CharField(max_length=64)
-    need_index = models.BooleanField(default=False)
-    deleted = models.BooleanField(default=False)
-
-    objects = GitHubIssuesRecordManager()
-
-    class Meta:
-        db_table = 'github_issues'
-        unique_together = [('issue_id', 'connection_id')]
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'issue_id': self.issue_id,
-            'issue_number': self.issue_number,
-            'title': self.title,
-            'body': self.body,
-            'state': self.state,
-            'labels': self.labels,
-            'author': self.author,
-            'url': self.url,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'closed_at': self.closed_at,
-            'comments': self.comments,
-            'connection_id': self.connection_id,
-            'need_index': self.need_index,
-            'deleted': self.deleted,
-        }
 
 
 class TicketRepliesManager(models.Manager):
@@ -1032,6 +1003,7 @@ class TicketView(object):
             "name": self.name,
             'basic_filters': [
                 {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
             ],
             "filters": [],
@@ -1158,15 +1130,11 @@ class TicketViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, project_uuid, view_id, folder_id=None):
-        record = self.get_record(project_uuid)
+    def duplicate_view(self, record, view_id, folder_id=None):
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)
         duplicate_view = next((copy.deepcopy(view) for view in view_details['views'] if view.get('_id') == view_id), None)
-        if not duplicate_view:
-            return None
-
         duplicate_view['_id'] = new_view_id
         view_name = get_no_duplicate_obj_name(duplicate_view['name'], record.views_names)
         duplicate_view['name'] = view_name
@@ -1287,7 +1255,7 @@ class TicketViewsManager(models.Manager):
 
 
 class TicketViews(models.Model):
-    project_uuid = models.CharField(max_length=32, db_index=True)
+    project_uuid = models.UUIDField(db_index=True)
     details = models.TextField()
 
     objects = TicketViewsManager()
@@ -1351,7 +1319,7 @@ class TicketsManager(models.Manager):
         return self.filter(
             project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
 
-    def create_ticket(self, project_uuid, username, title, content, status, type_id=None, priority=0):
+    def create_ticket(self, project_uuid, username, title, description, status, type_id=None, priority=0):
         for i in range(3):
             try:
                 previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
@@ -1361,7 +1329,7 @@ class TicketsManager(models.Manager):
                     number=number,
                     creator=username,
                     title=title,
-                    content=content,
+                    description=description,
                     status=status,
                     type=type_id,
                     priority=priority,
@@ -1385,7 +1353,7 @@ class Tickets(models.Model):
     number = models.IntegerField()
     creator = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
-    content = models.TextField()
+    description = models.TextField()
     status = models.CharField(max_length=50, null=True)
     type = models.BigIntegerField(null=True)
     priority = models.SmallIntegerField(default=0)
@@ -1407,7 +1375,7 @@ class Tickets(models.Model):
             'project_uuid': str(self.project_uuid),
             'number': self.number,
             'title': self.title,
-            'content': self.content,
+            'description': self.description,
             'participants': [],
             'tags': [],
             'status': self.status,
@@ -1535,57 +1503,3 @@ class ChatMessages(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
-
-
-class DiscourseForumTopicsRecord(models.Model):
-    """ Discourse forum record table"""
-
-    topic_id = models.BigIntegerField()
-    title = models.TextField(null=True, blank=True)
-    slug = models.TextField(null=True, blank=True)
-    views = models.IntegerField(null=True, blank=True)
-    category_id = models.IntegerField(null=True, blank=True)
-    connection_id = models.CharField(max_length=64)
-    bumped_at = models.DateTimeField(null=True, blank=True)
-    need_index = models.BooleanField(default=False)
-    deleted = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = 'discourse_topics'
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'topic_id': self.topic_id,
-            'title': self.title,
-            'slug': self.slug,
-            'views': self.views,
-            'bumped_at': self.bumped_at,
-        }
-
-
-class DiscourseForumRepliesRecord(models.Model):
-    """ Discourse forum replies record """
-
-    topic_id = models.BigIntegerField()
-    post_number = models.IntegerField()
-    content = models.TextField(null=True, blank=True)
-    author = models.CharField(max_length=255, null=True, blank=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
-    connection_id = models.CharField(max_length=64)
-
-    class Meta:
-        db_table = 'discourse_replies'
-        unique_together = [('topic_id', 'post_number', 'connection_id')]
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'topic_id': self.topic_id,
-            'post_number': self.post_number,
-            'content': self.content,
-            'author': self.author,
-            'connection_id': self.connection_id,
-            'updated_at': self.updated_at,
-        }
-

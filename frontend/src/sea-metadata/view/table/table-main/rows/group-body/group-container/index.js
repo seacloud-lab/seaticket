@@ -76,7 +76,7 @@ class GroupContainer extends Component {
   render() {
     const {
       group, columns, width, isExpanded, folding, summaryConfigs, height, backdropHeight, top,
-      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft, groupHeaderColSpan,
+      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft, fixedColumnCount,
     } = this.props;
     const { left, level } = group;
     const firstLevelGroup = level === 1;
@@ -89,7 +89,7 @@ class GroupContainer extends Component {
 
     const frozenColumns = getFrozenColumns(columns);
     const groupHeaderColumns = frozenColumns.length > 0 ? frozenColumns : columns;
-    const groupHeaderColSpanColumns = groupHeaderColumns.slice(0, groupHeaderColSpan);
+    const groupHeaderColSpanColumns = groupHeaderColumns.slice(0, fixedColumnCount);
     const groupHeaderContentWidth = groupHeaderColSpanColumns.reduce((pre, cur) => pre + (cur.width || 0), 0);
     const firstColumn = groupHeaderColumns[0];
     const firstColumnFrozen = frozenColumns.length > 0;
@@ -105,7 +105,7 @@ class GroupContainer extends Component {
     };
     let backDropStyle = {
       height: backdropHeight,
-      width: leftPaneWidth + scrollLeft ? GROUP_VIEW_OFFSET : 0,
+      width: leftPaneWidth + (scrollLeft ? GROUP_VIEW_OFFSET : 0),
       zIndex: seaTableZIndexes.GROUP_BACKDROP
     };
 
@@ -136,7 +136,7 @@ class GroupContainer extends Component {
           groupOffsetLeft={groupOffsetLeft}
           lastFrozenColumnKey={lastFrozenColumnKey}
           columns={columns}
-          groupHeaderColSpan={groupHeaderColSpan}
+          fixedColumnCount={fixedColumnCount}
           summaryConfigs={summaryConfigs}
         />
       </div>

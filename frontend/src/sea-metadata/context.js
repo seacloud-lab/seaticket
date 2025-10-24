@@ -2,12 +2,17 @@ import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
 import Translate from './utils/translate';
 import { CellType } from './constants';
+import { isFunction } from '@/utils/utils';
 
 class Context {
 
   constructor() {
     this.username = '';
-    this.settings = {};
+    this.settings = {
+      statusColumnKey: 'status',
+      typeColumnKey: 'type',
+      tagsColumnKey: 'tags',
+    };
     this.api = null;
     this.localStorage = null;
     this.permission = 'r';
@@ -27,7 +32,10 @@ class Context {
     t,
   }) => {
     this.username = username;
-    this.settings = settings;
+    this.settings = {
+      ...this.settings,
+      ...settings,
+    };
     this.api = api;
     this.permission = permission;
     this.isViewComputedOnServer = isViewComputedOnServer;
@@ -52,19 +60,24 @@ class Context {
   };
 
   destroy = () => {
-    console.log('de');
     this.username = '';
-    this.settings = {};
+    this.settings = {
+      statusColumnKey: 'status',
+      typeColumnKey: 'type',
+      tagsColumnKey: 'tags',
+    };
     this.api = null;
     this.localStorage = null;
-    this.eventBus = null;
     this.permission = 'r';
+    this.isViewComputedOnServer = true;
+    this.collaboratorsCache = {};
     this.translate = (key) => key;
+    this.eventBus = eventBus;
   };
 
-  getSetting = (key) => {
+  getSetting = (key, defaultValue = '') => {
     if (this.settings[key] === false) return this.settings[key];
-    return this.settings[key] || '';
+    return this.settings[key] || defaultValue;
   };
 
   setSetting = (key, value) => {
@@ -222,6 +235,15 @@ class Context {
   };
 
   // column
+  getColumns = () => {
+    if (isFunction(this.api.getColumns)) return this.api.getColumns();
+    return new Promise((resolve, reject) => {
+      resolve({
+        data: { columns: [] }
+      });
+    });
+  };
+
   insertColumn = (name, type, { key, data }) => {
     return this.api.insertColumn(name, type, { key, data });
   };

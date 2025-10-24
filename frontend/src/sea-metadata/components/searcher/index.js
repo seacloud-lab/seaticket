@@ -1,12 +1,15 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { gettext, KeyCodes } from '@/constants';
 import { IconButton } from '@/components';
 import { SearchInput } from '@/components';
+import { EVENT_BUS_TYPE } from '../../constants';
+import context from '../../context';
 
 import './index.css';
 
 const Searcher = ({ onChange }) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const searchInputRef = useRef(null);
 
   const onToggleSearch = useCallback(() => {
     setIsSearchActive(!isSearchActive);
@@ -24,6 +27,25 @@ const Searcher = ({ onChange }) => {
     }
   }, [onClear]);
 
+  const onReSearch = useCallback(() => {
+    if (!isSearchActive || !searchInputRef.current) return;
+    const searchValue = searchInputRef.current.getSearchValue();
+    onChange && onChange(searchValue);
+  }, [isSearchActive, onChange]);
+
+  useEffect(() => {
+    const unsubscribeStartSearch = context.eventBus.subscribe(EVENT_BUS_TYPE.START_SEARCH_ROWS, () => {
+      setIsSearchActive(true);
+    });
+    const unsubscribeClearSearch = context.eventBus.subscribe(EVENT_BUS_TYPE.CLEAR_SEARCH_ROWS, onClear);
+    const unsubscribeReSearch = context.eventBus.subscribe(EVENT_BUS_TYPE.RE_SEARCH_ROWS, onReSearch);
+    return () => {
+      unsubscribeStartSearch();
+      unsubscribeClearSearch();
+      unsubscribeReSearch();
+    };
+  }, [onClear, onReSearch]);
+
   return (
     <div className="sea-metadata-searcher-container mr-2">
       {!isSearchActive && (
@@ -31,6 +53,7 @@ const Searcher = ({ onChange }) => {
       )}
       {isSearchActive && (
         <SearchInput
+          ref={searchInputRef}
           autoFocus={true}
           isShowClearIcon={true}
           size={30}

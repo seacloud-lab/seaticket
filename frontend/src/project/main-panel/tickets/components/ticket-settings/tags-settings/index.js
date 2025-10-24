@@ -5,6 +5,7 @@ import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Tag from '../../../view/tags/components/tag';
 import { useTags } from '../../../hooks';
 import { OptionEditor } from '@/components';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 
 import './index.css';
 
@@ -71,6 +72,11 @@ const TagsSettings = ({
     });
   }, [createTag]);
 
+  const handleChange = useCallback((newValue) => {
+    if (!isCellValueChanged(newValue, value)) return;
+    onChange(newValue);
+  }, [onChange, value]);
+
   const selectedTags = value.map(v => tagsData.id_row_map[v]).filter(tag => tag);
 
   return (
@@ -96,7 +102,7 @@ const TagsSettings = ({
           value={value}
           options={tagOptions}
           onToggle={closeEditor}
-          onChange={onChange}
+          onChange={handleChange}
           onCreate={handleCreateTag}
         />
       )}

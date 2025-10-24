@@ -34,9 +34,11 @@
 .sea-qa-ai-ask-chat-input-content {
   width: 100%;
   height: fit-content;
+  position: relative;
 }
 
 .sea-qa-ai-ask-chat-input-content .message-input {
+  width: 100%;
   height: 100%;
   min-height: 36px;
   max-height: 100px;
@@ -44,17 +46,30 @@
   padding: 10px 10px 3px 10px;
   line-height: 1.5;
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: text;
+  resize: none;
+}
+
+.sea-qa-ai-ask-chat-input-content .message-input.message-input-value {
+  overscroll-behavior: contain;
+  position: absolute;
+  top: 0;
+}
+
+.sea-qa-ai-ask-chat-input-content .message-input.message-input-value:disabled {
+  background-color: transparent;
+}
+
+.sea-qa-ai-ask-chat-input-content .message-input.message-input-preview {
+  border-radius: 0;
+  visibility: hidden;
+  pointer-events: none;
+  height: fit-content;
 }
 
 .sea-qa-ai-ask-chat-input-wrapper.disabled .sea-qa-ai-ask-chat-input-content .message-input {
   cursor: default;
-}
-
-.sea-qa-ai-ask-chat-input-content .message-input:empty:before {
-  color: #868E96;
-  content: attr(placeholder);
 }
 
 .sea-qa-ai-ask-chat-input-content .message-input:focus-visible {
@@ -64,17 +79,17 @@
 .sea-qa-ai-ask-chat-operations-container {
   height: 38px;
   width: 100%;
-  padding: 0 10px 3px 10px;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  align-items: end;
+  justify-content: space-between;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   z-index: 1;
-  border-radius: 6px;
+  margin-right: 6px;
+  margin-bottom: 6px;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-icon-btn:not(.disabled) .sea-qa-icon-svg {

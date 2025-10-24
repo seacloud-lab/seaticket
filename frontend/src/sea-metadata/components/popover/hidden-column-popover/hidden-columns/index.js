@@ -28,7 +28,7 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
   return (
     <div className={classnames('hide-columns-list', { 'empty-hide-columns-container': isEmpty })}>
       {isEmpty && (
-        <div className="empty-hide-columns-list">
+        <div className="empty-hide-columns-list tip-default">
           {context.translate('No {columns} available to be hidden' )}
         </div>
       )}

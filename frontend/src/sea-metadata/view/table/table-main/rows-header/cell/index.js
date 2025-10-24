@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { UncontrolledTooltip } from 'reactstrap';
 import Icon from '@/components/icon';
 import ResizeColumn from './resize-column';
-import DropdownMenu from './dropdown-menu';
+import HeaderDropdownMenu from './dropdown-menu';
 import { COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
 import { checkIsNameColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
@@ -34,6 +34,7 @@ const Cell = ({
   onMove,
   updateDraggingKey,
   updateDragOverKey,
+  onColumnSelectNone,
 }) => {
   const headerCellRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -144,7 +145,11 @@ const Cell = ({
     window.seaTableBody.clearHorizontalScroll();
   }, [updateDraggingKey, updateDragOverKey]);
 
-  const { key, name, type } = column;
+  const onDropDownToggle = useCallback(() => {
+    onColumnSelectNone && onColumnSelectNone(column);
+  }, [column, onColumnSelectNone]);
+
+  const { key, display_name: name, type } = column;
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
 
@@ -159,7 +164,7 @@ const Cell = ({
         >
           <div className="sea-metadata-table-column-content">
             <span className="mr-2" id={`header-icon-${key}`}>
-              <Icon symbol={'priority-column'} className="sea-metadata-icon sea-metadata-column-icon" />
+              <Icon symbol="priority-column" className="sea-metadata-icon sea-metadata-column-icon" />
             </span>
             <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
               {gettext('Priority')}
@@ -191,13 +196,14 @@ const Cell = ({
         </div>
       </div>
       {canEditColumnInfo && (
-        <DropdownMenu
+        <HeaderDropdownMenu
           ref={dropdownRef}
           column={column}
           view={view}
           renameColumn={renameColumn}
           deleteColumn={deleteColumn}
           modifyColumnData={modifyColumnData}
+          onDropDownToggle={onDropDownToggle}
         />
       )}
       <ResizeColumn onDrag={onDraggingColumnWidth} onDragEnd={handleColumnWidth} />

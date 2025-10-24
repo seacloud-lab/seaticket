@@ -435,7 +435,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `created_at` datetime(6) NOT NULL,
   `last_sync_time` datetime(6) NULL,
   `indexed_at` datetime(6) NULL,
-  `project_id` int(11) NOT NULL,
+  `project_uuid` varchar(32) NOT NULL,
   `status` longtext NOT NULL,
   `deleted` tinyint(1) NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   KEY `project_connection_deleted_5n3d6`(`deleted`),
   KEY `project_connection_is_active` (`is_active`),
-  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `tickets`  (
@@ -452,7 +452,7 @@ CREATE TABLE `tickets`  (
   `number` int(11) NOT NULL,
   `creator` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
+  `description` text NOT NULL,
   `status` varchar(50) DEFAULT NULL,
   `type` bigint(20) DEFAULT NULL,
   `priority` tinyint(1) NOT NULL DEFAULT 0,
@@ -488,7 +488,7 @@ CREATE TABLE `ticket_views`  (
   `project_uuid` varchar(32) NOT NULL,
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `ticket_views_project_uuid_568ecbbf_fk_project_uuid` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  KEY `ticket_views_project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `ticket_tags`  (
@@ -505,7 +505,7 @@ CREATE TABLE `connection_views`  (
   `connection_id` int(11),
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `connection_views_connection_id_568ecbbf_fk_project_uuid` FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  KEY `connection_views_connection_id`(`connection_id`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `project_tags`  (
@@ -561,67 +561,6 @@ CREATE TABLE `deleted_projects`  (
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `discourse_topics` (
-   `id` BIGINT NOT NULL AUTO_INCREMENT,
-   `topic_id` BIGINT NOT NULL,
-   `title` VARCHAR(255) NOT NULL,
-   `slug` VARCHAR(255),
-   `views` INT DEFAULT 0,
-   `category_id` INT,
-   `connection_id` INT NOT NULL,
-   `bumped_at` datetime(6) NOT NULL,
-   `need_index` TINYINT(1) NOT NULL DEFAULT 1,
-   `deleted` TINYINT(1) NOT NULL DEFAULT 0,
-   PRIMARY KEY (`id`),
-   UNIQUE KEY `discourse_topics_topic_id_connection_id_unique` (`topic_id`, `connection_id`),
-   KEY `discourse_topics_connection_id_idx` (`connection_id`),
-   KEY `discourse_topics_topic_id_idx` (`topic_id`),
-   CONSTRAINT `discourse_topics_connection_id_fk_project_connection_id`
-     FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`)
-     ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `discourse_replies` (
-   `id` BIGINT NOT NULL AUTO_INCREMENT,
-   `topic_id` BIGINT NOT NULL,
-   `post_number` INT NOT NULL,
-   `content` TEXT NOT NULL,
-   `author` VARCHAR(255),
-   `updated_at` datetime(6) NOT NULL,
-   `connection_id` INT NOT NULL,
-   PRIMARY KEY (`id`),
-   KEY `discourse_replies_topic_id_idx` (`topic_id`),
-   KEY `discourse_replies_connection_id_idx` (`connection_id`),
-   UNIQUE KEY `discourse_replies_topic_id_connection_id_post_number_idx` (`topic_id`, `connection_id`, `post_number`),
-   CONSTRAINT `discourse_replies_topic_id_fk_discourse_topics_topic_id`
-     FOREIGN KEY (`topic_id`) REFERENCES `discourse_topics` (`topic_id`)
-     ON DELETE CASCADE,
-   CONSTRAINT `discourse_replies_connection_id_fk_project_connection_id`
-     FOREIGN KEY (`connection_id`) REFERENCES `project_connection` (`id`)
-     ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-CREATE TABLE `github_issues` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `issue_id` bigint(20) NOT NULL,
-  `issue_number` int(11) NOT NULL,
-  `title` text DEFAULT NULL,
-  `body` text DEFAULT NULL,
-  `state` varchar(20) DEFAULT NULL,
-  `labels` text DEFAULT NULL,
-  `author` varchar(255) DEFAULT NULL,
-  `url` varchar(1024) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `closed_at` timestamp NULL DEFAULT NULL,
-  `comments` int(11) DEFAULT NULL,
-  `connection_id` varchar(64) NOT NULL,
-  `need_index` tinyint(1) DEFAULT 0,
-  `deleted` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `issue_unique_key` (`issue_id`,`connection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `org_saml_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

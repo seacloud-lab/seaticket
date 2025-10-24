@@ -67,7 +67,7 @@ class SocialLogin extends React.Component {
     return (
       <Fragment>
         <div className="setting-item" id="social-auth">
-          <h3 className="setting-item-heading">{gettext('Social login')}</h3>
+          <h3 className="setting-item-heading">{gettext('SSO')}</h3>
           {enableWorkWeixin &&
             <div className="mb-4">
               <p className="mb-2">{langCode === 'zh-cn' ? '企业微信' : 'Work Weixin'}</p>

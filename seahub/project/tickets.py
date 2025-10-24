@@ -20,7 +20,8 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects, Tickets, TicketReplies, \
     TicketTags, TicketAssignees, ProjectTags, ProjectTypes, TicketParticipants
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    replace_file_url_in_content, upload_files_to_s3
+    replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
+    check_comment_permission
 from seahub.project.constants import TICKET_STATUS
 
 
@@ -137,27 +138,27 @@ class TicketsAPIView(APIView):
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        content_dict = request.POST.get('content')
-        if not content_dict:
-            error_msg = 'content invalid.'
+        description_dict = request.POST.get('description')
+        if not description_dict:
+            error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         try:
-            content_dict = json.loads(content_dict)
+            description_dict = json.loads(description_dict)
         except:
-            error_msg = 'content invalid.'
+            error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if not isinstance(content_dict, dict):
-            error_msg = 'content invalid.'
+        if not isinstance(description_dict, dict):
+            error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        content = content_dict.get('text')
-        if not content:
-            error_msg = 'content invalid.'
+        description = description_dict.get('text')
+        if not description:
+            error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        file_urls = content_dict.get('images')
+        file_urls = description_dict.get('images')
         if file_urls and not isinstance(file_urls, list):
-            error_msg = 'content invalid.'
+            error_msg = 'description invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        link_urls = content_dict.get('links')
+        link_urls = description_dict.get('links')
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
@@ -259,7 +260,7 @@ class TicketsAPIView(APIView):
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content = replace_file_url_in_content(content, new_file_urls_dict)
+                description = replace_file_url_in_content(description, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -269,7 +270,7 @@ class TicketsAPIView(APIView):
         try:
             ticket_status = 'open'
             ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, content, ticket_status, type_id, priority)
+                project_uuid, username, title, description, ticket_status, type_id, priority)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -403,7 +404,7 @@ class TicketAPIView(APIView):
         """
         Permission:
         1. creator
-        2. group admin, can modify status
+        2. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -412,27 +413,27 @@ class TicketAPIView(APIView):
         # argument check
         title = request.data.get('title')
 
-        content = None
+        description = None
         file_urls = None
-        content_dict = request.data.get('content')
-        if content_dict:
+        description_dict = request.data.get('description')
+        if description_dict:
             try:
-                content_dict = json.loads(content_dict)
+                description_dict = json.loads(description_dict)
             except:
-                error_msg = 'content invalid.'
+                error_msg = 'description invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(content_dict, dict):
-                error_msg = 'content invalid.'
+            if not isinstance(description_dict, dict):
+                error_msg = 'description invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            content = content_dict.get('text')
-            if not content:
-                error_msg = 'content invalid.'
+            description = description_dict.get('text')
+            if not description:
+                error_msg = 'description invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            file_urls = content_dict.get('images')
+            file_urls = description_dict.get('images')
             if file_urls and not isinstance(file_urls, list):
-                error_msg = 'content invalid.'
+                error_msg = 'description invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            link_urls = content_dict.get('links')
+            link_urls = description_dict.get('links')
             if link_urls and isinstance(link_urls, list):
                 file_urls = (file_urls or []) + link_urls
 
@@ -460,8 +461,11 @@ class TicketAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        is_update_priority = 'priority' in request.data
         priority = request.data.get('priority')
-        if priority is not None:
+        if is_update_priority:
+            if not priority:
+                priority = 0
             try:
                 priority = int(priority)
             except:
@@ -534,15 +538,15 @@ class TicketAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_ticket_permission(username, workspace.owner, ticket):
             error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)  
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # upload files
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                content = replace_file_url_in_content(content, new_file_urls_dict)
+                description = replace_file_url_in_content(description, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -552,13 +556,13 @@ class TicketAPIView(APIView):
         try:
             if title:
                 ticket.title = title
-            if content:
-                ticket.content = content
+            if description:
+                ticket.description = description
             if ticket_status or ticket_status == '':
                 ticket.status = ticket_status
             if is_update_type:
                 ticket.type = type_id
-            if priority is not None:
+            if is_update_priority:
                 ticket.priority = priority
             ticket.updated_at = timezone.now()
             ticket.save()
@@ -612,7 +616,7 @@ class TicketAPIView(APIView):
     def delete(self, request, project_uuid, ticket_number):
         """
         Permission:
-        1. group admin
+        1. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -627,7 +631,7 @@ class TicketAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -810,6 +814,7 @@ class TicketReplyAPIView(APIView):
         """
         Permission:
         1. creator
+        2. group admin
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -845,6 +850,7 @@ class TicketReplyAPIView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
 
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:
@@ -859,7 +865,7 @@ class TicketReplyAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if username != ticket_reply.creator:
+        if not check_comment_permission(username, workspace.owner, ticket_reply):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -898,7 +904,8 @@ class TicketReplyAPIView(APIView):
     def delete(self, request, project_uuid, ticket_number, reply_number):
         """
         Permission:
-        1. group admin
+        1. creator
+        2. group admin
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -911,12 +918,6 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        # permission check
-        username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
         if not ticket:
             error_msg = 'Ticket not found.'
@@ -927,6 +928,12 @@ class TicketReplyAPIView(APIView):
         if not ticket_reply:
             error_msg = 'Reply not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        username = request.user.username
+        if not check_comment_permission(username, workspace.owner, ticket_reply):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             ticket_reply.deleted = True

@@ -1,4 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo, useRef } from 'react';
+import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Option from '../../option';
 import { searchOptions } from '../../../utils/search';
@@ -31,7 +32,7 @@ const Main = forwardRef(({
   const [displayOptions, setDisplayOptions] = useState(options);
   const [highlightIndex, setHighlightIndex] = useState(-1);
 
-  const displayCollaboratorsRef = useRef(null);
+  const displayOptionsRef = useRef(null);
 
   const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
 
@@ -93,28 +94,28 @@ const Main = forwardRef(({
     event.stopPropagation();
     if (highlightIndex === 0) {
       setHighlightIndex(displayOptions.length - 1);
-      displayCollaboratorsRef.current.scrollTop = 0;
+      displayOptionsRef.current.scrollTop = 0;
       return;
     }
     setHighlightIndex(highlightIndex - 1);
     if (highlightIndex > displayOptions.length - maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop -= optionHeight;
+      displayOptionsRef.current.scrollTop -= optionHeight;
     }
-  }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
+  }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     if (highlightIndex === displayOptions.length - 1) {
       setHighlightIndex(0);
-      displayCollaboratorsRef.current.scrollTop = 0;
+      displayOptionsRef.current.scrollTop = 0;
       return;
     }
     setHighlightIndex(highlightIndex + 1);
     if (highlightIndex >= maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop += optionHeight;
+      displayOptionsRef.current.scrollTop += optionHeight;
     }
-  }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
+  }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
 
   const blur = useCallback(() => {
     onChange && onChange();
@@ -190,6 +191,7 @@ const Main = forwardRef(({
         <div className="option-editor-search-wrapper">
           <SearchInput
             isShowSearchIcon={false}
+            autoFocus={true}
             value={searchValue}
             size={28}
             placeholder={placeholder}
@@ -198,9 +200,13 @@ const Main = forwardRef(({
           />
         </div>
       )}
-      <div className="option-editor-content" style={{ maxHeight }} ref={displayCollaboratorsRef}>
+      <div
+        className={classnames('option-editor-content', { 'empty': displayOptions.length === 0 })}
+        style={{ maxHeight }}
+        ref={displayOptionsRef}
+      >
         {displayOptions.length === 0 ? (
-          <div className="tip-default p-4">{emptyTip}</div>
+          <div className="tip-default">{emptyTip}</div>
         ) : (
           <>
             {displayOptions.map((option, i) => {

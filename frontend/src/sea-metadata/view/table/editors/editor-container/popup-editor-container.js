@@ -6,7 +6,7 @@ import Editor from './editor';
 import { isFunction } from '@/utils/utils';
 import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
 import eventBus from '@/utils/event-bus';
-import { checkIsPredefinedColumn, getColumnOriginName } from '../../../../utils/column';
+import { getColumnOriginName } from '../../../../utils/column';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
 
@@ -148,7 +148,7 @@ class PopupEditorContainer extends React.Component {
     }
 
     this.changeCommitted = true;
-    const updates = checkIsPredefinedColumn(column) ? { [columnKey]: value } : { [columnName]: value };
+    const updates = { [columnName]: value };
     const { oldRowData, originalOldRowData } = this.getOldRowData(originalOldCellValue);
 
     // updates used for update remote row data

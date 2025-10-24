@@ -52,6 +52,9 @@ const FILTER_COLUMN_OPTIONS = {
   [CellType.TEXT]: {
     filterPredicateList: textPredicates,
   },
+  [CellType.URL]: {
+    filterPredicateList: textPredicates,
+  },
   [CellType.NUMBER]: {
     filterPredicateList: numberPredicates,
   },

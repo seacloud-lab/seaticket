@@ -214,6 +214,10 @@
   border-left-color: var(--bs-emphasis-color);
 }
 
+.sea-metadata-tooltip .bs-tooltip-auto[data-popper-placement^="right"] .arrow::before {
+  border-right-color: var(--bs-emphasis-color);
+}
+
 /* rows count */
 .sea-metadata-result.success .sea-metadata-table-footer {
   height: 32px;

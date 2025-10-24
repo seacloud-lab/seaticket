@@ -8,6 +8,7 @@ import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 
 const contentTypes = {
@@ -121,7 +122,7 @@ class Item extends Component {
             }
           </td>
           <td>{`${Utils.bytesToSize(item.size)}`}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             <IconButton
               className={classnames('attr-action-icon', { 'invisible': !isOpIconShown })}

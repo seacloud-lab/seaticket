@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Input } from 'reactstrap';
+import { ModalHeader } from '@/components';
 import { gettext } from '../../../constants';
 
 const propTypes = {

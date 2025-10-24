@@ -116,6 +116,14 @@ class ConnectionsAPI {
     return this.req.get(url, { params: params });
   }
 
+  queryConnectionsStatus(projectUuid, connectionIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
+    const params = {
+      connection_ids: connectionIds.join(','),
+    };
+    return this.req.get(url, { params: params });
+  }
+
   updateConnectionStatus(projectUuid, connectionID, { is_active }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();
@@ -177,6 +185,15 @@ class ConnectionsAPI {
     if (viewID) {
       form.append('view_id', viewID);
     }
+    return this._sendPostRequest(url, form);
+  }
+
+  convertRecordToTicket(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v2.1/ai/convert-record-to-ticket/';
+    let form = new FormData();
+    form.append('project_uuid', projectUuid);
+    form.append('connection_id', connectionID);
+    form.append('record_id', recordID);
     return this._sendPostRequest(url, form);
   }
 

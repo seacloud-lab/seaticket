@@ -1,6 +1,7 @@
 import dcopy from 'deep-copy';
 import { CellType, SEQUENCE_COLUMN_WIDTH } from '../../constants';
 import context from '../../context';
+import { getCellValueByColumn } from '../cell';
 
 export const checkIsColumnFrozen = (column) => {
   if (!column) return false;
@@ -84,7 +85,7 @@ export const handleCascadeColumn = (optionValue, columnKey, columns, row, update
     if (cascade_column_key === columnKey) {
       const { key: childColumnKey } = singleSelectColumn;
       const childColumnOptions = cascade_settings[optionValue];
-      const childColumnCellValue = row[childColumnKey];
+      const childColumnCellValue = getCellValueByColumn(row, singleSelectColumn);
       const cellValueInOptions = childColumnOptions && childColumnOptions.includes(childColumnCellValue);
       if (!cellValueInOptions) {
         updated[childColumnKey] = '';
@@ -120,7 +121,7 @@ export const checkIsColumnSupportPreview = (column) => {
 };
 
 export const checkIsColumnEditable = (column) => {
-  if (!column) return false;
+  if (!column || column.key === 'priority') return false;
   return !!column.editable;
 };
 
@@ -183,8 +184,8 @@ export const checkIsPredefinedColumn = (column) => {
 };
 
 export const getColumnOriginName = (column) => {
-  const { key, name } = column;
-  return checkIsPredefinedColumn(column) ? key : name;
+  const { name } = column;
+  return name;
 };
 
 export const getColumnOriginType = (column) => {

@@ -4,12 +4,13 @@ import logging
 import jwt
 import time
 import requests
+import hashlib
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
-    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees
+    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees, ConnectionsViews, TicketViews
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -17,11 +18,10 @@ from seahub.group.models import Group, GroupUser
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
-    SEAQA_AI_SERVER_URL, SEAQA_WEB_SERVICE_URL
+    SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
-from seahub.project.constants import WEB_CRAWL_COLUMNS
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,30 @@ def check_project_permission(username, workspace_owner, project=None):
             return PERMISSION_READ_WRITE
 
     return None
+
+
+def check_ticket_permission(username, workspace_owner, ticket=None):
+    """Check ticket permission of a user.
+    """
+    if not username or not workspace_owner or not ticket:
+        return None
+
+    if ticket.creator == username:
+        return PERMISSION_READ_WRITE
+
+    return check_project_permission(username, workspace_owner)
+
+
+def check_comment_permission(username, workspace_owner, comment=None):
+    """Check comment permission of a user.
+    """
+    if not username or not workspace_owner or not comment:
+        return None
+
+    if comment.creator == username:
+        return PERMISSION_READ_WRITE
+
+    return check_project_admin_permission(username, workspace_owner)
 
 
 def get_project_owner(project):
@@ -180,6 +204,30 @@ def update_github_issue_by_webhook(params):
     resp.raise_for_status()
     return resp
 
+
+def update_discourse_topic_by_webhook(params):
+    connection_id = params.get('connection_id')
+    data = params.get('data')
+    event_type = params.get('event_type')
+
+    payload = {'exp': int(time.time()) + 300, }
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/discourse/')
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {
+        "Authorization": "Token %s" % token,
+        "X-Discourse-Event": event_type,
+    }
+    query_params = {'connection_id': connection_id}
+    resp = requests.post(
+        url,
+        params=query_params,
+        json=data,
+        headers=headers,
+    )
+    resp.raise_for_status()
+    return resp
+
+
 def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
@@ -203,8 +251,23 @@ def ask_ai_question(params):
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
     ai_answer = resp_json.get('answer', '')
+    agent_memory = resp_json.get('agent_memory', {})
     sources = resp_json.get('sources', [])
-    return ai_answer, sources
+    return ai_answer, agent_memory, sources
+
+
+def convert_record_to_ticket(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_AI_SERVER_URL, '/convert-record-to-ticket')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception('convert record to ticket error status: %s body: %s', resp.status_code, resp.text)
+    resp_json = resp.json()
+    title = resp_json.get('title', '')
+    description = resp_json.get('description', '')
+    return title, description
 
 
 def gen_s3_file_path(project_uuid, file_path):
@@ -313,8 +376,10 @@ def delete_project(project):
         logger.error('delete project: %s error: %s', str(project_uuid), e)
 
     try:
+        ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         ProjectTags.objects.filter(project_uuid=project_uuid).delete()
         tickets = Tickets.objects.filter(project_uuid=project_uuid)
+        TicketViews.objects.filter(project_uuid=project_uuid).delete()
         ticket_id_list = [ticket.id for ticket in tickets]
         tickets.delete()
         TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()
@@ -330,26 +395,11 @@ def delete_project(project):
         logger.error(e)
 
 
-def init_seadb_table(seadb_api, project_uuid, username, connection_id):
-    res = seadb_api.create_table(project_uuid, connection_id)
-    table_id = res['table_id']
-    for column in WEB_CRAWL_COLUMNS:
-        mapped_column = {
-            'column_name': column['name'],
-            'column_type': column['type'],
-        }
-        seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-
-def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
-    sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
-    try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
-    except Exception as e:
-        logger.error(f'SeaDB query error for connection {connection_id}: {e}')
-        records = []
-    return records
+def get_current_table_metadata(tables, table_name):
+    for table in tables:
+        if table['name'] == table_name:
+            return table
+    return None
 
 
 def url_to_filename(url):

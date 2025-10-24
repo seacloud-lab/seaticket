@@ -6,6 +6,7 @@ import { toaster, ModalPortal, CommonOperationConfirmationDialog, Paginator, Pro
 import { orgAdminServiceApi } from '../../api/org-admin-service-api';
 import { orgID, gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
+import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
 
 const ItemPropTypes = {
   item: PropTypes.object.isRequired,
@@ -122,7 +123,7 @@ class Item extends React.Component {
           </td>
           <td>{item.uuid}</td>
           <td>{item.owner}</td>
-          <td>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td title={formatWithTimezone(item.created_at)}>{dayjs(item.created_at).format('YYYY-MM-DD HH:mm:ss')}</td>
           <td>
             {isOpIconShown && (
               <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>

@@ -2,8 +2,8 @@ import deepCopy from 'deep-copy';
 import { getRowById, getRowsByIds } from '../utils/row';
 import { getColumnByKey, normalizeColumns } from '../utils/column';
 import {
-  Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE, UNDO_OPERATION_TYPE,
-  VIEW_OPERATION, COLUMN_OPERATION
+  Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE,
+  UNDO_OPERATION_TYPE, RE_SEARCH_ROWS_OPERATION,
 } from './operations';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import DataProcessor from './data-processor';
@@ -56,7 +56,7 @@ class Store {
       let data = new Metadata({ rows, columns, view });
       data.view.rows = data.row_ids;
       const loadedCount = rows.length;
-      data.hasMore = loadedCount === limit;
+      data.hasMore = loadedCount >= limit;
       this.data = data;
       this.startIndex += loadedCount;
       DataProcessor.run(this.data, {
@@ -75,7 +75,7 @@ class Store {
 
   async reload(limit = PER_LOAD_NUMBER) {
     this.startIndex = 0;
-    return this.loadMetadata(this.data.view, limit, 0);
+    return this.loadMetadata(this.data.view, limit);
   }
 
   async loadMore(limit) {
@@ -98,6 +98,7 @@ class Store {
     this.startIndex = this.startIndex + loadedCount;
     DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
   }
 
   async updateRowData(newRowId) {
@@ -128,10 +129,15 @@ class Store {
 
     if (LOCAL_APPLY_OPERATION_TYPE.includes(op_type)) {
       this.localOperator.applyOperation(operation);
-      return;
+    } else {
+      this.addPendingOperations(operation, undoRedoHandler);
     }
 
-    this.addPendingOperations(operation, undoRedoHandler);
+    if (op_type === OPERATION_TYPE.MODIFY_FILTERS) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.CLEAR_SEARCH_ROWS);
+    } else if (RE_SEARCH_ROWS_OPERATION.includes(op_type)) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+    }
   }
 
   addPendingOperations(operation, undoRedoHandler) {
@@ -171,10 +177,6 @@ class Store {
       this.handleUndoRedos(undoRedoHandler, operation);
       this.data = deepCopy(operation.apply(this.data));
       this.syncOperationOnData(operation);
-    }
-
-    if (VIEW_OPERATION.includes(operation.op_type) || COLUMN_OPERATION.includes(operation.op_type)) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.VIEW_CHANGED, this.data.view);
     }
 
     if (isAfterServerOperation) {
@@ -447,8 +449,16 @@ class Store {
 
   modifyHiddenColumns(hidden_columns) {
     const type = OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS;
+    const oldHiddenColumns = (this.data && this.data.view && Array.isArray(this.data.view.hidden_columns)) ? this.data.view.hidden_columns : [];
+    const isShowingColumns = oldHiddenColumns.some(key => !hidden_columns.includes(key));
     const operation = this.createOperation({
-      type, hidden_columns, view_id: this.viewId
+      type,
+      hidden_columns,
+      view_id: this.viewId,
+      success_callback: () => {
+        if (!isShowingColumns) return;
+        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
+      }
     });
     this.applyOperation(operation);
   }
@@ -523,7 +533,6 @@ class Store {
     });
     this.applyOperation(operation);
   };
-
 
   modifyLocalColumnData(column_key, new_data, old_data) {
     const type = OPERATION_TYPE.MODIFY_LOCAL_COLUMN_DATA;

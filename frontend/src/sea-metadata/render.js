@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import classnames from 'classnames';
 import View from './view';
 import {
@@ -6,16 +6,17 @@ import {
   ViewsDataProvider, useViewsData,
   TagsDataProvider,
   TypesDataProvider,
+  SelectedRowsProvider,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
 import context from './context';
 import { CenteredLoading } from '@/components';
 import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
 
-const Main = ({
+const Main = forwardRef(({
   className,
   viewTools,
-  groupHeaderColSpan = 1,
+  fixedColumnCount = 1,
   tagsData,
   createTag,
   toggleAllTags,
@@ -24,10 +25,22 @@ const Main = ({
   toggleAllTypes,
   expandRow,
   toggleView,
+  createRowsTools,
   children,
   ...params
-}) => {
+}, ref) => {
   const { isLoading } = useViewsData();
+  const metadataRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    getData: () => metadataRef.current.getData(),
+  }), []);
+
+  useEffect(() => {
+    return () => {
+      context.destroy();
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -40,33 +53,37 @@ const Main = ({
   return (
     <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
-        <MetadataProvider tagsData={tagsData} typesData={typesData} { ...params }>
-          <div className={classnames('sea-metadata', className)}>
-            <ViewToolBar tools={viewTools} toggleView={toggleView} />
-            <View groupHeaderColSpan={groupHeaderColSpan} expandRow={expandRow} children={children} />
-          </div>
+        <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
+          <SelectedRowsProvider>
+            <div className={classnames('sea-metadata', className)}>
+              <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} createRowsTools={createRowsTools} toggleView={toggleView} />
+              <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
+            </div>
+          </SelectedRowsProvider>
         </MetadataProvider>
       </TypesDataProvider>
     </TagsDataProvider>
   );
-};
+});
 
-const SeaMetadata = ({
+const SeaMetadata = forwardRef(({
   toggleView,
   api,
   viewID,
   permission = PERMISSION_TYPES.READ_ONLY,
   isViewComputedOnServer = true,
-  settings = { lang, server, mediaUrl },
+  settings,
   t,
   ...params
-}) => {
+}, ref) => {
   const [isLoading, setLoading] = useState(true);
+  const viewsDataRef = useRef(null);
+  const mainRef = useRef(null);
 
   useEffect(() => {
     context.init({
       username,
-      settings,
+      settings: { lang, server, mediaUrl, ...settings, },
       permission,
       isViewComputedOnServer,
       api,
@@ -79,13 +96,30 @@ const SeaMetadata = ({
     context.re_set({ t, api });
   }, [t, api]);
 
+  useImperativeHandle(ref, () => ({
+    getData: () => {
+      const viewsData = viewsDataRef.current.getData();
+      const metadata = mainRef.current.getData();
+      return {
+        views: viewsData,
+        rows: metadata.rows,
+        view: {
+          ...metadata.view,
+          available_columns: [],
+          columns: [],
+          groups: [],
+        }
+      };
+    },
+  }), []);
+
   if (isLoading) return null;
 
   return (
-    <ViewsDataProvider viewID={viewID} toggleView={toggleView}>
-      <Main viewID={viewID} toggleView={toggleView} { ...params } />
+    <ViewsDataProvider ref={viewsDataRef} viewID={viewID} toggleView={toggleView}>
+      <Main ref={mainRef} viewID={viewID} toggleView={toggleView} { ...params } />
     </ViewsDataProvider>
   );
-};
+});
 
 export default SeaMetadata;

@@ -3,39 +3,42 @@ import { useTags, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import TagDialog from './components/tag-dialog';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
-  const { toggleChildrenPageType } = useTicketsPage();
+  const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
       type: CellType.TAG,
       key: 'name',
-      name: gettext('Tag'),
+      name: 'name',
+      display_name: gettext('Tag'),
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => toggleChildrenPageType(row._id)
+      click: (row) => togglePageType(pageType, row._id)
     },
     {
       type: CellType.TEXT,
       key: 'description',
-      name: gettext('Description'),
+      name: 'description',
+      display_name: gettext('Description'),
       editable: true,
       is_required: false,
     },
     {
       type: CellType.NUMBER,
       key: 'tickets_count',
-      name: gettext('Tickets count'),
+      name: 'tickets_count',
+      display_name: gettext('Tickets count'),
       editable: false,
     },
-  ], [toggleChildrenPageType]);
+  ], [pageType, togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -219,12 +222,12 @@ const AllTags = ({ projectUuid, permission }) => {
       <SeaMetadata
         viewID="0000"
         className="sea-tags-metadata"
-        groupHeaderColSpan={2}
+        fixedColumnCount={2}
         api={api}
         localStorageNamePrefix={localStorageName}
         permission={permission}
         createContextMenuOptions={createContextMenuOptions}
-        viewTools={['views', 'search', 'sorts']}
+        viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
         isViewComputedOnServer={false}
         t={t}
       >
