@@ -12,7 +12,7 @@ const ConnectionLogsDialog = ({ projectUuid, connectionId, onToggle }) => {
 
   const getConnectionLogs = useCallback(() => {
     connectionsAPI.getConnectionLogs(projectUuid, connectionId).then(res => {
-      setLogs(res.data.log_details);
+      setLogs(res.data.last_sync_log);
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);

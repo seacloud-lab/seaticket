@@ -648,12 +648,12 @@ class ProjectConnectionLogView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        log_details = project_connection.log_details or ''
-        if log_details:
-            log_details = log_details[1:] if log_details.startswith('\n') else log_details
-            log_details = log_details.replace('\n', '<br>')
+        last_sync_log = project_connection.last_sync_log or ''
+        if last_sync_log:
+            last_sync_log = last_sync_log[1:] if last_sync_log.startswith('\n') else last_sync_log
+            last_sync_log = last_sync_log.replace('\n', '<br>')
         return Response({
-            'log_details': log_details,
+            'last_sync_log': last_sync_log,
         })
 
 class ProjectConnectionsStatusView(APIView):
