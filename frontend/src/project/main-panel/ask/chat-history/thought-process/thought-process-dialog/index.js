@@ -95,75 +95,78 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     }
 
     // action
-    value.push({
-      name: gettext('Action steps'),
-      children: Array.isArray(propsValue.actions) ? propsValue.actions.map((action, stepNumber) => {
-        let otherInfos = [
-          action.error ? {
-            name: gettext('Error'),
-            children: [
-              { name: gettext('Error type'), value: action.error.type },
-              { name: gettext('Error message'), value: action.error.message },
-              { name: gettext('Step output'), value: action.result, formatter: StepMarkdownViewer },
-            ]
-          } : {
-            name: gettext('Observation'),
-            children: [
-              { value: action.result, formatter: StepMarkdownViewer }
-            ]
-          }, {
-            name: gettext('Statistics'),
-            children: [
-              { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
-              { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
-              { name: gettext('Total tokens'), value: action.token_usage?.total_tokens || 0 },
-              { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
-            ]
-          }
-        ];
-        if (action.tool_calls?.length === 1) {
-          return {
-            name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
-            children: [
-              {
-                name: gettext('Arguments'),
-                children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
-                  return {
-                    name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
-                    children: [
-                      { value: argumentValue }
-                    ]
-                  };
-                })
-              },
-              ...otherInfos
-            ],
-          };
-        }
-        return {
-          name: `${gettext('Step')} ${stepNumber + 1}`,
-          children: [
-            {
-              name: gettext('Substep'),
-              children: action.tool_calls.map((too_call, toolIndex) => {
-                return {
-                  name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
-                  children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
+    if (Array.isArray(propsValue.actions) && propsValue.actions.length > 0) {
+      value.push({
+        name: gettext('Action steps'),
+        children: propsValue.actions.map((action, stepNumber) => {
+          let otherInfos = [
+            action.error ? {
+              name: gettext('Error'),
+              children: [
+                { name: gettext('Error type'), value: action.error.type },
+                { name: gettext('Error message'), value: action.error.message },
+                { name: gettext('Step output'), value: action.result, formatter: StepMarkdownViewer },
+              ]
+            } : {
+              name: gettext('Observation'),
+              children: [
+                { value: action.result, formatter: StepMarkdownViewer }
+              ]
+            }, {
+              name: gettext('Statistics'),
+              children: [
+                { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
+                { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
+                { name: gettext('Total tokens'), value: action.token_usage?.total_tokens || 0 },
+                { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
+              ]
+            }
+          ];
+          if (action.tool_calls?.length === 1) {
+            return {
+              name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
+              children: [
+                {
+                  name: gettext('Arguments'),
+                  children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
                     return {
-                      name: `${gettext('Argument')}: ${argumentKey}`,
+                      name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
                       children: [
                         { value: argumentValue }
                       ]
                     };
                   })
-                };
-              })
-            },
-            ...otherInfos
-          ]
-        };
-      }) : [],
-    });
+                },
+                ...otherInfos
+              ],
+            };
+          }
+          return {
+            name: `${gettext('Step')} ${stepNumber + 1}`,
+            children: [
+              {
+                name: gettext('Substep'),
+                children: action.tool_calls.map((too_call, toolIndex) => {
+                  return {
+                    name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
+                    children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
+                      return {
+                        name: `${gettext('Argument')}: ${argumentKey}`,
+                        children: [
+                          { value: argumentValue }
+                        ]
+                      };
+                    })
+                  };
+                })
+              },
+              ...otherInfos
+            ]
+          };
+        })
+      });
+    }
+    
 
     // final answer
     if (propsValue?.final_answer?.result){
