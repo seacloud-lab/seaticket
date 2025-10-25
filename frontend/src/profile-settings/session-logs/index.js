@@ -148,7 +148,7 @@ class Item extends Component {
                 onUnfreezedItem={this.onUnfreezedItem}
               />
             }
-            {is_self && gettext('current browser')}
+            {is_self && gettext('Current browser')}
             {this.state.isOpIconShown && !is_online &&
               <OpMenu
                 operations={['Delete']}
