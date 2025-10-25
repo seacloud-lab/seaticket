@@ -35,10 +35,11 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     ];
 
     // context
-    if (propsValue.context?.length > 0) {
+    const contextValue = propsValue?.context;
+    if (Array.isArray(contextValue) && contextValue.length > 0) {
       value.push({
         name: gettext('Context'),
-        children: propsValue.context.map(record => {
+        children: contextValue.map(record => {
           return {
             name: (
               <>
@@ -97,11 +98,34 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     value.push({
       name: gettext('Action steps'),
       children: Array.isArray(propsValue.actions) ? propsValue.actions.map((action, stepNumber) => {
-        return {
-          name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.length === 1 ? action.tool_calls?.[0].name : ''}`,
-          children: [
-            (
-              action.tool_calls?.length === 1 ? {
+        let otherInfos = [
+          action.error ? {
+            name: gettext('Error'),
+            children: [
+              { name: gettext('Error type'), value: action.error.type },
+              { name: gettext('Error message'), value: action.error.message },
+              { name: gettext('Step output'), value: action.result, formatter: StepMarkdownViewer },
+            ]
+          } : {
+            name: gettext('Observation'),
+            children: [
+              { value: action.result, formatter: StepMarkdownViewer }
+            ]
+          }, {
+            name: gettext('Statistics'),
+            children: [
+              { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
+              { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
+              { name: gettext('Total tokens'), value: action.token_usage?.total_tokens || 0 },
+              { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
+            ]
+          }
+        ];
+        if (action.tool_calls?.length === 1) {
+          return {
+            name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
+            children: [
+              {
                 name: gettext('Arguments'),
                 children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
                   return {
@@ -111,12 +135,22 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                     ]
                   };
                 })
-              } : Object.entries(action.tool_calls).map(([toolName, toolArguments], toolIndex) => {
+              },
+              ...otherInfos
+            ],
+          };
+        }
+        return {
+          name: `${gettext('Step')} ${stepNumber + 1}`,
+          children: [
+            {
+              name: gettext('Substep'),
+              children: action.tool_calls.map((too_call, toolIndex) => {
                 return {
-                  name: `${gettext('Substep')} ${toolIndex + 1}: ${toolName}`,
-                  children: Object.entries(toolArguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
+                  name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
+                  children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
                     return {
-                      name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
+                      name: `${gettext('Argument')}: ${argumentKey}`,
                       children: [
                         { value: argumentValue }
                       ]
@@ -124,27 +158,8 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                   })
                 };
               })
-            ), action.error ? {
-              name: gettext('Error'),
-              children: [
-                { name: gettext('Error type'), value: action.error.type },
-                { name: gettext('Error message'), value: action.error.message },
-                { name: gettext('Step output'), value: action.result, formatter: StepMarkdownViewer },
-              ]
-            } : {
-              name: gettext('Observation'),
-              children: [
-                { value: action.result, formatter: StepMarkdownViewer }
-              ]
-            }, {
-              name: gettext('Statistics'),
-              children: [
-                { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
-                { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
-                { name: gettext('Total tokens'), value: action.token_usage?.total_tokens || 0 },
-                { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
-              ]
-            }
+            },
+            ...otherInfos
           ]
         };
       }) : [],
