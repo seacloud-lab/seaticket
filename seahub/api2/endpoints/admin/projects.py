@@ -10,7 +10,7 @@ from rest_framework import status
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.project.models import Projects
+from seahub.project.models import Projects, ProjectAPIToken
 from seahub.project.utils import get_project_owner, convert_project_trash_names, \
     restore_trash_project_name, delete_project
 from seahub.organizations.models import Organization
@@ -112,6 +112,7 @@ class AdminProject(APIView):
         try:
             Projects.objects.filter(id=project.id).update(
                 deleted=True, delete_time=datetime.now(), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'

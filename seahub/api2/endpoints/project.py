@@ -18,7 +18,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
-    ChatSessions, ChatMessages
+    ChatSessions, ChatMessages, ProjectAPIToken
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search
@@ -353,6 +353,7 @@ class ProjectView(APIView):
         new_project_name = convert_project_trash_names(project)
         try:
             Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(UTC), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
