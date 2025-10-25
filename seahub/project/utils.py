@@ -472,11 +472,11 @@ def ticket_to_json(ticket_id):
     whole_ticket_data = {
         'title': ticket.title,
         'description': ticket.description,
-        'created_at': ticket.created_at.isoformat(),
+        'created_at': ticket.created_at.astimezone().isoformat(),
         'replies': [{
                 'nickname': nickname_map[ticket_reply.creator],
                 'content': ticket_reply.content,
-                'replied_at': ticket_reply.created_at.isoformat()
+                'replied_at': ticket_reply.created_at.astimezone().isoformat()
             }
             for ticket_reply in ticket_replies
         ]
