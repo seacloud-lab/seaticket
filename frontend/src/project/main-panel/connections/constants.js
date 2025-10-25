@@ -1,5 +1,6 @@
 import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
+import { DEFAULT_TIMEZONE_FORMAT, DATE_FORMAT_MAP } from '@/sea-metadata/constants/column';
 
 export const CONNECTION_TYPE = {
   EMAIL: 'email',
@@ -160,7 +161,7 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       can_edit_multiple_times: false,
       is_custom: true
-    },
+    }
   ]
 };
 
@@ -336,6 +337,14 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'mtime': {
       display_name: gettext('Last modified time'),
       type: CellType.MTIME,
+    },
+    'updated_at': {
+      display_name: gettext('Last sync time'),
+      type: CellType.DATE,
+      data: {
+        format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
+        sub_format: DEFAULT_TIMEZONE_FORMAT,
+      }
     }
   }
 };
