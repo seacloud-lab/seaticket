@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { getColumnType } from './core';
-import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT } from '../../constants';
+import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT, DEFAULT_TIMEZONE_FORMAT } from '../../constants';
 
 /**
  * Check whether is date column:
@@ -66,10 +66,23 @@ const getDateDisplayString = (date, format) => {
     case 'DD.MM.YYYY HH:mm:ss': {
       return dateObj.format(format);
     }
+    case DEFAULT_TIMEZONE_FORMAT: {
+      const formattedDate = dateObj.format(DEFAULT_TIMEZONE_FORMAT);
+      const offset = dayjs(date).utcOffset();
+      const hours = Math.abs(Math.floor(offset / 60));
+      const sign = offset >= 0 ? '+' : '-';
+      return `${formattedDate} GMT${sign}${hours}`;
+    }
     default:
       // Compatible with older versions: if format is null, use defaultFormat
       return dateObj.format('YYYY-MM-DD');
   }
 };
 
-export { isDateColumn, getDateColumnFormat, getDateDisplayString };
+
+const formatWithTimezone = (date) => {
+  return getDateDisplayString(date, DEFAULT_TIMEZONE_FORMAT);
+};
+
+
+export { isDateColumn, getDateColumnFormat, getDateDisplayString, formatWithTimezone };

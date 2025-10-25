@@ -8,7 +8,7 @@ import { Utils } from '../../../utils/utils';
 import { siteRoot, gettext, mediaUrl } from '../../../constants';
 import UserLink from '../user-link';
 import { getRoleOptions } from '../../../utils/role-status-utils';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const { availableRoles } = window.sysadmin.pageOptions;
 

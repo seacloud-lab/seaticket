@@ -9,7 +9,7 @@ import ModalPortal from '../modal-portal';
 import Loading from '../loading';
 import LogOutSessionDialog from '../dialog/log-out-session-dialog';
 import OpMenu from '../dialog/op-menu';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,

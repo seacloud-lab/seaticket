@@ -12,7 +12,7 @@ import { Utils } from '../../../utils/utils';
 import { siteRoot, loginUrl, gettext, username, mediaUrl } from '../../../constants';
 import { getStatusOptions } from '../../../utils/role-status-utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const contentPropTypes = {
   loading: PropTypes.bool.isRequired,

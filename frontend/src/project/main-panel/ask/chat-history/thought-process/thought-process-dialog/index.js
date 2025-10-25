@@ -5,6 +5,7 @@ import { gettext } from '@/constants';
 import ProcessDetails from './process-details';
 import StepMarkdownViewer from './markdown-viewer';
 import { isObject } from '@/utils/type-detection';
+import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
@@ -34,12 +35,21 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     ];
 
     // context
-    if (propsValue.context?.length > 0) {
+    const contextValue = propsValue?.context;
+    if (Array.isArray(contextValue) && contextValue.length > 0) {
       value.push({
         name: gettext('Context'),
-        children: propsValue.context.map(record => {
+        children: contextValue.map(record => {
           return {
-            name: `${gettext('Date')}: ${record.date}`,
+            name: (
+              <>
+                {gettext('Date')}
+                {': '}
+                <span title={formatWithTimezone(record.date)}>
+                  {getDateDisplayString(record.date, 'YYYY-MM-DD HH:mm:ss')}
+                </span>
+              </>
+            ),
             children: [
               {
                 name: gettext('User message'),
@@ -62,7 +72,16 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
                   return {
-                    name: `${gettext('Response')} ${responseIndex + 1}: (${gettext('Date')}: ${responseDate})`,
+                    name: (
+                      <>
+                        {`${gettext('Response')} ${responseIndex + 1}: `}
+                        {`(${gettext('Date')}: `}
+                        <span title={formatWithTimezone(responseDate)}>
+                          {getDateDisplayString(responseDate, 'YYYY-MM-DD HH:mm:ss')}
+                        </span>
+                        {')'}
+                      </>
+                    ),
                     children: [
                       { value: responseContent }
                     ]
@@ -76,37 +95,12 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
     }
 
     // action
-    value.push({
-      name: gettext('Action steps'),
-      children: propsValue.actions.map((action, stepNumber) => {
-        return {
-          name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.length === 1 ? action.tool_calls?.[0].name : ''}`,
-          children: [
-            (
-              action.tool_calls?.length === 1 ? {
-                name: gettext('Arguments'),
-                children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
-                  return {
-                    name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
-                    children: [
-                      { value: argumentValue }
-                    ]
-                  };
-                })
-              } : Object.entries(action.tool_calls).map(([toolName, toolArguments], toolIndex) => {
-                return {
-                  name: `${gettext('Substep')} ${toolIndex + 1}: ${toolName}`,
-                  children: Object.entries(toolArguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
-                    return {
-                      name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
-                      children: [
-                        { value: argumentValue }
-                      ]
-                    };
-                  })
-                };
-              })
-            ), action.error ? {
+    if (Array.isArray(propsValue.actions) && propsValue.actions.length > 0) {
+      value.push({
+        name: gettext('Action steps'),
+        children: propsValue.actions.map((action, stepNumber) => {
+          let otherInfos = [
+            action.error ? {
               name: gettext('Error'),
               children: [
                 { name: gettext('Error type'), value: action.error.type },
@@ -127,13 +121,55 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                 { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
               ]
             }
-          ]
-        };
-      }),
-    });
+          ];
+          if (action.tool_calls?.length === 1) {
+            return {
+              name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
+              children: [
+                {
+                  name: gettext('Arguments'),
+                  children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
+                    return {
+                      name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
+                      children: [
+                        { value: argumentValue }
+                      ]
+                    };
+                  })
+                },
+                ...otherInfos
+              ],
+            };
+          }
+          return {
+            name: `${gettext('Step')} ${stepNumber + 1}`,
+            children: [
+              {
+                name: gettext('Substep'),
+                children: action.tool_calls.map((too_call, toolIndex) => {
+                  return {
+                    name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
+                    children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
+                      return {
+                        name: `${gettext('Argument')}: ${argumentKey}`,
+                        children: [
+                          { value: argumentValue }
+                        ]
+                      };
+                    })
+                  };
+                })
+              },
+              ...otherInfos
+            ]
+          };
+        })
+      });
+    }
+    
 
     // final answer
-    if (propsValue.final_answer?.result){
+    if (propsValue?.final_answer?.result){
       let result = propsValue.final_answer.result;
       if (result && isObject(result)) {
         result = JSON.stringify(result);
@@ -160,45 +196,47 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    value.push({
-      name: gettext('Statistics'),
-      children: [
-        {
-          name: gettext('Token usages'),
-          children: [
-            {
-              name: gettext('Input tokens'),
-              children: [
-                { name: gettext('Action steps'), value: propsValue.static.token_usage.input_tokens.action_steps },
-                { name: gettext('Answer generation'), value: propsValue.static.token_usage.input_tokens.answer_generation },
-                { name: gettext('Total'), value: propsValue.static.token_usage.input_tokens.total }
-              ]
-            }, {
-              name: gettext('Output tokens'),
-              children: [
-                { name: gettext('Action steps'), value: propsValue.static.token_usage.output_tokens.action_steps },
-                { name: gettext('Answer generation'), value: propsValue.static.token_usage.output_tokens.answer_generation },
-                { name: gettext('Total'), value: propsValue.static.token_usage.output_tokens.total }
-              ]
-            }, {
-              name: gettext('Total tokens'),
-              children: [
-                { name: gettext('Action steps'), value: propsValue.static.token_usage.total_tokens.action_steps },
-                { name: gettext('Answer generation'), value: propsValue.static.token_usage.total_tokens.answer_generation },
-                { name: gettext('Total'), value: propsValue.static.token_usage.total_tokens.total }
-              ]
-            }
-          ]
-        }, {
-          name: gettext('Time usage'),
-          children: [
-            { name: gettext('Action steps'), value: `${propsValue.static.time_usage.action_steps} s` },
-            { name: gettext('Answer generation'), value: `${propsValue.static.time_usage.answer_generation} s` },
-            { name: gettext('Total'), value: `${propsValue.static.time_usage.total} s` },
-          ]
-        }
-      ]
-    });
+    if (propsValue?.static) {
+      value.push({
+        name: gettext('Statistics'),
+        children: [
+          {
+            name: gettext('Token usages'),
+            children: [
+              {
+                name: gettext('Input tokens'),
+                children: [
+                  { name: gettext('Action steps'), value: propsValue.static.token_usage.input_tokens.action_steps },
+                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.input_tokens.answer_generation },
+                  { name: gettext('Total'), value: propsValue.static.token_usage.input_tokens.total }
+                ]
+              }, {
+                name: gettext('Output tokens'),
+                children: [
+                  { name: gettext('Action steps'), value: propsValue.static.token_usage.output_tokens.action_steps },
+                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.output_tokens.answer_generation },
+                  { name: gettext('Total'), value: propsValue.static.token_usage.output_tokens.total }
+                ]
+              }, {
+                name: gettext('Total tokens'),
+                children: [
+                  { name: gettext('Action steps'), value: propsValue.static.token_usage.total_tokens.action_steps },
+                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.total_tokens.answer_generation },
+                  { name: gettext('Total'), value: propsValue.static.token_usage.total_tokens.total }
+                ]
+              }
+            ]
+          }, {
+            name: gettext('Time usage'),
+            children: [
+              { name: gettext('Action steps'), value: `${propsValue.static.time_usage.action_steps} s` },
+              { name: gettext('Answer generation'), value: `${propsValue.static.time_usage.answer_generation} s` },
+              { name: gettext('Total'), value: `${propsValue.static.time_usage.total} s` },
+            ]
+          }
+        ]
+      });
+    }
 
     setValue(value);
     setLoading(false);

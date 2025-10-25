@@ -15,7 +15,7 @@ import { Utils } from '../../../utils/utils';
 import { sysAdminServiceApi } from '../../../api/sys-admin-service-api';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '../../../constants';
 import { getRoleOptions } from '../../../utils/role-status-utils';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import '../../../css/system-org.css';
 

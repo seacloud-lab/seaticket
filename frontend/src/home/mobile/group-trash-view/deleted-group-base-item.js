@@ -5,7 +5,7 @@ import { toaster, ProjectIcon } from '../../../components';
 import { seaQAAPI } from '../../../api/web-api';
 import { gettext } from '../../../constants';
 import { Utils } from '../../../utils/utils';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 
 function DeletedGroupBaseItem(props) {

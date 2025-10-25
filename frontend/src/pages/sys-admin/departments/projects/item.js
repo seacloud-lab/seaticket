@@ -6,7 +6,7 @@ import dayjs from '../../../../utils/dayjs';
 import ProjectOpMenu from '../../projects/project-op-menu';
 import DTableAllExternalLinksDialog from '../../../dtable/dialog/all-external-links-dialog';
 import { ProjectIcon, CommonOperationConfirmationDialog } from '../../../../components';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 const propTypes = {
   item: PropTypes.object.isRequired,
