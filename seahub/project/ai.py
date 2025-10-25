@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import json
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -98,7 +99,7 @@ class QAView(APIView):
             agent_memory = {}
 
         user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
-        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, sources)
+        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, json.dumps(sources))
 
         return Response({
             'answer': ai_answer,
