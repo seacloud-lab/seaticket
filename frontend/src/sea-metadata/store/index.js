@@ -447,6 +447,14 @@ class Store {
     this.applyOperation(operation);
   }
 
+  modifyRowHeight(row_height) {
+    const type = OPERATION_TYPE.MODIFY_ROW_HEIGHT;
+    const operation = this.createOperation({
+      type, row_height, view_id: this.viewId,
+    });
+    this.applyOperation(operation);
+  }
+
   modifyHiddenColumns(hidden_columns) {
     const type = OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS;
     const oldHiddenColumns = (this.data && this.data.view && Array.isArray(this.data.view.hidden_columns)) ? this.data.view.hidden_columns : [];

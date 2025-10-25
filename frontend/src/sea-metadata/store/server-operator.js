@@ -171,6 +171,15 @@ class ServerOperator {
         });
         break;
       }
+      case OPERATION_TYPE.MODIFY_ROW_HEIGHT: {
+        const { view_id, row_height } = operation;
+        context.modifyView(view_id, { row_height }).then(res => {
+          callback({ operation });
+        }).catch(error => {
+          callback({ operation, error: gettext('Failed to modify row height') });
+        });
+        break;
+      }
       case OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS: {
         const { view_id, hidden_columns } = operation;
         context.modifyView(view_id, { hidden_columns }).then(res => {

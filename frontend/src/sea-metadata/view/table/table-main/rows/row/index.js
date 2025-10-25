@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import Cell from './cell';
 import ActionsCell from './actions-cell';
 import { getFrozenColumns } from '../../../../../utils/column';
-import { seaTableZIndexes } from '../../../../../constants';
+import { seaTableZIndexes, ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
 
 import './index.css';
 
@@ -74,7 +74,7 @@ class Row extends React.Component {
   getFrozenCells = () => {
     const {
       columns, lastFrozenColumnKey, groupRowIndex, index: rowIndex, row,
-      cellMetaData, isGroupView, height, columnColor
+      cellMetaData, isGroupView, isLastRow, height, columnColor
     } = this.props;
     const frozenColumns = getFrozenColumns(columns);
     if (frozenColumns.length === 0) return null;
@@ -106,6 +106,7 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
+          rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
         />
       );
@@ -138,7 +139,7 @@ class Row extends React.Component {
   getColumnCells = () => {
     const {
       columns, colOverScanStartIdx, colOverScanEndIdx, groupRowIndex, index: rowIndex,
-      row, cellMetaData, isGroupView, height, columnColor
+      row, cellMetaData, isGroupView, isLastRow, height, columnColor
     } = this.props;
     const rowId = row._id;
     const rendererColumns = columns.slice(colOverScanStartIdx, colOverScanEndIdx);
@@ -168,6 +169,7 @@ class Row extends React.Component {
           modifyRowViaButton={this.props.modifyRowViaButton}
           reloadCurrentRow={this.reloadCurrentRow}
           highlightClassName={highlightClassName}
+          rowHeightClassName={ROW_HEIGHT_CLASS_MAP[(isGroupView && isLastRow) ? height - 2 : height - 1]}
           bgColor={bgColor}
         />
       );

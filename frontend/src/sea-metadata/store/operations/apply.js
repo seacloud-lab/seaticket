@@ -188,6 +188,11 @@ export default function apply(data, operation) {
       data.view.groupbys = groupbys;
       return data;
     }
+    case OPERATION_TYPE.MODIFY_ROW_HEIGHT: {
+      const { row_height } = operation;
+      data.view.row_height = row_height;
+      return data;
+    }
     case OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS: {
       const { hidden_columns } = operation;
       data.view.hidden_columns = hidden_columns;

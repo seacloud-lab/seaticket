@@ -104,6 +104,7 @@ export const VIEW_TOOL = {
   FILTERS: 'filters',
   SORTS: 'sorts',
   GROUPBYS: 'groupbys',
+  ROW_HEIGHT: 'row_height',
   ORDER_HIDDEN: 'order_and_hidden',
   MANAGE: 'manage'
 };
@@ -115,6 +116,7 @@ export const VIEW_TOOLS = [
   VIEW_TOOL.FILTERS,
   VIEW_TOOL.SORTS,
   VIEW_TOOL.GROUPBYS,
+  VIEW_TOOL.ROW_HEIGHT,
   VIEW_TOOL.ORDER_HIDDEN,
   VIEW_TOOL.MANAGE,
 ];
