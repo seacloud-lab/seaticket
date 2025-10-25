@@ -1,3 +1,16 @@
+.sea-qa-github-issue-details-container {
+  height: calc(100% - 28px - 28px); /* 28px is the height of modal header and footer each */
+}
+
+.sea-qa-github-issue-details-container .modal-content {
+  height: 100%;
+  overflow: hidden;
+}
+
+.sea-qa-github-issue-details-container .modal-content .modal-body {
+  height: calc(100% - 57px); /* 57px is the height of modal header */
+}
+
 .sea-qa-github-issue-details-container .row-expand-direct-icons {
   display: flex;
   justify-content: space-between;
@@ -29,7 +42,7 @@
 }
 
 .sea-qa-github-issue-details-container .sea-qa-github-issue-row-details {
-  height: 663px;
+  height: 100%;
   overflow: auto;
   padding: 0 16px;
 }

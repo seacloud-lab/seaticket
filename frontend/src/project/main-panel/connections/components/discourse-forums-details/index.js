@@ -1,7 +1,7 @@
-import { Modal, ModalBody } from 'reactstrap';
+import { Modal, ModalBody, UncontrolledTooltip } from 'reactstrap';
 import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader, Icon } from '@/components';
-import { mediaUrl } from '@/constants';
+import { mediaUrl, gettext } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
@@ -13,8 +13,14 @@ const DiscourseForumsDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSw
       <ModalHeader toggle={onClose}>
         <div className="d-flex align-items-center">
           <div className="row-expand-direct-icons mr-2">
-            <span className="direct-icon rotate-icon-180" onClick={() => {handleSwitchRows(-1);}}><Icon symbol="down" /></span>
-            <span className="direct-icon" onClick={() => {handleSwitchRows(1);}}><Icon symbol="down" /></span>
+            <span id="sea-qa-discourse-forums-details-prev-record-btn" className="direct-icon rotate-icon-180" onClick={() => {handleSwitchRows(-1);}}><Icon symbol="down" /></span>
+            <span id="sea-qa-discourse-forums-details-next-record-btn" className="direct-icon" onClick={() => {handleSwitchRows(1);}}><Icon symbol="down" /></span>
+            <UncontrolledTooltip placement="bottom" target="sea-qa-discourse-forums-details-prev-record-btn" fade={false} trigger="hover" className="sea-metadata-tooltip">
+              {gettext('Previous record')}
+            </UncontrolledTooltip>
+            <UncontrolledTooltip placement="bottom" target="sea-qa-discourse-forums-details-next-record-btn" fade={false} trigger="hover" className="sea-metadata-tooltip">
+              {gettext('Next record')}
+            </UncontrolledTooltip>
           </div>
           {rowDetailsTitle}
         </div>

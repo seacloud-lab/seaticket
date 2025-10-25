@@ -111,6 +111,15 @@ const SeaMetadata = forwardRef(({
         }
       };
     },
+    getGroupRows: () => {
+      if (!window.seaTableBody || !window.seaTableBody.getGroupMetrics) {
+        return [];
+      }
+      const metadata = mainRef.current.getData();
+      const groupMetrics = window.seaTableBody.getGroupMetrics();
+      const { groupRows } = groupMetrics;
+      return groupRows.filter(r => r.type === 'row').map(r => metadata.rows.find(row => row._id === r.rowId));
+    }
   }), []);
 
   if (isLoading) return null;
