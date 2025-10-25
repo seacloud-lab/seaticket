@@ -5,6 +5,7 @@ class Seafile {
     this.filename = object.filename || '';
     this.mtime = object.mtime || '';
     this.deleted = Boolean(object.deleted);
+    this.updated_at = object.updated_at || '';
   }
 }
 
