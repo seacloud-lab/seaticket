@@ -13,7 +13,7 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitch
       <ModalHeader toggle={onClose}>
         <div className="d-flex align-items-center">
           <div className="row-expand-direct-icons mr-2">
-            <span className="direct-icon rotate-icon-180"><Icon symbol="down" /></span>
+            <span className="direct-icon rotate-icon-180" onClick={() => {handleSwitchRows(-1);}}><Icon symbol="down" /></span>
             <span className="direct-icon" onClick={() => {handleSwitchRows(1);}}><Icon symbol="down" /></span>
           </div>
           {rowDetailsTitle}
