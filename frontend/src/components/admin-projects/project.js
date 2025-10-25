@@ -3,7 +3,7 @@ import { Dropdown } from 'reactstrap';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
-import { formatWithTimezone } from '@/sea-metadata/constants/column/format';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { gettext, siteRoot } from '@/constants';
 import ModalPortal from '../modal-portal';
 import { CommonOperationConfirmationDialog, RestoreProjectDialog } from '../dialog';
