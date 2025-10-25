@@ -148,7 +148,7 @@ class SortPopover extends Component {
             <span className="sea-metadata-filter-header-icon">
               <Icon className="sea-metadata-icon" symbol={column.key === 'priority' ? 'priority-column' : COLUMNS_ICON_CONFIG[type]} />
             </span>
-            <span>{name}</span>
+            <span className="select-option-name" title={name} aria-label={name}>{name}</span>
           </Fragment>
         )
       };
@@ -174,18 +174,8 @@ class SortPopover extends Component {
   };
 
   renderSortItem = (column, sort, index) => {
-    const { name, type } = column;
     const { readOnly = false, type: viewType } = this.props;
-    const selectedColumn = {
-      label: (
-        <>
-          <span className="sea-metadata-filter-header-icon">
-            <Icon className="sea-metadata-icon" symbol={column.key === 'priority' ? 'priority-column' : COLUMNS_ICON_CONFIG[type]} />
-          </span>
-          <span className="select-option-name" title={name} aria-label={name}>{name}</span>
-        </>
-      )
-    };
+    const selectedColumn = this.columnsOptions.find(c => c.value.column.key === column.key);
 
     const selectedType = sort.sort_type;
     const selectedTypeOption = SORT_TYPES.find(sortType => sortType.value === selectedType);
