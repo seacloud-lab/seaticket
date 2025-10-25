@@ -14,9 +14,10 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections
 from seahub.project.utils import check_project_permission, ask_ai_question, \
-    convert_record_to_ticket
-from seahub.project.constants import ConnectionType
+    convert_record_to_ticket, ticket_to_json, TicketNotFound
+from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,21 @@ class QAView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
+        
+        ticket_id = request.data.get('ticket_id')
+        if ticket_id:
+            try:
+                ticket_id = int(ticket_id)
+            except:
+                error_msg = 'ticket_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            try:
+                ticket_json_data = ticket_to_json(ticket_id)
+            except TicketNotFound:
+                error_msg = 'ticket not found'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
+            
         resolve_type = request.data.get('resolve_type', 'ask')
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:

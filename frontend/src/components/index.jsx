@@ -34,6 +34,7 @@ import { Collaborator, AsyncCollaborator } from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
 import OptionEditor from './option-editor';
+import SyncOptionsEditor from './sync-option-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
 import StepsNavigation from './steps-navigation';
@@ -76,7 +77,7 @@ export {
   Collaborator,
   CollaboratorEditor,
   Option,
-  OptionEditor,
+  OptionEditor, SyncOptionsEditor,
   PasswordInput,
   TextInput,
   StepsNavigation,

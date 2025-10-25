@@ -1,10 +1,9 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo, useRef } from 'react';
+import axios from 'axios';
 import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Option from '../../option';
-import { searchOptions } from '../../../utils/search';
 import IconButton from '../../icon-button';
-import CustomizeAddTool from '../../customize-add-tool';
 import { gettext, KeyCodes } from '@/constants';
 import { Utils, isFunction } from '@/utils/utils';
 import toaster from '../../toaster';
@@ -13,33 +12,31 @@ import './index.css';
 
 const Main = forwardRef(({
   isMultiple = false,
-  isSearchEnabled = true,
   placeholder,
   emptyTip,
   value: propsValue = '',
-  options = [],
   maxHeight = 200,
   optionHeight = 30,
-  children,
   onChange,
   onToggle,
-  onCreate,
   onPressTab,
-  addToolText = gettext('Add tag'),
+  onSearch,
 }, ref) => {
   const [value, setValue] = useState(propsValue);
   const [searchValue, setSearchValue] = useState('');
-  const [displayOptions, setDisplayOptions] = useState(options);
+  const [options, setOptions] = useState([]);
   const [highlightIndex, setHighlightIndex] = useState(-1);
 
   const displayOptionsRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const timer = useRef(null);
 
   const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
 
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
     setSearchValue(newSearchValue);
-  }, [options, searchValue]);
+  }, [searchValue]);
 
   const toggleOption = useCallback((optionValue) => {
     if (isMultiple) {
@@ -60,15 +57,6 @@ const Main = forwardRef(({
     onToggle && onToggle();
   }, [isMultiple, value, onChange, onToggle]);
 
-  const handleCreate = useCallback(() => {
-    onCreate(searchValue.trim()).then(option => {
-      toggleOption(option.value);
-    }).catch(error => {
-      const errorMsg = Utils.getErrorMsg(error);
-      toaster.danger(errorMsg);
-    });
-  }, [searchValue, onCreate, toggleOption]);
-
   const onMenuMouseEnter = useCallback((highlightIndex) => {
     setHighlightIndex(highlightIndex);
   }, []);
@@ -80,33 +68,33 @@ const Main = forwardRef(({
   const onEnter = useCallback((event) => {
     event.preventDefault();
     let option;
-    if (displayOptions.length === 1) {
-      option = displayOptions[0];
+    if (options.length === 1) {
+      option = options[0];
     } else if (highlightIndex > -1) {
-      option = displayOptions[highlightIndex];
+      option = options[highlightIndex];
     }
     if (!option) return;
     toggleOption(option.value);
-  }, [displayOptions, highlightIndex, toggleOption]);
+  }, [options, highlightIndex, toggleOption]);
 
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     if (highlightIndex === 0) {
-      setHighlightIndex(displayOptions.length - 1);
+      setHighlightIndex(options.length - 1);
       displayOptionsRef.current.scrollTop = 0;
       return;
     }
     setHighlightIndex(highlightIndex - 1);
-    if (highlightIndex > displayOptions.length - maxItemNum) {
+    if (highlightIndex > options.length - maxItemNum) {
       displayOptionsRef.current.scrollTop -= optionHeight;
     }
-  }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
+  }, [displayOptionsRef, highlightIndex, maxItemNum, options, optionHeight]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === displayOptions.length - 1) {
+    if (highlightIndex === options.length - 1) {
       setHighlightIndex(0);
       displayOptionsRef.current.scrollTop = 0;
       return;
@@ -115,7 +103,7 @@ const Main = forwardRef(({
     if (highlightIndex >= maxItemNum) {
       displayOptionsRef.current.scrollTop += optionHeight;
     }
-  }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
+  }, [displayOptionsRef, highlightIndex, maxItemNum, options, optionHeight]);
 
   const blur = useCallback(() => {
     onChange && onChange();
@@ -162,14 +150,45 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    const highlightIndex = displayOptions.length === 0 ? -1 : 0;
+    const highlightIndex = options.length === 0 ? -1 : 0;
     setHighlightIndex(highlightIndex);
-  }, [displayOptions]);
+  }, [options]);
 
   useEffect(() => {
-    const displayOptions = searchOptions(options, searchValue);
-    setDisplayOptions(displayOptions);
-  }, [searchValue, options]);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    timer.current && clearTimeout(timer.current);
+
+    if (!searchValue) {
+      setOptions([]);
+      return;
+    }
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      onSearch(searchValue, abortControllerRef.current.signal).then(options => {
+        setOptions(options);
+      }).catch(error => {
+        if (!axios.isCancel(error)) {
+          const errorMessage = Utils.getErrorMsg(error);
+          toaster.danger(this.props.gettext(errorMessage));
+        }
+      }).finally(() => {
+        abortControllerRef.current = null;
+      });
+    }, 300);
+  }, [searchValue, onSearch]);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      timer.current && clearTimeout(timer.current);
+    };
+  }, []);
 
   useImperativeHandle(ref, () => ({
     getValue: () => {
@@ -182,34 +201,29 @@ const Main = forwardRef(({
 
   return (
     <div className="option-editor-container">
-      {children && (
-        <div className="option-editor-selected-value-wrapper">
-          {children}
-        </div>
-      )}
-      {isSearchEnabled && (
-        <div className="option-editor-search-wrapper">
-          <SearchInput
-            isShowSearchIcon={false}
-            autoFocus={true}
-            value={searchValue}
-            size={28}
-            placeholder={placeholder}
-            onKeyDown={onKeyDown}
-            onChange={onSearchValueChange}
-          />
-        </div>
-      )}
+      <div className="option-editor-search-wrapper">
+        <SearchInput
+          isShowSearchIcon={false}
+          autoFocus={true}
+          value={searchValue}
+          size={28}
+          placeholder={placeholder}
+          onKeyDown={onKeyDown}
+          onChange={onSearchValueChange}
+        />
+      </div>
       <div
-        className={classnames('option-editor-content', { 'empty': displayOptions.length === 0 })}
+        className={classnames('option-editor-content', { 'empty': options.length === 0 })}
         style={{ maxHeight }}
         ref={displayOptionsRef}
       >
-        {displayOptions.length === 0 ? (
-          <div className="tip-default">{emptyTip}</div>
+        {options.length === 0 ? (
+          <div className="tip-default">
+            {searchValue ? emptyTip : gettext('Enter characters to start searching')}
+          </div>
         ) : (
           <>
-            {displayOptions.map((option, i) => {
+            {options.map((option, i) => {
               const isSelected = value.includes(option.value);
               return (
                 <div
@@ -220,20 +234,13 @@ const Main = forwardRef(({
                   onMouseLeave={() => onMenuMouseLeave(i)}
                 >
                   {option.label ? option.label : (<Option option={option} />)}
-                  <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                  <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
                 </div>
               );
             })}
           </>
         )}
       </div>
-      {onCreate && searchValue.trim() && !options.find(o => o.name === searchValue.trim()) && (
-        <CustomizeAddTool
-          className="option-editor-add-search-result"
-          name={`${addToolText} ${searchValue.trim()}`}
-          callBack={handleCreate}
-        />
-      )}
     </div>
   );
 });

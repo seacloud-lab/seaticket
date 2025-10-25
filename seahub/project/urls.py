@@ -11,7 +11,8 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
 from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
-from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
+from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
+    TicketsSearchAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -61,6 +62,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/(?P<reply_number>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-tickets-search'),
 
     # tags
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),

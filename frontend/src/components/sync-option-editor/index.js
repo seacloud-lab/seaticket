@@ -5,18 +5,16 @@ import Main from './main';
 
 import './index.css';
 
-const OptionsEditor = ({
+const SyncOptionsEditor = ({
   target,
   isMultiple = false,
-  isSearchEnabled = true,
   placeholder,
   emptyTip,
   value,
   className,
-  options = [],
   onChange,
   onToggle,
-  onCreate,
+  onSearch,
 }) => {
   const mainRef = useRef(null);
 
@@ -39,16 +37,14 @@ const OptionsEditor = ({
         ref={mainRef}
         isMultiple={isMultiple}
         placeholder={placeholder}
-        isSearchEnabled={isSearchEnabled}
         emptyTip={emptyTip}
         value={value}
-        options={options}
         onChange={onChange}
         onToggle={onToggle}
-        onCreate={onCreate}
+        onSearch={onSearch}
       />
     </CustomizePopover>
   );
 };
 
-export default OptionsEditor;
+export default SyncOptionsEditor;

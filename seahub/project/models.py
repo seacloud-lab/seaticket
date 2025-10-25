@@ -1291,12 +1291,27 @@ class TicketViews(models.Model):
 
 
 class TicketsManager(models.Manager):
-
     def list_tickets_by_view(self, project_uuid, username, start, end, view_id):
         from seahub.project.view_utils import filter_tickets_by_view
         view = TicketViews.objects.get_view(project_uuid, view_id)
         q, sorts = filter_tickets_by_view(username, view)
 
+        return self.filter(
+            project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
+    
+    def list_tickets_by_search(self, project_uuid, username, search_text, start, end):
+        from seahub.project.view_utils import filter_tickets_by_view
+        view = {
+            'basic_filters': [],
+            'filters': [
+                {'column_key': 'title', 'filter_predicate': 'contains', 'filter_term': search_text}
+            ] if search_text else [],
+            'filter_conjunction': 'Or',
+            'sorts': [
+                {'column_key': 'priority', 'sort_type': 'down'}
+            ]
+        }
+        q, sorts = filter_tickets_by_view(username, view)
         return self.filter(
             project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
 

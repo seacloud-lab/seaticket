@@ -15,13 +15,14 @@ from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
+from seahub.profile.models import Profile
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
+from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
 
 
 logger = logging.getLogger(__name__)
@@ -421,3 +422,64 @@ def url_to_filename(url):
 
     # Add .json extension
     return filename + '.json'
+
+class TicketNotFound(Exception):
+    pass
+
+def ticket_to_json(ticket_id):
+    """
+    Build a json from a ticket and its replies.
+
+    Args:
+    - ticket: a record in table `tickets`
+    - ticket_replies: some relative replies with the ticket
+
+    Returns:
+    ```json // <- not included
+    {
+        "title": ...,
+        "description": ...,
+        "created_at": ...,
+        "replies": [
+            {
+                "nickname": ...,
+                "content": ...,
+                "replied_at": ...,
+            },
+            ...
+        ]
+    }
+    ``` // <- not included
+    """
+    ticket = Tickets.objects.filter(pk=ticket_id).first()
+    if not ticket:
+        raise TicketNotFound()
+    
+    ticket_replies = TicketReplies.objects.list_replies(ticket_id, 0, AI_CHAT_TICKET_MAX_REPLIES_NUM)
+
+    all_replies_users = set([
+        ticket_reply.creator
+        for ticket_reply in ticket_replies
+    ])
+
+    all_replies_users_profile = Profile.objects.filter(user__in=all_replies_users)
+
+    nickname_map = {
+        user_profile.user: user_profile.nickname
+        for user_profile in all_replies_users_profile
+    }
+
+    whole_ticket_data = {
+        'title': ticket.title,
+        'description': ticket.description,
+        'created_at': ticket.created_at.astimezone().isoformat(),
+        'replies': [{
+                'nickname': nickname_map[ticket_reply.creator],
+                'content': ticket_reply.content,
+                'replied_at': ticket_reply.created_at.astimezone().isoformat()
+            }
+            for ticket_reply in ticket_replies
+        ]
+    }
+
+    return json.dumps(whole_ticket_data, indent=4)
