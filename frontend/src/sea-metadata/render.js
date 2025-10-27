@@ -11,6 +11,8 @@ import {
 import ViewToolBar from './components/view-toolbar';
 import context from './context';
 import { CenteredLoading } from '@/components';
+import { getRowsByIds } from '@/sea-metadata/utils/row/core';
+import { getValidGroupbys } from '@/sea-metadata/utils/group';
 import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
 
 const Main = forwardRef(({
@@ -111,14 +113,16 @@ const SeaMetadata = forwardRef(({
         }
       };
     },
-    getGroupRows: () => {
-      if (!window.seaTableBody || !window.seaTableBody.getGroupMetrics) {
-        return [];
-      }
+    getOrderRows: () => {
       const metadata = mainRef.current.getData();
-      const groupMetrics = window.seaTableBody.getGroupMetrics();
-      const { groupRows } = groupMetrics;
-      return groupRows.filter(r => r.type === 'row').map(r => metadata.rows.find(row => row._id === r.rowId));
+      const validGroupbys = getValidGroupbys(metadata.view.groupbys, metadata.columns);
+      if (validGroupbys.length > 0) {
+        const groupMetrics = window.seaTableBody.getGroupMetrics();
+        const { groupRows } = groupMetrics;
+        const ids = groupRows.filter(r => r.type === 'row').map(r => r.rowId);
+        return getRowsByIds(metadata, ids);
+      }
+      return metadata.rows;
     }
   }), []);
 

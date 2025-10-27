@@ -1,14 +1,22 @@
 .sea-qa-discourse-forums-details-container {
-  height: calc(100% - 28px - 28px); /* 28px is the height of modal header and footer each */
+  height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
 }
 
 .sea-qa-discourse-forums-details-container .modal-content {
   height: 100%;
-  overflow: hidden;
 }
 
 .sea-qa-discourse-forums-details-container .modal-content .modal-body {
-  height: calc(100% - 57px); /* 57px is the height of modal header */
+  padding: 0px;
+  overflow: hidden;
+}
+
+.sea-qa-discourse-forums-details-container .modal-content .modal-header .modal-title {
+  width: 80%;
+}
+
+.sea-qa-discourse-forums-details-container .modal-content .modal-header .sea-qa-modal-close.close {
+  flex: unset
 }
 
 .sea-qa-discourse-forums-details-container .row-expand-direct-icons {
@@ -37,8 +45,10 @@
   opacity: 1;
 }
 
-.sea-qa-discourse-forums-details-container .modal-body {
-  padding: 0px;
+.sea-qa-github-issue-details-container .row-expand-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sea-qa-discourse-forums-details-container .sea-qa-discourse-forums-row-details {

@@ -499,14 +499,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   }, [projectUuid, connectionID, connection]);
 
   const handleSwitchRows = useCallback((count) => {
-    let rowsData = [];
-    const groupRowData = seaMetaDataRef.current.getGroupRows();
-    if (groupRowData.length > 0) {
-      rowsData = seaMetaDataRef.current.getGroupRows();
-    } else {
-      rowsData = seaMetaDataRef.current.getData().rows;
-    }
-
+    const rowsData = seaMetaDataRef.current.getOrderRows();
     const index = rowsData.findIndex(r => r._id === currentRowRef.current);
     if (index === -1) return;
 

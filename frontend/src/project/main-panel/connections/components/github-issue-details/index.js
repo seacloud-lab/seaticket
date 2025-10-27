@@ -22,7 +22,7 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitch
               {gettext('Next record')}
             </UncontrolledTooltip>
           </div>
-          {rowDetailsTitle}
+          <div className="row-expand-title" title={rowDetailsTitle}>{rowDetailsTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>
