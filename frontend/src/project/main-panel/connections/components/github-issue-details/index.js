@@ -13,12 +13,36 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitch
       <ModalHeader toggle={onClose}>
         <div className="d-flex align-items-center">
           <div className="row-expand-direct-icons mr-2">
-            <span id="sea-qa-github-issue-details-prev-record-btn" className="direct-icon rotate-icon-180" onClick={() => {handleSwitchRows(-1);}}><Icon symbol="down" /></span>
-            <span id="sea-qa-github-issue-details-next-record-btn" className="direct-icon" onClick={() => {handleSwitchRows(1);}}><Icon symbol="down" /></span>
-            <UncontrolledTooltip placement="bottom" target="sea-qa-github-issue-details-prev-record-btn" fade={false} trigger="hover" className="sea-metadata-tooltip">
+            <span
+              id="sea-qa-github-issue-details-prev-record-btn"
+              className="direct-icon rotate-icon-180"
+              onClick={() => handleSwitchRows(-1)}
+            >
+              <Icon symbol="down" />
+            </span>
+            <span
+              id="sea-qa-github-issue-details-next-record-btn"
+              className="direct-icon"
+              onClick={() => handleSwitchRows(1)}
+            >
+              <Icon symbol="down" />
+            </span>
+            <UncontrolledTooltip
+              placement="bottom"
+              target="sea-qa-github-issue-details-prev-record-btn"
+              fade={false}
+              trigger="hover"
+              className="sea-metadata-tooltip"
+            >
               {gettext('Previous record')}
             </UncontrolledTooltip>
-            <UncontrolledTooltip placement="bottom" target="sea-qa-github-issue-details-next-record-btn" fade={false} trigger="hover" className="sea-metadata-tooltip">
+            <UncontrolledTooltip
+              placement="bottom"
+              target="sea-qa-github-issue-details-next-record-btn"
+              fade={false}
+              trigger="hover"
+              className="sea-metadata-tooltip"
+            >
               {gettext('Next record')}
             </UncontrolledTooltip>
           </div>
@@ -37,9 +61,11 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitch
                   </div>
                   <div className='sea-qa-github-issue-reply-item-author-name'>{detail.author}</div>
                 </div>
-                <div className='sea-qa-github-issue-reply-item-author-time' title={formatWithTimezone(detail.created_at)}>{dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}</div>
+                <div className='sea-qa-github-issue-reply-item-author-time' title={formatWithTimezone(detail.created_at)}>
+                  {dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                </div>
               </div>
-              <div className='sea-qa-github-issue-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.body }}></div>
+              <div className='sea-qa-github-issue-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.body }} />
             </div>
           ))}
         </div>

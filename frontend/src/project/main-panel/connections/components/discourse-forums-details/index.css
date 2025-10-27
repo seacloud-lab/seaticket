@@ -42,7 +42,7 @@
 }
 
 .sea-qa-discourse-forums-details-container .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-down:hover {
-  opacity: 1;
+  opacity: .75;
 }
 
 .sea-qa-github-issue-details-container .row-expand-title {
