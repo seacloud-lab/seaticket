@@ -16,16 +16,16 @@ const ChatHistory = ({ chat }) => {
     return ref.current.getHTML();
   }, []);
 
-  const getAnswer = useCallback(() => {
+  const getAIReply = useCallback(() => {
     if (!ref?.current) return '';
-    return ref.current.getAnswer();
+    return ref.current.getAIReply();
   }, []);
 
   if (Object.keys(message).length === 0) return null;
   return (
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage message={message} ref={ref} />
-      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations getAnswer={getAnswer} getMessageHTML={getMessageHTML} />)}
+      {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations getAIReply={getAIReply} getMessageHTML={getMessageHTML} />)}
     </MessageBox>
   );
 };
