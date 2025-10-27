@@ -42,6 +42,10 @@ class HeaderDropdownMenu extends React.Component {
     this.props.onLeaveGroupToggle(workspace);
   };
 
+  openInviteDialog = () => {
+    this.props.toggleGroupInviteDialog();
+  };
+
   openTrashDialog = () => {
     this.props.toggleGroupTrashDialog();
   };
@@ -88,7 +92,7 @@ class HeaderDropdownMenu extends React.Component {
           {showGroupOptions &&
             <CustomizeDropdownItem onClick={this.props.openGroupMember}>{gettext('Group members')}</CustomizeDropdownItem>
           }
-          {isOrgContext && isOwnerOrAdmin && showGroupOptions &&
+          {isOwnerOrAdmin && showGroupOptions &&
             <CustomizeDropdownItem onClick={this.openInviteDialog}>{gettext('Invite members')}</CustomizeDropdownItem>
           }
           {isOwnerOrAdmin && showGroupOptions &&

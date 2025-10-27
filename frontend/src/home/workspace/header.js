@@ -61,6 +61,7 @@ class WorkspaceHeader extends Component {
           onDeleteGroupToggle={this.props.onDeleteGroupToggle}
           onLeaveGroupToggle={this.props.onLeaveGroupToggle}
           onTransferGroupToggle={this.props.onTransferGroupToggle}
+          toggleGroupInviteDialog={this.props.toggleGroupInviteDialog}
           toggleGroupTrashDialog={this.props.toggleGroupTrashDialog}
           openGroupMember={this.props.openGroupMember}
           isPersonal={isPersonal}

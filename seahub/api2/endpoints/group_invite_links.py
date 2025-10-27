@@ -13,7 +13,6 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.group.models import Group, GroupUser, GroupInviteLinkModel
 from seahub.group.utils import is_group_admin_or_owner
-from seahub.settings import ENABLE_ADDRESSBOOK_V2
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +30,6 @@ class GroupInviteLinks(APIView):
         if not group:
             error_msg = 'group not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if ENABLE_ADDRESSBOOK_V2:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to operate department group')
 
         if not is_group_admin_or_owner(group_id, email):
             error_msg = 'Permission denied.'
@@ -55,9 +51,6 @@ class GroupInviteLinks(APIView):
         if not group:
             error_msg = 'group not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if ENABLE_ADDRESSBOOK_V2:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to operate department group')
 
         if not is_group_admin_or_owner(group_id, email):
             error_msg = 'Permission denied.'
@@ -85,9 +78,6 @@ class GroupInviteLink(APIView):
         if not group:
             error_msg = 'group not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if ENABLE_ADDRESSBOOK_V2:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Forbidden to operate department group')
 
         if not is_group_admin_or_owner(group_id, email):
             error_msg = 'Permission denied.'

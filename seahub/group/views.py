@@ -164,7 +164,8 @@ def group_invite(request, token):
     try:
         GroupUser.objects.group_add_member(group_invite_link.group_id, email)
         org_admin_op_detail = {
-            "username": email,
+            'username': email,
+            'group_id': group_invite_link.group_id,
         }
         org_admin_operation.send(sender=None,
             admin_name='',
