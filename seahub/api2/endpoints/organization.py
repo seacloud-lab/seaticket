@@ -55,7 +55,7 @@ class OrganizationMembersView(APIView):
             page = 1
             per_page = 20
         start = (page - 1) * per_page
-        org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix, start, per_page)
+        org_members = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
         member_list = []
         for member in org_members:
             member_info = get_user_info(member.email)

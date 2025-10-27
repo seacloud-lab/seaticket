@@ -1,4 +1,4 @@
-import { isDarkColor } from '@/utils/utils';
+import { isDarkColor } from '@/utils/color-utils';
 import { CellType } from '../constants';
 
 class Column {

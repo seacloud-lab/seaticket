@@ -27,13 +27,6 @@ PERMISSION_CUSTOM = 'custom'
 PERMISSION_ADMIN = 'admin'
 PERMISSION_PREFIX = 'c-'  # custom permission prefix
 
-# datble notification/automation rule run connditions
-RUN_CONDITION_PER_DAY = 'per_day'
-RUN_CONDITION_PER_WEEK = 'per_week'
-RUN_CONDITION_PER_MONTH = 'per_month'
-RUN_CONDITION_PER_UPDATE = 'per_update'
-RUN_CONDITION_LIST = [RUN_CONDITION_PER_DAY, RUN_CONDITION_PER_WEEK, RUN_CONDITION_PER_UPDATE]
-
 DEFAULT_ADMIN = 'default_admin'
 SYSTEM_ADMIN = 'system_admin'
 DAILY_ADMIN = 'daily_admin'

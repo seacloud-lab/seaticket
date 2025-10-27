@@ -209,13 +209,8 @@ INSTALLED_APPS = [
     'seahub.admin_log',
     'seahub.two_factor',
     'seahub.role_permissions',
-    'seahub.work_weixin',
-    'seahub.weixin',
-    'seahub.dingtalk',
     'seahub.project',
     'seahub.organizations',
-    'seahub.org_work_weixin',
-    'seahub.org_dingtalk',
     'seahub.registration',
     'seahub.sysadmin_extra',
 ]
@@ -242,15 +237,6 @@ LDAP_SAML_USE_SAME_UID = False
 # is show user's unit
 IS_SHOW_UNIT = False
 
-# enable work weixin
-ENABLE_WORK_WEIXIN = False
-
-# enable dingtalk
-ENABLE_DINGTALK = False
-
-# enable weixin
-ENABLE_WEIXIN = False
-
 ENABLE_LDAP = False
 LDAP_USER_FIRST_NAME_ATTR = ''
 LDAP_USER_LAST_NAME_ATTR = ''
@@ -269,8 +255,6 @@ LDAP_GROUP_MEMBER_UID_ATTR = 'uid'
 LDAP_USER_OBJECT_CLASS = 'person'
 LDAP_GROUP_OBJECT_CLASS = 'group'
 LDAP_GROUP_UUID_ATTR = 'objectGUID'
-SYNC_GROUP_AS_DEPARTMENT = False
-LDAP_DEPARTMENT_NAME_ATTR = ''
 
 # ldap sasl auth
 ENABLE_SASL = False
@@ -284,20 +268,6 @@ LOGOUT_URL = '/accounts/logout/'
 LOGOUT_REDIRECT_URL = None
 
 ACCOUNT_ACTIVATION_DAYS = 7
-
-# token length for the share link
-SHARE_LINK_TOKEN_LENGTH = 20
-
-# min/max expire days for a share link
-SHARE_LINK_EXPIRE_DAYS_MIN = 0 # 0 means no limit
-SHARE_LINK_EXPIRE_DAYS_MAX = 0 # 0 means no limit
-
-# default expire days should be
-# greater than or equal to MIN and less than or equal to MAX
-SHARE_LINK_EXPIRE_DAYS_DEFAULT = 0
-
-# mininum length for the password of a share link
-SHARE_LINK_PASSWORD_MIN_LENGTH = 8
 
 # mininum length for user's password
 USER_PASSWORD_MIN_LENGTH = 6
@@ -322,11 +292,6 @@ ENABLE_DELETE_ACCOUNT = True
 ENABLE_UPDATE_USER_INFO = True
 
 ENABLE_CONVERT_TO_TEAM_ACCOUNT = False
-
-# Enable or disable org department
-ENABLE_ORG_DEPARTMENT = True
-
-ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL = False
 
 # Enable or disable sharing to all groups
 ENABLE_SHARE_TO_ALL_GROUPS = False
@@ -490,22 +455,15 @@ REJECT_REGISTRATION_ORG_RE_STR = []
 ENABLE_SLIDE_CAPTCHA = False
 SLIDE_CAPTCHA_IMAGE_URL = ''
 
-# addressbook_v2
-ENABLE_ADDRESSBOOK_V2 = False
-ENABLE_DEPARTMENT_ADMIN_MANAGE_MEMBER_BASES = False
-
 # rate limit
 REQUEST_RATE_LIMIT_NUMBER = 3
 REQUEST_RATE_LIMIT_PERIOD = 60  # seconds
-
-# custom colors，example [{'color': '#FDFF55', 'text_color': '#212529'}, {'color': '#F5C043', 'text_color': '#FFFFFF'}]
-CUSTOM_COLORS = []
 
 # For security consideration, please set to match the host/domain of your site, e.g., ALLOWED_HOSTS = ['.example.com'].
 # Please refer https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts for details.
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ["https://*", "http://*", "chrome-extension://*"]
+CSRF_TRUSTED_ORIGINS = ["https://*", "http://*"]
 
 # Logging
 LOG_LEVEL = os.environ.get('SEAQA_LOG_LEVEL', '"INFO"')
@@ -577,12 +535,6 @@ ENABLE_USER_SET_CONTACT_EMAIL = False
 ENABLE_USER_SET_NAME = True
 
 ENABLE_SHOW_ID_IN_ORG_WHEN_SEARCH_USER = False
-
-####################
-# Guest Invite     #
-####################
-ENABLE_GUEST_INVITATION = False
-INVITATION_ACCEPTER_BLACKLIST = []
 
 ########################
 # Security Enhancements #
@@ -661,7 +613,7 @@ PROJECT_FILE_MAX_SIZE = 25  # 25MB
 
 # PWA
 PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
-PWA_APP_NAME = 'SeaQA'
+PWA_APP_NAME = 'SeaSearch'
 PWA_APP_DESCRIPTION = "Online rich form application"
 PWA_APP_THEME_COLOR = '#0A0302'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'
@@ -820,12 +772,9 @@ CONSTANCE_CONFIG = {
     'USER_PASSWORD_MIN_LENGTH': (USER_PASSWORD_MIN_LENGTH, ''),
     'USER_PASSWORD_STRENGTH_LEVEL': (USER_PASSWORD_STRENGTH_LEVEL, ''),
 
-    'SHARE_LINK_TOKEN_LENGTH': (SHARE_LINK_TOKEN_LENGTH, ''),
-    'SHARE_LINK_PASSWORD_MIN_LENGTH': (SHARE_LINK_PASSWORD_MIN_LENGTH, ''),
     'ENABLE_TWO_FACTOR_AUTH': (ENABLE_TWO_FACTOR_AUTH, ''),
 
     'TEXT_PREVIEW_EXT': (TEXT_PREVIEW_EXT, ''),
-    'ENABLE_SHARE_TO_ALL_GROUPS': (ENABLE_SHARE_TO_ALL_GROUPS, ''),
 
     'SITE_NAME': (SITE_NAME, ''),
     'SITE_TITLE': (SITE_TITLE, ''),
@@ -841,7 +790,7 @@ if ENABLE_REMOTE_USER_AUTHENTICATION:
     MIDDLEWARE.append('seahub.auth.middleware.SeafileRemoteUserMiddleware')
     AUTHENTICATION_BACKENDS += ('seahub.auth.backends.SeafileRemoteUserBackend',)
 
-if ENABLE_CUSTOM_OAUTH or ENABLE_OAUTH or ENABLE_WORK_WEIXIN or ENABLE_DINGTALK or ENABLE_WEIXIN:
+if ENABLE_CUSTOM_OAUTH or ENABLE_OAUTH:
     AUTHENTICATION_BACKENDS += ('seahub.oauth.backends.OauthRemoteUserBackend',)
 
 if ENABLE_SAML or ENABLE_MULTI_SAML:

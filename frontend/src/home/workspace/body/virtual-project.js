@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon, toaster } from '../../../components';
-import { seaQAAPI } from '../../../api/web-api';
+import { Icon, toaster } from '@/components';
+import homeAPI from '../../api';
 import Base from '../../models/base';
-import { Utils, validateName } from '../../../utils/utils';
+import { Utils } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
 import { ProjectSettingPopover } from '../../popover';
 import { PROJECT_BACKGROUND_COLOR_MAP, DEFAULT_COLOR } from '../constants';
+import userAPI from '@/api/user-api';
 
 const gettext = window.gettext;
 
@@ -32,13 +34,13 @@ class VirtualProject extends React.Component {
 
   componentDidMount() {
     let baseCreated = [];
-    seaQAAPI.getAccountInfo().then((res) => {
+    userAPI.getAccountInfo().then((res) => {
       let obj = {};
       obj.value = 'personal';
       obj.email = res.data.email;
       obj.label = 'Personal';
       baseCreated.push(obj);
-      seaQAAPI.listGroups().then((res) => {
+      homeAPI.listGroups().then((res) => {
         for (let i = 0 ; i < res.data.length; i++) {
           let obj = {};
           obj.value = res.data[i].id;
@@ -77,7 +79,7 @@ class VirtualProject extends React.Component {
       }
     }
     this.setState({ isCreatingProject: true });
-    seaQAAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
+    homeAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
       let newProject = new Base(res.data.project);
       this.props.createBlankProject(newProject);
       this.setState({ isCreatingProject: false });

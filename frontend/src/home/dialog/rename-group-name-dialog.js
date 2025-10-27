@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Label } from 'reactstrap';
-import { gettext } from '../../constants/config';
-import { seaQAAPI } from '../../api/web-api';
-import { Utils } from '../../utils/utils';
-import { ModalHeader, toaster } from '../../components';
+import { gettext } from '@/constants/config';
+import homeAPI from '../api';
+import { Utils } from '@/utils/utils';
+import { ModalHeader, toaster } from '@/components';
 
 const propTypes = {
   groupID: PropTypes.number.isRequired,
@@ -39,7 +39,7 @@ class RenameGroupNameDialog extends React.Component {
   renameGroup = () => {
     let name = this.state.newGroupName.trim();
     if (name) {
-      seaQAAPI.renameGroup(this.props.groupID, name).then((res) => {
+      homeAPI.renameGroup(this.props.groupID, name).then((res) => {
         this.props.renameGroupName();
       }).catch(error => {
         let errMsg = Utils.getErrorMsg(error, true);

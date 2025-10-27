@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { toaster, ModalHeader, Icon } from '../../../components';
-import { gettext } from '../../../constants/config';
-import { seaQAAPI } from '../../../api/web-api';
-import { Utils } from '../../../utils/utils';
+import { toaster, ModalHeader, Icon } from '@/components';
+import { gettext } from '@/constants/config';
+import homeAPI from '../../api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -28,7 +28,7 @@ class GroupInviteMembersDialog extends React.Component {
   }
 
   listInviteLinks = () => {
-    seaQAAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
+    homeAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
       this.setState({ inviteList: res.data.group_invite_link_list });
     }).catch(error => {
       this.onError(error);
@@ -36,7 +36,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   addInviteLink = () => {
-    seaQAAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
+    homeAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);
@@ -44,7 +44,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   deleteLink = (token) => {
-    seaQAAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
+    homeAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);

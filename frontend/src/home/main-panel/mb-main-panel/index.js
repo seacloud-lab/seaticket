@@ -4,12 +4,12 @@ import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
 import { TabBar } from '../../../components';
 import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
-import { seaQAAPI } from '../../../api/web-api.js';
+import homeAPI from '../../api.js';
 import Workspace from '../../models/workspace.js';
 import { gettext, siteRoot } from '../../../constants';
 import MobileMine from '../../mobile/mobile-mine';
 import MobileHeader from '../../mobile/mobile-header';
-import { Icon } from '../../../components';
+import { Icon } from '@/components';
 
 import './index.css';
 
@@ -52,7 +52,7 @@ class MobileMainPanel extends React.Component {
   };
 
   loadWorkspaceList = () => {
-    seaQAAPI.listWorkspaces().then(res => {
+    homeAPI.listWorkspaces().then(res => {
       let workspaceList = res.data.workspace_list.map(item => {
         return new Workspace(item);
       });
@@ -87,7 +87,7 @@ class MobileMainPanel extends React.Component {
     let newWorkspaceList = this.state.workspaceList.slice();
     for (let workspace of newWorkspaceList) {
       if (project.workspace_id === workspace.id) {
-        workspace.project_list.push(project);
+        workspace.projects.push(project);
         break;
       }
     }
@@ -98,7 +98,7 @@ class MobileMainPanel extends React.Component {
     let newWorkspaceList = this.state.workspaceList.slice();
     newWorkspaceList = newWorkspaceList.map(item => {
       if (project.workspace_id === item.id) {
-        item.project_list.push(project);
+        item.projects.push(project);
       }
       return item;
     });
@@ -109,33 +109,11 @@ class MobileMainPanel extends React.Component {
     let workspaceList = this.state.workspaceList.slice(0);
     for (let i = 0; i < workspaceList.length; i++) {
       if (workspaceList[i].id === deletedWorkspaceID) {
-        workspaceList[i].project_list = newProjectList;
+        workspaceList[i].projects = newProjectList;
         break;
       }
     }
     this.setState({ workspaceList });
-  };
-
-  onAddGroupSharedProject = (groupID, table) => {
-    let workspaceList = this.state.workspaceList.slice();
-    for (let workspace of workspaceList) {
-      if (workspace.group_id === groupID) {
-        workspace.group_shared_projects.push(table);
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
-  };
-
-  onLeaveGroupSharedProject = (groupID, table) => {
-    let workspaceList = this.state.workspaceList.slice(0);
-    for (let i = 0; i < workspaceList.length; i++) {
-      if (workspaceList[i].group_id === groupID) {
-        workspaceList[i].group_shared_projects = workspaceList[i].group_shared_projects.filter((item) => {return item.id !== table.id;});
-        break;
-      }
-    }
-    this.setState({ workspaceList: workspaceList });
   };
 
   onSelectCurrentTab = (selectedTab) => {
@@ -155,8 +133,6 @@ class MobileMainPanel extends React.Component {
           onDeleteGroup={this.onDeleteGroup}
           onDeleteProject={this.onDeleteProject}
           onCopyProject={this.onCopyProject}
-          onAddGroupSharedProject={this.onAddGroupSharedProject}
-          onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
           onAddProject={this.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
@@ -169,8 +145,6 @@ class MobileMainPanel extends React.Component {
           onDeleteGroup={this.onDeleteGroup}
           onDeleteProject={this.onDeleteProject}
           onCopyProject={this.onCopyProject}
-          onAddGroupSharedProject={this.onAddGroupSharedProject}
-          onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
           onAddProject={this.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />
@@ -183,8 +157,6 @@ class MobileMainPanel extends React.Component {
           onDeleteGroup={this.onDeleteGroup}
           onDeleteProject={this.onDeleteProject}
           onCopyProject={this.onCopyProject}
-          onAddGroupSharedProject={this.onAddGroupSharedProject}
-          onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
           onAddProject={this.onAddProject}
           updateSidePanelGroups={this.props.updateSidePanelGroups}
         />

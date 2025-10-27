@@ -14,8 +14,6 @@ from seahub import auth
 from seahub.base.accounts import User
 from seahub.base.sudo_mode import update_sudo_mode_ts
 from seahub.profile.models import Profile
-from seahub.utils.file_size import get_quota_from_string
-from seahub.utils.user_permissions import get_user_role
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

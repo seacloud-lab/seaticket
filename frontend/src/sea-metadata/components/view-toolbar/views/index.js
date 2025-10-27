@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import ViewItem from './view-item';
 import AllViews from './all-views';
 import context from '@/sea-metadata/context';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 

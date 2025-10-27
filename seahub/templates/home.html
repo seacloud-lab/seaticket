@@ -15,27 +15,6 @@
 {% endif %}
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
-{% if enable_org_dingtalk %}
-<meta name="wpk-bid" content="dta_2_108878">
-<script>
-    var isDingtalk = navigator && /DingTalk/.test(navigator.userAgent);
-    var isProductEnv = window && window.location && window.location.host && window.location.host.indexOf('//127.0.0.1')===-1 && window.location.host.indexOf('//localhost')===-1 && window.location.host.indexOf('//192.168.')===-1;
-    if (isProductEnv) {
-        !(function(c, i, e, b){
-            var h=i.createElement("script");
-            var f=i.getElementsByTagName("script")[0];
-            h.type="text/javascript";
-            h.crossorigin=true;
-            h.onload = function(){
-                c[b]||(c[b] = new c.wpkReporter({bid: "dta_2_108878"}));
-                c[b].installAll()
-            };
-            f.parentNode.insertBefore(h,f);
-            h.src=e
-        })(window, document, "https://g.alicdn.com/woodpeckerx/jssdk??wpkReporter.js", "__wpk");
-    }
-</script>
-{% endif %}
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?v={{ version }}" />

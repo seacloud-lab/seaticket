@@ -28,11 +28,8 @@ from seahub.organizations.signals import org_created
 from seahub.organizations.decorators import org_staff_required
 from seahub.organizations.forms import OrgRegistrationForm, SmsOrgRegistrationForm
 from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO
-from seahub.organizations.utils import get_or_create_invitation_link, \
-    transfer_user_to_org, get_org_corp_bind_type, can_org_use_saml
+from seahub.organizations.utils import transfer_user_to_org, can_org_use_saml
 from seahub.organizations.models import OrgSettings, Organization
-from seahub.org_work_weixin.utils import org_work_weixin_check
-from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.profile.models import Profile
 from seahub.utils.ip import get_remote_ip
@@ -267,7 +264,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             login(request, new_user)
 
             if not redirect_to:
-                response = HttpResponseRedirect(reverse('project'))
+                response = HttpResponseRedirect(reverse('projects_list'))
             else:
                 response = HttpResponseRedirect(redirect_to)
 
@@ -288,7 +285,7 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('project'),
+        'redirect_to': redirect_to or reverse('projects_list'),
     })
 
 
@@ -306,10 +303,10 @@ def render_sms_org_registration_error(request, redirect_to, error_msg, send_butt
     service_url_scheme = up.scheme
     service_url_remaining = up.netloc + up.path
     return render(request, 'organizations/sms_org_register.html', {
-        'ENABLE_SLIDE_CAPTCHA': ENABLE_SLIDE_CAPTCHA,
+        'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
         'form': SmsOrgRegistrationForm(),
-        REDIRECT_FIELD_NAME: redirect_to or reverse('project'),
-        'redirect_to': redirect_to or reverse('project'),
+        REDIRECT_FIELD_NAME: redirect_to or reverse('projects_list'),
+        'redirect_to': redirect_to or reverse('projects_list'),
         'login_bg_image_path': get_login_bg_image_path(),
         'error_msg': error_msg,
         'send_button_disabled': send_button_disabled,
@@ -317,7 +314,6 @@ def render_sms_org_registration_error(request, redirect_to, error_msg, send_butt
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('project'),
     })
 
 
@@ -362,7 +358,7 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
             if url_prefix is None:
                 messages.error(request, "Failed to create organization account, please try again later.")
                 return render(request, 'organizations/sms_org_register.html', {
-                    'ENABLE_SLIDE_CAPTCHA': ENABLE_SLIDE_CAPTCHA,
+                    'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
                     'form': form,
                     'login_bg_image_path': login_bg_image_path,
                     'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
@@ -479,7 +475,7 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                 clear_send_sms_attempts(phone, ip)
 
                 if not redirect_to:
-                    response = HttpResponseRedirect(reverse('project'))
+                    response = HttpResponseRedirect(reverse('projects_list'))
                 else:
                     response = HttpResponseRedirect(redirect_to)
 
@@ -496,14 +492,14 @@ def sms_org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
     strong_pwd_required = USER_STRONG_PASSWORD_REQUIRED
 
     return render(request, 'organizations/sms_org_register.html', {
-        'ENABLE_SLIDE_CAPTCHA': ENABLE_SLIDE_CAPTCHA,
+        'enable_slide_captcha': ENABLE_SLIDE_CAPTCHA,
         'form': form,
         'login_bg_image_path': login_bg_image_path,
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'redirect_to': redirect_to or reverse('project'),
-        redirect_field_name: redirect_to or reverse('project'),
+        'redirect_to': redirect_to or reverse('projects_list'),
+        redirect_field_name: redirect_to or reverse('projects_list'),
         'error_msg': error_msg,
         'send_button_disabled': send_button_disabled,
         'phone': phone,
@@ -551,7 +547,6 @@ def org_transfer(request, **kwargs):
 def react_fake_view(request, **kwargs):
     group_id = kwargs.get('group_id', '')
     org = request.user.org
-    invitation_link = get_or_create_invitation_link(org.org_id)
     enable_org_logo = ENABLE_ORG_LOGO and request.user.permissions.can_use_advanced_customization()
     can_use_saml = can_org_use_saml(org)
 
@@ -563,24 +558,8 @@ def react_fake_view(request, **kwargs):
         'enable_multi_saml': ENABLE_MULTI_SAML,
         'can_use_saml': can_use_saml,
         'group_id': group_id,
-        'invitation_link': invitation_link if invitation_link else '',
         'display_two_factor_auth': getattr(config, 'ENABLE_TWO_FACTOR_AUTH', False),
-        'enable_org_department': settings.ENABLE_ORG_DEPARTMENT,
         'enable_org_logo': enable_org_logo,
-        'enable_org_admin_invite_via_email': settings.ENABLE_ORG_ADMIN_INVITE_VIA_EMAIL,
-        'enable_slide_captcha': settings.ENABLE_SLIDE_CAPTCHA,
-        'enable_org_work_weixin': org_work_weixin_check(),
-        'enable_org_dingtalk': org_dingtalk_check(),
-        'org_corp_bind_type': get_org_corp_bind_type(org.org_id),
         'two_factor_auth_enabled': has_two_factor_auth(),
         'trash_clean_expire_days': settings.TRASH_CLEAN_AFTER_DAYS,
-        'enable_addressbook_v2': settings.ENABLE_ADDRESSBOOK_V2
         })
-
-
-@login_required
-@org_staff_required
-def react_fake_department_view(request, **kwargs):
-    if not settings.ENABLE_ORG_DEPARTMENT:
-        return render_error(request, _('Feature is not enabled.'))
-    return react_fake_view(request, **kwargs)

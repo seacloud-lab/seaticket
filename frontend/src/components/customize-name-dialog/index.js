@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Alert, Input } from 'reactstrap';
-import { gettext } from '../../constants';
-import { Utils, validateName } from '../../utils/utils';
+import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
 import ModalHeader from '../modal-header';
 
 const CustomizeNameDialog = ({

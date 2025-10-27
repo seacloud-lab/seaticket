@@ -8,6 +8,8 @@ import ProjectSearcher from '../search/project-searcher';
 import { QUERY_TYPE } from '../search/project-searcher/constant';
 import { IconButton } from '../../components';
 
+import './index.css';
+
 const gettext = window.gettext;
 const controlKey = isMac() ? '⌘' : 'Ctrl';
 

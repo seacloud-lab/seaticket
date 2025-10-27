@@ -1,10 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Popover } from 'reactstrap';
-import { gettext } from '../../../constants';
+import { gettext } from '@/constants';
 import Loading from '../../loading';
-import { seaQAAPI } from '../../../api/web-api';
-import User from '../../../models/user';
+import userAPI from '@/api/user-api';
+import User from '@/models/user';
 
 import './index.css';
 
@@ -29,7 +29,7 @@ class UserInfoPopover extends React.Component {
       if (!this.state.userInfo) {
         this.setState({ isLoading: true });
         let userEmail = nextProps.userEmail;
-        seaQAAPI.getUserCommonInfo(userEmail).then(res => {
+        userAPI.getUserCommonInfo(userEmail).then(res => {
           const userInfo = new User(res.data);
           this.setState({ userInfo: userInfo, isLoading: false });
         }).catch(error => {

@@ -227,6 +227,15 @@ class ProjectsManager(models.Manager):
         except self.model.DoesNotExist:
             return False
 
+    def search_project_count_in_org(self, org_id, query_str):
+        workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(
+                workspace_id__in=workspace_ids, deleted=False, uuid=query_str).count()
+        else:
+            return super(ProjectsManager, self).filter(
+                workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).count()
+    
     def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):
@@ -235,6 +244,18 @@ class ProjectsManager(models.Manager):
         else:
             return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).order_by('id')[start:end]
+        
+    def search_projects_count(self, query_str):
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).count()
+        else:
+            return super(ProjectsManager, self).filter(deleted=False, name__icontains=query_str).count()
+        
+    def search_projects(self, query_str, start, end):
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).order_by('id')[start:end]
+        else:
+            return super(ProjectsManager, self).filter(deleted=False, name__icontains=query_str).order_by('id')[start:end]
 
     def get_non_duplicated_name(self, name, workspace_id):
         projects = super(ProjectsManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)

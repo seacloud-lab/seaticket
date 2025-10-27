@@ -1,23 +1,19 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { toaster, Loading, CommonOperationConfirmationDialog } from '../../components';
-import { seaQAAPI } from '../../api/web-api';
+import { toaster, Loading, CommonOperationConfirmationDialog } from '@/components';
+import homeAPI from '../api';
 import ManageMembersDialog from '../dialog/manage-members-dialog';
 import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
-import GroupInviteMembersDialog from '../dialog/group-invite-members-dialog';
-import { Utils } from '../../utils/utils';
+import { Utils } from '@/utils/utils';
 import { compareTwoString } from '../utils/compare-two-string';
 import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import TransferGroupDialog from '../dialog/transfer-group-dialog';
-import MobileShareProject from '../mobile/mobile-share-project';
-import ModalPortal from '../../components/modal-portal';
+import ModalPortal from '@/components/modal-portal';
 import RenameProjectView from '../mobile/rename-project-view';
 import Header from './header';
 import Body from './body';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
-import DepartmentDetailDialog from '../dialog/department-detail-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
-import WorkspaceDepartmentV2MemberDialog from '../dialog/workspace-department-v2-member-dialog';
 
 const gettext = window.gettext;
 const username = window.app.pageOptions.username;
@@ -28,8 +24,6 @@ const propTypes = {
   onDeleteGroup: PropTypes.func,
   onCopyProject: PropTypes.func.isRequired,
   onDeleteProject: PropTypes.func.isRequired,
-  onLeaveGroupSharedProject: PropTypes.func,
-  onAddGroupSharedProject: PropTypes.func,
   onAddProject: PropTypes.func,
   loadWorkspaceList: PropTypes.func,
   emptyTip: PropTypes.object
@@ -44,10 +38,8 @@ class Workspace extends React.Component {
       isDataLoading: true,
       isItemFreezed: false,
       isShowDeleteDialog: false,
-      isShowSharedDialog: false,
       isShowRenameTableDialog: false,
       isShowManageMembersDialog: false,
-      isShowDepartmentDetailDialog: false,
       isShowCopyDTable: false,
       isOwner: false,
       isAdmin: false,
@@ -58,9 +50,7 @@ class Workspace extends React.Component {
       isShowTemplateList: false,
       isCreatedTemplateLoading: false,
       isShowVirtualProject: false,
-      isShowInviteDialog: false,
       isShowTrashDialog: false,
-      isShowMobileShareProject: false,
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
       isParsing: false,
@@ -176,9 +166,9 @@ class Workspace extends React.Component {
   };
 
   getSortedWorkspaceContent = (workspace) => {
-    let { project_list = [] } = workspace || {};
+    let { projects = [] } = workspace || {};
     return {
-      projectList: project_list.sort((a, b) => compareTwoString(a.name, b.name)),
+      projectList: projects.sort((a, b) => compareTwoString(a.name, b.name)),
     };
   };
 
@@ -204,21 +194,6 @@ class Workspace extends React.Component {
     this.onDeleteProjectToggle();
   };
 
-  // onShareProjectToggle = (project) => {
-  //   this.setState({
-  //     isShowSharedDialog: !this.state.isShowSharedDialog,
-  //     currentProject: project
-  //   });
-  //   this.onUnfreezedItem();
-  // };
-
-  onMobileShareProjectToggle = (project) => {
-    this.setState({
-      isShowMobileShareProject: !this.state.isShowMobileShareProject,
-      currentProject: project
-    });
-  };
-
   onMobileUpdateProjectToggle = (project) => {
     this.setState({
       isShowMobileRenameView: !this.state.isShowMobileRenameView,
@@ -226,15 +201,8 @@ class Workspace extends React.Component {
     });
   };
 
-  hideMobileShareProject = (project) => {
-    this.setState({
-      isShowMobileShareProject: false,
-      currentProject: project
-    });
-  };
-
   onCreateProject = (name, owner, icon, bgColor) => {
-    seaQAAPI.createProject(name, owner, icon, bgColor).then((res) => {
+    homeAPI.createProject(name, owner, icon, bgColor).then((res) => {
       this.state.projectList.push(res.data.project);
       this.setState({
         projectList: this.state.projectList
@@ -267,7 +235,7 @@ class Workspace extends React.Component {
 
   deleteProject = (projectName) => {
     let workspaceID = this.props.workspace.id;
-    seaQAAPI.deleteProject(workspaceID, projectName).then(() => {
+    homeAPI.deleteProject(workspaceID, projectName).then(() => {
       let projectList = this.state.projectList.filter(project => {
         return project.name !== projectName;
       });
@@ -279,7 +247,7 @@ class Workspace extends React.Component {
   };
 
   onUpdateProject = (projectName, updated) => {
-    seaQAAPI.updateProject(this.props.workspace.id, projectName, updated).then((res) => {
+    homeAPI.updateProject(this.props.workspace.id, projectName, updated).then((res) => {
       const updateProject = res.data.project;
       let projectList = this.state.projectList.map((project) => {
         if (project.name === projectName) {
@@ -307,14 +275,8 @@ class Workspace extends React.Component {
     });
   };
 
-  toggleDepartmentDetailDialog = () => {
-    this.setState({
-      isShowDepartmentDetailDialog: !this.state.isShowDepartmentDetailDialog
-    });
-  };
-
   onProjectManageMembers = () => {
-    seaQAAPI.getGroup(this.props.workspace.group_id).catch(error => {
+    homeAPI.getGroup(this.props.workspace.group_id).catch(error => {
       this.handleError(error);
     });
   };
@@ -359,7 +321,7 @@ class Workspace extends React.Component {
       toaster.danger(gettext('Cannot delete group with projects'));
       return;
     }
-    seaQAAPI.deleteGroup(groupID).then(() => {
+    homeAPI.deleteGroup(groupID).then(() => {
       toaster.success(gettext('Group deleted'));
       this.props.onDeleteGroup(groupID);
     }).catch((error) => {
@@ -369,25 +331,11 @@ class Workspace extends React.Component {
 
   onLeaveGroup = () => {
     let groupID = this.props.workspace.group_id;
-    seaQAAPI.deleteGroupMember(groupID, username).then((res) => {
+    homeAPI.deleteGroupMember(groupID, username).then((res) => {
       toaster.success(gettext('Successfully left group'));
       this.props.onDeleteGroup(groupID);
     }).catch(error => {
       this.handleError(error);
-    });
-  };
-
-  onLeaveGroupSharedProject = (project) => {
-    let { workspace } = this.props;
-    seaQAAPI.deleteProjectGroupShare(project.workspace_id, project.name, workspace.group_id).then(() => {
-      this.props.onLeaveGroupSharedProject(workspace.group_id, project);
-    }).catch((error) => {
-      if (error.response && error.response.status === 404) {
-        this.props.onLeaveGroupSharedProject(workspace.group_id, project);
-      } else {
-        let errMessage = Utils.getErrorMsg(error);
-        toaster.danger(errMessage);
-      }
     });
   };
 
@@ -414,12 +362,6 @@ class Workspace extends React.Component {
     }
   };
 
-  toggleGroupInviteDialog = () => {
-    this.setState({
-      isShowInviteDialog: !this.state.isShowInviteDialog
-    });
-  };
-
   toggleGroupTrashDialog = () => {
     this.setState({
       isShowTrashDialog: !this.state.isShowTrashDialog
@@ -442,19 +384,13 @@ class Workspace extends React.Component {
 
   render() {
     const { workspace } = this.props;
-    let groupSharedProjects = [];
     const isPersonal = workspace.type === 'personal';
     let { projectList, isItemFreezed, isDataLoading, isOwner, isAdmin } = this.state;
     if (isDataLoading) {
       return <Loading />;
     }
-    if (workspace.type === 'group') {
-      groupSharedProjects = workspace.group_shared_projects;
-    }
 
     const isOwnerOrAdmin = !isPersonal && (isOwner || isAdmin);
-
-    const isDepartV2 = !isPersonal && workspace.department_id;
 
     return (
       <Fragment>
@@ -473,7 +409,6 @@ class Workspace extends React.Component {
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
-            toggleGroupInviteDialog={this.toggleGroupInviteDialog}
             toggleGroupTrashDialog={this.toggleGroupTrashDialog}
             showVirtualProject={this.showVirtualProject}
           />
@@ -485,12 +420,10 @@ class Workspace extends React.Component {
             isAdmin={isAdmin}
             workspace={workspace}
             projectList={projectList}
-            groupSharedProjects={groupSharedProjects}
             isItemFreezed={isItemFreezed}
             isShowVirtualProject={this.state.isShowVirtualProject}
             createBlankProject={this.createBlankProject}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
-            onShareProjectToggle={this.onShareProjectToggle}
             onDeleteProjectToggle={this.onDeleteProjectToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onFreezedItem={this.onFreezedItem}
@@ -498,9 +431,7 @@ class Workspace extends React.Component {
             onCopyProjectToggle={this.onCopyProjectToggle}
             onAddProject={this.props.onAddProject}
             onUpdateProject={this.onUpdateProject}
-            onMobileShareProjectToggle={this.onMobileShareProjectToggle}
             onMobileUpdateProjectToggle={this.onMobileUpdateProjectToggle}
-            onLeaveGroupSharedProject={this.onLeaveGroupSharedProject}
             openGroupMember={this.openGroupMember}
             onRenameGroupToggle={this.onRenameGroupToggle}
             toggleManageMembersDialog={this.toggleManageMembersDialog}
@@ -540,18 +471,6 @@ class Workspace extends React.Component {
             isOwner={this.state.isOwner}
             isAdmin={this.state.isAdmin}
             loadWorkspaceList={this.props.loadWorkspaceList}
-            toggleDepartmentDetailDialog={this.toggleDepartmentDetailDialog}
-          />
-        }
-        {this.state.isShowDepartmentDetailDialog &&
-          <DepartmentDetailDialog
-            groupID={workspace.group_id}
-            toggleManageMembersDialog={this.toggleManageMembersDialog}
-            isOwner={this.state.isOwner}
-            isAdmin={this.state.isAdmin}
-            loadWorkspaceList={this.props.loadWorkspaceList}
-            toggleDepartmentDetailDialog={this.toggleDepartmentDetailDialog}
-            usedFor='add_group_member'
           />
         }
         {this.state.isShowTransferGroupDialog &&
@@ -578,32 +497,12 @@ class Workspace extends React.Component {
             workspace={this.props.workspace}
           />
         )}
-        {this.state.isShowInviteDialog && (
-          <GroupInviteMembersDialog
-            workspace={workspace}
-            toggleGroupInviteDialog={this.toggleGroupInviteDialog}
-          />
-        )}
-        {this.state.isShowGroupMember && !isDepartV2 && (
+        {this.state.isShowGroupMember && (
           <WorkspaceMemberDialog
             workspace={workspace}
             onGroupMemberToggle={this.onGroupMemberToggle}
           />
         )}
-        {this.state.isShowGroupMember && isDepartV2 && (
-          <WorkspaceDepartmentV2MemberDialog
-            workspace={workspace}
-            onGroupMemberToggle={this.onGroupMemberToggle}
-          />
-        )}
-        {this.state.isShowMobileShareProject &&
-          <ModalPortal>
-            <MobileShareProject
-              hideMobileShareProject={this.hideMobileShareProject}
-              currentProject={this.state.currentProject}
-            />
-          </ModalPortal>
-        }
         {this.state.isShowMobileRenameView &&
           <ModalPortal>
             <RenameProjectView

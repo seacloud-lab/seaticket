@@ -34,13 +34,8 @@ logger = logging.getLogger(__name__)
 def get_org_group_info(group):
     group_info = dict()
     group_info['group_name'] = group.group_name
-    if group.parent_group_id == 0:
-        group_info['creator_name'] = email2nickname(group.creator_name)
-        group_info['creator_email'] = group.creator_name
-    else:
-        # Explicit set owner for department
-        group_info['creator_name'] = 'system admin'
-        group_info['creator_email'] = 'system admin'
+    group_info['creator_name'] = email2nickname(group.creator_name)
+    group_info['creator_email'] = group.creator_name
     group_info['created_at'] = timestamp_to_isoformat_timestr(group.timestamp)
     group_info['group_id'] = group.group_id
 

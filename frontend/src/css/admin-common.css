@@ -5,16 +5,6 @@
   min-height: 0;
 }
 
-.org-admin .info-item-heading,
-.sys-admin .info-item-heading {
-  font-size: 15px;
-  font-weight: normal;
-  padding-bottom: 0.2em;
-  border-bottom: 1px solid #eee;
-  margin: 24px 0 0.7em;
-  color: inherit;
-}
-
 .org-admin .side-nav-con svg.sea-qa-icon-svg,
 .sys-admin .side-nav-con svg.sea-qa-icon-svg {
   height: 20px;
@@ -52,6 +42,8 @@
 .sys-admin .main-panel .nav .nav-item .nav-link {
   font-size: 16px;
   border-bottom: 2px solid transparent;
+  line-height: 38px;
+  margin: 0 12px;
 }
 
 .org-admin .main-panel .nav .nav-item .nav-link.active,
@@ -98,152 +90,24 @@
   height: 36px;
 }
 
-.org-project-icon {
+.admin-project-icon {
   padding-left: 10px;
 }
 
-.org-info-content {
+/* admin info */
+.sea-qa-admin-info-center .cur-view-content {
   padding: 0rem 1rem;
   background-color: #f5f5f5;
   flex: 1 1;
   overflow: auto;
 }
 
-.org-info-content .info-header-content {
+.sea-qa-admin-info-center .info-header-content {
   height: 106px;
+  flex-shrink: 0;
 }
 
-.info-header-content .info-header-id,
-.info-header-content .info-header-name {
-  width: calc(50% - 5px);
-  background-color: #fff;
-  border-radius: 5px;
-  border: 1px solid #e4e4e4;
-}
-
-.info-header-content .info-header-id img,
-.info-header-content .info-header-name img {
-  width: 46px;
-  height: 46px;
-  margin: 30px 0 0 30px;
-}
-
-.info-header-content .id-content,
-.info-header-content .name-content {
-  width: 70%;
-  height: 50%;
-  margin: 28px 0 0 15px;
-}
-
-.info-header-content .id-content p,
-.info-header-content .name-content p {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.info-header-content .id-content span,
-.info-header-content .name-content span {
-  font-size: 14px;
-}
-
-.org-info-content .info-user-content {
-  height: 180px;
-  background: #fff;
-  border-radius: 5px;
-  border: 1px solid #e4e4e4;
-}
-
-.info-user-content .user-content-detail {
-  flex-direction: column;
-  width: calc(100% / 3);
-}
-
-.info-user-content .user-content-detail p:first-child {
-  font-size: 16px;
-  font-weight: 500;
-  margin-top: 45px;
-}
-
-.info-user-content .user-content-detail p:last-child {
-  font-size: 36px;
-  font-weight: 500;
-}
-
-.org-info-content .used-storage-content {
-  height: 180px;
-}
-
-.used-storage-content .used-space {
-  width: calc(50% - 5px);
-  flex-direction: column;
-  background-color: #fff;
-  border-radius: 5px;
-  border: 1px solid #e4e4e4;
-}
-
-.used-storage-content .used-space p:first-child {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 30px 0 0 30px;
-}
-
-.used-storage-content .used-space p:nth-child(2) {
-  font-size: 30px;
-  font-weight: 500;
-  margin: 5px 0 0 30px;
-}
-
-.used-storage-content .used-space span {
-  font-size: 13px;
-  font-weight: 400;
-  color: #aaa;
-  margin-left: 30px;
-}
-
-/* mobile */
-@media (max-width: 767px) {
-  .org-info-content .info-header-content {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .info-header-content .info-header-name,
-  .info-header-content .info-header-id {
-    width: 100%;
-    height: 100%;
-    display: inline-flex;
-    background-color: #fff;
-    border-radius: 5px;
-  }
-
-  .info-header-content .info-header-id {
-    margin-top: 10px;
-  }
-
-  .info-header-content .info-header-id img,
-  .info-header-content .info-header-name img {
-    margin: 30px 0 30px 30px;
-  }
-
-  .org-info-content .used-storage-content {
-    height: auto;
-    flex-direction: column;
-  }
-
-  .used-storage-content .used-space {
-    width: 100%;
-  }
-
-  .used-storage-content .used-space span {
-    margin-bottom: 30px;
-  }
-}
-
-/* Process bar style */
-.org-info-content .am-progress-outer {
+.sea-qa-admin-info-center .am-progress-outer {
   height: 6px !important;
   background: #eee;
   margin-left: 30px;
@@ -252,11 +116,13 @@
   margin-top: 1.25rem;
 }
 
-.org-info-content .am-progress-bar {
+.sea-qa-admin-info-center .am-progress-bar {
   height: 6px !important;
   border-radius: 5px;
   background-color: #ED7109;
 }
+
+
 
 .sea-qa-help-icon {
   color: #bdbdbd;
@@ -270,4 +136,35 @@
 
 #org-users table tbody tr {
   height: 42px;
+}
+
+.info-item-heading {
+  border-bottom: 1px solid #eee;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  margin: 24px 0 .7em;
+  padding-bottom: .2em;
+}
+
+.web-setting-icon-btn {
+  font-size: 1rem;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.web-setting-icon-btn-submit {
+  color: green;
+}
+
+.web-setting-icon-btn-cancel {
+  color: #666;
+}
+
+.web-setting-textarea {
+  min-height: 7rem;
+}
+
+.web-setting-label {
+  word-break: break-word;
 }

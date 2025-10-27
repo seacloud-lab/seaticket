@@ -37,10 +37,6 @@ def get_group_info(group, show_size=False):
         "created_at": isoformat_timestr,
         "parent_group_id": group.parent_group_id if is_pro_version() else 0
     }
-    # Explicit set owner for department
-    if group.parent_group_id != 0:
-        group_info['owner'] = 'system admin'
-        group_info['owner_name'] = 'system admin'
 
     return group_info
 

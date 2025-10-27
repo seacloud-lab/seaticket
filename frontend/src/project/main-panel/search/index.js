@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { toaster, EmptyTip, CenteredLoading } from '../../../components';
-import GlobalSearchInput from '../../../components/search-input/global-search-input';
+import { toaster, EmptyTip, CenteredLoading } from '@/components';
+import GlobalSearchInput from '@/components/search-input/global-search-input';
 import { searchAPI, connectionsAPI } from '../../api';
-import { gettext, mediaUrl } from '../../../constants';
-import { Utils } from '../../../utils/utils';
+import { gettext, mediaUrl } from '@/constants';
+import { Utils } from '@/utils/utils';
 import { SearchResult } from './models';
 import Connection from '../connections/models/connection';
 import TopBar from '../top-bar';

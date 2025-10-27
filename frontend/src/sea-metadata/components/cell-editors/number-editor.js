@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Utils, isFunction } from '@/utils/utils';
+import { Utils } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { getNumberDisplayString, replaceNumberNotAllowInput, formatStringToNumber } from '../../utils/column';
 import { KeyCodes } from '@/constants';
 import { DEFAULT_NUMBER_FORMAT } from '../../constants';

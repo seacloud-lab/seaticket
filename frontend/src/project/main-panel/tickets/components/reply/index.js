@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button } from 'reactstrap';
+import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster } from '@/components';
+import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
@@ -128,23 +128,20 @@ const Reply = ({
                   <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn" tag="div">
                     <Icon symbol="more" />
                   </DropdownToggle>
-                  <DropdownMenu
-                    className="sea-qa-dropdown-menu dropdown-menu my-1 mr-2 position-fixed"
-                    modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
-                  >
+                  <CustomizeDropdownMenu fixed={true} className="my-1 mr-2">
                     {onModify && (
-                      <DropdownItem onClick={openEditor}>
-                        <Icon symbol="rename" className="item-icon" />
+                      <CustomizeDropdownItem onClick={openEditor}>
+                        <CustomizeDropdownItem.Icon symbol="rename" />
                         {gettext('Edit')}
-                      </DropdownItem>
+                      </CustomizeDropdownItem>
                     )}
                     {onDelete && (
-                      <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>
-                        <Icon symbol="delete" className="item-icon" />
+                      <CustomizeDropdownItem onClick={() => setIsShowDeleteDialog(true)}>
+                        <CustomizeDropdownItem.Icon symbol="delete" />
                         {gettext('Delete')}
-                      </DropdownItem>
+                      </CustomizeDropdownItem>
                     )}
-                  </DropdownMenu>
+                  </CustomizeDropdownMenu>
                 </Dropdown>
               )}
             </div>

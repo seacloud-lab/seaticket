@@ -4,7 +4,8 @@ import { InputGroup, Input } from 'reactstrap';
 import classnames from 'classnames';
 import StrengthChecker from './strength-checker';
 import IconButton from '../icon-button';
-import { isFunction, Utils } from '../../utils/utils';
+import { Utils } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 

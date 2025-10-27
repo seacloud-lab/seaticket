@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG, FILTER_PREDICATE_SHOW, FILTER_TERM_MODIFIER_SHOW } from '../../../../constants';
-import { isWhiteColor } from '@/utils/utils';
+import { isWhiteColor } from '@/utils/color-utils';
 import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 
 class FilterItemUtils {

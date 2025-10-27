@@ -39,7 +39,6 @@
 <body>
     <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
     <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
-    <div id="plugin-wrapper" class="{{ LANGUAGE_CODE }}"></div>
     <div id="widget-wrapper" class="{{ LANGUAGE_CODE }}"></div>
 
 <script type="text/javascript">
@@ -82,25 +81,9 @@
             enableResumableFileUpload: '{{ enable_resumable_fileupload }}',
             resumableUploadFileBlockSize: '{{ resumable_upload_file_block_size }}',
             enableUserSetContactEmail: {% if enable_user_set_contact_email %} true {% else %} false {% endif %},
-            // storage backends
-            storages: (function () {
-              var storages = [];
-              {% for storage in storages %}
-              storages.push({
-                'id': '{{storage.storage_id|escapejs}}',
-                'name': '{{storage.storage_name|escapejs}}'
-              });
-              {% endfor %}
-              return storages;
-            })(),
-            shareLinkPasswordMinLength: {{ share_link_password_min_length }},
-            shareLinkExpireDaysDefault: {% if share_link_expire_days_default %} {{ share_link_expire_days_default }} {% else %} 0 {% endif %},
-            shareLinkExpireDaysMin: "{{ share_link_expire_days_min }}",
-            shareLinkExpireDaysMax: "{{ share_link_expire_days_max }}",
             maxFileName: "{{ max_file_name }}",
             enableEncryptedLibrary: {% if enable_encrypted_library %} true {% else %} false {% endif %},
             isSystemStaff: {% if request.user.is_staff %} true {% else %} false {% endif %},
-            canInvitePeople: {% if enable_guest_invitation and user.permissions.can_invite_guest %} true {% else %} false {% endif %},
             isMobile: {% if request.is_mobile or request.is_tablet %} true {% else %} false {% endif %},
             loadDtableFromAPIGateway: {% if load_dtable_from_api_gateway %} true {% else %} false {% endif %},
             enableAPIGatewayProxySocket: {% if enable_api_gateway_proxy_socket %} true {% else %} false {% endif %},

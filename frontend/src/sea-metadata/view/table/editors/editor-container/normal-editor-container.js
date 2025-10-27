@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import ClickOutside from '@/components/click-outside';
 import Editor from './editor';
 import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { getEventClassName } from '@/utils/dom';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';

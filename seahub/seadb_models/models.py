@@ -29,7 +29,6 @@ class PropertyTypes:
     DATE = 'date'
     LONG_TEXT = 'long-text'
     CHECKBOX = 'checkbox'
-    DEPARTMENT_SINGLE_SELECT = 'department-single-select'
     URL = 'url'
     DURATION = 'duration'
     NUMBER = 'number'

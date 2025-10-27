@@ -1,9 +1,9 @@
 const paths = require('./paths');
 
 const entryFiles = {
-  settings: '/settings.js',
-  orgAdmin: '/pages/org-admin',
-  sysAdmin: '/pages/sys-admin',
+  settings: '/profile-settings',
+  orgAdmin: '/org-admin',
+  sysAdmin: '/sys-admin',
   home: '/home',
   project: '/project',
   eyeIcon: '/icon-page/eye-icon',

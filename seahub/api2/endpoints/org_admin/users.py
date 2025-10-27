@@ -11,7 +11,7 @@ from django.conf import settings
 from seahub.api2.permissions import IsProVersion, IsOrgAdminUser
 from seahub.api2.throttling import UserRateThrottle, OrgAdminRateThrottle
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.utils import api_error, to_python_boolean, get_user_social_auth_info
+from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.endpoints.utils import is_org_user
 from seahub.base.accounts import User
 from seahub.base.models import UserLastLogin
@@ -29,9 +29,6 @@ from seahub.settings import SEND_EMAIL_ON_ACTIVATING_ORG_USER
 from seahub.organizations.models import Organization, OrgUser
 from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED
 from seahub.organizations.views import is_org_staff, unset_org_user, set_org_user, set_org_staff, unset_org_staff
-from seahub.weixin.utils import weixin_check
-from seahub.org_work_weixin.utils import org_work_weixin_check
-from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import USER_DELETE, USER_ADD, USER_DEACTIVATE, USER_ACTIVATE
 
@@ -268,10 +265,6 @@ class OrgAdminUser(APIView):
             user_info['has_default_device'] = True if default_device(user) else False
             user_info['is_force_2fa'] = UserOptions.objects.is_force_2fa(email)
 
-        if weixin_check() or org_work_weixin_check() or org_dingtalk_check():
-            social_auth_info = get_user_social_auth_info(email, org_id)
-            user_info.update(social_auth_info)
-
         return Response(user_info)
 
     def put(self, request, org_id, email):
@@ -493,8 +486,7 @@ class OrgAdminSearchUsers(APIView):
 
         start = (page - 1) * per_page
         end = page * per_page
-        org_all_users = Organization.objects.get_org_users_by_url_prefix(
-            org.url_prefix, -1, -1)
+        org_all_users = Organization.objects.get_org_users_by_url_prefix(org.url_prefix)
 
         query_str = request.GET.get('query', '').strip()
         if not query_str:

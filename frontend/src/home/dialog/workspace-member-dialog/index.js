@@ -2,11 +2,11 @@ import React from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { toaster, ModalHeader, Loading } from '../../../components';
-import { seaQAAPI } from '../../../api/web-api';
-import User from '../../../models/user';
-import { gettext } from '../../../constants/config';
-import { Utils } from '../../../utils/utils';
+import { toaster, ModalHeader, Loading } from '@/components';
+import homeAPI from '../../api';
+import User from '@/models/user';
+import { gettext } from '@/constants/config';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -28,7 +28,7 @@ export default class WorkspaceMemberDialog extends React.Component {
   componentDidMount() {
     let { workspace } = this.props;
     let { group_id } = workspace;
-    seaQAAPI.listGroupMembers(group_id).then((res) => {
+    homeAPI.listGroupMembers(group_id).then((res) => {
       let groupMembers = res.data.map(item => {
         return new User(item);
       });

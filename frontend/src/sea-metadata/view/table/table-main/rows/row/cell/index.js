@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Formatter from './formatter';
 import CellOperationBtn from './operation-btn';
-import { isFunction } from '@utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';

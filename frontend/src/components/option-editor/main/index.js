@@ -2,11 +2,12 @@ import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandl
 import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Option from '../../option';
-import { searchOptions } from '../../../utils/search';
+import { searchOptions } from '@/utils/search';
 import IconButton from '../../icon-button';
 import CustomizeAddTool from '../../customize-add-tool';
 import { gettext, KeyCodes } from '@/constants';
-import { Utils, isFunction } from '@/utils/utils';
+import { Utils } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import toaster from '../../toaster';
 
 import './index.css';

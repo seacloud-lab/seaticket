@@ -20,21 +20,10 @@ from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_e
 from seahub.options.models import UserOptions
 from seahub.utils import render_error, get_update_contact_email_cache_key
 from seahub.utils.two_factor_auth import has_two_factor_auth
-from seahub.work_weixin.utils import work_weixin_oauth_check
-from seahub.weixin.utils import weixin_check, get_mp_weixin_users_openid
 from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOUNT, ENABLE_UPDATE_USER_INFO, ENABLE_BIND_PHONE, \
     ENABLE_LDAP_USER_CHANGE_PASSWORD, USE_EXTERNAL_TEAM_ADMIN, ENABLE_CONVERT_TO_TEAM_ACCOUNT, \
     ENABLE_SAML, ENABLE_MULTI_SAML, ENABLE_USER_SET_NAME, USER_STRONG_PASSWORD_REQUIRED
 from seahub.auth.models import SocialAuthUser
-from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
-from seahub.weixin.settings import WEIXIN_PROVIDER, MP_OPENID
-from seahub.org_work_weixin.utils import org_work_weixin_check
-from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
-from seahub.org_dingtalk.utils import org_dingtalk_check
-from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
-from seahub.dingtalk.settings import DINGTALK_PROVIDER
-from seahub.dingtalk.utils import dingtalk_check
-from seahub.organizations.utils import get_org_corp_bind_type
 
 try:
     from seahub.settings import ENABLE_LDAP, LDAP_PROVIDER
@@ -62,71 +51,16 @@ def edit_profile(request):
     else:
         webdav_passwd = ''
 
-    project_updates_email_interval = UserOptions.objects.get_dtable_updates_email_interval(username)
+    project_updates_email_interval = UserOptions.objects.get_project_updates_email_interval(username)
     project_updates_email_interval = project_updates_email_interval if project_updates_email_interval is not None else 0
-    project_collaborate_email_interval = UserOptions.objects.get_dtable_collaborate_email_interval(username)
+    project_collaborate_email_interval = UserOptions.objects.get_project_collaborate_email_interval(username)
     project_collaborate_email_interval = project_collaborate_email_interval if project_collaborate_email_interval is not None else COLLABORATE_EMAIL_INTERVAL_DEFAULT
 
     # social oauth
-    enable_work_weixin = False
-    enable_dingtalk = False
-    enable_org_work_weixin = False
-    enable_weixin = False
-    enable_org_dingtalk = False
-    work_weixin_connected = False
-    org_work_weixin_connected = False
-    org_work_weixin_license_status = 0
-    dingtalk_connected = False
-    weixin_connected = False
     enable_saml = False
     saml_connected = False
     enable_multi_saml = False
     org_saml_connected = False
-    weixin_official_accounts_followed = False
-    org_dingtalk_connected = False
-    org_corp_bind_type = ''
-
-    if work_weixin_oauth_check():
-        enable_work_weixin = True
-        work_weixin_connected = SocialAuthUser.objects.filter(
-            username=request.user.username, provider=WORK_WEIXIN_PROVIDER).exists()
-    if dingtalk_check():
-        enable_dingtalk = True
-        dingtalk_connected = SocialAuthUser.objects.filter(
-            username=request.user.username, provider=DINGTALK_PROVIDER).exists()
-    if org_work_weixin_check() and is_org_context(request):
-        enable_org_work_weixin = True
-        org_work_weixin_connected = SocialAuthUser.objects.filter(
-            username=request.user.username, provider=ORG_WORK_WEIXIN_PROVIDER).exists()
-        if org_work_weixin_connected:
-            try:
-                from seahub.org_work_weixin.utils import get_active_info_by_user
-                uid = SocialAuthUser.objects.filter(username=request.user.username, provider=ORG_WORK_WEIXIN_PROVIDER).first().uid
-                active_info = get_active_info_by_user(uid)
-                if active_info:
-                    org_work_weixin_license_status = active_info.get('active_status', 0)
-            except Exception as e:
-                logger.error(e)
-    if weixin_check():
-        enable_weixin = True
-        weixin_obj = SocialAuthUser.objects.filter(
-            username=request.user.username, provider=WEIXIN_PROVIDER).first()
-        if weixin_obj:
-            weixin_connected = True
-            if weixin_obj.extra_data:
-                try:
-                    openid = json.loads(weixin_obj.extra_data).get(MP_OPENID)
-                    users_openid = get_mp_weixin_users_openid()  # refresh every hour
-                    if openid in users_openid:
-                        weixin_official_accounts_followed = True
-                except Exception as e:
-                    logger.error(e)
-    if org_dingtalk_check() and is_org_context(request):
-        enable_org_dingtalk = True
-        org_dingtalk_connected = SocialAuthUser.objects.filter(
-            username=request.user.username, provider=ORG_DINGTALK_PROVIDER).exists()
-    if is_org_context(request) and (org_dingtalk_check() or org_work_weixin_check()):
-        org_corp_bind_type = get_org_corp_bind_type(request.user.org.org_id)
 
     if ENABLE_SAML:
         enable_saml = True
@@ -165,19 +99,6 @@ def edit_profile(request):
             'webdav_passwd': webdav_passwd,
             'project_updates_email_interval': project_updates_email_interval,
             'project_collaborate_email_interval': project_collaborate_email_interval,
-            'enable_work_weixin': enable_work_weixin,
-            'enable_dingtalk': enable_dingtalk,
-            'enable_org_work_weixin': enable_org_work_weixin,
-            'enable_weixin': enable_weixin,
-            'enable_org_dingtalk': enable_org_dingtalk,
-            'work_weixin_connected': work_weixin_connected,
-            'dingtalk_connected': dingtalk_connected,
-            'org_work_weixin_connected': org_work_weixin_connected,
-            'org_work_weixin_license_status': org_work_weixin_license_status,
-            'weixin_connected': weixin_connected,
-            'org_dingtalk_connected': org_dingtalk_connected,
-            'weixin_official_accounts_followed': weixin_official_accounts_followed,
-            'org_corp_bind_type': org_corp_bind_type,
             'social_next_page': reverse('edit_profile'),
             'ENABLE_USER_SET_CONTACT_EMAIL': settings.ENABLE_USER_SET_CONTACT_EMAIL,
             'ENABLE_USER_SET_NAME' : ENABLE_USER_SET_NAME,

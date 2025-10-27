@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { toaster, List, InputItem, MobileCommonHeader, Icon } from '../../components';
 import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
 import { gettext } from '../../constants';
-import { validateName } from '../../utils/utils';
+import { validateName } from '@/utils/validate';
 
 const propTypes = {
   currentItem: PropTypes.object.isRequired,

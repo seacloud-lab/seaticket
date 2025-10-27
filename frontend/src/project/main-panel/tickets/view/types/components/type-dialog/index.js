@@ -4,7 +4,8 @@ import classnames from 'classnames';
 import { ColorSelectorPopover, IconButton, ModalHeader } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Type from '../type';
-import { isHexColor, isDarkColor, validateName } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
+import { isHexColor, isDarkColor } from '@/utils/color-utils';
 
 import './index.css';
 

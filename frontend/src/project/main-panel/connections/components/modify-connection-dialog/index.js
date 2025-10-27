@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, UncontrolledTooltip } from 'reactstrap';
 import { gettext } from '@/constants';
-import { validateName } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, Icon } from '@/components';
 

@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../../constants';
-import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
-import { toaster } from '../../../../../components';
+import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { toaster } from '@/components';
 import { TICKET_PAGE_TYPE } from '../../constants';
 import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
-import { Utils } from '../../../../../utils/utils';
+import { Utils } from '@/utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
