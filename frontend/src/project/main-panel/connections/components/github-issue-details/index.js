@@ -46,7 +46,7 @@ const GithubIssueDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSwitch
               {gettext('Next record')}
             </UncontrolledTooltip>
           </div>
-          <div className="text-truncate" title={rowDetailsTitle}>{rowDetailsTitle}</div>
+          <div className="text-truncate flex-1" title={rowDetailsTitle}>{rowDetailsTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>

@@ -45,12 +45,6 @@
   opacity: .75;
 }
 
-.sea-qa-github-issue-details-container .row-expand-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sea-qa-github-issue-details-container .sea-qa-github-issue-row-details {
   height: 100%;
   overflow: auto;
