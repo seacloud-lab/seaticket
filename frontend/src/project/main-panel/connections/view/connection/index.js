@@ -564,8 +564,22 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} handleSwitchRows={handleSwitchRows} />}
-      {githubIssueDetails && <GithubIssueDetails rowDetailsTitle={githubIssueDetailsTitle} rowDetails={githubIssueDetails} onClose={() => {setGithubIssueDetails(null);}} handleSwitchRows={handleSwitchRows} />}
+      {discourseForumsDetails && (
+        <DiscourseForumsDetails
+          rowDetailsTitle={discourseForumsDetailsTitle}
+          rowDetails={discourseForumsDetails}
+          onClose={() => setDiscourseForumsDetails(null)}
+          handleSwitchRows={handleSwitchRows}
+        />
+      )}
+      {githubIssueDetails && (
+        <GithubIssueDetails
+          rowDetailsTitle={githubIssueDetailsTitle}
+          rowDetails={githubIssueDetails}
+          onClose={() => setGithubIssueDetails(null)}
+          handleSwitchRows={handleSwitchRows}
+        />
+      )}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}
