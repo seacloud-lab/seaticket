@@ -41,7 +41,7 @@
   opacity: .5;
 }
 
-.sea-qa-github-issue-details-container .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-down:hover {
+.sea-qa-github-issue-details-container .row-expand-direct-icons .direct-icon:hover .sea-qa-icon-svg-down {
   opacity: .75;
 }
 
