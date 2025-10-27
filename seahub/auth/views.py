@@ -221,8 +221,7 @@ def login(request, template_name='registration/login.html',
                  getattr(settings, 'ENABLE_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CAS', False) or \
-                 getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False) or \
-                 getattr(settings, 'ENABLE_TSINGHUA_AUTH', False)
+                 getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False)
 
     login_bg_image_path = get_login_bg_image_path()
     cur_language = translation.get_language()

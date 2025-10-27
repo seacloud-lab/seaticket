@@ -55,9 +55,6 @@ def sso(request):
     if getattr(settings, 'ENABLE_CAS', False):
         return HttpResponseRedirect(reverse('cas_ng_login') + next_param)
 
-    if getattr(settings, 'ENABLE_TSINGHUA_AUTH', False):
-        return HttpResponseRedirect(reverse('tsinghua_login'))
-
     return HttpResponseRedirect(next_page)
 
 

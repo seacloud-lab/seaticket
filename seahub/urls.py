@@ -118,6 +118,7 @@ urlpatterns = [
 
     re_path(r'^options/', include('seahub.options.urls')),
     re_path(r'^profile/', include('seahub.profile.urls')),
+    re_path(r'^captcha/', include('captcha.urls')),
 
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 
