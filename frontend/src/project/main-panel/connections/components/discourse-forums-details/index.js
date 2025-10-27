@@ -46,7 +46,7 @@ const DiscourseForumsDetails = ({ rowDetailsTitle, rowDetails, onClose, handleSw
               {gettext('Next record')}
             </UncontrolledTooltip>
           </div>
-          <div className="row-expand-title" title={rowDetailsTitle}>{rowDetailsTitle}</div>
+          <div className="text-truncate" title={rowDetailsTitle}>{rowDetailsTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>
