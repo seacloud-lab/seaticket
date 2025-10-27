@@ -2,7 +2,7 @@ export const STORAGE_CHAT_HISTORY_RECORDS_COUNT = 20;
 
 export const CHAT_MESSAGE_TYPE = {
   GROUP: 'group',
-  ANSWER: 'answer',
+  AI_REPLY: 'ai_reply',
   TIP: 'tip',
   ERROR: 'error',
   TEXT: 'text',

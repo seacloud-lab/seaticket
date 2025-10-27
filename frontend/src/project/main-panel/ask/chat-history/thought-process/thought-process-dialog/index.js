@@ -166,7 +166,6 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
         })
       });
     }
-    
 
     // final answer
     if (propsValue?.final_answer?.result){

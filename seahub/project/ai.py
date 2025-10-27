@@ -14,7 +14,7 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections
-from seahub.project.utils import check_project_permission, ask_ai_question, \
+from seahub.project.utils import check_project_permission, get_ai_reply, \
     convert_record_to_ticket, ticket_to_json, TicketNotFound
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -24,7 +24,7 @@ from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 logger = logging.getLogger(__name__)
 
 
-class QAView(APIView):
+class ChatView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -91,18 +91,18 @@ class QAView(APIView):
         }
 
         try:
-            ai_answer, agent_memory, sources = ask_ai_question(params)
+            ai_reply, agent_memory, sources = get_ai_reply(params)
         except Exception as e:
             logger.error(f'AI service error: {e}')
-            ai_answer = 'Sorry, the AI service is temporarily unavailable, please try again later.'
+            ai_reply = 'Sorry, the AI service is temporarily unavailable, please try again later.'
             sources = []
             agent_memory = {}
 
         user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
-        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_answer, json.dumps(sources))
+        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_reply, json.dumps(sources))
 
         return Response({
-            'answer': ai_answer,
+            'ai_reply': ai_reply,
             'sources': sources,
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,

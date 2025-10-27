@@ -242,19 +242,19 @@ def search(params):
     return results
 
 
-def ask_ai_question(params):
+def get_ai_reply(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-answer')
+    url = urljoin(SEAQA_AI_SERVER_URL, '/get-ai-reply')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
-    ai_answer = resp_json.get('answer', '')
+    ai_reply = resp_json.get('ai_reply', '')
     agent_memory = resp_json.get('agent_memory', {})
     sources = resp_json.get('sources', [])
-    return ai_answer, agent_memory, sources
+    return ai_reply, agent_memory, sources
 
 
 def convert_record_to_ticket(params):
