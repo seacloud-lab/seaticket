@@ -5,7 +5,8 @@ import SearchInput from '../../search-input';
 import Option from '../../option';
 import IconButton from '../../icon-button';
 import { gettext, KeyCodes } from '@/constants';
-import { Utils, isFunction } from '@/utils/utils';
+import { Utils } from '@/utils/utils';
+import { isFunction } from '@utils/type-detection';
 import toaster from '../../toaster';
 
 import './index.css';
