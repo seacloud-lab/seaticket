@@ -4,6 +4,10 @@ import time
 
 from django.db import models
 
+from seahub.utils import gen_token
+from seahub.settings import SEAQA_WEB_SERVICE_URL
+from seahub.base.templatetags.seahub_tags import email2nickname
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,3 +79,37 @@ class Group(models.Model):
 
     class Meta:
         db_table = 'group'
+
+
+class GroupInviteLinkModelManager(models.Manager):
+    def create_link(self, group_id, email):
+        token = gen_token(max_length=8)
+        while self.model.objects.filter(token=token).exists():
+            token = gen_token(max_length=8)
+
+        group_invite_link = super(GroupInviteLinkModelManager, self).create(
+            group_id=group_id, token=token, created_by=email)
+        return group_invite_link
+
+
+class GroupInviteLinkModel(models.Model):
+    token = models.CharField(max_length=40, db_index=True)
+    group_id = models.IntegerField(db_index=True, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=255)
+
+    objects = GroupInviteLinkModelManager()
+
+    class Meta:
+        db_table = 'group_invite_link'
+
+    def to_dict(self):
+        result = {
+            'id': self.pk,
+            'token': self.token,
+            'group_id': self.group_id,
+            'created_at': self.created_at,
+            'created_by': email2nickname(self.created_by),
+            'link': f"{SEAQA_WEB_SERVICE_URL.rstrip('/')}/group-invite/{self.token}/",
+        }
+        return result

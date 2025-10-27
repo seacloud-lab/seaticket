@@ -7,9 +7,10 @@ from seahub.views import *
 from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
 from seahub.views.sso import *
+from seahub.group.views import group_invite
 
 from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView, GroupTrashProjectsView, GroupTrashProjectView
-
+from seahub.api2.endpoints.group_invite_links import GroupInviteLinks, GroupInviteLink
 from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember, GroupMembersBulk
 from seahub.api2.endpoints.search_group import SearchGroup
 from seahub.api2.endpoints.user_avatar import UserAvatarView
@@ -92,6 +93,8 @@ urlpatterns = [
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v2.1-group-member'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v2.1-group-trash-projects'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v2.1-group-trash-project'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/$', GroupInviteLinks.as_view(), name='api-v2.1-group-invite-links'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/(?P<token>[-0-9a-f]{8})/$', GroupInviteLink.as_view(), name='api-v2.1-group-invite-link'),
     re_path(r'^api/v2.1/search-group/$', SearchGroup.as_view(), name='api-v2.1-search-group'),
 
     ## org
@@ -147,6 +150,8 @@ urlpatterns = [
     re_path(r'^sys/groups/(?P<group_id>\d+)/projects/$', sysadmin_react_fake_view, name="sys_group_projects"),
     re_path(r'^sys/groups/(?P<group_id>\d+)/members/$', sysadmin_react_fake_view, name="sys_group_members"),
     re_path(r'^sys/search-groups/$', sysadmin_react_fake_view, name="sys_search_groups"),
+
+    re_path(r'^group-invite/(?P<token>[-0-9a-f]{8})/$', group_invite, name='group_invite'),
 ]
 
 if settings.SERVE_STATIC:

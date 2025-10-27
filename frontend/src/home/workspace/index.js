@@ -4,6 +4,7 @@ import { toaster, Loading, CommonOperationConfirmationDialog } from '@/component
 import homeAPI from '../api';
 import ManageMembersDialog from '../dialog/manage-members-dialog';
 import RenameGroupNameDialog from '../dialog/rename-group-name-dialog';
+import GroupInviteMembersDialog from '../dialog/group-invite-members-dialog';
 import { Utils } from '@/utils/utils';
 import { compareTwoString } from '../utils/compare-two-string';
 import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
@@ -50,6 +51,7 @@ class Workspace extends React.Component {
       isShowTemplateList: false,
       isCreatedTemplateLoading: false,
       isShowVirtualProject: false,
+      isShowInviteDialog: false,
       isShowTrashDialog: false,
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
@@ -362,6 +364,12 @@ class Workspace extends React.Component {
     }
   };
 
+  toggleGroupInviteDialog = () => {
+    this.setState({
+      isShowInviteDialog: !this.state.isShowInviteDialog
+    });
+  };
+
   toggleGroupTrashDialog = () => {
     this.setState({
       isShowTrashDialog: !this.state.isShowTrashDialog
@@ -409,6 +417,7 @@ class Workspace extends React.Component {
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
+            toggleGroupInviteDialog={this.toggleGroupInviteDialog}
             toggleGroupTrashDialog={this.toggleGroupTrashDialog}
             showVirtualProject={this.showVirtualProject}
           />
@@ -512,6 +521,12 @@ class Workspace extends React.Component {
             />
           </ModalPortal>
         }
+        {this.state.isShowInviteDialog && (
+          <GroupInviteMembersDialog
+            workspace={workspace}
+            toggleGroupInviteDialog={this.toggleGroupInviteDialog}
+          />
+        )}
         {this.state.isShowTrashDialog && (
           <GroupTrashDialog
             groupID={workspace.group_id}
