@@ -52,7 +52,7 @@ class Store {
     if (!view) {
       throw Error('View_not_exist');
     }
-    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit }).then(res => {
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit })?.then(res => {
       if (!this.mounted) return;
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || []);
