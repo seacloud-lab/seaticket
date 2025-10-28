@@ -267,7 +267,7 @@ class FilterTermModifier(object):
 
 
 CONNECTION_DISPLAY_ALL_COLUMNS = {
-    ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
+    ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at'],

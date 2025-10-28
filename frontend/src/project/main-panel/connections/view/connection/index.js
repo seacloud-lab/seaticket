@@ -186,6 +186,33 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     });
   }, [projectUuid]);
 
+  const generateAITitleForRow = useCallback((row) => {
+    const recordID = row._id || row._pk;
+
+    if (!recordID) {
+      toaster.danger(gettext('Cannot get record ID'));
+      return;
+    }
+
+    toaster.notify(gettext('Generating AI title...'), { duration: 0 });
+
+    connectionsAPI.generateAITitle(projectUuid, connectionID, recordID)
+      .then(res => {
+        toaster.closeAll();
+        if (res.data && res.data.ai_title) {
+          toaster.success(gettext('AI title generated successfully'));
+          window.location.reload();
+        } else {
+          toaster.warning(gettext('Failed to generate AI title'));
+        }
+      })
+      .catch(error => {
+        toaster.closeAll();
+        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI title');
+        toaster.danger(errorMessage);
+      });
+  }, [projectUuid, connectionID]);
+
   const handleClickSiteTitle = useCallback((row) => {
     if (!row || !row.url) return;
     // open dialog first with loading state
@@ -458,6 +485,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
         callback: () => createTicketFromRow(row),
         disabled: isSubmitting
+      }, {
+        label: gettext('Generate AI title'),
+        callback: () => generateAITitleForRow(row)
       }];
     }
 
@@ -470,7 +500,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       }];
     }
     return [];
-  }, [connection, isSubmitting, createTicketFromRow]);
+  }, [connection, isSubmitting, createTicketFromRow, generateAITitleForRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 

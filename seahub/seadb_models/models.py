@@ -228,6 +228,7 @@ class GithubIssuesTable(BaseModel):
     issue_id = MappedColumn('issue_id', PropertyTypes.INT)
     issue_number = MappedColumn('issue_number', PropertyTypes.INT)
     title = MappedColumn('title', PropertyTypes.TEXT)
+    ai_title = MappedColumn('ai_title', PropertyTypes.TEXT)
     body = MappedColumn('body', PropertyTypes.TEXT, {'compressed': True})
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, SelectTypes.state)
     state_reason = MappedColumn('state_reason', PropertyTypes.SINGLE_SELECT, SelectTypes.state_reason)

@@ -244,6 +244,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
         }
       }
     },
+    'ai_title': {
+      display_name: gettext('AI Title'),
+      type: CellType.TEXT,
+      is_predefined: true,
+      editable: true,
+    },
     'author': {
       display_name: gettext('Author'),
       is_predefined: true,
