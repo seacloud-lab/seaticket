@@ -310,7 +310,14 @@ class ProjectView(APIView):
             if icon:
                 project.icon = icon
             if settings:
-                project.settings = settings
+                if project.settings:
+                    project_settings = json.loads(project.settings)
+                else:
+                    project_settings = {}
+                update_settings = json.loads(settings)
+                for k,v in update_settings.items():
+                    project_settings[k] = v
+                project.settings = json.dumps(project_settings)
             project.modifier = username
             project.save()
         except OperationalError:

@@ -64,7 +64,7 @@ const Project = () => {
   }, [activeBar]);
 
   const modifySettings = useCallback((update, callback) => {
-    projectAPI.updateProject(workspaceID, projectName, update).then(res => {
+    projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
       setSettings({ ...settings, ...update });
       callback && callback();
     }).catch(error => {

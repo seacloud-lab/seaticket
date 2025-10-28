@@ -54,6 +54,7 @@ const Settings = ({
               <DeveloperModeSettings
                 value={settings.developer_mode}
                 onChange={(value) => modifySettings({ developer_mode: value })}
+                onToggle={onToggle}
               />
             </TabPane>
           )}

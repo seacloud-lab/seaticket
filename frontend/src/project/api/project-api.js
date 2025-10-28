@@ -62,6 +62,7 @@ class ProjectAPI {
   updateProject(workspaceID, project_name, updates) {
     const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
     let form = new FormData();
+
     form.append('name', project_name);
     if (updates.color) {
       form.append('color', updates.color);
@@ -73,7 +74,7 @@ class ProjectAPI {
       form.append('icon', updates.icon);
     }
     if (updates.settings) {
-      form.append('settings', updates.settings);
+      form.append('settings', JSON.stringify(updates.settings));
     }
     return this.req.put(url, form);
   }

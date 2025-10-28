@@ -305,6 +305,7 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
+            'settings': json.loads(self.settings) if self.settings else {},
         }
         if include_deleted:
             result.update({
