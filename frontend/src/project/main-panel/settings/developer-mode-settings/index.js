@@ -1,43 +1,29 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { ModalBody, ModalFooter, Button } from 'reactstrap';
-import Switch from '../../../components/switch';
-import { gettext } from '../../../constants';
-import toaster from '../../../components/toaster';
-import { Utils } from '../../../utils/utils';
-import { seaQAAPI } from '../../../api/web-api';
+import { Loading, Switch } from '@/components';
+import { gettext } from '@/constants';
+
 import './index.css';
 
-const DeveloperModeDialog = ({
-  value: oldValue,
-  workspaceID,
-  projectName,
-  toggleDialog: toggle,
-  submit,
+const DeveloperModeSettings = ({
+  value: oldValue = false,
+  onChange,
+  onToggle,
 }) => {
   const [value, setValue] = useState(oldValue);
   const [submitting, setSubmitting] = useState(false);
 
-  const onToggle = useCallback(() => {
-    toggle();
-  }, [toggle]);
-
   const onSubmit = useCallback(() => {
     setSubmitting(true);
-    const updates = { developer_mode: value };
-    seaQAAPI
-      .updateProject(workspaceID, projectName, updates)
-      .then(() => {
-        toaster.success(gettext('Updated successfully'));
-        submit(value);
-        toggle();
-      })
-      .catch((error) => {
-        const errorMsg = Utils.getErrorMsg(error);
-        toaster.danger(errorMsg);
+    onChange && onChange(value, ({ error }) => {
+      if (error) {
         setSubmitting(false);
-      });
-  }, [workspaceID, projectName, value, submit, toggle]);
+        return;
+      }
+      onToggle();
+    });
+  }, [value, onToggle]);
 
   const onValueChange = useCallback(() => {
     setValue((prev) => !prev);
@@ -45,7 +31,7 @@ const DeveloperModeDialog = ({
 
   return (
     <>
-      <ModalBody className="developer-mode-dialog">
+      <ModalBody className="developer-mode-settings">
         <Switch
           checked={value}
           disabled={submitting}
@@ -55,28 +41,34 @@ const DeveloperModeDialog = ({
           onChange={onValueChange}
           placeholder={gettext('Developer mode')}
         />
-        <p className="tip m-0">
+        <p className="tip-default tip m-0">
           {gettext('Enable developer mode to show advanced features for development and debugging purposes.')}
         </p>
       </ModalBody>
-
       <ModalFooter>
         <Button color="secondary" onClick={onToggle}>
           {gettext('Cancel')}
         </Button>
         <Button
           color="primary"
+          className="submit-btn"
           disabled={oldValue === value || submitting}
           onClick={onSubmit}
         >
-          {submitting ? gettext('Saving...') : gettext('Submit')}
+          {submitting && (
+            <>
+              <Loading />
+              <span className="ml-2">{gettext('Submitting')}</span>
+            </>
+          )}
+          {!submitting && gettext('Submit')}
         </Button>
       </ModalFooter>
     </>
   );
 };
 
-DeveloperModeDialog.propTypes = {
+DeveloperModeSettings.propTypes = {
   value: PropTypes.bool.isRequired,
   workspaceID: PropTypes.string.isRequired,
   projectName: PropTypes.string.isRequired,
@@ -84,4 +76,4 @@ DeveloperModeDialog.propTypes = {
   submit: PropTypes.func.isRequired,
 };
 
-export default DeveloperModeDialog;
+export default DeveloperModeSettings;

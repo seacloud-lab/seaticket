@@ -1,18 +1,24 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ResizeBar from '../../components/resize-bar';
 import Header from './header';
 import { BAR_TYPES } from '../constants';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
-import ProjectSettingsDialog from '../../components/dialog/project-settings-dialog';
+import Settings from '../main-panel/settings';
 
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
+const { isProjectAdmin } = window.app.pageOptions;
 
-const SidePanel = ({ activeBar, toggleBar }) => {
+const SidePanel = ({ activeBar, toggleBar, settings, modifySettings }) => {
+  const [isShowSettings, setIsShowSettings] = useState(false);
 
   const ref = useRef(null);
+
+  const toggleSettings = useCallback(() => {
+    setIsShowSettings(!isShowSettings);
+  }, [isShowSettings]);
 
   const onResize = useCallback((width) => {
     localStorage.setItem('project_panel_width', width);
@@ -25,19 +31,26 @@ const SidePanel = ({ activeBar, toggleBar }) => {
   }, []);
 
   return (
-    <div className="sea-qa-project-side-panel" ref={ref}>
-      <div className="sea-qa-project-side-panel-container">
-        <Header />
-        <div className="sea-qa-project-navigation sea-qa-nav-list">
-          <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
-          <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
-          <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
-          <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
-          <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
+    <>
+      <div className="sea-qa-project-side-panel" ref={ref}>
+        <div className="sea-qa-project-side-panel-container">
+          <Header />
+          <div className="sea-qa-project-navigation sea-qa-nav-list">
+            <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            {isProjectAdmin && (
+              <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleSettings} />
+            )}
+          </div>
         </div>
+        <ResizeBar min={200} max={600} onResize={onResize} />
       </div>
-      <ResizeBar min={200} max={600} onResize={onResize} />
-    </div>
+      {isShowSettings && (
+        <Settings onToggle={toggleSettings} settings={settings} modifySettings={modifySettings} />
+      )}
+    </>
   );
 };
 

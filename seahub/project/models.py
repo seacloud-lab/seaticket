@@ -285,6 +285,7 @@ class Projects(models.Model):
     color = models.CharField(max_length=50, null=True)
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
+    settings = models.TextField(null=True)
 
     objects = ProjectsManager()
 
