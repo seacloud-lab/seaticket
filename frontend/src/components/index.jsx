@@ -52,6 +52,7 @@ import { SectionSettings, AdminCheckboxSettings } from './settings';
 import FixedWidthTable from './fixed-width-table';
 import AdminProjects from './admin-projects';
 import UserSelect from './user-select';
+import Switch from './switch';
 
 export {
   FixedWidthTable,
@@ -108,4 +109,5 @@ export {
   CustomizeNameDialog,
   SubDropdown,
   UserSelect,
+  Switch,
 };
