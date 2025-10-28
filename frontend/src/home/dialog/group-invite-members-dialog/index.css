@@ -9,33 +9,11 @@
   color: #666;
 }
 
-.invite-link-item {
-  display: flex;
-  margin: 1rem 0 2.5rem;
-}
-
-.invite-link-item .form-item {
-  width: calc(100% - 120px);
-  padding-left: 10px;
-  height: 40px;
-  line-height: 40px;
-  border: 1px solid #ccc;
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-}
-
-.invite-link-item .invite-link-copy {
-  width: 72px;
-}
-
-.invite-link-item .invite-link-copy-btn {
-  width: 72px;
-  height: 40px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.invite-link-item .delete-link-btn {
+.group-invite-members .input-group .btn:hover,
+.group-invite-members .input-group .btn {
   color: #666;
-  width: 40px;
+}
+
+.group-invite-members .input-group .btn:hover {
+  background-color: #efefef;
 }
