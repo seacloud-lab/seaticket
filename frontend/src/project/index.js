@@ -108,7 +108,7 @@ const Project = () => {
         ) : (
           <ConnectionsProvider projectUuid={projectUuid} >
             <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} modifySettings={modifySettings} />
-            <MainPanel activeBar={activeBar} />
+            <MainPanel activeBar={activeBar} settings={settings} />
           </ConnectionsProvider>
         )}
       </div>

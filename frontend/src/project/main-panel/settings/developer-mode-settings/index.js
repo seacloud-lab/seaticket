@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { ModalBody, ModalFooter, Button } from 'reactstrap';
 import { Loading, Switch } from '@/components';
 import { gettext } from '@/constants';
@@ -66,14 +65,6 @@ const DeveloperModeSettings = ({
       </ModalFooter>
     </>
   );
-};
-
-DeveloperModeSettings.propTypes = {
-  value: PropTypes.bool.isRequired,
-  workspaceID: PropTypes.string.isRequired,
-  projectName: PropTypes.string.isRequired,
-  toggleDialog: PropTypes.func.isRequired,
-  submit: PropTypes.func.isRequired,
 };
 
 export default DeveloperModeSettings;

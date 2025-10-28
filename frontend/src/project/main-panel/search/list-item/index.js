@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
@@ -7,8 +7,9 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
-const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', score = '', searchValue }) => {
+const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', score = '', searchValue, settings }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
+  const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
 
   const openOriginalURL = useCallback(() => {
     if (!url) return;
@@ -30,8 +31,8 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
       <div className="list-item-content">
         <div className="list-item-title">{title || ''}
           <span>{title || ''}</span>
-          {score && (
-            <span className="list-item-score"> {score}</span>
+          {isShowScore && score && (
+            <span className="list-item-score ml-2"> {score}</span>
           )}
         </div>
         <div className="list-item-path">{subtitle || ''}</div>

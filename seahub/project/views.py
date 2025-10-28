@@ -45,10 +45,7 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'name': project.icon
     }
 
-    project_settings = project.settings
-    if project_settings:
-        project_settings = json.dumps(project_settings)
-
+    project_settings = project.settings or '{}'
 
     is_project_admin= check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
