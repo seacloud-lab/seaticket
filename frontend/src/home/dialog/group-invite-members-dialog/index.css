@@ -16,4 +16,5 @@
 
 .group-invite-members .input-group .btn:hover {
   background-color: #efefef;
+  border-color: var(--bs-btn-hover-border-color);
 }
