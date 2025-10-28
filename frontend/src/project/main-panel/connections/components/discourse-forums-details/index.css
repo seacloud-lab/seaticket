@@ -1,10 +1,52 @@
-.sea-qa-discourse-forums-details-container .modal-body {
+.sea-qa-discourse-forums-details-container {
+  height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
+}
+
+.sea-qa-discourse-forums-details-container .modal-content {
+  height: 100%;
+}
+
+.sea-qa-discourse-forums-details-container .modal-content .modal-body {
   padding: 0px;
+  overflow: hidden;
+}
+
+.sea-qa-discourse-forums-details-container .modal-content .modal-header .modal-title {
+  width: 80%;
+}
+
+.sea-qa-discourse-forums-details-container .modal-content .modal-header .sea-qa-modal-close.close {
+  flex: unset
+}
+
+.sea-qa-discourse-forums-details-container .row-expand-direct-icons {
+  display: flex;
+  justify-content: space-between;
+  width: 46px;
+}
+
+.sea-qa-discourse-forums-details-container .row-expand-direct-icons .direct-icon {
+  cursor: pointer;
+  display: inline-block;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  width: 20px;
+}
+
+.sea-qa-discourse-forums-details-container .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-down {
+  color: #000;
+  width: 16px !important;
+  height: 16px !important;
+  opacity: .5;
+}
+
+.sea-qa-discourse-forums-details-container .row-expand-direct-icons .direct-icon:hover .sea-qa-icon-svg-down {
+  opacity: .75;
 }
 
 .sea-qa-discourse-forums-details-container .sea-qa-discourse-forums-row-details {
-  min-height: 40vh;
-  max-height: 60vh;
+  height: 100%;
   overflow: auto;
   padding: 0 16px;
 }
