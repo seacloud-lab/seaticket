@@ -565,6 +565,8 @@ class TicketAPIView(APIView):
                 ticket.priority = priority
             ticket.updated_at = timezone.now()
             ticket.save()
+            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
+                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -937,6 +939,8 @@ class TicketReplyAPIView(APIView):
         try:
             ticket.reply_updated_at = ticket_reply.updated_at
             ticket.save()
+            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
+                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
         except Exception as e:
             logger.error(e)
 
@@ -980,6 +984,8 @@ class TicketReplyAPIView(APIView):
             ticket_reply.deleted = True
             ticket_reply.delete_time = timezone.now()
             ticket_reply.save()
+            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
+                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

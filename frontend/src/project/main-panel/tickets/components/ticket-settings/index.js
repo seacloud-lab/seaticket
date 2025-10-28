@@ -1,10 +1,10 @@
-import AssigneesSettings from './assignees-settings';
+import CollaboratorsSettings from './collaborators-settings';
 import TagsSettings from './tags-settings';
 import TypeSettings from './type-settings';
 import RateSettings from './rate-settings';
 
 export {
-  AssigneesSettings,
+  CollaboratorsSettings,
   TagsSettings,
   TypeSettings,
   RateSettings
