@@ -17,7 +17,7 @@ from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import QAView, ConvertRecordToTicket
+from .ai import ChatView, ConvertRecordToTicket
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
