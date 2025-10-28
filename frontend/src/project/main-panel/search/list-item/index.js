@@ -7,7 +7,7 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
-const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', searchValue }) => {
+const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', score = '', searchValue }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
 
   const openOriginalURL = useCallback(() => {
@@ -28,7 +28,12 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
-        <div className="list-item-title">{title || ''}</div>
+        <div className="list-item-title">{title || ''}
+          <span>{title || ''}</span>
+          {score && (
+            <span className="list-item-score"> {score}</span>
+          )}
+        </div>
         <div className="list-item-path">{subtitle || ''}</div>
         {bumped_at &&
           <div className="list-item-time" title={formatWithTimezone(bumped_at)}>

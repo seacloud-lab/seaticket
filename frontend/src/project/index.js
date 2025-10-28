@@ -5,19 +5,23 @@ import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { BAR_TYPE, EVENT_BUS_TYPE } from './constants';
-import { TICKET_PAGE_TYPE } from './main-panel/tickets/constants';
+import { SETTINGS_PAGE_TYPE, TICKET_PAGE_TYPE } from './main-panel/tickets/constants';
 import { CONNECTION_PAGE_TYPE } from './main-panel/connections/constants';
 import { CenteredLoading } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
+import ProjectSettingsDialog from '../components/dialog/project-settings-dialog';
 
 import './index.css';
 
-const { projectName, projectUuid, workspaceID } = window.app.pageOptions;
-
+const { projectName, projectUuid, workspaceID, isProjectAdmin } = window.app.pageOptions;
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
+  const [isShowDialog, setIsShowDialog] = useState(false);
+  const toggleProjectSettingsDialog = useCallback(() => {
+    setIsShowDialog(prev => !prev);
+  }, []);
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
@@ -34,6 +38,11 @@ const Project = () => {
 
   const toggleBar = useCallback((newActiveBar) => {
     const activeBarKey = newActiveBar[0];
+    if (activeBarKey === BAR_TYPE.SETTINGS) {
+      eventBus.dispatch(EVENT_BUS_TYPE.OPEN_PROJECT_SETTINGS, SETTINGS_PAGE_TYPE.ALL);
+      setIsShowDialog(true);
+      return;
+    }
     if (activeBar[0] === activeBarKey) {
       if ([BAR_TYPE.SEARCH].includes(activeBarKey)) return;
       if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
@@ -83,6 +92,14 @@ const Project = () => {
           <ConnectionsProvider projectUuid={projectUuid} >
             <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
             <MainPanel activeBar={activeBar} />
+            {isShowDialog && <ProjectSettingsDialog
+              projectUuid={projectUuid}
+              projectName={projectName}
+              workspaceID={workspaceID}
+              isProjectAdmin={isProjectAdmin}
+              toggleDialog={toggleProjectSettingsDialog}
+              onSaveSuccess={() => {}}
+            />}
           </ConnectionsProvider>
         )}
       </div>

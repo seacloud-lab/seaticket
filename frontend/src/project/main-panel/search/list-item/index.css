@@ -62,3 +62,11 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+.list-item-score {
+  font-size: 12px;
+  color: #888;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  padding: 2px 6px;
+}

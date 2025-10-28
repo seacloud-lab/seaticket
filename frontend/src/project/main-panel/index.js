@@ -15,7 +15,7 @@ const Container = ({ activeBar }) => {
   const title = bar.name;
   if (barKey === BAR_TYPE.CHAT) return (<Ask title={title}/>); // Question answering page
   if (barKey === BAR_TYPE.SEARCH) return (<Search title={title}/>); // search page
-  if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} />); // tickets page
+  if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} />);// tickets page
   return (<Connections title={title} />); // connections page
 };
 

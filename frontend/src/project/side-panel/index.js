@@ -4,6 +4,7 @@ import Header from './header';
 import { BAR_TYPES } from '../constants';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
+import ProjectSettingsDialog from '../../components/dialog/project-settings-dialog';
 
 import './index.css';
 
@@ -32,6 +33,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
           <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
           <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
           <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
+          <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
         </div>
       </div>
       <ResizeBar min={200} max={600} onResize={onResize} />

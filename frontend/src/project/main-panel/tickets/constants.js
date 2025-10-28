@@ -161,6 +161,10 @@ export const TICKET_CHILDREN_PAGE_TYPE = {
   ALL: 'all',
 };
 
+export const SETTINGS_PAGE_TYPE = {
+  ALL: 'all',
+};
+
 export const TICKET_COLUMNS = [
   {
     type: CellType.RATE,
