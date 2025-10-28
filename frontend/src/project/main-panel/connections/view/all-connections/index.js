@@ -6,6 +6,7 @@ import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
+import ConnectionLogsDialog from '../../components/connection-logs-dialog';
 import createFormatter from '../../components/cell-formatter';
 import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_COMPLETED_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
@@ -16,6 +17,7 @@ import './index.css';
 
 const AllConnections = ({ projectUuid }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
+  const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 
   const { isLoading, isDataLoaded, connections, reload, loadMore, handleModify, handleDelete,
     modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
@@ -64,6 +66,16 @@ const AllConnections = ({ projectUuid }) => {
   const closeStatusDialog = useCallback(() => {
     activeRecordRef.current = null;
     setIsShowStatusDialog(false);
+  }, []);
+
+  const onViewLog = useCallback((record) => {
+    activeRecordRef.current = record;
+    setIsShowLogDialog(true);
+  }, []);
+
+  const closeLogDialog = useCallback(() => {
+    activeRecordRef.current = null;
+    setIsShowLogDialog(false);
   }, []);
 
   const handleExpandRow = useCallback((row) => {
@@ -147,6 +159,7 @@ const AllConnections = ({ projectUuid }) => {
         onMore={onMore}
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
+        onViewLog={onViewLog}
         onUpdate={modifyConnectionStatus}
         handleStatusActive={handleStatusActive}
         rowsDidMount={rowsDidMount}
@@ -158,6 +171,13 @@ const AllConnections = ({ projectUuid }) => {
           projectUuid={projectUuid}
           connectionId={activeRecordRef.current?.id}
           onToggle={closeStatusDialog}
+        />
+      )}
+      {isShowLogDialog && (
+        <ConnectionLogsDialog
+          projectUuid={projectUuid}
+          connectionId={activeRecordRef.current?.id}
+          onToggle={closeLogDialog}
         />
       )}
     </>

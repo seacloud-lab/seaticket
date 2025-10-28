@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStatusActive }) => {
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row, handleStatusActive }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggle = () => {
@@ -20,7 +20,7 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStat
       {onDelete &&
         <IconButton className="bg-color-deep mr-1" title={gettext('Delete')} icon="delete" onClick={() => onDelete(row)} />
       }
-      {(onMore || onManualSync || handleStatusActive) &&
+      {(onMore || onManualSync || handleStatusActive || onViewLog) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <DropdownToggle className="bg-color-deep" tag="span">
             <IconButton className="bg-color-deep" icon="more" onClick={toggle} />
@@ -33,6 +33,11 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, row, handleStat
                 </DropdownItem>
               )
             }
+            {onViewLog && (
+              <DropdownItem onClick={() => onViewLog(row)}>
+                {gettext('Logs')}
+              </DropdownItem>
+            )}
             {onManualSync &&
               (
                 <DropdownItem onClick={() => onManualSync(row)}>
