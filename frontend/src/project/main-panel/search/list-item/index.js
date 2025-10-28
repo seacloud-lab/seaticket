@@ -29,8 +29,8 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
-        <div className="list-item-title">{title || ''}
-          <span>{title || ''}</span>
+        <div className="list-item-title">
+          <span className="text-truncate list-item-title-content">{title || ''}</span>
           {isShowScore && score && (
             <span className="list-item-score ml-2"> {score}</span>
           )}
