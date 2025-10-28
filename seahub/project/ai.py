@@ -315,7 +315,6 @@ class GenerateAITitleView(APIView):
 
 
         except Exception as e:
-            print(e)
             logger.error(f'AI title generation error: {e}')
             error_msg = 'Failed to generate AI title.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
