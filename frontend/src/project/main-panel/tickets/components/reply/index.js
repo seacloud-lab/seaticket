@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
+import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem, CenteredLoading } from '@/components';
 import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
@@ -27,6 +27,7 @@ const Reply = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isShowEditor, setIsShowEditor] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
+  const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
   const { getCollaborator, queryUser } = useCollaborators();
   const [content, setContent] = useState(reply.content);
 
@@ -77,13 +78,16 @@ const Reply = ({
   }, []);
 
   const handleUpdateReply = useCallback(() => {
+    setIsShowCommentLoading(true);
     onModify && onModify(content, (error) => {
       if (!error) {
         isChangeRef.current = false;
         setContent(content?.text);
         setIsShowEditor(false);
+        setIsShowCommentLoading(false);
         return;
       }
+      setIsShowCommentLoading(false);
     });
   }, [content, onModify]);
 
@@ -166,7 +170,13 @@ const Reply = ({
                     <UploadFilesButton onChange={handleFiles} />
                     <div className="ml-2">
                       <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
-                      <Button disabled={!isChangeRef.current || (isChangeRef.current && !content?.text)} color="primary" onClick={handleUpdateReply}>{gettext('Update comment')}</Button>
+                      <Button
+                        disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
+                        color="primary"
+                        onClick={handleUpdateReply}
+                      >
+                        {isShowCommentLoading ? <CenteredLoading /> : gettext('Update comment')}
+                      </Button>
                     </div>
                   </div>
                 </>
