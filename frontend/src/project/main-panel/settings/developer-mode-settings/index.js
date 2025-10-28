@@ -16,7 +16,7 @@ const DeveloperModeSettings = ({
 
   const onSubmit = useCallback(() => {
     setSubmitting(true);
-    onChange && onChange(value, ({ error }) => {
+    onChange && onChange(value, ({ error } = {}) => {
       if (error) {
         setSubmitting(false);
         return;

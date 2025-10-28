@@ -70,7 +70,7 @@ const Project = () => {
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      callback && callback(error);
+      callback && callback({ error });
     });
   }, [settings]);
 

@@ -53,7 +53,7 @@ const Settings = ({
             <TabPane tabId={TAB.DEV_MODE} role="tabpanel" id="developer-mode-setting-panel">
               <DeveloperModeSettings
                 value={settings.developer_mode}
-                onChange={(value) => modifySettings({ developer_mode: value })}
+                onChange={(value, callback) => modifySettings({ developer_mode: value }, callback)}
                 onToggle={onToggle}
               />
             </TabPane>
