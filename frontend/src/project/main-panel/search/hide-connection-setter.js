@@ -49,10 +49,17 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 
   return (
     <>
-      <div className="search-filter filter-by-suffix-container" id={target} onClick={onSetterToggle} onKeyDown={onKeyDown} tabIndex={0} role="button">
+      <div
+        className="search-filter filter-by-suffix-container"
+        id={target}
+        onClick={onSetterToggle}
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+        role="button"
+      >
         <div className={classNames('search-filter-toggle', {
-          'active': isShowSetter && connections.length !== hiddenConnectionIDs.length,
-          'highlighted': connections.length !== hiddenConnectionIDs.length,
+          'active': isShowSetter && showConnectionsLen > 0,
+          'highlighted': showConnectionsLen > 0,
         })} >
           <div className="filter-label">
             {showConnectionsLen < 1 && gettext('Connection')}
