@@ -53,6 +53,7 @@ import FixedWidthTable from './fixed-width-table';
 import AdminProjects from './admin-projects';
 import UserSelect from './user-select';
 import Switch from './switch';
+import IconTooltip from './icon-tooltip';
 
 export {
   FixedWidthTable,
@@ -110,4 +111,5 @@ export {
   SubDropdown,
   UserSelect,
   Switch,
+  IconTooltip,
 };

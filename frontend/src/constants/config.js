@@ -38,10 +38,6 @@ export const hasBoundPhone = window.app.pageOptions.hasBoundPhone;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const isOrgStaff = window.app.pageOptions.isOrgStaff;
 
-export const curNoteMsg = window.app.pageOptions.curNoteMsg;
-export const curNoteID = window.app.pageOptions.curNoteID;
-export const curNoteList = window.app.pageOptions.curNoteList;
-
 export const trashCleanExpireDays = window.app.pageOptions.trashCleanExpireDays;
 
 export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShowIDInOrgWhenSearchUser;
