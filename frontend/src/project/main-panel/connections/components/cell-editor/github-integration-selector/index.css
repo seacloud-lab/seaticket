@@ -6,6 +6,11 @@
   cursor: pointer;
 }
 
+.sea-qa-connection-github-integration-selector.focus {
+  border-color: #1991eb !important;
+  box-shadow: 0 0 0 2px rgba(70, 127, 207, 0.25);
+}
+
 .sea-qa-connection-github-integration-formatter {
   padding: 0 6px;
   border-radius: 3px;
