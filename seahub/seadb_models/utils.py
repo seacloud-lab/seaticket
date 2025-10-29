@@ -3,7 +3,8 @@ import logging
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
-from seahub.project.utils import get_current_table_metadata, get_project_related_users
+from seahub.project.utils import get_current_table_metadata
+from seahub.project.ticket_utils import get_column_key_by_name
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable
 
@@ -398,6 +399,31 @@ def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
     return records, display_columns
+
+
+def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
+    title_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'title')
+    priority_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'priority')
+    view = {
+            'basic_filters': [],
+            'filters': [
+                {'column_key': title_column_key, 'filter_predicate': 'contains', 'filter_term': search_text}
+            ] if search_text else [],
+            'filter_conjunction': 'Or',
+            'sorts': [
+                {'column_key': priority_column_key, 'sort_type': 'down'}
+            ]
+        }
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
+    if not table_metadata:
+        return []
+    columns = table_metadata.get('columns') or []
+    display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
+    sql = view_data_2_sql('tickets', display_columns, view, start, end, include_deleted=True)
+    ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
+    return ticket_data
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
     connection_type = connection.type

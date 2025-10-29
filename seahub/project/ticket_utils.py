@@ -128,6 +128,15 @@ def _get_select_column_options(seadb_api, project_uuid, table_name, column_name)
     options = column_data.get('options', []) or []
     return options, column_key
 
+def get_column_key_by_name(seadb_api, project_uuid, table_name, column_name):
+    table_meta = get_table_by_name(seadb_api, project_uuid, table_name)
+    if not table_meta:
+        return None
+    column, column_key = _get_column_by_name(table_meta, column_name)
+    if not column:
+        return None
+    return column_key
+
 ### status
 def get_status_column(seadb_api, project_uuid):
     options, column_key = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'status')

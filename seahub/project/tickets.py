@@ -23,7 +23,7 @@ from seahub.project.models import Projects, TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission
-from seahub.seadb_models.utils import list_tickets_view_records
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search
 from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
@@ -536,8 +536,8 @@ class TicketAPIView(APIView):
                 update_row['priority'] = priority
             if is_update_assignees:
                 update_row['assignees'] = assignees
-            participants = ticket.get('participants')
-            if participants and username not in participants:
+            participants = ticket.get('participants', [])
+            if username not in participants:
                 participants.append(username)
             update_row['participants'] = participants
             update_row['updated_at'] = datetime.datetime.now(datetime.UTC).isoformat()
@@ -642,9 +642,15 @@ class TicketsSearchAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
         # project_uuid, username, search_text, start, end
-        tickets = Tickets.objects.list_tickets_by_search(project_uuid, username, query, 0, limit)
+        try:
+            seadb_api = SeaDBAPI(username)
+            tickets = list_tickets_by_search(seadb_api, project_uuid, query, 0, limit)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        tickets = [{'number': ticket.number, 'title': ticket.title} for ticket in tickets]
+        tickets = [{'number': ticket.get('_pk'), 'title': ticket.get('title')} for ticket in tickets]
         return Response({'tickets': tickets})
 
 
@@ -803,8 +809,8 @@ class TicketRepliesAPIView(APIView):
                     'reply_updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
-            participants = ticket.get('participants')
-            if participants and username not in participants:
+            participants = ticket.get('participants', [])
+            if username not in participants:
                 participants.append(username)
             update_ticket['row']['participants'] = participants
             seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
@@ -923,8 +929,8 @@ class TicketReplyAPIView(APIView):
             update_row = {
                 'reply_updated_at': ticket_reply_data.get('updated_at'),
             }
-            participants = ticket.get('participants')
-            if participants and username not in participants:
+            participants = ticket.get('participants', [])
+            if username not in participants:
                 participants.append(username)
                 update_row['participants'] = participants
             ticket_update = {
@@ -972,8 +978,8 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            participants = ticket.get('participants')
-            if participants and username not in participants:
+            participants = ticket.get('participants', [])
+            if username not in participants:
                 participants.append(username)
                 update_ticket = {
                     'pk': ticket.get('_pk'),
