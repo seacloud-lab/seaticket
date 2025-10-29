@@ -7,6 +7,8 @@ import './index.css';
 const CollaboratorEditor = ({
   target,
   isShowDeleteArea = true,
+  isSearchEnabled = true,
+  isMultiple = true,
   placeholder,
   emptyTip,
   value = [],
@@ -17,8 +19,10 @@ const CollaboratorEditor = ({
   const mainRef = useRef(null);
 
   const handleSubmit = useCallback(() => {
-    const value = mainRef.current.getValue();
-    onChange(value);
+    if (isMultiple) {
+      const value = mainRef.current.getValue();
+      onChange(value);
+    }
     onClose();
   }, [onChange, onClose]);
 
@@ -29,7 +33,19 @@ const CollaboratorEditor = ({
       hidePopover={handleSubmit}
       hidePopoverWithEsc={handleSubmit}
     >
-      <Main ref={mainRef} isShowDeleteArea={isShowDeleteArea} placeholder={placeholder} emptyTip={emptyTip} value={value} collaborators={collaborators} />
+      <Main
+        ref={mainRef}
+        isShowDeleteArea={isShowDeleteArea}
+        isSearchEnabled={isSearchEnabled}
+        isMultiple={isMultiple}
+        placeholder={placeholder}
+        emptyTip={emptyTip}
+        value={value}
+        collaborators={collaborators}
+        onChange={onChange}
+        onToggle={onClose}
+        onHidden={handleSubmit}
+      />
     </CustomizePopover>
 
   );

@@ -1,0 +1,20 @@
+.sea-qa-tooltip-icon-btn {
+  height: 14px;
+  width: 14px;
+  margin-left: 8px;
+  margin-right: 8px;
+  display: inline-block;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
+  height: 14px;
+  width: 14px;
+  color: #bdbdbd;
+  margin-top: -2px;
+}
+
+.sea-qa-tooltip-icon-btn:hover .sea-qa-icon-svg {
+  color: #888;
+}

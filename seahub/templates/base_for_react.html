@@ -85,12 +85,6 @@
             enableEncryptedLibrary: {% if enable_encrypted_library %} true {% else %} false {% endif %},
             isSystemStaff: {% if request.user.is_staff %} true {% else %} false {% endif %},
             isMobile: {% if request.is_mobile or request.is_tablet %} true {% else %} false {% endif %},
-            loadDtableFromAPIGateway: {% if load_dtable_from_api_gateway %} true {% else %} false {% endif %},
-            enableAPIGatewayProxySocket: {% if enable_api_gateway_proxy_socket %} true {% else %} false {% endif %},
-            {% if request.user.is_authenticated and request.cur_note %}
-            curNoteMsg: '{{ request.cur_note.message|urlize|escapejs }}',
-            curNoteID: '{{ request.cur_note.id }}',
-            {% endif %}
         }
      };
 </script>
