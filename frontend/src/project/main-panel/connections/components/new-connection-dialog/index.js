@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
-import { gettext, mediaUrl, GitHubAppURL } from '@/constants';
+import { gettext, mediaUrl, server, GitHubAppURL } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, IconTooltip } from '@/components';
 import CopyInput from '@/components/copy-input';
