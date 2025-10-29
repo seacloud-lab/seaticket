@@ -341,3 +341,10 @@ img:not([src]) {
   display: block;
   margin: 1em auto;
 }
+
+.tooltip-inner {
+  background-color: #303133;
+  font-weight: lighter;
+  max-width: 242px;
+  text-align: start;
+}
