@@ -30,7 +30,7 @@ const Search = ({ title, settings }) => {
 
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections) => {
     if (!connections || connections.length === 0) {
-      toaster.danger(gettext('Please select at least one connection to search'));
+      toaster.danger(gettext('Select at least one connection to search'));
       return;
     }
     const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
