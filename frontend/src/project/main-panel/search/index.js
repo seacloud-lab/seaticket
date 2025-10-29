@@ -18,7 +18,7 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 
 const SEARCH_STORE_KEY = 'search-project';
 
-const Search = ({ title }) => {
+const Search = ({ title, settings }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -131,7 +131,7 @@ const Search = ({ title }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result => <ListItem key={result.id || result.uuid} {...result} searchValue={value} />)}
+                {results.map(result => <ListItem key={result.id || result.uuid} {...result} searchValue={value} settings={settings} />)}
               </div>
             }
           </>

@@ -285,6 +285,7 @@ class Projects(models.Model):
     color = models.CharField(max_length=50, null=True)
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
+    settings = models.TextField(null=True)
 
     objects = ProjectsManager()
 
@@ -304,6 +305,7 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
+            'settings': json.loads(self.settings) if self.settings else {},
         }
         if include_deleted:
             result.update({

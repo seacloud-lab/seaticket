@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
@@ -7,8 +7,9 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
-const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', searchValue }) => {
+const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = '', score = '', searchValue, settings }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
+  const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
 
   const openOriginalURL = useCallback(() => {
     if (!url) return;
@@ -28,7 +29,12 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
-        <div className="list-item-title">{title || ''}</div>
+        <div className="list-item-title">
+          <span className="text-truncate list-item-title-content">{title || ''}</span>
+          {isShowScore && score && (
+            <span className="list-item-score ml-2"> {score}</span>
+          )}
+        </div>
         <div className="list-item-path">{subtitle || ''}</div>
         {bumped_at &&
           <div className="list-item-time" title={formatWithTimezone(bumped_at)}>

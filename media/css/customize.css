@@ -210,3 +210,13 @@
 .sea-qa-icon-svg.sea-qa-icon-svg-priority-04 {
   color: var(--bs-body-color) !important;
 }
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+}
+
+.submit-btn .sea-qa-loading-tip {
+  height: 14px;
+  width: 14px;
+}

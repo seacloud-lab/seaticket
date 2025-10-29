@@ -272,6 +272,7 @@ class ProjectView(APIView):
         color = request.data.get('color')
         text_color = request.data.get('text_color')
         icon = request.data.get('icon')
+        settings = request.data.get('settings')
         password = request.data.get('password')
 
         if not is_org_context(request):
@@ -308,6 +309,15 @@ class ProjectView(APIView):
                 project.text_color = text_color
             if icon:
                 project.icon = icon
+            if settings:
+                if project.settings:
+                    project_settings = json.loads(project.settings)
+                else:
+                    project_settings = {}
+                update_settings = json.loads(settings)
+                for k,v in update_settings.items():
+                    project_settings[k] = v
+                project.settings = json.dumps(project_settings)
             project.modifier = username
             project.save()
         except OperationalError:

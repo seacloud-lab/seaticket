@@ -1,0 +1,16 @@
+.developer-mode-settings .change-developer-mode-status {
+  margin-bottom: 10px;
+}
+
+.developer-mode-settings .change-developer-mode-status .custom-switch {
+  padding-left: 0;
+}
+
+.developer-mode-settings .change-developer-mode-status:not(.disabled) .custom-switch:hover,
+.developer-mode-settings .change-developer-mode-status:not(.disabled) .custom-switch:hover * {
+  cursor: pointer;
+}
+
+.developer-mode-settings .tip {
+  font-size: 12px;
+}
