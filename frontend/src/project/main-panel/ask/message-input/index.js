@@ -81,14 +81,27 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }
 
   const onKeyDown = useCallback((event) => {
     if (CommonlyUsedHotkey.isShiftEnter(event)) return;
+    if (CommonlyUsedHotkey.isModEnter(event)) {
+      event.preventDefault();
+      const textarea = inputRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
 
+      const newValue = value.substring(0, start) + '\n' + value.substring(end);
+      setValue(newValue);
+
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
+      return;
+    }
     const keyCode = event.keyCode;
     if (keyCode === Utils.keyCodes.enter) {
       event.preventDefault();
       onSendMessage();
       return;
     }
-  }, [onSendMessage, setAsk]);
+  }, [value, onSendMessage, setAsk]);
 
   const onMouseUp = useCallback(() => {
     const selection = window.getSelection();
@@ -111,7 +124,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }
 
   useEffect(() => {
     if (inputRef.current && previewContentRef.current) {
-      previewContentRef.current.textContent = value;
+      previewContentRef.current.innerText = value;
     }
   }, [value]);
 
