@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../connections/constants';
-import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
@@ -32,7 +32,9 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         <div className="list-item-title">
           <span className="text-truncate list-item-title-content">{title || ''}</span>
           {isShowScore && score && (
-            <span className="list-item-score ml-2"> {score}</span>
+            <span className="list-item-score ml-2">
+              {getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 })}
+            </span>
           )}
         </div>
         <div className="list-item-path">{subtitle || ''}</div>
