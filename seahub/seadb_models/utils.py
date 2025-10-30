@@ -315,11 +315,22 @@ def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
             mapped_column["column_data"] = column.data
         seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
     # Create tickets table index for seadb
-    seadb_api.create_column_index(
-        project_uuid,
-        tickets_table_id,
-        [TicketsTable.deleted.name],
-    )
+    ticket_index_columns = [
+        TicketsTable.priority.name,
+        TicketsTable.status.name,
+        TicketsTable.type.name,
+        TicketsTable.tags.name,
+        TicketsTable.assignees.name,
+        TicketsTable.participants.name,
+        TicketsTable.creator.name,
+        TicketsTable.deleted.name,
+    ]
+    for column in ticket_index_columns:
+        seadb_api.create_column_index(
+            project_uuid,
+            tickets_table_id,
+            [column],
+        )
 
     # Create replies table
     res = seadb_api.create_table(project_uuid, 'ticket_replies')
@@ -334,12 +345,12 @@ def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
         seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
 
     # Create replies table index for seadb
-    index_columns = [
+    ticket_replies_index_columns = [
         TicketRepliesTable.ticket_id.name,
         TicketRepliesTable.creator.name,
         TicketRepliesTable.deleted.name,
     ]
-    for column in index_columns:
+    for column in ticket_replies_index_columns:
         seadb_api.create_column_index(
             project_uuid,
             replies_table_id,
