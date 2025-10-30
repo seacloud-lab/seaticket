@@ -244,7 +244,12 @@ const NewConnectionDialog = ({ onSubmit, githubOauth, projectUuid, onToggle, mod
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
                     {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
                     {githubOauth && columnType === CONNECTION_FIELD_TYPE.GITHUB_INSTALLATION && (
-                      <IconTooltip icon="github" tip={gettext('Jump to GitHub app')} className="ml-0" onClick={() => location.href = GitHubAppURL} />
+                      <IconTooltip
+                        icon="github"
+                        tip={gettext('Jump to GitHub app')}
+                        className="ml-0"
+                        onClick={() => window.open(GitHubAppURL, '_blank', 'noopener,noreferrer')}
+                      />
                     )}
                   </Label>
                   {renderEditor(c)}

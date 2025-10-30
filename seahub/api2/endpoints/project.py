@@ -275,7 +275,7 @@ class ProjectView(APIView):
         icon = request.data.get('icon')
         settings = request.data.get('settings')
         password = request.data.get('password')
-        github_oauth = request.data('github_oauth')
+        github_oauth = request.data.get('github_oauth')
 
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
