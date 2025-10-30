@@ -335,6 +335,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
 
     # Create replies table index for seadb
     index_columns = [
+        TicketRepliesTable.ticket_id.name,
         TicketRepliesTable.creator.name,
         TicketRepliesTable.deleted.name,
     ]
