@@ -489,7 +489,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           time: detail.created_at || detail.updated_at,
           body: detail.body || detail.content,
         }));
-        setRowDetailsTitle(row.title);
+        setRowDetailsTitle(row.title || row.filename);
         setRowDetails(detailData);
       });
     }
