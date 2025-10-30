@@ -259,7 +259,7 @@ export const MetadataProvider = forwardRef(({
       // if (context) {
       //   context.destroy();
       // }
-      // storeRef.current.destroy();
+      storeRef.current.destroy();
       unsubscribeServerTableChanged();
       unsubscribeTableChanged();
       unsubscribeHandleTableError();

@@ -28,6 +28,7 @@ class Store {
     this.collaborators = props.collaborators || [];
     this.tagsData = {};
     this.typesData = {};
+    this.mounted = true;
   }
 
   destroy = () => {
@@ -40,6 +41,7 @@ class Store {
     this.isSendingOperation = false;
     this.tagsData = {};
     this.typesData = {};
+    this.mounted = false;
   };
 
   initStartIndex = () => {
@@ -50,7 +52,8 @@ class Store {
     if (!view) {
       throw Error('View_not_exist');
     }
-    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit }).then(res => {
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit })?.then(res => {
+      if (!this.mounted) return;
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || []);
       let data = new Metadata({ rows, columns, view });

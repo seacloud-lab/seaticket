@@ -29,6 +29,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
+  const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
 
   const { typesData } = useTypes();
   const { updateCacheData } = useDataCache();
@@ -197,16 +198,19 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [editorAPI]);
 
   const onSubmitReply = useCallback(() => {
+    setIsShowCommentLoading(true);
     createReply(ticket.id, reply).then(() => {
       const editor = replyEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
       setTimeout(() => {
         containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+        setIsShowCommentLoading(false);
       }, 1);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
+      setIsShowCommentLoading(false);
     });
   }, [reply, ticket, replyEditorRef, createReply]);
 
@@ -304,7 +308,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
               <StatusToggleButton status={status} onChange={toggleStatus} />
-              <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
+              <Button disabled={!reply.text || isShowCommentLoading} color="primary" onClick={onSubmitReply}>
+                {isShowCommentLoading ? <CenteredLoading /> : gettext('Comment')}
+              </Button>
             </div>
           </div>
         </div>
