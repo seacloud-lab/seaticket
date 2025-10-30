@@ -26,7 +26,7 @@ from seahub.project.utils import check_project_permission, \
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search
 from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
+from seahub.tickets.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
     check_ticket_reply_creation_interval, get_ticket_reply_by_pk, get_type_option_by_id, get_tags_column, check_ticket_creation_interval,\
     get_type_option_by_name, get_tag_ids_by_names, get_status_option_by_id
 
@@ -1002,4 +1002,3 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
-

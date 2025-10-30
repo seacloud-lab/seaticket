@@ -13,7 +13,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects, TicketViews
-from .utils import check_project_admin_permission, check_project_permission
+from seahub.project.utils import check_project_admin_permission, check_project_permission
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -462,4 +462,3 @@ class TicketViewsMoveView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'navigation': results['navigation']})
-

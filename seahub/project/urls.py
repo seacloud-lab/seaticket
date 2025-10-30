@@ -9,11 +9,11 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionsStatusView, ProjectConnectionLogView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
-from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
-from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
-from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
+from seahub.tickets.ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
+from seahub.tickets.ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
+from seahub.tickets.tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
     TicketsSearchAPIView
-from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
+from seahub.tickets.ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView

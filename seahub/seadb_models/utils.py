@@ -4,7 +4,7 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
     CONNECTION_MUST_RETURN_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.project.ticket_utils import get_column_key_by_name
+from seahub.tickets.ticket_utils import get_column_key_by_name
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable
 

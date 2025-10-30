@@ -23,7 +23,7 @@ from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.ticket_utils import time_str_to_utc_time
+from seahub.tickets.ticket_utils import time_str_to_utc_time
 
 
 logger = logging.getLogger(__name__)
