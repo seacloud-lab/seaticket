@@ -2,11 +2,11 @@ import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
 
 export const TICKET_STATUS = {
-  OPEN: 'open',
+  OPEN: '0001',
   REOPEN: 're_open',
-  COMPLETED: 'completed',
-  NOT_PLANNED: 'not_planned',
-  DUPLICATE: 'duplicate',
+  COMPLETED: '0002',
+  NOT_PLANNED: '0003',
+  DUPLICATE: '0004',
 };
 
 export const TICKET_OPENED_STATUS = [
@@ -63,10 +63,10 @@ export const TICKET_STATUS_CONFIG = {
 };
 
 export const TICKET_STATUS_OPTIONS = [
-  { id: TICKET_STATUS.OPEN, value: TICKET_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: TICKET_STATUS.COMPLETED, value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: TICKET_STATUS.NOT_PLANNED, value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
-  { id: TICKET_STATUS.DUPLICATE, value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+  { id: '0001', value: TICKET_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
+  { id: '0002', value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
+  { id: '0003', value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+  { id: '0004', value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
 ];
 
 export const PREDEFINED_TICKET_TAG_NAME = {

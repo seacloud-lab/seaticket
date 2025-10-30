@@ -446,57 +446,12 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   CONSTRAINT `connection_project_id_568ecbbf_fk_project_id` FOREIGN KEY (`project_uuid`) REFERENCES `projects` (`uuid`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `tickets`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `project_uuid` char(32) NOT NULL,
-  `number` int(11) NOT NULL,
-  `creator` varchar(255) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `status` varchar(50) DEFAULT NULL,
-  `type` bigint(20) DEFAULT NULL,
-  `priority` tinyint(1) NOT NULL DEFAULT 0,
-  `reply_count` int(11) NOT NULL DEFAULT 0,
-  `created_at` datetime(6) NOT NULL,
-  `updated_at` datetime(6) NOT NULL,
-  `reply_updated_at` datetime(6) NULL DEFAULT NULL,
-  `deleted` tinyint(1) NOT NULL DEFAULT 0,
-  `delete_at` datetime(6) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `tickets_project_uuid_number`(`project_uuid`, `number`),
-  KEY `tickets_deleted`(`deleted`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `ticket_replies`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ticket_id` bigint(20) NOT NULL,
-  `number` int(11) NOT NULL,
-  `creator` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `created_at` datetime(6) NOT NULL,
-  `updated_at` datetime(6) NOT NULL,
-  `deleted` tinyint(1) NOT NULL DEFAULT 0,
-  `delete_at` datetime(6) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ticket_replies_ticket_id_number`(`ticket_id`, `number`),
-  KEY `ticket_replies_creator`(`creator`),
-  KEY `ticket_replies_deleted`(`deleted`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
 CREATE TABLE `ticket_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ticket_views_project_uuid`(`project_uuid`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `ticket_tags`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ticket_id` bigint(20) NOT NULL,
-  `tag_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ticket_tags_ticket_id_tag_id`(`ticket_id`, `tag_id`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `connection_views`  (
@@ -506,43 +461,6 @@ CREATE TABLE `connection_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `connection_views_connection_id`(`connection_id`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `project_tags`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `project_uuid` char(32) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `color` varchar(50) NOT NULL,
-  `text_color` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `project_tags_project_uuid_name`(`project_uuid`, `name`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `project_types`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `project_uuid` char(32) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `color` varchar(50) NOT NULL,
-  `text_color` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `project_types_project_uuid_name`(`project_uuid`, `name`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `ticket_participants`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ticket_id` bigint(20) NOT NULL,
-  `participant` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ticket_participants_ticket_id_participant`(`ticket_id`, `participant`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
-
-CREATE TABLE `ticket_assignees`  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `ticket_id` bigint(20) NOT NULL,
-  `assignee` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ticket_assignees_ticket_id_assignee`(`ticket_id`, `assignee`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
 
 CREATE TABLE `options_useroptions`  (

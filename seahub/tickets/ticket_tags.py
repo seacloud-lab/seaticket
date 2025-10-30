@@ -12,9 +12,12 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, TicketTags, ProjectTags, Tickets, TicketAssignees, \
-    TicketParticipants
+from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.tickets.ticket_utils import get_tags_column, add_tag_option, update_tag_option, delete_tag_option, \
+    get_tag_option_by_id, get_type_option_by_name, get_tag_ids_by_names, get_ticket_counts_group_by_tag, \
+    get_status_option_by_name
 
 
 logger = logging.getLogger(__name__)
@@ -53,29 +56,23 @@ class ProjectTagsAPIView(APIView):
 
         # main
         try:
-            project_tags = ProjectTags.objects.filter(
-                project_uuid=project_uuid)
+            seadb_api = SeaDBAPI(username)
+            tag_options, _ = get_tags_column(seadb_api, project_uuid)
         except Exception as e:
+            logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:
-            project_tags = []
-
         tickets_count_dict = {}
         if tickets_count == '1':
-            tickets = Tickets.objects.list_tickets(project_uuid)
-            ticket_tags = TicketTags.objects.filter(
-                tag_id__in=[project_tag.id for project_tag in project_tags], ticket_id__in=[ticket.id for ticket in tickets])
-            for ticket_tag in ticket_tags:
-                if ticket_tag.tag_id not in tickets_count_dict:
-                    tickets_count_dict[ticket_tag.tag_id] = 1
-                else:
-                    tickets_count_dict[ticket_tag.tag_id] += 1
+            try:
+                tickets_count_dict = get_ticket_counts_group_by_tag(seadb_api, project_uuid) or {}
+                for tag_option in tag_options:
+                    tag_option['tickets_count'] = tickets_count_dict.get(tag_option.get('name'), 0)
+            except Exception as e:
+                logger.error(e)
 
-        return Response({
-            'project_tags': [project_tag.to_dict(tickets_count_dict) for project_tag in project_tags],
-        })
+        return Response({'project_tags': tag_options})
 
     def post(self, request, project_uuid):
         """
@@ -121,35 +118,19 @@ class ProjectTagsAPIView(APIView):
 
         # main
         try:
-            project_tags = ProjectTags.objects.filter(
-                project_uuid=project_uuid)
+            seadb_api = SeaDBAPI(username)
+            existing_options, _ = get_tags_column(seadb_api, project_uuid)
+            if any(opt.get('name') == name for opt in (existing_options or [])):
+                error_msg = 'tag already exists.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            tag_option = add_tag_option(seadb_api, project_uuid, name, color, text_color, description=description)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_tags:
-            project_tags = []
-
-        if name in [project_tag.name for project_tag in project_tags]:
-            error_msg = 'tag already exists.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # main
-        try:
-            project_tag = ProjectTags.objects.create(
-                project_uuid=project_uuid,
-                name=name,
-                description=description,
-                color=color,
-                text_color=text_color,
-            )
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'project_tag': project_tag.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'project_tag': tag_option}, status=status.HTTP_201_CREATED)
 
 
 class ProjectTagAPIView(APIView):
@@ -189,29 +170,35 @@ class ProjectTagAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid).first()
-        if not project_tag:
-            error_msg = 'Project tag not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         # main
         try:
+            seadb_api = SeaDBAPI(username)
+            tag_option = get_tag_option_by_id(seadb_api, project_uuid, tag_id)
+            if not tag_option:
+                error_msg = 'Project tag not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        try:
+            update_data = {}
             if name:
-                project_tag.name = name
+                update_data['name'] = name
             if description:
-                project_tag.description = description
+                update_data['description'] = description
             if color:
-                project_tag.color = color
+                update_data['color'] = color
             if text_color:
-                project_tag.text_color = text_color
-            project_tag.save()
+                update_data['text_color'] = text_color
+            update_tag_option(seadb_api, project_uuid, tag_id, update_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_tag': project_tag.to_dict()})
+        return Response({'success': True})
 
     def delete(self, request, project_uuid, tag_id):
         """
@@ -234,15 +221,14 @@ class ProjectTagAPIView(APIView):
         if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project_tag = ProjectTags.objects.filter(
-            id=tag_id, project_uuid=project_uuid).first()
-        if not project_tag:
-            error_msg = 'Project tag not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+        
         try:
-            project_tag.delete()
+            seadb_api = SeaDBAPI(username)
+            tag_option = get_tag_option_by_id(seadb_api, project_uuid, tag_id)
+            if not tag_option:
+                error_msg = 'Project tag not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            delete_tag_option(seadb_api, project_uuid, tag_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -280,44 +266,29 @@ class ProjectTagTicketsAPIView(APIView):
 
         # main
         try:
-            tickets = Tickets.objects.list_tickets_by_tag(
-                    project_uuid, tag_id)
+            seadb_api = SeaDBAPI(username)
+            tag_name = get_tag_option_by_id(seadb_api, project_uuid, tag_id).get('name')
+            sql = f"""
+                SELECT * 
+                FROM `tickets` 
+                WHERE `deleted` = False 
+                AND `tags` in ('{tag_name}')
+            """
+            res = seadb_api.query_rows(project_uuid, sql)
+            tickets = res.get('results') or []
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not tickets:
-            return Response({
-                'tickets': []
-            })
+        for row in tickets:
+            if row.get('status'):
+                option = get_status_option_by_name(seadb_api, project_uuid, row.get('status'))
+                row['status'] = option.get('id')
+            if row.get('type'):
+                option = get_type_option_by_name(seadb_api, project_uuid, row.get('type'))
+                row['type'] = option.get('id')
+            if row.get('tags'):
+                row['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, row.get('tags'))
 
-        ticket_id_list = [ticket.id for ticket in tickets]
-
-        tags_dict = {}
-        ticket_tags = TicketTags.objects.filter(ticket_id__in=ticket_id_list)
-        for tag in ticket_tags:
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag.tag_id]
-            else:
-                tags_dict[tag.ticket_id].append(tag.tag_id)
-
-        assignees_dict = {}
-        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_assignee in ticket_assignees:
-            if ticket_assignee.ticket_id not in assignees_dict:
-                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
-            else:
-                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
-
-        participants_dict = {}
-        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_participant in ticket_participants:
-            if ticket_participant.ticket_id not in participants_dict:
-                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
-            else:
-                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
-
-        return Response({
-            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict, participants_dict=participants_dict) for ticket in tickets],
-        })
+        return Response({'tickets': tickets})

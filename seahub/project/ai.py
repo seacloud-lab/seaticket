@@ -53,7 +53,7 @@ class ChatView(APIView):
                 error_msg = 'ticket_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                ticket_json_data = ticket_to_json(ticket_id)
+                ticket_json_data = ticket_to_json(project_uuid, ticket_id)
             except TicketNotFound:
                 error_msg = 'ticket not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)

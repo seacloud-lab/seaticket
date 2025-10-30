@@ -23,6 +23,8 @@ from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search
 
+from seahub.seadb_models.utils import init_ticket_seadb_table
+
 from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
@@ -237,6 +239,7 @@ class ProjectsView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             seadb_api.create_base(project.uuid)
+            init_ticket_seadb_table(seadb_api, project.uuid, workspace.owner)
         except Exception as e:
             logger.error(e)
             project.delete()

@@ -9,6 +9,7 @@ import { BAR_TYPE } from '@/project/constants/bar';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
+import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
@@ -56,6 +57,35 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       }
       return ticketsAPI.listProjectTickets(projectUuid, ...params).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
+        let backendColumns = res?.data?.columns || [];
+        const columnsUpdate = {
+          'title': { click: expandRow },
+        };
+        const backendColumnsMap = {};
+        backendColumns.forEach(c => {
+          backendColumnsMap[c.name] = c;
+        });
+        const columns = TICKET_COLUMNS.map(c => {
+          const backendColumn = backendColumnsMap[c.name];
+          const columnUpdate = columnsUpdate[c.name];
+          return {
+            ...c,
+            key: backendColumn?.key || c.key,
+            ...(columnUpdate || {})
+          };
+        });
+        const typeColum = columns.find(c => c.name === 'type');
+        if (typeColum) {
+          context.setSetting('typeColumnKey', typeColum.key);
+        }
+        const statusColumn = columns.find(c => c.name === 'status');
+        if (statusColumn) {
+          context.setSetting('statusColumnKey', statusColumn.key);
+        }
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
         clearCacheData();
         return {
           data: {
@@ -92,6 +122,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
         const view = res?.data?.view;
         const basic_filters = view?.basic_filters || [];
         if (basic_filters.length === 3) return { data: { view } };
+
         return {
           data: {
             view: {
@@ -99,7 +130,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
               basic_filters: [
                 basic_filters.find(f => f.column_key === 'status') || { column_key: 'status', filter_predicate: 'is_any_of', filter_term: [] },
                 basic_filters.find(f => f.column_key === 'type') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
-                basic_filters.find(f => f.column_key === 'tags') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
+                basic_filters.find(f => f.column_key === 'tags') || { column_key: 'tags', filter_predicate: 'is_any_of', filter_term: [] },
               ]
             }
           }

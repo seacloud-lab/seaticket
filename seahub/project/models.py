@@ -3,7 +3,6 @@ from django.core.cache import cache
 import logging
 import uuid
 import json
-import time
 import copy
 import random
 import string
@@ -1045,6 +1044,44 @@ class TicketView(object):
 
 class TicketViewsManager(models.Manager):
 
+    def update_init_view_details(self, project_uuid, details):
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_tickets_columns
+        seadb_api = SeaDBAPI('seaqa-web')
+        columns = get_tickets_columns(seadb_api, project_uuid)
+        views = details.get('views', [])
+        for v in views:
+            basic_filters = v.get('basic_filters', [])
+            for basic_filter in basic_filters:
+                column_key = basic_filter['column_key']
+
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    column_name = column['name']
+                    basic_filter['column_key'] = column['key']
+                    if column_name in ['status', 'type', 'tags']:
+                        data = column.get('data', {})
+                        if data:
+                            options = data.get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+            v['basic_filters'] = basic_filters
+
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item['column_key']
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    item['column_key'] = column['key']
+            v['sorts'] = sorts
+            details['views'] = views
+        return details
+
     def get_record(self, project_uuid):
         """
             get record from database, if not record, create it
@@ -1052,9 +1089,10 @@ class TicketViewsManager(models.Manager):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(project_uuid=project_uuid).first()
         if not record:
+            details = self.update_init_view_details(project_uuid, TICKET_DEFAULT_DETAILS)
             record = self.create(
                 project_uuid=project_uuid,
-                details=json.dumps(TICKET_DEFAULT_DETAILS)
+                details=json.dumps(details)
             )
         return record
 
@@ -1129,6 +1167,7 @@ class TicketViewsManager(models.Manager):
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
+        view_details = self.update_init_view_details(project_uuid, view_details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
         if folder_id:
             folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
@@ -1315,132 +1354,6 @@ class TicketViews(models.Model):
     @property
     def folders_views_ids(self):
         return self.folders_ids + self.views_ids
-
-
-class TicketsManager(models.Manager):
-    def list_tickets_by_view(self, project_uuid, username, start, end, view_id):
-        from seahub.project.view_utils import filter_tickets_by_view
-        view = TicketViews.objects.get_view(project_uuid, view_id)
-        q, sorts = filter_tickets_by_view(username, view)
-
-        return self.filter(
-            project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
-    
-    def list_tickets_by_search(self, project_uuid, username, search_text, start, end):
-        from seahub.project.view_utils import filter_tickets_by_view
-        view = {
-            'basic_filters': [],
-            'filters': [
-                {'column_key': 'title', 'filter_predicate': 'contains', 'filter_term': search_text}
-            ] if search_text else [],
-            'filter_conjunction': 'Or',
-            'sorts': [
-                {'column_key': 'priority', 'sort_type': 'down'}
-            ]
-        }
-        q, sorts = filter_tickets_by_view(username, view)
-        return self.filter(
-            project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
-
-    def list_tickets_by_tag(self, project_uuid, tag_id):
-        q = Q(project_uuid=project_uuid) & Q(deleted=False)
-        tags = TicketTags.objects.filter(tag_id__in=[tag_id])
-        if tags:
-            ticket_ids = [tag.ticket_id for tag in tags]
-            q = q & Q(id__in=ticket_ids)
-            return self.filter(q)
-        return []
-
-    def list_tickets_by_type(self, project_uuid, type_id):
-        return self.filter(project_uuid=project_uuid, type=type_id, deleted=False)
-
-    def list_tickets(self, project_uuid):
-        return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False))
-
-    def list_tickets_by_username(self, project_uuid, username, start, end):
-        return self.filter(
-            project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
-
-    def create_ticket(self, project_uuid, username, title, description, status, type_id=None, priority=0):
-        for i in range(3):
-            try:
-                previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
-                number = previous_ticket.number + 1 if previous_ticket else 1
-                item = self.create(
-                    project_uuid=project_uuid,
-                    number=number,
-                    creator=username,
-                    title=title,
-                    description=description,
-                    status=status,
-                    type=type_id,
-                    priority=priority,
-                )
-                return item
-            except self.model.MultipleObjectsReturned:
-                time.sleep(0.2)
-                continue
-        return None
-
-    def get_ticket(self, project_uuid, number, deleted=False):
-        return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
-
-    def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
-        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
-
-
-class Tickets(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    project_uuid = models.UUIDField()
-    number = models.IntegerField()
-    creator = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    status = models.CharField(max_length=50, null=True)
-    type = models.BigIntegerField(null=True)
-    priority = models.SmallIntegerField(default=0)
-    reply_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    reply_updated_at = models.DateTimeField(null=True)
-    deleted = models.BooleanField(default=False, null=False, db_index=True)
-    delete_at = models.DateTimeField(null=True)
-
-    objects = TicketsManager()
-
-    class Meta:
-        unique_together = (('project_uuid', 'number'),)
-        db_table = 'tickets'
-
-    def to_dict(self, tags_dict={}, assignees_dict={}, participants_dict={}, include_deleted=False):
-        result = {
-            'project_uuid': str(self.project_uuid),
-            'number': self.number,
-            'title': self.title,
-            'description': self.description,
-            'participants': [],
-            'tags': [],
-            'status': self.status,
-            'type': self.type,
-            'priority': self.priority,
-            'reply_count': self.reply_count,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'reply_updated_at': self.reply_updated_at,
-            'creator': self.creator,
-        }
-        if self.id in tags_dict:
-            result['tags'] = tags_dict[self.id]
-        if self.id in assignees_dict:
-            result['assignees'] = assignees_dict[self.id]
-        if self.id in participants_dict:
-            result['participants'] = participants_dict[self.id]
-        if include_deleted:
-            result.update({
-                'deleted': self.deleted,
-                'delete_at': self.delete_at if self.delete_at else '',
-            })
-        return result
 
 class ChatSessionsManager(models.Manager):
     def create_session(self, project_uuid, session_name, username):

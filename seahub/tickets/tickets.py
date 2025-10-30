@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+import uuid
 import logging
 import json
 from dateutil.relativedelta import relativedelta
@@ -17,13 +19,16 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, Tickets, TicketReplies, \
-    TicketTags, TicketAssignees, ProjectTags, ProjectTypes, TicketParticipants
-from seahub.project.utils import check_project_admin_permission, check_project_permission, \
+from seahub.project.models import Projects, TicketViews
+from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission
-from seahub.project.constants import TICKET_STATUS
-
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search
+from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.tickets.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
+    check_ticket_reply_creation_interval, get_ticket_reply_by_pk, get_type_option_by_id, get_tags_column, check_ticket_creation_interval,\
+    get_type_option_by_name, get_tag_ids_by_names, get_status_option_by_id
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -57,7 +62,6 @@ class TicketsAPIView(APIView):
         except:
             start = 0
             limit = 1000
-        end = start + limit
 
         if start < 0:
             error_msg = 'start invalid'
@@ -86,41 +90,28 @@ class TicketsAPIView(APIView):
 
         # main
         try:
-            tickets = Tickets.objects.list_tickets_by_view(
-                project_uuid, username, start, end, view_id)
+            view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
+            seadb_api = SeaDBAPI(username)
+            tickets, columns = list_tickets_view_records(
+                seadb_api, project_uuid, view, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        ticket_id_list = [ticket.id for ticket in tickets]
-
-        tags_dict = {}
-        ticket_tags = TicketTags.objects.filter(ticket_id__in=ticket_id_list)
-        for tag in ticket_tags:
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag.tag_id]
-            else:
-                tags_dict[tag.ticket_id].append(tag.tag_id)
-
-        assignees_dict = {}
-        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_assignee in ticket_assignees:
-            if ticket_assignee.ticket_id not in assignees_dict:
-                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
-            else:
-                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
-
-        participants_dict = {}
-        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_participant in ticket_participants:
-            if ticket_participant.ticket_id not in participants_dict:
-                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
-            else:
-                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
-
+        
+        for ticket in tickets:
+            if ticket.get('status'):
+                status_option = get_status_option_by_name(seadb_api, project_uuid, ticket.get('status'))
+                ticket['status'] = status_option.get('id')
+            if ticket.get('type'):
+                type_option = get_type_option_by_name(seadb_api, project_uuid, ticket.get('type'))
+                ticket['type'] = type_option.get('id')
+            if ticket.get('tags'):
+                tag_ids = get_tag_ids_by_names(seadb_api, project_uuid, ticket.get('tags'))
+                ticket['tags'] = tag_ids
         return Response({
-            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict, participants_dict=participants_dict) for ticket in tickets],
+            'tickets': tickets,
+            'columns': columns,
         })
 
     def post(self, request, project_uuid):
@@ -174,17 +165,20 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             assignees = list(set(assignees))
 
-        type_id = request.POST.get('type') or None
+        try:
+            username = request.user.username
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        type_id = request.POST.get('type')
         if type_id:
             try:
-                type_id = int(type_id)
-            except:
-                error_msg = 'type invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                project_type = ProjectTypes.objects.filter(
-                    id=type_id, project_uuid=project_uuid).first()
+                project_type = get_type_option_by_id(seadb_api, project_uuid, type_id)
             except Exception as e:
+                logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             if not project_type:
@@ -216,19 +210,22 @@ class TicketsAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                project_tags = ProjectTags.objects.filter(
-                    project_uuid=project_uuid)
+                tag_options, _ = get_tags_column(seadb_api, project_uuid)
+                valid_tag_ids = set([opt.get('id') for opt in (tag_options or [])])
+                for tag in tags:
+                    if tag not in valid_tag_ids:
+                        error_msg = 'tags invalid.'
+                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             except Exception as e:
+                logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not project_tags:
-                project_tags = []
-            project_tag_ids = [project_tag.id for project_tag in project_tags]
-            for tag in tags:
-                if tag not in project_tag_ids:
-                    error_msg = 'tags invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
+            tag_names = []
+            for tag in tags:
+                tag_option = get_tag_option_by_id(seadb_api, project_uuid, tag)
+                tag_names.append(tag_option.get('name'))
+            tags = tag_names
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -244,15 +241,11 @@ class TicketsAPIView(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # permission check
-        username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        previous_ticket = Tickets.objects.get_previous_ticket_by_username(
-            project_uuid, username)
-        if previous_ticket and \
-                previous_ticket.created_at > timezone.now() - relativedelta(seconds=30):
+        if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -269,56 +262,40 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_status = 'open'
-            ticket = Tickets.objects.create_ticket(
-                project_uuid, username, title, description, ticket_status, type_id, priority)
+            client_token = uuid.uuid4().hex
+            row = {
+                TicketsTable.title.name: title,
+                TicketsTable.description.name: description,
+                TicketsTable.status.name: ticket_status,
+                TicketsTable.type.name: project_type.get('name') if type_id and project_type else None,
+                TicketsTable.priority.name: priority,
+                TicketsTable.assignees.name: assignees or [],
+                TicketsTable.participants.name: [username],
+                TicketsTable.tags.name: tags or [],
+                TicketsTable.creator.name: username,
+                TicketsTable.reply_count.name: 0,
+                TicketsTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.reply_updated_at.name: None,
+                TicketsTable.deleted.name: False,
+                TicketsTable.delete_at.name: None,
+                TicketsTable.client_token.name: client_token,
+            }
+            seadb_api.insert_rows(project_uuid, 'tickets', [row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        if not ticket:
-            error_msg = 'Too many requests'
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
         try:
-            TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
+            sql = f"SELECT _pk FROM `tickets` WHERE `client_token` = '{client_token}' ORDER BY _pk DESC LIMIT 1"
+            res = seadb_api.query_rows(project_uuid, sql).get('results')
+            ticket_pk = res and res[0].get('_pk')
+            row.update({'_pk': ticket_pk})
         except Exception as e:
             logger.error(e)
 
-        tags_dict = {}
-        if tags:
-            try:
-                ticket_tags = [TicketTags(
-                    ticket_id=ticket.id,
-                    tag_id=tag,
-                ) for tag in tags]
-                TicketTags.objects.bulk_create(ticket_tags)
-                for tag in ticket_tags:
-                    if tag.ticket_id not in tags_dict:
-                        tags_dict[tag.ticket_id] = [tag.tag_id]
-                    else:
-                        tags_dict[tag.ticket_id].append(tag.tag_id)
-            except Exception as e:
-                logger.error(e)
-
-        assignees_dict = {}
-        if assignees:
-            try:
-                ticket_assignees = [TicketAssignees(
-                    ticket_id=ticket.id,
-                    assignee=assignee,
-                ) for assignee in assignees]
-                TicketAssignees.objects.bulk_create(ticket_assignees)
-                assignees_dict[ticket.id] = assignees
-            except Exception as e:
-                logger.error(e)
-
-        participants_dict = {ticket.id: [username]}
-
-        return Response({'ticket': ticket.to_dict(
-            tags_dict=tags_dict,
-            assignees_dict=assignees_dict,
-            participants_dict=participants_dict,
-        )},status=status.HTTP_201_CREATED)
+        return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
 
 class TicketAPIView(APIView):
@@ -349,54 +326,42 @@ class TicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        start = 0
-        end = 25
         try:
-            ticket_replies = TicketReplies.objects.list_replies(
-                ticket.id, start, end)
-            ticket_tags = TicketTags.objects.filter(
-                ticket_id=ticket.id)
-            ticket_assignees = TicketAssignees.objects.filter(
-                ticket_id=ticket.id)
-            ticket_participants = TicketParticipants.objects.filter(
-                ticket_id=ticket.id)
+            seadb_api = SeaDBAPI(username)
+            ticket = get_ticket(seadb_api, project_uuid, ticket_number)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
+            if ticket.get('status'):
+                status_option = get_status_option_by_name(seadb_api, project_uuid, ticket.get('status'))
+                ticket['status'] = status_option.get('id')
+            if ticket.get('type'):
+                type_option = get_type_option_by_name(seadb_api, project_uuid, ticket.get('type'))
+                ticket['type'] = type_option.get('id')
+            if ticket.get('tags'):
+                tag_ids = get_tag_ids_by_names(seadb_api, project_uuid, ticket.get('tags'))
+                ticket['tags'] = tag_ids
+            start = 0
+            end = 25
+            ticket_replies = get_ticket_replies(seadb_api, project_uuid, ticket_number, start, end)
+
+            for ticket_reply in ticket_replies:
+                result = {
+                    'number': ticket_reply.get('_pk'),
+                    'content': ticket_reply.get('content'),
+                    'created_at': ticket_reply.get('created_at'),
+                    'updated_at': ticket_reply.get('updated_at'),
+                    'creator': ticket_reply.get('creator'),
+                }
+                if not ticket.get('replies'):
+                    ticket['replies'] = []
+                ticket['replies'].append(result)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        tags_dict = {}
-        for tag in ticket_tags:
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag.tag_id]
-            else:
-                tags_dict[tag.ticket_id].append(tag.tag_id)
-
-        assignees_dict = {}
-        for ticket_assignee in ticket_assignees:
-            if ticket_assignee.ticket_id not in assignees_dict:
-                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
-            else:
-                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
-
-        participants_dict = {}
-        for ticket_participant in ticket_participants:
-            if ticket_participant.ticket_id not in participants_dict:
-                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
-            else:
-                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
-
-        ticket = ticket.to_dict(
-            tags_dict=tags_dict,
-            assignees_dict=assignees_dict,
-            participants_dict=participants_dict,
-        )
-        ticket['replies'] = [ticket_reply.to_dict() for ticket_reply in ticket_replies]
         return Response({'ticket': ticket})
 
     def put(self, request, project_uuid, ticket_number):
@@ -411,6 +376,7 @@ class TicketAPIView(APIView):
 
         # argument check
         title = request.data.get('title')
+        username = request.user.username
 
         description = None
         file_urls = None
@@ -435,25 +401,27 @@ class TicketAPIView(APIView):
             link_urls = description_dict.get('links')
             if link_urls and isinstance(link_urls, list):
                 file_urls = (file_urls or []) + link_urls
-
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         ticket_status = request.data.get('status')
         if ticket_status is not None:
-            if ticket_status not in TICKET_STATUS:
+            status_option = get_status_option_by_id(seadb_api, project_uuid, ticket_status)
+            if not status_option:
                 error_msg = 'status invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         is_update_type = 'type' in request.data
         type_id = request.data.get('type') or None
+
         if is_update_type and type_id is not None:
             try:
-                type_id = int(type_id)
-            except:
-                error_msg = 'type invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                project_type = ProjectTypes.objects.filter(
-                    id=type_id, project_uuid=project_uuid).first()
+                project_type = get_type_option_by_id(seadb_api, project_uuid, type_id)
             except Exception as e:
+                logger.error(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             if not project_type:
@@ -503,20 +471,18 @@ class TicketAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                project_tags = ProjectTags.objects.filter(
-                    project_uuid=project_uuid)
+                tag_options, _ = get_tags_column(seadb_api, project_uuid)
             except Exception as e:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not project_tags:
-                project_tags = []
-            project_tag_ids = [project_tag.id for project_tag in project_tags]
+            if not tag_options:
+                tag_options = []
+            tag_ids = [tag.get('id') for tag in tag_options]
             for tag in tags:
-                if tag not in project_tag_ids:
+                if tag not in tag_ids:
                     error_msg = 'tags invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             tags = list(set(tags))
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -530,13 +496,11 @@ class TicketAPIView(APIView):
                     error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
+        ticket = get_ticket(seadb_api, project_uuid, ticket_number)
         if not ticket:
             error_msg = 'Ticket not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
         # permission check
-        username = request.user.username
         if not check_ticket_permission(username, workspace.owner, ticket):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
@@ -553,64 +517,41 @@ class TicketAPIView(APIView):
 
         # main
         try:
+            update_row = {}
             if title:
-                ticket.title = title
+                update_row['title'] = title
             if description:
-                ticket.description = description
+                update_row['description'] = description
             if ticket_status or ticket_status == '':
-                ticket.status = ticket_status
+                update_row['status'] = status_option.get('name')
             if is_update_type:
-                ticket.type = type_id
+                update_row['type'] = project_type.get('name') if type_id and project_type else None
+            if is_update_tags:
+                tag_names = []
+                for tag in tag_options:
+                    if tag.get('id') in tags:
+                        tag_names.append(tag.get('name'))
+                update_row['tags'] = tag_names
             if is_update_priority:
-                ticket.priority = priority
-            ticket.updated_at = timezone.now()
-            ticket.save()
-            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
-                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
+                update_row['priority'] = priority
+            if is_update_assignees:
+                update_row['assignees'] = assignees
+            participants = ticket.get('participants', [])
+            if username not in participants:
+                participants.append(username)
+            update_row['participants'] = participants
+            update_row['updated_at'] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_rows = [
+                {
+                    'pk': ticket.get('_pk'),
+                    'row': update_row
+                }
+            ]
+            seadb_api.update_rows(project_uuid, 'tickets', update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if is_update_tags:
-            try:
-                exist_ticket_tags = TicketTags.objects.filter(ticket_id=ticket.id)
-                exist_tags = [tag.tag_id for tag in exist_ticket_tags]
-                tags_to_create = list(set(tags) - set(exist_tags))
-                tags_to_delete = list(set(exist_tags) - set(tags))
-                if tags_to_create:
-                    ticket_tags = [TicketTags(
-                        ticket_id=ticket.id,
-                        tag_id=tag,
-                    ) for tag in tags_to_create]
-                    TicketTags.objects.bulk_create(ticket_tags)
-                if tags_to_delete:
-                    TicketTags.objects.filter(
-                        ticket_id=ticket.id, tag_id__in=tags_to_delete).delete()
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if is_update_assignees:
-            try:
-                exist_ticket_assignees = TicketAssignees.objects.filter(ticket_id=ticket.id)
-                exist_assignees = [ticket_assignee.assignee for ticket_assignee in exist_ticket_assignees]
-                assignees_to_create = list(set(assignees) - set(exist_assignees))
-                assignees_to_delete = list(set(exist_assignees) - set(assignees))
-                if assignees_to_create:
-                    ticket_assignees = [TicketAssignees(
-                        ticket_id=ticket.id,
-                        assignee=assignee,
-                    ) for assignee in assignees_to_create]
-                    TicketAssignees.objects.bulk_create(ticket_assignees)
-                if assignees_to_delete:
-                    TicketAssignees.objects.filter(
-                        ticket_id=ticket.id, assignee__in=assignees_to_delete).delete()
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
 
@@ -636,15 +577,27 @@ class TicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        ticket = get_ticket(seadb_api, project_uuid, ticket_number)
         if not ticket:
             error_msg = 'Ticket not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+        
+        update_row = {
+            'pk': ticket.get('_pk'),
+            'row': {
+                'deleted': True,
+                'deleted_at': datetime.datetime.now(datetime.UTC).isoformat(),
+            }
+        }
         try:
-            ticket.deleted = True
-            ticket.delete_time = timezone.now()
-            ticket.save()
+            seadb_api.update_rows(project_uuid, 'tickets', [update_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -689,9 +642,15 @@ class TicketsSearchAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
         # project_uuid, username, search_text, start, end
-        tickets = Tickets.objects.list_tickets_by_search(project_uuid, username, query, 0, limit)
+        try:
+            seadb_api = SeaDBAPI(username)
+            tickets = list_tickets_by_search(seadb_api, project_uuid, query, 0, limit)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        tickets = [{'number': ticket.number, 'title': ticket.title} for ticket in tickets]
+        tickets = [{'number': ticket.get('_pk'), 'title': ticket.get('title')} for ticket in tickets]
         return Response({'tickets': tickets})
 
 
@@ -734,21 +693,20 @@ class TicketRepliesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # main
         try:
-            ticket_replies = TicketReplies.objects.list_replies(
-                ticket.id, start, end)
+            seadb_api = SeaDBAPI(username)
+            ticket = get_ticket(seadb_api, project_uuid, ticket_number)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            replies_data = get_ticket_replies(seadb_api, project_uuid, ticket.get('_pk'), start, end)
         except Exception as e:
+            logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'ticket_replies': [ticket_reply.to_dict() for ticket_reply in ticket_replies],
+            'ticket_replies': replies_data,
         })
 
     def post(self, request, project_uuid, ticket_number):
@@ -792,22 +750,25 @@ class TicketRepliesAPIView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
+        username = request.user.username
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        try:
+            seadb_api = SeaDBAPI(username)
+            ticket = get_ticket(seadb_api, project_uuid, ticket_number)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # permission check
-        username = request.user.username
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        previous_ticket_reply = TicketReplies.objects.get_previous_reply_by_username(
-            ticket.id, username)
-        if previous_ticket_reply and \
-                previous_ticket_reply.created_at > timezone.now() - relativedelta(seconds=30):
+        if not check_ticket_reply_creation_interval(seadb_api, project_uuid, username, ticket.get('_pk')):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -823,28 +784,43 @@ class TicketRepliesAPIView(APIView):
 
         # main
         try:
-            ticket_reply = TicketReplies.objects.create_reply(
-                ticket.id, username, content)
+            client_token = uuid.uuid4().hex
+            row = {
+                TicketRepliesTable.ticket_id.name: ticket.get('_pk'),
+                TicketRepliesTable.creator.name: username,
+                TicketRepliesTable.content.name: content,
+                TicketRepliesTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketRepliesTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketRepliesTable.deleted.name: False,
+                TicketRepliesTable.delete_at.name: None,
+                TicketRepliesTable.client_token.name: client_token,
+            }
+            seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
+
+            sql = f"SELECT _pk FROM `ticket_replies` WHERE `client_token` = '{client_token}' ORDER BY _pk DESC LIMIT 1"
+            res = seadb_api.query_rows(project_uuid, sql).get('results')
+            pk = res and res[0].get('_pk')
+            row.update({'number': pk})
+            ticket_replies_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_replies` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
+            update_ticket = {
+                'pk': ticket.get('_pk'),
+                'row': {
+                    'reply_count': ticket_replies_count,
+                    'reply_updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                    },
+                }
+            participants = ticket.get('participants', [])
+            if username not in participants:
+                participants.append(username)
+            update_ticket['row']['participants'] = participants
+            seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        if not ticket_reply:
-            error_msg = 'Too many requests'
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
-        try:
-            ticket_replies_count = TicketReplies.objects.get_replies_count(
-                ticket_id=ticket.id)
-            ticket.reply_count = ticket_replies_count
-            ticket.reply_updated_at = timezone.now()
-            ticket.save()
-            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
-                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
-        except Exception as e:
-            logger.error(e)
-
-        return Response({'ticket_reply': ticket_reply.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'ticket_reply': row}, status=status.HTTP_201_CREATED)
 
 
 class TicketReplyAPIView(APIView):
@@ -895,24 +871,32 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        ticket_reply = TicketReplies.objects.get_reply(
-            ticket.id, reply_number)
-        if not ticket_reply:
-            error_msg = 'Reply not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        # permission check
         username = request.user.username
-        if not check_comment_permission(username, workspace.owner, ticket_reply):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if ticket_reply.updated_at > timezone.now() - relativedelta(seconds=10):
+        try:
+            seadb_api = SeaDBAPI(username)
+            ticket = get_ticket(seadb_api, project_uuid, ticket_number)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+            ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket.get('_pk'), reply_number)
+            if not ticket_reply_data:
+                error_msg = 'Reply not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            # permission check
+            if not check_comment_permission(username, workspace.owner, ticket_reply_data):
+                error_msg = 'Permission denied.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        updated_at = ticket_reply_data.get('updated_at')
+        if updated_at:
+            updated_at = datetime.datetime.fromisoformat(updated_at)
+        if updated_at and updated_at > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -928,23 +912,36 @@ class TicketReplyAPIView(APIView):
 
         # main
         try:
-            ticket_reply.content = content
-            ticket_reply.updated_at = timezone.now()
-            ticket_reply.save()
+            ticket_reply_update = {
+                'pk': ticket_reply_data.get('_pk'),
+                'row': {
+                    'content': content,
+                    'updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                },
+            }
+            seadb_api.update_rows(project_uuid, 'ticket_replies', [ticket_reply_update])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            ticket.reply_updated_at = ticket_reply.updated_at
-            ticket.save()
-            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
-                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
+            update_row = {
+                'reply_updated_at': ticket_reply_data.get('updated_at'),
+            }
+            participants = ticket.get('participants', [])
+            if username not in participants:
+                participants.append(username)
+                update_row['participants'] = participants
+            ticket_update = {
+                'pk': ticket.get('_pk'),
+                'row': update_row,
+            }
+            seadb_api.update_rows(project_uuid, 'tickets', [ticket_update])
         except Exception as e:
             logger.error(e)
 
-        return Response({'ticket_reply': ticket_reply.to_dict()})
+        return Response({'ticket_reply': ticket_reply_data})
 
     def delete(self, request, project_uuid, ticket_number, reply_number):
         """
@@ -962,34 +959,46 @@ class TicketReplyAPIView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         workspace = project.workspace
+        username = request.user.username
 
-        ticket = Tickets.objects.get_ticket(project_uuid, ticket_number)
-        if not ticket:
-            error_msg = 'Ticket not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        ticket_reply = TicketReplies.objects.get_reply(
-            ticket.id, reply_number)
-        if not ticket_reply:
-            error_msg = 'Reply not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        try:
+            seadb_api = SeaDBAPI(username)
+            ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_number, reply_number)
+            if not ticket_reply_data:
+                error_msg = 'Reply not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # permission check
-        username = request.user.username
-        if not check_comment_permission(username, workspace.owner, ticket_reply):
+        if not check_comment_permission(username, workspace.owner, ticket_reply_data):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            ticket_reply.deleted = True
-            ticket_reply.delete_time = timezone.now()
-            ticket_reply.save()
-            if not TicketParticipants.objects.filter(ticket_id=ticket.id, participant=username).exists():
-                TicketParticipants.objects.create(ticket_id=ticket.id, participant=username)
+            participants = ticket.get('participants', [])
+            if username not in participants:
+                participants.append(username)
+                update_ticket = {
+                    'pk': ticket.get('_pk'),
+                    'row': {
+                        'participants': participants,
+                    },
+                }
+                seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
+            update_ticket_reply = {
+                'pk': ticket_reply_data.get('_pk'),
+                'row': {
+                    'deleted': True,
+                    'delete_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                },
+            }
+            seadb_api.update_rows(project_uuid, 'ticket_replies', [update_ticket_reply])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
-

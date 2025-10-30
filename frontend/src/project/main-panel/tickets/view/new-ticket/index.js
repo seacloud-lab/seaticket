@@ -66,9 +66,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const validTags = tags.map(tagId => Number(tagId));
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags: validTags, priority }).then(res => {
-      togglePageType(res.data.ticket.number);
+    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags, priority }).then(res => {
+      togglePageType(res.data.ticket._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);

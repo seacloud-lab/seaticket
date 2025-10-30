@@ -75,14 +75,6 @@ class CrawlStatus:
 
 
 # tickets
-TICKET_STATUS = (
-    '',
-    'open',
-    'completed',
-    'not_planned',
-    'duplicate',
-)
-
 TICKET_DEFAULT_DETAILS = {
     'views': [
         {

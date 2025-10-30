@@ -66,6 +66,5 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'is_project_admin': is_project_admin,
         'permission': permission if permission else PERMISSION_READ
     }
-
     return render(request, 'project_view_react.html', return_dict)
 

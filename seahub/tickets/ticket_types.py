@@ -12,10 +12,12 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, ProjectTypes, Tickets, TicketAssignees, \
-    TicketParticipants, TicketTags
+from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-
+from seahub.tickets.ticket_utils import get_type_column, filter_tickets_by_type, get_type_option_by_id, \
+    update_type_option, delete_type_option, add_type_option, get_ticket_counts_group_by_type, \
+    get_type_option_by_name, get_tag_ids_by_names, get_status_option_by_name
+from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
 
@@ -53,29 +55,20 @@ class ProjectTypesAPIView(APIView):
 
         # main
         try:
-            project_types = ProjectTypes.objects.filter(
-                project_uuid=project_uuid)
+            seadb_api = SeaDBAPI(username)
+            project_types, _ = get_type_column(seadb_api, project_uuid)
         except Exception as e:
+            logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_types:
-            project_types = []
-
         tickets_count_dict = {}
         if tickets_count == '1':
-            tickets = Tickets.objects.filter(
-                project_uuid=project_uuid,
-                deleted=False,
-                type__in=[project_type.id for project_type in project_types])
-            for ticket in tickets:
-                if ticket.type not in tickets_count_dict:
-                    tickets_count_dict[ticket.type] = 1
-                else:
-                    tickets_count_dict[ticket.type] += 1
-
+            tickets_count_dict = get_ticket_counts_group_by_type(seadb_api, project_uuid)
+        for project_type in project_types:
+            project_type['tickets_count'] = tickets_count_dict.get(project_type['name'], 0)
         return Response({
-            'project_types': [project_type.to_dict(tickets_count_dict) for project_type in project_types],
+            'project_types': project_types,
         })
 
     def post(self, request, project_uuid):
@@ -118,34 +111,26 @@ class ProjectTypesAPIView(APIView):
 
         # main
         try:
-            project_types = ProjectTypes.objects.filter(
-                project_uuid=project_uuid)
+            seadb_api = SeaDBAPI(username)
+            project_types, _ = get_type_column(seadb_api, project_uuid)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not project_types:
-            project_types = []
-
-        if name in [project_type.name for project_type in project_types]:
+        if name in [project_type['name'] for project_type in project_types]:
             error_msg = 'type already exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # main
         try:
-            project_type = ProjectTypes.objects.create(
-                project_uuid=project_uuid,
-                name=name,
-                color=color,
-                text_color=text_color,
-            )
+            project_type = add_type_option(seadb_api, project_uuid, name, color, text_color)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_type': project_type.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'project_type': project_type}, status=status.HTTP_201_CREATED)
 
 
 class ProjectTypeAPIView(APIView):
@@ -184,27 +169,34 @@ class ProjectTypeAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_type = ProjectTypes.objects.filter(
-            id=type_id, project_uuid=project_uuid).first()
-        if not project_type:
+        try:
+            seadb_api = SeaDBAPI(username)
+            project_type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        if not project_type_option:
             error_msg = 'Project type not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
+        
         # main
         try:
+            update_data = {}
             if name:
-                project_type.name = name
+                update_data['name'] = name
             if color:
-                project_type.color = color
+                update_data['color'] = color
             if text_color:
-                project_type.text_color = text_color
-            project_type.save()
+                update_data['text_color'] = text_color
+            update_type_option(seadb_api, project_uuid, type_id, update_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_type': project_type.to_dict()})
+        return Response({'success': True})
 
     def delete(self, request, project_uuid, type_id):
         """
@@ -228,14 +220,20 @@ class ProjectTypeAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_type = ProjectTypes.objects.filter(
-            id=type_id, project_uuid=project_uuid).first()
+        try:
+            seadb_api = SeaDBAPI(username)
+            project_type = get_type_option_by_id(seadb_api, project_uuid, type_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
         if not project_type:
             error_msg = 'Project type not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            project_type.delete()
+            delete_type_option(seadb_api, project_uuid, type_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -270,53 +268,37 @@ class ProjectTypeTicketsAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        project_type = ProjectTypes.objects.filter(
-            id=type_id, project_uuid=project_uuid).first()
+        
+        try:
+            seadb_api = SeaDBAPI(username)
+            project_type = get_type_option_by_id(seadb_api, project_uuid, type_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
         if not project_type:
             error_msg = 'Project type not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # main
         try:
-            tickets = Tickets.objects.list_tickets_by_type(
-                    project_uuid, type_id)
+            tickets = filter_tickets_by_type(
+                    seadb_api, project_uuid, [type_id])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not tickets:
-            return Response({
-                'tickets': []
-            })
         
-        ticket_id_list = [ticket.id for ticket in tickets]
-
-        tags_dict = {}
-        ticket_tags = TicketTags.objects.filter(ticket_id__in=ticket_id_list)
-        for tag in ticket_tags:
-            if tag.ticket_id not in tags_dict:
-                tags_dict[tag.ticket_id] = [tag.tag_id]
-            else:
-                tags_dict[tag.ticket_id].append(tag.tag_id)
-
-        assignees_dict = {}
-        ticket_assignees = TicketAssignees.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_assignee in ticket_assignees:
-            if ticket_assignee.ticket_id not in assignees_dict:
-                assignees_dict[ticket_assignee.ticket_id] = [ticket_assignee.assignee]
-            else:
-                assignees_dict[ticket_assignee.ticket_id].append(ticket_assignee.assignee)
-
-        participants_dict = {}
-        ticket_participants = TicketParticipants.objects.filter(ticket_id__in=ticket_id_list)
-        for ticket_participant in ticket_participants:
-            if ticket_participant.ticket_id not in participants_dict:
-                participants_dict[ticket_participant.ticket_id] = [ticket_participant.participant]
-            else:
-                participants_dict[ticket_participant.ticket_id].append(ticket_participant.participant)
-
+        for ticket in tickets:
+            if ticket.get('status'):
+                option = get_status_option_by_name(seadb_api, project_uuid, ticket.get('status'))
+                ticket['status'] = option.get('id')
+            if ticket.get('type'):
+                option = get_type_option_by_name(seadb_api, project_uuid, ticket.get('type'))
+                ticket['type'] = option.get('id')
+            if ticket.get('tags'):
+                ticket['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, ticket.get('tags'))
         return Response({
-            'tickets': [ticket.to_dict(tags_dict=tags_dict, assignees_dict=assignees_dict, participants_dict=participants_dict) for ticket in tickets],
+            'tickets': tickets,
         })

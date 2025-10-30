@@ -44,9 +44,30 @@ class PropertyTypes:
     RATE = 'rate'
     GEOLOCATION = 'geolocation'
     BUTTON = 'button'
+    LIST = 'list'
 
 
 class SelectTypes:
+    ticket_status = {
+      "options": [
+        {
+          "id": "0001",
+          "name": "open"
+        },
+        {
+          "id": "0002",
+          "name": "completed"
+        },
+        {
+          "id": "0003",
+          "name": "not_planned"
+        },
+        {
+          "id": "0004",
+          "name": "duplicate"
+        },
+      ]
+    }
     state = {
       "options": [
         {
@@ -116,7 +137,6 @@ class SelectTypes:
         }
       ]
     }
-
 
 class MappedColumn(object):
     def __init__(self, name, type, data=None):
@@ -240,7 +260,6 @@ class GithubIssueCommentsTable(BaseModel):
     def gen_table_name(cls, connection_id):
         return ConnectionType.GITHUB_ISSUE.value + '_comments' + '_' + str(connection_id)
 
-
 class SeafileTable(BaseModel):
     path = MappedColumn('path', PropertyTypes.TEXT)
     filename = MappedColumn('filename', PropertyTypes.TEXT)
@@ -252,3 +271,31 @@ class SeafileTable(BaseModel):
     @classmethod
     def gen_table_name(cls, connection_id):
         return ConnectionType.SEAFILE.value + '_' + str(connection_id)
+
+class TicketsTable(BaseModel):
+    title = MappedColumn('title', PropertyTypes.TEXT)
+    description = MappedColumn('description', PropertyTypes.TEXT)
+    status = MappedColumn('status', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
+    type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
+    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
+    assignees = MappedColumn('assignees', PropertyTypes.LIST)
+    participants = MappedColumn('participants', PropertyTypes.LIST)
+    priority = MappedColumn('priority', PropertyTypes.INT)
+    creator = MappedColumn('creator', PropertyTypes.TEXT)
+    reply_count = MappedColumn('reply_count', PropertyTypes.INT)
+    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    reply_updated_at = MappedColumn('reply_updated_at', PropertyTypes.DATETIME)
+    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
+    client_token = MappedColumn('client_token', PropertyTypes.TEXT)
+
+class TicketRepliesTable(BaseModel):
+    ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
+    content = MappedColumn('content', PropertyTypes.TEXT)
+    creator = MappedColumn('creator', PropertyTypes.TEXT)
+    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
+    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    client_token = MappedColumn('client_token', PropertyTypes.TEXT)
