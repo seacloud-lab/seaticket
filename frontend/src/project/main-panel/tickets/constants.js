@@ -230,7 +230,8 @@ export const TICKET_COLUMNS = [
   }, {
     type: CellType.MTIME,
     key: 'updated_at',
-    name: gettext('Last updated time'),
+    name: 'updated_at',
+    display_name: gettext('Last updated time'),
     editable: false,
   }, {
     type: CellType.CREATOR,
