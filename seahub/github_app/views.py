@@ -11,16 +11,19 @@ from seahub.project.models import Workspaces, Projects
 from seahub.project.utils import check_project_admin_permission
 from seahub.auth.decorators import login_required
 from django.shortcuts import render
+from seahub.utils import render_error
 
 
 def github_login(request):
     username = request.user.username
     if not username:
-        return JsonResponse({"error": "invalid user"}, status=403)
+        error_msg = "Invalid user"
+        return render_error(request, error_msg)
     state = secrets.token_hex(16)
     project_uuid = request.GET.get('project_uuid')
     if not project_uuid:
-        return JsonResponse({"error": "Missing project_uuid"}, status=400)
+        error_msg = "Missing project_uuid"
+        return render_error(request, error_msg)
     request.session["oauth_state"] = state
     request.session["username"] = username
     request.session["project_uuid"] = project_uuid
@@ -38,12 +41,13 @@ def github_login(request):
 def github_callback(request):
     username = request.session.get("username")
     if not username:
-        return JsonResponse({"error": "invalid user"}, status=403)
+        error_msg = "invalid user"
+        return render_error(request, error_msg)
     code = request.GET.get("code")
     state = request.GET.get("state")
     if state != request.session.get("oauth_state"):
-        return JsonResponse({"error": "Invalid state"}, status=400)
-
+        error_msg = "Invalid state"
+        return render_error(request, error_msg)
     token_resp = requests.post(
         "https://github.com/login/oauth/access_token",
         headers={"Accept": "application/json"},
@@ -66,26 +70,25 @@ def github_callback(request):
     )
     user_info = user_resp.json()
     if not token:
-        return JsonResponse({"error": "Failed to get token", "details": data}, status=400)
-
+        error_msg = "Failed to get token"
+        return render_error(request, error_msg)
 
     # save user info
     project_uuid = request.session.get("project_uuid")
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         error_msg = f'Project {project_uuid} not found.'
-        return JsonResponse({"error": error_msg}, status=404)
+        return render_error(request, error_msg)
     project_name = project.name
 
     workspace_id = project.workspace_id
     workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
     if not workspace:
         error_msg = f'Workspace {workspace_id} not found.'
-        return JsonResponse({"error": error_msg}, status=404)
-
+        return render_error(request, error_msg)
     if not check_project_admin_permission(username, workspace.owner):
         error_msg = 'Permission denied.'
-        return JsonResponse({"error": error_msg}, status=403)
+        return render_error(request, error_msg)
 
     try:
         github_oauth = {"username": user_info.get('login'), "avatar_url": user_info.get('avatar_url'),
@@ -96,7 +99,7 @@ def github_callback(request):
         github_oauth.pop('access_token')
     except Exception as e:
         error_msg = 'Internal Server Error'
-        return JsonResponse({"error": error_msg}, status=403)
+        return render_error(request, error_msg)
     back_url = f"{settings.SERVICE_URL}/workspace/{workspace_id}/project/{project_name}/github-integration/"
     return redirect(back_url)
 
@@ -108,6 +111,7 @@ def available_installations(request):
     token = request.session.get("access_token")
     if not token:
         return redirect("/github/login/")
+
     result = available_installations_by_token(token)
 
     return JsonResponse(result, safe=False)
@@ -117,22 +121,24 @@ def available_installations(request):
 def github_oauth_auth(request, **kwargs):
     username = request.user.username
     if not username:
-        return JsonResponse({"error": "invalid user"}, status=403)
+        error_msg = 'Invalid user.'
+        return render_error(request, error_msg)
     project_uuid = request.GET.get('project_uuid')
     if not project_uuid:
         error_msg = f'Missing project_uuid.'
-        return JsonResponse({"error": error_msg}, status=404)
+        return render_error(request, error_msg)
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         error_msg = f'Project {project_uuid} not found.'
-        return JsonResponse({"error": error_msg}, status=404)
+        return render_error(request, error_msg)
 
     workspace_id = project.workspace_id
     workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
     org_id = workspace.org_id
     is_staff = is_org_staff(org_id, username)
     if not is_staff:
-        return JsonResponse({"error": "invalid user"}, status=403)
+        error_msg = "Invalid user"
+        return render_error(request, error_msg)
     project_name = project.name
 
     return render(request, "github/oauth_auth.html", {

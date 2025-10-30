@@ -4,12 +4,7 @@ import hashlib
 import logging
 import json
 import datetime
-import time
-from urllib.parse import urlparse
 
-import jwt
-import requests
-from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
@@ -22,7 +17,6 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
-from seahub.settings import SEAQA_INDEXER_SERVER_URL
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews

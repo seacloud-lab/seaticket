@@ -1,11 +1,13 @@
 import time
 import jwt
 import requests
+import logging
 
-from django.http import HttpResponse
+
 from django.shortcuts import redirect
 from seahub.github_app import settings
 
+logger = logging.getLogger(__name__)
 
 def available_installations_by_token(token):
     if not token:
@@ -17,7 +19,9 @@ def available_installations_by_token(token):
 
     user_resp = requests.get("https://api.github.com/user", headers=headers)
     if user_resp.status_code != 200:
-        return HttpResponse("Failed to fetch user info", status=400)
+        result = []
+        logger.error("Failed to fetch user info")
+        return result
     user_data = user_resp.json()
 
     orgs_resp = requests.get("https://api.github.com/user/orgs", headers=headers)
@@ -61,7 +65,7 @@ def generate_app_jwt():
     private_key = open(settings.GITHUB_APP_PRIVATE_KEY_PATH, "r").read()
     payload = {
         "iat": int(time.time()),
-        "exp": int(time.time()) + 10 * 60,
+        "exp": int(time.time()) + 9 * 60,
         "iss": settings.GITHUB_APP_ID,
     }
     return jwt.encode(payload, private_key, algorithm="RS256")
