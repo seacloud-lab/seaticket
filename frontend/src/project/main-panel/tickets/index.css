@@ -48,3 +48,12 @@
   padding-left: 56px;
   justify-content: space-between;
 }
+
+.sea-qa-project-ticket-footer .sea-qa-project-ticket-footer-confirm-btn {
+  height: 38px;
+}
+
+.sea-qa-project-ticket-footer .sea-qa-loading-icon {
+  height: 16px;
+  width: 16px;
+}

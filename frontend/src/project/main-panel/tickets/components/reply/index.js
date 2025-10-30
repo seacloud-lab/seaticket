@@ -171,6 +171,7 @@ const Reply = ({
                     <div className="ml-2">
                       <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
                       <Button
+                        className="sea-qa-project-ticket-footer-confirm-btn"
                         disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
                         color="primary"
                         onClick={handleUpdateReply}

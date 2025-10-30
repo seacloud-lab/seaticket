@@ -308,7 +308,12 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
               <StatusToggleButton status={status} onChange={toggleStatus} />
-              <Button disabled={!reply.text || isShowCommentLoading} color="primary" onClick={onSubmitReply}>
+              <Button
+                className="sea-qa-project-ticket-footer-confirm-btn"
+                disabled={!reply.text || isShowCommentLoading}
+                color="primary"
+                onClick={onSubmitReply}
+              >
                 {isShowCommentLoading ? <CenteredLoading /> : gettext('Comment')}
               </Button>
             </div>
