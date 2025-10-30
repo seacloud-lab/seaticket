@@ -8,10 +8,13 @@ import copy
 import random
 import string
 from copy import deepcopy
+from hashlib import sha1
+import hmac
 
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
@@ -1542,3 +1545,65 @@ class ChatMessages(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+
+
+PERMISSION_READ = 'r'
+PERMISSION_READ_WRITE = 'rw'
+API_TOKEN_PERMISSION_TUPLE = (
+    PERMISSION_READ,
+    PERMISSION_READ_WRITE,
+)
+
+class ProjectAPITokenManager(models.Manager):
+    def add(self, project, app_name, username, permission):
+        api_token_obj = self.model(
+            project=project,
+            app_name=app_name,
+            generated_by=username,
+            permission=permission
+        )
+        api_token_obj.token = self.generate_key()
+        api_token_obj.save()
+        return api_token_obj
+
+    def generate_key(self):
+        unique = str(uuid.uuid4())
+        return hmac.new(unique.encode('utf-8'), digestmod=sha1).hexdigest()
+    
+    def get_by_token(self, token):
+        try:
+            api_token_obj = self.get(token=token)
+            api_token_obj.update_last_access()
+            return api_token_obj
+        except self.model.DoesNotExist:
+            return None
+    
+    def get_by_project_and_app_name(self, project, app_name):
+        """Check if API token already exists for project and app"""
+        try:
+            return self.get(project=project, app_name=app_name)
+        except self.model.DoesNotExist:
+            return None
+    
+    def list_by_project(self, project):
+        return self.filter(project=project).order_by('-generated_at')
+
+
+class ProjectAPIToken(models.Model):
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, to_field="uuid", db_column="project_uuid")
+    app_name = models.CharField(max_length=255)
+    token = models.CharField(max_length=255, unique=True, db_index=True)
+    generated_by = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    last_access = models.DateTimeField(auto_now=True)
+    permission = models.CharField(max_length=15)
+    
+    objects = ProjectAPITokenManager()
+    
+    class Meta:
+        db_table = 'project_api_token'
+        unique_together = ('project', 'app_name')
+    
+    def update_last_access(self):
+        self.last_access = timezone.now()
+        self.save(update_fields=['last_access'])

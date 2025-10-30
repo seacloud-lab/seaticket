@@ -603,3 +603,18 @@ CREATE TABLE `chat_messages` (
     FOREIGN KEY (`session_id`) REFERENCES `chat_sessions` (`id`)
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `project_api_token` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `app_name` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `generated_by` varchar(255) NOT NULL,
+  `generated_at` datetime(6) NOT NULL,
+  `last_access` datetime(6) NOT NULL,
+  `permission` varchar(15) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_api_token_token_uniq` (`token`),
+  UNIQUE KEY `project_api_token_project_uuid_app_name_uniq` (`project_uuid`,`app_name`),
+  KEY `project_api_token_app_name_idx` (`app_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

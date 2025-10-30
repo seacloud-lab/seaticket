@@ -15,6 +15,7 @@ import Header from './header';
 import Body from './body';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
+import ProjectAPITokenDialog from '../../components/dialog/project-api-token-dialog';
 
 const gettext = window.gettext;
 const username = window.app.pageOptions.username;
@@ -55,6 +56,7 @@ class Workspace extends React.Component {
       isShowTrashDialog: false,
       isShowMobileRenameView: false,
       isShowMovingDialog: false,
+      isShowAPITokenDialog: false,
       isParsing: false,
       projectItemWidth: 168,
       numberOfItemsPerRow: 1,
@@ -185,6 +187,14 @@ class Workspace extends React.Component {
   onDeleteProjectToggle = (project) => {
     this.setState({
       isShowDeleteDialog: !this.state.isShowDeleteDialog,
+      currentProject: project
+    });
+    this.onUnfreezedItem();
+  };
+
+  onAPITokenToggle = (project) => {
+    this.setState({
+      isShowAPITokenDialog: !this.state.isShowAPITokenDialog,
       currentProject: project
     });
     this.onUnfreezedItem();
@@ -434,6 +444,7 @@ class Workspace extends React.Component {
             createBlankProject={this.createBlankProject}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onDeleteProjectToggle={this.onDeleteProjectToggle}
+            onAPITokenToggle={this.onAPITokenToggle}
             onLeaveGroupToggle={this.onLeaveGroupToggle}
             onFreezedItem={this.onFreezedItem}
             onUnfreezedItem={this.onUnfreezedItem}
@@ -463,6 +474,13 @@ class Workspace extends React.Component {
             executeOperation={this.onDeleteProject}
             confirmBtnText={gettext('Delete')}
             toggleDialog={this.onDeleteProjectToggle}
+          />
+        )}
+        {this.state.isShowAPITokenDialog && this.state.currentProject && (
+          <ProjectAPITokenDialog
+            projectUuid={this.state.currentProject.uuid}
+            projectName={this.state.currentProject.name}
+            toggle={this.onAPITokenToggle}
           />
         )}
         {this.state.isShowRenameTableDialog &&

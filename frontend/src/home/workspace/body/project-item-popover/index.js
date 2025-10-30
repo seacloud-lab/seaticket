@@ -18,6 +18,11 @@ class ProjectItemPopover extends React.Component {
     this.props.onToggle();
   };
 
+  onAPITokenToggle = () => {
+    this.props.onAPITokenToggle(this.props.project);
+    this.props.onToggle();
+  };
+
   onDeleteProjectToggle = () => {
     this.props.onDeleteProjectToggle();
     this.props.onToggle();
@@ -48,6 +53,12 @@ class ProjectItemPopover extends React.Component {
             <Icon symbol="delete" className="project-item-operation-icon" />
             {gettext('Delete')}
           </button>
+          {this.props.onAPITokenToggle &&
+            <button className="dropdown-item project-item-operation" onClick={this.onAPITokenToggle}>
+              <Icon symbol="setting" className="project-item-operation-icon" />
+              {gettext('API Token')}
+            </button>
+          }
         </PopoverBody>
       </CustomizePopover>
     );

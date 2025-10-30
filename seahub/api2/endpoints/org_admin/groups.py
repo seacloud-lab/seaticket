@@ -14,7 +14,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.project.models import Workspaces, Projects
+from seahub.project.models import Workspaces, Projects, ProjectAPIToken
 from seahub.group.utils import validate_group_name, is_group_member, is_group_admin_or_owner, check_group_name_conflict, \
     refresh_group_name_cache, get_group_members, get_group_member_info
 from seahub.utils import is_valid_username
@@ -728,6 +728,7 @@ class OrgAdminGroupProject(APIView):
         try:
             Projects.objects.filter(id=project.id).update(
                 deleted=True, delete_time=datetime.now(), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
