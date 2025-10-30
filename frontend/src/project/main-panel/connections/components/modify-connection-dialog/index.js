@@ -26,7 +26,9 @@ const ModifyConnectionDialog = ({ record, githubOauth, projectUuid, onSubmit, on
     }) : true;
     if (!isRequiredValid) return false;
     if (type !== CONNECTION_TYPE.GITHUB_ISSUE) return isRequiredValid;
-    return config.access_token || config.installation_id;
+    if (config.access_token) return true;
+    if (config.installation_id || config.installation_id === 0) return true;
+    return false;
   }, [name, type, config, customColumns]);
 
   const onNameChange = useCallback((event) => {
@@ -59,7 +61,7 @@ const ModifyConnectionDialog = ({ record, githubOauth, projectUuid, onSubmit, on
       if (fieldType === CONNECTION_FIELD_TYPE.NUMBER) {
         validConfig[key] = config[key] ? parseInt(config[key], 10) : '';
       } else {
-        validConfig[key] = config[key] ? config[key].trim() : '';
+        validConfig[key] = config[key] ? config[key] : '';
       }
     });
     onSubmit({ name: message, config: validConfig }, () => setSubmitting(false));

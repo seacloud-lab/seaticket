@@ -47,7 +47,8 @@ const NewConnectionDialog = ({ onSubmit, githubOauth, projectUuid, onToggle, mod
     }) : true;
     if (!isRequiredValid) return false;
     if (type !== CONNECTION_TYPE.GITHUB_ISSUE) return isRequiredValid;
-    return config.access_token || config.installation_id;
+    if (config.access_token) return true;
+    if (config.installation_id || config.installation_id === 0) return true;
   }, [name, config, customColumns, type]);
 
   const onNameChange = useCallback((event) => {
