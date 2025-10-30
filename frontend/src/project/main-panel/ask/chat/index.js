@@ -213,8 +213,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
-      <div className='sea-qa-ai-ask-chats-wrapper'>
-        <div className="sea-qa-ai-ask-chats" ref={chatHistoryContentRef}>
+      <div className="sea-qa-ai-ask-chats-wrapper">
+        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
               <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
