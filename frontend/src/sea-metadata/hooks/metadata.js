@@ -236,7 +236,7 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID });
+    storeRef.current = new Store({ viewId: viewID, typesData, tagsData });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       setMetadata(storeRef.current.data);

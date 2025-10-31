@@ -29,7 +29,8 @@ const _getFormattedCellValue = (cellValue, groupby) => {
     case CellType.CHECKBOX: {
       return !!cellValue;
     }
-    case CellType.SINGLE_SELECT: {
+    case CellType.SINGLE_SELECT:
+    case CellType.TYPE: {
       return cellValue || null;
     }
     case CellType.MULTIPLE_SELECT: {

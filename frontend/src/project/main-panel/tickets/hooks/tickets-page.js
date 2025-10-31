@@ -54,14 +54,12 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TAGS) {
       pageType = TICKET_PAGE_TYPE.TAGS;
       if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-        const childrenNumber = Number(childrenPageTypeFromURL);
-        childrenPageType = childrenPageTypeFromURL && isNumber(childrenNumber) ? childrenNumber : TICKET_CHILDREN_PAGE_TYPE.ALL;
+        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
       }
     } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TYPES) {
       pageType = TICKET_PAGE_TYPE.TYPES;
       if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-        const childrenNumber = Number(childrenPageTypeFromURL);
-        childrenPageType = childrenPageTypeFromURL && isNumber(childrenNumber) ? childrenNumber : TICKET_CHILDREN_PAGE_TYPE.ALL;
+        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
       }
     } else {
       const ticketNumber = Number(pageTypeFromURL);

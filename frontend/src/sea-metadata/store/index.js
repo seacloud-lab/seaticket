@@ -26,8 +26,8 @@ class Store {
     this.serverOperator = new ServerOperator();
     this.localOperator = new LocalOperator();
     this.collaborators = props.collaborators || [];
-    this.tagsData = {};
-    this.typesData = {};
+    this.tagsData = props?.tagsData || {};
+    this.typesData = props?.typesData || {};
     this.mounted = true;
   }
 

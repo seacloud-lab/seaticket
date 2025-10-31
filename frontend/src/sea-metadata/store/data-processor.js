@@ -102,7 +102,7 @@ class DataProcessor {
       return;
     }
     let renderedRows = rows;
-    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators }) : [];
+    const groups = _isGroupView ? this.getGroupedRows(table, renderedRows, groupbys, { collaborators, typesData }) : [];
     const row_ids = isTableRows(renderedRows) ? renderedRows.map(row => row._id) : renderedRows;
     table.view.rows = row_ids;
     table.view.groups = groups;
