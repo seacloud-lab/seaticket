@@ -4,6 +4,7 @@ import copy from 'copy-to-clipboard';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
+import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
@@ -122,6 +123,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [isEmbeddingVisualizationOpen, setEmbeddingVisualizationOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
@@ -541,6 +543,24 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   return (
     <CollaboratorsProvider>
+      {connection?.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          zIndex: 100
+        }}>
+          <Button
+            color="primary"
+            size="sm"
+            onClick={() => setEmbeddingVisualizationOpen(true)}
+          >
+            <i className="sf3-font-ai sf3-font"></i>
+            {' '}
+            {gettext('Analyze')}
+          </Button>
+        </div>
+      )}
       <SeaMetadata
         viewID={isMultiView ? viewID : '0000'}
         api={api}
@@ -572,6 +592,16 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           isLoading={isTicketLoading}
           isOpen={isTicketDialogOpen}
           toggle={() => setTicketDialogOpen(false)}
+        />
+      )}
+      {isEmbeddingVisualizationOpen && (
+        <EmbeddingVisualization
+          isOpen={isEmbeddingVisualizationOpen}
+          onClose={() => setEmbeddingVisualizationOpen(false)}
+          connectionId={connectionID}
+          connectionName={connection?.name || ''}
+          projectUuid={projectUuid}
+          viewId={viewID}
         />
       )}
     </CollaboratorsProvider>

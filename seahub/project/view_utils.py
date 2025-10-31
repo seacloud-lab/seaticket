@@ -1205,7 +1205,7 @@ class SQLGenerator(object):
 
 def view_data_2_sql(table, columns, view, username, start, limit, include_deleted=False):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, username, start, limit, include_deleted=include_deleted)
+    sql_generator = SQLGenerator(table, columns, view, start, limit, username, include_deleted=include_deleted)
     sql = sql_generator.to_sql()
     return sql
 

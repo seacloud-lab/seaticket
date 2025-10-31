@@ -9,6 +9,8 @@ import uuid
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
+import numpy as np
+from sklearn.manifold import TSNE
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, ChatMessages, ChatToolCalls, ChatSessions, \
     StatsAIByTeam, StatsAIByOwner, StatsAIByProject
@@ -285,6 +287,27 @@ def generate_ai_summary(content, username, connection_type, project_uuid, org_id
     ai_summary = resp_json.get('summary', '')
     vector = resp_json.get('embedding', [])
     return ai_summary, vector
+
+
+def generate_embeddings_2d_with_tsne(vectors):
+    if not vectors:
+        return []
+    
+    embeddings_array = np.array(vectors)
+
+    perplexity = min(30, len(embeddings_array) - 1)
+    if perplexity < 1:
+        perplexity = 5
+    
+    tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity)
+    embeddings_2d = tsne.fit_transform(embeddings_array)
+    
+    result = []
+    for i in range(len(embeddings_2d)):
+        coords = [float(embeddings_2d[i][0]), float(embeddings_2d[i][1])]
+        result.append(coords)
+    
+    return result
 
 
 def gen_s3_file_path(project_uuid, file_path):

@@ -16,11 +16,12 @@ from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.utils import get_connection_columns
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
-    ChatMessages, ProjectConnections
+    ChatMessages, ProjectConnections, ConnectionsViews
 from seahub.project.utils import check_project_permission, get_ai_reply, \
     convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
-    get_file_from_s3_web_crawl
+    get_file_from_s3_web_crawl, generate_embeddings_2d_with_tsne
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
+from seahub.seadb_models.utils import list_connection_view_records_with_columns
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, SeafileTable, \
@@ -473,4 +474,101 @@ class GenerateAISummaryView(APIView):
             'ai_summary': ai_summary,
             'ai_processed_time': ai_processed_time,
             'success': True
+        })
+
+
+class EmbeddingAnalysisView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def post(self, request):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_uuid = request.data.get('project_uuid')
+        if not project_uuid:
+            error_msg = 'project_uuid is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        connection_id = request.data.get('connection_id')
+        if not connection_id:
+            error_msg = 'connection_id is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'Connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        view_id = request.data.get('view_id')
+
+        try:
+            view = ConnectionsViews.objects.get_view(project_uuid, project_connection, view_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        if not view:
+            error_msg = f'Connection view {view_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        seadb_api = SeaDBAPI(username)
+        try:
+            column_names=['_pk', 'title', 'ai_summary', 'ai_summary_vector']
+            records = list_connection_view_records_with_columns(
+                seadb_api, project_uuid, project_connection, view, column_names, 
+                 start=0, limit=10000, username=username
+            )
+        except Exception as e:
+            logger.error(f'Error fetching records for embedding analysis: {e}')
+            error_msg = 'Failed to fetch records.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not records:
+            return Response({
+                'records': [],
+            })
+        valid_records = []
+        vectors = []
+        
+        for record in records:
+            ai_summary = record.get('ai_summary')
+            ai_summary_vector = record.get('ai_summary_vector')
+            if ai_summary and ai_summary_vector:
+                valid_records.append(record)
+                vectors.append(ai_summary_vector)
+
+        if not vectors:
+            return Response({
+                'records': [],
+            })
+
+        try:
+            embeddings_2d = generate_embeddings_2d_with_tsne(vectors)
+        except Exception as e:
+            logger.error(f'Error generating 2D embeddings: {e}')
+            error_msg = 'Failed to generate embeddings.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        for i, record in enumerate(valid_records):
+            if i < len(embeddings_2d):
+                record['x'] = embeddings_2d[i][0]
+                record['y'] = embeddings_2d[i][1]
+
+        return Response({
+            'records': valid_records,
         })
