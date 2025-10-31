@@ -4,7 +4,7 @@ import Column from './column';
 class Metadata {
   constructor(object) {
     const columns = object.columns || [];
-    this.columns = columns.map(column => new Column(column));
+    this.columns = columns.map(column => column instanceof Column ? column : new Column(column));
     this.key_column_map = {};
     this.columns.forEach(column => {
       this.key_column_map[column.key] = column;

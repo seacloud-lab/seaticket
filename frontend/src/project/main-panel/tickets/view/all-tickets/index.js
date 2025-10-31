@@ -44,10 +44,23 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       if (cachedData && cachedData.view?._id === view_id && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
         return new Promise((resolve, reject) => {
           const rows = cachedData.rows;
+          const columns = cachedData.columns;
+          const typeColum = columns.find(c => c.name === 'type');
+          if (typeColum) {
+            context.setSetting('typeColumnKey', typeColum.key);
+          }
+          const statusColumn = columns.find(c => c.name === 'status');
+          if (statusColumn) {
+            context.setSetting('statusColumnKey', statusColumn.key);
+          }
+          const tagsColumn = columns.find(c => c.name === 'tags');
+          if (tagsColumn) {
+            context.setSetting('tagsColumnKey', tagsColumn.key);
+          }
           resolve({
             data: {
               rows: rows,
-              columns,
+              columns: columns,
             }
           });
         }).then(res => {

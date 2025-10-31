@@ -105,6 +105,7 @@ const SeaMetadata = forwardRef(({
       return {
         views: viewsData,
         rows: metadata.rows,
+        columns: metadata.columns,
         view: {
           ...metadata.view,
           available_columns: [],
