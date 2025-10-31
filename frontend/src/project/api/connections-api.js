@@ -202,6 +202,16 @@ class ConnectionsAPI {
     return this._sendPostRequest(url, form);
   }
 
+  generateAITitle(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v2.1/ai/generate-ai-title/';
+    let data = {
+      project_uuid: projectUuid,
+      connection_id: connectionID,
+      record_id: recordID
+    };
+    return this.req.post(url, data);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();
