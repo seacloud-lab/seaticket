@@ -288,7 +288,6 @@ class TicketsTable(BaseModel):
     reply_updated_at = MappedColumn('reply_updated_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
-    client_token = MappedColumn('client_token', PropertyTypes.TEXT)
 
 class TicketRepliesTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
@@ -298,4 +297,3 @@ class TicketRepliesTable(BaseModel):
     updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
     delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
-    client_token = MappedColumn('client_token', PropertyTypes.TEXT)
