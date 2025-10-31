@@ -15,41 +15,12 @@ const DATE_INPUT_WIDTH = 118;
 const FilterByDate = ({ date, onChange }) => {
   const [value, setValue] = useState(date.value || '');
   const [isOpen, setIsOpen] = useState(false);
-  const [isTypeOpen, setIsTypeOpen] = useState(false);
-  const [type, setType] = useState(date.type || SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME);
+  const [type] = useState(date.type || SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_UPDATED_TIME);
   const [isCustomDate, setIsCustomDate] = useState(date.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM);
   const [time, setTime] = useState({
     from: date.from,
     to: date.to,
   });
-
-  const typeLabel = useMemo(() => {
-    switch (type) {
-      case SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME:
-        return gettext('Create time');
-      case SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_MODIFIED_TIME:
-        return gettext('Last modified time');
-      default:
-        return gettext('Create time');
-    }
-  }, [type]);
-
-  const label = useMemo(() => {
-    if (!value || value.length === 0) return gettext('Date');
-    return typeLabel;
-  }, [typeLabel, value]);
-
-  const typeOptions = useMemo(() => {
-    return [
-      {
-        key: SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME,
-        label: gettext('Create time'),
-      }, {
-        key: SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_MODIFIED_TIME,
-        label: gettext('Last modified time'),
-      }
-    ];
-  }, []);
 
   const options = useMemo(() => {
     return [
@@ -73,14 +44,6 @@ const FilterByDate = ({ date, onChange }) => {
 
   const toggle = useCallback(() => setIsOpen(!isOpen), [isOpen]);
 
-  const toggleType = useCallback(() => setIsTypeOpen(!isTypeOpen), [isTypeOpen]);
-
-  const onChangeType = useCallback((e) => {
-    const option = Utils.getEventData(e, 'toggle') ?? e.currentTarget.getAttribute('data-toggle');
-    if (option === type) return;
-    setType(option);
-  }, [type]);
-
   const onClearDate = useCallback(() => {
     setValue('');
     setIsCustomDate(false);
@@ -93,7 +56,10 @@ const FilterByDate = ({ date, onChange }) => {
 
   const onOptionClick = useCallback((e) => {
     const option = Utils.getEventData(e, 'toggle') ?? e.currentTarget.getAttribute('data-toggle');
-    if (option === value) return;
+    if (option === value) {
+      onClearDate();
+      return;
+    }
     const today = dayjs().endOf('day');
     const isCustomOption = option === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
     setIsCustomDate(isCustomOption);
@@ -175,36 +141,13 @@ const FilterByDate = ({ date, onChange }) => {
           className={classNames('search-filter-toggle', { 'active': isOpen && value, 'highlighted': value })}
           onClick={toggle}
         >
-          <div className="filter-label" style={{ maxWidth: 300 }} title={label}>{label}</div>
+          <div className="filter-label" style={{ maxWidth: 300 }} title={gettext('Last updated time')}>
+            {gettext('Last updated time')}
+          </div>
           <Icon symbol="down"/>
         </DropdownToggle>
         <ModalPortal>
           <DropdownMenu className="search-filter-menu filter-by-date-menu">
-            <div className="filter-by-date-menu-toolbar">
-              <Dropdown isOpen={isTypeOpen} toggle={toggleType}>
-                <DropdownToggle tag="div" className="search-filter-toggle filter-by-date-type-toggle">
-                  <div className="filter-label">{typeLabel}</div>
-                  <Icon symbol="down" className="pl-1" onClick={(e) => {
-                    e.stopPropagation();
-                    toggleType();
-                  }} />
-                </DropdownToggle>
-                <DropdownMenu>
-                  {typeOptions.map((option) => {
-                    const isSelected = option.key === type;
-                    return (
-                      <DropdownItem key={option.key} data-toggle={option.key} onClick={onChangeType}>
-                        {option.label}
-                        {isSelected && <Icon symbol="check" className="dropdown-item-tick" />}
-                      </DropdownItem>
-                    );
-                  })}
-                </DropdownMenu>
-              </Dropdown>
-              <div className="delete-btn" onClick={onClearDate}>
-                <Icon symbol="delete"/>
-              </div>
-            </div>
             {options.map((option, i) => {
               const isSelected = option.key === value;
               if (option === 'Divider') return <div key={i} className="seafile-divider dropdown-divider"></div>;

@@ -14,6 +14,5 @@ export const SEARCH_FILTER_BY_DATE_OPTION_KEY = {
 };
 
 export const SEARCH_FILTER_BY_DATE_TYPE_KEY = {
-  CREATE_TIME: 'create_time',
-  LAST_MODIFIED_TIME: 'last_modified_time',
+  LAST_UPDATED_TIME: 'last_updated_time',
 };

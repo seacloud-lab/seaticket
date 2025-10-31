@@ -28,7 +28,7 @@ const Search = ({ title, settings }) => {
   const [connections, setConnections] = useState([]);
   const [filterDate, setFilterDate] = useState(
     {
-      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME,
+      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_UPDATED_TIME,
       value: '',
       from: null,
       to: null,
@@ -70,8 +70,8 @@ const Search = ({ title, settings }) => {
       let timeTo = null;
       if (filterDate.value) {
         const isCustom = filterDate.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
-        timeFrom = isCustom ? filterDate.start?.unix() : filterDate.from;
-        timeTo = isCustom ? filterDate.end?.unix() : filterDate.to;
+        timeFrom = isCustom ? filterDate.from?.unix() : filterDate.from;
+        timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
       }
       const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
       searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, source.token).then(res => {
@@ -95,7 +95,7 @@ const Search = ({ title, settings }) => {
     setResults([]);
     setSearching(false);
     setFilterDate({
-      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.CREATE_TIME,
+      type: SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_UPDATED_TIME,
       value: '',
       from: null,
       to: null,
