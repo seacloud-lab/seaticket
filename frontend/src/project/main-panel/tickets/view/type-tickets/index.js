@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import copy from 'copy-to-clipboard';
-import { typesAPI, ticketsAPI } from '../../../../api';
+import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useTypes, useTicketsPage, useTags } from '../../hooks';
@@ -30,7 +30,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return typesAPI.listProjectTicketsByType(projectUuid, childrenPageType).then(res => {
+      return ticketsAPI.listTicketsByType(projectUuid, childrenPageType).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {

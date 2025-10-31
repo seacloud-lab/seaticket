@@ -58,24 +58,66 @@ class SelectTypes:
         },
         {
           "id": "0002",
-          "name": "completed",
+          "name": "closed",
+          "color": "#8250DF",
+          "text_color": "#FFFFFF",
+        }
+      ]
+    }
+    ticket_substate = {
+      "cascade_column_key": "",
+      "cascade_settings": {
+        "0001": [
+          "0010",
+          "0011",
+          "0012"
+        ],
+        "0002": [
+          "0013",
+          "0014",
+          "0015"
+        ]
+      },
+      "options": [
+        {
+          "id": "0010",
+          "name": "New",
+          "color": "#59CB74",
+          "text_color": "#FFFFFF",
+        },
+        {
+          "id": "0011",
+          "name": "Reopen",
+          "color": "#1A7F37",
+          "text_color": "#FFFFFF",
+        },
+        {
+          "id": "0012",
+          "name": "Working on",
+          "color": "#46A1FD",
+          "text_color": "#FFFFFF",
+        },
+        {
+          "id": "0013",
+          "name": "Completed",
           "color": "#8250DF",
           "text_color": "#FFFFFF",
         },
         {
-          "id": "0003",
-          "name": "not_planned",
+          "id": "0014",
+          "name": "Not planned",
           "color": "#59636E",
           "text_color": "#FFFFFF"
         },
         {
-          "id": "0004",
-          "name": "duplicate",
+          "id": "0015",
+          "name": "Duplicate",
           "color": "#59636E",
           "text_color": "#FFFFFF"
         },
       ]
     }
+
     state = {
       "options": [
         {
@@ -296,7 +338,6 @@ class TicketsTable(BaseModel):
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
-    delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
 
 class TicketRepliesTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
@@ -304,7 +345,6 @@ class TicketRepliesTable(BaseModel):
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
-    delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 

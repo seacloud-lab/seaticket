@@ -9,12 +9,6 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionsStatusView, ProjectConnectionLogView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
-from seahub.tickets.ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
-from seahub.tickets.ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
-from seahub.tickets.tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
-    TicketsSearchAPIView
-from seahub.tickets.ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
-    TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
 from .ai import ChatView, ConvertRecordToTicket, GenerateAITitleView
@@ -28,13 +22,6 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/chat/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/chat/(?P<children_id>[-0-9a-zA-Z]{36})/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/search/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/tags/(?P<children_id>[-0-9a-zA-Z]{4})/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/types/(?P<children_id>[-0-9a-zA-Z]{4})/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/new/$', project_view, name='project_view'),
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/tickets/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/settings/$', project_view, name='project_view'),
@@ -68,30 +55,6 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v2.1-connection-view'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
-
-    # ticket
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/(?P<reply_number>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-tickets-search'),
-
-    # tags
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/tickets/$', ProjectTagTicketsAPIView.as_view(), name='api-v2.1-project-tag-tickets'),
-
-    # types
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/$', ProjectTypesAPIView.as_view(), name='api-v2.1-project-types'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>[-0-9a-zA-Z]{4})/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>[-0-9a-zA-Z]{4})/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
-
-    # ticket views
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-folders/$', TicketFolders.as_view(), name='api-v2.1-project-ticket-folders'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/$', TicketViewsAPI.as_view(), name='api-v2.1-project-ticket-views'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-views/(?P<view_id>.+)/$', TicketViewView.as_view(), name='api-v2.1-project-ticket-view'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-move-views/$', TicketViewsMoveView.as_view(), name='api-v2.1-project-ticket-views-move'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-duplicate-view/$', TicketViewsDuplicateView.as_view(), name='api-v2.1-project-ticket-view-duplicate'),
 
     # ai
     re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),

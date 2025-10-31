@@ -3,21 +3,21 @@ import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
-import { BAR_TYPE } from '../../../../constants';
+import { useSubstates, useTicketsPage, useTypes, useTags } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { BAR_TYPE } from '@/project/constants/bar';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
-const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
+const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
-  const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
-  const { typesData, createType } = useTypes();
-  const { substatesData, createSubstate } = useSubstates();
+  const { isLoading: isSubstatesLoading, substatesData } = useSubstates();
+  const { typesData } = useTypes();
+  const { tagsData } = useTags();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -31,7 +31,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return ticketsAPI.listTicketsByTag(projectUuid, childrenPageType).then(res => {
+      return ticketsAPI.listTicketsBySubstate(projectUuid, childrenPageType).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
@@ -58,15 +58,14 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
     // view
     getViews: () => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         resolve({ data: viewsData });
       });
     },
 
     getView: (viewID) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const view = viewsData.views[0];
-
         resolve({ data: { view: {
           ...view,
           sorts: context.localStorage.getItem('sorts') || [],
@@ -75,7 +74,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     },
 
     modifyView: (viewID, viewData) => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         Object.keys(viewData).forEach(key => {
           context.localStorage.setItem(key, viewData[key]);
         });
@@ -211,20 +210,17 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return list;
   }, [projectName, workspaceID]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tag-tickets`, [projectUuid]);
+  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-substate-tickets`, [projectUuid]);
 
-  const t = useMemo(() => {
-    return {
-      row: gettext('ticket'),
-      rows: gettext('tickets'),
-      Row: gettext('Ticket'),
-      Rows: gettext('Tickets'),
-    };
-  }, []);
+  const t = useMemo(() => ({
+    row: gettext('ticket'),
+    rows: gettext('tickets'),
+    Rows: gettext('Tickets'),
+  }), []);
 
-  if (isLoading || isTagsLoading) return null;
-  const tag = getRowById(tagsData, childrenPageType);
-  if (!tag) {
+  if (isLoading || isSubstatesLoading) return null;
+  const substate = getRowById(substatesData, childrenPageType);
+  if (!substate) {
     togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL);
     return null;
   }
@@ -233,30 +229,21 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     <SeaMetadata
       viewID="0000"
       api={api}
-      isViewComputedOnServer={false}
-      permission={permission}
       localStorageNamePrefix={localStorageName}
+      createRowsTools={createRowsTools}
       createContextMenuOptions={createContextMenuOptions}
       expandRow={(row) => togglePageType(row._id)}
-      viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
-      createRowsTools={createRowsTools}
+      toggleView={() => {}}
+      viewTools={[VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
+      isViewComputedOnServer={false}
 
-      // tags
-      tagsData={tagsData}
-      createTag={createTag}
-      toggleAllTags={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}
-
+      // assist data
       typesData={typesData}
-      createType={createType}
-      toggleAllTypes={() => togglePageType(TICKET_PAGE_TYPE.TYPES)}
-
-      substatesData={substatesData}
-      createSubstate={createSubstate}
-      toggleAllSubstates={() => togglePageType(TICKET_PAGE_TYPE.SUBSTATES)}
+      tagsData={tagsData}
 
       t={t}
     />
   );
 };
 
-export default TagTickets;
+export default SubstateTickets;

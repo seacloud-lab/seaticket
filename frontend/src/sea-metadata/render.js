@@ -6,6 +6,7 @@ import {
   ViewsDataProvider, useViewsData,
   TagsDataProvider,
   TypesDataProvider,
+  SubstatesDataProvider,
   SelectedRowsProvider,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
@@ -25,6 +26,9 @@ const Main = forwardRef(({
   typesData,
   createType,
   toggleAllTypes,
+  substatesData,
+  createSubstate,
+  toggleAllSubstates,
   expandRow,
   toggleView,
   createRowsTools,
@@ -55,14 +59,16 @@ const Main = forwardRef(({
   return (
     <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
-        <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
-          <SelectedRowsProvider>
-            <div className={classnames('sea-metadata', className)}>
-              <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} createRowsTools={createRowsTools} toggleView={toggleView} />
-              <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
-            </div>
-          </SelectedRowsProvider>
-        </MetadataProvider>
+        <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
+          <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
+            <SelectedRowsProvider>
+              <div className={classnames('sea-metadata', className)}>
+                <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} createRowsTools={createRowsTools} toggleView={toggleView} />
+                <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
+              </div>
+            </SelectedRowsProvider>
+          </MetadataProvider>
+        </SubstatesDataProvider>
       </TypesDataProvider>
     </TagsDataProvider>
   );

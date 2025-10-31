@@ -7,4 +7,5 @@ export const EVENT_BUS_TYPE = {
   ASK_QUESTION: 'ask_question',
   AI_REPLY: 'ai_reply',
   NEW_TYPE: 'new-type',
+  NEW_SUBSTATE: 'new-substate',
 };

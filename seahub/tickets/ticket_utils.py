@@ -1,10 +1,10 @@
 import random
-from copy import deepcopy
 from datetime import datetime
+from django.contrib.admin import display
 from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
-from seahub.seadb_models.models import PropertyTypes
+from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS
 
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_REPLIES = 'ticket_replies'
@@ -73,8 +73,8 @@ def get_table_by_name(seadb_api, project_uuid, table_name):
             return table
     return None
 
-def get_ticket(seadb_api, project_uuid, ticket_number):
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_number}"
+def get_ticket(seadb_api, project_uuid, ticket_id):
+    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
@@ -85,30 +85,18 @@ def get_tickets(seadb_api, project_uuid):
     return tickets_data
 
 def filter_tickets_by_type(seadb_api, project_uuid, types):
-    if not types:
-        return []
-    types_names = []
-    for type_id in types:
-        type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
-        types_names.append(type_option.get('name'))
-    types_str = ', '.join(f"'{type_name}'" for type_name in types_names)
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `type` IN ({types_str}) AND `deleted` = False"
-    res = seadb_api.query_rows(project_uuid, sql)
-    tickets = res.get('results')
-    columns = res.get('metadata') or []
-    return tickets, columns
+    return filter_tickets_by_select(seadb_api, project_uuid, 'type', types)
 
-
-def get_ticket_replies(seadb_api, project_uuid, ticket_number, start, end):
-    ticket_replies_sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_number} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
+def get_ticket_replies(seadb_api, project_uuid, ticket_id, start, end):
+    ticket_replies_sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
     ticket_replies_data = seadb_api.query_rows(project_uuid, ticket_replies_sql).get('results')
     return ticket_replies_data
 
 def get_tickets_table(seadb_api, project_uuid):
     return get_table_by_name(seadb_api, project_uuid, TABLE_TICKETS)
 
-def get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_number, ticket_reply_number):
-    sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_number} AND `_pk` = {ticket_reply_number}"
+def get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_id, ticket_reply_number):
+    sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_id} AND `_pk` = {ticket_reply_number}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
@@ -128,20 +116,140 @@ def _get_select_column_options(seadb_api, project_uuid, table_name, column_name)
         return [], None
     column_data = column.get('data') or {}
     options = column_data.get('options', []) or []
-    return options, column_key
+    cascade_settings = column_data.get('cascade_settings')
+    return options, column_key, cascade_settings
 
-def get_column_key_by_name(seadb_api, project_uuid, table_name, column_name):
+def get_column_by_name(seadb_api, project_uuid, table_name, column_name):
     table_meta = get_table_by_name(seadb_api, project_uuid, table_name)
     if not table_meta:
-        return None
+        return None, None
     column, column_key = _get_column_by_name(table_meta, column_name)
     if not column:
+        return None, None
+    return column, column_key
+
+# universal select column
+def _get_tickets_select_column(seadb_api, project_uuid, column_name):
+    """Return (options, column_key, cascade_settings) for a select-like column on tickets table."""
+    return _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, column_name)
+
+def get_select_column(seadb_api, project_uuid, column_name):
+    """Return (options, column_key) for a select-like column on tickets table."""
+    options, column_key, _ = _get_tickets_select_column(seadb_api, project_uuid, column_name)
+    return options, column_key
+
+def get_select_option_by_id(seadb_api, project_uuid, column_name, option_id):
+    options, _ = get_select_column(seadb_api, project_uuid, column_name)
+    for opt in options:
+        if opt.get('id') == option_id:
+            return opt
+    return None
+
+def get_select_option_by_name(seadb_api, project_uuid, column_name, option_name):
+    options, _ = get_select_column(seadb_api, project_uuid, column_name)
+    for opt in options:
+        if opt.get('name') == option_name:
+            return opt
+    return None
+
+def add_select_option(seadb_api, project_uuid, column_name, name, option_data):
+    """Add an option to a select-like column; option_data is dict stored in option_data."""
+    tickets_table = get_tickets_table(seadb_api, project_uuid)
+    if not tickets_table:
         return None
-    return column_key
+    options, column_key = get_select_column(seadb_api, project_uuid, column_name)
+    if not column_key:
+        return None
+
+    new_option_data = {
+        'table_id': tickets_table.get('id'),
+        'column_key': column_key,
+        'option_name': name,
+        'option_data': option_data or {},
+    }
+    res = seadb_api.add_column_option(project_uuid, new_option_data)
+    option_id = res.get('option_id')
+    # Return merged visible structure
+    result = {'id': option_id, 'name': name}
+    if option_data:
+        result.update(option_data)
+    return result
+
+def update_select_option(seadb_api, project_uuid, column_name, option_id, update_data):
+    options, column_key = get_select_column(seadb_api, project_uuid, column_name)
+    if not column_key:
+        return None
+
+    tickets_table = get_tickets_table(seadb_api, project_uuid)
+    if not tickets_table:
+        return None
+
+    payload = {
+        'table_id': tickets_table.get('id'),
+        'column_key': column_key,
+        'option_id': option_id,
+        'update_option_data': update_data or {},
+    }
+
+    # handle rename separately per API contract
+    for opt in options:
+        if opt.get('id') == option_id:
+            if update_data and update_data.get('name') is not None and update_data.get('name') != opt.get('name'):
+                payload['new_option_name'] = update_data.pop('name')
+            break
+    res = seadb_api.update_column_option(project_uuid, payload)
+    return res.get('success')
+
+def delete_select_option(seadb_api, project_uuid, column_name, option_id):
+    options, column_key = get_select_column(seadb_api, project_uuid, column_name)
+    tickets_table = get_tickets_table(seadb_api, project_uuid)
+    if not tickets_table or not column_key:
+        return None
+    option_data = {
+        'table_id': tickets_table.get('id'),
+        'column_key': column_key,
+        'option_id': option_id,
+    }
+    res = seadb_api.delete_column_option(project_uuid, option_data)
+    return res.get('success')
+
+def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name):
+    sql = (
+        f"SELECT {column_name}, COUNT(*) AS count "
+        f"FROM `{TABLE_TICKETS}` "
+        "WHERE `deleted` = False "
+        f"GROUP BY {column_name}"
+    )
+    res = seadb_api.query_rows(project_uuid, sql)
+    rows = res.get('results') or []
+    # tags is array; others are scalar strings
+    if column_name == 'tags':
+        return {row.get('tags')[0]: row.get('count') for row in rows if row.get('tags')}
+    return {row.get(column_name): row.get('count') for row in rows if row.get(column_name)}
+
+def filter_tickets_by_select(seadb_api, project_uuid, column_name, option_ids):
+    if not option_ids:
+        return []
+    # map ids to names
+    names = []
+    for oid in option_ids:
+        opt = get_select_option_by_id(seadb_api, project_uuid, column_name, oid)
+        if opt:
+            names.append(opt.get('name'))
+    names_str = ', '.join(f"'{n}'" for n in names)
+    display_columns_join = ', '.join(TICKET_DISPLAY_ALL_COLUMNS)
+    sql = (
+        f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
+        f"WHERE `{column_name}` IN ({names_str}) AND `deleted` = False"
+    )
+    res = seadb_api.query_rows(project_uuid, sql)
+    tickets = res.get('results')
+    columns = res.get('metadata') or []
+    return tickets, columns
 
 ### status
 def get_status_column(seadb_api, project_uuid):
-    options, column_key = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'status')
+    options, column_key, _ = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'status')
     return options, column_key
 
 def get_status_option_by_id(seadb_api, project_uuid, status_id):
@@ -158,100 +266,43 @@ def get_status_option_by_name(seadb_api, project_uuid, status_name):
             return status_option
     return None
 
+
 ### type
 def get_type_column(seadb_api, project_uuid):
-    options, column_key = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'type')
+    options, column_key = get_select_column(seadb_api, project_uuid, 'type')
     return options, column_key
 
 
 def get_type_option_by_id(seadb_api, project_uuid, type_id):
-    type_options, _ = get_type_column(seadb_api, project_uuid)
-    for type_option in type_options:
-        if type_option.get('id') == type_id:
-            return type_option
-    return None
+    return get_select_option_by_id(seadb_api, project_uuid, 'type', type_id)
 
 
 def get_type_option_by_name(seadb_api, project_uuid, type_name):
-    type_options, _ = get_type_column(seadb_api, project_uuid)
-    for type_option in type_options:
-        if type_option.get('name') == type_name:
-            return type_option
-    return None
+    return get_select_option_by_name(seadb_api, project_uuid, 'type', type_name)
 
 
 def update_type_option(seadb_api, project_uuid, type_id, update_data):
-    type_options, column_key = get_type_column(seadb_api, project_uuid)
-    if not column_key:
-        return None
-
-    tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table:
-        return None
-    
-    option_data = {
-        'table_id': tickets_table.get('id'),
-        'column_key': column_key,
-        'option_id': type_id,
-        'update_option_data': update_data,
-    }
-
-    for type_option in type_options:
-        if type_option.get('id') == type_id:
-            if update_data.get('name') != type_option.get('name'):
-                option_data['new_option_name'] = update_data.pop('name')
-            break
-    res = seadb_api.update_column_option(project_uuid, option_data)
-    return res.get('success')
+    return update_select_option(seadb_api, project_uuid, 'type', type_id, update_data)
 
 
 def delete_type_option(seadb_api, project_uuid, type_id):
-    _, column_key = get_type_column(seadb_api, project_uuid)
-    tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table or not column_key:
-        return None
-    option_data = {
-        'table_id': tickets_table.get('id'),
-        'column_key': column_key,
-        'option_id': type_id,
-    }
-    res = seadb_api.delete_column_option(project_uuid, option_data)
-    return res.get('success')
+    return delete_select_option(seadb_api, project_uuid, 'type', type_id)
 
 
 def add_type_option(seadb_api, project_uuid, name, color, text_color):
-    tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table:
-        return None
-    table_id = tickets_table.get('id')
-    _, column_key = get_type_column(seadb_api, project_uuid)
-    if not column_key:
-        return None
-
-    new_option_data = {
-        'table_id': table_id,
-        'column_key': column_key,
-        'option_name': name,
-        'option_data': {
-            'color': color,
-            'text_color': text_color,
-        },
-    }
-    res = seadb_api.add_column_option(project_uuid, new_option_data)
-    option_id = res.get('option_id')
-    return {
-        'id': option_id,
-        'name': name,
-        'color': color,
-        'text_color': text_color,
-    }
+    return add_select_option(
+        seadb_api,
+        project_uuid,
+        'type',
+        name,
+        {'color': color, 'text_color': text_color},
+    )
 
 
 def update_ticket_type(seadb_api, project_uuid, ticket_id_map):
-    """Batch update ticket type (by name)."""
-    for ticket_number, type_id in ticket_id_map.items():
+    for ticket_id, type_id in ticket_id_map.items():
         update_data = {
-            'pk': ticket_number,
+            'pk': ticket_id,
             'row': {'type': type_id},
         }
         seadb_api.update_rows(project_uuid, TABLE_TICKETS, [update_data])
@@ -259,16 +310,12 @@ def update_ticket_type(seadb_api, project_uuid, ticket_id_map):
 
 ### tags
 def get_tags_column(seadb_api, project_uuid):
-    options, column_key = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'tags')
+    options, column_key = get_select_column(seadb_api, project_uuid, 'tags')
     return options, column_key
 
 
 def get_tag_option_by_id(seadb_api, project_uuid, tag_id):
-    tag_options, _ = get_tags_column(seadb_api, project_uuid)
-    for tag_option in tag_options:
-        if tag_option.get('id') == tag_id:
-            return tag_option
-    return None
+    return get_select_option_by_id(seadb_api, project_uuid, 'tags', tag_id)
 
 
 def get_tag_ids_by_names(seadb_api, project_uuid, tag_names):
@@ -281,108 +328,118 @@ def get_tag_ids_by_names(seadb_api, project_uuid, tag_names):
 
 
 def update_ticket_tags(seadb_api, project_uuid, ticket_id_map):
-    """Batch update ticket tags (by names list)."""
     updates = []
-    for ticket_number, tag_ids in ticket_id_map.items():
-        updates.append({'pk': ticket_number, 'row': {'tags': tag_ids}})
+    for ticket_id, tag_ids in ticket_id_map.items():
+        updates.append({'pk': ticket_id, 'row': {'tags': tag_ids}})
     if updates:
         seadb_api.update_rows(project_uuid, TABLE_TICKETS, updates)
 
 
 def add_tag_option(seadb_api, project_uuid, name, color, text_color, description=''):
-    """Add a tag option to 'tags' column."""
-    tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table:
-        return None
-    table_id = tickets_table.get('id')
-    _, tags_column_key = get_tags_column(seadb_api, project_uuid)
-    if not tags_column_key:
-        return None
-
-    new_option_data = {
-        'table_id': table_id,
-        'column_key': tags_column_key,
-        'option_name': name,
-        'option_data': {
-            'color': color,
-            'text_color': text_color,
-            'description': description,
-        },
-    }
-    res = seadb_api.add_column_option(project_uuid, new_option_data)
-    option_id = res.get('option_id')
-
-    return {
-        'id': option_id,
-        'name': name,
-        'description': description,
-        'color': color,
-        'text_color': text_color,
-    }
-
+    return add_select_option(
+        seadb_api,
+        project_uuid,
+        'tags',
+        name,
+        {'color': color, 'text_color': text_color, 'description': description or ''},
+    )
 
 def update_tag_option(seadb_api, project_uuid, tag_id, update_data):
-    tag_options, column_key = get_tags_column(seadb_api, project_uuid)
-    if not column_key:
-        return None
-    
-    tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table:
-        return None
-    
-    old_tag_name = None
-    for tag_option in tag_options:
-        if tag_option.get('id') == tag_id:
-            if update_data.get('name'):
-                old_tag_name = tag_option.pop('name')
-            break
-    
-    option_data = {
-        'table_id': tickets_table.get('id'),
-        'column_key': column_key,
-        'option_id': tag_id,
-        'update_option_data': update_data,
-    }
-    if update_data.get('name') != old_tag_name:
-        option_data['new_option_name'] = update_data.get('name')
-    res = seadb_api.update_column_option(project_uuid, option_data)
-    return res.get('success')
-
+    return update_select_option(seadb_api, project_uuid, 'tags', tag_id, update_data)
 
 def delete_tag_option(seadb_api, project_uuid, tag_id):
+    return delete_select_option(seadb_api, project_uuid, 'tags', tag_id)
+
+def filter_tickets_by_tag(seadb_api, project_uuid, tag_id):
+    return filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_id])
+
+
+### substate
+def get_substate_column(seadb_api, project_uuid):
+    options, column_key, _ = _get_select_column_options(seadb_api, project_uuid, TABLE_TICKETS, 'substate')
+    return options, column_key
+
+def get_substate_column_details(seadb_api, project_uuid):
+    column, column_key = get_column_by_name(seadb_api, project_uuid, TABLE_TICKETS, 'substate')
+    if not column:
+        return [], None, {}
+    data = (column.get('data') or {})
+    options = data.get('options', []) or []
+    return options, column_key, data
+
+def get_substate_option_by_id(seadb_api, project_uuid, substate_id):
+    return get_select_option_by_id(seadb_api, project_uuid, 'substate', substate_id)
+
+def get_substate_option_by_name(seadb_api, project_uuid, substate_name):
+    return get_select_option_by_name(seadb_api, project_uuid, 'substate', substate_name)
+
+def add_substate_option(seadb_api, project_uuid, name, color, text_color):
+    return add_select_option(
+        seadb_api,
+        project_uuid,
+        'substate',
+        name,
+        {'color': color, 'text_color': text_color},
+    )
+
+def update_substate_option(seadb_api, project_uuid, substate_id, update_data):
+    return update_select_option(seadb_api, project_uuid, 'substate', substate_id, update_data)
+
+def delete_substate_option(seadb_api, project_uuid, substate_id):
+    substate_options, column_key, data = get_substate_column_details(seadb_api, project_uuid)
     tickets_table = get_tickets_table(seadb_api, project_uuid)
-    if not tickets_table:
-        return None
-    _, column_key = get_tags_column(seadb_api, project_uuid)
-    if not column_key:
+    if not tickets_table or not column_key:
         return None
     option_data = {
         'table_id': tickets_table.get('id'),
         'column_key': column_key,
-        'option_id': tag_id,
+        'option_id': substate_id,
     }
     res = seadb_api.delete_column_option(project_uuid, option_data)
+    # delete substate id in cascade settings
+    cascade_settings = data.get('cascade_settings')
+    if cascade_settings:
+        for status_id, substate_ids in cascade_settings.items():
+            if substate_id in substate_ids:
+                substate_ids.remove(substate_id)
+            column_data = {
+                'table_id': tickets_table.get('id'),
+                'column_key': column_key,
+                'update_column_data': {
+                    'cascade_settings': cascade_settings,
+                },
+            }
+            seadb_api.update_column(project_uuid, column_data)
     return res.get('success')
 
+def filter_tickets_by_substate(seadb_api, project_uuid, substate_ids):
+    return filter_tickets_by_select(seadb_api, project_uuid, 'substate', substate_ids)
 
-def get_ticket_counts_group_by_tag(seadb_api, project_uuid):
-    sql = (
-        "SELECT tags, COUNT(*) AS count "
-        "FROM `tickets` "
-        "WHERE `deleted` = False "
-        "GROUP BY tags"
-    )
-    res = seadb_api.query_rows(project_uuid, sql)
-    rows = res.get('results') or []
-    return {row.get('tags')[0]: row.get('count') for row in rows if row.get('tags')}
+def get_substate_options_by_status_option_id(seadb_api, project_uuid, status_id):
+    options, column_key, data = get_substate_column_details(seadb_api, project_uuid)
+    cascade_settings = (data or {}).get('cascade_settings') or {}
+    if not cascade_settings:
+        return options
+    allowed_ids = set(cascade_settings.get(status_id, []))
+    return [opt for opt in (options or []) if opt.get('id') in allowed_ids]
 
-def get_ticket_counts_group_by_type(seadb_api, project_uuid):
-    sql = (
-        "SELECT type, COUNT(*) AS count "
-        "FROM `tickets` "
-        "WHERE `deleted` = False "
-        "GROUP BY type"
-    )
-    res = seadb_api.query_rows(project_uuid, sql)
-    rows = res.get('results') or []
-    return {row.get('type'): row.get('count') for row in rows if row.get('type')}
+# format tickets
+def convert_ticket_select_column_name_to_option_id(seadb_api, project_uuid, ticket):
+    """In-place convert ticket fields from names to ids for status/type/tags/substate."""
+    if not ticket:
+        return ticket
+    if ticket.get('status'):
+        option = get_status_option_by_name(seadb_api, project_uuid, ticket.get('status'))
+        if option:
+            ticket['status'] = option.get('id')
+    if ticket.get('type'):
+        option = get_type_option_by_name(seadb_api, project_uuid, ticket.get('type'))
+        if option:
+            ticket['type'] = option.get('id')
+    if ticket.get('tags'):
+        ticket['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, ticket.get('tags'))
+    if ticket.get('substate'):
+        option = get_substate_option_by_name(seadb_api, project_uuid, ticket.get('substate'))
+        if option:
+            ticket['substate'] = option.get('id')
+    return ticket

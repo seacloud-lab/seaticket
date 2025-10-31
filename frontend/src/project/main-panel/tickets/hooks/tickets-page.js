@@ -28,6 +28,9 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     if (pageType === TICKET_PAGE_TYPE.TYPES && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
       urlPart = urlPart + childrenPageType + '/';
     }
+    if (pageType === TICKET_PAGE_TYPE.SUBSTATES && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
+      urlPart = urlPart + childrenPageType + '/';
+    }
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
@@ -65,6 +68,11 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
       }
     } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TYPES) {
       pageType = TICKET_PAGE_TYPE.TYPES;
+      if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
+        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
+      }
+    } else if (pageTypeFromURL === TICKET_PAGE_TYPE.SUBSTATES) {
+      pageType = TICKET_PAGE_TYPE.SUBSTATES;
       if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
         childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
       }

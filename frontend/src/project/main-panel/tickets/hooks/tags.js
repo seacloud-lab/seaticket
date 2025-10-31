@@ -4,11 +4,11 @@ import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { TagsData, Tag } from '../models';
-import { tagsAPI } from '../../../api';
+import { ticketsAPI } from '../../../api';
 
 const TagsContext = React.createContext(null);
 
-export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
+export const TagsProvider = ({ projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [tagsData, setTagsData] = useState(new TagsData());
   const [isReLoading, setReLoading] = useState(false);
@@ -56,7 +56,7 @@ export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
   }, [tagsData]);
 
   const createTag = useCallback((tag) => {
-    return tagsAPI.createProjectTag(projectUuid, tag).then(res => {
+    return ticketsAPI.createTicketTag(projectUuid, tag).then(res => {
       const tag = new Tag(res.data.project_tag);
       applyCreateTags([tag]);
       return tag;
@@ -64,14 +64,14 @@ export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
   }, [projectUuid, applyCreateTags]);
 
   const deleteTag = useCallback((tagID) => {
-    return tagsAPI.deleteProjectTag(projectUuid, tagID).then(res => {
+    return ticketsAPI.deleteTicketTag(projectUuid, tagID).then(res => {
       applyDeleteTags([tagID]);
       return tagID;
     });
   }, [projectUuid, applyDeleteTags]);
 
   const modifyTag = useCallback((tagID, update) => {
-    return tagsAPI.modifyProjectTag(projectUuid, tagID, update).then(res => {
+    return ticketsAPI.modifyTicketTag(projectUuid, tagID, update).then(res => {
       applyModifyTags({ [tagID]: update });
     });
   }, [projectUuid, applyModifyTags]);
@@ -81,7 +81,7 @@ export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
     if (dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
     loadTime.current = currentTime;
     setReLoading(true);
-    tagsAPI.listProjectTags(projectUuid, tagsCount).then(res => {
+    ticketsAPI.listTicketTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.project_tags) ? res.data.project_tags : [];
       applyCreateTags(tags, true);
       setReLoading(false);
@@ -94,7 +94,7 @@ export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
 
   const load = useCallback(() => {
     setLoading(true);
-    tagsAPI.listProjectTags(projectUuid, tagsCount).then(res => {
+    ticketsAPI.listTicketTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.project_tags) ? res.data.project_tags : [];
       applyCreateTags(tags);
       setLoading(false);
@@ -103,7 +103,7 @@ export const TagsProvider = ({ projectUuid, tagsCount = 1, children }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [projectUuid, tagsCount]);
+  }, [projectUuid]);
 
   useEffect(() => {
     load();

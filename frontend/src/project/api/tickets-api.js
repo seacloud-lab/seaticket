@@ -236,6 +236,125 @@ class TicketsAPI {
     return this._sendPostRequest(url, form);
   }
 
+  // substates
+  listTicketSubstates(projectUuid, { status_id = '' } = {}) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
+    const params = {};
+    if (status_id) params.status_id = status_id;
+    return this.req.get(url, { params });
+  }
+
+  createTicketSubstate(projectUuid, { name, color, text_color }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
+    let form = new FormData();
+    if (name) form.append('name', name);
+    if (color) form.append('color', color);
+    if (text_color) form.append('text_color', text_color);
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyTicketSubstate(projectUuid, substateId, update) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
+    let form = new FormData();
+    Object.keys(update).forEach(key => {
+      form.append(key, update[key]);
+    });
+    return this.req.put(url, form);
+  }
+
+  deleteTicketSubstate(projectUuid, substateId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
+    return this.req.delete(url);
+  }
+
+  listTicketsBySubstate(projectUuid, substateId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
+    return this.req.get(url);
+  }
+
+  // tags
+  listTicketTags(projectUuid) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/';
+    return this.req.get(url);
+  }
+
+  createTicketTag(projectUuid, { name, description, color, text_color }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (description) {
+      form.append('description', description);
+    }
+    if (color) {
+      form.append('color', color);
+    }
+    if (text_color) {
+      form.append('text_color', text_color);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyTicketTag(projectUuid, tagId, update,) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
+    let form = new FormData();
+    Object.keys(update).forEach(key => {
+      form.append(key, update[key]);
+    });
+    return this.req.put(url, form);
+  }
+
+  deleteTicketTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
+    return this.req.delete(url);
+  }
+
+  listTicketsByTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
+    return this.req.get(url);
+  }
+
+  // types
+  listTicketTypes(projectUuid) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/';
+    return this.req.get(url);
+  }
+
+  createTicketType(projectUuid, { name, color, text_color }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (color) {
+      form.append('color', color);
+    }
+    if (text_color) {
+      form.append('text_color', text_color);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyTicketType(projectUuid, typeId, update,) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
+    let form = new FormData();
+    Object.keys(update).forEach(key => {
+      form.append(key, update[key]);
+    });
+    return this.req.put(url, form);
+  }
+
+  deleteTicketType(projectUuid, typeId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
+    return this.req.delete(url);
+  }
+
+  listTicketsByType(projectUuid, typeId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
+    return this.req.get(url);
+  }
+
 }
 
 const ticketsAPI = new TicketsAPI();

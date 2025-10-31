@@ -4,11 +4,11 @@ import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { TypesData, Type } from '../models';
-import { typesAPI } from '../../../api';
+import { ticketsAPI } from '../../../api';
 
 const TypesContext = React.createContext(null);
 
-export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
+export const TypesProvider = ({ projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [typesData, setTypesData] = useState(new TypesData());
   const [isReLoading, setReLoading] = useState(false);
@@ -61,7 +61,7 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
   }, [typesData]);
 
   const createType = useCallback((type) => {
-    return typesAPI.createProjectType(projectUuid, type).then(res => {
+    return ticketsAPI.createTicketType(projectUuid, type).then(res => {
       const type = new Type(res.data.project_type);
       applyCreateTypes([type]);
       return type;
@@ -69,14 +69,14 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
   }, [projectUuid, applyCreateTypes]);
 
   const deleteType = useCallback((typeID) => {
-    return typesAPI.deleteProjectType(projectUuid, typeID).then(res => {
+    return ticketsAPI.deleteTicketType(projectUuid, typeID).then(res => {
       applyDeleteTypes([typeID]);
       return typeID;
     });
   }, [projectUuid, applyDeleteTypes]);
 
   const modifyType = useCallback((typeID, update) => {
-    return typesAPI.modifyProjectType(projectUuid, typeID, update).then(res => {
+    return ticketsAPI.modifyTicketType(projectUuid, typeID, update).then(res => {
       applyModifyTypes({ [typeID]: update });
     });
   }, [projectUuid, applyModifyTypes]);
@@ -86,7 +86,7 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
     if (dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
     loadTime.current = currentTime;
     setReLoading(true);
-    typesAPI.listProjectTypes(projectUuid, typesCount).then(res => {
+    ticketsAPI.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.project_types) ? res.data.project_types : [];
       applyCreateTypes(types, true);
       setReLoading(false);
@@ -99,7 +99,7 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
 
   const load = useCallback(() => {
     setLoading(true);
-    typesAPI.listProjectTypes(projectUuid, typesCount).then(res => {
+    ticketsAPI.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.project_types) ? res.data.project_types : [];
       applyCreateTypes(types);
       setLoading(false);
@@ -108,7 +108,7 @@ export const TypesProvider = ({ projectUuid, typesCount = 1, children }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, [projectUuid, typesCount]);
+  }, [projectUuid]);
 
   useEffect(() => {
     load();

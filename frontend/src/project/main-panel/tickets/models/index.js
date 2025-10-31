@@ -3,6 +3,8 @@ import Tag from './tag';
 import TagsData from './tags';
 import Type from './type';
 import TypesData from './types';
+import Substate from './substate';
+import SubstatesData from './substates';
 
 export {
   Ticket,
@@ -12,5 +14,7 @@ export {
   TagsData,
   Type,
   TypesData,
+  Substate,
+  SubstatesData,
   Reply,
 };

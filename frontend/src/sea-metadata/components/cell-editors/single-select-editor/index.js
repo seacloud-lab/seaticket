@@ -34,7 +34,9 @@ const SingleSelectEditor = forwardRef(({
         if (!cascadeColumnValue) return [];
         const cascadeSetting = cascade_settings[cascadeColumnValue];
         if (!cascadeSetting || !Array.isArray(cascadeSetting) || cascadeSetting.length === 0) return [];
-        return options.filter(option => cascadeSetting.includes(option.id));
+        return options
+          .filter(option => cascadeSetting.includes(option.id))
+          .map(o => ({ ...o, value: o.id }));
       }
     }
     return options.map(o => ({ ...o, value: o.id }));

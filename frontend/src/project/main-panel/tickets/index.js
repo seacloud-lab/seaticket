@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
-import { TagsProvider, TypesProvider, TicketsPageProvider, useTicketsPage, DataCacheProvider } from './hooks';
+import { TagsProvider, TypesProvider, SubstatesProvider, TicketsPageProvider, useTicketsPage, DataCacheProvider } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
 import TagTickets from './view/tag-tickets';
 import TypeTickets from './view/type-tickets';
+import Substates from './view/substates';
+import SubstateTickets from './view/substate-tickets';
 import AllTickets from './view/all-tickets';
 import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
@@ -38,6 +40,10 @@ const Page = () => {
     if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
     return (<TypeTickets { ...props } typeID={childrenPageType}/>);
   }
+  if (pageType === TICKET_PAGE_TYPE.SUBSTATES) {
+    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Substates projectUuid={projectUuid} permission={permission} />);
+    return (<SubstateTickets { ...props } substateID={childrenPageType}/>);
+  }
   if (pageType === TICKET_PAGE_TYPE.ALL) {
     return (<AllTickets { ...props }/>);
   }
@@ -56,10 +62,12 @@ const Index = ({ title }) => {
       >
         <TypesProvider projectUuid={projectUuid}>
           <TagsProvider projectUuid={projectUuid}>
-            <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
-              <TicketTopBar title={title} />
-              <Page />
-            </TicketsPageProvider>
+            <SubstatesProvider projectUuid={projectUuid}>
+              <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
+                <TicketTopBar title={title} />
+                <Page />
+              </TicketsPageProvider>
+            </SubstatesProvider>
           </TagsProvider>
         </TypesProvider>
       </CollaboratorsProvider>
