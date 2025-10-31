@@ -13,6 +13,8 @@ IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 
 MANUAL_SYNC_INTERVAL = 10 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
+AI_CHAT_TICKET_PREFIX_PROMPT = 'I will provide a Json-like issue record with title, descriptions and some replies, please help me to resolve my problem:\n\n'
+
 # connection types
 class ConnectionType(Enum):
     EMAIL = 'email'
@@ -73,14 +75,6 @@ class CrawlStatus:
 
 
 # tickets
-TICKET_STATUS = (
-    '',
-    'open',
-    'completed',
-    'not_planned',
-    'duplicate',
-)
-
 TICKET_DEFAULT_DETAILS = {
     'views': [
         {
@@ -276,7 +270,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
-    ConnectionType.SEAFILE.value: ['path', 'filename', 'mtime', 'updated_at'],
+    ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at'],
 }
 
 

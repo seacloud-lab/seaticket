@@ -1,0 +1,45 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { gettext } from '../constants';
+import SelectEditor from './select-editor';
+
+const propTypes = {
+  isTextMode: PropTypes.bool.isRequired,
+  isEditIconShow: PropTypes.bool.isRequired,
+  roles: PropTypes.array.isRequired,
+  currentRole: PropTypes.string.isRequired,
+  onRoleChanged: PropTypes.func.isRequired,
+  toggleItemFreezed: PropTypes.func,
+  translateRole: PropTypes.func,
+};
+
+class RoleEditor extends React.Component {
+
+  translateRole = (role) => {
+    if (role === 'Admin') {
+      return gettext('Admin');
+    }
+
+    if (role === 'Member') {
+      return gettext('Member');
+    }
+  };
+
+  render() {
+    return (
+      <SelectEditor
+        isTextMode={this.props.isTextMode}
+        isEditIconShow={this.props.isEditIconShow}
+        options={this.props.roles}
+        currentOption={this.props.currentRole}
+        onOptionChanged={this.props.onRoleChanged}
+        translateOption={this.props.translateRole || this.translateRole}
+        toggleItemFreezed={this.props.toggleItemFreezed}
+      />
+    );
+  }
+}
+
+RoleEditor.propTypes = propTypes;
+
+export default RoleEditor;

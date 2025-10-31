@@ -5,10 +5,12 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import Icon from '../../../../components/icon';
 import ModalPortal from '../../../../components/modal-portal';
 import LongTextPreview from './long-text-preview';
+import MarkdownViewer from './long-text-preview/viewer';
+import { ROW_HEIGHT_MAP, ROW_HEIGHT_TYPE } from '../../../constants/grid-body';
 
 import './index.css';
 
-const LongTextFormatter = ({ value: oldValue, className, previewClassName, children: emptyFormatter }) => {
+const LongTextFormatter = ({ value: oldValue, className, previewClassName, height, children: emptyFormatter, }) => {
   const [isPreview, setPreview] = useState(false);
 
   const ref = useRef(null);
@@ -113,6 +115,7 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, child
   }, [isPreview]);
 
   if (!value) return emptyFormatter || null;
+  const markdownContent = value ? value.text : '';
 
   return (
     <div
@@ -121,10 +124,17 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, child
       onMouseLeave={onMouseLeave}
       ref={ref}
     >
-      {renderLinks()}
-      {renderCheckList()}
-      {renderImages()}
-      {renderContent()}
+      {height >= ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
+        <MarkdownViewer value={markdownContent} showTOC={false} />
+      )}
+      {height < ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
+        <>
+          {renderLinks()}
+          {renderCheckList()}
+          {renderImages()}
+          {renderContent()}
+        </>
+      )}
       {isPreview &&
         <ModalPortal>
           <LongTextPreview
@@ -143,6 +153,7 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, child
 LongTextFormatter.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   className: PropTypes.string,
+  height: PropTypes.number,
   previewClassName: PropTypes.string,
   children: PropTypes.any,
 };

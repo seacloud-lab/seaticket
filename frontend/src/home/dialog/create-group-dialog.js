@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Input, Button, Label } from 'reactstrap';
-import { toaster, ModalHeader } from '../../components';
-import { gettext } from '../../constants';
-import { seaQAAPI } from '../../api/web-api';
-import { Utils } from '../../utils/utils';
+import { toaster, ModalHeader } from '@/components';
+import { gettext } from '@/constants';
+import homeAPI from '../api';
+import { Utils } from '@/utils/utils';
 
 class CreateGroupDialog extends React.Component {
 
@@ -42,7 +42,7 @@ class CreateGroupDialog extends React.Component {
   handleSubmit = () => {
     let name = this.state.groupName.trim();
     if (name) {
-      seaQAAPI.createGroup(name).then((res) => {
+      homeAPI.createGroup(name).then((res) => {
         this.props.onSubmit();
       }).catch((error) => {
         let errMsg = Utils.getErrorMsg(error, true);

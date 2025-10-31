@@ -608,6 +608,42 @@ class ProjectConnectionRowDetailView(APIView):
         })
 
 
+class ProjectConnectionLogView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id):
+        # role permission check
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        last_sync_log = project_connection.last_sync_log or ''
+        if last_sync_log:
+            last_sync_log = last_sync_log[1:] if last_sync_log.startswith('\n') else last_sync_log
+            last_sync_log = last_sync_log.replace('\n', '<br>')
+        return Response({
+            'last_sync_log': last_sync_log,
+        })
+
 class ProjectConnectionsStatusView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )

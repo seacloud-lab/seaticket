@@ -12,12 +12,6 @@ from seahub.api2.utils import api_error
 from seahub.profile.models import Profile
 from seahub.utils.verify import verify_sms_code
 
-from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
-from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
-from seahub.weixin.settings import WEIXIN_PROVIDER
-from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
-from seahub.dingtalk.settings import DINGTALK_PROVIDER
-
 from seahub.auth.models import SocialAuthUser
 
 logger = logging.getLogger(__name__)
@@ -68,10 +62,6 @@ class UnbindPhoneView(APIView):
             error_msg = 'Code incorrect'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        provider_list = [WORK_WEIXIN_PROVIDER, WEIXIN_PROVIDER, ORG_WORK_WEIXIN_PROVIDER, ORG_DINGTALK_PROVIDER, DINGTALK_PROVIDER]
-
-        is_connect_wx_or_dingtalk = SocialAuthUser.objects.filter(username=request.user.username, provider__in=provider_list).exists()
-
         try:
             profile = Profile.objects.get(user=request.user.username)
         except Profile.DoesNotExist:
@@ -82,7 +72,7 @@ class UnbindPhoneView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not is_connect_wx_or_dingtalk and not profile.contact_email:
+        if not profile.contact_email:
             error_msg = 'no other login method is set, the phone number cannot be unbound'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 

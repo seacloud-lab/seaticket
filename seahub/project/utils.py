@@ -9,19 +9,21 @@ import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, DeletedProjects, ProjectTags, \
-    Tickets, TicketReplies, TicketTags, TicketParticipants, TicketAssignees, ConnectionsViews, TicketViews
+from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
+from seahub.profile.models import Profile
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
+from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
+from seahub.project.seadb_api import SeaDBAPI
+from seahub.tickets.ticket_utils import time_str_to_utc_time
 
 
 logger = logging.getLogger(__name__)
@@ -88,8 +90,8 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     """
     if not username or not workspace_owner or not ticket:
         return None
-
-    if ticket.creator == username:
+    
+    if ticket.get('creator') == username:
         return PERMISSION_READ_WRITE
 
     return check_project_permission(username, workspace_owner)
@@ -100,8 +102,8 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """
     if not username or not workspace_owner or not comment:
         return None
-
-    if comment.creator == username:
+    
+    if comment.get('creator') == username:
         return PERMISSION_READ_WRITE
 
     return check_project_admin_permission(username, workspace_owner)
@@ -241,19 +243,19 @@ def search(params):
     return results
 
 
-def ask_ai_question(params):
+def get_ai_reply(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-answer')
+    url = urljoin(SEAQA_AI_SERVER_URL, '/get-ai-reply')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
-    ai_answer = resp_json.get('answer', '')
+    ai_reply = resp_json.get('ai_reply', '')
     agent_memory = resp_json.get('agent_memory', {})
     sources = resp_json.get('sources', [])
-    return ai_answer, agent_memory, sources
+    return ai_reply, agent_memory, sources
 
 
 def convert_record_to_ticket(params):
@@ -377,15 +379,9 @@ def delete_project(project):
 
     try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
-        ProjectTags.objects.filter(project_uuid=project_uuid).delete()
-        tickets = Tickets.objects.filter(project_uuid=project_uuid)
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
-        ticket_id_list = [ticket.id for ticket in tickets]
-        tickets.delete()
-        TicketReplies.objects.filter(ticket_id__in=ticket_id_list).delete()
-        TicketTags.objects.filter(ticket_id__in=ticket_id_list).delete()
-        TicketAssignees.objects.filter(ticket_id__in=ticket_id_list).delete()
-        TicketParticipants.objects.filter(ticket_id__in=ticket_id_list).delete()
+        seadb_api = SeaDBAPI()
+        seadb_api.delete_base(project_uuid)
     except Exception as e:
         logger.error(e)
 
@@ -421,3 +417,73 @@ def url_to_filename(url):
 
     # Add .json extension
     return filename + '.json'
+
+class TicketNotFound(Exception):
+    pass
+
+def ticket_to_json(project_uuid, ticket_id):
+    """
+    Build a json from a ticket and its replies.
+
+    Args:
+    - ticket: a record in table `tickets`
+    - ticket_replies: some relative replies with the ticket
+
+    Returns:
+    ```json // <- not included
+    {
+        "title": ...,
+        "description": ...,
+        "created_at": ...,
+        "replies": [
+            {
+                "nickname": ...,
+                "content": ...,
+                "replied_at": ...,
+            },
+            ...
+        ]
+    }
+    ``` // <- not included
+    """
+    try:
+        seadb_api = SeaDBAPI()
+        query_ticket_sql = f"select * from tickets where _pk = {ticket_id}"
+        query_ticket_replies_sql = f"select * from ticket_replies where ticket_id = {ticket_id} order by _pk limit {AI_CHAT_TICKET_MAX_REPLIES_NUM}"
+        ticket = seadb_api.query_rows(project_uuid, query_ticket_sql).get('results', [])
+        ticket_replies = seadb_api.query_rows(project_uuid, query_ticket_replies_sql).get('results', [])
+    except Exception as e:
+        logger.error(e)
+        raise TicketNotFound()
+    all_replies_users = set([
+        ticket_reply.get('creator')
+        for ticket_reply in ticket_replies
+    ])
+
+    all_replies_users_profile = Profile.objects.filter(user__in=all_replies_users)
+
+    nickname_map = {
+        user_profile.user: user_profile.nickname
+        for user_profile in all_replies_users_profile
+    }
+    title = ticket[0].get('title')
+    description = ticket[0].get('description')
+    created_at = ticket[0].get('created_at')
+    created_at = time_str_to_utc_time(created_at).isoformat()
+    whole_ticket_data = {
+        'title': title,
+        'description': description,
+        'created_at': created_at,
+        'replies': []
+    }
+    for ticket_reply in ticket_replies:
+        nickname = nickname_map.get(ticket_reply.get('creator'))
+        content = ticket_reply.get('content')
+        replied_at = ticket_reply.get('created_at')
+        replied_at = time_str_to_utc_time(replied_at).isoformat()
+        whole_ticket_data['replies'].append({
+            'nickname': nickname,
+            'content': content,
+            'replied_at': replied_at
+        })
+    return json.dumps(whole_ticket_data, indent=4)

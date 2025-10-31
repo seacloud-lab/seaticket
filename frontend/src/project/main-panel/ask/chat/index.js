@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
-import { askAPI } from '../../../api';
+import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
 import Thinking from '../thinking';
 import { Utils } from '@/utils/utils';
@@ -56,7 +56,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback((resolveType, message) => {
+  const sendMessage = useCallback(({ resolveType, message, ticket }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -72,7 +72,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
     });
 
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, sessionId, validMessage, resolveType);
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, ticket });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -81,7 +81,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       newSessionProblem.current = '';
       togglePageType(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, newSessionId, validMessage, resolveType);
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, ticket });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
@@ -105,7 +105,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
       return;
     }
 
-    askAPI.getChatMessages(projectUuid, sessionId).then(res => {
+    chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
         if (item.role === 'user') {
           return new ChatMessage({
@@ -118,7 +118,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         let msgContent;
         try {
           msgContent = {
-            answer: item.content,
+            ai_reply: item.content,
             sources: Array.isArray(item.sources)
               ? item.sources
               : typeof item.sources === 'string'
@@ -127,10 +127,10 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           };
         } catch (e) {
           console.error(e);
-          msgContent = { answer: item.content, sources: [] };
+          msgContent = { ai_reply: item.content, sources: [] };
         }
         const newChatData = {
-          [CHAT_MESSAGE_TYPE.ANSWER]: msgContent.answer,
+          [CHAT_MESSAGE_TYPE.AI_REPLY]: msgContent.ai_reply,
           [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
         };
         return new ChatMessage({
@@ -186,11 +186,11 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
         updateChatHistories(newChatHistories, false);
         return;
       }
-      const { answer = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
+      const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
       let newChatData = {
-        [CHAT_MESSAGE_TYPE.ANSWER]: answer,
+        [CHAT_MESSAGE_TYPE.AI_REPLY]: ai_reply,
         [CHAT_MESSAGE_TYPE.SOURCES]: sources,
       };
       if (resolveType === AI_RESOLVE_TYPE.AGENT) {
@@ -213,8 +213,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
 
   return (
     <div className={classnames('sea-qa-ai-ask-wrapper', { 'empty': isEmpty, 'large': !isShowSessions })} ref={wrapperRef}>
-      <div className='sea-qa-ai-ask-chats-wrapper'>
-        <div className="sea-qa-ai-ask-chats" ref={chatHistoryContentRef}>
+      <div className="sea-qa-ai-ask-chats-wrapper">
+        <div className={classnames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty })} ref={chatHistoryContentRef}>
           {isEmpty && (
             <div className="sea-qa-ai-ask-chats-tip" style={{ marginTop: height > 420 ? 134 : Math.max(0, height - 286) }}>
               <Icon symbol="problem-solving" className="sea-qa-ai-ask-chats-tip-icon" />
@@ -238,6 +238,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           ref={messageInputRef}
           isReply={loading || isReply}
           readOnly={readOnly}
+          projectUuid={projectUuid}
           sendMessage={sendMessage}
         />
       </div>

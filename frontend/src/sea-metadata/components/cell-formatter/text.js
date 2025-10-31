@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { getType } from '../../../utils/utils';
+import { getType } from '@/utils/type-detection';
 
 const TextFormatter = ({ value, className, column, onClick, children: emptyFormatter }) => {
   const validValue = useMemo(() => {

@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { seaQAAPI } from '../../api/web-api';
-import { gettext } from '../../constants';
+import homeAPI from '../../api';
+import { gettext } from '@/constants';
 import SearchResultItem from './search-result-item';
-import { Utils } from '../../utils/utils';
+import { Utils } from '@/utils/utils';
 import getWorkspaceName from '../utils/get-workspace-name';
 import { getValueLength } from './search-utils';
-import { IconButton } from '../../components';
+import { IconButton } from '@/components';
 
 const propTypes = {
   isPublic: PropTypes.bool,
@@ -161,7 +161,7 @@ class SearchProject extends Component {
 
   sendRequest = (queryData) => {
     const query_str = queryData.q.trim();
-    seaQAAPI.searchItems(query_str, 'project').then(res => {
+    homeAPI.searchItems(query_str, 'project').then(res => {
       const results = res.data.results;
       this.setState({
         resultItems: results,

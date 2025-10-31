@@ -13,7 +13,6 @@ const propTypes = {
   isAdmin: PropTypes.bool.isRequired,
   loadWorkspaceList: PropTypes.func.isRequired,
   toggleManageMembersDialog: PropTypes.func.isRequired,
-  toggleDepartmentDetailDialog: PropTypes.func,
 };
 
 class ManageMembersDialog extends React.Component {
@@ -23,7 +22,7 @@ class ManageMembersDialog extends React.Component {
   };
 
   render() {
-    const { groupID, isOwner, toggleManageMembersDialog, toggleDepartmentDetailDialog, isAdmin, loadWorkspaceList } = this.props;
+    const { groupID, isOwner, toggleManageMembersDialog, isAdmin, loadWorkspaceList } = this.props;
     return (
       <Modal isOpen={true} toggle={this.toggle} className="group-manage-members-dialog">
         <ModalHeader toggle={this.toggle}>
@@ -35,7 +34,6 @@ class ManageMembersDialog extends React.Component {
             isOwner={isOwner}
             changeMode={this.changeMode}
             toggleManageMembersDialog={toggleManageMembersDialog}
-            toggleDepartmentDetailDialog={toggleDepartmentDetailDialog}
             isAdmin={isAdmin}
             loadWorkspaceList={loadWorkspaceList}
           />

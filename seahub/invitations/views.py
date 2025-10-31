@@ -1,18 +1,10 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-import io
-import base64
-import os
-
-import qrcode
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
-from PIL import Image
-
-from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.auth import login as auth_login, authenticate
 from seahub.auth import get_backends
 from seahub.base.accounts import User
@@ -98,42 +90,9 @@ def invitation_link_view(request, token):
     get_object_or_404(InvitationLinks, token=token)
 
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('project'))
+        return HttpResponseRedirect(reverse('projects_list'))
 
     response = HttpResponseRedirect('https://www.seatable.cn/?source=invitation&invitation_token=%s' % token)
 
     return response
 
-
-def invitation_poster_view(request, token):
-    if not settings.ENABLE_SIGNUP:
-        raise Http404
-
-    invitation_link = get_object_or_404(InvitationLinks, token=token)
-
-    qrcode_img = qrcode.make(invitation_link.link)
-    qrcode_img = qrcode_img.convert('RGBA')
-    qr_width, qr_height = qrcode_img.size
-
-    icon_path = os.path.join(settings.MEDIA_ROOT, 'favicons', 'favicon.ico')
-    with open(icon_path, 'rb') as f:
-        icon_img = Image.open(f)
-
-    # resize and convert icon img
-    icon_width, icon_height = qr_width // 4, qr_height // 4
-    icon_img = icon_img.resize((icon_width, icon_height), Image.Resampling.LANCZOS)
-    icon_left, icon_right = (qr_width - icon_width) // 2, (qr_height - icon_height) // 2
-    icon_img = icon_img.convert('RGBA')
-
-    # add white background under icon img
-    icon_img_with_bg = Image.new('RGBA', icon_img.size, (255,255,255))
-    icon_img_with_bg.paste(icon_img, (0, 0, *icon_img_with_bg.size), icon_img)
-
-    # add icon
-    qrcode_img.paste(icon_img_with_bg, (icon_left, icon_right), icon_img_with_bg)
-
-    buffer = io.BytesIO()
-    qrcode_img.save(buffer, 'png')
-    return render(request, 'invite_poster.html', {
-        'qrcode_src': 'data:image/png;base64,' + base64.b64encode(buffer.getvalue()).decode()
-    })

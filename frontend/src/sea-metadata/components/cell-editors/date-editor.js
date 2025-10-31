@@ -9,7 +9,7 @@ import dayjs from '../../utils/dayjs';
 import { translateCalendar } from '@/utils/date-format-utils';
 import { gettext } from '@/constants';
 import { getEventClassName } from '@/utils/dom';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import context from '../../context';
 
 import 'dayjs/locale/zh-cn';

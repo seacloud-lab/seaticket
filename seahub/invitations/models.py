@@ -159,6 +159,7 @@ class RegistrationiLogsManager(models.Manager):
         )
         return logs
 
+
 class RegistrationLogs(models.Model):
     source = models.CharField(max_length=40, db_index=True, default='')
     token = models.CharField(max_length=40, null=True)

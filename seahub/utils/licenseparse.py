@@ -2,6 +2,7 @@
 import logging
 from django.conf import settings
 from seahub.utils import is_pro_version
+from seahub.base.accounts import User
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ def user_number_over_limit(new_users=1):
             max_users = 200
 
         # get active user number
-        active_users = ccnet_api.count_emailusers('DB')
+        active_users = User.objects.count_emailusers()
 
         if new_users < 0:
             logger.debug('`new_users` must be greater or equal to 0.')

@@ -1,10 +1,9 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { EmptyTip, Icon, Loading } from '../../../../components';
-import { isOrgContext, orgName, mediaUrl } from '../../../../constants';
+import { EmptyTip, Icon, Loading } from '@/components';
+import { isOrgContext, orgName, mediaUrl } from '@/constants';
 import Workspace from '../../../workspace';
-import { Utils } from '../../../../utils/utils';
-import { isNumber } from '../../../../utils/type-detection';
+import { Utils } from '@/utils/utils';
 
 const gettext = window.gettext;
 
@@ -21,14 +20,8 @@ class WorkspaceInMainPanel extends React.Component {
 
   renderWorkspace = () => {
     const { projectID, workspaceList, onCopyProject, onDeleteProject,
-      onDeleteGroup, onAddGroupSharedProject, onLeaveGroupSharedProject,
-      onAddProject } = this.props;
-
-    if (!isNumber(projectID)) {
-      if (projectID === 'starred' || projectID === 'shared') {
-        return (<EmptyTip text={gettext('No projects')} src={`${mediaUrl}img/no-items-tip.png`} />);
-      }
-    }
+      onDeleteGroup, onAddProject
+    } = this.props;
 
     let workspace = workspaceList.find(workspace => {
       return workspace.id === Number(projectID);
@@ -44,8 +37,6 @@ class WorkspaceInMainPanel extends React.Component {
         onDeleteGroup={onDeleteGroup}
         onDeleteProject={onDeleteProject}
         onCopyProject={onCopyProject}
-        onAddGroupSharedProject={onAddGroupSharedProject}
-        onLeaveGroupSharedProject={onLeaveGroupSharedProject}
         onAddProject={onAddProject}
         loadWorkspaceList={this.props.loadWorkspaceList}
         emptyTip={
@@ -92,8 +83,6 @@ WorkspaceInMainPanel.propTypes = {
   onDeleteGroup: PropTypes.func.isRequired,
   onCopyProject: PropTypes.func.isRequired,
   onDeleteProject: PropTypes.func.isRequired,
-  onLeaveGroupSharedProject: PropTypes.func.isRequired,
-  onAddGroupSharedProject: PropTypes.func.isRequired,
   onAddProject: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
   projectID: PropTypes.string,

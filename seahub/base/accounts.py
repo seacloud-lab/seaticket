@@ -288,24 +288,11 @@ class UserPermissions(object):
     def can_invite_guest(self):
         return self._get_perm_by_roles('can_invite_guest')
 
-    def can_send_share_link_mail(self):
-        if not IS_EMAIL_CONFIGURED:
-            return False
-
-        return self._get_perm_by_roles('can_send_share_link_mail')
-
-    def can_generate_external_link(self):
-        return self._get_perm_by_roles('can_generate_external_link')
-
     def can_use_advanced_permissions(self):
         return self._get_perm_by_roles('can_use_advanced_permissions')
 
     def can_use_advanced_customization(self):
         return self._get_perm_by_roles('can_use_advanced_customization')
-
-    def share_limit(self):
-        return self._get_perm_by_roles('share_limit', default=100)
-
 
 class AdminPermissions(object):
     def __init__(self, user):
@@ -320,17 +307,11 @@ class AdminPermissions(object):
     def can_config_system(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_config_system']
 
-    def can_manage_library(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_library']
-
     def can_manage_user(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_user']
 
     def can_manage_group(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_group']
-
-    def can_manage_external_link(self):
-        return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_manage_external_link']
 
     def can_view_user_log(self):
         return get_enabled_admin_role_permissions_by_role(self.user.admin_role)['can_view_user_log']

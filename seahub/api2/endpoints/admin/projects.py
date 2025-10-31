@@ -10,7 +10,7 @@ from rest_framework import status
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.project.models import Projects
+from seahub.project.models import Projects, ProjectAPIToken
 from seahub.project.utils import get_project_owner, convert_project_trash_names, \
     restore_trash_project_name, delete_project
 from seahub.organizations.models import Organization
@@ -112,6 +112,7 @@ class AdminProject(APIView):
         try:
             Projects.objects.filter(id=project.id).update(
                 deleted=True, delete_time=datetime.now(), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'
@@ -158,7 +159,7 @@ class AdminTrashProjectsView(APIView):
         results = [get_project_info(project, include_deleted=True, orgs_dict=orgs_dict)
                    for project in projects_queryset]
 
-        return Response({'count': projects_count, 'trash_project_list': results})
+        return Response({'count': projects_count, 'projects': results})
 
     def delete(self, request):
         try:
@@ -206,3 +207,40 @@ class AdminTrashProjectView(APIView):
         #    sender=None, admin_name=request.user.username, operation=BASE_RESTORE, detail=detail)
 
         return Response({'success': True})
+
+
+class AdminSearchProjectsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    throttle_classes = (UserRateThrottle,)
+    permission_classes = (IsAdminUser,)
+
+    def get(self, request):
+        # argument check
+        query_str = request.GET.get('query', '').strip()
+        if not query_str:
+            error_msg = 'query invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 20))
+        except Exception as e:
+            error_msg = 'per_page or page invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        start = (page - 1) * per_page
+        end = page * per_page
+
+        try:
+            projects_count = Projects.objects.search_projects_count(query_str)
+            projects_queryset = Projects.objects.search_projects(query_str, start, end)
+        except Exception as e:
+            logger.error('get search projects error: %s', e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'projects': [get_project_info(project, include_deleted=False) for project in projects_queryset],
+            'count': projects_count
+        })
+

@@ -3,17 +3,17 @@ import classnames from 'classnames';
 import { CustomizeMarkdownViewer } from '@/components';
 
 const StepMarkdownViewer = ({ value, className }) => {
-  const [answerType, setAnswerType] = useState('rich-text');
+  const [aiMessageType, setAIMessageType] = useState('rich-text');
 
-  const beforeAnswerRenderCallback = useCallback((value) => {
+  const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
-      setAnswerType('text');
+      setAIMessageType('text');
     }
   }, []);
 
   return (
-    <div className={classnames('sea-qa-ai-ask-message-answer', className, answerType)}>
-      <CustomizeMarkdownViewer value={value} showTOC={false} beforeRenderCallback={beforeAnswerRenderCallback} />
+    <div className={classnames('sea-qa-message-ai-reply', className, aiMessageType)}>
+      <CustomizeMarkdownViewer value={value} showTOC={false} beforeRenderCallback={beforeAIReplyRenderCallback} />
     </div>
   );
 };

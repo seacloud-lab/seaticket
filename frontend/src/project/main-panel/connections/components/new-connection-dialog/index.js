@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, UncontrolledTooltip } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader, StepsNavigation, Icon } from '@/components';
+import { TextInput, PasswordInput, ModalHeader, StepsNavigation, IconTooltip } from '@/components';
 import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
 
@@ -194,24 +194,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                   <Label>
                     {c.name}
                     {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
-                    {helpText ? (
-                      <>
-                        <Icon
-                          symbol="help"
-                          id={`help-icon-${key}`}
-                          className="mr-1 help-icon"
-                          style={{ cursor: 'pointer' }}
-                        />
-                        <UncontrolledTooltip
-                          target={`help-icon-${key}`}
-                          placement="right"
-                          fade={false}
-                          className="sea-metadata-tooltip"
-                        >
-                          {helpText}
-                        </UncontrolledTooltip>
-                      </>
-                    ) : null}
+                    {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
                   </Label>
                   {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                     <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />

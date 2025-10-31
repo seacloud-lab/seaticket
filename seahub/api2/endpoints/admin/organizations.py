@@ -10,7 +10,6 @@ from rest_framework import status
 from django.utils.crypto import get_random_string
 
 from seahub.constants import ORG_DEFAULT
-from seahub.utils.file_size import get_file_size_unit
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.utils import is_valid_email
 from seahub.base.accounts import User
@@ -41,7 +40,7 @@ except ImportError:
 
 try:
     from seahub.settings import MULTI_TENANCY
-    from seahub.organizations.models import OrgSettings, OrgQuota, OrgCorpAuth
+    from seahub.organizations.models import OrgSettings, OrgQuota
 except ImportError:
     MULTI_TENANCY = False
 
@@ -57,20 +56,11 @@ def get_org_info(org):
     org_id = org.org_id
 
     org_info = {}
-    org_info['bound_dingtalk'] = False
-    org_info['bound_workweixin'] = False
     org_info['org_id'] = org_id
     org_info['org_name'] = org.org_name
     org_info['ctime'] = timestamp_to_isoformat_timestr(org.ctime)
     org_info['org_url_prefix'] = org.url_prefix
     org_info['role'] = OrgSettings.objects.get_role_by_org(org)
-
-    corp_auth = OrgCorpAuth.objects.get_by_org_id(org_id)
-    if corp_auth:
-        if corp_auth.permanent_code:
-            org_info['bound_workweixin'] = True
-        else:
-            org_info['bound_dingtalk'] = True
 
     creator = org.creator
     org_info['creator_email'] = creator
@@ -503,8 +493,6 @@ class AdminOrganization(APIView):
             # # remove org org quota
             # OrgQuota.objects.filter(org_id=org_id).delete()
 
-            # # reset org corp
-            OrgCorpAuth.objects.filter(org_id=org_id).update(org_id=None)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

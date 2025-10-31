@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
-import ClickOutside from '../../../components/click-outside';
-import { isEsc } from '../../../utils/hotkey';
-import { siteRoot, mediaUrl, isOrgStaff, useExternalTeamAdmin, gettext } from '../../../constants';
+import ClickOutside from '@/components/click-outside';
+import { isEsc } from '@/utils/hotkey';
+import { siteRoot, mediaUrl, isOrgStaff, useExternalTeamAdmin, gettext } from '@/constants';
 
 import './index.css';
 
@@ -28,7 +28,7 @@ const Account = ({ user }) => {
 
   const defaultAvatarUrl = `${mediaUrl}avatars/default.png`;
   const avatarUrl = user ? user.avatar_url : defaultAvatarUrl;
-  const teamAdminUrl = useExternalTeamAdmin ? `${siteRoot}external-team-admin/` : `${siteRoot}org/orgmanage/`;
+  const teamAdminUrl = useExternalTeamAdmin ? `${siteRoot}external-team-admin/` : `${siteRoot}org/manage/`;
 
   return (
     <>

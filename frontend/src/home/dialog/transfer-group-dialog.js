@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter, Label } from 'reactstrap';
-import { ModalHeader } from '../../components';
-import { gettext } from '../../constants';
-import { seaQAAPI } from '../../api/web-api';
-import UserSelect from '../../components/user-select';
-import { Utils } from '../../utils/utils';
+import { ModalHeader } from '@/components';
+import { gettext } from '@/constants';
+import homeAPI from '../api';
+import UserSelect from '@/components/user-select';
+import { Utils } from '@/utils/utils';
 
 const propTypes = {
   groupID: PropTypes.number.isRequired,
@@ -31,7 +31,7 @@ class TransferGroupDialog extends React.Component {
     const [user] = this.state.selectedUsers;
     const email = user?.email;
     if (email) {
-      seaQAAPI.transferGroup(this.props.groupID, email).then((res) => {
+      homeAPI.transferGroup(this.props.groupID, email).then((res) => {
         this.props.toggleTransferGroupDialog();
         this.props.loadWorkspaceList();
       }).catch((error) => {

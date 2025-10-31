@@ -65,7 +65,6 @@ const getFilterResult = (row, filter, { username, userId }) => {
  * @param {object} formulaRow
  * @param {string} username
  * @param {string} userId
- * @param {object} userDepartmentIdsMap e.g. { current_user_department_ids: [8, 10], current_user_department_and_sub_ids: [8, 10, 12, 34] }
  * @returns filter result, bool
  */
 const filterRow = (row, filterConjunction, filters, { username = '', userId } = {}) => {

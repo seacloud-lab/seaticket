@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import SearchedList from './searched-list';
-import { Loading, SearchInput } from '../../../components';
-import { seaQAAPI } from '../../../api/web-api';
+import { Loading, SearchInput } from '@/components';
+import homeAPI from '../../api';
 import { getValueLength } from '../search-utils';
-import { gettext } from '../../../constants';
+import { gettext } from '@constants';
 import { QUERY_TYPE, SEARCHED_STORE_KEY, QUERY_TYPE_DISPLAY } from './constant';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 
@@ -30,7 +30,7 @@ const ProjectSearcher = (props) => {
   const sendRequest = (queryData, queryType) => {
     setIsLoading(true);
     const query_str = queryData.q; // trimmed string
-    seaQAAPI.searchItems(query_str, queryType).then(res => {
+    homeAPI.searchItems(query_str, queryType).then(res => {
       const nextSearchedRes = {
         ...searchedRes,
         [SEARCHED_STORE_KEY[queryType]]: getNormalizeSearchedList(res.data.results, queryType),

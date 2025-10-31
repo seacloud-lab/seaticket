@@ -45,7 +45,12 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'name': project.icon
     }
 
-    is_project_admin= check_project_admin_permission(request.user.username, workspace.owner)
+    try:
+        project_settings = getattr(project, 'settings', '{}') or '{}'
+    except:
+        project_settings = '{}'
+
+    is_project_admin = check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
 
     return_dict = {
@@ -57,9 +62,9 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'is_owned_by_group': project.is_owned_by_group,
         'media_url': MEDIA_URL,
         'icon': json.dumps(icon),
+        'settings': project_settings,
         'is_project_admin': is_project_admin,
         'permission': permission if permission else PERMISSION_READ
     }
-
     return render(request, 'project_view_react.html', return_dict)
 

@@ -14,12 +14,12 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.project.models import Workspaces, Projects
+from seahub.project.models import Workspaces, Projects, ProjectAPIToken
 from seahub.group.utils import validate_group_name, is_group_member, is_group_admin_or_owner, check_group_name_conflict, \
     refresh_group_name_cache, get_group_members, get_group_member_info
 from seahub.utils import is_valid_username
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
-from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_GROUP_LIMIT, ADVANCE_ORG_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT, GROUP_MEMBER_LIMIT
 
 from seahub.organizations.views import get_org_groups
@@ -67,15 +67,9 @@ class OrgAdminGroups(APIView):
             group['id'] = i.group_id
             group['group_name'] = i.group_name
             group['ctime'] = timestamp_to_isoformat_timestr(i.timestamp)
-            if i.parent_group_id == 0:
-                group['creator_name'] = email2nickname(i.creator_name)
-                group['creator_email'] = i.creator_name
-                group['creator_contact_email'] = email2contact_email(i.creator_name)
-            else:
-                # Explicit set owner for department
-                group['creator_name'] = 'system admin'
-                group['creator_email'] = 'system admin'
-                group['creator_contact_email'] = ''
+            group['creator_name'] = email2nickname(i.creator_name)
+            group['creator_email'] = i.creator_name
+            group['creator_contact_email'] = email2contact_email(i.creator_name)
 
             groups_list.append(group)
 
@@ -139,10 +133,10 @@ class OrgAdminGroups(APIView):
         # quota
         group_count = len(pattern_matched_groups)
         error_msg = ''
-        if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-            error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-        elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-            error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+        if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_GROUP_LIMIT
+        elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_GROUP_LIMIT
         elif group_count >= ORG_GROUP_QUOTA:
             error_msg = _('Number of groups exceeds the %s limit.') % ORG_GROUP_QUOTA
         if error_msg:
@@ -377,47 +371,6 @@ class OrgAdminGroup(APIView):
 
         return Response({'success': True})
 
-class OrgAdminSearchGroups(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    throttle_classes = (UserRateThrottle,)
-    permission_classes = (IsProVersion, IsOrgAdminUser)
-
-    def get(self, request, org_id):
-        """Query organization groups
-        """
-
-        # resource check
-        try:
-            org_id = int(org_id)
-        except:
-            error_msg = 'org_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not Organization.objects.get_org_by_id(org_id):
-            error_msg = 'Organization %s not found.' % org_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        query = request.GET.get('query', '').strip()
-        if not query:
-            error_msg = 'query invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        group_infos = [{
-                'id': group_info['group_id'],
-                'name': group_info['group_name'],
-                'owner': group_info['creator_name'],
-                'created_at': timestamp_to_isoformat_timestr(group_info['timestamp']),
-            }
-            for group_info in search_org_group(org_id, query, 0, 25)
-        ]
-
-        results = {
-            'group_list': group_infos
-        }
-
-        return Response(results)
-
-
 class AdminGroupMembers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -464,10 +417,6 @@ class AdminGroupMembers(APIView):
                 role = 'Owner'
             elif is_admin:
                 role = 'Admin'
-
-            # filter empty-user from bug that made an empty-group-owner when creating department
-            if role == 'Owner' and email == '':
-                continue
 
             if email in users_info:
                 nickname = users_info.get(email)[1]
@@ -735,6 +684,7 @@ class OrgAdminGroupProjects(APIView):
             project_dict['modifier'] = email2nickname(project.modifier)
             project_dict['created_at'] = project.created_at
             project_dict['updated_at'] = project.updated_at
+            project_dict['group_id'] = group_id
             project_list.append(project_dict)
 
         return Response({'projects': project_list})
@@ -778,6 +728,7 @@ class OrgAdminGroupProject(APIView):
         try:
             Projects.objects.filter(id=project.id).update(
                 deleted=True, delete_time=datetime.now(), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'

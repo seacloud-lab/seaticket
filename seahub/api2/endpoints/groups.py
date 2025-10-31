@@ -21,8 +21,8 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.group.utils import validate_group_name, check_group_name_conflict, \
     is_group_member, is_group_admin_or_owner, is_group_owner, is_group_admin_or_owner_by_group
 from seahub.project.models import Workspaces, ProjectGroupOrders, Projects
-from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT, \
-    ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+from seahub.organizations.settings import ORG_GROUP_QUOTA, FREE_ORG_GROUP_LIMIT, \
+    ADVANCE_ORG_GROUP_LIMIT
 from seahub.settings import PERSONAL_GROUP_LIMIT
 from seahub.organizations.models import OrgGroup
 from seahub.group.models import GroupUser, Group
@@ -127,10 +127,10 @@ class GroupsView(APIView):
         group_count = OrgGroup.objects.filter(org_id=org_id).count()
         error_msg = ''
 
-        if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-            error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_DEPARTMENT_OR_GROUP_LIMIT
-        elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT:
-            error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_DEPARTMENT_OR_GROUP_LIMIT
+        if not request.user.permissions.can_use_advanced_permissions() and group_count >= FREE_ORG_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % FREE_ORG_GROUP_LIMIT
+        elif request.user.permissions.can_use_advanced_permissions() and group_count >= ADVANCE_ORG_GROUP_LIMIT:
+            error_msg = _('Number of groups exceeds the %s limit.') % ADVANCE_ORG_GROUP_LIMIT
         elif group_count >= ORG_GROUP_QUOTA:
             error_msg = _('Number of groups exceeds the %s limit.') % ORG_GROUP_QUOTA
         if error_msg:

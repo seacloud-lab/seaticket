@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { isWhiteColor } from '@/utils/utils';
+import { isWhiteColor } from '@/utils/color-utils';
 import { getOptionDisplayNameByOption } from '../../../utils/column';
 
 import './index.css';

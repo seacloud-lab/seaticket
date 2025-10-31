@@ -9,7 +9,7 @@ import DragMask from '../drag-mask';
 import SelectionRangeMask from '../selection-range-mask';
 import SelectionMask from '../selection-mask';
 import { gettext, KeyCodes } from '@/constants';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import { isEmptyObject } from '@/utils/object-utils';
 import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,

@@ -59,6 +59,14 @@ class TicketsAPI {
     }
   }
 
+  listProjectTicketsBySearch(projectUuid, query = '', signal) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/search/';
+    const params = {
+      query,
+    };
+    return this.req.get(url, { params: params, signal: signal });
+  }
+
   listProjectTickets(projectUuid, { view_id = '0000', start = 0, limit = 100 }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     const params = {
@@ -88,9 +96,6 @@ class TicketsAPI {
     Object.keys(update).forEach(key => {
       let value = update[key];
       if (value && typeof value === 'object') {
-        if (key === 'tags') {
-          value = value.map(v => Number(v));
-        }
         value = JSON.stringify(value);
       }
       if (value === null) {

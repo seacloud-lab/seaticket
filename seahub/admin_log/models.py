@@ -20,12 +20,6 @@ GROUP_DELETE = 'group_delete'
 GROUP_MEMBER_ADD = 'group_member_add'
 # 'group_member_delete': {'id': group_id, 'name': group_name, 'user': user}
 GROUP_MEMBER_DELETE = 'group_member_delete'
-# 'department_create': {'id': department_id, 'name': department_name}
-DEPARTMENT_CREATE = 'department_create'
-# 'department_rename': {'id': department_id, 'old_name': old_department_name, 'new_name': new_department_name}
-DEPARTMENT_RENAME = 'department_rename'
-# 'department_delete': {'name': department_name}
-DEPARTMENT_DELETE = 'department_delete'
 
 
 # 'base_delete': {'name': base_name, 'project_uuid': project_uuid, [, 'group_id': group_id, 'group_name': group_name] [, 'org_id': org_id, 'org_name': org_name]}
@@ -54,7 +48,6 @@ ADMIN_LOG_OPERATION_TYPE = (
 ORGADMIN_LOG_OPERATION_TYPE = (
     GROUP_CREATE, GROUP_TRANSFER, GROUP_DELETE,
     BASE_DELETE, BASE_RESTORE,
-    DEPARTMENT_CREATE, DEPARTMENT_RENAME, DEPARTMENT_DELETE,
     USER_ADD, USER_DELETE, USER_ACTIVATE, USER_DEACTIVATE
 )
 

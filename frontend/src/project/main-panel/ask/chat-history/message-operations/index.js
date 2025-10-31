@@ -5,23 +5,23 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const MessageOperations = ({ getMessageHTML, getAnswer }) => {
+const MessageOperations = ({ getMessageHTML, getAIReply }) => {
 
   const onCopy = useCallback(() => {
-    const answer = getAnswer();
+    const AIReply = getAIReply();
     const messageHTML = getMessageHTML();
 
     navigator.clipboard.write([
       new ClipboardItem({
         'text/html': new Blob([messageHTML], { type: 'text/html' }),
-        'text/plain': new Blob([answer], { type: 'text/plain' })
+        'text/plain': new Blob([AIReply], { type: 'text/plain' })
       })
     ]).then(() => {
       toaster.success(gettext('The content has been copied'));
     }).catch(err => {
-      copy(answer);
+      copy(AIReply);
     });
-  }, [getMessageHTML, getAnswer]);
+  }, [getMessageHTML, getAIReply]);
 
   return (
     <div className="sea-qa-ai-answer-operations">

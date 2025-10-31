@@ -7,17 +7,20 @@ import MainPanel from './main-panel';
 import { BAR_TYPE, EVENT_BUS_TYPE } from './constants';
 import { TICKET_PAGE_TYPE } from './main-panel/tickets/constants';
 import { CONNECTION_PAGE_TYPE } from './main-panel/connections/constants';
-import { CenteredLoading } from '../components';
+import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
+import projectAPI from './api/project-api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const { projectName, projectUuid, workspaceID } = window.app.pageOptions;
+const { projectName, projectUuid, workspaceID, settings: initSettings } = window.app.pageOptions;
 
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
+  const [settings, setSettings] = useState({});
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
@@ -60,6 +63,17 @@ const Project = () => {
     setActiveBar(newActiveBar);
   }, [activeBar]);
 
+  const modifySettings = useCallback((update, callback) => {
+    projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
+      setSettings({ ...settings, ...update });
+      callback && callback();
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      callback && callback({ error });
+    });
+  }, [settings]);
+
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -74,6 +88,18 @@ const Project = () => {
     setLoading(false);
   }, []);
 
+  useEffect(() => {
+    let settings = {};
+    if (initSettings) {
+      try {
+        settings = JSON.parse(initSettings);
+      } catch {
+        settings = {};
+      }
+    }
+    setSettings(settings);
+  }, []);
+
   return (
     <I18nextProvider i18n={i18n}>
       <div className="sea-qa-project">
@@ -81,8 +107,8 @@ const Project = () => {
           <CenteredLoading />
         ) : (
           <ConnectionsProvider projectUuid={projectUuid} >
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-            <MainPanel activeBar={activeBar} />
+            <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} modifySettings={modifySettings} />
+            <MainPanel activeBar={activeBar} settings={settings} />
           </ConnectionsProvider>
         )}
       </div>

@@ -291,8 +291,7 @@ img:not([src]) {
   opacity: 0;
 }
 
-.cur-view-path.draft-review-nav,
-.cur-view-path.share-upload-nav {
+.cur-view-path.draft-review-nav {
   padding: 0 1rem;
 }
 
@@ -341,4 +340,11 @@ img:not([src]) {
 .main-panel .loading-tip {
   display: block;
   margin: 1em auto;
+}
+
+.tooltip-inner {
+  background-color: #303133;
+  font-weight: lighter;
+  max-width: 242px;
+  text-align: start;
 }

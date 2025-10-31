@@ -22,20 +22,6 @@ class IsGroupMember(BasePermission):
         username = request.user.username if request.user else ''
         return True if is_group_member(group_id, username) else False
 
-
-class CanInviteGuest(BasePermission):
-    """Check user has permission to invite a guest.
-    """
-    def has_permission(self, request, *args, **kwargs):
-        return settings.ENABLE_GUEST_INVITATION and \
-                request.user.permissions.can_invite_guest()
-
-class CanSendShareLinkMail(BasePermission):
-    """Check user has permission to generate upload link.
-    """
-    def has_permission(self, request, *args, **kwargs):
-        return request.user.permissions.can_send_share_link_mail()
-
 class IsProVersion(BasePermission):
     """
     Check whether Seafile is pro version

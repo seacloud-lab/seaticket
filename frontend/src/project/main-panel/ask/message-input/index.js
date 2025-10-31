@@ -4,18 +4,21 @@ import classnames from 'classnames';
 import { IconButton, ClickOutside } from '@/components';
 import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
-import { getType, Utils } from '@/utils/utils';
+import { Utils } from '@/utils/utils';
+import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE, AI_RESOLVE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
+import Ticket from './ticket';
 
 import './index.css';
 
-const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
+const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
   const [value, setValue] = useState('');
+  const [ticket, setTicket] = useState(null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -66,8 +69,8 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage(resolveType, value, []);
-  }, [resolveType, value, sendMessage]);
+    sendMessage({ resolveType, message: value, ticket: ticket?._id });
+  }, [resolveType, value, ticket, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -78,14 +81,27 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
 
   const onKeyDown = useCallback((event) => {
     if (CommonlyUsedHotkey.isShiftEnter(event)) return;
+    if (CommonlyUsedHotkey.isModEnter(event)) {
+      event.preventDefault();
+      const textarea = inputRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
 
+      const newValue = value.substring(0, start) + '\n' + value.substring(end);
+      setValue(newValue);
+
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
+      return;
+    }
     const keyCode = event.keyCode;
     if (keyCode === Utils.keyCodes.enter) {
       event.preventDefault();
       onSendMessage();
       return;
     }
-  }, [onSendMessage, setAsk]);
+  }, [value, onSendMessage, setAsk]);
 
   const onMouseUp = useCallback(() => {
     const selection = window.getSelection();
@@ -108,7 +124,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
 
   useEffect(() => {
     if (inputRef.current && previewContentRef.current) {
-      previewContentRef.current.textContent = value;
+      previewContentRef.current.innerText = value;
     }
   }, [value]);
 
@@ -162,7 +178,10 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage }, ref) => {
             <div ref={previewContentRef} className="message-input message-input-preview"></div>
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
-            <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
+            <div className="sea-qa-ai-ask-chat-operations-container-left">
+              <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
+              <Ticket projectUuid={projectUuid} value={ticket} onChange={setTicket} />
+            </div>
             <IconButton
               disabled={disabled}
               icon="send"

@@ -7,9 +7,10 @@ from seahub.views import *
 from seahub.views.mobile import mobile_login
 from seahub.views.sysadmin import *
 from seahub.views.sso import *
+from seahub.group.views import group_invite
 
 from seahub.api2.endpoints.groups import GroupsView, GroupView, GroupMoveView, GroupTrashProjectsView, GroupTrashProjectView
-
+from seahub.api2.endpoints.group_invite_links import GroupInviteLinks, GroupInviteLink
 from seahub.api2.endpoints.group_members import GroupMembers, GroupMember, GroupSearchMember, GroupMembersBulk
 from seahub.api2.endpoints.search_group import SearchGroup
 from seahub.api2.endpoints.user_avatar import UserAvatarView
@@ -24,22 +25,6 @@ from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectV
 
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
-from seahub.api2.endpoints.admin.sysinfo import SysInfo
-from seahub.api2.endpoints.admin.users import AdminUsers, AdminUser, AdminUserResetPassword, \
-    AdminUserGroups, AdminAdminUsers, AdminSearchUser, AdminSearchUserByOrgId
-from seahub.api2.endpoints.admin.groups import AdminGroups, AdminGroup, AdminSearchGroup
-
-from seahub.api2.endpoints.admin.organizations import AdminOrganizations, AdminOrganization, AdminSearchOrganization, \
-    AdminOrganizationsBaseInfo
-from seahub.api2.endpoints.admin.org_users import AdminOrgUsers, AdminOrgUser
-from seahub.api2.endpoints.admin.org_groups import AdminOrgGroups, AdminOrgGroup
-from seahub.api2.endpoints.admin.logo import AdminLogo
-from seahub.api2.endpoints.admin.favicon import AdminFavicon
-from seahub.api2.endpoints.admin.license import AdminLicense
-from seahub.api2.endpoints.admin.login_bg_image import AdminLoginBgImage
-from seahub.api2.endpoints.admin.admin_role import AdminAdminRole
-from seahub.api2.endpoints.admin.two_factor_auth import TwoFactorAuthView
-from seahub.api2.endpoints.admin.projects import AdminProjects, AdminProject, AdminTrashProjectsView, AdminTrashProjectView
 from seahub.api2.endpoints.user_list import UserListView
 
 urlpatterns = [
@@ -65,8 +50,6 @@ urlpatterns = [
     ### React ###
     re_path(r'^projects/$', seaqa_fake_view, name='projects_list'),
     re_path(r'^project/(?P<workspace_id>\d+)/$', seaqa_fake_view, name="project_workspace"),
-    re_path(r'^project/starred/$', seaqa_fake_view, name="project_starred"),
-    re_path(r'^project/shared/$', seaqa_fake_view, name="project_shared"),
 
     ### Apps ###
     re_path(r'^api2/', include('seahub.api2.urls')),
@@ -110,6 +93,8 @@ urlpatterns = [
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v2.1-group-member'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v2.1-group-trash-projects'),
     re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v2.1-group-trash-project'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/$', GroupInviteLinks.as_view(), name='api-v2.1-group-invite-links'),
+    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/(?P<token>[-0-9a-f]{8})/$', GroupInviteLink.as_view(), name='api-v2.1-group-invite-link'),
     re_path(r'^api/v2.1/search-group/$', SearchGroup.as_view(), name='api-v2.1-search-group'),
 
     ## org
@@ -132,62 +117,17 @@ urlpatterns = [
     ## user::avatar
     re_path(r'^api/v2.1/user-avatar/$', UserAvatarView.as_view(), name='api-v2.1-user-avatar'),
 
-    ## admin::sysinfo
-    re_path(r'^api/v2.1/admin/sysinfo/$', SysInfo.as_view(), name='api-v2.1-sysinfo'),
-
-    ## admin::users
-    re_path(r'^api/v2.1/admin/users/$', AdminUsers.as_view(), name='api-v2.1-admin-users'),
-    re_path(r'^api/v2.1/admin/search-user/$', AdminSearchUser.as_view(), name='api-v2.1-admin-search-user'),
-    re_path(r'^api/v2.1/admin/search-user-by-org-id/$', AdminSearchUserByOrgId.as_view(), name='api-v2.1-admin-search-user-by-org-id'),
-
-    ## admin::admin-role
-    re_path(r'^api/v2.1/admin/admin-role/$', AdminAdminRole.as_view(), name='api-v2.1-admin-admin-role'),
-
-    # [^...] Matches any single character not in brackets
-    # + Matches between one and unlimited times, as many times as possible
-    re_path(r'^api/v2.1/admin/users/(?P<email>[^/]+@[^/]+)/$', AdminUser.as_view(), name='api-v2.1-admin-user'),
-    re_path(r'^api/v2.1/admin/users/(?P<email>[^/]+@[^/]+)/reset-password/$', AdminUserResetPassword.as_view(), name='api-v2.1-admin-user-reset-password'),
-    re_path(r'^api/v2.1/admin/users/(?P<email>[^/]+@[^/]+)/groups/$', AdminUserGroups.as_view(), name='api-v2.1-admin-user-groups'),
-    re_path(r'^api/v2.1/admin/users/(?P<email>[^/]+@[^/]+)/two-factor-auth/$', TwoFactorAuthView.as_view(), name='api-v2.1-admin-user-two-factor-auth'),
-
-    re_path(r'^api/v2.1/admin/admin-users/$', AdminAdminUsers.as_view(), name='api-v2.1-admin-admin-users'),
-
-    ## admin::groups
-    re_path(r'^api/v2.1/admin/groups/$', AdminGroups.as_view(), name='api-v2.1-admin-groups'),
-    re_path(r'^api/v2.1/admin/groups/(?P<group_id>\d+)/$', AdminGroup.as_view(), name='api-v2.1-admin-group'),
-    re_path(r'^api/v2.1/admin/search-group/$', AdminSearchGroup.as_view(), name='api-v2.1-admin-search-group'),
-
-    ## admin::organizations
-    re_path(r'^api/v2.1/admin/organizations/$', AdminOrganizations.as_view(), name='api-v2.1-admin-organizations'),
-    re_path(r'^api/v2.1/admin/organizations/(?P<org_id>\d+)/$', AdminOrganization.as_view(), name='api-v2.1-admin-organization'),
-    re_path(r'^api/v2.1/admin/organizations/(?P<org_id>\d+)/users/$', AdminOrgUsers.as_view(), name='api-v2.1-admin-org-users'),
-    re_path(r'^api/v2.1/admin/organizations/(?P<org_id>\d+)/users/(?P<email>[^/]+)/$', AdminOrgUser.as_view(), name='api-v2.1-admin-org-user'),
-    re_path(r'^api/v2.1/admin/organizations/(?P<org_id>\d+)/groups/$', AdminOrgGroups.as_view(), name='api-v2.1-admin-org-groups'),
-    re_path(r'^api/v2.1/admin/organizations/(?P<org_id>\d+)/groups/(?P<group_id>\d+)/$', AdminOrgGroup.as_view(), name='api-v2.1-admin-org-group'),
-    re_path(r'^api/v2.1/admin/search-organization/$', AdminSearchOrganization.as_view(), name='api-v2.1-admin-search-org'),
-    re_path(r'^api/v2.1/admin/organizations-basic-info/$', AdminOrganizationsBaseInfo.as_view(), name='api-v2.1-admin-orgs-base-info'),
-
-    ## admin::logo
-    re_path(r'^api/v2.1/admin/logo/$', AdminLogo.as_view(), name='api-v2.1-admin-logo'),
-    re_path(r'^api/v2.1/admin/favicon/$', AdminFavicon.as_view(), name='api-v2.1-admin-favicon'),
-    re_path(r'^api/v2.1/admin/license/$', AdminLicense.as_view(), name='api-v2.1-admin-license'),
-    re_path(r'^api/v2.1/admin/login-background-image/$', AdminLoginBgImage.as_view(), name='api-v2.1-admin-login-background-image'),
+    re_path(r'^api/v2.1/admin/', include('seahub.api2.endpoints.admin.urls')),
 
     re_path(r'^options/', include('seahub.options.urls')),
     re_path(r'^profile/', include('seahub.profile.urls')),
     re_path(r'^captcha/', include('captcha.urls')),
 
-    ## admin::projects
-    re_path(r'^api/v2.1/admin/projects/$', AdminProjects.as_view(), name='api-v2.1-admin-projects'),
-    re_path(r'^api/v2.1/admin/projects/(?P<project_uuid>[-0-9a-f]+)/$', AdminProject.as_view(), name='api-v2.1-admin-project'),
-    re_path(r'^api/v2.1/admin/trash-projects/$', AdminTrashProjectsView.as_view(), name='api-v2.1-admin-trash-projects'),
-    re_path(r'^api/v2.1/admin/trash-projects/(?P<project_id>\d+)/$', AdminTrashProjectView.as_view(), name='api-v2.1-admin-trash-project'),
-
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 
-    ### system admin ###
+    ### system admin page ###
     re_path(r'^sys/info/$', sysadmin_react_fake_view, name="sys_info"),
-    re_path(r'^sys/sudo/', sys_sudo_mode, name='sys_sudo_mode'),
+        re_path(r'^sys/sudo/', sys_sudo_mode, name='sys_sudo_mode'),
     re_path(r'^sys/web-settings/$', sysadmin_react_fake_view, name="sys_web_settings"),
 
     re_path(r'^sys/users/$', sysadmin_react_fake_view, name="sys_users"),
@@ -210,6 +150,8 @@ urlpatterns = [
     re_path(r'^sys/groups/(?P<group_id>\d+)/projects/$', sysadmin_react_fake_view, name="sys_group_projects"),
     re_path(r'^sys/groups/(?P<group_id>\d+)/members/$', sysadmin_react_fake_view, name="sys_group_members"),
     re_path(r'^sys/search-groups/$', sysadmin_react_fake_view, name="sys_search_groups"),
+
+    re_path(r'^group-invite/(?P<token>[-0-9a-f]{8})/$', group_invite, name='group_invite'),
 ]
 
 if settings.SERVE_STATIC:
@@ -225,8 +167,6 @@ if getattr(settings, 'MULTI_TENANCY', False):
     urlpatterns += [
         re_path(r'^api/v2.1/org/', include('seahub.organizations.api_urls')),
         re_path(r'^org/', include('seahub.organizations.urls')),
-        re_path(r'^org-work-weixin/', include('seahub.org_work_weixin.urls')),
-        re_path(r'^org-dingtalk/', include('seahub.org_dingtalk.urls')),
     ]
 
 if getattr(settings, 'ENABLE_MULTI_SAML', False):

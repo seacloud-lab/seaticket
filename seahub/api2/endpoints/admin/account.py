@@ -18,9 +18,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.profile.models import Profile
-from seahub.utils import is_valid_username, is_org_context
-from seahub.utils.file_size import get_file_size_unit
-from seahub.group.utils import is_group_member
+from seahub.utils import is_valid_username
 from seahub.utils.licenseparse import user_number_over_limit
 
 
@@ -154,13 +152,6 @@ class Account(APIView):
             if usernamebyloginid is not None:
                 return api_error(status.HTTP_400_BAD_REQUEST,
                           _("Login id %s already exists." % loginid))
-
-        # argument check for department
-        department = request.data.get("department", None)
-        if department is not None:
-            if len(department) > 512:
-                return api_error(status.HTTP_400_BAD_REQUEST,
-                        _('Department is too long (maximum is 512 characters)'))
 
         # argument check for is_trial
         is_trial = request.data.get("is_trial", None)

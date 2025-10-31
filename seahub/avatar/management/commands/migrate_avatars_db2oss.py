@@ -16,7 +16,7 @@ from seahub.avatar.models import Avatar
 
 
 logger = logging.getLogger(__name__)
-success_path = '/shared/seatable/logs/avatar_upload_success.log'
+success_path = '/shared/seasearch/logs/avatar_upload_success.log'
 
 
 class AvatarUploaded(models.Model):

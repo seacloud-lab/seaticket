@@ -38,6 +38,7 @@ CustomizeTable.propTypes = {
   onModify: PropTypes.func,
   showStatus: PropTypes.func,
   onManualSync: PropTypes.func,
+  onViewLog: PropTypes.func,
 };
 
 CustomizeTable.Header = Header;

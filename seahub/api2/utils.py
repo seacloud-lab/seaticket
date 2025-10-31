@@ -208,62 +208,6 @@ def is_web_request(request):
     else:
         return False
 
-def get_user_social_auth_info(username, org_id):
-    from seahub.auth.models import SocialAuthUser
-    from seahub.organizations.models import OrgCorpAuth
-    from seahub.weixin.utils import weixin_check, get_mp_weixin_users_openid
-    from seahub.weixin.settings import WEIXIN_PROVIDER, MP_OPENID
-    from seahub.org_work_weixin.utils import org_work_weixin_check
-    from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
-    from seahub.org_dingtalk.utils import org_dingtalk_check
-    from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
-
-    corp_bound_work_weixin = False
-    corp_bound_dingtalk = False
-    weixin_connected = False
-    weixin_official_accounts_followed = False
-    org_work_weixin_connected = False
-    org_dingtalk_connected = False
-
-    if (org_id and org_id > 0) and (org_work_weixin_check() or org_dingtalk_check()):
-        corp_auth = OrgCorpAuth.objects.get_by_org_id(org_id)
-        if corp_auth:
-            if corp_auth.permanent_code:
-                corp_bound_work_weixin = True
-            else:
-                corp_bound_dingtalk = True
-
-    if weixin_check():
-        weixin_obj = SocialAuthUser.objects.filter(
-            username=username, provider=WEIXIN_PROVIDER).first()
-        if weixin_obj:
-            weixin_connected = True
-            if weixin_obj.extra_data:
-                try:
-                    openid = json.loads(weixin_obj.extra_data).get(MP_OPENID)
-                    users_openid = get_mp_weixin_users_openid()  # refresh every hour
-                    if openid in users_openid:
-                        weixin_official_accounts_followed = True
-                except Exception as e:
-                    logger.warning(e)
-    if corp_bound_work_weixin:
-        org_work_weixin_connected = SocialAuthUser.objects.filter(
-            username=username, provider=ORG_WORK_WEIXIN_PROVIDER).exists()
-    if corp_bound_dingtalk:
-        org_dingtalk_connected = SocialAuthUser.objects.filter(
-            username=username, provider=ORG_DINGTALK_PROVIDER).exists()
-
-    social_auth_info = {
-        'corp_bound_work_weixin' : corp_bound_work_weixin,
-        'corp_bound_dingtalk' : corp_bound_dingtalk,
-        'weixin_connected': weixin_connected,
-        'weixin_official_accounts_followed': weixin_official_accounts_followed,
-        'org_work_weixin_connected': org_work_weixin_connected,
-        'org_dingtalk_connected': org_dingtalk_connected,
-    }
-    return social_auth_info
-
-
 def clear_tmp_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)

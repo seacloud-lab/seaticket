@@ -25,22 +25,13 @@ class WorkspaceHeader extends Component {
 
   renderName = () => {
     const { workspace } = this.props;
-    const { type, group_owner, name } = workspace;
+    const { type, name } = workspace;
     const isPersonal = type === 'personal';
-    const isDepart = group_owner === 'system admin';
     if (isPersonal) {
       return (
         <>
           <Icon symbol="creator" className="project-workspace-icon" />
           <span className="text-truncate flex-1" title={gettext('My projects')}>{gettext('My projects')}</span>
-        </>
-      );
-    }
-    if (isDepart) {
-      return (
-        <>
-          <Icon symbol="department" className="project-workspace-icon" title={gettext('This is a department')}/>
-          <span className="text-truncate flex-1" title={name}>{name}</span>
         </>
       );
     }
@@ -56,15 +47,9 @@ class WorkspaceHeader extends Component {
   render() {
     const { isDesktop, isOwnerOrAdmin, isOwner, workspace, isAdmin } = this.props;
     const isPersonal = workspace.type === 'personal';
-    const isDepart = workspace.group_owner === 'system admin';
-    const isDepartV2 = workspace.group_owner === 'system admin' && workspace.department_id;
     let showGroupOptions = true;
     if (isPersonal) {
       showGroupOptions = false;
-    } else if (isDepart) {
-      if (!isDepartV2 && !isOwnerOrAdmin) { // old department and non-admin no dropdown
-        showGroupOptions = false;
-      }
     }
     return (
       <div className={`${isDesktop ? '' : 'table-mobile-heading ' }workspace-header`}>
@@ -83,7 +68,6 @@ class WorkspaceHeader extends Component {
           isOwner={isOwner}
           isAdmin={isAdmin}
           isOwnerOrAdmin={isOwnerOrAdmin}
-          isDepart={isDepart}
           workspace={workspace}
           showVirtualProject={this.props.showVirtualProject}
           showGroupOptions={showGroupOptions}

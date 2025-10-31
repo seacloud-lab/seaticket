@@ -18,11 +18,12 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
-    ChatSessions, ChatMessages
+    ChatSessions, ChatMessages, ProjectAPIToken
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search, get_project_related_users, \
-    ask_ai_question
+    convert_project_trash_names, check_project_permission, search
+
+from seahub.seadb_models.utils import init_ticket_seadb_table
 
 from seahub.project.seadb_api import SeaDBAPI
 
@@ -87,8 +88,6 @@ class WorkspacesView(APIView):
 
         workspace_list = list()
         if detail == 'false':
-            workspace_list.append(dict(id='', name='starred', type='starred'))
-            workspace_list.append(dict(id='', name='shared', type='shared'))
             workspace_list_for_group = []
             for workspace in workspaces:
                 owner = workspace.owner
@@ -112,7 +111,7 @@ class WorkspacesView(APIView):
             return Response({'workspace_list': workspace_list}, status=status.HTTP_200_OK)
 
         try:
-            project_list = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
+            projects = Projects.objects.filter(workspace__in=workspaces, deleted=False).select_related()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -121,7 +120,7 @@ class WorkspacesView(APIView):
 
         # group and personal tables
         workspace_id2project_list = {}
-        for project in project_list:
+        for project in projects:
             project_info = project.to_dict()
             if project.workspace.id in workspace_id2project_list:
                 workspace_id2project_list[project.workspace.id].append(project_info)
@@ -141,12 +140,12 @@ class WorkspacesView(APIView):
                 res['group_id'] = group_id
                 res['group_owner'] = [g.creator_name for g in groups if g.group_id == group_id][0]
                 res['is_admin'] = group_id in admin_group_ids
-                res['project_list'] = workspace_id2project_list.get(workspace.id, [])
+                res['projects'] = workspace_id2project_list.get(workspace.id, [])
                 workspace_list_for_group.append(res)
             else:
                 res['name'] = 'personal'
                 res['type'] = 'personal'
-                res['project_list'] = workspace_id2project_list.get(workspace.id, [])
+                res['projects'] = workspace_id2project_list.get(workspace.id, [])
                 workspace_list.append(res)
         workspace_list_for_group = sorted(workspace_list_for_group, key=lambda x: group_id_list.index(x.get('group_id')))
         workspace_list.extend(workspace_list_for_group)
@@ -240,6 +239,7 @@ class ProjectsView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             seadb_api.create_base(project.uuid)
+            init_ticket_seadb_table(seadb_api, project.uuid, workspace.owner)
         except Exception as e:
             logger.error(e)
             project.delete()
@@ -275,6 +275,7 @@ class ProjectView(APIView):
         color = request.data.get('color')
         text_color = request.data.get('text_color')
         icon = request.data.get('icon')
+        settings = request.data.get('settings')
         password = request.data.get('password')
 
         if not is_org_context(request):
@@ -311,6 +312,15 @@ class ProjectView(APIView):
                 project.text_color = text_color
             if icon:
                 project.icon = icon
+            if settings:
+                if project.settings:
+                    project_settings = json.loads(project.settings)
+                else:
+                    project_settings = {}
+                update_settings = json.loads(settings)
+                for k,v in update_settings.items():
+                    project_settings[k] = v
+                project.settings = json.dumps(project_settings)
             project.modifier = username
             project.save()
         except OperationalError:
@@ -356,6 +366,7 @@ class ProjectView(APIView):
         new_project_name = convert_project_trash_names(project)
         try:
             Projects.objects.filter(id=project.id).update(deleted=True, delete_time=datetime.now(UTC), name=new_project_name)
+            ProjectAPIToken.objects.filter(project=project).delete()
         except Exception as e:
             logger.error('delete project: %s error: %s', project.id, e)
             error_msg = 'Internal Server Error'

@@ -24,11 +24,6 @@ from seahub.profile.models import Profile
 from seahub.settings import ENABLE_UPDATE_USER_INFO, ENABLE_USER_SET_CONTACT_EMAIL, SEND_SMS_ATTEMPT_LIMIT, \
     SEND_SMS_ATTEMPT_TIMEOUT, ENABLE_USER_SET_NAME
 from seahub.utils import is_org_context, send_html_email, get_update_contact_email_cache_key
-from seahub.work_weixin.settings import WORK_WEIXIN_PROVIDER
-from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
-from seahub.weixin.settings import WEIXIN_PROVIDER
-from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
-from seahub.dingtalk.settings import DINGTALK_PROVIDER
 from seahub.auth.models import SocialAuthUser
 from seahub.base.accounts import User as AccountUser
 from seahub.utils.verify import verify_sms_code
@@ -227,13 +222,6 @@ class RemovePasswordView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def put(self, request):
-
-        provider_list = [WORK_WEIXIN_PROVIDER, WEIXIN_PROVIDER, ORG_WORK_WEIXIN_PROVIDER, ORG_DINGTALK_PROVIDER,
-                         DINGTALK_PROVIDER]
-
-        is_connect_wx_or_dingtalk = SocialAuthUser.objects.filter(username=request.user.username,
-                                                                  provider__in=provider_list).exists()
-
         try:
             profile = Profile.objects.get(user=request.user.username)
         except Profile.DoesNotExist:
@@ -243,8 +231,8 @@ class RemovePasswordView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not is_connect_wx_or_dingtalk and not profile.phone:
-            error_msg = 'phone or third party account not bind'
+        if not profile.phone:
+            error_msg = 'phone not bind'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:

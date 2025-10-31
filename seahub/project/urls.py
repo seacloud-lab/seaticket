@@ -6,17 +6,21 @@ from .views import project_view
 from .apis import ProjectRelatedUsersView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
-    ProjectConnectionsStatusView
+    ProjectConnectionsStatusView, ProjectConnectionLogView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
-from .ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
-from .ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
-from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView
-from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
+from seahub.tickets.ticket_tags import ProjectTagsAPIView, ProjectTagAPIView, ProjectTagTicketsAPIView
+from seahub.tickets.ticket_types import ProjectTypesAPIView, ProjectTypeAPIView, ProjectTypeTicketsAPIView
+from seahub.tickets.tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
+    TicketsSearchAPIView
+from seahub.tickets.ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import QAView, ConvertRecordToTicket
+from .ai import ChatView, ConvertRecordToTicket
+from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
+from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
+    ProjectConnectionRowDetailByTokenView
 
 
 urlpatterns = [
@@ -38,6 +42,13 @@ urlpatterns = [
     # user: related users
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/related-users/$', ProjectRelatedUsersView.as_view(), name='api-v2.1-project-related-users'),
 
+    # API tokens
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/api-tokens/$', ProjectAPITokensView.as_view(), name='api-v2.1-project-api-tokens'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/api-tokens/(?P<token_id>\d+)/$', ProjectAPITokenView.as_view(), name='api-v2.1-project-api-token'),
+    re_path(r'^api/v2.1/project/connection-list/$', ProjectConnectionListByTokenView.as_view(), name='api-v2.1-connection-list-by-token'),
+    re_path(r'^api/v2.1/project/connection-details/$', ProjectConnectionDetailByTokenView.as_view(), name='api-v2.1-connection-details-by-token'),
+    re_path(r'^api/v2.1/project/connection-row-details/$', ProjectConnectionRowDetailByTokenView.as_view(), name='api-v2.1-connection-row-details-by-token'),
+
     #sync data
     re_path(r'webhook/github', GithubWebhookView.as_view(), name='github_webhook'),
     re_path(r'webhook/discourse', DiscourseWebhookView.as_view(), name='discourse_webhook'),
@@ -49,6 +60,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v2.1-connection-details'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/row-detail/$', ProjectConnectionRowDetailView.as_view(), name='api-v2.1-connection-row-detail'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/query-status/$', ProjectConnectionsStatusView.as_view(), name='api-v2.1-connection-status'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/logs/$', ProjectConnectionLogView.as_view(), name='api-v2.1-connection-logs'),
 
     # connection views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),
@@ -61,16 +73,17 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_number>\d+)/replies/(?P<reply_number>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-tickets-search'),
 
     # tags
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/$', ProjectTagsAPIView.as_view(), name='api-v2.1-project-tags'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>\d+)/tickets/$', ProjectTagTicketsAPIView.as_view(), name='api-v2.1-project-tag-tickets'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/$', ProjectTagAPIView.as_view(), name='api-v2.1-project-tag'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tags/(?P<tag_id>[-0-9a-zA-Z]{4})/tickets/$', ProjectTagTicketsAPIView.as_view(), name='api-v2.1-project-tag-tickets'),
 
     # types
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/$', ProjectTypesAPIView.as_view(), name='api-v2.1-project-types'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>\d+)/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>[-0-9a-zA-Z]{4})/$', ProjectTypeAPIView.as_view(), name='api-v2.1-project-type'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/types/(?P<type_id>[-0-9a-zA-Z]{4})/tickets/$', ProjectTypeTicketsAPIView.as_view(), name='api-v2.1-project-type-tickets'),
 
     # ticket views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-folders/$', TicketFolders.as_view(), name='api-v2.1-project-ticket-folders'),
@@ -80,7 +93,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket-duplicate-view/$', TicketViewsDuplicateView.as_view(), name='api-v2.1-project-ticket-view-duplicate'),
 
     # ai
-    re_path(r'^api/v2.1/ai/qa/$', QAView.as_view(), name='api-v2.1-qa'),
+    re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
 
 ]

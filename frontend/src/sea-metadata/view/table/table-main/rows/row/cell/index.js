@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Formatter from './formatter';
 import CellOperationBtn from './operation-btn';
-import { isFunction } from '@utils/utils';
+import { isFunction } from '@/utils/type-detection';
 import ObjectUtils from '@utils/object-utils';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
@@ -19,6 +19,7 @@ const Cell = React.memo(({
   rowIndex,
   cellMetaData,
   highlightClassName,
+  rowHeightClassName,
   isLastCell,
   isLastFrozenCell,
   isCellSelected,
@@ -35,7 +36,7 @@ const Cell = React.memo(({
 
   const className = useMemo(() => {
     const { type } = column;
-    return classnames('sea-metadata-table-cell', `sea-metadata-table-${type}-cell`, highlightClassName, {
+    return classnames('sea-metadata-table-cell', `sea-metadata-table-${type}-cell`, highlightClassName, rowHeightClassName, {
       'table-cell-uneditable': !canEditable,
       'table-cell-clickable': column.click,
       'last-cell': isLastCell,
@@ -44,7 +45,7 @@ const Cell = React.memo(({
       // 'dragging-file-to-cell': ,
       // 'row-comment-cell': ,
     });
-  }, [canEditable, column, highlightClassName, isLastCell, isLastFrozenCell, isCellSelected]);
+  }, [canEditable, column, rowHeightClassName, highlightClassName, isLastCell, isLastFrozenCell, isCellSelected]);
   const style = useMemo(() => {
     const { left, width } = column;
     let value = {
@@ -163,6 +164,7 @@ const Cell = React.memo(({
         value={cellValue}
         column={column}
         row={row}
+        height={height}
         onChange={modifyRow}
         onClick={isCellSelected && column.click ? column.click : null}
       />
@@ -211,6 +213,7 @@ Cell.propTypes = {
   modifyRowViaButton: PropTypes.func,
   reloadCurrentRow: PropTypes.func,
   highlightClassName: PropTypes.string,
+  rowHeightClassName: PropTypes.string,
   bgColor: PropTypes.string,
 };
 

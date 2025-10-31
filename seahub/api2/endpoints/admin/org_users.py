@@ -14,7 +14,6 @@ from seahub.project.models import Workspaces
 from seahub.organizations.views import is_org_staff
 from seahub.utils import is_valid_email
 from seahub.utils.licenseparse import user_number_over_limit
-from seahub.utils.file_size import get_file_size_unit
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.base.models import UserLastLogin
 from seahub.base.accounts import User

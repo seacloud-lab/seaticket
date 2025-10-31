@@ -7,7 +7,7 @@
 }
 
 .list-item:hover {
-  background: #eee;
+  background: #F5F5F5;
 }
 
 .list-item-icon {
@@ -31,9 +31,24 @@
 .list-item-content .list-item-title {
   font-size: 16px;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+}
+
+.list-item-content .list-item-title .list-item-title-content {
+  flex: 1;
+}
+
+.list-item-content .list-item-score {
+  font-size: 12px;
+  color: #888;
+  background-color: #eaeaea;
+  border-radius: 9px;
+  padding: 0px 6px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .list-item-content .list-item-path {

@@ -6,7 +6,6 @@ from django.urls import reverse
 
 from seahub.api2.utils import api_error
 from seahub.utils import gen_token, get_site_scheme_and_netloc
-from seahub.weixin.utils import weixin_check
 from seahub.project.models import Workspaces
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
@@ -41,39 +40,6 @@ def update_log_perm_audit_type(event):
 
     etype = etype.replace('perm', 'permission')
     return etype
-
-def get_or_create_invitation_link(org_id):
-    """Invitation link for an org. Users will be redirected to WeChat QR page.
-    """
-    if not weixin_check():
-        return None
-
-    org_id = int(org_id)
-    expires = 3 * 24 * 60 * 60
-
-    def get_token_by_org_id(org_id):
-        return cache.get('org_associate_%d' % org_id, None)
-
-    def set_token_by_org_id(org_id, token):
-        cache.set('org_associate_%d' % org_id, token, expires)
-
-    def get_org_id_by_token(token):
-        return cache.get('org_associate_%s' % token, -1)
-
-    def set_org_id_by_token(token, org_id):
-        cache.set('org_associate_%s' % token, org_id, expires)
-
-    token = get_token_by_org_id(org_id)
-    cached_org_id = get_org_id_by_token(token)
-
-    if not token or org_id != cached_org_id:
-        token = gen_token(32)
-        set_token_by_org_id(org_id, token)
-        set_org_id_by_token(token, org_id)
-
-    link = get_site_scheme_and_netloc() + reverse('weixin_oauth_login') \
-        + '?org_token=' + token
-    return link
 
 
 def transfer_user_to_org(username, org_id):
@@ -146,20 +112,6 @@ def gen_org_url_prefix(max_trial=None):
 
     logger.warning("Failed to generate org url prefix, retry: %d" % max_trial)
     return None
-
-
-def get_org_corp_bind_type(org_id):
-    from seahub.organizations.models import OrgCorpAuth
-    from seahub.org_work_weixin.settings import ORG_WORK_WEIXIN_PROVIDER
-    from seahub.org_dingtalk.settings import ORG_DINGTALK_PROVIDER
-    org_corp_bind_type = ''
-    org_corp = OrgCorpAuth.objects.get_by_org_id(org_id=org_id)
-    if org_corp:
-        if org_corp.permanent_code:
-            org_corp_bind_type = ORG_WORK_WEIXIN_PROVIDER
-        else:
-            org_corp_bind_type = ORG_DINGTALK_PROVIDER
-    return org_corp_bind_type
 
 
 def can_org_use_saml(org):

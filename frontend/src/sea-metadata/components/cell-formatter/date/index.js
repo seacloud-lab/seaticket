@@ -2,10 +2,12 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { getDateDisplayString } from '../../../utils/column';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
 import './index.css';
 
 const DateFormatter = ({ value, format, className, children: emptyFormatter }) => {
+
   const displayValue = useMemo(() => {
     return getDateDisplayString(value, format);
   }, [value, format]);
@@ -14,7 +16,7 @@ const DateFormatter = ({ value, format, className, children: emptyFormatter }) =
   return (
     <div
       className={classnames('sea-metadata-ui cell-formatter-container date-formatter', className)}
-      title={displayValue}
+      title={formatWithTimezone(value)}
     >
       {displayValue}
     </div>

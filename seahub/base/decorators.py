@@ -25,39 +25,6 @@ def sys_staff_required(func):
         return func(request, *args, **kwargs)
     return _decorated
 
-def repo_passwd_set_required(func):
-    """
-    Decorator for views to redirect user to repo decryption page if repo is
-    encrypt and password is not set by user.
-    """
-    def _decorated(request, *args, **kwargs):
-        repo_id = kwargs.get('repo_id', None)
-        if not repo_id:
-            raise Exception('Repo id is not found in url.')
-        repo = get_repo(repo_id)
-        if not repo:
-            raise Http404
-        username = request.user.username
-        if repo.encrypted:
-            try:
-                server_crypto = UserOptions.objects.is_server_crypto(username)
-            except CryptoOptionNotSetError:
-                return render(request, 'options/set_user_options.html', {
-                        })
-
-            if (repo.enc_version == 1 or (repo.enc_version == 2 and server_crypto)) \
-                    and not seafile_api.is_password_set(repo_id, username):
-                return render(request, 'decrypt_repo_form.html', {
-                        'repo': repo,
-                        'next': request.get_full_path(),
-                        })
-
-            if repo.enc_version == 2 and not server_crypto:
-                return render_error(request, _('Files in this library can not be viewed online.'))
-
-        return func(request, *args, **kwargs)
-    return _decorated
-
 
 def require_POST(func):
     def decorated(request, *args, **kwargs):

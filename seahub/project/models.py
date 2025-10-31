@@ -3,15 +3,17 @@ from django.core.cache import cache
 import logging
 import uuid
 import json
-import time
 import copy
 import random
 import string
 from copy import deepcopy
+from hashlib import sha1
+import hmac
 
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, TICKET_DEFAULT_DETAILS, CONNECTION_DEFAULT_DETAILS, ConnectionType
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
@@ -227,6 +229,15 @@ class ProjectsManager(models.Manager):
         except self.model.DoesNotExist:
             return False
 
+    def search_project_count_in_org(self, org_id, query_str):
+        workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(
+                workspace_id__in=workspace_ids, deleted=False, uuid=query_str).count()
+        else:
+            return super(ProjectsManager, self).filter(
+                workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).count()
+    
     def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):
@@ -235,6 +246,18 @@ class ProjectsManager(models.Manager):
         else:
             return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).order_by('id')[start:end]
+        
+    def search_projects_count(self, query_str):
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).count()
+        else:
+            return super(ProjectsManager, self).filter(deleted=False, name__icontains=query_str).count()
+        
+    def search_projects(self, query_str, start, end):
+        if is_valid_uuid(query_str):
+            return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).order_by('id')[start:end]
+        else:
+            return super(ProjectsManager, self).filter(deleted=False, name__icontains=query_str).order_by('id')[start:end]
 
     def get_non_duplicated_name(self, name, workspace_id):
         projects = super(ProjectsManager, self).filter(deleted=False, name__startswith=name, workspace_id=workspace_id)
@@ -264,6 +287,7 @@ class Projects(models.Model):
     color = models.CharField(max_length=50, null=True)
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
+    settings = models.TextField(null=True)
 
     objects = ProjectsManager()
 
@@ -283,6 +307,7 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
+            'settings': json.loads(self.settings) if self.settings else {},
         }
         if include_deleted:
             result.update({
@@ -506,6 +531,7 @@ class ProjectConnections(models.Model):
     indexed_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     is_active = models.BooleanField(default=True, null=False, db_index=True)
+    last_sync_log = models.TextField(null=True)
 
     objects = ProjectConnectionsManager()
 
@@ -623,12 +649,12 @@ class ConnectionsViewsManager(models.Manager):
         record = self.filter(connection_id=connection_id).first()
 
         if not record:
-            details = json.dumps(CONNECTION_DEFAULT_DETAILS[connection_type])
+            details = CONNECTION_DEFAULT_DETAILS[connection_type]
             details = self.update_init_view_details(project_uuid, connection, details)
             record = self.create(
                 project_uuid=project_uuid,
                 connection_id=connection_id,
-                details=details
+                details=json.dumps(details)
             )
         return record
 
@@ -1018,6 +1044,44 @@ class TicketView(object):
 
 class TicketViewsManager(models.Manager):
 
+    def update_init_view_details(self, project_uuid, details):
+        from seahub.project.seadb_api import SeaDBAPI
+        from seahub.seadb_models.utils import get_tickets_columns
+        seadb_api = SeaDBAPI('seaqa-web')
+        columns = get_tickets_columns(seadb_api, project_uuid)
+        views = details.get('views', [])
+        for v in views:
+            basic_filters = v.get('basic_filters', [])
+            for basic_filter in basic_filters:
+                column_key = basic_filter['column_key']
+
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    column_name = column['name']
+                    basic_filter['column_key'] = column['key']
+                    if column_name in ['status', 'type', 'tags']:
+                        data = column.get('data', {})
+                        if data:
+                            options = data.get('options', [])
+                            filter_term = basic_filter.get('filter_term', [])
+                            new_filter_term = []
+                            for option_name in filter_term:
+                                option = next((option for option in options if option['name'] == option_name), None)
+                                if option:
+                                    new_filter_term.append(option['id'])
+                            basic_filter['filter_term'] = new_filter_term
+            v['basic_filters'] = basic_filters
+
+            sorts = v.get('sorts', [])
+            for item in sorts:
+                column_key = item['column_key']
+                column = next((column for column in columns if column['name'] == column_key), None)
+                if column:
+                    item['column_key'] = column['key']
+            v['sorts'] = sorts
+            details['views'] = views
+        return details
+
     def get_record(self, project_uuid):
         """
             get record from database, if not record, create it
@@ -1025,9 +1089,10 @@ class TicketViewsManager(models.Manager):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(project_uuid=project_uuid).first()
         if not record:
+            details = self.update_init_view_details(project_uuid, TICKET_DEFAULT_DETAILS)
             record = self.create(
                 project_uuid=project_uuid,
-                details=json.dumps(TICKET_DEFAULT_DETAILS)
+                details=json.dumps(details)
             )
         return record
 
@@ -1102,6 +1167,7 @@ class TicketViewsManager(models.Manager):
         details = new_view.details
         view_id = details.get('_id')
         view_details['views'].append(details)
+        view_details = self.update_init_view_details(project_uuid, view_details)
         new_view_nav = { '_id': view_id, 'type': 'view' }
         if folder_id:
             folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
@@ -1289,117 +1355,6 @@ class TicketViews(models.Model):
     def folders_views_ids(self):
         return self.folders_ids + self.views_ids
 
-
-class TicketsManager(models.Manager):
-
-    def list_tickets_by_view(self, project_uuid, username, start, end, view_id):
-        from seahub.project.view_utils import filter_tickets_by_view
-        view = TicketViews.objects.get_view(project_uuid, view_id)
-        q, sorts = filter_tickets_by_view(username, view)
-
-        return self.filter(
-            project_uuid=project_uuid, deleted=False).filter(q).order_by(', '.join(sorts))[start: end]
-
-    def list_tickets_by_tag(self, project_uuid, tag_id):
-        q = Q(project_uuid=project_uuid) & Q(deleted=False)
-        tags = TicketTags.objects.filter(tag_id__in=[tag_id])
-        if tags:
-            ticket_ids = [tag.ticket_id for tag in tags]
-            q = q & Q(id__in=ticket_ids)
-            return self.filter(q)
-        return []
-
-    def list_tickets_by_type(self, project_uuid, type_id):
-        return self.filter(project_uuid=project_uuid, type=type_id, deleted=False)
-
-    def list_tickets(self, project_uuid):
-        return self.filter(Q(project_uuid=project_uuid) & Q(deleted=False))
-
-    def list_tickets_by_username(self, project_uuid, username, start, end):
-        return self.filter(
-            project_uuid=project_uuid, creator=username, deleted=False).order_by('-number')[start: end]
-
-    def create_ticket(self, project_uuid, username, title, description, status, type_id=None, priority=0):
-        for i in range(3):
-            try:
-                previous_ticket = self.filter(project_uuid=project_uuid).order_by('-number').first()
-                number = previous_ticket.number + 1 if previous_ticket else 1
-                item = self.create(
-                    project_uuid=project_uuid,
-                    number=number,
-                    creator=username,
-                    title=title,
-                    description=description,
-                    status=status,
-                    type=type_id,
-                    priority=priority,
-                )
-                return item
-            except self.model.MultipleObjectsReturned:
-                time.sleep(0.2)
-                continue
-        return None
-
-    def get_ticket(self, project_uuid, number, deleted=False):
-        return self.filter(project_uuid=project_uuid, number=number, deleted=deleted).first()
-
-    def get_previous_ticket_by_username(self, project_uuid, username, deleted=False):
-        return self.filter(project_uuid=project_uuid, creator=username, deleted=deleted).order_by('-number').first()
-
-
-class Tickets(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    project_uuid = models.UUIDField()
-    number = models.IntegerField()
-    creator = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    status = models.CharField(max_length=50, null=True)
-    type = models.BigIntegerField(null=True)
-    priority = models.SmallIntegerField(default=0)
-    reply_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    reply_updated_at = models.DateTimeField(null=True)
-    deleted = models.BooleanField(default=False, null=False, db_index=True)
-    delete_at = models.DateTimeField(null=True)
-
-    objects = TicketsManager()
-
-    class Meta:
-        unique_together = (('project_uuid', 'number'),)
-        db_table = 'tickets'
-
-    def to_dict(self, tags_dict={}, assignees_dict={}, participants_dict={}, include_deleted=False):
-        result = {
-            'project_uuid': str(self.project_uuid),
-            'number': self.number,
-            'title': self.title,
-            'description': self.description,
-            'participants': [],
-            'tags': [],
-            'status': self.status,
-            'type': self.type,
-            'priority': self.priority,
-            'reply_count': self.reply_count,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'reply_updated_at': self.reply_updated_at,
-            'creator': self.creator,
-        }
-        if self.id in tags_dict:
-            result['tags'] = tags_dict[self.id]
-        if self.id in assignees_dict:
-            result['assignees'] = assignees_dict[self.id]
-        if self.id in participants_dict:
-            result['participants'] = participants_dict[self.id]
-        if include_deleted:
-            result.update({
-                'deleted': self.deleted,
-                'delete_at': self.delete_at if self.delete_at else '',
-            })
-        return result
-
 class ChatSessionsManager(models.Manager):
     def create_session(self, project_uuid, session_name, username):
         """Create a new chat session"""
@@ -1503,3 +1458,65 @@ class ChatMessages(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+
+
+PERMISSION_READ = 'r'
+PERMISSION_READ_WRITE = 'rw'
+API_TOKEN_PERMISSION_TUPLE = (
+    PERMISSION_READ,
+    PERMISSION_READ_WRITE,
+)
+
+class ProjectAPITokenManager(models.Manager):
+    def add(self, project, app_name, username, permission):
+        api_token_obj = self.model(
+            project=project,
+            app_name=app_name,
+            generated_by=username,
+            permission=permission
+        )
+        api_token_obj.token = self.generate_key()
+        api_token_obj.save()
+        return api_token_obj
+
+    def generate_key(self):
+        unique = str(uuid.uuid4())
+        return hmac.new(unique.encode('utf-8'), digestmod=sha1).hexdigest()
+    
+    def get_by_token(self, token):
+        try:
+            api_token_obj = self.get(token=token)
+            api_token_obj.update_last_access()
+            return api_token_obj
+        except self.model.DoesNotExist:
+            return None
+    
+    def get_by_project_and_app_name(self, project, app_name):
+        """Check if API token already exists for project and app"""
+        try:
+            return self.get(project=project, app_name=app_name)
+        except self.model.DoesNotExist:
+            return None
+    
+    def list_by_project(self, project):
+        return self.filter(project=project).order_by('-generated_at')
+
+
+class ProjectAPIToken(models.Model):
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, to_field="uuid", db_column="project_uuid")
+    app_name = models.CharField(max_length=255)
+    token = models.CharField(max_length=255, unique=True, db_index=True)
+    generated_by = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    last_access = models.DateTimeField(auto_now=True)
+    permission = models.CharField(max_length=15)
+    
+    objects = ProjectAPITokenManager()
+    
+    class Meta:
+        db_table = 'project_api_token'
+        unique_together = ('project', 'app_name')
+    
+    def update_last_access(self):
+        self.last_access = timezone.now()
+        self.save(update_fields=['last_access'])

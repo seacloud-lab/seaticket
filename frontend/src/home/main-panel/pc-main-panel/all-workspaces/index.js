@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import Loading from '../../../../components/loading';
-import { isOrgContext } from '../../../../constants';
+import { Loading } from '@/components';
+import { isOrgContext } from '@constants';
 import Workspace from '../../../workspace';
 import CreateGroupDialog from '../../../dialog/create-group-dialog';
-import { Utils } from '../../../../utils/utils';
-import SessionStorage from '../../../../utils/session-utils';
+import { Utils } from '@/utils/utils';
+import SessionStorage from '@/utils/session-utils';
 import OrgTitle from './org-title';
 
 class AllWorkspace extends React.Component {
@@ -60,8 +60,8 @@ class AllWorkspace extends React.Component {
 
   render() {
     let { isWorkspaceListLoading, workspaceList, errorMsg, onCopyProject,
-      onDeleteProject, onDeleteGroup, onAddGroupSharedProject, onLeaveGroupSharedProject,
-      onAddProject } = this.props;
+      onDeleteProject, onDeleteGroup, onAddProject
+    } = this.props;
     if (isWorkspaceListLoading) {
       return (<div className="mt-6"><Loading /></div>);
     }
@@ -95,8 +95,6 @@ class AllWorkspace extends React.Component {
                       workspace={personalWorkspace}
                       onCopyProject={onCopyProject}
                       onDeleteProject={onDeleteProject}
-                      onAddGroupSharedProject={onAddGroupSharedProject}
-                      onLeaveGroupSharedProject={onLeaveGroupSharedProject}
                       onAddProject={onAddProject}
                       loadWorkspaceList={this.props.loadWorkspaceList}
                     />
@@ -110,8 +108,6 @@ class AllWorkspace extends React.Component {
                         onDeleteGroup={onDeleteGroup}
                         onDeleteProject={onDeleteProject}
                         onCopyProject={onCopyProject}
-                        onAddGroupSharedProject={onAddGroupSharedProject}
-                        onLeaveGroupSharedProject={onLeaveGroupSharedProject}
                         onAddProject={onAddProject}
                         loadWorkspaceList={this.props.loadWorkspaceList}
                       />
@@ -137,8 +133,6 @@ AllWorkspace.propTypes = {
   onDeleteGroup: PropTypes.func.isRequired,
   onCopyProject: PropTypes.func.isRequired,
   onDeleteProject: PropTypes.func.isRequired,
-  onLeaveGroupSharedProject: PropTypes.func.isRequired,
-  onAddGroupSharedProject: PropTypes.func.isRequired,
   onAddProject: PropTypes.func.isRequired,
   updateSidePanelGroups: PropTypes.func.isRequired,
 };

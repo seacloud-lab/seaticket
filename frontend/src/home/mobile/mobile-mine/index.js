@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, List } from '../../../components';
-import { seaQAAPI } from '../../../api/web-api';
-import { Utils } from '../../../utils/utils';
-import { isWorkWeChat } from '../../../utils/wechat-utils';
-import { siteRoot, gettext, avatarURL, isOrgContext, useExternalTeamAdmin } from '../../../constants';
+import { toaster, List } from '@/components';
+import userAPI from '@/api/user-api';
+import { Utils } from '@/utils/utils';
+import { isWorkWeChat } from '@/utils/wechat-utils';
+import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 
 import './index.css';
 
@@ -22,7 +22,6 @@ class MobileMine extends React.Component {
     super(props);
     this.state = {
       showInfo: false,
-      enableSubscription: false,
       userName: '',
       contactEmail: '',
       isStaff: false,
@@ -38,7 +37,7 @@ class MobileMine extends React.Component {
   }
 
   getAccountInfo = () => {
-    seaQAAPI.getAccountInfo().then(resp => {
+    userAPI.getAccountInfo().then(resp => {
       this.setState({
         userName: resp.data.name,
         contactEmail: resp.data.email,
@@ -46,7 +45,6 @@ class MobileMine extends React.Component {
         isInstAdmin: resp.data.is_inst_admin,
         isOrgStaff: resp.data.is_org_staff === 1 ? true : false,
         showInfo: !this.state.showInfo,
-        enableSubscription: resp.data.enable_subscription,
         quotaUsage: Utils.bytesToSize(resp.data.usage),
         quotaTotal: Utils.bytesToSize(resp.data.total),
         usageRate: resp.data.space_usage,
@@ -100,12 +98,12 @@ class MobileMine extends React.Component {
         };
       } else if (isOrgStaff) {
         data = {
-          url: useExternalTeamAdmin ? 'external-team-admin/' : 'org/orgmanage/',
+          url: useExternalTeamAdmin ? 'external-team-admin/' : 'org/manage/',
           text: gettext('Team admin')
         };
       } else if (isInstAdmin) {
         data = {
-          url: 'inst/useradmin/',
+          url: 'inst/users/',
           text: gettext('Institution admin')
         };
       }
@@ -152,14 +150,6 @@ class MobileMine extends React.Component {
           >
             {gettext('Personal settings')}
           </Item>
-          {(this.state.enableSubscription && !isOrgContext) &&
-            <Item
-              onClick={this.onClickListItem.bind(this, 'subscription/')}
-              arrow="horizontal"
-            >
-              {'付费管理'}
-            </Item>
-          }
           {data &&
           <Item
             arrow="horizontal"

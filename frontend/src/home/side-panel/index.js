@@ -4,12 +4,11 @@ import isHotkey from 'is-hotkey';
 import { Link } from '@gatsbyjs/reach-router';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import toaster from '../../components/toaster';
-import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, friendInvitationLink, siteRoot, gettext } from '../../constants';
-import { Utils } from '../../utils/utils';
-import { seaQAAPI } from '../../api/web-api';
+import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, siteRoot, gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../api';
 import GroupItem from './group-item';
-import { Icon, IconButton } from '../../components';
+import { Icon, IconButton, toaster } from '@/components';
 import classNames from 'classnames';
 
 const propTypes = {
@@ -31,7 +30,6 @@ class SidePanel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isShowWechatDialog: false,
       isDataLoading: true,
       isExpandedMoreList: this.props.currentTab.includes('more/'),
       workspaceList: [],
@@ -55,7 +53,7 @@ class SidePanel extends React.Component {
 
   async initTableData() {
     try {
-      let workspaceData = await seaQAAPI.listWorkspaces(false);
+      let workspaceData = await homeAPI.listWorkspaces(false);
       let workspaceList = workspaceData.data.workspace_list;
       this.groupsHeight = workspaceList.length * GROUP_ITEM_HEIGHT + 1;
       let groupItems = workspaceList.filter(workspace => {
@@ -103,10 +101,6 @@ class SidePanel extends React.Component {
     return this.props.currentTab === tab ? 'active' : '';
   };
 
-  onOpenSeaTableFriendInvitation = () => {
-    window.open(friendInvitationLink);
-  };
-
   onBasesListExtended = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -134,7 +128,7 @@ class SidePanel extends React.Component {
         targetGroupId = targetGroup.group_id;
       }
     }
-    seaQAAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
+    homeAPI.moveUserGroupsOrder(sourceGroupId, targetGroupId, isMoveToLast).then(() => {
       groupItems.splice(optionSource.idx, 1);
       groupItems.splice(optionTarget.idx, 0, optionSource.data);
       this.setState({ groupItems });
@@ -166,33 +160,13 @@ class SidePanel extends React.Component {
             </Link>
           </div>
         )}
-        <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('project/starred') ? 'sea-qa-bg-orange active' : ''}`}
-          onClick={(event) => this.onGroupTabClick(event, 'project/starred')}
-        >
-          <Link tabIndex={tabIndex} to={siteRoot + 'project/starred/'} className="workspace-nav-link ellipsis">
-            <Icon className="project-workspace-icon" symbol="star" />
-            <span className="nav-text">{gettext('Favorites')}</span>
-          </Link>
-        </div>
-        <div
-          className={`nav-item workspace-nav-item ${this.getActiveClass('project/shared') ? 'sea-qa-bg-orange active' : ''}`}
-          onClick={(event) => this.onGroupTabClick(event, 'project/shared')}
-        >
-          <Link tabIndex={tabIndex} to={siteRoot + 'project/shared/'} className="workspace-nav-link ellipsis">
-            <Icon className="project-workspace-icon" symbol="share-with-me" />
-            <span className="nav-text">{gettext('Shared with me')}</span>
-          </Link>
-        </div>
         {groupItems.map((item, index) => {
-          const isDepart = item.group_owner === 'system admin';
           return (
             <GroupItem
               key={item.id}
               item={item}
               index={index}
               isOpenGroupExpanded={this.props.isOpenGroupExpanded}
-              isDepart={isDepart}
               getActiveClass={this.getActiveClass}
               onGroupTabClick={this.onGroupTabClick}
               onMove={this.moveGroupItem}

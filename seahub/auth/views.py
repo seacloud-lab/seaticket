@@ -38,16 +38,9 @@ from seahub.profile.models import Profile
 from seahub.two_factor.views.login import is_device_remembered
 from seahub.utils import render_error, get_site_name
 from seahub.utils.ip import get_remote_ip
-from seahub.utils.file_size import get_quota_from_string
 from seahub.utils.two_factor_auth import two_factor_auth_enabled, handle_two_factor_auth
-from seahub.utils.user_permissions import get_user_role
 from seahub.utils.auth import get_login_bg_image_path
 from seahub.utils.http import rate_limit
-from seahub.weixin.utils import weixin_check
-from seahub.org_work_weixin.utils import org_work_weixin_check
-from seahub.org_dingtalk.utils import org_dingtalk_check
-from seahub.work_weixin.utils import work_weixin_base_check
-from seahub.dingtalk.utils import dingtalk_check
 from seahub.auth.sms_two_factor_auth import sms_two_factor_auth_enabled, \
     handle_sms_two_factor_auth
 from seahub.settings import LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED, \
@@ -125,7 +118,7 @@ def login(request, template_name='registration/login.html',
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
-            return HttpResponseRedirect(reverse('project'))
+            return HttpResponseRedirect(reverse('projects_list'))
 
     source = request.GET.get('source', None)
     invitation_token = request.GET.get('invitation_token', None)
@@ -228,8 +221,7 @@ def login(request, template_name='registration/login.html',
                  getattr(settings, 'ENABLE_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
                  getattr(settings, 'ENABLE_CAS', False) or \
-                 getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False) or \
-                 getattr(settings, 'ENABLE_TSINGHUA_AUTH', False)
+                 getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False)
 
     login_bg_image_path = get_login_bg_image_path()
     cur_language = translation.get_language()
@@ -244,11 +236,6 @@ def login(request, template_name='registration/login.html',
         'enable_sso': enable_sso,
         'enable_multi_saml': getattr(settings, 'ENABLE_MULTI_SAML', False),
         'login_bg_image_path': login_bg_image_path,
-        'enable_weixin': weixin_check(),
-        'enable_org_work_weixin': org_work_weixin_check(),
-        'enable_org_dingtalk': org_dingtalk_check(),
-        'enable_work_weixin': work_weixin_base_check(),
-        'enable_dingtalk': dingtalk_check(),
         'enable_sms_login': settings.ENABLE_SMS_LOGIN,
         'email_host': settings.EMAIL_HOST,
         'cur_language': cur_language,

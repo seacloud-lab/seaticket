@@ -8,6 +8,7 @@ import './index.css';
 const OptionsEditor = ({
   target,
   isMultiple = false,
+  isSearchEnabled = true,
   placeholder,
   emptyTip,
   value,
@@ -38,6 +39,7 @@ const OptionsEditor = ({
         ref={mainRef}
         isMultiple={isMultiple}
         placeholder={placeholder}
+        isSearchEnabled={isSearchEnabled}
         emptyTip={emptyTip}
         value={value}
         options={options}

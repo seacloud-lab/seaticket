@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, UncontrolledTooltip } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
 import { gettext } from '@/constants';
-import { validateName } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader, Icon } from '@/components';
+import { TextInput, PasswordInput, ModalHeader, IconTooltip } from '@/components';
 
 const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
@@ -81,24 +81,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
               <Label>
                 {c.name}
                 {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
-                {helpText ? (
-                  <>
-                    <Icon
-                      symbol="help"
-                      id={`help-icon-${key}`}
-                      className="mr-1 help-icon"
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <UncontrolledTooltip
-                      target={`help-icon-${key}`}
-                      placement="right"
-                      fade={false}
-                      className="sea-metadata-tooltip"
-                    >
-                      {helpText}
-                    </UncontrolledTooltip>
-                  </>
-                ) : null}
+                {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
               </Label>
               {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
                 <>

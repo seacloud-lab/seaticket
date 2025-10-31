@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { IconButton, ProjectIcon, toaster } from '../../../components';
-import { Utils, validateName } from '../../../utils/utils';
+import { IconButton, ProjectIcon, toaster } from '@/components';
+import { Utils } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
 import { ProjectSettingPopover } from '../../popover';
 import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
 import ProjectItemPopover from './project-item-popover';
@@ -12,13 +13,12 @@ const siteRoot = window.app.config.siteRoot;
 const propTypes = {
   project: PropTypes.object.isRequired,
   onDeleteProjectToggle: PropTypes.func.isRequired,
-  onShareProjectToggle: PropTypes.func,
+  onAPITokenToggle: PropTypes.func,
   onUpdateProject: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
   onUnfreezedItem: PropTypes.func.isRequired,
   isOwner: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
-  onMobileShareProjectToggle: PropTypes.func,
   onMobileUpdateProjectToggle: PropTypes.func,
   changeContainerColor: PropTypes.func,
   setDropdownState: PropTypes.func,
@@ -73,10 +73,6 @@ class Project extends React.Component {
 
   onDeleteProjectToggle = () => {
     this.props.onDeleteProjectToggle(this.props.project);
-  };
-
-  onMobileShareProjectToggle = () => {
-    this.props.onMobileShareProjectToggle(this.props.project);
   };
 
   dropdownToggle = (e) => {
@@ -207,7 +203,7 @@ class Project extends React.Component {
               project={project}
               onToggle={this.toggleMoreOperation}
               onProjectSettingsToggle={this.onProjectSettingsToggle}
-              onShareProjectToggle={this.props.onShareProjectToggle}
+              onAPITokenToggle={this.props.onAPITokenToggle}
               onDeleteProjectToggle={this.onDeleteProjectToggle}
             />
           )}

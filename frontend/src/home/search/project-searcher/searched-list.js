@@ -1,21 +1,14 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SearchedBase from './searched-project';
-import { Utils } from '../../../utils/utils';
+import { Utils } from '@/utils/utils';
 import { QUERY_TYPE } from './constant';
 
 const siteRoot = window.app.config.siteRoot;
 
 const openOnBlankWindow = (searched) => {
-  const { workspace_id, name, share_type, share_id } = searched;
-  let href;
-  if (share_type === 'user-view-share') {
-    href = siteRoot + 'project-shared-view/personal/' + share_id + '/';
-  } else if (share_type === 'group-view-share') {
-    href = siteRoot + 'project-shared-view/group/' + share_id + '/';
-  } else {
-    href = siteRoot + 'workspace/' + workspace_id + '/project/' + name + '/';
-  }
+  const { workspace_id, name } = searched;
+  const href = siteRoot + 'workspace/' + workspace_id + '/project/' + name + '/';
   window.open(href, '_blank');
 };
 

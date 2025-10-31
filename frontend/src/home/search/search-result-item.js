@@ -19,14 +19,13 @@ class SearchResultItem extends React.Component {
 
   render() {
     const { item, getClassName } = this.props;
-    const { color, icon, name, shared_name, type, group_name } = item;
+    const { color, icon, name, group_name } = item;
     const pathName = group_name === 'personal' ? gettext('My projects') : group_name;
     return (
       <div className={getClassName} onClick={this.onClickHandler}>
         <ProjectIcon bgColor={color} icon={icon} />
         <div className="project-name">
-          <span>{shared_name || name}</span>
-          {type === 'shared' && <span className="share-tip">{gettext('Shared')}</span>}
+          <span>{name}</span>
           {pathName && <span className="share-tip text-truncate">{pathName}</span>}
         </div>
       </div>

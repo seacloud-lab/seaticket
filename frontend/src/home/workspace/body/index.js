@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Project from './project';
-import SharedProject from './shared-project';
 import VirtualProject from './virtual-project';
 import { gettext } from '../../../constants';
 
@@ -21,26 +20,23 @@ const propTypes = {
   onTransferGroupToggle: PropTypes.func,
   toggleGroupInviteDialog: PropTypes.func,
   projectList: PropTypes.array,
-  groupSharedProjects: PropTypes.array,
   connectDropTarget: PropTypes.func,
   canDrop: PropTypes.bool,
   isAdmin: PropTypes.bool,
   isShowVirtualProject: PropTypes.bool,
   isItemFreezed: PropTypes.bool,
   isPersonal: PropTypes.bool,
-  onLeaveGroupSharedProject: PropTypes.func,
   onFreezedItem: PropTypes.func,
   onUnfreezedItem: PropTypes.func,
   hideVirtualProject: PropTypes.func,
-  onShareProjectToggle: PropTypes.func,
   onSetPasswordToggle: PropTypes.func,
   onUnsetPasswordToggle: PropTypes.func,
   onModifyPasswordToggle: PropTypes.func,
   onDeleteProjectToggle: PropTypes.func,
+  onAPITokenToggle: PropTypes.func,
   onCopyProjectToggle: PropTypes.func,
   onAddProject: PropTypes.func,
   onUpdateProject: PropTypes.func,
-  onMobileShareProjectToggle: PropTypes.func,
   onMobileUpdateProjectToggle: PropTypes.func,
   createBlankProject: PropTypes.func,
   setDropdownState: PropTypes.func,
@@ -51,8 +47,8 @@ const propTypes = {
 class WorkspaceContainer extends Component {
 
   render() {
-    const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle, projectList, groupSharedProjects } = this.props;
-    const total = projectList.length + groupSharedProjects.length;
+    const { isDesktop, isOwner, isAdmin, isItemFreezed, getProjectClassAndStyle, projectList } = this.props;
+    const total = projectList.length;
     const { className: virtualClassName, style: virtualStyle } = getProjectClassAndStyle(total, total);
     return (
       <div className={classnames('project-group-content d-flex', {
@@ -75,7 +71,7 @@ class WorkspaceContainer extends Component {
               isOwner={isOwner}
               isAdmin={isAdmin}
               workspace={this.props.workspace}
-              onShareProjectToggle={this.props.onShareProjectToggle}
+              onAPITokenToggle={this.props.onAPITokenToggle}
               onSetPasswordToggle={this.props.onSetPasswordToggle}
               onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
               onModifyPasswordToggle={this.props.onModifyPasswordToggle}
@@ -83,33 +79,11 @@ class WorkspaceContainer extends Component {
               onCopyProjectToggle={this.props.onCopyProjectToggle}
               onAddProject={this.props.onAddProject}
               onUpdateProject={this.props.onUpdateProject}
-              onMobileShareProjectToggle={this.props.onMobileShareProjectToggle}
               onMobileUpdateProjectToggle={this.props.onMobileUpdateProjectToggle}
               onFreezedItem={this.props.onFreezedItem}
               onUnfreezedItem={this.props.onUnfreezedItem}
               setDropdownState={this.props.setDropdownState}
               getDropdownState={this.props.getDropdownState}
-            />
-          );
-        })}
-        {groupSharedProjects.map((project, index) => {
-          const { className, style } = getProjectClassAndStyle(projectList.length + index, total);
-          return (
-            <SharedProject
-              className={className}
-              style={style}
-              key={index}
-              sharedItemKey={`table-${index}`}
-              project={project}
-              isItemFreezed={isItemFreezed}
-              isAdmin={isAdmin}
-              workspace={this.props.workspace}
-              onLeaveShare={this.props.onLeaveGroupSharedProject}
-              setDropdownState={this.props.setDropdownState}
-              getDropdownState={this.props.getDropdownState}
-              onCopyProjectToggle={this.props.onCopyProjectToggle}
-              onCopyProject={this.props.onCopyProject}
-              currentWorkspace={this.props.workspace}
             />
           );
         })}

@@ -12,7 +12,7 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
@@ -29,6 +29,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
+  const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
 
   const { typesData } = useTypes();
   const { updateCacheData } = useDataCache();
@@ -55,36 +56,53 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   // api
   const modifyTicket = useCallback((ticketID, data) => {
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, data).then(res => {
-      const newTicket = ticket._update(data);
-      updateCacheData('rows', String(ticketID), data);
+      let update = { ...data };
+      const { participants = [] } = ticket;
+      if (!participants.includes(user.email)) {
+        update['participants'] = [...participants, user.email];
+      }
+      const newTicket = ticket._update(update);
+      updateCacheData('rows', String(ticketID), update);
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [projectUuid, ticket, updateCacheData]);
+  }, [projectUuid, ticket, user, updateCacheData]);
+
+  const handleUpdateParticipants = useCallback((ticket) => {
+    const { participants = [] } = ticket;
+    if (!participants.includes(user.email)) {
+      const update = { 'participants': [...participants, user.email] };
+      ticket = ticket._update(update);
+      updateCacheData('rows', String(ticket._id), update);
+    }
+  }, [user, updateCacheData]);
 
   const createReply = useCallback((ticketID, reply) => {
     return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
-      const newTicket = ticket._create_reply(res.data.ticket_reply);
-      setTicket(newTicket);
+      let newTicket = ticket._create_reply(res.data.ticket_reply);
+      handleUpdateParticipants(newTicket);
+      setTicket(deepCopy(newTicket));
       return res.data.ticket_reply;
     });
-  }, [projectUuid, ticket]);
+  }, [projectUuid, ticket, handleUpdateParticipants]);
 
   const modifyReply = useCallback((ticketID, replyID, reply) => {
     return ticketsAPI.modifyProjectTicketReply(projectUuid, ticketID, replyID, reply).then(res => {
-      const newTicket = ticket._modify_reply(replyID, reply);
+      let newTicket = ticket._modify_reply(replyID, reply);
+      handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
       return newTicket;
     });
-  }, [projectUuid, ticket]);
+  }, [projectUuid, ticket, handleUpdateParticipants]);
 
   const deleteReply = useCallback((ticketID, replyID) => {
     return ticketsAPI.deleteProjectTicketReply(projectUuid, ticketID, replyID).then(res => {
-      const newTicket = ticket._delete_reply(replyID);
+      let newTicket = ticket._delete_reply(replyID);
+      handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
       return newTicket;
     });
-  }, [projectUuid, ticket]);
+  }, [projectUuid, ticket, handleUpdateParticipants]);
 
   const copyLink = useCallback(() => {
     copy(window.location.href);
@@ -180,16 +198,19 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [editorAPI]);
 
   const onSubmitReply = useCallback(() => {
+    setIsShowCommentLoading(true);
     createReply(ticket.id, reply).then(() => {
       const editor = replyEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
       setTimeout(() => {
         containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+        setIsShowCommentLoading(false);
       }, 1);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
+      setIsShowCommentLoading(false);
     });
   }, [reply, ticket, replyEditorRef, createReply]);
 
@@ -219,7 +240,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies = [], assignees = [], type, tags, priority } = ticket;
+  const { id, status, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const statusOption = TICKET_STATUS_CONFIG[status];
@@ -287,15 +308,23 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
               <StatusToggleButton status={status} onChange={toggleStatus} />
-              <Button disabled={!reply.text} color="primary" onClick={onSubmitReply}>{gettext('Comment')}</Button>
+              <Button
+                className="sea-qa-project-ticket-footer-confirm-btn"
+                disabled={!reply.text || isShowCommentLoading}
+                color="primary"
+                onClick={onSubmitReply}
+              >
+                {isShowCommentLoading ? <CenteredLoading /> : gettext('Comment')}
+              </Button>
             </div>
           </div>
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <AssigneesSettings isReadonly={!editable} value={assignees} onChange={onAssigneesChange} />
+          <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
+          <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
       </div>
     </div>

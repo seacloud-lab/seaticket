@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, ModalBody } from 'reactstrap';
+import { Button, Modal, ModalBody, Label, Input, InputGroup, UncontrolledTooltip } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { toaster, ModalHeader, Icon } from '../../../components';
-import { gettext } from '../../../constants/config';
-import { seaQAAPI } from '../../../api/web-api';
-import { Utils } from '../../../utils/utils';
+import { toaster, ModalHeader, Icon } from '@/components';
+import { gettext } from '@/constants/config';
+import homeAPI from '../../api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -28,7 +28,7 @@ class GroupInviteMembersDialog extends React.Component {
   }
 
   listInviteLinks = () => {
-    seaQAAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
+    homeAPI.getGroupInviteLinks(this.props.workspace.group_id).then((res) => {
       this.setState({ inviteList: res.data.group_invite_link_list });
     }).catch(error => {
       this.onError(error);
@@ -36,7 +36,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   addInviteLink = () => {
-    seaQAAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
+    homeAPI.addGroupInviteLinks(this.props.workspace.group_id).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);
@@ -44,7 +44,7 @@ class GroupInviteMembersDialog extends React.Component {
   };
 
   deleteLink = (token) => {
-    seaQAAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
+    homeAPI.deleteGroupInviteLinks(this.props.workspace.group_id, token).then(() => {
       this.listInviteLinks();
     }).catch(error => {
       this.onError(error);
@@ -73,24 +73,36 @@ class GroupInviteMembersDialog extends React.Component {
 
   render() {
     const { inviteList } = this.state;
-    const link = inviteList[0];
+    const linkItem = inviteList[0];
     return (
       <Modal isOpen={true} toggle={this.toggle} className="group-invite-members">
         <ModalHeader toggle={this.toggle}>{gettext('Invite members')}</ModalHeader>
         <ModalBody>
-          {link ?
+          {linkItem ?
             <>
-              <div>
-                <strong>{gettext('Group invitation link')}</strong>
-              </div>
-              <div className="invite-link-item">
-                <div className="form-item text-truncate">{link.link}</div>
-                <div className="invite-link-copy">
-                  <Button color="primary" onClick={this.copyLink} className="invite-link-copy-btn text-truncate">{gettext('Copy')}</Button>
-                </div>
-                <Button color="secondary" onClick={this.deleteLink.bind(this, link.token)} className="delete-link-btn ml-2">
+              <Label for="invite-link">{gettext('Group invitation link')}</Label>
+              <InputGroup>
+                <Input
+                  value={linkItem.link}
+                  disabled
+                  className="text-truncate"
+                  id="invite-link"
+                />
+                <Button color="secondary" onClick={this.copyLink} id="copy-link-button">
+                  <Icon symbol="copy" />
+                </Button>
+                <UncontrolledTooltip placement="bottom" target="copy-link-button">
+                  {gettext('Copy link')}
+                </UncontrolledTooltip>
+                <Button color="secondary" onClick={this.deleteLink.bind(this, linkItem.token)} className="delete-link-btn" id="delete-link-button">
                   <Icon symbol="delete" />
                 </Button>
+                <UncontrolledTooltip placement="bottom" target="delete-link-button">
+                  {gettext('Delete link')}
+                </UncontrolledTooltip>
+              </InputGroup>
+              <div className="no-link-tip my-4">
+                {gettext('Users in your team can join the group via group invitation link. If the user has not registered yet, you should ask your team admin to add the user first.')}
               </div>
             </>
             :

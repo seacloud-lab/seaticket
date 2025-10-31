@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '../../../../../constants';
-import { isLongTextValueExceedLimit } from '../../../../../utils/long-text';
-import { toaster } from '../../../../../components';
+import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { toaster } from '@/components';
 import { TICKET_PAGE_TYPE } from '../../constants';
-import { AssigneesSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
@@ -66,9 +66,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const validTags = tags.map(tagId => Number(tagId));
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags: validTags, priority }).then(res => {
-      togglePageType(res.data.ticket.number);
+    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags, priority }).then(res => {
+      togglePageType(res.data.ticket._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -120,7 +119,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           </div>
           <div className="sea-qa-project-ticket-other-settings">
             <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
-            <AssigneesSettings isReadonly={isSubmitting} value={assignees} onChange={setAssignees} />
+            <CollaboratorsSettings isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>

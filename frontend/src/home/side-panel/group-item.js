@@ -7,7 +7,7 @@ import { Icon, IconButton } from '../../components';
 
 const siteRoot = window.app.config.siteRoot;
 
-const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabClick, isOpenGroupExpanded, onMove }) => {
+const SidePanelGroupItem = ({ item, index, getActiveClass, onGroupTabClick, isOpenGroupExpanded, onMove }) => {
   const dragRef = useRef(null);
   const dropRef = useRef(null);
 
@@ -67,7 +67,7 @@ const SidePanelGroupItem = ({ isDepart, item, index, getActiveClass, onGroupTabC
           icon="drag"
         />
         <Link tabIndex={tabIndex} to={siteRoot + 'project/' + item.id + '/'} className="workspace-nav-link ellipsis">
-          <Icon symbol={isDepart ? 'department' : 'collaborator'} className="project-workspace-icon" />
+          <Icon symbol={'collaborator'} className="project-workspace-icon" />
           <span className="nav-text">{item.name}</span>
         </Link>
       </div>

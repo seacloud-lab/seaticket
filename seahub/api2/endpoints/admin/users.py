@@ -15,7 +15,7 @@ from django.utils.translation import gettext as _
 
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
-from seahub.api2.utils import api_error, to_python_boolean, get_user_social_auth_info
+from seahub.api2.utils import api_error, to_python_boolean
 
 import seahub.settings as settings
 from seahub.organizations.views import is_org_staff
@@ -33,7 +33,6 @@ from seahub.settings import SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER, INIT_PASSWD, \
     SEND_EMAIL_ON_RESETTING_USER_PASSWD, SEND_EMAIL_ON_ACTIVATING_USER, ENABLE_LDAP, \
     ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_LDAP_USER_CHANGE_PASSWORD, FORCE_PASSWORD_CHANGE
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
-from seahub.utils.file_size import get_file_size_unit
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.utils.user_permissions import get_user_role
 from seahub.role_permissions.utils import get_available_roles
@@ -46,9 +45,6 @@ from seahub.options.models import UserOptions
 from seahub.auth.models import UserQuota, SocialAuthUser
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.two_factor.models import default_device
-from seahub.weixin.utils import weixin_check
-from seahub.org_work_weixin.utils import org_work_weixin_check
-from seahub.org_dingtalk.utils import org_dingtalk_check
 from seahub.organizations.models import Organization
 from seahub.auth.models import EmailUser
 from seahub.project.models import IdInOrgTuple
@@ -416,10 +412,6 @@ class AdminUser(APIView):
         if has_two_factor_auth():
             user_info['has_default_device'] = True if default_device(user) else False
             user_info['is_force_2fa'] = UserOptions.objects.is_force_2fa(email)
-
-        if weixin_check() or org_work_weixin_check() or org_dingtalk_check():
-            social_auth_info = get_user_social_auth_info(email, user_info.get('org_id', -1))
-            user_info.update(social_auth_info)
 
         return Response(user_info)
 

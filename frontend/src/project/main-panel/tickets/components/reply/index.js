@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem, Button } from 'reactstrap';
+import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster } from '@/components';
+import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem, CenteredLoading } from '@/components';
 import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
@@ -27,6 +27,7 @@ const Reply = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isShowEditor, setIsShowEditor] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
+  const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
   const { getCollaborator, queryUser } = useCollaborators();
   const [content, setContent] = useState(reply.content);
 
@@ -77,13 +78,16 @@ const Reply = ({
   }, []);
 
   const handleUpdateReply = useCallback(() => {
+    setIsShowCommentLoading(true);
     onModify && onModify(content, (error) => {
       if (!error) {
         isChangeRef.current = false;
         setContent(content?.text);
         setIsShowEditor(false);
+        setIsShowCommentLoading(false);
         return;
       }
+      setIsShowCommentLoading(false);
     });
   }, [content, onModify]);
 
@@ -128,23 +132,20 @@ const Reply = ({
                   <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn" tag="div">
                     <Icon symbol="more" />
                   </DropdownToggle>
-                  <DropdownMenu
-                    className="sea-qa-dropdown-menu dropdown-menu my-1 mr-2 position-fixed"
-                    modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
-                  >
+                  <CustomizeDropdownMenu fixed={true} className="my-1 mr-2">
                     {onModify && (
-                      <DropdownItem onClick={openEditor}>
-                        <Icon symbol="rename" className="item-icon" />
+                      <CustomizeDropdownItem onClick={openEditor}>
+                        <CustomizeDropdownItem.Icon symbol="rename" />
                         {gettext('Edit')}
-                      </DropdownItem>
+                      </CustomizeDropdownItem>
                     )}
                     {onDelete && (
-                      <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>
-                        <Icon symbol="delete" className="item-icon" />
+                      <CustomizeDropdownItem onClick={() => setIsShowDeleteDialog(true)}>
+                        <CustomizeDropdownItem.Icon symbol="delete" />
                         {gettext('Delete')}
-                      </DropdownItem>
+                      </CustomizeDropdownItem>
                     )}
-                  </DropdownMenu>
+                  </CustomizeDropdownMenu>
                 </Dropdown>
               )}
             </div>
@@ -169,7 +170,14 @@ const Reply = ({
                     <UploadFilesButton onChange={handleFiles} />
                     <div className="ml-2">
                       <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
-                      <Button disabled={!isChangeRef.current || (isChangeRef.current && !content?.text)} color="primary" onClick={handleUpdateReply}>{gettext('Update comment')}</Button>
+                      <Button
+                        className="sea-qa-project-ticket-footer-confirm-btn"
+                        disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
+                        color="primary"
+                        onClick={handleUpdateReply}
+                      >
+                        {isShowCommentLoading ? <CenteredLoading /> : gettext('Update comment')}
+                      </Button>
                     </div>
                   </div>
                 </>

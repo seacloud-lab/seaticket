@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { toaster, ModalHeader } from '../../../components';
+import { toaster, ModalHeader } from '@/components';
 import GroupTrashProjectList from '../group-trash/group-trash-project-list';
 import GroupTrashView from '../../mobile/group-trash-view';
-import { gettext } from '../../../constants/config';
-import { seaQAAPI } from '../../../api/web-api';
-import { Utils } from '../../../utils/utils';
+import { gettext } from '@/constants/config';
+import homeAPI from '../../api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -17,7 +17,7 @@ function GroupTrashDialog(props) {
   const [trashList, setTrashList] = useState([]);
 
   useEffect(() => {
-    seaQAAPI.listGroupTrashProjects(groupID).then(res => {
+    homeAPI.listGroupTrashProjects(groupID).then(res => {
       setLoading(false);
       setTrashList(res.data.trash_project_list);
     }).catch(error => {

@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { toaster, EmptyTip, CenteredLoading } from '../../../components';
-import GlobalSearchInput from '../../../components/search-input/global-search-input';
+import { toaster, EmptyTip, CenteredLoading } from '@/components';
+import GlobalSearchInput from '@/components/search-input/global-search-input';
 import { searchAPI, connectionsAPI } from '../../api';
-import { gettext, mediaUrl } from '../../../constants';
-import { Utils } from '../../../utils/utils';
+import { gettext, mediaUrl } from '@/constants';
+import { Utils } from '@/utils/utils';
 import { SearchResult } from './models';
 import Connection from '../connections/models/connection';
 import TopBar from '../top-bar';
@@ -20,7 +20,7 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 
 const SEARCH_STORE_KEY = 'search-project';
 
-const Search = ({ title }) => {
+const Search = ({ title, settings }) => {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -39,6 +39,10 @@ const Search = ({ title }) => {
   const timer = useRef(null);
 
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
+    if (!connections || connections.length === 0) {
+      toaster.danger(gettext('Select at least one connection to search'));
+      return;
+    }
     const oldSearch = JSON.parse(window.localStorage.getItem(SEARCH_STORE_KEY) || '[]');
     if (!oldSearch.includes(value)) {
       oldSearch.push(value);
@@ -161,7 +165,7 @@ const Search = ({ title }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result => <ListItem key={result.id || result.uuid} {...result} searchValue={value} />)}
+                {results.map(result => <ListItem key={result._id || result.uuid} {...result} searchValue={value} settings={settings} />)}
               </div>
             }
           </>

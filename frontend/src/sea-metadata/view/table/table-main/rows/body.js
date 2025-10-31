@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { RightScrollbar } from '../../../../components/scrollbar';
 import Row from './row';
 import InteractionMasks from '../../masks/interaction-masks';
-import { EVENT_BUS_TYPE, SEQUENCE_COLUMN_WIDTH } from '../../../../constants';
+import { EVENT_BUS_TYPE, SEQUENCE_COLUMN_WIDTH, ROW_HEIGHT_MAP } from '../../../../constants';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { isColumnSupportDirectEdit, checkIsColumnEditable } from '../../../../utils/column';
 import { isSelectedCellSupportOpenEditor } from '../../utils/selected-cell-utils';
@@ -11,7 +11,6 @@ import RowMetrics from '../../utils/row-metrics';
 import { getColumnScrollPosition, getColVisibleStartIdx, getColVisibleEndIdx } from '../../utils/rows-body-utils';
 import context from '@/sea-metadata/context';
 
-const ROW_HEIGHT = 33;
 const RENDER_MORE_NUMBER = 10;
 const CONTENT_HEIGHT = window.innerHeight - 174;
 const { max, min, ceil, round } = Math;
@@ -77,7 +76,7 @@ class RowsBody extends Component {
   };
 
   setRowVisibleEnd = () => {
-    return max(ceil(CONTENT_HEIGHT / ROW_HEIGHT), 0);
+    return max(ceil(CONTENT_HEIGHT / this.getRowHeight()), 0);
   };
 
   setColumnVisibleEnd = () => {
@@ -99,9 +98,9 @@ class RowsBody extends Component {
   recalculateRenderIndex = (rowIds) => {
     const { startRenderIndex, endRenderIndex } = this.state;
     const contentScrollTop = this.resultContentRef.scrollTop;
-    const start = Math.max(0, Math.floor(contentScrollTop / ROW_HEIGHT) - RENDER_MORE_NUMBER);
+    const start = Math.max(0, Math.floor(contentScrollTop / this.getRowHeight()) - RENDER_MORE_NUMBER);
     const { height } = this.props.getTableContentRect();
-    const end = Math.min(Math.ceil((contentScrollTop + height) / ROW_HEIGHT) + RENDER_MORE_NUMBER, rowIds.length);
+    const end = Math.min(Math.ceil((contentScrollTop + height) / this.getRowHeight()) + RENDER_MORE_NUMBER, rowIds.length);
     if (start !== startRenderIndex) {
       this.setState({ startRenderIndex: start });
     }
@@ -111,7 +110,7 @@ class RowsBody extends Component {
   };
 
   getInitEndIndex = (props) => {
-    return Math.min(Math.ceil(window.innerHeight / ROW_HEIGHT) + RENDER_MORE_NUMBER, props.rowsCount);
+    return Math.min(Math.ceil(window.innerHeight / this.getRowHeight()) + RENDER_MORE_NUMBER, props.rowsCount);
   };
 
   getShownRowIds = () => {
@@ -121,11 +120,11 @@ class RowsBody extends Component {
   };
 
   getRowTop = (rowIdx) => {
-    return ROW_HEIGHT * rowIdx;
+    return this.getRowHeight() * rowIdx;
   };
 
   getRowHeight = () => {
-    return ROW_HEIGHT;
+    return ROW_HEIGHT_MAP[this.props.rowHeight] + 1;
   };
 
   jumpToRow = (scrollToRowIndex) => {
@@ -199,12 +198,12 @@ class RowsBody extends Component {
     const { startRenderIndex, endRenderIndex } = this.state;
     const { offsetHeight, scrollTop: contentScrollTop } = this.resultContentRef;
     // Calculate the start rendering row index, and end rendering row index
-    const start = Math.max(0, Math.floor(contentScrollTop / ROW_HEIGHT) - RENDER_MORE_NUMBER);
-    const end = Math.min(Math.ceil((contentScrollTop + this.resultContentRef.offsetHeight) / ROW_HEIGHT) + RENDER_MORE_NUMBER, rowsCount);
+    const start = Math.max(0, Math.floor(contentScrollTop / this.getRowHeight()) - RENDER_MORE_NUMBER);
+    const end = Math.min(Math.ceil((contentScrollTop + this.resultContentRef.offsetHeight) / this.getRowHeight()) + RENDER_MORE_NUMBER, rowsCount);
 
     this.oldScrollTop = contentScrollTop;
-    const renderedRowsCount = ceil(this.resultContentRef.offsetHeight / ROW_HEIGHT);
-    const newRowVisibleStart = max(0, round(contentScrollTop / ROW_HEIGHT));
+    const renderedRowsCount = ceil(this.resultContentRef.offsetHeight / this.getRowHeight());
+    const newRowVisibleStart = max(0, round(contentScrollTop / this.getRowHeight()));
     const newRowVisibleEnd = min(newRowVisibleStart + renderedRowsCount, rowsCount);
     this.rowVisibleStart = newRowVisibleStart;
     this.rowVisibleEnd = newRowVisibleEnd;
@@ -504,8 +503,8 @@ class RowsBody extends Component {
       );
     });
 
-    const upperHeight = startRenderIndex * ROW_HEIGHT;
-    const belowHeight = (rowsCount - endRenderIndex) * ROW_HEIGHT;
+    const upperHeight = startRenderIndex * this.getRowHeight();
+    const belowHeight = (rowsCount - endRenderIndex) * this.getRowHeight();
     // add top placeholder
     if (upperHeight > 0) {
       const style = { height: upperHeight, width: '100%' };
@@ -600,6 +599,7 @@ RowsBody.propTypes = {
   table: PropTypes.object,
   rowIds: PropTypes.array,
   rowsCount: PropTypes.number,
+  rowHeight: PropTypes.string,
   columns: PropTypes.array.isRequired,
   colOverScanStartIdx: PropTypes.number,
   colOverScanEndIdx: PropTypes.number,

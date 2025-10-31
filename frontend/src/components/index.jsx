@@ -1,9 +1,13 @@
+import Account from './account';
 import CenteredError from './centered-error';
 import CenteredLoading from './centered-loading';
 import ClickOutside from './click-outside';
 import CustomizeSelect from './customize-select';
+import Logo from './logo';
 import {
-  CommonOperationConfirmationDialog
+  CommonOperationConfirmationDialog,
+  RestoreProjectDialog,
+  ClearTrashDialog,
 } from './dialog';
 import EmptyTip from './empty-tip';
 import Icon from './icon';
@@ -12,7 +16,7 @@ import Loading from './loading';
 import ModalHeader from './modal-header';
 import ResizeBar from './resize-bar';
 import ActiveStatusEditor from './active-status-editor';
-import SearchInput from './search-input';
+import SearchInput, { EnterSearchInput } from './search-input';
 import toaster from './toaster';
 import Paginator from './paginator';
 import ModalPortal from './modal-portal';
@@ -34,6 +38,7 @@ import { Collaborator, AsyncCollaborator } from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
 import OptionEditor from './option-editor';
+import SyncOptionsEditor from './sync-option-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
 import StepsNavigation from './steps-navigation';
@@ -42,12 +47,31 @@ import ColorSelectorPopover from './color-selector-popover';
 import CustomizeTable from './customize-table';
 import CustomizeNameDialog from './customize-name-dialog';
 import SubDropdown from './sub-dropdown';
+import { UsageCard, MultipleTextCard, InfoCard } from './chart';
+import { SectionSettings, AdminCheckboxSettings } from './settings';
+import FixedWidthTable from './fixed-width-table';
+import AdminProjects from './admin-projects';
+import UserSelect from './user-select';
+import Switch from './switch';
+import IconTooltip from './icon-tooltip';
 
 export {
+  FixedWidthTable,
+  Account,
+  Logo,
+  UsageCard,
+  MultipleTextCard,
+  InfoCard,
+  SectionSettings,
+  AdminCheckboxSettings,
+  EnterSearchInput,
   CenteredError, CenteredLoading,
   ClickOutside,
   CustomizeSelect,
   CommonOperationConfirmationDialog,
+  AdminProjects,
+  RestoreProjectDialog,
+  ClearTrashDialog,
   EmptyTip,
   Icon, IconButton,
   Loading,
@@ -76,7 +100,7 @@ export {
   Collaborator,
   CollaboratorEditor,
   Option,
-  OptionEditor,
+  OptionEditor, SyncOptionsEditor,
   PasswordInput,
   TextInput,
   StepsNavigation,
@@ -85,4 +109,7 @@ export {
   CustomizeTable,
   CustomizeNameDialog,
   SubDropdown,
+  UserSelect,
+  Switch,
+  IconTooltip,
 };

@@ -2,15 +2,17 @@ import { forwardRef, useState, useRef, useMemo, useCallback, useImperativeHandle
 import classnames from 'classnames';
 import SearchInput from '../../search-input';
 import Collaborator from '../../collaborator/collaborator';
-import { searchCollaborators } from '../../../utils/search';
+import { searchCollaborators } from '@/utils/search';
 import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
-import { isFunction } from '@utils/utils';
+import { isFunction } from '@utils/type-detection';
 
 import './index.css';
 
 const Main = forwardRef(({
   isShowDeleteArea = true,
+  isSearchEnabled = true,
+  isMultiple = true,
   placeholder,
   emptyTip,
   value: propsValue = [],
@@ -19,13 +21,18 @@ const Main = forwardRef(({
   optionHeight = 30,
   onPressTab,
   onChange,
+  onToggle,
+  onHidden,
 }, ref) => {
   const [value, setValue] = useState(propsValue);
   const [searchValue, setSearchValue] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const displayCollaborators = useMemo(() => {
+    if (searchValue) return searchCollaborators(collaborators, searchValue);
+    return collaborators;
+  }, [collaborators, searchValue]);
 
   const displayCollaboratorsRef = useRef(null);
-  const displayCollaborators = useRef(collaborators);
 
   const collaboratorsMap = useMemo(() => {
     return collaborators.reduce((pre, cur) => {
@@ -38,7 +45,6 @@ const Main = forwardRef(({
 
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
-    displayCollaborators.current = searchCollaborators(collaborators, newSearchValue);
     setSearchValue(newSearchValue);
   }, [collaborators, searchValue]);
 
@@ -48,9 +54,23 @@ const Main = forwardRef(({
   }, [value]);
 
   const toggleCollaborator = useCallback((email) => {
-    const newValue = value.includes(email) ? value.filter(i => i !== email) : [...value, email];
+    if (isMultiple) {
+      let newValue = Array.isArray(value) ? value.slice(0) : [];
+      const optionIndex = newValue.findIndex(v => v === email);
+      if (optionIndex === -1) {
+        newValue.push(email);
+      } else {
+        newValue.splice(optionIndex, 1);
+      }
+      setValue(newValue);
+      onChange && onChange(newValue);
+      return;
+    }
+    const newValue = email === value ? '' : email;
     setValue(newValue);
-  }, [value]);
+    onChange && onChange(newValue);
+    onToggle && onToggle();
+  }, [value, isMultiple, onToggle, onChange]);
 
   const onMenuMouseEnter = useCallback((highlightIndex) => {
     setHighlightIndex(highlightIndex);
@@ -100,15 +120,11 @@ const Main = forwardRef(({
     }
   }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayCollaborators, optionHeight]);
 
-  const blur = useCallback(() => {
-    onChange && onChange();
-  }, [onChange]);
-
   const onEsc = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    blur();
-  }, [blur]);
+    onHidden && onHidden();
+  }, [onHidden]);
 
   const onHotKey = useCallback((event) => {
     if (event.keyCode === KeyCodes.Enter) {
@@ -168,28 +184,30 @@ const Main = forwardRef(({
           })}
         </div>
       )}
-      <div className="collaborator-editor-search-wrapper">
-        <SearchInput
-          isShowSearchIcon={false}
-          autoFocus={true}
-          value={searchValue}
-          size={28}
-          placeholder={placeholder}
-          onKeyDown={onKeyDown}
-          onChange={onSearchValueChange}
-        />
-      </div>
+      {isSearchEnabled && (
+        <div className="collaborator-editor-search-wrapper">
+          <SearchInput
+            isShowSearchIcon={false}
+            autoFocus={true}
+            value={searchValue}
+            size={28}
+            placeholder={placeholder}
+            onKeyDown={onKeyDown}
+            onChange={onSearchValueChange}
+          />
+        </div>
+      )}
       <div
-        className={classnames('collaborator-editor-content', { 'empty': displayCollaborators.current.length === 0 })}
+        className={classnames('collaborator-editor-content', { 'empty': displayCollaborators.length === 0 })}
         style={{ maxHeight }}
         ref={displayCollaboratorsRef}
       >
-        {displayCollaborators.current.length === 0 ? (
+        {displayCollaborators.length === 0 ? (
           <div className="tip-default">{emptyTip}</div>
         ) : (
           <>
-            {displayCollaborators.current.map((c, i) => {
-              const isSelected = value.includes(c.email);
+            {displayCollaborators.map((c, i) => {
+              const isSelected = isMultiple && Array.isArray(value) && value.includes(c.email);
               return (
                 <div
                   className="collaborator-editor-option"

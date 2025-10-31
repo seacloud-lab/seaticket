@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import { UncontrolledPopover } from 'reactstrap';
 import isHotkey from 'is-hotkey';
-import SearchInput from '../../../../components/search-input';
+import SearchInput from '@/components/search-input';
 import HiddenConnections from './hidden-connections';
-import { gettext } from '../../../../constants';
-import KeyCodes from '../../../../components/select-option-group/KeyCodes';
-import { getEventClassName } from '../../../../utils/utils';
+import { gettext } from '@/constants';
+import KeyCodes from '@/components/select-option-group/KeyCodes';
+import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 

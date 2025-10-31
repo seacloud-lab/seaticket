@@ -2,7 +2,7 @@ import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
 import Translate from './utils/translate';
 import { CellType } from './constants';
-import { isFunction } from '@/utils/utils';
+import { isFunction } from '@/utils/type-detection';
 
 class Context {
 

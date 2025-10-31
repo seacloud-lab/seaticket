@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 import { gettext } from '../../constants/config';
 import CustomModalHeader from '../modal-header';
+import { isEnter } from '@/utils/hotkey';
 
 const propTypes = {
   title: PropTypes.string.isRequired,
@@ -13,6 +14,20 @@ const propTypes = {
 };
 
 class CommonOperationConfirmationDialog extends Component {
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.onHotKey);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.onHotKey);
+  }
+
+  onHotKey = (e) => {
+    if (isEnter(e)) {
+      this.executeOperation();
+    }
+  };
 
   toggle = () => {
     this.props.toggleDialog();

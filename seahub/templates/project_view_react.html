@@ -29,7 +29,6 @@
 <body>
     <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
     <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
-    <div id="plugin-wrapper" class="{{ LANGUAGE_CODE }}"></div>
     <div id="widget-wrapper" class="{{ LANGUAGE_CODE }}"></div>
 
 <script type="text/javascript">
@@ -57,6 +56,7 @@
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',
             icon: '{{ icon|escapejs }}',
+            settings: '{{ settings|escapejs }}',
             langCode: "{{LANGUAGE_CODE|escapejs}}",
         }
      };

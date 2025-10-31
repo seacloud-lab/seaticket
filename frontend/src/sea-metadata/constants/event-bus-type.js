@@ -67,4 +67,6 @@ export const EVENT_BUS_TYPE = {
   CLEAR_SEARCH_ROWS: 'clear_search_rows',
   RE_SEARCH_ROWS: 're_search_rows',
 
+  DISPLAY_SORTS: 'display_sorts',
+
 };

@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useEffect } from 'react';
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { processor, getPreviewContent } from '@seafile/seafile-editor';
@@ -133,6 +133,8 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
 };
 
 const Connection = ({ projectUuid, permission, connectionID }) => {
+  const seaMetaDataRef = useRef(null);
+  const currentRowRef = useRef(null);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [discourseForumsDetails, setDiscourseForumsDetails] = useState(null);
@@ -472,12 +474,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
-  const handleExpandRow = useCallback((row) => {
-    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
-      window.open(row.url);
-      return;
-    }
-
+  const getRowDetails = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         setDiscourseForumsDetailsTitle(row.title);
@@ -490,6 +487,33 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         setGithubIssueDetails(res.data.row_details);
       });
     }
+  }, [projectUuid, connectionID, connection]);
+
+  const handleExpandRow = useCallback((row) => {
+    currentRowRef.current = row._id;
+    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+      window.open(row.url);
+      return;
+    }
+    getRowDetails(row);
+  }, [projectUuid, connectionID, connection]);
+
+  const handleSwitchRows = useCallback((count) => {
+    const rowsData = seaMetaDataRef.current.getOrderRows();
+    const index = rowsData.findIndex(r => r._id === currentRowRef.current);
+    if (index === -1) return;
+
+    let newIndex = index + count;
+    if (newIndex > rowsData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = rowsData.length - 1;
+    }
+    const currentRow = rowsData[newIndex];
+    currentRowRef.current = currentRow._id;
+    getRowDetails(currentRow);
+
   }, [projectUuid, connectionID, connection]);
 
   useEffect(() => {
@@ -528,6 +552,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       <SeaMetadata
         viewID={isMultiView ? viewID : '0000'}
         api={api}
+        ref={seaMetaDataRef}
         className="sea-qa-connection-details"
         localStorageNamePrefix={localStorageName}
         createRowsTools={createRowsTools}
@@ -539,8 +564,22 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {discourseForumsDetails && <DiscourseForumsDetails rowDetailsTitle={discourseForumsDetailsTitle} rowDetails={discourseForumsDetails} onClose={() => {setDiscourseForumsDetails(null);}} />}
-      {githubIssueDetails && <GithubIssueDetails rowDetailsTitle={githubIssueDetailsTitle} rowDetails={githubIssueDetails} onClose={() => {setGithubIssueDetails(null);}} />}
+      {discourseForumsDetails && (
+        <DiscourseForumsDetails
+          rowDetailsTitle={discourseForumsDetailsTitle}
+          rowDetails={discourseForumsDetails}
+          onClose={() => setDiscourseForumsDetails(null)}
+          handleSwitchRows={handleSwitchRows}
+        />
+      )}
+      {githubIssueDetails && (
+        <GithubIssueDetails
+          rowDetailsTitle={githubIssueDetailsTitle}
+          rowDetails={githubIssueDetails}
+          onClose={() => setGithubIssueDetails(null)}
+          handleSwitchRows={handleSwitchRows}
+        />
+      )}
       {siteDetails && (
         <SiteContentDialog
           title={siteDetails.title}

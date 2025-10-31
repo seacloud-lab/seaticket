@@ -84,7 +84,7 @@ def sms_login(request):
         if redirect_to:
             return HttpResponseRedirect(redirect_to)
         else:
-            return HttpResponseRedirect(reverse('project'))
+            return HttpResponseRedirect(reverse('projects_list'))
     redirect_to = redirect_to or LOGIN_REDIRECT_URL
 
     phone = ''

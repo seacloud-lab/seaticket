@@ -17,7 +17,7 @@ from seahub.utils.licenseparse import parse_license
 from seahub.utils.error_msg import file_type_error_msg, file_size_error_msg
 
 logger = logging.getLogger(__name__)
-HOST_DIR = '/shared/seatable/'
+HOST_DIR = '/shared/seasearch/'
 
 
 class AdminLicense(APIView):
@@ -53,7 +53,6 @@ class AdminLicense(APIView):
             if os.path.exists(HOST_DIR):
                 os.system('cp %s %s' % (LICENSE_PATH, HOST_DIR))
 
-            ccnet_api.reload_license()
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
