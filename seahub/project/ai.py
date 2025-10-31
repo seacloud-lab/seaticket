@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
+import uuid
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -84,9 +85,12 @@ class ChatView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        chat_uuid = str(uuid.uuid4())
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
+            'chat_uuid': chat_uuid,
             'query': query,
             'resolve_type': resolve_type,
             'username': username,
