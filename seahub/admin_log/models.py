@@ -83,6 +83,7 @@ class AdminLog(models.Model):
     objects = AdminLogManager()
 
     class Meta:
+        db_table = 'admin_log_adminlog'
         ordering = ["-datetime"]
 
 

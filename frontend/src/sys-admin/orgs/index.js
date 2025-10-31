@@ -7,15 +7,14 @@ import classnames from 'classnames';
 import { ActiveStatusEditor, toaster, EmptyTip, Loading, IconButton } from '@/components';
 import SysAdminAddOrgDialog from '@/sys-admin/dialog/sysadmin-add-org-dialog';
 import ConfirmDeleteOrg from '@/components/dialog/confirm-delete-org';
-import MainPanelTopbar from '../main-panel-topbar';
-import Search from '../search';
 import OrgNav from './orgs-nav';
-import Paginator from '@/components/paginator';
+import { Paginator, EnterSearchInput } from '@/components';
 import { Utils } from '@/utils/utils';
 import sysAdminAPI from '@/sys-admin/api';
 import { siteRoot, loginUrl, gettext, mediaUrl } from '@/constants';
 import { getRoleOptions } from '@/utils/role-status-utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { TopBar, Main } from '@/sys-admin/main-panel';
 
 import './index.css';
 
@@ -279,10 +278,7 @@ class Orgs extends Component {
   };
 
   getSearch = () => {
-    return <Search
-      placeholder={gettext('Search organizations')}
-      submit={this.searchItems}
-    />;
+    return <EnterSearchInput placeholder={gettext('Search organizations')} onSubmit={this.searchItems} />;
   };
 
   searchItems = (keyword) => {
@@ -372,32 +368,29 @@ class Orgs extends Component {
     if (isDesktop) {
       MainPanelTopbarContainer = isShowOrgOpItem ?
         (
-          <MainPanelTopbar search={this.getSearch()}>
+          <TopBar search={this.getSearch()}>
             <Button className="btn btn-secondary operation-item" onClick={this.toggleAddOrgDialog}>{gettext('Add organization')}</Button>
-          </MainPanelTopbar>
-        ) : <MainPanelTopbar />;
+          </TopBar>
+        ) : <TopBar />;
     } else {
       MainPanelTopbarContainer = isShowOrgOpItem ? (
-        <MainPanelTopbar search={this.getSearch()} onCloseSidePanel={this.props.onCloseSidePanel}>
+        <TopBar search={this.getSearch()} onCloseSidePanel={this.props.onCloseSidePanel}>
           <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddOrgDialog}>{gettext('Add organization')}</span>
-        </MainPanelTopbar>
-      ) : <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />;
+        </TopBar>
+      ) : <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />;
     }
     return (
       <Fragment>
         {MainPanelTopbarContainer}
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <OrgNav
-              currentItem={this.getCurrentNavItem()}
-              updateSysFilter={this.updateSysFilter}
-              filters={filters}
-            />
-            <div className="cur-view-content">
-              {this.renderContent()}
-            </div>
-          </div>
-        </div>
+        <Main
+          title={(<OrgNav
+            currentItem={this.getCurrentNavItem()}
+            updateSysFilter={this.updateSysFilter}
+            filters={filters}
+          />)}
+        >
+          {this.renderContent()}
+        </Main>
         {isAddOrgDialogOpen &&
           <SysAdminAddOrgDialog
             addOrg={this.addOrg}

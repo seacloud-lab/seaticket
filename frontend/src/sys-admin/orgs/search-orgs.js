@@ -4,7 +4,7 @@ import { Form, FormGroup, Input, Label, Col } from 'reactstrap';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { loginUrl, gettext } from '@/constants';
-import MainPanelTopbar from '../main-panel-topbar';
+import { TopBar, Main } from '../main-panel';
 import Content from './orgs-content';
 import sysAdminAPI from '@/sys-admin/api';
 
@@ -114,47 +114,42 @@ class SearchOrgs extends Component {
     const { query, isSubmitBtnActive } = this.state;
     return (
       <Fragment>
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel}/>
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <h2 className="heading">{gettext('Organizations')}</h2>
-            <div className="cur-view-content">
-              <div className="mt-4 mb-6">
-                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search organizations')}</h4>
-                <p className="sea-qa-tip-default">{gettext('Tip: you can search by keyword in name.')}</p>
-                <Form>
-                  <FormGroup row>
-                    <Label for="name" sm={1}>{gettext('Name')}</Label>
-                    <Col sm={5}>
-                      <Input type="text" name="query" id="name" value={query} onChange={this.handleInputChange} />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup row>
-                    <Col sm={{ size: 5, offset: 1 }}>
-                      <button
-                        className="btn btn-outline-primary"
-                        disabled={!isSubmitBtnActive}
-                        onClick={this.onClick}
-                      >
-                        {gettext('Submit')}
-                      </button>
-                    </Col>
-                  </FormGroup>
-                </Form>
-              </div>
-              <div className="mt-4 mb-6">
-                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Result')}</h4>
-                <Content
-                  loading={this.state.loading}
-                  errorMsg={this.state.errorMsg}
-                  items={this.state.orgList}
-                  updateRole={this.updateRole}
-                  deleteOrg={this.deleteOrg}
-                />
-              </div>
-            </div>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel}/>
+        <Main title={gettext('Organizations')}>
+          <div className="mt-4 mb-6">
+            <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search organizations')}</h4>
+            <p className="sea-qa-tip-default">{gettext('Tip: you can search by keyword in name.')}</p>
+            <Form>
+              <FormGroup row>
+                <Label for="name" sm={1}>{gettext('Name')}</Label>
+                <Col sm={5}>
+                  <Input type="text" name="query" id="name" value={query} onChange={this.handleInputChange} />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Col sm={{ size: 5, offset: 1 }}>
+                  <button
+                    className="btn btn-outline-primary"
+                    disabled={!isSubmitBtnActive}
+                    onClick={this.onClick}
+                  >
+                    {gettext('Submit')}
+                  </button>
+                </Col>
+              </FormGroup>
+            </Form>
           </div>
-        </div>
+          <div className="mt-4 mb-6">
+            <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Result')}</h4>
+            <Content
+              loading={this.state.loading}
+              errorMsg={this.state.errorMsg}
+              items={this.state.orgList}
+              updateRole={this.updateRole}
+              deleteOrg={this.deleteOrg}
+            />
+          </div>
+        </Main>
       </Fragment>
     );
   }

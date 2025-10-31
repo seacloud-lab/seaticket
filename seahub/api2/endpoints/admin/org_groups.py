@@ -33,11 +33,11 @@ logger = logging.getLogger(__name__)
 
 def get_org_group_info(group):
     group_info = dict()
-    group_info['group_name'] = group.group_name
+    group_info['name'] = group.group_name
     group_info['creator_name'] = email2nickname(group.creator_name)
     group_info['creator_email'] = group.creator_name
     group_info['created_at'] = timestamp_to_isoformat_timestr(group.timestamp)
-    group_info['group_id'] = group.group_id
+    group_info['id'] = group.group_id
 
     return group_info
 
@@ -74,7 +74,7 @@ class AdminOrgGroups(APIView):
         for group in groups:
             groups_info.append(get_org_group_info(group))
 
-        return Response({'group_list': groups_info})
+        return Response({'groups': groups_info})
 
 
 class AdminOrgGroup(APIView):

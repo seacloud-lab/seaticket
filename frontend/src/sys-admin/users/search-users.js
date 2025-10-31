@@ -1,192 +1,34 @@
-import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { Button, Form, FormGroup, Input, Col } from 'reactstrap';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { Button, Form, FormGroup, Col } from 'reactstrap';
+import { navigate } from '@gatsbyjs/reach-router';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import { gettext, loginUrl } from '@/constants';
-import CommonOperationConfirmationDialog from '@/components/dialog/common-operation-confirmation-dialog';
-import MainPanelTopbar from '../main-panel-topbar';
-import Content from './users-content';
+import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
+import { TopBar, Main } from '../main-panel';
+import UsersTable from './users-table';
+import { SelectedUsersProvider, useSelectedUsers } from './selected-users';
+import { isEnter } from '@/utils/hotkey';
+import { SearchInput, CommonOperationConfirmationDialog } from '@/components';
 
-const propTypes = {
-  onCloseSidePanel: PropTypes.func
-};
+const CustomizeTopBar = ({ onCloseSidePanel, deleteUsers }) => {
+  const { selectedUsers } = useSelectedUsers();
+  const [isBatchDeleteUserDialogOpen, setIsBatchDeleteUserDialogOpen] = useState(false);
 
-class SearchUsers extends Component {
+  const toggleBatchDeleteUserDialog = useCallback(() => {
+    setIsBatchDeleteUserDialogOpen(!isBatchDeleteUserDialogOpen);
+  }, [isBatchDeleteUserDialogOpen]);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      query: '',
-      isSubmitBtnActive: false,
-      loading: true,
-      errorMsg: '',
-      userList: [],
-      hasUserSelected: false,
-      selectedUserList: [],
-      hasNextPage: false,
-      currentPage: 1,
-      perPage: 25,
-      isAllUsersSelected: false,
-      isBatchDeleteUserDialogOpen: false
-    };
-  }
-
-  componentDidMount() {
-    let urlParams = (new URL(window.location)).searchParams;
-    const { currentPage, perPage } = this.state;
-    this.setState({
-      perPage: parseInt(urlParams.get('per_page') || perPage),
-      currentPage: parseInt(urlParams.get('page') || currentPage),
-      query: urlParams.get('query') || ''
-    }, () => {
-      this.getItems(this.state.currentPage);
-    });
-  }
-
-  toggleBatchDeleteUserDialog = () => {
-    this.setState({ isBatchDeleteUserDialogOpen: !this.state.isBatchDeleteUserDialogOpen });
-  };
-
-  onUserSelected = (item) => {
-    let hasUserSelected = false;
-    let selectedUserList = [];
-    // traverse all users, toggle its selected status
-    let users = this.state.userList.map(user => {
-      // toggle status
-      if (user.email === item.email) {
-        user.isSelected = !user.isSelected;
-      }
-      // update selectedUserList
-      // if current user is now selected, push it to selectedUserList
-      // if current user is now not selected, drop it from selectedUserList
-      if (user.isSelected === true) {
-        hasUserSelected = true;
-        selectedUserList.push(user);
-      } else {
-        selectedUserList = selectedUserList.filter(thisuser => {
-          return thisuser.email !== user.email;
-        });
-      }
-      return user;
-    });
-    // finally update state
-    this.setState({
-      userList: users,
-      hasUserSelected: hasUserSelected,
-      selectedUserList: selectedUserList,
-    });
-  };
-
-  toggleSelectAllUsers = () => {
-    if (this.state.isAllUsersSelected) {
-      // if previous state is allSelected, toggle to not select
-      let users = this.state.userList.map(user => {
-        user.isSelected = false;
-        return user;
-      });
-      this.setState({
-        userList: users,
-        hasUserSelected: false,
-        isAllUsersSelected: false,
-        selectedUserList: [],
-      });
-    } else {
-      // if previous state is not allSelected, toggle to selectAll
-      let users = this.state.userList.map(user => {
-        user.isSelected = true;
-        return user;
-      });
-      this.setState({
-        userList: users,
-        hasUserSelected: true,
-        isAllUsersSelected: true,
-        selectedUserList: users
-      });
-    }
-  };
-
-  resetPerPage = (perPage) => {
-    this.setState({
-      perPage: perPage
-    }, () => {
-      this.getItems(1);
-    });
-  };
-
-  getSearchUsers = (e) => {
-    e.preventDefault();
-    this.getItems(1);
-  };
-
-  getItems = (page) => {
-    let { perPage } = this.state;
-    sysAdminAPI.sysAdminSearchUsers(this.state.query.trim(), page, perPage).then(res => {
-      this.setState({
-        userList: res.data.user_list,
-        loading: false,
-        hasNextPage: res.data.has_next_page === 'true',
-        currentPage: page
-      });
-    }).catch((error) => {
-      if (error.response) {
-        if (error.response.status === 403) {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Permission denied')
-          });
-          location.href = `${loginUrl}?next=${encodeURIComponent(location.href)}`;
-        } else {
-          this.setState({
-            loading: false,
-            errorMsg: gettext('Error')
-          });
-        }
-      } else {
-        this.setState({
-          loading: false,
-          errorMsg: gettext('Please check the network.')
-        });
-      }
-    });
-  };
-
-  deleteUser = (email) => {
-    sysAdminAPI.sysAdminDeleteUser(email).then(res => {
-      let newUserList = this.state.userList.filter(item => {
-        return item.email !== email;
-      });
-      this.setState({ userList: newUserList });
-      toaster.success(gettext('Successfully deleted 1 user.'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
-  deleteUserInBatch = () => {
-    let emails = this.state.selectedUserList.map(user => {
-      return user.email;
-    });
-    sysAdminAPI.sysAdminDeleteUserInBatch(emails).then(res => {
-      if (res.data.success.length) {
-        let oldUserList = this.state.userList;
-        let newUserList = oldUserList.filter(oldUser => {
-          return !res.data.success.find(deletedUser => {
-            return deletedUser.email === oldUser.email;
-          });
-        });
-        this.setState({
-          userList: newUserList,
-          hasUserSelected: emails.length !== res.data.success.length
-        });
-        const length = res.data.success.length;
+  const deleteUserInBatch = useCallback(() => {
+    sysAdminAPI.sysAdminDeleteUserInBatch(selectedUsers).then(res => {
+      const deletedUsers = res.data.success;
+      if (deletedUsers.length) {
+        const length = deletedUsers.length;
         const msg = length === 1 ?
           gettext('Successfully deleted 1 user.') :
-          gettext('Successfully deleted {user_number_placeholder} users.')
-            .replace('{user_number_placeholder}', length);
+          gettext('Successfully deleted {count} users.').replace('{count}', length);
         toaster.success(msg);
+        deleteUsers(deletedUsers);
       }
       res.data.failed.map(item => {
         const msg = `${item.email}: ${item.error_msg}`;
@@ -197,159 +39,140 @@ class SearchUsers extends Component {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  };
+  }, [selectedUsers, deleteUsers]);
 
-  updateUser = (email, key, value) => {
-    sysAdminAPI.sysAdminUpdateUser(email, key, value).then(res => {
-      let newUserList = this.state.userList.map(item => {
-        if (item.email === email) {
-          item[key] = res.data[key];
-        }
-        return item;
-      });
-      this.setState({ userList: newUserList });
-      const msg = (key === 'is_active' && value) ?
-        res.data.update_status_tip : gettext('Edit succeeded');
-      toaster.success(msg);
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
+  const isDesktop = Utils.isDesktop();
+  return (
+    <>
+      <TopBar onCloseSidePanel={onCloseSidePanel}>
+        {isDesktop ? (
+          <>
+            {selectedUsers.length > 0 && (
+              <Button className="btn btn-secondary operation-item" onClick={toggleBatchDeleteUserDialog}>
+                {gettext('Delete users')}
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            {selectedUsers.length > 0 && (
+              <span className="mobile-dropdown-item dropdown-item" onClick={toggleBatchDeleteUserDialog}>
+                {gettext('Delete users')}
+              </span>
+            )}
+          </>
+        )}
+      </TopBar>
+      {isBatchDeleteUserDialogOpen && (
+        <CommonOperationConfirmationDialog
+          title={gettext('Delete users')}
+          message={gettext('Are you sure you want to delete the selected user(s) ?')}
+          executeOperation={deleteUserInBatch}
+          confirmBtnText={gettext('Delete')}
+          toggleDialog={toggleBatchDeleteUserDialog}
+        />
+      )}
+    </>
+  );
+};
 
-  updateAdminRole = (email, role) => {
-    sysAdminAPI.sysAdminUpdateAdminRole(email, role).then(res => {
-      let newUserList = this.state.userList.map(item => {
-        if (item.email === email) {
-          item.admin_role = res.data.role;
-        }
-        return item;
-      });
-      this.setState({ userList: newUserList });
-      toaster.success(gettext('Edit succeeded'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
+const SearchUsers = ({ onCloseSidePanel }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState('');
 
-  revokeAdmin = (email, name) => {
-    sysAdminAPI.sysAdminUpdateUser(email, 'is_staff', false).then(res => {
-      let userList = this.state.userList.filter(item => {
-        return item.email !== email;
-      });
-      this.setState({
-        userList: userList
-      });
-      toaster.success(gettext('Successfully revoked the admin permission of {placeholder}'.replace('{placeholder}', name)));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
+  const lastSearchValue = useRef('');
+  const usersTableRef = useRef(null);
 
-  handleInputChange = (e) => {
-    this.setState({
-      query: e.target.value
-    }, this.checkSubmitBtnActive);
-  };
+  const onSearch = useCallback((query, page, perPage) => {
+    if (lastSearchValue.current === query) return;
+    let url = new URL(location.href);
+    let searchParams = new URLSearchParams(url.search);
+    searchParams.set('query', query);
+    url.search = searchParams.toString();
+    navigate(url.toString());
+    lastSearchValue.current = query;
+    return sysAdminAPI.sysAdminSearchUsers(query, page, perPage);
+  }, []);
 
-  checkSubmitBtnActive = () => {
-    const { query } = this.state;
-    this.setState({
-      isSubmitBtnActive: query.trim()
-    });
-  };
+  const onChange = useCallback((value) => {
+    setSearchValue(value);
+  }, []);
 
-  render() {
-    const { query, isSubmitBtnActive } = this.state;
-    const {
-      hasUserSelected,
-      isBatchDeleteUserDialogOpen,
-    } = this.state;
-    const isDesktop = Utils.isDesktop();
-    let MainPanelTopbarContainer;
-    if (isDesktop) {
-      MainPanelTopbarContainer = hasUserSelected ?
-        <MainPanelTopbar>
-          <Button className="btn btn-secondary operation-item" onClick={this.toggleBatchDeleteUserDialog}>{gettext('Delete users')}</Button>
-        </MainPanelTopbar> :
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />;
-    } else {
-      MainPanelTopbarContainer = hasUserSelected ?
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel}>
-          <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleBatchDeleteUserDialog}>{gettext('Delete users')}</span>
-        </MainPanelTopbar> :
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />;
+  const loadData = useCallback((page, perPage) => {
+    return usersTableRef.current.loadData(searchValue, page, perPage);
+  }, [searchValue]);
+
+  const onKeyDown = useCallback((event) => {
+    if (isEnter(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+      loadData();
+      return;
     }
-    return (
-      <Fragment>
-        {MainPanelTopbarContainer}
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <h2 className="heading">{gettext('Users')}</h2>
-            <div className="cur-view-content">
-              <div className="mt-4 mb-6">
-                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search users')}</h4>
-                <Form>
-                  <FormGroup row>
-                    <Col sm={5}>
-                      <Input type="text" name="query" value={query} placeholder={gettext('Search users')} onChange={this.handleInputChange} />
-                    </Col>
-                  </FormGroup>
-                  <FormGroup row>
-                    <Col sm={{ size: 5 }}>
-                      <button
-                        className="btn btn-outline-primary"
-                        disabled={!isSubmitBtnActive}
-                        onClick={this.getSearchUsers}
-                      >
-                        {gettext('Submit')}
-                      </button>
-                    </Col>
-                  </FormGroup>
-                </Form>
-              </div>
-              <div className="mt-4 mb-6">
-                <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Result')}</h4>
-                <Content
-                  isLDAPImported={false}
-                  isAdmin={false}
-                  isSearchResult={true}
-                  loading={this.state.loading}
-                  errorMsg={this.state.errorMsg}
-                  items={this.state.userList}
-                  updateUser={this.updateUser}
-                  deleteUser={this.deleteUser}
-                  updateAdminRole={this.updateAdminRole}
-                  revokeAdmin={this.revokeAdmin}
-                  onUserSelected={this.onUserSelected}
-                  isAllUsersSelected={this.state.isAllUsersSelected}
-                  toggleSelectAllUsers={this.toggleSelectAllUsers}
-                  currentPage={this.state.currentPage}
-                  hasNextPage={this.state.hasNextPage}
-                  curPerPage={this.state.perPage}
-                  resetPerPage={this.resetPerPage}
-                  getListByPage={this.getItems}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        {isBatchDeleteUserDialogOpen &&
-          <CommonOperationConfirmationDialog
-            title={gettext('Delete users')}
-            message={gettext('Are you sure you want to delete the selected user(s) ?')}
-            executeOperation={this.deleteUserInBatch}
-            confirmBtnText={gettext('Delete')}
-            toggleDialog={this.toggleBatchDeleteUserDialog}
-          />
-        }
-      </Fragment>
-    );
-  }
-}
+  }, [loadData]);
 
-SearchUsers.propTypes = propTypes;
+  const onModify = useCallback((...params) => {
+    return sysAdminAPI.sysAdminUpdateUser(...params);
+  }, []);
+
+  const onDelete = useCallback((...params) => {
+    return sysAdminAPI.sysAdminDeleteUser(...params);
+  }, []);
+
+  const onResetPassword = useCallback((...params) => {
+    return sysAdminAPI.sysAdminResetUserPassword(...params);
+  }, []);
+
+  const deleteUsers = useCallback((users) => {
+    usersTableRef.current.deleteUsers(users);
+  }, []);
+
+  useEffect(() => {
+    const params = (new URL(document.location)).searchParams;
+    const searchValue = params.get('query', '') || '';
+    setSearchValue(searchValue);
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) return null;
+
+  return (
+    <SelectedUsersProvider>
+      <CustomizeTopBar onCloseSidePanel={onCloseSidePanel} deleteUsers={deleteUsers} />
+      <Main title={gettext('Users')} >
+        <UsersTable
+          type="database"
+          ref={usersTableRef}
+          api={(page, perPage) => onSearch(searchValue, page, perPage)}
+          onModify={onModify}
+          onDelete={onDelete}
+          onResetPassword={onResetPassword}
+        >
+          <div className="mt-4 mb-6">
+            <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Search users')}</h4>
+            <Form>
+              <FormGroup row>
+                <Col sm={5}>
+                  <SearchInput isShowSearchIcon={false} value={searchValue} onChange={onChange} onKeyDown={onKeyDown} />
+                </Col>
+              </FormGroup>
+              <FormGroup row>
+                <Col sm={{ size: 5 }}>
+                  <Button color="outline-primary" disabled={!searchValue.trim()} onClick={loadData} >
+                    {gettext('Submit')}
+                  </Button>
+                </Col>
+              </FormGroup>
+            </Form>
+          </div>
+          <div className="mt-4">
+            <h4 className="border-bottom font-weight-normal mb-2 pb-1">{gettext('Result')}</h4>
+          </div>
+        </UsersTable>
+      </Main>
+    </SelectedUsersProvider>
+  );
+};
 
 export default SearchUsers;
+

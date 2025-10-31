@@ -5,25 +5,42 @@ import { TopBar, Main } from '../main-panel';
 import { orgID, gettext } from '@/constants';
 import { AdminProjects, SearchInput } from '@/components';
 import orgAdminAPI from '../api';
+import { isEnter } from '@/utils/hotkey';
 
 const SearchProjects = ({ onCloseSidePanel }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
 
+  const lastSearchValue = useRef('');
   const ref = useRef(null);
 
   const onSearch = useCallback((query, page, perPage) => {
+    if (lastSearchValue.current === query) return;
     let url = new URL(location.href);
     let searchParams = new URLSearchParams(url.search);
     searchParams.set('query', query);
     url.search = searchParams.toString();
     navigate(url.toString());
+    lastSearchValue.current = query;
     return orgAdminAPI.orgAdminSearchProjects(orgID, query, page, perPage);
   }, []);
 
   const onChange = useCallback((value) => {
     setSearchValue(value);
   }, []);
+
+  const loadData = useCallback((page, perPage) => {
+    return ref.current.loadData(searchValue, page, perPage);
+  }, [searchValue]);
+
+  const onKeyDown = useCallback((event) => {
+    if (isEnter(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+      loadData();
+      return;
+    }
+  }, [loadData]);
 
   useEffect(() => {
     const params = (new URL(document.location)).searchParams;
@@ -58,12 +75,12 @@ const SearchProjects = ({ onCloseSidePanel }) => {
             <Form>
               <FormGroup row>
                 <Col sm={5}>
-                  <SearchInput isShowSearchIcon={false} value={searchValue} onChange={onChange} />
+                  <SearchInput isShowSearchIcon={false} value={searchValue} onChange={onChange} onKeyDown={onKeyDown}/>
                 </Col>
               </FormGroup>
               <FormGroup row>
                 <Col sm={{ size: 5 }}>
-                  <Button color="outline-primary" disabled={!searchValue.trim()} onClick={(page, perPage) => ref.current.loadData(searchValue, page, perPage)} >
+                  <Button color="outline-primary" disabled={!searchValue.trim()} onClick={loadData} >
                     {gettext('Submit')}
                   </Button>
                 </Col>

@@ -11,6 +11,17 @@ CREATE TABLE `admin_log_orgadminlog` (
   KEY `admin_log_org_id` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `admin_log_adminlog` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(254) NOT NULL,
+  `operation` varchar(255) NOT NULL,
+  `detail` longtext NOT NULL,
+  `datetime` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `admin_log_adminlog_email_7213c993` (`email`),
+  KEY `admin_log_adminlog_operation_4bad7bd1` (`operation`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `django_content_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `app_label` varchar(100) NOT NULL,

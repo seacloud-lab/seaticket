@@ -1,15 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'reactstrap';
-import { ActiveStatusEditor, toaster, EmptyTip, CommonOperationConfirmationDialog } from '@/components';
-import Loading from '@/components/loading';
-import SysAdminAddUserDialog from '@/sys-admin/dialog/sysadmin-add-user-dialog';
-import MainPanelTopbar from '../main-panel-topbar';
+import { ActiveStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog } from '@/components';
 import OrgNav from './org-nav';
+import OrgTitle from './org-title';
+import { Main, TopBar } from '../main-panel';
 import OpMenu from './user-op-menu';
 import dayjs from '@/utils/dayjs';
 import { Utils } from '@/utils/utils';
-import { siteRoot, loginUrl, gettext, username, mediaUrl } from '@/constants';
+import { gettext, loginUrl, siteRoot, username, mediaUrl } from '@/constants';
 import { getStatusOptions } from '@/utils/role-status-utils';
 import sysAdminAPI from '@/sys-admin/api';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
@@ -43,7 +41,7 @@ class Content extends Component {
   render() {
     const { loading, errorMsg, items } = this.props;
     if (loading) {
-      return <Loading />;
+      return <Loading/>;
     } else if (errorMsg) {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
@@ -103,7 +101,6 @@ class Item extends Component {
       isOpIconShown: false,
       highlight: false,
       isDeleteDialogOpen: false,
-      isShowInactiveDialog: false,
       isResetPasswordDialogOpen: false
     };
   }
@@ -143,9 +140,6 @@ class Item extends Component {
       case 'Reset password':
         this.toggleResetPasswordDialog();
         break;
-      case 'Set as admin':
-        this.props.updateUserOrgAdmin(item.email, true);
-        break;
       case 'Unset as admin':
         this.props.updateUserOrgAdmin(item.email, false);
         break;
@@ -168,20 +162,8 @@ class Item extends Component {
     this.setState({ isResetPasswordDialogOpen: !this.state.isResetPasswordDialogOpen });
   };
 
-  toggleConfirmInactiveDialog = () => {
-    this.setState({ isShowInactiveDialog: !this.state.isShowInactiveDialog });
-  };
-
-  onChangeOption = (option) => {
-    if (option === 'active') {
-      this.props.updateStatus(this.props.item.email, 'active');
-    } else {
-      this.toggleConfirmInactiveDialog();
-    }
-  };
-
-  confirmInactiveUser = () => {
-    this.props.updateStatus(this.props.item.email, 'inactive');
+  updateStatus = (statusValue) => {
+    this.props.updateStatus(this.props.item.email, statusValue);
   };
 
   deleteUser = () => {
@@ -211,14 +193,16 @@ class Item extends Component {
 
     return (
       <Fragment>
-        <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
+        <tr className={this.state.highlight ? 'tr-highlight' : ''} onMouseEnter={this.handleMouseEnter}
+          onMouseLeave={this.handleMouseLeave}>
           <td><a href={`${siteRoot}sys/users/${encodeURIComponent(item.email)}/`}>{item.name}</a></td>
           <td>
             <ActiveStatusEditor
               isShowDropdownIcon={isOpIconShown}
               currentOption={currentOption}
               menuOptions={statusOptions}
-              onChangeOption={this.onChangeOption}
+              onChangeOption={this.updateStatus}
+              closeShowDropdownIcon={this.handleMouseLeave}
             />
           </td>
           <td title={formatWithTimezone(item.create_time) + ' / ' + formatWithTimezone(item.last_login)}>
@@ -226,42 +210,33 @@ class Item extends Component {
           </td>
           <td>
             {(isOpIconShown && item.email !== username) &&
-              <OpMenu
-                canUpdateAdmin={true}
-                isAdmin={item.is_org_admin}
-                onMenuItemClick={this.onMenuItemClick}
-                onFreezedItem={this.props.onFreezedItem}
-                onUnfreezedItem={this.onUnfreezedItem}
-              />
+            <OpMenu
+              canUpdateAdmin={true}
+              isAdmin={true}
+              onMenuItemClick={this.onMenuItemClick}
+              onFreezedItem={this.props.onFreezedItem}
+              onUnfreezedItem={this.onUnfreezedItem}
+            />
             }
           </td>
         </tr>
         {isDeleteDialogOpen &&
-          <CommonOperationConfirmationDialog
-            title={gettext('Delete member')}
-            message={deleteDialogMsg}
-            executeOperation={this.deleteUser}
-            confirmBtnText={gettext('Delete')}
-            toggleDialog={this.toggleDeleteDialog}
-          />
+        <CommonOperationConfirmationDialog
+          title={gettext('Delete member')}
+          message={deleteDialogMsg}
+          executeOperation={this.deleteUser}
+          confirmBtnText={gettext('Delete')}
+          toggleDialog={this.toggleDeleteDialog}
+        />
         }
         {isResetPasswordDialogOpen &&
-          <CommonOperationConfirmationDialog
-            title={gettext('Reset password')}
-            message={resetPasswordDialogMsg}
-            executeOperation={this.resetPassword}
-            confirmBtnText={gettext('Reset')}
-            toggleDialog={this.toggleResetPasswordDialog}
-          />
-        }
-        {this.state.isShowInactiveDialog &&
-          <CommonOperationConfirmationDialog
-            title={gettext('Set user inactive')}
-            message={gettext('Are you sure you want to set xxx inactive?').replace('xxx', '<span class="op-target">' + Utils.HTMLescape(item.name) + '</span>')}
-            toggleDialog={this.toggleConfirmInactiveDialog}
-            executeOperation={this.confirmInactiveUser}
-            confirmBtnText={gettext('Set')}
-          />
+        <CommonOperationConfirmationDialog
+          title={gettext('Reset password')}
+          message={resetPasswordDialogMsg}
+          executeOperation={this.resetPassword}
+          confirmBtnText={gettext('Reset')}
+          toggleDialog={this.toggleResetPasswordDialog}
+        />
         }
       </Fragment>
     );
@@ -275,7 +250,7 @@ const orgUsersPropTypes = {
   onCloseSidePanel: PropTypes.func
 };
 
-class OrgUsers extends Component {
+class OrgAdminUsers extends Component {
 
   constructor(props) {
     super(props);
@@ -284,8 +259,6 @@ class OrgUsers extends Component {
       errorMsg: '',
       orgName: '',
       userList: [],
-      isAddUserDialogOpen: false,
-      searchValue: '',
     };
   }
 
@@ -295,7 +268,7 @@ class OrgUsers extends Component {
         orgName: res.data.org_name
       });
     });
-    sysAdminAPI.sysAdminListOrgUsers(this.props.orgID, false).then((res) => {
+    sysAdminAPI.sysAdminListOrgUsers(this.props.orgID, true).then((res) => {
       this.setState({
         loading: false,
         userList: res.data.users
@@ -323,30 +296,16 @@ class OrgUsers extends Component {
     });
   }
 
-  toggleAddUserDialog = () => {
-    this.setState({ isAddUserDialogOpen: !this.state.isAddUserDialogOpen });
-  };
-
-  addUser = (newUserInfo) => {
-    const { email, name, password } = newUserInfo;
-    sysAdminAPI.sysAdminAddOrgUser(this.props.orgID, email, name, password).then(res => {
-      let userList = this.state.userList;
-      userList.unshift(res.data);
-      this.setState({ userList: userList });
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
   updateUserOrgAdmin = (email, isAdmin) => {
     const { orgID } = this.props;
     sysAdminAPI.sysAdminUpdateOrgUser(orgID, email, 'is_admin', isAdmin).then(res => {
       let user;
-      let newUserList = this.state.userList.map(item => {
-        if (item.email !== email) return item;
+      let newUserList = this.state.userList.filter(item => {
+        if (item.email !== email) {
+          return true;
+        }
         user = item;
-        return res.data;
+        return false;
       });
       this.setState({ userList: newUserList });
       if (isAdmin) {
@@ -389,65 +348,27 @@ class OrgUsers extends Component {
     });
   };
 
-  onChangeSearchValue = (inputValue) => {
-    const { searchValue } = this.state;
-    if (searchValue === inputValue) return;
-    this.setState({ searchValue: inputValue });
-  };
-
   render() {
-    const { isAddUserDialogOpen, orgName, userList, searchValue } = this.state;
-    const isDesktop = Utils.isDesktop();
-    const items = userList.filter(user => user.name.indexOf(searchValue.trim()) !== -1);
-    let MainPanelTopbarContainer;
-    if (isDesktop) {
-      MainPanelTopbarContainer = (
-        <MainPanelTopbar>
-          <Button className="btn btn-secondary operation-item" onClick={this.toggleAddUserDialog}>{gettext('Add member')}</Button>
-        </MainPanelTopbar>
-      );
-    } else {
-      MainPanelTopbarContainer = (
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel}>
-          <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddUserDialog}>{gettext('Add member')}</span>
-        </MainPanelTopbar>
-      );
-    }
+    const { orgName } = this.state;
     return (
       <Fragment>
-        {MainPanelTopbarContainer}
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <OrgNav
-              currentItem="users"
-              orgID={this.props.orgID}
-              orgName={orgName}
-              searchValue={searchValue}
-              onChangeSearchValue={this.onChangeSearchValue}
-            />
-            <div className="cur-view-content">
-              <Content
-                loading={this.state.loading}
-                errorMsg={this.state.errorMsg}
-                items={items}
-                updateStatus={this.updateStatus}
-                updateUserOrgAdmin={this.updateUserOrgAdmin}
-                deleteUser={this.deleteUser}
-              />
-            </div>
-          </div>
-        </div>
-        {isAddUserDialogOpen &&
-          <SysAdminAddUserDialog
-            addUser={this.addUser}
-            toggleDialog={this.toggleAddUserDialog}
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
+        <Main title={(<OrgTitle orgName={orgName} />)}>
+          <OrgNav currentItem="admin-users" orgID={this.props.orgID} />
+          <Content
+            loading={this.state.loading}
+            errorMsg={this.state.errorMsg}
+            items={this.state.userList}
+            updateStatus={this.updateStatus}
+            updateUserOrgAdmin={this.updateUserOrgAdmin}
+            deleteUser={this.deleteUser}
           />
-        }
+        </Main>
       </Fragment>
     );
   }
 }
 
-OrgUsers.propTypes = orgUsersPropTypes;
+OrgAdminUsers.propTypes = orgUsersPropTypes;
 
-export default OrgUsers;
+export default OrgAdminUsers;

@@ -5,11 +5,12 @@ import { ActiveStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirma
 import { Utils } from '@/utils/utils';
 import { loginUrl, gettext, mediaUrl } from '@/constants';
 import SysAdminGroupAddMemberDialog from '@/sys-admin/dialog/sysadmin-group-add-member-dialog';
-import MainPanelTopbar from '../main-panel-topbar';
 import GroupNav from './group-nav';
 import UserLink from '../user-link';
 import { getRoleOptions } from '@/utils/role-status-utils';
 import sysAdminAPI from '@/sys-admin/api';
+import { TopBar, Main } from '../main-panel';
+import GroupTitle from './group-title';
 
 const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
@@ -144,7 +145,7 @@ class Item extends Component {
       <Fragment>
         <tr onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
           <td className="text-center"><img src={item.avatar_url} alt="" className="avatar" width="32" /></td>
-          <td><UserLink email={item.email} name={item.name} /></td>
+          <td><UserLink user={item} /></td>
           <td>
             {role}
           </td>
@@ -233,11 +234,12 @@ class GroupMembers extends Component {
     });
   }
 
-  toggleAddMemgerDialog = () => {
+  toggleAddMemberDialog = () => {
     this.setState({ isAddMemberDialogOpen: !this.state.isAddMemberDialogOpen });
   };
 
   addMembers = (emails) => {
+    console.log(emails)
     sysAdminAPI.sysAdminAddGroupMember(this.props.groupID, emails).then(res => {
       let newMemberList = res.data.success;
       if (newMemberList.length) {
@@ -308,47 +310,34 @@ class GroupMembers extends Component {
     let { isAddMemberDialogOpen, orgID, memberList, groupName, searchValue } = this.state;
     const items = memberList.filter(member => member.name.indexOf(searchValue.trim()) !== -1);
     const isDesktop = Utils.isDesktop();
-    let MainPanelTopbarContainer;
-    if (isDesktop) {
-      MainPanelTopbarContainer = (
-        <MainPanelTopbar>
-          <Button className="btn btn-secondary operation-item" onClick={this.toggleAddMemgerDialog}>{gettext('Add member')}</Button>
-        </MainPanelTopbar>
-      );
-    } else {
-      MainPanelTopbarContainer = (
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel}>
-          <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddMemgerDialog}>{gettext('Add member')}</span>
-        </MainPanelTopbar>
-      );
-    }
     return (
       <Fragment>
-        {MainPanelTopbarContainer}
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <GroupNav
-              currentItem="members"
-              groupID={this.props.groupID}
-              groupName={groupName}
-              searchValue={searchValue}
-              onChangeSearchValue={this.onChangeSearchValue}
-            />
-            <div className="cur-view-content">
-              <Content
-                loading={this.state.loading}
-                errorMsg={this.state.errorMsg}
-                items={items}
-                removeMember={this.removeMember}
-                updateMemberRole={this.updateMemberRole}
-              />
-            </div>
-          </div>
-        </div>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel}>
+          {isDesktop ? (
+            <Button className="btn btn-secondary operation-item" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</Button>
+          ) : (
+            <span className="mobile-dropdown-item dropdown-item" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</span>
+          )}
+        </TopBar>
+        <Main title={<GroupTitle groupName={groupName} />}>
+          <GroupNav
+            currentItem="members"
+            groupID={this.props.groupID}
+            searchValue={searchValue}
+            onChangeSearchValue={this.onChangeSearchValue}
+          />
+          <Content
+            loading={this.state.loading}
+            errorMsg={this.state.errorMsg}
+            items={items}
+            removeMember={this.removeMember}
+            updateMemberRole={this.updateMemberRole}
+          />
+        </Main>
         {isAddMemberDialogOpen &&
           <SysAdminGroupAddMemberDialog
             addMembers={this.addMembers}
-            toggle={this.toggleAddMemgerDialog}
+            toggle={this.toggleAddMemberDialog}
             orgID={orgID}
           />
         }

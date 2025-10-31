@@ -63,7 +63,7 @@ class AdminGroups(APIView):
         if group_name:
             groups_all = Group.objects.filter(name__icontains=group_name)
             for group in groups_all:
-                group_info = get_group_info(group.group_id)
+                group_info = get_group_info(group)
                 return_results.append(group_info)
 
             return Response({"name": group_name, "groups": return_results})
@@ -79,15 +79,12 @@ class AdminGroups(APIView):
         end = start + per_page
 
         try:
-            groups = Group.objects.all().order_by('-timestamp')[start:end]
+            all_groups = Group.objects.all()
+            groups = all_groups.order_by('-timestamp')[start:end]
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        has_next_page = True
-        if len(groups) < per_page:
-            has_next_page = False
 
         return_results = []
 
@@ -95,12 +92,8 @@ class AdminGroups(APIView):
             group_info = get_group_info(group)
             return_results.append(group_info)
 
-        page_info = {
-            'has_next_page': has_next_page,
-            'current_page': current_page
-        }
 
-        return Response({"page_info": page_info, "groups": return_results})
+        return Response({"count": len(all_groups), "groups": return_results})
 
     def post(self, request):
         """ Create a group
@@ -144,7 +137,7 @@ class AdminGroups(APIView):
 
         # create group.
         try:
-            group_id = Group.objects.create_group(group_name, new_owner)
+            group = Group.objects.create_group(group_name, new_owner)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -152,7 +145,7 @@ class AdminGroups(APIView):
 
         # send admin operation log signal
         admin_op_detail = {
-            "id": group_id,
+            "id": group.id,
             "name": group_name,
             "owner": new_owner,
         }
@@ -160,7 +153,7 @@ class AdminGroups(APIView):
                 operation=GROUP_CREATE, detail=admin_op_detail)
 
         # get info of new group
-        group_info = get_group_info(group_id, show_size=True)
+        group_info = get_group_info(group, show_size=True)
 
         return Response(group_info, status=status.HTTP_201_CREATED)
 
@@ -218,7 +211,7 @@ class AdminGroup(APIView):
             # transfer a group
             try:
                 if not is_group_member(group_id, new_owner):
-                    GroupUser.objects.group_add_member(group_id, old_owner, new_owner)
+                    GroupUser.objects.group_add_member(group_id, new_owner)
 
                 if not is_group_admin_or_owner(group_id, new_owner):
                     GroupUser.objects.group_set_admin(group_id, new_owner)
@@ -245,7 +238,7 @@ class AdminGroup(APIView):
             admin_operation.send(sender=None, admin_name=request.user.username,
                     operation=GROUP_TRANSFER, detail=admin_op_detail)
 
-        group_info = get_group_info(group_id, show_size=True)
+        group_info = get_group_info(group, show_size=True)
         return Response(group_info)
 
     def delete(self, request, group_id):
@@ -319,15 +312,15 @@ class AdminSearchGroup(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         result = []
-        groups = Group.objects.search_groups(query_str, 0, 25)
+        groups = Group.objects.search_groups(query_str)
         group_id_list = [group.group_id for group in groups]
         owner_list = ['%s@seafile_group' % group_id for group_id in group_id_list]
         workspaces = Workspaces.objects.filter(owner__in=owner_list)
         group_workspace_dict = {workspace.owner.strip('@seafile_group'): workspace.id for workspace in workspaces}
 
         for group in groups:
-            group_info = get_group_info(group.group_id, show_size=True)
+            group_info = get_group_info(group, show_size=True)
             group_info['workspace_id'] = group_workspace_dict.get(str(group.group_id))
             result.append(group_info)
 
-        return Response({"group_list": result})
+        return Response({"groups": result})

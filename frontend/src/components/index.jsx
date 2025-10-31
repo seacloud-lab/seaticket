@@ -54,6 +54,7 @@ import AdminProjects from './admin-projects';
 import UserSelect from './user-select';
 import Switch from './switch';
 import IconTooltip from './icon-tooltip';
+import SelectEditor from './select-editor';
 
 export {
   FixedWidthTable,
@@ -112,4 +113,5 @@ export {
   UserSelect,
   Switch,
   IconTooltip,
+  SelectEditor,
 };

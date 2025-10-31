@@ -20,20 +20,11 @@ from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.organizations.models import Organization
 from seahub.group.models import Group
 
+from seahub.api2.endpoints.admin.projects import get_project_info
+
 logger = logging.getLogger(__name__)
 FILE_TYPE = '.project'
 GROUP_DOMAIN = '@seafile_group'
-
-
-def get_project_info(project, include_deleted=False):
-    dtable_info = project.to_dict(include_deleted=include_deleted)
-    dtable_info['org_id'] = project.workspace.org_id
-    dtable_info['email'] = project.workspace.owner
-    dtable_info['group_id'] = project.get_owner_group_id()
-    owner_name, owner_deleted = get_project_owner(project)
-    dtable_info['owner'] = owner_name
-    dtable_info['owner_deleted'] = owner_deleted
-    return dtable_info
 
 
 def _check_org(org_id):

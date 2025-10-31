@@ -279,7 +279,7 @@ class AdminUsers(APIView):
 
             data.append(info)
 
-        result = {'data': data, 'total_count': total_count}
+        result = {'users': data, 'count': total_count}
         return Response(result)
 
     def post(self, request):
@@ -638,18 +638,8 @@ class AdminSearchUser(APIView):
             per_page = 25
         start = (page - 1) * per_page
 
-        users = []
-        profile_flag = 0
-        total_db_user_count = 0
-        has_next_page = 'true'
-
-        # search user from ccnet db
-        users += User.objects.search_emailusers(query_str, start, per_page)
-        db_user_count = len(users)
-        if db_user_count < per_page:
-            profile_flag = 1
-            total_db_users = User.objects.search_emailusers(query_str, 0, start + per_page)
-            total_db_user_count = len(total_db_users)
+        users_count = User.objects.search_emailusers_count(query_str)
+        users = User.objects.search_emailusers(query_str, start, per_page)
 
         ccnet_user_emails = [u.email for u in users]
 
@@ -665,44 +655,7 @@ class AdminSearchUser(APIView):
             for user in users:
                 user.institution = user_institution_dict.get(user.email, '')
 
-        if profile_flag == 1:
-            profile_start = start - total_db_user_count if start > total_db_user_count else 0
-            profile_limit = per_page - len(users)
-            while True:
-                profile_end = profile_start + profile_limit
-                searched_profile = Profile.objects.filter((Q(nickname__icontains=query_str)) |
-                                                          Q(contact_email__icontains=query_str) |
-                                                          Q(phone__icontains=query_str))[
-                                   profile_start:profile_end]
-                if len(searched_profile) < profile_limit:
-                    has_next_page = 'false'
-
-                ccnet_total_user_emails = [u.email for u in total_db_users]
-                for profile in searched_profile:
-                    email = profile.user
-                    institution = profile.institution
-                    # remove duplicate emails
-                    if email not in ccnet_total_user_emails:
-                        try:
-                            # get is_staff and is_active info
-                            user = User.objects.get(email=email)
-                            user.institution = institution
-                            users.append(user)
-                        except User.DoesNotExist:
-                            continue
-                user_count = len(users)
-                if has_next_page == 'false' or user_count == per_page:
-                    break
-                else:
-                    profile_start = profile_start + profile_limit
-                    profile_limit = per_page - user_count
-                    continue
-
         data = []
-        email_list = [user.email for user in users]
-        rows_count_dict = get_users_rows_count(email_list)
-        storages_dict = get_users_storage(email_list)
-        org_roles_dict = {}
         for user in users:
             info = {}
             info['email'] = user.email
@@ -711,15 +664,11 @@ class AdminSearchUser(APIView):
             info['is_staff'] = user.is_staff
             info['is_active'] = user.is_active
 
-            info['source'] = user.source.lower()
-
             orgs = Organization.objects.get_orgs_by_user(user.email)
             if orgs:
                 org_id = orgs[0].org_id
                 info['org_id'] = org_id
                 info['org_name'] = orgs[0].org_name
-
-            info[user.email] = storages_dict.get(user.email) or 0
 
             info['create_time'] = timestamp_to_isoformat_timestr(user.ctime)
             last_login_obj = UserLastLogin.objects.get_by_username(user.email)
@@ -730,17 +679,12 @@ class AdminSearchUser(APIView):
             else:
                 info['role'] = None
 
-            info['storage_usage'] = storages_dict.get(user.email) or 0
-
             if getattr(settings, 'MULTI_INSTITUTION', False):
                 info['institution'] = user.institution
 
-            info['rows_count'] = rows_count_dict.get(user.email, 0)
-
             data.append(info)
-        if len(data) < per_page:
-            has_next_page = 'false'
-        result = {'user_list': data, 'has_next_page': has_next_page}
+
+        result = {'users': data, 'count': users_count}
         return Response(result)
 
 
@@ -892,7 +836,7 @@ class AdminUserGroups(APIView):
                 group_info['role'] = 'Admin'
             else:
                 group_info['role'] = 'Member'
-        return Response({'group_list': groups_info})
+        return Response({'groups': groups_info})
 
     def post(self, request, email):
         """add user to groups
@@ -950,7 +894,7 @@ class AdminUserGroups(APIView):
                 "role": 'Member'
             })
         return Response(result)
-
+   
 
 class AdminAdminUsers(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -1002,7 +946,7 @@ class AdminAdminUsers(APIView):
             admin_users_info.append(user_info)
 
         result = {
-            'admin_user_list': admin_users_info,
+            'users': admin_users_info,
         }
         return Response(result)
 
@@ -1033,25 +977,10 @@ class AdminSearchUserByOrgId(APIView):
 
         try:
             start = 0
-            user_list = []
 
-            while True:
-                profile_users = Profile.objects.filter(
-                    Q(nickname__icontains=query_str) | Q(contact_email__icontains=query_str)
-                ).values('user', 'nickname', 'contact_email')[start:start + search_limit]
-
-                if not profile_users:
-                    break
-                profile_user_dict = {user['user']: user for user in profile_users}
-                profile_user_list = list(profile_user_dict.keys())
-
-                filtered_users = filter_profile_users(profile_user_list, org_id)
-                for user in filtered_users:
-                    user_list.append(profile_user_dict.get(user))
-
-                if len(user_list) >= search_limit:
-                    break
-                start += search_limit
+            user_list = Profile.objects.filter(
+                Q(nickname__icontains=query_str) | Q(contact_email__icontains=query_str)
+            ).values('user', 'nickname', 'contact_email')[start:start + search_limit]
 
         except Exception as e:
             logger.error(e)
@@ -1059,8 +988,16 @@ class AdminSearchUserByOrgId(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # format users
+        users = []
         for user in user_list:
-            url, is_default, date_uploaded = api_avatar_url(user['user'])
-            user['avatar_url'] = url
+            print(user)
+            user_info = {}
+            email = user['user']
+            url, is_default, date_uploaded = api_avatar_url(email)
+            user_info['avatar_url'] = url
+            user_info['email'] = email
+            user_info['name'] = user['nickname']
+            user_info['contact_email'] = user['contact_email']
+            users.append(user_info)
 
-        return Response({"users": user_list})
+        return Response({"users": users})

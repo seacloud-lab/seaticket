@@ -83,11 +83,11 @@ const Project = ({
           }
           if (key === 'op') {
             return (
-              <td key={key} className="admin-project-icon">
+              <td key={key}>
                 {highlight && ops.length > 0 && (
-                  <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu}>
+                  <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-flex">
                     <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} className="ml-0" />
-                    <CustomizeDropdownMenu>
+                    <CustomizeDropdownMenu className="position-fixed">
                       {ops.map((o, index) => <CustomizeDropdownItem key={index} onClick={o.callback}>{o.name}</CustomizeDropdownItem>)}
                     </CustomizeDropdownMenu>
                   </Dropdown>
@@ -105,7 +105,7 @@ const Project = ({
           }
           if (key === 'owner') {
             return (
-              <td>
+              <td key={key}>
                 {link_to ? (<Link to={ownerLink}>{value}</Link>) : (<>{value}</>)}
               </td>
             );
@@ -125,7 +125,7 @@ const Project = ({
           <CommonOperationConfirmationDialog
             title={gettext('Delete project')}
             message={gettext('Are you sure you want to delete the project {placeholder} ?').replace('{placeholder}', `<b>${project.name}</b>`)}
-            executeOperation={() => onDelete && onDelete(project)}
+            executeOperation={() => onDelete && onDelete(project.uuid)}
             confirmBtnText={gettext('Delete')}
             toggleDialog={() => setOpType('')}
           />
@@ -135,7 +135,7 @@ const Project = ({
         <ModalPortal>
           <RestoreProjectDialog
             project={project}
-            onRestore={() => onRestore && onRestore(project)}
+            onRestore={() => onRestore && onRestore(project.uuid)}
             onToggle={() => setOpType('')}
           />
         </ModalPortal>

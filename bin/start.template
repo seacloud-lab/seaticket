@@ -9,7 +9,7 @@ DJANGO_WSGI_MODULE=seahub.wsgi:application # WSGI module name
 
 cd $DJANGODIR
 source  ~/.virtualenvs/6.3/bin/activate # Activate the virtual environment
-. setenv.sh          # Set ccnet/seafiel env, and related python path
+. setenv.sh          # Set related python path
 
 export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export LANG=en_US.UTF-8

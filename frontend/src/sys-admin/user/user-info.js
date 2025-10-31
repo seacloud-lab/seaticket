@@ -7,11 +7,12 @@ import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled } from '@/constants
 import Loading from '@/components/loading';
 import SysAdminSetQuotaDialog from '@/sys-admin/dialog/set-quota';
 import SysAdminUpdateUserDialog from '@/sys-admin/dialog/update-user';
-import MainPanelTopbar from '../main-panel-topbar';
 import Nav from './user-nav';
 import SetRowLimitDialog from '@/sys-admin/dialog/set-row-limit';
 import sysAdminAPI from '../api';
 import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
+import { TopBar, Main } from '../main-panel';
+import UserTitle from './user-title';
 
 const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
@@ -103,8 +104,9 @@ class Content extends Component {
         aria-label={gettext('Edit')}
         icon="rename"
         className="attr-action-icon"
-        onClick={action}>
-      </IconButton>
+        onClick={action}
+        style={{ display: 'inline-flex' }}
+      />
     );
   };
 
@@ -342,24 +344,20 @@ class User extends Component {
   render() {
     const { userInfo } = this.state;
     return (
-      <Fragment>
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <Nav currentItem="info" email={this.props.email} userName={userInfo.name} />
-            <div className="cur-view-content">
-              <Content
-                loading={this.state.loading}
-                errorMsg={this.state.errorMsg}
-                userInfo={this.state.userInfo}
-                updateUser={this.updateUser}
-                disable2FA={this.disable2FA}
-                toggleForce2fa={this.toggleForce2fa}
-              />
-            </div>
-          </div>
-        </div>
-      </Fragment>
+      <>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
+        <Main title={<UserTitle username={userInfo.name} />} >
+          <Nav currentItem="info" email={this.props.email} />
+          <Content
+            loading={this.state.loading}
+            errorMsg={this.state.errorMsg}
+            userInfo={this.state.userInfo}
+            updateUser={this.updateUser}
+            disable2FA={this.disable2FA}
+            toggleForce2fa={this.toggleForce2fa}
+          />
+        </Main>
+      </>
     );
   }
 }

@@ -11,7 +11,7 @@ import FixedWidthTable from '../fixed-width-table';
 
 const AdminProjects = forwardRef(({
   columns,
-  placeholder,
+  placeholder = gettext('No projects'),
   showPaginator = true,
   api,
   onDelete,

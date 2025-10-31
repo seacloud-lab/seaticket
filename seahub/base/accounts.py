@@ -251,6 +251,9 @@ class UserManager(object):
 
     def search_emailusers(self, query_str, start, limit):
         return EmailUser.objects.filter(email__icontains=query_str)[start: limit]
+    
+    def search_emailusers_count(self, query_str):
+        return EmailUser.objects.filter(email__icontains=query_str).count()
 
     def count_emailusers(self):
         return EmailUser.objects.filter(is_active=True)

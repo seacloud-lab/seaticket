@@ -16,6 +16,8 @@ from seahub.project.utils import get_project_owner, convert_project_trash_names,
 from seahub.organizations.models import Organization
 from seahub.admin_log.models import BASE_DELETE, BASE_RESTORE
 from seahub.admin_log.signals import admin_operation
+from seahub.utils import is_valid_username
+from seahub.base.accounts import User
 
 logger = logging.getLogger(__name__)
 
@@ -244,3 +246,34 @@ class AdminSearchProjectsView(APIView):
             'count': projects_count
         })
 
+
+class AdminUserProjects(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAdminUser,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, email):
+        """ return all groups user joined
+
+        Permission checking:
+        1. Admin user;
+        """
+
+        if not is_valid_username(email):
+            error_msg = 'email invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            User.objects.get(email=email)
+        except User.DoesNotExist as e:
+            logger.error(e)
+            error_msg = 'User %s not found.' % email
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        projects = Projects.objects.filter(workspace__owner=email, deleted=False).select_related('workspace')
+
+        return Response({
+            'projects': [get_project_info(project, include_deleted=False) for project in projects]
+        })
+        
+     
