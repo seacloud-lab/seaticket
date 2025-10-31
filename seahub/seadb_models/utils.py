@@ -401,7 +401,6 @@ def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     hidden_columns = view_copy.get('hidden_columns', [])
-    hidden_columns.append('client_token')
     display_columns = [column for column in columns if column['name'] not in hidden_columns]
     sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, include_deleted=True)
     try:

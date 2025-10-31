@@ -262,7 +262,6 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_status = 'open'
-            client_token = uuid.uuid4().hex
             row = {
                 TicketsTable.title.name: title,
                 TicketsTable.description.name: description,
@@ -279,21 +278,18 @@ class TicketsAPIView(APIView):
                 TicketsTable.reply_updated_at.name: None,
                 TicketsTable.deleted.name: False,
                 TicketsTable.delete_at.name: None,
-                TicketsTable.client_token.name: client_token,
             }
-            seadb_api.insert_rows(project_uuid, 'tickets', [row])
+            res = seadb_api.insert_rows(project_uuid, 'tickets', [row])
+            pks = res.get('pks', [])
+            if len(pks) != 1:
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            ticket_pk = pks[0]
+            row.update({'_pk': ticket_pk})
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        try:
-            sql = f"SELECT _pk FROM `tickets` WHERE `client_token` = '{client_token}' ORDER BY _pk DESC LIMIT 1"
-            res = seadb_api.query_rows(project_uuid, sql).get('results')
-            ticket_pk = res and res[0].get('_pk')
-            row.update({'_pk': ticket_pk})
-        except Exception as e:
-            logger.error(e)
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
@@ -784,7 +780,6 @@ class TicketRepliesAPIView(APIView):
 
         # main
         try:
-            client_token = uuid.uuid4().hex
             row = {
                 TicketRepliesTable.ticket_id.name: ticket.get('_pk'),
                 TicketRepliesTable.creator.name: username,
@@ -793,13 +788,13 @@ class TicketRepliesAPIView(APIView):
                 TicketRepliesTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketRepliesTable.deleted.name: False,
                 TicketRepliesTable.delete_at.name: None,
-                TicketRepliesTable.client_token.name: client_token,
             }
-            seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
-
-            sql = f"SELECT _pk FROM `ticket_replies` WHERE `client_token` = '{client_token}' ORDER BY _pk DESC LIMIT 1"
-            res = seadb_api.query_rows(project_uuid, sql).get('results')
-            pk = res and res[0].get('_pk')
+            res = seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
+            pks = res.get('pks', [])
+            if len(pks) != 1:
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            pk = pks[0]
             row.update({'number': pk})
             ticket_replies_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_replies` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
