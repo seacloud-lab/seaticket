@@ -82,8 +82,7 @@ class SelectTypes:
           "id": "0001",
           "name": "open",
           "color": "#1A7F37",
-          "text_color": "#FFFFFF",
-
+          "text_color": "#FFFFFF"
         },
         {
           "id": "0002",
@@ -286,6 +285,7 @@ class TicketsTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     description = MappedColumn('description', PropertyTypes.TEXT)
     status = MappedColumn('status', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
+    substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
     tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     assignees = MappedColumn('assignees', PropertyTypes.LIST)
@@ -295,7 +295,6 @@ class TicketsTable(BaseModel):
     reply_count = MappedColumn('reply_count', PropertyTypes.INT)
     created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
     updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
-    reply_updated_at = MappedColumn('reply_updated_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
 

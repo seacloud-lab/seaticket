@@ -102,7 +102,7 @@ TICKET_DEFAULT_DETAILS = {
             'name': _('Closed'),
             'type': 'table',
             'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']},
+                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
                 {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],

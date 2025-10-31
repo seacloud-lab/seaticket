@@ -275,7 +275,6 @@ class TicketsAPIView(APIView):
                 TicketsTable.reply_count.name: 0,
                 TicketsTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketsTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketsTable.reply_updated_at.name: None,
                 TicketsTable.deleted.name: False,
                 TicketsTable.delete_at.name: None,
             }
@@ -801,7 +800,7 @@ class TicketRepliesAPIView(APIView):
                 'pk': ticket.get('_pk'),
                 'row': {
                     'reply_count': ticket_replies_count,
-                    'reply_updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
             participants = ticket.get('participants', [])
@@ -922,7 +921,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             update_row = {
-                'reply_updated_at': ticket_reply_data.get('updated_at'),
+                'updated_at': ticket_reply_data.get('updated_at'),
             }
             participants = ticket.get('participants', [])
             if username not in participants:
