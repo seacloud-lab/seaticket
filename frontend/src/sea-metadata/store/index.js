@@ -460,16 +460,10 @@ class Store {
 
   modifyHiddenColumns(hidden_columns) {
     const type = OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS;
-    const oldHiddenColumns = (this.data && this.data.view && Array.isArray(this.data.view.hidden_columns)) ? this.data.view.hidden_columns : [];
-    const isShowingColumns = oldHiddenColumns.some(key => !hidden_columns.includes(key));
     const operation = this.createOperation({
       type,
       hidden_columns,
       view_id: this.viewId,
-      success_callback: () => {
-        if (!isShowingColumns) return;
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
-      }
     });
     this.applyOperation(operation);
   }
