@@ -29,7 +29,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [reply, setReply] = useState('');
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
-  const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { typesData } = useTypes();
   const { updateCacheData } = useDataCache();
@@ -118,15 +118,6 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     setReply(value);
   }, []);
 
-  const toggleStatus = useCallback((status = '') => {
-    modifyTicket(ticket.id, { status }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
   const onPriorityChange = useCallback((priority = 0) => {
     modifyTicket(ticket.id, { priority }).then(res => {
       // todo
@@ -197,22 +188,40 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     }
   }, [editorAPI]);
 
-  const onSubmitReply = useCallback(() => {
-    setIsShowCommentLoading(true);
+  const onSubmitReply = useCallback((callback) => {
+    setIsSubmitting(true);
     createReply(ticket.id, reply).then(() => {
       const editor = replyEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
+      callback && callback();
       setTimeout(() => {
         containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
-        setIsShowCommentLoading(false);
+        setIsSubmitting(false);
       }, 1);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      setIsShowCommentLoading(false);
+      setIsSubmitting(false);
     });
   }, [reply, ticket, replyEditorRef, createReply]);
+
+  const toggleStatus = useCallback((status = '') => {
+    const modifyStatus = () => {
+      modifyTicket(ticket.id, { status }).then(res => {
+        // todo
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+      });
+    };
+    if (reply && reply?.text) {
+      onSubmitReply(modifyStatus);
+      return;
+    }
+
+    modifyStatus();
+  }, [ticket, reply, modifyTicket, onSubmitReply]);
 
   const handleModifyReply = useCallback((replyID, content, callback) => {
     modifyReply(ticket.id, replyID, content).then(res => {
@@ -307,14 +316,14 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
-              <StatusToggleButton status={status} onChange={toggleStatus} />
+              <StatusToggleButton status={status} disabled={isSubmitting} onChange={toggleStatus} />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
-                disabled={!reply.text || isShowCommentLoading}
+                disabled={!reply.text || isSubmitting}
                 color="primary"
-                onClick={onSubmitReply}
+                onClick={() => onSubmitReply()}
               >
-                {isShowCommentLoading ? <CenteredLoading /> : gettext('Comment')}
+                {isSubmitting ? (<CenteredLoading />) : gettext('Comment')}
               </Button>
             </div>
           </div>
