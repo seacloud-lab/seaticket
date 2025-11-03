@@ -1,6 +1,6 @@
 import { gettext } from '@/constants';
 import { TICKET_STATUS_OPTIONS } from './constants';
-import { RATE_LIST } from '@/sea-metadata/components/cell-editors/rate-editor/constants';
+import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
@@ -58,7 +58,7 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
       }, {
         name: gettext('Set priority'),
         key: 'priority',
-        children: RATE_LIST.map(o => {
+        children: PRIORITIES.map(o => {
           return {
             ...o,
             key: o.value,

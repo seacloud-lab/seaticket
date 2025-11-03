@@ -146,7 +146,7 @@ class SortPopover extends Component {
         label: (
           <Fragment>
             <span className="sea-metadata-filter-header-icon">
-              <Icon className="sea-metadata-icon" symbol={column.key === 'priority' ? 'priority-column' : COLUMNS_ICON_CONFIG[type]} />
+              <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} />
             </span>
             <span className="select-option-name" title={name} aria-label={name}>{name}</span>
           </Fragment>

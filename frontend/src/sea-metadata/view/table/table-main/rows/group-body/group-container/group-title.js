@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
 import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
-import { CellType, DELETED_OPTION_BACKGROUND_COLOR } from '@/sea-metadata/constants';
-import { RATE_MAP } from '@/sea-metadata/components/cell-editors/rate-editor/constants';
-import RateItem from '@/sea-metadata/components/cell-editors/rate-editor/rate-item';
+import { CellType, DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
 import { useTypesData } from '@/sea-metadata/hooks';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
@@ -70,15 +68,10 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
           </>
         );
       }
-      case CellType.RATE: {
-        const item = RATE_MAP[cellValue];
+      case CellType.PRIORITY: {
+        const item = PRIORITY_MAP[cellValue];
         if (!cellValue || !item) return emptyTip;
-        return (
-          <RateItem
-            value={cellValue}
-            readOnly={true}
-          />
-        );
+        return (<CellFormatter value={cellValue} column={column}/>);
       }
       default: {
         return cellValue || emptyTip;

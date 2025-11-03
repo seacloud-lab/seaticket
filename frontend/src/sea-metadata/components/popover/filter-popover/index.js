@@ -70,7 +70,7 @@ class FilterPopover extends Component {
   };
 
   hideDTablePopover = (e) => {
-    if (getEventClassName(e) === 'sea-metadata-rate-item') return;
+    if (getEventClassName(e) === 'sea-metadata-priority-item') return;
     if (this.dtablePopoverRef && !getEventClassName(e).includes('popover') && !this.dtablePopoverRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();

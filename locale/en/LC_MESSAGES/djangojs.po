@@ -2823,27 +2823,27 @@ msgstr ""
 msgid "Add option"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/constants.js:5
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:5
 msgid "No priority"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/constants.js:11
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:11
 msgid "Urgent"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/constants.js:17
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:17
 msgid "High"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/constants.js:23
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:23
 msgid "Medium"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/constants.js:29
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:29
 msgid "Low"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/rate-editor/rate-item.js:29
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/rate-item.js:29
 #: frontend/src/sea-metadata/components/popover/row-height-popover/index.js:37
 msgid "Selected"
 msgstr ""

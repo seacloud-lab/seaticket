@@ -4,7 +4,7 @@ import { typesAPI, ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useTypes, useTicketsPage, useTags } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_COLUMNS, TICKET_CHILDREN_PAGE_TYPE } from '../../constants';
+import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
@@ -17,17 +17,6 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
   const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
   const { isLoading: isTypesLoading, typesData, createType } = useTypes();
   const { tagsData } = useTags();
-
-  const columns = useMemo(() => {
-    const columnsUpdate = {
-      'title': { click: (row) => togglePageType(row._id) },
-    };
-    return TICKET_COLUMNS.map(c => {
-      const columnUpdate = columnsUpdate[c.key];
-      if (columnUpdate) return { ...c, ...columnUpdate };
-      return c;
-    });
-  }, [togglePageType]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -43,6 +32,20 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
     getMetadata: (...params) => {
       return typesAPI.listProjectTicketsByType(projectUuid, childrenPageType).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
+        let columns = res?.data?.columns || [];
+        const othersConfig = {
+          'title': { click: (row) => togglePageType(row._id) },
+        };
+        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+          const { name } = c;
+          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
+          const otherConfig = othersConfig[name];
+          return {
+            ...c,
+            ...predefinedConfig,
+            ...otherConfig,
+          };
+        });
         return {
           data: {
             rows,
@@ -87,7 +90,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, childrenPageType, columns, viewsData]);
+  }), [projectUuid, childrenPageType, viewsData, togglePageType]);
 
   const createRowsTools = useCallback(({ rows, modifyRows }) => {
     let tools = [];

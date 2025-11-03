@@ -1,6 +1,6 @@
 import { gettext } from '@/constants';
 
-const RATE_MAP = {
+export const PRIORITY_MAP = {
   '0': {
     name: gettext('No priority'),
     hotKey: '0',
@@ -33,12 +33,10 @@ const RATE_MAP = {
   },
 };
 
-const RATE_LIST = [
-  RATE_MAP['0'],
-  RATE_MAP['4'],
-  RATE_MAP['3'],
-  RATE_MAP['2'],
-  RATE_MAP['1'],
+export const PRIORITIES = [
+  PRIORITY_MAP['0'],
+  PRIORITY_MAP['4'],
+  PRIORITY_MAP['3'],
+  PRIORITY_MAP['2'],
+  PRIORITY_MAP['1'],
 ];
-
-export { RATE_MAP, RATE_LIST };

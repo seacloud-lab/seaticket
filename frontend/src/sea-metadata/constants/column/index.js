@@ -39,3 +39,8 @@ export {
   RATE_MAX_NUMBER,
   RATE_TYPES,
 } from './rate';
+
+export {
+  PRIORITY_MAP,
+  PRIORITIES,
+} from './priority';

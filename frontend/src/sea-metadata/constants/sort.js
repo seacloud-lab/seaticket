@@ -18,6 +18,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.NUMBER,
   CellType.RATE,
   CellType.TAG,
+  CellType.PRIORITY,
 ];
 
 const SHOW_DISABLED_SORT_COLUMNS = [

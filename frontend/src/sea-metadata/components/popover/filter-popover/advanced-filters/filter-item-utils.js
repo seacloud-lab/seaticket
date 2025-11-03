@@ -17,7 +17,7 @@ class FilterItemUtils {
       label: (
         <>
           <span className="sea-metadata-filter-header-icon">
-            <Icon className="sea-metadata-icon" symbol={column.key === 'priority' ? 'priority-column' : COLUMNS_ICON_CONFIG[type]} />
+            <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} />
           </span>
           <span className="select-option-name">{name}</span>
         </>

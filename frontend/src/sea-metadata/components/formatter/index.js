@@ -15,6 +15,7 @@ import TagsFormatter from '../cell-formatter/tags';
 import URLFormatter from '../cell-formatter/URL';
 import TagFormatter from '../cell-formatter/tag';
 import TypeFormatter from '../cell-formatter/type';
+import PriorityFormatter from '../cell-formatter/priority';
 import Empty from './empty';
 import { CellType } from '../../constants';
 
@@ -105,6 +106,13 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
         <NumberFormatter value={value} formats={column?.data} className={className} { ...props }>
           <Empty columnType={columnType} placeholder={emptyTip} />
         </NumberFormatter>
+      );
+    }
+    case CellType.PRIORITY: {
+      return (
+        <PriorityFormatter value={value} className={className} { ...props }>
+          <Empty columnType={columnType} placeholder={emptyTip} />
+        </PriorityFormatter>
       );
     }
     case CellType.RATE: {

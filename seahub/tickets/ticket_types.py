@@ -283,7 +283,7 @@ class ProjectTypeTicketsAPIView(APIView):
 
         # main
         try:
-            tickets = filter_tickets_by_type(
+            tickets, columns = filter_tickets_by_type(
                     seadb_api, project_uuid, [type_id])
         except Exception as e:
             logger.error(e)
@@ -301,4 +301,5 @@ class ProjectTypeTicketsAPIView(APIView):
                 ticket['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, ticket.get('tags'))
         return Response({
             'tickets': tickets,
+            'columns': columns,
         })

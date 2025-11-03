@@ -275,6 +275,7 @@ class ProjectTagTicketsAPIView(APIView):
                 AND `tags` in ('{tag_name}')
             """
             res = seadb_api.query_rows(project_uuid, sql)
+            columns = res.get('metadata') or []
             tickets = res.get('results') or []
         except Exception as e:
             logger.error(e)
@@ -291,4 +292,7 @@ class ProjectTagTicketsAPIView(APIView):
             if row.get('tags'):
                 row['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, row.get('tags'))
 
-        return Response({'tickets': tickets})
+        return Response({
+            'tickets': tickets,
+            'columns': columns,
+        })

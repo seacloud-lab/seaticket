@@ -8,8 +8,8 @@ import Icon from '@/components/icon';
 import IconBtn from '@/components/icon-button';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
-import RateItem from '../../../../cell-editors/rate-editor/rate-item';
-import { RATE_LIST } from '../../../../cell-editors/rate-editor/constants';
+import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
+import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { gettext } from '@/constants';
 import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '../../../../../utils/column';
 import {
@@ -18,7 +18,7 @@ import {
 } from '../../../../../utils/filter';
 import {
   CellType, DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS, FILTER_PREDICATE_TYPE, FILTER_TERM_MODIFIER_TYPE, FILTER_ERR_MSG,
-  filterTermModifierIsWithin,
+  filterTermModifierIsWithin, PRIORITIES,
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
@@ -50,7 +50,7 @@ class FilterItem extends React.Component {
     super(props);
     this.state = {
       filterTerm: props.filter.filter_term,
-      isRateFilterOpen: false,
+      isPriorityFilterOpen: false,
     };
     this.filterPredicateOptions = null;
     this.filterTermModifierOptions = null;
@@ -80,7 +80,7 @@ class FilterItem extends React.Component {
       nextProps.filterConjunction !== currentProps.filterConjunction ||
       nextProps.conjunctionOptions !== currentProps.conjunctionOptions ||
       nextProps.filterColumnOptions !== currentProps.filterColumnOptions ||
-      nextState.isRateFilterOpen !== this.state.isRateFilterOpen
+      nextState.isPriorityFilterOpen !== this.state.isPriorityFilterOpen
     );
     return shouldUpdated;
   }
@@ -235,8 +235,9 @@ class FilterItem extends React.Component {
     }
   };
 
-  onChangeRateNumber = (index) => {
+  onChangePriority = (index) => {
     this.onFilterTermChanged(index);
+    this.onPriorityFilterClose();
   };
 
   getInputComponent = (type) => {
@@ -350,12 +351,12 @@ class FilterItem extends React.Component {
     );
   };
 
-  onRateFilterOpen = () => {
-    this.setState({ isRateFilterOpen: true });
+  onPriorityFilterOpen = () => {
+    this.setState({ isPriorityFilterOpen: true });
   };
 
-  onRateFilterClose = () => {
-    this.setState({ isRateFilterOpen: false });
+  onPriorityFilterClose = () => {
+    this.setState({ isPriorityFilterOpen: false });
   };
 
   renderFilterTerm = (filterColumn) => {
@@ -398,7 +399,6 @@ class FilterItem extends React.Component {
 
     switch (type) {
       case CellType.NUMBER:
-      case CellType.FILE_NAME:
       case CellType.TEXT:
       case CellType.URL: { // The data in the formula column is a date type that has been excluded
         if (filter_predicate === FILTER_PREDICATE_TYPE.IS_CURRENT_USER_ID) {
@@ -483,29 +483,26 @@ class FilterItem extends React.Component {
         let { options = [] } = filterColumn.data || {};
         return this.renderMultipleSelectOption(options, filter_term, readOnly);
       }
-      case CellType.RATE: {
+      case CellType.PRIORITY: {
         return (
           <div>
-            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onRateFilterOpen} id={`rate-editor-${filterColumn.key}`} >
-              <RateItem
-                value={Number(filter_term)}
-                readOnly={true}
-              />
+            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onPriorityFilterOpen} id={`priority-editor-${filterColumn.key}`} >
+              <PriorityFormatter value={Number(filter_term)} showName={true} className={readOnly ? '' : 'cursor-pointer'} />
             </div>
-            {this.state.isRateFilterOpen && (
+            {this.state.isPriorityFilterOpen && (
               <CustomizePopover
-                target={`rate-editor-${filterColumn.key}`}
-                className={classnames('sea-metadata-rate-editor-popover-container')}
-                hidePopover={this.onRateFilterClose}
-                hidePopoverWithEsc={this.onRateFilterClose}
+                target={`priority-editor-${filterColumn.key}`}
+                className={classnames('sea-metadata-priority-editor-popover-container')}
+                hidePopover={this.onPriorityFilterClose}
+                hidePopoverWithEsc={this.onPriorityFilterClose}
               >
-                <div className="sea-metadata-rate-editor-popover">
-                  {RATE_LIST.map((item, index) => (
-                    <RateItem
+                <div className="sea-metadata-priority-editor-popover">
+                  {PRIORITIES.map((item, index) => (
+                    <PriorityItem
                       key={index}
                       value={item.value}
                       hotKey={item.hotKey}
-                      onClick={this.onChangeRateNumber}
+                      onClick={this.onChangePriority}
                       readOnly={false}
                       isSelected={item.value === Number(filter_term)}
                     />

@@ -93,8 +93,10 @@ def filter_tickets_by_type(seadb_api, project_uuid, types):
         types_names.append(type_option.get('name'))
     types_str = ', '.join(f"'{type_name}'" for type_name in types_names)
     sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `type` IN ({types_str}) AND `deleted` = False"
-    ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
-    return ticket_data
+    res = seadb_api.query_rows(project_uuid, sql)
+    tickets = res.get('results')
+    columns = res.get('metadata') or []
+    return tickets, columns
 
 
 def get_ticket_replies(seadb_api, project_uuid, ticket_number, start, end):

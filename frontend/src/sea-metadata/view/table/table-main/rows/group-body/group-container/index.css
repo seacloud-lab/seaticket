@@ -413,8 +413,3 @@
   -webkit-transition-property: none;
   -moz-transition-property: none;
 }
-
-.canvas-groups-rows .group-title .group-cell-value .sea-metadata-rate-item {
-  height: 20px;
-  width: 20px;
-}

@@ -14,6 +14,7 @@ const POPUP_EDITOR_COLUMN_TYPES = [
   CellType.MULTIPLE_SELECT,
   CellType.LONG_TEXT,
   CellType.TAGS,
+  CellType.PRIORITY,
 ];
 
 const EditorContainer = (props) => {

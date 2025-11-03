@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import RateItem from './rate-item';
+import PriorityItem from './priority-item';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
-import { RATE_LIST } from './constants';
+import { PRIORITIES } from '../../../constants/column';
 
 import './index.css';
 
-const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
+const PriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
   const [value, setValue] = useState(oldValue || 0);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -29,7 +29,7 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
         e.preventDefault();
         e.stopPropagation();
         // eslint-disable-next-line
-        const selectedPriority = RATE_LIST.find(item => item.hotKey == e.key);
+        const selectedPriority = PRIORITIES.find(item => item.hotKey == e.key);
         if (selectedPriority && selectedPriority.value !== value) {
           setValue(selectedPriority.value);
           onChange({ [column.key]: selectedPriority.value });
@@ -51,16 +51,13 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
 
   return (
     <>
-      <div className="sea-metadata-rate-editor d-flex" onClick={() => setIsOpen(!isOpen)} id={`rate-editor-${column.key}-${row._id}`}>
-        <RateItem
-          value={value}
-          readOnly={true}
-        />
+      <div className="sea-metadata-priority-editor d-flex" onClick={() => setIsOpen(!isOpen)} id={`priority-editor-${column.key}-${row._id}`}>
+        <PriorityItem value={value} readOnly={true} />
       </div>
       {isOpen && (
         <CustomizePopover
-          target={`rate-editor-${column.key}-${row._id}`}
-          className={classnames('sea-metadata-rate-editor-popover-container')}
+          target={`priority-editor-${column.key}-${row._id}`}
+          className={classnames('sea-metadata-priority-editor-popover-container')}
           hidePopover={() => setIsOpen(false)}
           hidePopoverWithEsc={() => setIsOpen(false)}
           modifiers={[
@@ -68,9 +65,9 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
             { name: 'offset', options: { offset: [-6, 8] } }
           ]}
         >
-          <div className="sea-metadata-rate-editor-popover">
-            {RATE_LIST.map((item, index) => (
-              <RateItem
+          <div className="sea-metadata-priority-editor-popover">
+            {PRIORITIES.map((item, index) => (
+              <PriorityItem
                 key={index}
                 value={item.value}
                 hotKey={item.hotKey}
@@ -86,11 +83,11 @@ const RateEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) 
   );
 };
 
-RateEditor.propTypes = {
+PriorityEditor.propTypes = {
   isCellSelected: PropTypes.bool,
   column: PropTypes.object,
   value: PropTypes.number,
   onChange: PropTypes.func,
 };
 
-export default RateEditor;
+export default PriorityEditor;

@@ -267,11 +267,11 @@
   align-items: center;
 }
 
-.table-cell-editor .rate-editor .rate-item {
+.table-cell-editor .priority-editor .rate-item {
   padding-right: 0;
 }
 
-.rdg-editor-container .rate-editor {
+.rdg-editor-container .priority-editor {
   width: 100%;
   height: calc(100% - 1px);
   border: 2px solid #66afe9;

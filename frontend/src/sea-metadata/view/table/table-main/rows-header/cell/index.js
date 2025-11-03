@@ -5,10 +5,9 @@ import { UncontrolledTooltip } from 'reactstrap';
 import Icon from '@/components/icon';
 import ResizeColumn from './resize-column';
 import HeaderDropdownMenu from './dropdown-menu';
-import { COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
-import { checkIsNameColumn } from '@/sea-metadata/utils/column';
+import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
+import { checkIsNameColumn, checkIsPriorityColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
-import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -152,28 +151,8 @@ const Cell = ({
   const { key, display_name: name, type } = column;
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
-
-  if (column.key === 'priority') {
-    return (
-      <div key={key} className="sea-metadata-row-header-cell">
-        <div
-          className='sea-metadata-table-cell column priority-column'
-          ref={headerCellRef}
-          style={style}
-          id={`sea-metadata-column-${key}`}
-        >
-          <div className="sea-metadata-table-column-content">
-            <span className="mr-2" id={`header-icon-${key}`}>
-              <Icon symbol="priority-column" className="sea-metadata-icon sea-metadata-column-icon" />
-            </span>
-            <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
-              {gettext('Priority')}
-            </UncontrolledTooltip>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isPriorityColumn = checkIsPriorityColumn(column);
+  const contentClassName = 'sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate';
 
   const cell = (
     <div
@@ -184,16 +163,18 @@ const Cell = ({
       onClick={() => handleHeaderCellClick(column, frozen)}
       onContextMenu={onContextMenu}
     >
-      <div className="sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate">
-        <span className="mr-2" id={`header-icon-${key}`}>
+      <div className={classnames(contentClassName, { 'justify-content-center': isPriorityColumn })}>
+        <span className={classnames('', { 'mr-2': !isPriorityColumn })} id={`header-icon-${key}`}>
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
         <UncontrolledTooltip placement="bottom" target={`header-icon-${key}`} fade={false} trigger="hover" className="sea-metadata-tooltip">
           {headerIconTooltip}
         </UncontrolledTooltip>
-        <div className="header-name d-flex">
-          <span title={name} className={classnames('header-name-text', { 'double': height === 56 })}>{name}</span>
-        </div>
+        {!isPriorityColumn && (
+          <div className="header-name d-flex">
+            <span title={name} className={classnames('header-name-text', { 'double': height === 56 })}>{name}</span>
+          </div>
+        )}
       </div>
       {canEditColumnInfo && (
         <HeaderDropdownMenu
@@ -206,11 +187,13 @@ const Cell = ({
           onDropDownToggle={onDropDownToggle}
         />
       )}
-      <ResizeColumn onDrag={onDraggingColumnWidth} onDragEnd={handleColumnWidth} />
+      {!column.is_width_fixed && (
+        <ResizeColumn onDrag={onDraggingColumnWidth} onDragEnd={handleColumnWidth} />
+      )}
     </div>
   );
 
-  if (!canModifyColumnOrder || checkIsNameColumn(column)) {
+  if (!canModifyColumnOrder || checkIsNameColumn(column) || column.type === CellType.PRIORITY) {
     return (
       <div key={key} className="sea-metadata-row-header-cell">
         {cell}

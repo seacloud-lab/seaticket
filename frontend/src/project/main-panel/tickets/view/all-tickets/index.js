@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useTags, useTypes, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_COLUMNS, TICKET_PAGE_TYPE } from '../../constants';
+import { TICKET_PAGE_TYPE, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
@@ -26,17 +26,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     cacheData(data);
     togglePageType(row._id);
   }, [togglePageType, cacheData]);
-
-  const columns = useMemo(() => {
-    const columnsUpdate = {
-      'title': { click: expandRow },
-    };
-    return TICKET_COLUMNS.map(c => {
-      const columnUpdate = columnsUpdate[c.key];
-      if (columnUpdate) return { ...c, ...columnUpdate };
-      return c;
-    });
-  }, [expandRow]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
@@ -70,21 +59,18 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       }
       return ticketsAPI.listProjectTickets(projectUuid, ...params).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
-        let backendColumns = res?.data?.columns || [];
-        const columnsUpdate = {
+        let columns = res?.data?.columns || [];
+        const othersConfig = {
           'title': { click: expandRow },
         };
-        const backendColumnsMap = {};
-        backendColumns.forEach(c => {
-          backendColumnsMap[c.name] = c;
-        });
-        const columns = TICKET_COLUMNS.map(c => {
-          const backendColumn = backendColumnsMap[c.name];
-          const columnUpdate = columnsUpdate[c.name];
+        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+          const { name } = c;
+          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
+          const otherConfig = othersConfig[name];
           return {
             ...c,
-            key: backendColumn?.key || c.key,
-            ...(columnUpdate || {})
+            ...predefinedConfig,
+            ...otherConfig,
           };
         });
         const typeColum = columns.find(c => c.name === 'type');
@@ -131,24 +117,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
           });
         });
       }
-      return ticketsAPI.getView(projectUuid, viewID).then(res => {
-        const view = res?.data?.view;
-        const basic_filters = view?.basic_filters || [];
-        if (basic_filters.length === 3) return { data: { view } };
-
-        return {
-          data: {
-            view: {
-              ...view,
-              basic_filters: [
-                basic_filters.find(f => f.column_key === 'status') || { column_key: 'status', filter_predicate: 'is_any_of', filter_term: [] },
-                basic_filters.find(f => f.column_key === 'type') || { column_key: 'type', filter_predicate: 'is_any_of', filter_term: [] },
-                basic_filters.find(f => f.column_key === 'tags') || { column_key: 'tags', filter_predicate: 'is_any_of', filter_term: [] },
-              ]
-            }
-          }
-        };
-      });
+      return ticketsAPI.getView(projectUuid, viewID);
     },
     insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
     modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
@@ -164,7 +133,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, columns, cachedData, updateViewID, clearCacheData]);
+  }), [projectUuid, cachedData, updateViewID, clearCacheData]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tickets`, [projectUuid]);
 

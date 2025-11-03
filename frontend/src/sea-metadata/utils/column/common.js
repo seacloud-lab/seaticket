@@ -72,6 +72,11 @@ export const checkIsNameColumn = (column) => {
   return Boolean(column?.is_name_column);
 };
 
+export const checkIsPriorityColumn = (column) => {
+  if (!column) return false;
+  return column.type === CellType.PRIORITY;
+};
+
 export const handleCascadeColumn = (optionValue, columnKey, columns, row, updated = {}, processedColumns = new Set()) => {
   // This column has already been processed, avoid circular dependency.
   if (!Array.isArray(columns) || processedColumns.has(columnKey)) {
@@ -121,7 +126,7 @@ export const checkIsColumnSupportPreview = (column) => {
 };
 
 export const checkIsColumnEditable = (column) => {
-  if (!column || column.key === 'priority') return false;
+  if (!column || column.type === CellType.PRIORITY) return false;
   return !!column.editable;
 };
 
@@ -205,11 +210,11 @@ export const normalizeColumns = (columns) => {
       displayColumns.push(column);
     }
   });
-  // find key ==="priority" column and move to first
-  const priorityColumns = displayColumns.filter(c => c.name === 'priority');
-  // use only one priority column
+  // find type === priority column and move to first
+  const priorityColumns = displayColumns.filter(c => c.type === CellType.PRIORITY);
+  // use only one priority type
   if (priorityColumns.length > 0) {
-    displayColumns = [priorityColumns[0], ...displayColumns.filter(c => c.name !== 'priority')];
+    displayColumns = [priorityColumns[0], ...displayColumns.filter(c => c.type !== CellType.PRIORITY)];
   }
   return displayColumns.map(c => {
     if (columnsWidth[c.key]) {
