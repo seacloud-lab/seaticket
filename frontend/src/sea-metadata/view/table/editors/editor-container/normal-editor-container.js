@@ -230,7 +230,7 @@ class NormalEditorContainer extends React.Component {
     const { key: columnKey } = column;
     const originalOldCellValue = getCellValueByColumn(row, column);
     const updated = (this.getEditor() && this.getEditor().getValue()) || {};
-    if (!isCellValueChanged(originalOldCellValue, updated[columnKey]) || column.key === 'priority') {
+    if (!isCellValueChanged(originalOldCellValue, updated[columnKey])) {
       this.props.onCommitCancel();
       return;
     }

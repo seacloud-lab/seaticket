@@ -9,6 +9,7 @@ class Column {
     this.type = object.type || '';
     this.data = object.data || null;
     this.width = object.width || 200;
+    this.is_width_fixed = object.is_width_fixed || false;
 
     this.is_required = object.is_required || false;
     this.is_predefined = object.is_predefined || true;

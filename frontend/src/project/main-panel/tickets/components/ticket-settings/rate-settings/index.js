@@ -4,8 +4,8 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Icon } from '@/components';
 import CustomizePopover from '@/components/customize-popover';
-import RateItem from '@/sea-metadata/components/cell-editors/rate-editor/rate-item';
-import { RATE_LIST } from '@/sea-metadata/components/cell-editors/rate-editor/constants';
+import PriorityItem from '@/sea-metadata/components/cell-editors/priority-editor/priority-item';
+import { PRIORITIES } from '@/sea-metadata/constants';
 
 import './index.css';
 
@@ -32,7 +32,7 @@ const RateSettings = ({
     closeEditor();
   }, [onChange]);
 
-  const rateOption = RATE_LIST.find(o => o.value === value);
+  const rateOption = PRIORITIES.find(o => o.value === value);
 
   return (
     <>
@@ -48,7 +48,7 @@ const RateSettings = ({
       {!isReadonly && isShowEditor && (
         <CustomizePopover
           target={'ticket-rate-formatter'}
-          className={classnames('sea-metadata-rate-editor-popover-container')}
+          className={classnames('sea-metadata-priority-editor-popover-container')}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
           modifiers={[
@@ -56,9 +56,9 @@ const RateSettings = ({
             { name: 'offset', options: { offset: [-6, 8] } }
           ]}
         >
-          <div className="sea-metadata-rate-editor-popover">
-            {RATE_LIST.map((item, index) => (
-              <RateItem
+          <div className="sea-metadata-priority-editor-popover">
+            {PRIORITIES.map((item, index) => (
+              <PriorityItem
                 key={index}
                 value={item.value}
                 hotKey={item.hotKey}

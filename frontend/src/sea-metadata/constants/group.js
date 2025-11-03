@@ -30,6 +30,7 @@ const SUPPORT_GROUP_COLUMN_TYPES = [
   CellType.CREATOR,
   CellType.LAST_MODIFIER,
   CellType.RATE,
+  CellType.PRIORITY,
 ];
 
 const GROUPBY_DATE_GRANULARITY_LIST = [

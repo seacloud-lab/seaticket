@@ -161,83 +161,96 @@ export const TICKET_CHILDREN_PAGE_TYPE = {
   ALL: 'all',
 };
 
-export const TICKET_COLUMNS = [
-  {
-    type: CellType.RATE,
-    key: 'priority',
-    name: 'priority',
+export const TICKET_PREDEFINED_COLUMN_CONFIG = {
+  'priority': {
+    type: CellType.PRIORITY,
     display_name: gettext('Priority'),
     editable: true,
+    is_width_fixed: true,
     frozen: true,
     width: 33,
-    data: { type: 'rate' }
-  }, {
+  },
+  'title': {
     type: CellType.TEXT,
-    key: 'title',
-    name: 'title',
     display_name: gettext('Title'),
     editable: true,
     is_name_column: true,
     frozen: true,
     is_required: true,
-  }, {
+  },
+  'status': {
     type: CellType.SINGLE_SELECT,
-    key: 'status',
-    name: 'status',
     display_name: gettext('Status'),
     editable: true,
-    data: { options: TICKET_STATUS_OPTIONS },
     is_required: true,
-  }, {
+  },
+  'type': {
     type: CellType.TYPE,
-    key: 'type',
-    name: 'type',
     display_name: gettext('Type'),
     editable: true,
     modify_data_able: true,
-  }, {
+  },
+  'description': {
     type: CellType.LONG_TEXT,
-    key: 'description',
-    name: 'description',
     display_name: gettext('Description'),
     editable: true,
     is_required: true,
-  }, {
+  },
+  'assignees': {
     type: CellType.COLLABORATOR,
-    key: 'assignees',
-    name: 'assignees',
     display_name: gettext('Assignees'),
     editable: true,
-  }, {
+  },
+  'tags': {
     type: CellType.TAGS,
-    key: 'tags',
-    name: 'tags',
     display_name: gettext('Tags'),
     editable: true,
     modify_data_able: true,
-  }, {
+  },
+  'participants': {
     type: CellType.COLLABORATOR,
-    key: 'participants',
-    name: 'participants',
     display_name: gettext('Participants'),
     editable: false,
-  }, {
+  },
+  'created_at': {
     type: CellType.CTIME,
-    key: 'created_at',
-    name: 'created_at',
     display_name: gettext('Create time'),
     editable: false,
-  }, {
+  },
+  'updated_at': {
     type: CellType.MTIME,
-    key: 'updated_at',
-    name: 'updated_at',
     display_name: gettext('Last updated time'),
     editable: false,
-  }, {
+  },
+  'creator': {
     type: CellType.CREATOR,
-    key: 'creator',
-    name: 'creator',
     display_name: gettext('Creator'),
     editable: false,
   },
+  'deleted': {
+    type: CellType.CHECKBOX,
+    display_name: gettext('Deleted'),
+    editable: false,
+  },
+  'delete_at': {
+    type: CellType.DATE,
+    display_name: gettext('Delete at'),
+    editable: false,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' }
+  },
+  'reply_updated_at': {
+    type: CellType.DATE,
+    display_name: gettext('Comment updated at'),
+    editable: false,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' }
+  },
+};
+
+export const TICKET_NOT_DISPLAY_COLUMNS = [
+  '_pk',
+  'reply_count',
+  'client_token',
+];
+
+export const TICKET_COLUMNS = [
 ];

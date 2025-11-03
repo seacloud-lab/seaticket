@@ -8,8 +8,7 @@ import Icon from '@/components/icon';
 import IconBtn from '@/components/icon-button';
 import CollaboratorFilter from './collaborator-filter';
 import FilterCalendar from '../filter-calendar';
-import RateItem from '../../../../cell-editors/rate-editor/rate-item';
-import { RATE_LIST } from '../../../../cell-editors/rate-editor/constants';
+import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
 import { gettext } from '@/constants';
 import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '../../../../../utils/column';
 import {
@@ -18,7 +17,7 @@ import {
 } from '../../../../../utils/filter';
 import {
   CellType, DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS, FILTER_PREDICATE_TYPE, FILTER_TERM_MODIFIER_TYPE, FILTER_ERR_MSG,
-  filterTermModifierIsWithin,
+  filterTermModifierIsWithin, PRIORITIES,
 } from '../../../../../constants';
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
@@ -483,25 +482,25 @@ class FilterItem extends React.Component {
         let { options = [] } = filterColumn.data || {};
         return this.renderMultipleSelectOption(options, filter_term, readOnly);
       }
-      case CellType.RATE: {
+      case CellType.PRIORITY: {
         return (
           <div>
-            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onRateFilterOpen} id={`rate-editor-${filterColumn.key}`} >
-              <RateItem
+            <div className="form-control pr-8 d-flex align-items-center" onClick={this.onRateFilterOpen} id={`priority-editor-${filterColumn.key}`} >
+              <PriorityItem
                 value={Number(filter_term)}
                 readOnly={true}
               />
             </div>
             {this.state.isRateFilterOpen && (
               <CustomizePopover
-                target={`rate-editor-${filterColumn.key}`}
-                className={classnames('sea-metadata-rate-editor-popover-container')}
+                target={`priority-editor-${filterColumn.key}`}
+                className={classnames('sea-metadata-priority-editor-popover-container')}
                 hidePopover={this.onRateFilterClose}
                 hidePopoverWithEsc={this.onRateFilterClose}
               >
-                <div className="sea-metadata-rate-editor-popover">
-                  {RATE_LIST.map((item, index) => (
-                    <RateItem
+                <div className="sea-metadata-priority-editor-popover">
+                  {PRIORITIES.map((item, index) => (
+                    <PriorityItem
                       key={index}
                       value={item.value}
                       hotKey={item.hotKey}

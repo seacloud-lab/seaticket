@@ -20,6 +20,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.TAGS]: 'tag',
   [CellType.TAG]: 'tag',
   [CellType.URL]: 'url',
+  [CellType.PRIORITY]: 'priority',
 };
 
 const COLUMNS_ICON_NAME = {
@@ -41,6 +42,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.TAGS]: gettext('Tags'),
   [CellType.TAG]: gettext('Tag'),
   [CellType.URL]: gettext('URL'),
+  [CellType.PRIORITY]: gettext('Priority'),
 };
 
 export {

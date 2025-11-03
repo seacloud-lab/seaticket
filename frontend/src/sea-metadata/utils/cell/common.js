@@ -71,7 +71,8 @@ export const getCellValueStringResult = (row, column, { collaborators = [] } = {
     case CellType.AUTO_NUMBER: {
       return cellValue || '';
     }
-    case CellType.RATE: { // number
+    case CellType.RATE:
+    case CellType.PRIORITY: { // number
       return cellValue ? String(cellValue) : '';
     }
     case CellType.CHECKBOX: {

@@ -48,7 +48,7 @@ function convert2Number(cellValue, oldCellValue, fromColumnType, targetColumnDat
   switch (fromColumnType) {
     case CellType.NUMBER:
     case CellType.RATE:
-    case CellType.DURATION: {
+    case CellType.PRIORITY: {
       return cellValue;
     }
     case CellType.TEXT: {
@@ -356,7 +356,8 @@ function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { c
     case CellType.CHECKBOX: {
       return convert2Checkbox(cellValue, oldCellValue, fromColumnType);
     }
-    case CellType.NUMBER: {
+    case CellType.NUMBER:
+    case CellType.PRIORITY: {
       return convert2Number(cellValue, oldCellValue, fromColumnType, targetColumnData);
     }
     case CellType.DATE: {

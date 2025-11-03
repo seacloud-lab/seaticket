@@ -228,7 +228,8 @@ class ValidateFilter {
         return this.isValidTermType(term, TERM_TYPE_MAP.STRING);
       }
       case CellType.NUMBER:
-      case CellType.RATE: {
+      case CellType.RATE:
+      case CellType.PRIORITY: {
         return this.isValidTermType(term, TERM_TYPE_MAP.NUMBER);
       }
 

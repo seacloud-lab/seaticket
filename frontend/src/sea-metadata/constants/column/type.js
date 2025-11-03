@@ -17,6 +17,7 @@ const CellType = {
   TAG: 'tag',
   TAGS: 'tags',
   TYPE: 'type',
+  PRIORITY: 'priority'
 };
 
 export default CellType;
