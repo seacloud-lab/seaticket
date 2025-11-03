@@ -76,6 +76,7 @@ const SINGLE_CELL_VALUE_COLUMN_TYPE_MAP = {
   [CellType.TYPE]: true,
   [CellType.NUMBER]: true,
   [CellType.RATE]: true,
+  [CellType.PRIORITY]: true,
 };
 
 const DATE_DEFAULT_TYPES = {
