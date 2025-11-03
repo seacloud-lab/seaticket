@@ -36,7 +36,7 @@ class GroupHeaderRight extends Component {
       fixedColumnCount,
     } = this.props;
     const summaryColumns = columns.slice(fixedColumnCount); // get column from 2 index
-    const firstColumnWidth = columns[0] ? columns[1].width : 0;
+    const firstColumnWidth = (columns && columns[1]) ? columns[1].width : 0;
     let offsetLeft = 0;
     return summaryColumns.map((column, index) => {
       const { key } = column;
