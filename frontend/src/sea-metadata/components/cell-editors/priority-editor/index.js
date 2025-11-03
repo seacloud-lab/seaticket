@@ -52,10 +52,7 @@ const PriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected
   return (
     <>
       <div className="sea-metadata-priority-editor d-flex" onClick={() => setIsOpen(!isOpen)} id={`priority-editor-${column.key}-${row._id}`}>
-        <PriorityItem
-          value={value}
-          readOnly={true}
-        />
+        <PriorityItem value={value} readOnly={true} />
       </div>
       {isOpen && (
         <CustomizePopover
