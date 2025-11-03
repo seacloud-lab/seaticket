@@ -131,9 +131,9 @@ class SimpleTextEditor extends Component {
           onCut={this.onCut}
           onPaste={this.onPaste}
           value={value}
-          name={column.name}
-          title={column.name}
-          aria-label={column.name}
+          name={column.display_name}
+          title={column.display_name}
+          aria-label={column.display_name}
           onChange={this.onChange}
           onKeyDown={this.onInputKeyDown}
           onClick={this.onClick}

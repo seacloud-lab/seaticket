@@ -183,6 +183,9 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Status'),
     editable: true,
     is_required: true,
+    data: {
+      options: TICKET_STATUS_OPTIONS
+    }
   },
   'type': {
     type: CellType.TYPE,

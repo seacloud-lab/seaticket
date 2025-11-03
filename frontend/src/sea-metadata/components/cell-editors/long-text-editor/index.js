@@ -96,7 +96,7 @@ class LongTextEditor extends React.PureComponent {
           className="sea-metadata-long-text-editor-dialog"
           lang={this.lang}
           readOnly={readOnly}
-          headerName={column.name}
+          headerName={column.display_name}
           value={this.value.text}
           autoSave={true}
           saveDelay={20 * 1000}

@@ -1,3 +1,5 @@
+import { getColumnByName } from '../column';
+
 /**
  * Get column by key from table
  * @param {object} table
@@ -17,7 +19,7 @@ const getTableColumnByKey = (table, columnKey) => {
  */
 const getTableColumnByName = (table, columnName) => {
   if (!table || !Array.isArray(table.columns) || !columnName) return null;
-  return table.columns.find((column) => column.name === columnName);
+  return getColumnByName(table.columns, columnName);
 };
 
 export {

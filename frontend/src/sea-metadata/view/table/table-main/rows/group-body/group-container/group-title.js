@@ -81,7 +81,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
 
   return (
     <div className="group-title">
-      <div className="group-column-name">{column.name}</div>
+      <div className="group-column-name">{column.display_name}</div>
       <div className="group-cell-value">{renderGroupCellVal()}</div>
     </div>
   );
