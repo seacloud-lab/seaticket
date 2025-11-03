@@ -46,7 +46,7 @@ const getOptions = (status) => {
   });
 };
 
-const StatusToggleButton = ({ status: oldStatus, onChange }) => {
+const StatusToggleButton = ({ status: oldStatus, disabled, onChange }) => {
   const [status, setStatus] = useState(BTNS[oldStatus][0].value);
   const [isShowPopover, setIsShowPopover] = useState(false);
   const downBtn = useRef(null);
@@ -82,7 +82,7 @@ const StatusToggleButton = ({ status: oldStatus, onChange }) => {
   return (
     <>
       <ButtonGroup className="mr-4">
-        <Button className="sea-qa-project-ticket-status-toggle-btn d-flex align-items-center" onClick={onStatusChange}>
+        <Button className="sea-qa-project-ticket-status-toggle-btn d-flex align-items-center" disabled={disabled} onClick={onStatusChange}>
           <Icon symbol={statusOption?.icon} className={`mr-2 sea-qa-project-ticket-status-${statusOption?.icon}-icon`} />
           <span>{statusOption?.shortName}</span>
         </Button>
