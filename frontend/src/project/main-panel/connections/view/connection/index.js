@@ -484,11 +484,18 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       CONNECTION_TYPE.SEAFILE
     ].includes(connection.type)) {
       connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
-        const detailData = res.data.row_details.map(detail => ({
-          ...detail,
-          time: detail.created_at || detail.updated_at,
-          body: detail.body || detail.content,
-        }));
+        let detailData = null;
+        if (connection.type === CONNECTION_TYPE.SEAFILE) {
+          detailData = {
+            body: res.data.row_details[0].content,
+          };
+        } else {
+          detailData = res.data.row_details.map(detail => ({
+            ...detail,
+            time: detail.created_at || detail.updated_at,
+            body: detail.body || detail.content,
+          }));
+        }
         setRowDetailsTitle(row.title || row.filename);
         setRowDetails(detailData);
       });

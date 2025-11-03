@@ -3,6 +3,8 @@ import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader, Icon } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { isObject } from '@/utils/type-detection';
+import MarkdownViewer from '@/sea-metadata/components/cell-formatter/long-text/long-text-preview/viewer';
 
 import './index.css';
 
@@ -50,25 +52,30 @@ const RowDetailsDialog = ({ rowDetailsTitle, rowDetails, onClose, handleSwitchRo
         </div>
       </ModalHeader>
       <ModalBody>
-        <div className='sea-qa-row-details'>
-          {!rowDetails.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-          {rowDetails.map(detail => (
-            <div key={detail.id} className='sea-qa-row-details-reply-item'>
-              <div className='sea-qa-row-details-reply-item-author-info-wrapper'>
-                <div className='sea-qa-row-details-reply-item-author-info-left'>
-                  <div className='sea-qa-row-details-reply-item-author-avatar'>
-                    <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+        {isObject(rowDetails) && (
+          <MarkdownViewer value={rowDetails.body} showTOC={false} />
+        )}
+        {!isObject(rowDetails) && (
+          <div className='sea-qa-row-details'>
+            {!rowDetails.length && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
+            {rowDetails.map(detail => (
+              <div key={detail.id} className='sea-qa-row-details-reply-item'>
+                <div className='sea-qa-row-details-reply-item-author-info-wrapper'>
+                  <div className='sea-qa-row-details-reply-item-author-info-left'>
+                    <div className='sea-qa-row-details-reply-item-author-avatar'>
+                      <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+                    </div>
+                    <div className='sea-qa-row-details-reply-item-author-name'>{detail.author}</div>
                   </div>
-                  <div className='sea-qa-row-details-reply-item-author-name'>{detail.author}</div>
+                  <div className='sea-qa-row-details-reply-item-author-time' title={formatWithTimezone(detail.time)}>
+                    {dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                  </div>
                 </div>
-                <div className='sea-qa-row-details-reply-item-author-time' title={formatWithTimezone(detail.time)}>
-                  {dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}
-                </div>
+                <div className='sea-qa-row-details-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.body }} />
               </div>
-              <div className='sea-qa-row-details-reply-item-content' dangerouslySetInnerHTML={{ __html: detail.body }} />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </ModalBody>
     </Modal>
   );

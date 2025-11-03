@@ -100,3 +100,22 @@
 .sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-time {
   color: #666;
 }
+
+/* row details markdown style */
+.sea-qa-row-details-container .sf-slate-viewer-container {
+  overflow: hidden;
+  height: 100%;
+}
+
+.sea-qa-row-details-container .sf-slate-viewer-scroll-container {
+  padding: 0px;
+}
+
+.sea-qa-row-details-container .sf-slate-viewer-article-container {
+  flex: 1;
+}
+
+.sea-qa-row-details-container .article {
+  border: 0px;
+  min-height: 100%;
+}
