@@ -52,19 +52,27 @@ class SelectTypes:
       "options": [
         {
           "id": "0001",
-          "name": "open"
+          "name": "open",
+          "color": "#1A7F37",
+          "textColor": "#FFFFFF",
         },
         {
           "id": "0002",
-          "name": "completed"
+          "name": "completed",
+          "color": "#8250DF",
+          "textColor": "#FFFFFF",
         },
         {
           "id": "0003",
-          "name": "not_planned"
+          "name": "not_planned",
+          "color": "#59636E",
+          "textColor": "#FFFFFF"
         },
         {
           "id": "0004",
-          "name": "duplicate"
+          "name": "duplicate",
+          "color": "#59636E",
+          "textColor": "#FFFFFF"
         },
       ]
     }

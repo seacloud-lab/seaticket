@@ -958,6 +958,11 @@ class TicketReplyAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
+            ticket = get_ticket(seadb_api, project_uuid, ticket_number)
+            if not ticket:
+                error_msg = 'Ticket not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            
             ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_number, reply_number)
             if not ticket_reply_data:
                 error_msg = 'Reply not found.'

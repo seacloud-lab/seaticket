@@ -1,7 +1,7 @@
 import logging
 
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
-    CONNECTION_MUST_RETURN_COLUMNS
+    CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.tickets.ticket_utils import get_column_key_by_name
@@ -400,8 +400,11 @@ def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
         return []
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
-    hidden_columns = view_copy.get('hidden_columns', [])
-    display_columns = [column for column in columns if column['name'] not in hidden_columns]
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in TICKET_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
     sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, include_deleted=True)
     try:
         res = seadb_api.query_rows(project_uuid, sql)

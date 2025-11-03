@@ -265,7 +265,7 @@ class FilterTermModifier(object):
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
 
-
+TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'description', 'status', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_at', 'updated_at']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
