@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.utils import get_connection_columns
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
@@ -22,9 +23,8 @@ from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable
 
-
-
 logger = logging.getLogger(__name__)
+MAX_LENGTH = 10000
 
 
 class ChatView(APIView):
@@ -166,9 +166,10 @@ class ConvertRecordToTicket(APIView):
                     connection_id, record_id
                 )
                 title = topics[0].get('title', '') if topics else ''
+                topic_id = topics[0].get('topic_id') if topics else ''
                 default_title = title
                 replies = discourse_db_api.get_replies_by_topic(
-                    connection_id, record_id
+                    connection_id, topic_id
                 )
                 body_content = ''
                 for reply in replies:
@@ -178,7 +179,36 @@ class ConvertRecordToTicket(APIView):
                     content_to_add = reply.get('content')
                     if body_content:
                         content_to_add = '\n\n' + content_to_add
-                    if len(body_content) + len(content_to_add) > 600:
+                    if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                        break
+                    body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Body: {body_content}
+                """
+
+            case ConnectionType.GITHUB_ISSUE.value:
+                github_db_api = GitHubSeaDBAPI(project_uuid)
+                issue = github_db_api.get_issues_by_connection_id(
+                    connection_id, record_id
+                )
+                title = issue[0].get('title', '') if issue else ''
+                default_title = title
+                body_content = issue[0].get('body', '') if issue else ''
+                issue_id = issue[0].get('issue_id') if issue else ''
+                comments = github_db_api.get_comments_by_issue_id(
+                    connection_id, issue_id
+                )
+                for comment in comments:
+                    if not comment.get('body'):
+                        continue
+
+                    content_to_add = comment.get('body')
+                    if body_content:
+                        content_to_add = '\n\n' + content_to_add
+                    if len(body_content) + len(content_to_add) > MAX_LENGTH:
                         break
                     body_content += content_to_add
 

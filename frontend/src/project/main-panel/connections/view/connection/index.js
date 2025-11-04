@@ -144,47 +144,10 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
-
-  const parseChecklistFromBody = (bodyText) => {
-    if (!bodyText) return { total: 0, completed: 0 };
-    const regex = /^\s*[-*]\s*\[( |x|X)\]/gm;
-    const matches = bodyText.match(regex) || [];
-    const total = matches.length;
-    const completed = matches.filter(item => /\[x\]/i.test(item)).length;
-    return { total, completed };
-  };
-
-  const createTicketFromRow = useCallback(async (rowData) => {
-    setIsSubmitting(true);
-
-    const bodyText = rowData.body || 'body is empty';
-    const checklist = parseChecklistFromBody(bodyText);
-    const descriptionData = {
-      text: bodyText,
-      preview: bodyText.substring(0, 100) + '...',
-      images: [],
-      links: [],
-      checklist
-    };
-
-    const ticketData = {
-      title: `${rowData.title || ''}`,
-      description: descriptionData,
-      author: `${rowData.author || ''}`,
-      status: `${rowData.status_reason || ''}`
-    };
-
-    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(res => {
-      setIsSubmitting(false);
-    }).catch(error => {
-      setIsSubmitting(false);
-    });
-  }, [projectUuid]);
 
   const generateAITitleForRow = useCallback((row) => {
     const recordID = row._id || row._pk;
@@ -461,7 +424,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           setTicketData(null);
           setTicketDialogOpen(true);
           setTicketLoading(true);
-          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row.topic_id).then(res => {
+          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
             const data = res.data || {};
             const discourseBaseUrl = connection.config?.url;
             let relatedUrl = '';
@@ -482,9 +445,22 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
     if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE){
       return [{
-        label: isSubmitting ? gettext('Create new ticket') : gettext('Create new ticket'),
-        callback: () => createTicketFromRow(row),
-        disabled: isSubmitting
+        label: gettext('Create related ticket'),
+        callback: () => {
+          setTicketData(null);
+          setTicketDialogOpen(true);
+          setTicketLoading(true);
+          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
+            const data = res.data || {};
+            const relatedUrl = row.url;
+            const prefix = data.description || '';
+            const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+            data.description = prefix ? `${prefix}\n\n${suffix}` : suffix;
+            setTicketData(data);
+          }).finally(() => {
+            setTicketLoading(false);
+          });
+        }
       }, {
         label: gettext('Generate AI title'),
         callback: () => generateAITitleForRow(row)
@@ -500,7 +476,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       }];
     }
     return [];
-  }, [connection, isSubmitting, createTicketFromRow, generateAITitleForRow]);
+  }, [connection, generateAITitleForRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
