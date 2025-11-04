@@ -239,7 +239,6 @@ class GroupMembers extends Component {
   };
 
   addMembers = (emails) => {
-    console.log(emails)
     sysAdminAPI.sysAdminAddGroupMember(this.props.groupID, emails).then(res => {
       let newMemberList = res.data.success;
       if (newMemberList.length) {

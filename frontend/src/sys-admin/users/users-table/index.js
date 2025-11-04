@@ -12,12 +12,16 @@ const UsersTable = forwardRef(({
   placeholder = gettext('No users'),
   type,
   showPaginator = true,
+  columns: customizeColumns,
+  searchValue = '',
   api,
   onModify,
   onDelete,
   onResetPassword,
   updateAdminRole,
   revokeAdmin,
+  setAsAdmin,
+  unsetAsAdmin,
   children,
   ...params
 }, ref) => {
@@ -32,6 +36,9 @@ const UsersTable = forwardRef(({
   const { selectedUsers, updateSelectedUsers } = useSelectedUsers();
 
   const columns = useMemo(() => {
+    if (Array.isArray(customizeColumns) && customizeColumns.length > 0) {
+      return customizeColumns;
+    }
     const userEmails = users.map(u => u.email);
     return [
       {
@@ -48,14 +55,14 @@ const UsersTable = forwardRef(({
         )
       },
       { key: 'name-', width: 0.2, name: `${gettext('Name')} / ${gettext('Contact email')}` },
-      { key: 'status', width: 0.2, name: gettext('Status') },
+      { key: 'is_active', width: 0.2, name: gettext('Status') },
       isShowUint ? { key: 'unit', width: 0.1, name: gettext('Unit') } : { key: 'placeholder-1', width: 0.1 },
       isPro ? { key: 'role', width: 0.2, name: gettext('Role') } : { key: 'placeholder-2', width: 0.2 },
       (multiInstitution && !(type === 'admin')) ? { key: 'institution', width: 0.1, name: gettext('Institution') } : { key: 'placeholder-3', width: 0.1 },
       { key: 'create_login', width: 0.2, name: `${gettext('Created at')} / ${gettext('Last login')}` },
       { key: 'op', width: 44, isFixed: true },
     ];
-  }, [isPro, multiInstitution, type, users, selectedUsers, updateSelectedUsers]);
+  }, [isPro, multiInstitution, type, users, selectedUsers, customizeColumns, updateSelectedUsers]);
 
   const loadData = useCallback((page, perPage) => {
     setErrorMessage('');
@@ -139,12 +146,12 @@ const UsersTable = forwardRef(({
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  }, [onModify, users]);
+  }, [users, onModify]);
 
   const handleAdminRole = useCallback((userEmail, role) => {
     updateAdminRole(userEmail, role).then(res => {
       let newUsers = users.slice(0);
-      const userIndex = users.findIndex(u => u.email === userEmail);
+      const userIndex = newUsers.findIndex(u => u.email === userEmail);
       newUsers[userIndex] = {
         ...newUsers[userIndex],
         admin_role: res.data.role
@@ -155,11 +162,11 @@ const UsersTable = forwardRef(({
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  }, [updateAdminRole]);
+  }, [users, updateAdminRole]);
 
   const handleRevokeAdmin = useCallback((userEmail, name) => {
     let newUsers = users.slice(0);
-    const user = users.find(u => u.email === userEmail);
+    const user = newUsers.find(u => u.email === userEmail);
     if (!user) return;
     revokeAdmin(userEmail, 'is_staff', false).then(res => {
       newUsers = newUsers.filter(p => p.email !== userEmail);
@@ -169,7 +176,33 @@ const UsersTable = forwardRef(({
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  }, [revokeAdmin]);
+  }, [users, revokeAdmin]);
+
+  const handleSetAsAdmin = useCallback((userEmail) => {
+    setAsAdmin(userEmail).then(res => {
+      let newUsers = users.slice(0);
+      const userIndex = newUsers.findIndex(u => u.email === userEmail);
+      newUsers[userIndex] = {
+        ...newUsers[userIndex],
+        is_org_admin: false,
+      };
+      setUsers(newUsers);
+    }).catch((error) => {
+      let errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+    });
+  }, [users, setAsAdmin]);
+
+  const handleUnsetAsAdmin = useCallback((userEmail) => {
+    unsetAsAdmin(userEmail).then(res => {
+      let newUsers = users.slice(0);
+      newUsers = newUsers.filter(u => u.email !== userEmail);
+      setUsers(newUsers);
+    }).catch((error) => {
+      let errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+    });
+  }, [users, unsetAsAdmin]);
 
   useEffect(() => {
     const params = (new URL(document.location)).searchParams;
@@ -218,7 +251,9 @@ const UsersTable = forwardRef(({
       </>
     );
   }
-  if (users.length === 0 && placeholder) {
+  const displayUsers = searchValue ? users.filter(user => user.name.indexOf(searchValue.trim()) !== -1) : users;
+
+  if (displayUsers.length === 0 && placeholder) {
     return (
       <>
         {children}
@@ -231,7 +266,7 @@ const UsersTable = forwardRef(({
     <>
       {children}
       <FixedWidthTable columns={columns}>
-        {users.map((user) => {
+        {displayUsers.map((user) => {
           return (
             <User
               key={user.email}
@@ -245,6 +280,8 @@ const UsersTable = forwardRef(({
               revokeAdmin={handleRevokeAdmin}
               onDelete={onDelete ? handleDelete : null}
               onResetPassword={onResetPassword ? handleResetPassword : null}
+              setAsAdmin={setAsAdmin ? handleSetAsAdmin : null}
+              unsetAsAdmin={unsetAsAdmin && users.length > 1 ? handleUnsetAsAdmin : null}
               { ...params }
             />
           );

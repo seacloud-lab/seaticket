@@ -990,7 +990,6 @@ class AdminSearchUserByOrgId(APIView):
         # format users
         users = []
         for user in user_list:
-            print(user)
             user_info = {}
             email = user['user']
             url, is_default, date_uploaded = api_avatar_url(email)

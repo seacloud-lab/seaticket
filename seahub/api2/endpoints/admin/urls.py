@@ -58,7 +58,6 @@ urlpatterns = [
     re_path(r'^organizations/(?P<org_id>\d+)/groups/$', AdminOrgGroups.as_view(), name='api-v2.1-admin-org-groups'),
     re_path(r'^organizations/(?P<org_id>\d+)/groups/(?P<group_id>\d+)/$', AdminOrgGroup.as_view(), name='api-v2.1-admin-org-group'),
     re_path(r'^organizations/(?P<org_id>\d+)/projects/$', OrgProjects.as_view(), name='api-v2.1-admin-org-projects'),
-    # re_path(r'^organizations/(?P<org_id>\d+)/groups/(?P<group_id>\d+)/$', AdminOrgGroup.as_view(), name='api-v2.1-admin-org-group'),
 
     re_path(r'^search-organization/$', AdminSearchOrganization.as_view(), name='api-v2.1-admin-search-org'),
     re_path(r'^organizations-basic-info/$', AdminOrganizationsBaseInfo.as_view(), name='api-v2.1-admin-orgs-base-info'),

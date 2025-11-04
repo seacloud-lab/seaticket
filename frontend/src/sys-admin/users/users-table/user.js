@@ -27,6 +27,8 @@ const User = ({
   onModify,
   updateAdminRole,
   revokeAdmin,
+  setAsAdmin,
+  unsetAsAdmin,
 }) => {
   const [highlight, setHighlight] = useState(false);
   const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
@@ -47,6 +49,18 @@ const User = ({
         callback: () => setOpType('reset_password'),
       });
     }
+    if (setAsAdmin && !user.is_org_admin) {
+      _ops.push({
+        name: gettext('Set as admin'),
+        callback: () => setAsAdmin(user.email),
+      });
+    }
+    if (unsetAsAdmin && user.is_org_admin) {
+      _ops.push({
+        name: gettext('Unset as admin'),
+        callback: () => unsetAsAdmin(user.email),
+      });
+    }
     if (type === 'admin') {
       _ops = [{
         name: gettext('Revoke admin'),
@@ -54,7 +68,7 @@ const User = ({
       }];
     }
     return _ops;
-  }, [onDelete, onResetPassword, type]);
+  }, [type, user, onDelete, onResetPassword, setAsAdmin, unsetAsAdmin]);
 
   const onMouseEnter = useCallback(() => {
     if (hasFreezed) return;
@@ -71,14 +85,14 @@ const User = ({
     setIsMoreMenuShow(!isMoreMenuShow);
   }, [isMoreMenuShow]);
 
-  const updateStatus = useCallback((value) => {
+  const updateStatus = useCallback((key, value) => {
     const isActive = value === 'active';
     if (isActive) {
       toaster.notify(gettext('It may take some time, please wait.'));
-      onModify(user.email, 'is_active', isActive);
+      onModify(user.email, key, isActive);
       return;
     }
-    setOpType('status');
+    setOpType(key);
   }, [user, onModify]);
 
   useEffect(() => {
@@ -159,8 +173,9 @@ const User = ({
               </td>
             );
           }
-          if (key === 'status') {
-            const currentStatus = user.is_active ? 'active' : 'inactive';
+          if (key === 'is_active' || key === 'active') {
+            const value = user[key];
+            const currentStatus = value ? 'active' : 'inactive';
             const statusOptions = getStatusOptions(['active', 'inactive']);
             const statusOption = statusOptions.find(item => item.value === currentStatus) || {};
             return (
@@ -170,7 +185,7 @@ const User = ({
                     isShowDropdownIcon={highlight}
                     currentOption={statusOption}
                     menuOptions={statusOptions}
-                    onChangeOption={updateStatus}
+                    onChangeOption={(value) => updateStatus(key, value)}
                     closeShowDropdownIcon={onMouseLeave}
                   />)
                 }
@@ -211,6 +226,13 @@ const User = ({
             );
           }
           if (key === 'create_login') {
+            if (c['isLinebreak'] === false) {
+              return (
+                <td key={key}>
+                  {`${user.create_time ? dayjs(user.create_time).format('YYYY-MM-DD HH:mm') : '--'} / ${user.last_login ? dayjs(user.last_login).fromNow() : '--'}`}
+                </td>
+              );
+            }
             return (
               <td key={key}>
                 {`${user.create_time ? dayjs(user.create_time).format('YYYY-MM-DD HH:mm') : '--'} /`}
@@ -252,12 +274,12 @@ const User = ({
           />
         </ModalPortal>
       )}
-      {opType === 'status' && (
+      {(opType === 'is_active' || opType === 'active') && (
         <CommonOperationConfirmationDialog
           title={gettext('Set user inactive')}
           message={gettext('Are you sure you want to set {user} inactive?').replace('{user}', `<b>${name}</b>`)}
           toggleDialog={() => setOpType('')}
-          executeOperation={() => onModify(email, 'is_active', false)}
+          executeOperation={() => onModify(email, opType, false)}
           confirmBtnText={gettext('Set')}
         />
       )}
