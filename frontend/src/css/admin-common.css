@@ -153,11 +153,13 @@
   min-width: 0;
 }
 
-.web-setting-icon-btn-submit {
+.web-setting-icon-btn-submit,
+.web-setting-icon-btn-submit:hover svg {
   color: green;
 }
 
-.web-setting-icon-btn-cancel {
+.web-setting-icon-btn-cancel,
+.web-setting-icon-btn-cancel:hover svg {
   color: #666;
 }
 

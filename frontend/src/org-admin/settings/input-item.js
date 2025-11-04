@@ -1,9 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Input, Button, InputGroup } from 'reactstrap';
+import { Input, InputGroup } from 'reactstrap';
 import { gettext } from '@/constants';
-import AdminSettingsTemplate from '../../components/settings/admin-settings-template';
+import AdminSettingsTemplate from '@/components/settings/admin-settings-template';
 import { Icon } from '@/components';
+import OpBtn from './op-btn';
 
 const propTypes = {
   inputType: PropTypes.string,
@@ -63,19 +64,26 @@ class WebSettingInput extends Component {
           disabled ?
             <Input type={inputType || 'text'} className={inputType === 'textarea' ? 'web-setting-textarea' : ''} value={value} disabled /> :
             <InputGroup>
-              <Input type={inputType || 'text'} className={inputType === 'textarea' ? 'web-setting-textarea' : ''} onChange={this.onInputChange} onFocus={this.toggleBtns} onBlur={this.hideBtns} value={value} />
+              <Input
+                type={inputType || 'text'}
+                className={inputType === 'textarea' ? 'web-setting-textarea' : ''}
+                onChange={this.onInputChange}
+                onFocus={this.toggleBtns}
+                // onBlur={this.hideBtns}
+                value={value}
+              />
               {inputAddon && inputAddon}
             </InputGroup>
         }
         extraContent={
           isBtnsShown ?
             <Fragment>
-              <Button color="primary" onMouseDown={this.onSubmit} title={gettext('Submit')}>
-                <Icon symbol={'check'} />
-              </Button>
-              <Button className="ml-1" title={gettext('Cancel')}>
-                <Icon symbol={'x'} />
-              </Button>
+              <OpBtn onMouseDown={this.onSubmit} title={gettext('Submit')} className="web-setting-icon-btn-submit">
+                <Icon symbol="check" />
+              </OpBtn>
+              <OpBtn className="ml-2 web-setting-icon-btn-cancel" title={gettext('Cancel')}>
+                <Icon symbol="x" />
+              </OpBtn>
             </Fragment> : null
         }
       />
