@@ -72,13 +72,13 @@ class OrgAdminInfo(APIView):
         org = request.user.org
         org_id = org.org_id
 
-        new_org_name = request.data.get('new_org_name')
-        if new_org_name:
+        org_name = request.data.get('org_name')
+        if org_name:
             try:
-                org.org_name = new_org_name
+                org.org_name = org_name
                 org.save()
             except Exception as e:
-                logger.error('set org_id: %s new_org_name: %s error: %s', org_id, new_org_name, e)
+                logger.error('set org_id: %s org_name: %s error: %s', org_id, org_name, e)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'success': True})

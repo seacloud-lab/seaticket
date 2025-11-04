@@ -96,6 +96,13 @@ class OrgAdminAPI {
     return this.req.get(url);
   }
 
+  orgAdminUpdateName(orgID, orgName) {
+    const url = this.server + '/api/v2.1/org/admin/info/';
+    let form = new FormData();
+    form.append('org_name', orgName);
+    return this.req.put(url, form);
+  }
+
   orgAdminGetOrgUserInfo(orgID, email) {
     const url = this.server + '/api/v2.1/org/' + orgID + '/admin/users/' + encodeURIComponent(email) + '/';
     return this.req.get(url);
