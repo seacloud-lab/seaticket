@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@gatsbyjs/reach-router": "2.0.1",
-    "@seafile/seafile-calendar": "0.0.32",
+    "@seafile/seafile-calendar": "1.0.0",
     "@seafile/seafile-editor": "^2.0.36",
     "autoprefixer": "7.1.6",
     "axios": "~1.12.2",

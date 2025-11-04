@@ -11,17 +11,22 @@ class GlobalSearchInput extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchValue: props.value,
+      searchValue: props.value || '',
       oldSearchList: [],
     };
     this.isInputtingChinese = false;
     this.inputRef = null;
+    this.globalSearchRef = null;
   }
 
-  static defaultProps = {
-    disabled: false,
-    value: '',
-  };
+  componentDidMount() {
+    document.addEventListener('click', this.handleClick);
+  }
+
+  componentWillUnmount() {
+    this.inputRef = null;
+    document.removeEventListener('click', this.handleClick);
+  }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.value !== this.props.value) {
@@ -29,9 +34,11 @@ class GlobalSearchInput extends Component {
     }
   }
 
-  componentWillUnmount() {
-    this.inputRef = null;
-  }
+  handleClick = (event) => {
+    if (this.globalSearchRef && !this.globalSearchRef.contains(event.target) && this.state.oldSearchList.length) {
+      this.setState({ oldSearchList: [] });
+    }
+  };
 
   onCompositionStart = () => {
     this.isInputtingChinese = true;
@@ -112,11 +119,12 @@ class GlobalSearchInput extends Component {
   };
 
   render() {
-    const { placeholder, autoFocus, className, inputClassName, disabled, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
+    const { placeholder, autoFocus, className, inputClassName, disabled = false, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
     const { searchValue } = this.state;
 
     return (
       <div
+        ref={ref => this.globalSearchRef = ref}
         className={classnames('sea-qa-search-input-wrapper', className, { 'display-search-icon': isShowSearchIcon, 'display-clear-icon': isFunction(onClear) })}
         style={{ ...style, height: size }}
       >
