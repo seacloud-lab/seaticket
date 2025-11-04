@@ -409,6 +409,9 @@ class SearchView(APIView):
         if not connection_ids:
             error_msg = 'connection_ids invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        time_from = request.data.get('time_from')
+        time_to = request.data.get('time_to')
 
         workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
         if not workspace:
@@ -430,6 +433,8 @@ class SearchView(APIView):
             'query': query,
             'connection_ids': connection_ids,
             'count': count,
+            'time_from': time_from,
+            'time_to': time_to,
         }
         results = search(params)
 
