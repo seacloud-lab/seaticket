@@ -147,7 +147,7 @@ const FilterByDate = ({ date, onChange }) => {
           <Icon symbol="down"/>
         </DropdownToggle>
         <ModalPortal>
-          <DropdownMenu className="search-filter-menu filter-by-date-menu">
+          <DropdownMenu className="sea-qa-dropdown-menu search-filter-menu filter-by-date-menu">
             {options.map((option, i) => {
               const isSelected = option.key === value;
               if (option === 'Divider') return <div key={i} className="seafile-divider dropdown-divider"></div>;
