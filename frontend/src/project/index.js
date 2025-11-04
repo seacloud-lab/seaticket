@@ -38,7 +38,7 @@ const Project = () => {
   const toggleBar = useCallback((newActiveBar) => {
     const activeBarKey = newActiveBar[0];
     if (activeBar[0] === activeBarKey) {
-      if ([BAR_TYPE.SEARCH].includes(activeBarKey)) return;
+      if ([BAR_TYPE.SEARCH, BAR_TYPE.SETTINGS].includes(activeBarKey)) return;
       if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_TYPE.NEW);
         return;
@@ -107,8 +107,8 @@ const Project = () => {
           <CenteredLoading />
         ) : (
           <ConnectionsProvider projectUuid={projectUuid} >
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} modifySettings={modifySettings} />
-            <MainPanel activeBar={activeBar} settings={settings} />
+            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+            <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} />
           </ConnectionsProvider>
         )}
       </div>
