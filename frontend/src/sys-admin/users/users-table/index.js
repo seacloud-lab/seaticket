@@ -251,7 +251,8 @@ const UsersTable = forwardRef(({
       </>
     );
   }
-  const displayUsers = searchValue ? users.filter(user => user.name.indexOf(searchValue.trim()) !== -1) : users;
+  const validSearchValue = searchValue ? searchValue.trim().toLowerCase() : '';
+  const displayUsers = validSearchValue ? users.filter(user => user.name.toLowerCase().indexOf(validSearchValue) !== -1) : users;
 
   if (displayUsers.length === 0 && placeholder) {
     return (
