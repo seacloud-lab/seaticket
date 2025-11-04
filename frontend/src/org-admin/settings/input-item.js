@@ -69,7 +69,7 @@ class WebSettingInput extends Component {
                 className={inputType === 'textarea' ? 'web-setting-textarea' : ''}
                 onChange={this.onInputChange}
                 onFocus={this.toggleBtns}
-                // onBlur={this.hideBtns}
+                onBlur={this.hideBtns}
                 value={value}
               />
               {inputAddon && inputAddon}

@@ -7,6 +7,7 @@ import { gettext, displayTwoFactorAuth } from '@/constants';
 import { TopBar, Main } from '../main-panel';
 import InputItem from './input-item';
 import { orgID } from '@/constants';
+import { validateName } from '@/utils/validate';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -58,15 +59,16 @@ class OrgSettings extends React.Component {
     if (newOrgName === this.state.orgName) {
       return;
     }
-    if (newOrgName === '') {
-      toaster.danger(gettext('Name cannot be empty'));
+    const { isValid, message } = validateName(newOrgName);
+    if (!isValid) {
+      toaster.danger(message);
       return;
     }
-    orgAdminAPI.orgAdminUpdateName(orgID, newOrgName).then((res) => {
+    orgAdminAPI.orgAdminUpdateName(orgID, message).then((res) => {
       this.setState({
-        orgName: newOrgName
+        orgName: message
       });
-      toaster.success(gettext('Name updated'));
+      toaster.success(gettext('Successfully set name.'));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
