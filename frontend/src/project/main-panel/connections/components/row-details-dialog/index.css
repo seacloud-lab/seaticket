@@ -64,40 +64,40 @@
   border-bottom: 1px solid #eee;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper {
+.sea-qa-row-details-reply-item .author-info-wrapper {
   display: flex;
   justify-content: space-between;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-content {
+.sea-qa-row-details-reply-item .reply-item-content {
   padding-left: 42px;
   padding-bottom: 16px;
   word-wrap: break-word;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-content :last-child {
+.sea-qa-row-details-reply-item .reply-item-content :last-child {
   margin-bottom: 0px;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-info-left {
+.sea-qa-row-details-reply-item .author-info-wrapper .author-info-left {
   display: flex;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-info-left .sea-qa-row-details-reply-item-author-avatar {
+.sea-qa-row-details-reply-item .author-info-wrapper .author-info-left .author-avatar {
   width: 32px;
   height: 32px;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-info-left .sea-qa-row-details-reply-item-author-avatar img {
+.sea-qa-row-details-reply-item .author-info-wrapper .author-info-left .author-avatar img {
   border-radius: 50%;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-info-left .sea-qa-row-details-reply-item-author-name {
+.sea-qa-row-details-reply-item .author-info-wrapper .author-info-left .author-name {
   padding-left: 10px;
   font-weight: 500;
 }
 
-.sea-qa-row-details-reply-item .sea-qa-row-details-reply-item-author-info-wrapper .sea-qa-row-details-reply-item-author-time {
+.sea-qa-row-details-reply-item .author-info-wrapper .author-time {
   color: #666;
 }
 
@@ -118,4 +118,5 @@
 .sea-qa-row-details-container .article {
   border: 0px;
   min-height: 100%;
+  padding: 16px;
 }

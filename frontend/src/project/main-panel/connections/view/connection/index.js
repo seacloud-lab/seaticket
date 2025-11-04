@@ -27,6 +27,12 @@ const MULTIPLE_VIEWS_CONNECTION_TYPE = [
   CONNECTION_TYPE.SEAFILE,
 ];
 
+const SUPPORT_DETAILS_CONNECTION_TYPE = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.SEAFILE,
+];
+
 const SiteContentDialog = ({ title, content, onClose }) => {
   const [innerHtml, setInnerHtml] = useState('');
 
@@ -145,6 +151,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
+  const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
   const generateAITitleForRow = useCallback((row) => {
     const recordID = row._id || row._pk;
@@ -478,11 +485,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
   const getRowDetails = useCallback((row) => {
-    if ([
-      CONNECTION_TYPE.GITHUB_ISSUE,
-      CONNECTION_TYPE.DISCOURSE_FORUM,
-      CONNECTION_TYPE.SEAFILE
-    ].includes(connection.type)) {
+    if (SUPPORT_DETAILS_CONNECTION_TYPE.includes(connection.type)) {
+      setRowDetailsTitle(row.title || row.filename);
       connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
         let detailData = null;
         if (connection.type === CONNECTION_TYPE.SEAFILE) {
@@ -496,7 +500,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
             body: detail.body || detail.content,
           }));
         }
-        setRowDetailsTitle(row.title || row.filename);
         setRowDetails(detailData);
       });
     }
@@ -508,6 +511,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       window.open(row.url);
       return;
     }
+    setIsShowRowDetailsDialog(true);
     getRowDetails(row);
   }, [projectUuid, connectionID, connection]);
 
@@ -528,6 +532,12 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     getRowDetails(currentRow);
 
   }, [projectUuid, connectionID, connection]);
+
+  const onCloseRowDetailsDialog = useCallback(() => {
+    setIsShowRowDetailsDialog(false);
+    setRowDetails(null);
+    setRowDetailsTitle('');
+  }, []);
 
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
@@ -577,11 +587,11 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {rowDetails && (
+      {isShowRowDetailsDialog && (
         <RowDetailsDialog
           rowDetailsTitle={rowDetailsTitle}
           rowDetails={rowDetails}
-          onClose={() => setRowDetails(null)}
+          onClose={() => onCloseRowDetailsDialog()}
           handleSwitchRows={handleSwitchRows}
         />
       )}
