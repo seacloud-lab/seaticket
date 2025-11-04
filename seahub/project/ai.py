@@ -159,18 +159,26 @@ class ConvertRecordToTicket(APIView):
 
         record_detail = ''
         default_title = ''
+        start = 0
+        limit = 1000
         match connection.type:
             case ConnectionType.DISCOURSE_FORUM.value:
                 discourse_db_api = DiscourseSeaDBAPI(project_uuid)
-                topics = discourse_db_api.get_topics_by_connection_id(
+                topics = discourse_db_api.get_topic_by_pk(
                     connection_id, record_id
                 )
                 title = topics[0].get('title', '') if topics else ''
                 topic_id = topics[0].get('topic_id') if topics else ''
                 default_title = title
-                replies = discourse_db_api.get_replies_by_topic(
-                    connection_id, topic_id
-                )
+                replies = []
+                while True:
+                    replies_res = discourse_db_api.get_replies_by_topic(
+                        connection_id, topic_id, start, limit
+                    )
+                    if len(replies) == 0:
+                        break
+                    replies.extend(replies_res)
+                    start += limit
                 body_content = ''
                 for reply in replies:
                     if not reply.get('content'):
@@ -191,16 +199,23 @@ class ConvertRecordToTicket(APIView):
 
             case ConnectionType.GITHUB_ISSUE.value:
                 github_db_api = GitHubSeaDBAPI(project_uuid)
-                issue = github_db_api.get_issues_by_connection_id(
+                issue = github_db_api.get_issue_by_pk(
                     connection_id, record_id
                 )
                 title = issue[0].get('title', '') if issue else ''
                 default_title = title
                 body_content = issue[0].get('body', '') if issue else ''
                 issue_id = issue[0].get('issue_id') if issue else ''
-                comments = github_db_api.get_comments_by_issue_id(
-                    connection_id, issue_id
-                )
+                comments = []
+                while True:
+                    comments_res = github_db_api.get_comments_by_issue_id(
+                        connection_id, issue_id, start, limit
+                    )
+                    if len(comments_res) == 0:
+                        break
+                    comments.extend(comments_res)
+                    start += limit
+
                 for comment in comments:
                     if not comment.get('body'):
                         continue
