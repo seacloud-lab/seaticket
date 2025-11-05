@@ -29,10 +29,10 @@ class DiscourseSeaDBAPI:
             return result['results']
         return []
 
-    def get_replies_by_topic(self, connection_id, topic_id, start, limit):
-        """Retrieve all replies for the specified topic."""
+    def get_replies_by_topic_id(self, connection_id, topic_id):
+        """Retrieve all replies for the specified topic_id."""
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id} LIMIT {limit} OFFSET {start}"
+        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id}"
         result = self.seadb_api.query_rows(self.base_id, sql)
         if result and 'results' in result:
             return result['results']
