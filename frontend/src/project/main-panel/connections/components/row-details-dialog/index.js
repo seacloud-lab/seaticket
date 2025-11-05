@@ -83,6 +83,15 @@ const RowDetailsDialog = ({
     getRowDetails(currentRow);
   }, []);
 
+  const renderContentByType = useCallback((type, content) => {
+    if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return (
+        <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: content }} />
+      );
+    }
+    return <MarkdownViewer value={content} showTOC={false} />;
+  }, []);
+
   return (
     <Modal className="sea-qa-row-details-container" isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onClose}>
@@ -117,8 +126,11 @@ const RowDetailsDialog = ({
           <Fragment>
             {connection.type === CONNECTION_TYPE.SEAFILE && rowDetails && (
               <Fragment>
-                {!rowDetails.body && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-                {rowDetails.body && (<MarkdownViewer value={rowDetails.body} showTOC={false} />)}
+                {
+                  rowDetails.body
+                    ? renderContentByType(connection.type, rowDetails.body)
+                    : <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />
+                }
               </Fragment>
             )}
             {connection.type !== CONNECTION_TYPE.SEAFILE && rowDetails && (
@@ -139,7 +151,7 @@ const RowDetailsDialog = ({
                             {dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}
                           </div>
                         </div>
-                        <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: detail.body }} />
+                        {renderContentByType(connection.type, detail.body)}
                       </div>
                     ))}
                   </Fragment>
