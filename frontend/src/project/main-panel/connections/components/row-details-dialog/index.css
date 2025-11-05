@@ -131,6 +131,6 @@
   padding: 16px;
 }
 
-.sea-qa-row-details-container .article p:first-child {
+.sea-qa-row-details-container .article>div[data-slate-editor=true]>:first-child {
   margin-top: 0px;
 }
