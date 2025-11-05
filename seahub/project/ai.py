@@ -105,8 +105,8 @@ class ChatView(APIView):
             sources = []
             agent_memory = {}
 
-        user_message = ChatMessages.objects.create_message(session.id, request.user.username, 'user', query)
-        ai_reply_message = ChatMessages.objects.create_message(session.id, request.user.username, 'assistant', ai_reply, json.dumps(sources))
+        user_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'user', query, resolve_type == 'agent')
+        ai_reply_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
 
         return Response({
             'ai_reply': ai_reply,

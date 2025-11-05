@@ -9,7 +9,7 @@ import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews
+from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews, ChatMessages, ChatToolCalls, ChatSessions
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -361,6 +361,17 @@ def replace_file_url_in_content(content, new_file_urls_dict):
         old_file_url = new_file_urls_dict[new_file_url]
         content = content.replace(old_file_url, new_file_url)
     return content
+
+def delete_session(session_id):
+    try:
+        chat_messages = ChatMessages.objects.filter(session_id=session_id)
+        ChatToolCalls.objects.filter(chat_uuid__in=chat_messages.values_list('chat_uuid', flat=True)).delete()
+        chat_messages.delete()
+        ChatSessions.objects.filter(pk=session_id).delete()
+        return True
+    except Exception as e:
+        logger.error('delete session: %s error: %s', str(session_id), e)
+        return False
 
 
 def delete_project(project):
