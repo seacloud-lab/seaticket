@@ -32,6 +32,7 @@ const GALLERY_SORT_COLUMN_OPTIONS = [
   CellType.MTIME,
   CellType.RATE,
   CellType.NUMBER,
+  CellType.PRIORITY,
 ];
 
 const GALLERY_FIRST_SORT_COLUMN_OPTIONS = [
@@ -40,7 +41,11 @@ const GALLERY_FIRST_SORT_COLUMN_OPTIONS = [
 ];
 
 const TEXT_SORTER_COLUMN_TYPES = [CellType.TEXT];
-const NUMBER_SORTER_COLUMN_TYPES = [CellType.NUMBER, CellType.RATE];
+const NUMBER_SORTER_COLUMN_TYPES = [
+  CellType.NUMBER,
+  CellType.RATE,
+  CellType.PRIORITY,
+];
 
 export {
   SORT_TYPE,

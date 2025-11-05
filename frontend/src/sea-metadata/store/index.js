@@ -3,7 +3,7 @@ import { getRowById, getRowsByIds } from '../utils/row';
 import { getColumnByKey, normalizeColumns } from '../utils/column';
 import {
   Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE,
-  UNDO_OPERATION_TYPE, RE_SEARCH_ROWS_OPERATION,
+  UNDO_OPERATION_TYPE, RE_SEARCH_ROWS_OPERATION, NEED_LOADING_OPERATION,
 } from './operations';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import DataProcessor from './data-processor';
@@ -122,6 +122,10 @@ class Store {
 
   applyOperation(operation, undoRedoHandler = { handleUndo: true }) {
     const { op_type } = operation;
+
+    if (NEED_LOADING_OPERATION.includes(op_type)) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.LOADING, true);
+    }
 
     if (!NEED_APPLY_AFTER_SERVER_OPERATION.includes(op_type)) {
       this.handleUndoRedos(undoRedoHandler, operation);

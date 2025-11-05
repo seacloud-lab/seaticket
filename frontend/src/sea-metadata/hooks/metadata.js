@@ -254,6 +254,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeLocalRowChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, updateLocalRow);
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
+    const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
 
     return () => {
       // if (context) {
@@ -268,6 +269,7 @@ export const MetadataProvider = forwardRef(({
       unsubscribeLocalRowChanged();
       unsubscribeLocalColumnChanged();
       unsubscribeMoveRow();
+      unsubscribeLoading();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localStorageNamePrefix, viewID]);
