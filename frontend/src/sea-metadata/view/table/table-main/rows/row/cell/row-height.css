@@ -290,7 +290,7 @@
   white-space: nowrap !important;
 }
 
-.sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article p:first-child {
+.sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article>div[data-slate-editor=true]>:first-child {
   margin-top: 0px;
 }
 
