@@ -124,7 +124,6 @@ class Store {
     const { op_type } = operation;
 
     if (NEED_LOADING_OPERATION.includes(op_type)) {
-      console.log(12);
       context.eventBus.dispatch(EVENT_BUS_TYPE.LOADING, true);
     }
 
