@@ -4,6 +4,7 @@
 {% block sub_title %}{% trans "Signup" %} - {% endblock %}
 
 {% block extra_style %}{{block.super}}
+{% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block private_style %}
@@ -16,7 +17,6 @@
     margin-right: 25px;
 }
 
-{% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block main_content %}

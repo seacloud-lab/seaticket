@@ -13,8 +13,10 @@
     color: #666;
 }
 
-{% render_bundle 'eyeIcon' 'css' %}
+{% endblock %}
 
+{% block extra_style %}{{block.super}}
+{% render_bundle 'eyeIcon' 'css' %}
 {% endblock %}
 
 {% block main_content %}
