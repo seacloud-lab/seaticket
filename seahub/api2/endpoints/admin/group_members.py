@@ -314,7 +314,6 @@ class AdminGroupMember(APIView):
             
         except Exception as e:
             logger.error(e)
-            print(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
