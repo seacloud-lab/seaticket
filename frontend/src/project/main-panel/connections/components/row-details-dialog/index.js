@@ -1,12 +1,12 @@
-import { useMemo, useCallback, useState, useEffect, useRef, Fragment } from 'react';
-import { Modal, ModalBody, UncontrolledTooltip } from 'reactstrap';
+import { useCallback, useState, useEffect, useRef, Fragment } from 'react';
+import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
-import { EmptyTip, ModalHeader, Icon, Loading } from '@/components';
+import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import { isObject } from '@/utils/type-detection';
 import MarkdownViewer from '@/sea-metadata/components/cell-formatter/long-text/long-text-preview/viewer';
 import { connectionsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPE } from '../../constants';
 
 import './index.css';
@@ -17,13 +17,14 @@ const SUPPORT_DETAILS_CONNECTION_TYPE = [
   CONNECTION_TYPE.SEAFILE,
 ];
 
-const RowDetailsDialog = ({ 
+const RowDetailsDialog = ({
   projectUuid, connection, currentRow, seaMetaDataRef,
   setIsShowRowDetailsDialog
 }) => {
   const currentRowRef = useRef(null);
   const [rowDetails, setRowDetails] = useState(null);
   const [rowDetailsTitle, setRowDetailsTitle] = useState('');
+  const [errMessage, setErrMessage] = useState('');
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
 
   const getRowDetails = useCallback((row) => {
@@ -45,9 +46,11 @@ const RowDetailsDialog = ({
         }
         setRowDetails(detailData);
         setStatus('loaded');
-      }).catch(() => {
+      }).catch((error) => {
+        const errMessage = Utils.getErrorMsg(error);
+        setErrMessage(errMessage);
         setStatus('error');
-      })
+      });
     }
   }, [projectUuid, connection]);
 
@@ -72,65 +75,43 @@ const RowDetailsDialog = ({
     setIsShowRowDetailsDialog(false);
     setRowDetails(null);
     setRowDetailsTitle('');
-    currentRowRef.current = null
+    currentRowRef.current = null;
   }, []);
 
   useEffect(() => {
     currentRowRef.current = currentRow._id;
-    getRowDetails(currentRow)
-  }, [])
+    getRowDetails(currentRow);
+  }, []);
 
   return (
     <Modal className="sea-qa-row-details-container" isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onClose}>
         <div className="d-flex align-items-center">
           <div className="row-expand-direct-icons mr-2">
-            <span
-              id="sea-qa-row-details-prev-record-btn"
+            <IconTooltip
+              icon="down"
+              tip={gettext('Previous record')}
               className="direct-icon rotate-icon-180"
+              placement="bottom"
               onClick={() => handleSwitchRows(-1)}
-            >
-              <Icon symbol="down" />
-            </span>
-            <span
-              id="sea-qa-row-details-next-record-btn"
+            />
+            <IconTooltip
+              icon="down"
+              tip={gettext('Next record')}
               className="direct-icon"
+              placement="bottom"
               onClick={() => handleSwitchRows(1)}
-            >
-              <Icon symbol="down" />
-            </span>
-            <UncontrolledTooltip
-              placement="bottom"
-              target="sea-qa-row-details-prev-record-btn"
-              fade={false}
-              trigger="hover"
-              className="sea-metadata-tooltip"
-            >
-              {gettext('Previous record')}
-            </UncontrolledTooltip>
-            <UncontrolledTooltip
-              placement="bottom"
-              target="sea-qa-row-details-next-record-btn"
-              fade={false}
-              trigger="hover"
-              className="sea-metadata-tooltip"
-            >
-              {gettext('Next record')}
-            </UncontrolledTooltip>
+            />
           </div>
-          <div className="text-truncate flex-1" title={rowDetailsTitle}>{rowDetailsTitle}</div>
+          <div className="text-truncate flex-1 user-select-none" title={rowDetailsTitle}>{rowDetailsTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>
         {status === 'loading' && (
-          <div className="h-100 d-flex align-items-center justify-content-center">
-            <Loading/>
-          </div>
+          <CenteredLoading />
         )}
         {status === 'error' && (
-          <div className="h-100 d-flex align-items-center justify-content-center">
-            <span className="error" dangerouslySetInnerHTML={{ __html: status }}></span>
-          </div>
+          <CenteredError>{errMessage}</CenteredError>
         )}
         {status === 'loaded' && (
           <Fragment>
