@@ -27,12 +27,6 @@ const MULTIPLE_VIEWS_CONNECTION_TYPE = [
   CONNECTION_TYPE.SEAFILE,
 ];
 
-const SUPPORT_DETAILS_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-];
-
 const SiteContentDialog = ({ title, content, onClose }) => {
   const [innerHtml, setInnerHtml] = useState('');
 
@@ -139,13 +133,11 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
 
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const seaMetaDataRef = useRef(null);
-  const currentRowRef = useRef(null);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
-  const [rowDetails, setRowDetails] = useState(null);
-  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
+  const [currentRow, setCurrentRow] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -484,60 +476,14 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
-  const getRowDetails = useCallback((row) => {
-    if (SUPPORT_DETAILS_CONNECTION_TYPE.includes(connection.type)) {
-      setRowDetailsTitle(row.title || row.filename);
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
-        let detailData = null;
-        if (connection.type === CONNECTION_TYPE.SEAFILE) {
-          detailData = {
-            body: res.data.row_details[0].content,
-          };
-        } else {
-          detailData = res.data.row_details.map(detail => ({
-            ...detail,
-            time: detail.created_at || detail.updated_at,
-            body: detail.body || detail.content,
-          }));
-        }
-        setRowDetails(detailData);
-      });
-    }
-  }, [projectUuid, connectionID, connection]);
-
   const handleExpandRow = useCallback((row) => {
-    currentRowRef.current = row._id;
+    setCurrentRow(row);
     if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
       window.open(row.url);
       return;
     }
     setIsShowRowDetailsDialog(true);
-    getRowDetails(row);
   }, [projectUuid, connectionID, connection]);
-
-  const handleSwitchRows = useCallback((count) => {
-    const rowsData = seaMetaDataRef.current.getOrderRows();
-    const index = rowsData.findIndex(r => r._id === currentRowRef.current);
-    if (index === -1) return;
-
-    let newIndex = index + count;
-    if (newIndex > rowsData.length - 1) {
-      newIndex = 0;
-    }
-    if (newIndex < 0) {
-      newIndex = rowsData.length - 1;
-    }
-    const currentRow = rowsData[newIndex];
-    currentRowRef.current = currentRow._id;
-    getRowDetails(currentRow);
-
-  }, [projectUuid, connectionID, connection]);
-
-  const onCloseRowDetailsDialog = useCallback(() => {
-    setIsShowRowDetailsDialog(false);
-    setRowDetails(null);
-    setRowDetailsTitle('');
-  }, []);
 
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
@@ -589,10 +535,11 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       />
       {isShowRowDetailsDialog && (
         <RowDetailsDialog
-          rowDetailsTitle={rowDetailsTitle}
-          rowDetails={rowDetails}
-          onClose={() => onCloseRowDetailsDialog()}
-          handleSwitchRows={handleSwitchRows}
+          projectUuid={projectUuid}
+          connection={connection}
+          currentRow={currentRow}
+          seaMetaDataRef={seaMetaDataRef}
+          setIsShowRowDetailsDialog={setIsShowRowDetailsDialog}
         />
       )}
       {siteDetails && (
