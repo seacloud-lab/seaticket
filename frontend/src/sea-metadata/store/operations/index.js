@@ -12,6 +12,7 @@ export {
   VIEW_OPERATION,
   COLUMN_OPERATION,
   RE_SEARCH_ROWS_OPERATION,
+  NEED_LOADING_OPERATION,
 } from './constants';
 
 export {
