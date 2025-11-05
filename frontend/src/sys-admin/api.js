@@ -1,24 +1,24 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { siteRoot } from '../constants';
+import { siteRoot } from '@/constants';
 
 class SysAdminServiceApi {
 
-  constructor(config) {
-    this.server = config?.server;
-    this.accessToken = config?.accessToken;
-    if (this.accessToken && this.server) {
+  init({ server, username, password, token } = {}) {
+    this.server = server;
+    this.username = username;
+    this.password = password;
+    this.token = token;
+    if (this.token && this.server) {
       this.req = axios.create({
         baseURL: this.server,
-        headers: { 'Authorization': 'Token ' + this.accessToken }
+        headers: { 'Authorization': 'Token ' + this.token }
       });
-    } else {
-      this.initForUsage();
     }
+    return this;
   }
 
-  initForUsage() {
-    const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
+  initForUsage({ siteRoot, xcsrfHeaders }) {
     if (siteRoot && siteRoot.charAt(siteRoot.length - 1) === '/') {
       var server = siteRoot.substring(0, siteRoot.length - 1);
       this.server = server;
@@ -31,6 +31,7 @@ class SysAdminServiceApi {
         'X-CSRFToken': xcsrfHeaders,
       }
     });
+    return this;
   }
 
   _sendPostRequest(url, form) {
@@ -415,12 +416,9 @@ class SysAdminServiceApi {
     return this._sendPostRequest(url, form);
   }
 
-  sysAdminListUserRepoDirents(email, parentDir) {
-    let url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/storage/';
-    let params = {
-      parent_dir: parentDir
-    };
-    return this.req.get(url, { params: params });
+  sysAdminListUserProjects(email) {
+    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/projects/';
+    return this.req.get(url);
   }
 
   sysAdminRenameUserFile(email, direntPath, newName) {
@@ -455,8 +453,8 @@ class SysAdminServiceApi {
     return this.req.get(url);
   }
 
-  sysAdminDeleteProjectsFromGroup(groupID, projectID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/' + projectID + '/';
+  sysAdminDeleteProjectsFromGroup(groupID, projectUuid) {
+    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/' + projectUuid + '/';
     return this.req.delete(url);
   }
 
@@ -646,5 +644,7 @@ class SysAdminServiceApi {
 }
 
 const sysAdminAPI = new SysAdminServiceApi();
+const xcsrfHeaders = Cookies.get('seaqa_csrftoken');
+sysAdminAPI.initForUsage({ siteRoot, xcsrfHeaders });
 
 export default sysAdminAPI;

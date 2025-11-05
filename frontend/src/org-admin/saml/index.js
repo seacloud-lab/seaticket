@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col, Label, Button, Input, InputGroup } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
-import MainPanelTopbar from '../main-panel/top-bar';
+import { Main, TopBar } from '../main-panel';
 import { Loading } from '@/components';
 import { gettext, orgID, serviceURL } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -94,129 +94,124 @@ class SAMLConfig extends Component {
 
     return (
       <Fragment>
-        <MainPanelTopbar />
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <h2 className="heading">{gettext('SAML configuration')}</h2>
-            <div className="cur-view-content container mw-100 px-4">
-              {loading && <Loading />}
-              {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
-              {(!loading && !errorMsg) &&
+        <TopBar />
+        <Main title={gettext('SAML configuration')}>
+          {loading && <Loading />}
+          {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
+          {(!loading && !errorMsg) &&
+            <Fragment>
+              <Section headingText={gettext('Configure your Identity Provider')}>
+                <p className="text-secondary mt-1">{gettext('Use these values to configure your Identity Provider')}</p>
                 <Fragment>
-                  <Section headingText={gettext('Configure your Identity Provider')}>
-                    <p className="text-secondary mt-1">{gettext('Use these values to configure your Identity Provider')}</p>
-                    <Fragment>
-                      <Row className="my-4">
-                        <Col md="3">
-                          <Label className="web-setting-label">Identifier (Entity ID)</Label>
-                        </Col>
-                        <Col md="5">
-                          <InputGroup>
-                            <Input type="text" readOnly={true} value={entityID} />
-                            <Button color="primary" onClick={this.onCopyValue.bind(this, entityID)} className="border-0">{gettext('Copy')}</Button>
-                          </InputGroup>
-                        </Col>
-                      </Row>
+                  <Row className="my-4">
+                    <Col md="3">
+                      <Label className="web-setting-label">Identifier (Entity ID)</Label>
+                    </Col>
+                    <Col md="5">
+                      <InputGroup>
+                        <Input type="text" readOnly={true} value={entityID} />
+                        <Button color="primary" onClick={this.onCopyValue.bind(this, entityID)} className="border-0">{gettext('Copy')}</Button>
+                      </InputGroup>
+                    </Col>
+                  </Row>
 
-                      <Row className="my-4">
-                        <Col md="3">
-                          <Label className="web-setting-label">Reply URL (Assertion Consumer Service URL)</Label>
-                        </Col>
-                        <Col md="5">
-                          <InputGroup>
-                            <Input type="text" readOnly={true} value={acsURL} />
-                            <Button color="primary" onClick={this.onCopyValue.bind(this, acsURL)} className="border-0">{gettext('Copy')}</Button>
-                          </InputGroup>
-                        </Col>
-                      </Row>
+                  <Row className="my-4">
+                    <Col md="3">
+                      <Label className="web-setting-label">Reply URL (Assertion Consumer Service URL)</Label>
+                    </Col>
+                    <Col md="5">
+                      <InputGroup>
+                        <Input type="text" readOnly={true} value={acsURL} />
+                        <Button color="primary" onClick={this.onCopyValue.bind(this, acsURL)} className="border-0">{gettext('Copy')}</Button>
+                      </InputGroup>
+                    </Col>
+                  </Row>
 
-                      <Row className="my-4">
-                        <Col md="3">
-                          <Label className="web-setting-label">Sign on URL</Label>
-                        </Col>
-                        <Col md="5">
-                          <InputGroup>
-                            <Input type="text" readOnly={true} value={serviceURL} />
-                            <Button color="primary" onClick={this.onCopyValue.bind(this, serviceURL)} className="border-0">{gettext('Copy')}</Button>
-                          </InputGroup>
-                        </Col>
-                      </Row>
+                  <Row className="my-4">
+                    <Col md="3">
+                      <Label className="web-setting-label">Sign on URL</Label>
+                    </Col>
+                    <Col md="5">
+                      <InputGroup>
+                        <Input type="text" readOnly={true} value={serviceURL} />
+                        <Button color="primary" onClick={this.onCopyValue.bind(this, serviceURL)} className="border-0">{gettext('Copy')}</Button>
+                      </InputGroup>
+                    </Col>
+                  </Row>
 
-                      <Row className="my-4">
-                        <Col md="3">
-                          <Label className="web-setting-label">Logout URL</Label>
-                        </Col>
-                        <Col md="5">
-                          <InputGroup>
-                            <Input type="text" readOnly={true} value={logoutURL} />
-                            <Button color="primary" onClick={this.onCopyValue.bind(this, logoutURL)} className="border-0">{gettext('Copy')}</Button>
-                          </InputGroup>
-                        </Col>
-                      </Row>
-                    </Fragment>
-                  </Section>
-
-                  <Section headingText={gettext('Configure SeaQA')}>
-                    <p className="text-secondary mt-1">{gettext('Use information from your Identity Provider to configure SeaQA')}</p>
-                    <Fragment>
-                      <InputItem
-                        value={metadataUrl}
-                        changeType={'metadataUrl'}
-                        changeValue={this.updateSamlConfig}
-                        displayName={'SAML App Federation Metadata URL'}
-                      />
-
-                      <InputItem
-                        value={idpCertificate}
-                        changeType={'idpCertificate'}
-                        changeValue={this.updateSamlConfig}
-                        displayName={gettext('Certificate')}
-                        isCertificate={true}
-                      />
-                    </Fragment>
-                  </Section>
-
-                  <Section headingText={gettext('Verify Domain')}>
-                    <p className="text-secondary mt-1">{gettext('Create a DNS TXT record to confirm the ownership of your Email Domain.')}</p>
-                    <Fragment>
-                      <InputItem
-                        value={domain}
-                        changeType={'domain'}
-                        changeValue={this.updateSamlConfig}
-                        displayName={gettext('Email Domain')}
-                        domainVerified={domainVerified}
-                      />
-
-                      <Row className="my-4">
-                        <Col md="3">
-                          <Label className="web-setting-label">{gettext('DNS TXT Value')}</Label>
-                        </Col>
-                        <Col md="5">
-                          <InputGroup>
-                            <Input type="text" readOnly={true} value={dnsTxt} />
-                            {(dnsTxt && !domainVerified) && (
-                              <Button color="primary" onClick={this.onCopyValue.bind(this, dnsTxt)} className="border-0">{gettext('Copy')}</Button>
-                            )}
-                          </InputGroup>
-                          {(dnsTxt && !domainVerified) &&
-                            <p className="small text-secondary mt-1">
-                              {gettext('Copy the domain DNS TXT and add it to your domain\'s DNS records, then click the button to verify domain ownership. You must verify the ownership of domain before Single Sign-On.')}
-                            </p>
-                          }
-                        </Col>
-                        <Col md="4">
-                          {(domain && dnsTxt && !domainVerified) &&
-                            <Button color="secondary" onClick={this.verifyDomain}>{gettext('Verify')}</Button>
-                          }
-                        </Col>
-                      </Row>
-                    </Fragment>
-                  </Section>
+                  <Row className="my-4">
+                    <Col md="3">
+                      <Label className="web-setting-label">Logout URL</Label>
+                    </Col>
+                    <Col md="5">
+                      <InputGroup>
+                        <Input type="text" readOnly={true} value={logoutURL} />
+                        <Button color="primary" onClick={this.onCopyValue.bind(this, logoutURL)} className="border-0">{gettext('Copy')}</Button>
+                      </InputGroup>
+                    </Col>
+                  </Row>
                 </Fragment>
-              }
-            </div>
-          </div>
-        </div>
+              </Section>
+
+              <Section headingText={gettext('Configure SeaQA')}>
+                <p className="text-secondary mt-1">{gettext('Use information from your Identity Provider to configure SeaQA')}</p>
+                <Fragment>
+                  <InputItem
+                    value={metadataUrl}
+                    changeType={'metadataUrl'}
+                    changeValue={this.updateSamlConfig}
+                    displayName={'SAML App Federation Metadata URL'}
+                  />
+
+                  <InputItem
+                    value={idpCertificate}
+                    changeType={'idpCertificate'}
+                    changeValue={this.updateSamlConfig}
+                    displayName={gettext('Certificate')}
+                    isCertificate={true}
+                  />
+                </Fragment>
+              </Section>
+
+              <Section headingText={gettext('Verify Domain')}>
+                <p className="text-secondary mt-1">{gettext('Create a DNS TXT record to confirm the ownership of your Email Domain.')}</p>
+                <Fragment>
+                  <InputItem
+                    value={domain}
+                    changeType={'domain'}
+                    changeValue={this.updateSamlConfig}
+                    displayName={gettext('Email Domain')}
+                    domainVerified={domainVerified}
+                  />
+
+                  <Row className="my-4">
+                    <Col md="3">
+                      <Label className="web-setting-label">{gettext('DNS TXT Value')}</Label>
+                    </Col>
+                    <Col md="5">
+                      <InputGroup>
+                        <Input type="text" readOnly={true} value={dnsTxt} />
+                        {(dnsTxt && !domainVerified) && (
+                          <Button color="primary" onClick={this.onCopyValue.bind(this, dnsTxt)} className="border-0">{gettext('Copy')}</Button>
+                        )}
+                      </InputGroup>
+                      {(dnsTxt && !domainVerified) &&
+                        <p className="small text-secondary mt-1">
+                          {gettext('Copy the domain DNS TXT and add it to your domain\'s DNS records, then click the button to verify domain ownership. You must verify the ownership of domain before Single Sign-On.')}
+                        </p>
+                      }
+                    </Col>
+                    <Col md="4">
+                      {(domain && dnsTxt && !domainVerified) &&
+                        <Button color="secondary" onClick={this.verifyDomain}>{gettext('Verify')}</Button>
+                      }
+                    </Col>
+                  </Row>
+                </Fragment>
+              </Section>
+            </Fragment>
+          }
+        </Main>
       </Fragment>
     );
   }

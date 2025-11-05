@@ -79,8 +79,6 @@ class SearchUser(APIView):
                         return err
                     email_list += result_users
                 else:
-                    # # search from ccnet
-                    # email_list += search_user_from_ccnet(q)
 
                     # search from profile, NOT limit search range
                     email_list += search_user_from_profile(q)
@@ -134,24 +132,6 @@ def format_searched_user_result(request, users):
         results.append(user_info)
 
     return results
-
-def search_user_from_ccnet(q):
-    """ Return 10 items at most.
-    """
-
-    users = []
-
-    db_users = User.objects.search_emailusers(q, 0, 10)
-    users.extend(db_users)
-
-    count = len(users)
-
-    # `users` is already search result, no need search more
-    email_list = []
-    for user in users:
-        email_list.append(user.email)
-
-    return email_list
 
 def search_user_from_profile(q):
     """ Return 10 items at most.

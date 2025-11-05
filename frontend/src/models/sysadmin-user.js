@@ -12,7 +12,7 @@ class SysAdminUser {
     this.quota_total = object.quota_total;
     this.quota_usage = object.quota_usage;
     this.role = object.role;
-    this.institution = object.institution;
+    this.institution = object.institution || '';
     this.storage_usage = object.storage_usage;
     if (object.org_id) {
       this.org_id = object.org_id;

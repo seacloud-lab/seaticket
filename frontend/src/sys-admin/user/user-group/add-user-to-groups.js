@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { toaster, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
@@ -7,26 +6,18 @@ import { Utils } from '@/utils/utils';
 import GroupSelect from '@/components/group-select';
 import sysAdminAPI from '@/sys-admin/api';
 
-const propTypes = {
-  title: PropTypes.string,
-  email: PropTypes.string,
-  groupList: PropTypes.array,
-  addToGroups: PropTypes.func
-};
-
 class AddUserToGroupsOperation extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      isShowDialog: false,
       isAdding: false,
       selectedGroupIds: []
     };
   }
 
   toggleDialog = () => {
-    this.setState({ isShowDialog: !this.state.isShowDialog });
+    this.props.toggleDialog();
   };
 
   handleSubmit = () => {
@@ -53,13 +44,13 @@ class AddUserToGroupsOperation extends React.Component {
 
   loadOptions = (input, callback) => {
     const value = input.trim();
-    const { groupList } = this.props;
+    const { groups } = this.props;
     if (value.length > 0) {
       sysAdminAPI.sysAdminSearchGroups(value).then((res) => {
         this.options = [];
         for (let i = 0 ; i < res.data.group_list.length; i++) {
           const item = res.data.group_list[i];
-          const group = groupList.find(group => group.id === item.id);
+          const group = groups.find(group => group.id === item.id);
           if (group) continue;
           let obj = {};
           obj.value = item.name;
@@ -86,45 +77,29 @@ class AddUserToGroupsOperation extends React.Component {
   };
 
   render() {
-    const { isShowDialog, isAdding } = this.state;
-    const { title } = this.props;
-
-    const btnProps = {
-      className: 'btn btn-secondary operation-item',
-      title: title,
-      'aria-label': title,
-      onClick: this.toggleDialog
-    };
+    const { isAdding } = this.state;
 
     return (
-      <>
-        <button {...btnProps}>{title}</button>
-        {isShowDialog && (
-          <Modal isOpen={true} toggle={this.toggleDialog}>
-            <ModalHeader toggle={this.toggleDialog}>
-              {gettext('Add user to groups')}
-            </ModalHeader>
-            <ModalBody>
-              <GroupSelect
-                placeholder={gettext('Search groups')}
-                onSelectChange={this.onSelectChange}
-                ref="groupSelect"
-                isMulti={true}
-                loadOptions={this.loadOptions}
-              />
-            </ModalBody>
-
-            <ModalFooter>
-              <Button color="secondary" onClick={this.toggleDialog}>{gettext('Cancel')}</Button>
-              <Button color="primary" disable={isAdding} onClick={this.handleSubmit}>{gettext('Submit')}</Button>
-            </ModalFooter>
-          </Modal>
-        )}
-      </>
+      <Modal isOpen={true} toggle={this.toggleDialog}>
+        <ModalHeader toggle={this.toggleDialog}>
+          {gettext('Add user to groups')}
+        </ModalHeader>
+        <ModalBody>
+          <GroupSelect
+            placeholder={gettext('Search groups')}
+            onSelectChange={this.onSelectChange}
+            ref="groupSelect"
+            isMulti={true}
+            loadOptions={this.loadOptions}
+          />
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={this.toggleDialog}>{gettext('Cancel')}</Button>
+          <Button color="primary" disable={isAdding} onClick={this.handleSubmit}>{gettext('Submit')}</Button>
+        </ModalFooter>
+      </Modal>
     );
   }
 }
-
-AddUserToGroupsOperation.propTypes = propTypes;
 
 export default AddUserToGroupsOperation;

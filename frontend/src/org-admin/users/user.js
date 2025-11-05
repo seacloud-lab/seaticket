@@ -184,8 +184,8 @@ class User extends React.Component {
               return (
                 <td className="text-center cursor-pointer" key={key}>
                   {isOperationMenuShow && (
-                    <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
-                      <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} onClick={this.onDropdownToggleClick} />
+                    <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu} className="d-flex">
+                      <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} className="ml-0" />
                       <CustomizeDropdownMenu>
                         {currentTab === 'users' && (
                           <>

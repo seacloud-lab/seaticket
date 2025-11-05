@@ -4,7 +4,7 @@ import { Button } from 'reactstrap';
 import { toaster, Loading } from '@/components';
 import { gettext, isPro, isDefaultAdmin } from '@/constants';
 import { Utils } from '@/utils/utils';
-import MainPanelTopbar from '../main-panel-topbar';
+import { TopBar, Main } from '../main-panel';
 import sysAdminAPI from '@/sys-admin/api';
 
 import './index.css';
@@ -118,72 +118,67 @@ class Info extends Component {
 
     return (
       <Fragment>
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container system-admin-info">
-            <h2 className="heading">{gettext('Info')}</h2>
-            <div className="content">
-              {loading && <Loading />}
-              {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
-              {(!loading && !errorMsg) &&
-              <dl className="m-0">
-                <dt className="info-item-heading">{gettext('System info')}</dt>
-                {isPro ?
-                  <dd className="info-item-content">
-                    {gettext('Enterprise Edition')}
-                    {with_license &&
-                      ' ' + this.renderLicenseDescString(license_mode, license_to, license_expiration)
-                    }<br/>
-                    {isDefaultAdmin &&
-                      <Fragment>
-                        <Button
-                          type="button"
-                          className="mt-2"
-                          color="primary"
-                          outline={true}
-                          onClick={this.openFileInput}
-                        >{gettext('Upload license')}
-                        </Button>
-                        <input className="d-none" type="file" onChange={this.uploadLicenseFile} ref={this.fileInput} />
-                      </Fragment>
-                    }
-                  </dd> :
-                  <dd className="info-item-content">
-                    {gettext('Developer edition')}
-                  </dd>
-                }
-                <dt className="info-item-heading">{gettext('Version info')}</dt>
-                <dd className="info-item-content">{version}</dd>
-
-                <dt className="info-item-heading">{gettext('Bases')}</dt>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
+        <Main title={gettext('Info')}>
+          {loading && <Loading />}
+          {errorMsg && <p className="error text-center mt-4">{errorMsg}</p>}
+          {(!loading && !errorMsg) && (
+            <dl className="m-0">
+              <dt className="info-item-heading">{gettext('System info')}</dt>
+              {isPro ?
                 <dd className="info-item-content">
-                  {this.renderBaseInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
+                  {gettext('Enterprise Edition')}
+                  {with_license &&
+                    ' ' + this.renderLicenseDescString(license_mode, license_to, license_expiration)
+                  }<br/>
+                  {isDefaultAdmin &&
+                    <Fragment>
+                      <Button
+                        type="button"
+                        className="mt-2"
+                        color="primary"
+                        outline={true}
+                        onClick={this.openFileInput}
+                      >{gettext('Upload license')}
+                      </Button>
+                      <input className="d-none" type="file" onChange={this.uploadLicenseFile} ref={this.fileInput} />
+                    </Fragment>
+                  }
+                </dd> :
+                <dd className="info-item-content">
+                  {gettext('Developer edition')}
                 </dd>
-                {isPro ?
-                  <Fragment>
-                    <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')} / {gettext('Limits')}</dt>
-                    <dd className="info-item-content">{active_users_count}{' / '}{users_count}{' / '}{with_license ? license_maxusers : '--'}</dd>
-                  </Fragment> :
-                  <Fragment>
-                    <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')}</dt>
-                    <dd className="info-item-content">{active_users_count} / {users_count}</dd>
-                  </Fragment>
-                }
-
-                <dt className="info-item-heading">{gettext('Groups')}</dt>
-                <dd className="info-item-content">{groups_count}</dd>
-
-                {multi_tenancy_enabled &&
-                  <Fragment>
-                    <dt className="info-item-heading">{gettext('Organizations')}</dt>
-                    <dd className="info-item-content">{org_count}</dd>
-                  </Fragment>
-                }
-              </dl>
               }
-            </div>
-          </div>
-        </div>
+              <dt className="info-item-heading">{gettext('Version info')}</dt>
+              <dd className="info-item-content">{version}</dd>
+
+              <dt className="info-item-heading">{gettext('Bases')}</dt>
+              <dd className="info-item-content">
+                {this.renderBaseInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
+              </dd>
+              {isPro ?
+                <Fragment>
+                  <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')} / {gettext('Limits')}</dt>
+                  <dd className="info-item-content">{active_users_count}{' / '}{users_count}{' / '}{with_license ? license_maxusers : '--'}</dd>
+                </Fragment> :
+                <Fragment>
+                  <dt className="info-item-heading">{gettext('Activated users')} / {gettext('Total users')}</dt>
+                  <dd className="info-item-content">{active_users_count} / {users_count}</dd>
+                </Fragment>
+              }
+
+              <dt className="info-item-heading">{gettext('Groups')}</dt>
+              <dd className="info-item-content">{groups_count}</dd>
+
+              {multi_tenancy_enabled &&
+                <Fragment>
+                  <dt className="info-item-heading">{gettext('Organizations')}</dt>
+                  <dd className="info-item-content">{org_count}</dd>
+                </Fragment>
+              }
+            </dl>
+          )}
+        </Main>
       </Fragment>
     );
   }

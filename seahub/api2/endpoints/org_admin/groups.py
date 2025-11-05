@@ -261,7 +261,7 @@ class OrgAdminGroup(APIView):
             # transfer a group
             try:
                 if not is_group_member(group_id, new_owner):
-                    GroupUser.objects.group_add_member(group_id, old_owner, new_owner)
+                    GroupUser.objects.group_add_member(group_id, new_owner)
 
                 if not is_group_admin_or_owner(group_id, new_owner):
                     GroupUser.objects.group_set_admin(group_id, new_owner)
@@ -521,7 +521,7 @@ class AdminGroupMembers(APIView):
         # Add user to group.
         for email in emails_need_add:
             try:
-                GroupUser.objects.group_add_member(group_id, group.creator_name, email)
+                GroupUser.objects.group_add_member(group_id, email)
                 member_info = get_group_member_info(group_id, email)
                 result['success'].append(member_info)
             except Exception as e:

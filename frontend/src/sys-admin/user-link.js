@@ -1,20 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { Link } from '@gatsbyjs/reach-router';
 import { siteRoot } from '@/constants';
 
-const propTypes = {
-  email: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired
+const UserLink = ({ user }) => {
+  if (!user) return null;
+  return (
+    <Link to={`${siteRoot}sys/users/${encodeURIComponent(user.email)}/`}>
+      {user.name}
+    </Link>
+  );
 };
-
-class UserLink extends Component {
-
-  render() {
-    return <Link to={`${siteRoot}sys/users/${encodeURIComponent(this.props.email)}/`}>{this.props.name}</Link>;
-  }
-}
-
-UserLink.propTypes = propTypes;
 
 export default UserLink;

@@ -6,28 +6,36 @@ import { Modal } from 'reactstrap';
 import dayjs from 'dayjs';
 import { siteRoot, lang } from '@/constants';
 import SidePanel from './side-panel';
+
 import Info from './info';
 
-import Users from './users/users';
-import AdminUsers from './users/admin-users';
-import User from './users/user-info';
-import UserGroups from './users/user-groups';
-import SearchUsers from './users/search-users';
-
-import Orgs from './orgs';
-import OrgInfo from './orgs/org-info';
-import OrgUsers from './orgs/org-users';
-import OrgGroups from './orgs/org-groups';
-import OrgProjects from './orgs/org-projects';
-import SearchOrgs from './orgs/search-orgs';
 import AllProjects from './projects/all-projects';
 import TrashProjects from './projects/trash-projects';
 import SearchProjects from './projects/search-projects';
 
+import Users from './users/users';
+import AdminUsers from './users/admin-users';
+import SearchUsers from './users/search-users';
+
+import User from './user/user-info';
+import UserGroups from './user/user-group';
+import UserProjects from './user/user-projects';
+
 import Groups from './groups/groups';
-import GroupMembers from './groups/group-members';
 import SearchGroups from './groups/search-groups';
-import OrgAdminUsers from './orgs/org-admin-users';
+
+import GroupProjects from './group/group-projects';
+import GroupMembers from './group/group-members';
+
+import Orgs from './orgs';
+import OrgInfo from './org/org-info';
+import OrgUsers from './org/org-users';
+import OrgGroups from './org/org-groups';
+import OrgProjects from './org/org-projects';
+import SearchOrgs from './orgs/search-orgs';
+
+
+import OrgAdminUsers from './org/org-admin-users';
 
 import { BARS } from './constants';
 
@@ -86,14 +94,20 @@ class SysAdmin extends React.Component {
             {/* users */}
             <Users path={siteRoot + 'sys/users'} onCloseSidePanel={this.onCloseSidePanel} />
             <AdminUsers path={siteRoot + 'sys/users/admins'} onCloseSidePanel={this.onCloseSidePanel} />
+            <SearchUsers path={siteRoot + 'sys/search-users'} onCloseSidePanel={this.onCloseSidePanel} />
+
+            {/* user */}
             <User path={siteRoot + 'sys/users/:email'} onCloseSidePanel={this.onCloseSidePanel} />
             <UserGroups path={siteRoot + 'sys/users/:email/groups'} onCloseSidePanel={this.onCloseSidePanel} />
-            <SearchUsers path={siteRoot + 'sys/search-users'} onCloseSidePanel={this.onCloseSidePanel} />
+            <UserProjects path={siteRoot + 'sys/users/:email/projects'} onCloseSidePanel={this.onCloseSidePanel} />
 
             {/* groups */}
             <Groups path={siteRoot + 'sys/groups'} onCloseSidePanel={this.onCloseSidePanel} />
-            <GroupMembers path={siteRoot + 'sys/groups/:groupID/members'} onCloseSidePanel={this.onCloseSidePanel} />
             <SearchGroups path={siteRoot + 'sys/search-groups'} onCloseSidePanel={this.onCloseSidePanel}/>
+
+            {/* group */}
+            <GroupMembers path={siteRoot + 'sys/groups/:groupID/members'} onCloseSidePanel={this.onCloseSidePanel} />
+            <GroupProjects path={siteRoot + 'sys/groups/:groupID/projects'} onCloseSidePanel={this.onCloseSidePanel} />
 
             {/* org */}
             <Orgs path={siteRoot + 'sys/organizations'} onCloseSidePanel={this.onCloseSidePanel} />

@@ -6,8 +6,9 @@ import { validateName } from '@/utils/validate';
 import { loginUrl, gettext } from '@/constants';
 import SysAdminSetOrgNameDialog from '@/sys-admin/dialog/sysadmin-set-org-name-dialog';
 import SysAdminSetOrgMaxUserNumberDialog from '@/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog';
-import MainPanelTopbar from '../main-panel-topbar';
 import OrgNav from './org-nav';
+import OrgTitle from './org-title';
+import { Main, TopBar } from '../main-panel';
 import SetQuotaDialog from '@/sys-admin/dialog/set-quota';
 import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
 import sysAdminAPI from '@/sys-admin/api';
@@ -58,8 +59,9 @@ class Content extends Component {
         aria-label={gettext('Edit')}
         className="attr-action-icon"
         icon="rename"
-        onClick={action}>
-      </IconButton>
+        onClick={action}
+        style={{ display: 'inline-flex' }}
+      />
     );
   };
 
@@ -78,7 +80,7 @@ class Content extends Component {
     } else if (errorMsg) {
       return <p className="error text-center">{errorMsg}</p>;
     } else {
-      const { org_name, users_count, max_user_number, groups_count, storage_usage, storage_quota,
+      const { org_name, users_count, max_user_number, groups_count,
         api_calls_count, monthly_api_call_limit_per_user } = orgInfo;
       const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetQuotaDialogOpen,
         isSetAPICallsLimitPerUserDialogOpen } = this.state;
@@ -106,14 +108,6 @@ class Content extends Component {
 
             <dt className="info-item-heading">{gettext('Number of groups')}</dt>
             <dd className="info-item-content">{groups_count}</dd>
-
-            <dt className="info-item-heading">{gettext('Storage usage')}</dt>
-            <dd className="info-item-content">
-              {Utils.bytesToSize(storage_usage)}
-              {' / '}
-              {Utils.bytesToSize(storage_quota)}
-              {this.showEditIcon(this.toggleSetQuotaDialog)}
-            </dd>
 
             <dt className="info-item-heading">{gettext('API calls count')}</dt>
             <dd className="info-item-content">
@@ -271,24 +265,20 @@ class OrgInfo extends Component {
     const { orgInfo } = this.state;
     return (
       <Fragment>
-        <MainPanelTopbar onCloseSidePanel={this.props.onCloseSidePanel} />
-        <div className="main-panel-center flex-row">
-          <div className="cur-view-container">
-            <OrgNav currentItem="info" orgID={this.props.orgID} orgName={orgInfo.org_name} />
-            <div className="cur-view-content">
-              <Content
-                orgID={this.props.orgID}
-                loading={this.state.loading}
-                errorMsg={this.state.errorMsg}
-                orgInfo={this.state.orgInfo}
-                updateQuota={this.updateQuota}
-                updateName={this.updateName}
-                updateMaxUserNumber={this.updateMaxUserNumber}
-                updateAPICallsLimitPerUser={this.updateAPICallsLimitPerUser}
-              />
-            </div>
-          </div>
-        </div>
+        <TopBar onCloseSidePanel={this.props.onCloseSidePanel} />
+        <Main title={(<OrgTitle orgName={orgInfo.org_name} />)}>
+          <OrgNav currentItem="info" orgID={this.props.orgID} />
+          <Content
+            orgID={this.props.orgID}
+            loading={this.state.loading}
+            errorMsg={this.state.errorMsg}
+            orgInfo={this.state.orgInfo}
+            updateQuota={this.updateQuota}
+            updateName={this.updateName}
+            updateMaxUserNumber={this.updateMaxUserNumber}
+            updateAPICallsLimitPerUser={this.updateAPICallsLimitPerUser}
+          />
+        </Main>
       </Fragment>
     );
   }

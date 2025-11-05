@@ -1,50 +1,32 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
+import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
 import { siteRoot, gettext, isDefaultAdmin } from '@/constants';
 
-const propTypes = {
-  currentItem: PropTypes.string.isRequired
+const UsersNav = ({ currentItem }) => {
+  const navList = useMemo(() => {
+    return [
+      { name: 'database', urlPart: 'users', text: gettext('Database') },
+      isDefaultAdmin ? { name: 'admin', urlPart: 'users/admins', text: gettext('Admins') } : null,
+    ].filter(item => item);
+  }, []);
+
+  return (
+    <ul className="nav">
+      {navList.map((item, index) => {
+        return (
+          <li className="nav-item" key={index}>
+            <Link
+              to={`${siteRoot}sys/${item.urlPart}/`}
+              className={classnames('nav-link pt-0 pb-0', { 'active': currentItem === item.name })}
+            >
+              {item.text}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
 };
 
-class Nav extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.navItems = [
-      { name: 'database', urlPart: 'users', text: gettext('Database') }
-    ];
-    // if (haveLDAP) {
-    //   this.navItems.push(
-    //     {name: 'ldap', urlPart: 'users/ldap', text: gettext('LDAP')},
-    //     {name: 'ldap-imported', urlPart: 'users/ldap-imported', text: gettext('LDAP(imported)')}
-    //   );
-    // }
-    if (isDefaultAdmin) {
-      this.navItems.push(
-        { name: 'admin', urlPart: 'users/admins', text: gettext('Admins') }
-      );
-    }
-  }
-
-  render() {
-    const { currentItem } = this.props;
-    return (
-      <div className="cur-view-path tab-nav-container">
-        <ul className="nav">
-          {this.navItems.map((item, index) => {
-            return (
-              <li className="nav-item" key={index}>
-                <Link to={`${siteRoot}sys/${item.urlPart}/`} className={`nav-link${currentItem === item.name ? ' active' : ''}`}>{item.text}</Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    );
-  }
-}
-
-Nav.propTypes = propTypes;
-
-export default Nav;
+export default UsersNav;

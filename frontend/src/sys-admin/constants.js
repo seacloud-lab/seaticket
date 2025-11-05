@@ -23,7 +23,7 @@ export const BAR_CONFIG = {
     name: gettext('Projects'),
     value: BAR_TYPE.PROJECTS,
     link: `${siteRoot}sys/all-projects/`,
-    isActive: (bar) => bar === BAR_TYPE.PROJECTS || bar === 'trash-projects' || bar === 'search-projects',
+    isActive: (bar) => bar === BAR_TYPE.PROJECTS || bar === 'trash-projects' || bar === 'search-projects' || bar === 'all-projects',
   },
   [BAR_TYPE.USERS]: {
     icon: 'mine',

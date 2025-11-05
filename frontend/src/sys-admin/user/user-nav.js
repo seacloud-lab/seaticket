@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
 import { siteRoot, gettext } from '@/constants';
 
@@ -21,17 +22,19 @@ class Nav extends React.Component {
   }
 
   render() {
-    const { currentItem, email, userName } = this.props;
+    const { currentItem, email } = this.props;
     return (
       <div>
-        <h2 className="heading">
-          <Link to={`${siteRoot}sys/users/`}>{gettext('Users')}</Link> / {userName}
-        </h2>
-        <ul className="nav border-bottom mx-4">
+        <ul className="nav border-bottom">
           {this.navItems.map((item, index) => {
             return (
               <li className="nav-item mr-2" key={index}>
-                <Link to={`${siteRoot}sys/users/${encodeURIComponent(email)}/${item.urlPart}`} className={`nav-link ${currentItem === item.name ? ' active' : ''}`}>{item.text}</Link>
+                <Link
+                  to={`${siteRoot}sys/users/${encodeURIComponent(email)}/${item.urlPart}`}
+                  className={classnames('nav-link pt-0 pb-0', { 'active': currentItem === item.name, 'ml-0': index === 0 })}
+                >
+                  {item.text}
+                </Link>
               </li>
             );
           })}
