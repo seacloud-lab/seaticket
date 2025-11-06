@@ -13,7 +13,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.project.utils import check_project_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_tags_column, add_tag_option, update_tag_option, delete_tag_option, \
     get_tag_option_by_id, get_type_option_by_name, get_tag_ids_by_names, get_ticket_counts_group_by_tag, \
