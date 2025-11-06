@@ -54,7 +54,7 @@ const RowDetailsDialog = ({
     }
   }, [projectUuid, connection]);
 
-  const handleSwitchRows = useCallback((count) => {
+  const handleSwitchRows = Utils.debounce(useCallback((count) => {
     const rowsData = seaMetaDataRef.current.getOrderRows();
     const index = rowsData.findIndex(r => r._id === currentRowRef.current);
     if (index === -1) return;
@@ -69,7 +69,7 @@ const RowDetailsDialog = ({
     const currentRow = rowsData[newIndex];
     currentRowRef.current = currentRow._id;
     getRowDetails(currentRow);
-  }, [projectUuid, connection, seaMetaDataRef]);
+  }, [projectUuid, connection, seaMetaDataRef]), 300);
 
   const onClose = useCallback(() => {
     setIsShowRowDetailsDialog(false);
@@ -96,7 +96,7 @@ const RowDetailsDialog = ({
     <Modal className="sea-qa-row-details-container" isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
       <ModalHeader toggle={onClose}>
         <div className="d-flex align-items-center">
-          <div className="row-expand-direct-icons mr-2">
+          <div className="row-expand-direct-icons user-select-none mr-2">
             <IconTooltip
               icon="down"
               tip={gettext('Previous record')}
@@ -112,7 +112,7 @@ const RowDetailsDialog = ({
               onClick={() => handleSwitchRows(1)}
             />
           </div>
-          <div className="text-truncate flex-1 user-select-none" title={rowDetailsTitle}>{rowDetailsTitle}</div>
+          <div className="text-truncate flex-1" title={rowDetailsTitle}>{rowDetailsTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>
