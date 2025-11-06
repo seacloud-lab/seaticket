@@ -458,7 +458,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
             display_all_columns.append(column)
         elif name in extra_query_names:
             extra_query_columns.append(column)
-    
+
 
     view_copy = view.copy()
     sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, start, limit)
@@ -471,7 +471,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     return records, display_all_columns
 
 
-def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username=None):
+def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk):
     topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
@@ -485,7 +485,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_n
     return records
 
 
-def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username=None):
+def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk):
     """Query github issue comments from SeaDB"""
     issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
@@ -500,3 +500,14 @@ def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, 
         logger.error(f'SeaDB query error for issue details {issue_table_name} or {comments_table_name}: {e}')
         issue_record = []
     return issue_record
+
+
+def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk):
+    sql = f"SELECT `path`, `filename`, `mtime`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
+        record = []
+    return record

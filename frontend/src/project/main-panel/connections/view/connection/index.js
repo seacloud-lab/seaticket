@@ -3,8 +3,7 @@ import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } 
 import copy from 'copy-to-clipboard';
 import { processor, getPreviewContent } from '@seafile/seafile-editor';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
-import DiscourseForumsDetails from '../../components/discourse-forums-details';
-import GithubIssueDetails from '../../components/github-issue-details';
+import RowDetailsDialog from '../../components/row-details-dialog';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
@@ -134,20 +133,17 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
 
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const seaMetaDataRef = useRef(null);
-  const currentRowRef = useRef(null);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
-  const [discourseForumsDetails, setDiscourseForumsDetails] = useState(null);
-  const [discourseForumsDetailsTitle, setDiscourseForumsDetailsTitle] = useState('');
-  const [githubIssueDetails, setGithubIssueDetails] = useState(null);
-  const [githubIssueDetailsTitle, setGithubIssueDetailsTitle] = useState('');
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
+  const [currentRow, setCurrentRow] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
+  const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
   const generateAITitleForRow = useCallback((row) => {
     const recordID = row._id || row._pk;
@@ -480,46 +476,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
-  const getRowDetails = useCallback((row) => {
-    if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
-        setDiscourseForumsDetailsTitle(row.title);
-        setDiscourseForumsDetails(res.data.row_details);
-      });
-    }
-    if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, { _pk: row._id }).then((res) => {
-        setGithubIssueDetailsTitle(row.title);
-        setGithubIssueDetails(res.data.row_details);
-      });
-    }
-  }, [projectUuid, connectionID, connection]);
-
   const handleExpandRow = useCallback((row) => {
-    currentRowRef.current = row._id;
+    setCurrentRow(row);
     if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
       window.open(row.url);
       return;
     }
-    getRowDetails(row);
-  }, [projectUuid, connectionID, connection]);
-
-  const handleSwitchRows = useCallback((count) => {
-    const rowsData = seaMetaDataRef.current.getOrderRows();
-    const index = rowsData.findIndex(r => r._id === currentRowRef.current);
-    if (index === -1) return;
-
-    let newIndex = index + count;
-    if (newIndex > rowsData.length - 1) {
-      newIndex = 0;
-    }
-    if (newIndex < 0) {
-      newIndex = rowsData.length - 1;
-    }
-    const currentRow = rowsData[newIndex];
-    currentRowRef.current = currentRow._id;
-    getRowDetails(currentRow);
-
+    setIsShowRowDetailsDialog(true);
   }, [projectUuid, connectionID, connection]);
 
   useEffect(() => {
@@ -570,20 +533,13 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         expandRow={handleExpandRow}
         t={t}
       />
-      {discourseForumsDetails && (
-        <DiscourseForumsDetails
-          rowDetailsTitle={discourseForumsDetailsTitle}
-          rowDetails={discourseForumsDetails}
-          onClose={() => setDiscourseForumsDetails(null)}
-          handleSwitchRows={handleSwitchRows}
-        />
-      )}
-      {githubIssueDetails && (
-        <GithubIssueDetails
-          rowDetailsTitle={githubIssueDetailsTitle}
-          rowDetails={githubIssueDetails}
-          onClose={() => setGithubIssueDetails(null)}
-          handleSwitchRows={handleSwitchRows}
+      {isShowRowDetailsDialog && (
+        <RowDetailsDialog
+          projectUuid={projectUuid}
+          connection={connection}
+          currentRow={currentRow}
+          seaMetaDataRef={seaMetaDataRef}
+          setIsShowRowDetailsDialog={setIsShowRowDetailsDialog}
         />
       )}
       {siteDetails && (
