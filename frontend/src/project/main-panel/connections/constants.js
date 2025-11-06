@@ -324,7 +324,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.NUMBER,
       is_predefined: true,
     },
-    'updated_at': {
+    'sync_time': {
       display_name: gettext('Last updated'),
       type: CellType.MTIME,
       is_predefined: true,
@@ -335,7 +335,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
       is_predefined: true,
     },
-    'created_at': {
+    'created_time': {
       display_name: gettext('Create time'),
       type: CellType.CTIME,
       is_predefined: true,
@@ -354,12 +354,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Views count'),
       type: CellType.NUMBER,
     },
-    'bumped_at': {
+    'modified_time': {
       display_name: gettext('Last activity'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
-    'created_at': {
+    'created_time': {
       display_name: gettext('Created at'),
       type: CellType.CTIME,
     }
@@ -373,14 +373,14 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('URL'),
       type: CellType.URL,
     },
-    'last_modified': {
+    'modified_time': {
       display_name: gettext('Last modify time'),
       type: CellType.MTIME,
       sort_able: true, filter_able: true
     }
   },
   [CONNECTION_TYPE.SEAFILE]: {
-    'filename': {
+    'title': {
       display_name: gettext('File name'),
       editable: false, is_name_column: true, frozen: true,
     },
@@ -388,11 +388,11 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Parent folder'),
       type: CellType.TEXT,
     },
-    'mtime': {
+    'modified_time': {
       display_name: gettext('Last modified time'),
       type: CellType.MTIME,
     },
-    'updated_at': {
+    'sync_time': {
       display_name: gettext('Last sync time'),
       type: CellType.DATE,
       data: {

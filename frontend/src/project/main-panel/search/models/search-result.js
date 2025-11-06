@@ -10,23 +10,20 @@ class SearchResult {
     this.title = data.title || '';
     this.url = data.url || '';
     this.content = data.content || '';
-    this.bumped_at = data.bumped_at || '';
+    this.modified_time = data.modified_time || '';
 
     if (this.type === CONNECTION_TYPE.SEAFILE) {
-      const filename = data.filename || '';
       const repoName = data.repo_name || '';
-
       let serverURL = data.server_url || '';
       if (serverURL.endsWith('/')) {
         serverURL = serverURL.slice(0, -1);
       }
       const path = data.path || '';
       const folderPath = path.endsWith('/') ? path.slice(0, -1) : path;
-      let filePath = folderPath + '/' + filename;
+      let filePath = folderPath + '/' + this.title;
       if (!filePath.startsWith('/')) {
         filePath = '/' + filePath;
       }
-      this.title = filename;
       this.url = `${serverURL}/lib/${data.repo_id || ''}/file${filePath}`;
       this.subtitle = repoName + filePath;
     }

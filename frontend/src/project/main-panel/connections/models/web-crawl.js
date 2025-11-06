@@ -3,7 +3,7 @@ class WebCrawl {
     this._id = object._pk || '';
     this.title = object.title || '';
     this.url = object.url || '';
-    this.last_modified = object.last_modified || '';
+    this.modified_time = object.modified_time || '';
   }
 }
 

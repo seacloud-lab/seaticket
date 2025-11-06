@@ -289,12 +289,14 @@ class FilterTermModifier(object):
     THIS_YEAR = 'this_year'
 
 TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'description', 'status', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_at', 'updated_at']
+
 CONNECTION_DISPLAY_ALL_COLUMNS = {
-    ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
-    ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
-    ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
-    ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at', 'content'],
-    ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'subject', 'cc', 'content', 'email_date', 'is_sender'],
+    ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_time', 'sync_time'],
+    ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'modified_time', 'created_time'],
+    ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time'],
+    ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'sync_time'],
+    ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'subject', 'cc', 'content', 'email_date',
+                                 'is_sender'],
 }
 
 
