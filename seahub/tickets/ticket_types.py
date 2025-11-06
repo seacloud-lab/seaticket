@@ -13,7 +13,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_admin_permission, check_project_permission
+from seahub.project.utils import check_project_permission
 from seahub.tickets.ticket_utils import get_type_column, filter_tickets_by_type, get_type_option_by_id, \
     update_type_option, delete_type_option, add_type_option, get_ticket_counts_group_by_type, \
     get_type_option_by_name, get_tag_ids_by_names, get_status_option_by_name
@@ -74,7 +74,8 @@ class ProjectTypesAPIView(APIView):
     def post(self, request, project_uuid):
         """
         Permission:
-        1. group admin
+        1. owner
+        2. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -105,7 +106,7 @@ class ProjectTypesAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -142,7 +143,8 @@ class ProjectTypeAPIView(APIView):
     def put(self, request, project_uuid, type_id):
         """
         Permission:
-        1. group admin
+        1. owner
+        2. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -165,7 +167,7 @@ class ProjectTypeAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -201,7 +203,8 @@ class ProjectTypeAPIView(APIView):
     def delete(self, request, project_uuid, type_id):
         """
         Permission:
-        1. group admin
+        1. owner
+        2. group member
         """
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -216,7 +219,7 @@ class ProjectTypeAPIView(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
