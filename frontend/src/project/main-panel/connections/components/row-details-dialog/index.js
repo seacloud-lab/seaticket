@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import MarkdownViewer from '@/sea-metadata/components/cell-formatter/long-text/long-text-preview/viewer';
+import { MarkdownViewer } from '@seafile/seafile-editor';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPE } from '../../constants';

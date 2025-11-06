@@ -503,7 +503,6 @@ def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, 
 
 
 def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk):
-    """Query github issue comments from SeaDB"""
     sql = f"SELECT `path`, `filename`, `mtime`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
