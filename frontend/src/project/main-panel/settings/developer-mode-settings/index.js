@@ -1,17 +1,18 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Switch } from '@/components';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 
 import './index.css';
 
 const DeveloperModeSettings = ({
-  value = false,
+  value: oldValue = false,
   onChange,
 }) => {
+  const [value, setValue] = useState(oldValue);
 
   const onValueChange = useCallback(() => {
     const newValue = !value;
+    setValue(newValue);
     onChange && onChange(newValue);
   }, [value]);
 
@@ -24,7 +25,7 @@ const DeveloperModeSettings = ({
           size="large"
           textPosition="right"
           className="change-developer-mode-status w-100"
-          onChange={Utils.debounce(onValueChange, 300)}
+          onChange={onValueChange}
           placeholder={gettext('Developer mode')}
         />
         <p className="tip-default tip m-0">
