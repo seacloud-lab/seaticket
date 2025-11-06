@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import MarkdownViewer from './viewer';
+import CustomizeMarkdownViewer from '@/components/customize-markdown-viewer';
 
 import './index.css';
 
@@ -58,7 +58,7 @@ const LongTextPreview = React.memo(({ value, className, targetStyle, onMouseEnte
       onClick={handleClick}
     >
       <div className="sea-metadata-longtext-container sea-metadata-longtext-container-scroll">
-        <MarkdownViewer value={markdownContent} showTOC={false} />
+        <CustomizeMarkdownViewer value={markdownContent} showTOC={false} />
       </div>
     </div>
   );

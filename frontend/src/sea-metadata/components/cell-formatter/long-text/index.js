@@ -5,7 +5,7 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import Icon from '../../../../components/icon';
 import ModalPortal from '../../../../components/modal-portal';
 import LongTextPreview from './long-text-preview';
-import MarkdownViewer from './long-text-preview/viewer';
+import CustomizeMarkdownViewer from '@/components/customize-markdown-viewer';
 import { ROW_HEIGHT_MAP, ROW_HEIGHT_TYPE } from '../../../constants/grid-body';
 
 import './index.css';
@@ -125,7 +125,7 @@ const LongTextFormatter = ({ value: oldValue, className, previewClassName, heigh
       ref={ref}
     >
       {height >= ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
-        <MarkdownViewer value={markdownContent} showTOC={false} />
+        <CustomizeMarkdownViewer value={markdownContent} showTOC={false} />
       )}
       {height < ROW_HEIGHT_MAP[ROW_HEIGHT_TYPE.QUADRUPLE] && (
         <>
