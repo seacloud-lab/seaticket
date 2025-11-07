@@ -6,7 +6,7 @@ from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.tickets.ticket_utils import get_column_key_by_name
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable
 
 logger = logging.getLogger(__name__)
 
@@ -358,6 +358,60 @@ def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
         )
 
 
+def init_email_seadb_table(seadb_api, project_uuid, connection_id):
+    table_name = EmailTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in EmailTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            EmailTable.subject.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            EmailTable.email_from.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            EmailTable.deleted.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            EmailTable.updated_at.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            EmailTable.is_sender.name,
+        ]
+    )
+
+
 def get_connection_table_name(connection):
     connection_id = connection.id
     connection_type = connection.type
@@ -370,6 +424,8 @@ def get_connection_table_name(connection):
         table_name = WebCrawlTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.SEAFILE.value:
         table_name = SeafileTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.EMAIL.value:
+        table_name = EmailTable.gen_table_name(connection_id)
 
     return table_name
 
