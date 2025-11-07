@@ -125,14 +125,14 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
               onClick={hideAll}
               aria-label={gettext('Hide all')}
             >
-              {gettext('Hide all')}
+              {gettext('Close all')}
             </div>
             <div
               className="sea-metadata-hide-connections-operation px-2"
               onClick={showAll}
               aria-label={gettext('Show all')}
             >
-              {gettext('Show all')}
+              {gettext('Open all')}
             </div>
           </div>
         )}
