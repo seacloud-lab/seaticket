@@ -13,10 +13,14 @@
 
 .sea-qa-project-refresh-tickets-btn {
   display: inline-flex;
-  margin-left: 4px;
-  height: 20px;
-  width: 20px;
+  height: 24px;
+  width: 24px;
   flex-shrink: 0;
+}
+
+.sea-qa-project-refresh-tickets-btn .sea-qa-icon-svg-refresh {
+  margin-top: 0px;
+  color: #666 !important;
 }
 
 .sea-qa-project-main-panel-header .sea-qa-project-add-ticket-btn {
