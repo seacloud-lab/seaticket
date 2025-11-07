@@ -8,6 +8,8 @@ import { IconButton, Icon } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
+import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 
@@ -18,8 +20,16 @@ const TicketTopBar = ({ title }) => {
 
   const renderLeftChildren = useCallback(() => {
     if (pageType === TICKET_PAGE_TYPE.ALL) {
+      const eventBus = context.eventBus;
       return (
-        <div className="w-100 text-truncate">{title}</div>
+        <>
+          <div className="text-truncate">{title}</div>
+          <IconButton
+            icon="down"
+            className="sea-qa-project-refresh-tickets-btn"
+            onClick={() => eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA)}
+          />
+        </>
       );
     }
 
