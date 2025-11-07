@@ -12,6 +12,7 @@ import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
 import FilterByDate from './filter-by-date';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY } from './constants';
+import Switch from '@/components/switch';
 
 import './index.css';
 import './search-filters.css';
@@ -37,6 +38,15 @@ const Search = ({ title, settings }) => {
 
   const sourceRef = useRef(null);
   const timer = useRef(null);
+
+  const [semanticEnabled, setSemanticEnabled] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem('search-semantic-enabled') || 'false');
+    } catch {
+      return false;
+    }
+  });
+
 
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
     if (!connections || connections.length === 0) {
@@ -74,9 +84,9 @@ const Search = ({ title, settings }) => {
         timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
       }
       const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, source.token).then(res => {
-        const results = res.data?.results || [];
-        setResults(results.map(result => new SearchResult(result)));
+      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, source.token, semanticEnabled).then(res => {
+        const rawResults = res.data?.results || [];
+        setResults(rawResults.map(result => new SearchResult(result)));
         setSearching(false);
       }).catch(error => {
         if (!axios.isCancel(error)) {
@@ -88,7 +98,7 @@ const Search = ({ title, settings }) => {
         setSearching(error.message === cancelError);
       });
     }, 500);
-  }, []);
+  }, [semanticEnabled]);
 
   const onClear = useCallback(() => {
     setValue('');
@@ -106,6 +116,17 @@ const Search = ({ title, settings }) => {
     timer.current && clearTimeout(timer.current);
     timer.current = null;
   }, []);
+
+  const toggleSemantic = useCallback(() => {
+    setSemanticEnabled(prev => {
+      const next = !prev;
+      window.localStorage.setItem('search-semantic-enabled', JSON.stringify(next));
+      if (value) {
+        onChange(value, hiddenConnectionIDs, connections);
+      }
+      return next;
+    });
+  }, [value, hiddenConnectionIDs, connections, onChange]);
 
   useEffect(() => {
     reloadConnections();
@@ -142,9 +163,18 @@ const Search = ({ title, settings }) => {
           onClear={onClear}
           storeKey={SEARCH_STORE_KEY}
         />
-        <div className="search-filters-container">
+        <div className="search-filters-container" style={{ justifyContent: 'space-between' }}>
           <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
           <FilterByDate date={filterDate} onChange={onFilterDateChange} />
+          <div className="search-filter ml-auto">
+            <Switch
+              checked={semanticEnabled}
+              onChange={toggleSemantic}
+              placeholder={gettext('Semantic search')}
+              size="small"
+              textPosition="right"
+            />
+          </div>
         </div>
         {searching ?
           <CenteredLoading className="sea-qa-project-search-loading-tip" />

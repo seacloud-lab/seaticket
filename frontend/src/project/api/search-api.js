@@ -58,7 +58,7 @@ class SearchAPI {
     }
   }
 
-  search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, cancelToken) {
+  search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, cancelToken, semanticSearch) {
     const url = `${this.server}/api/v2.1/search/`;
     let params = {
       query: query,
@@ -73,6 +73,9 @@ class SearchAPI {
     }
     if (timeTo) {
       params.time_to = timeTo;
+    }
+    if (typeof semanticSearch !== 'undefined') {
+      params.search_type = semanticSearch ? 'semantic_search' : 'normal_search';
     }
     return this.req.post(url, params, { cancelToken: cancelToken, params: { count: 100 } });
   }

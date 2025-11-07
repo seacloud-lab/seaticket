@@ -2,6 +2,7 @@
 import logging
 import json
 from datetime import datetime, UTC
+from urllib.parse import urlparse
 
 from django.utils.translation import gettext as _
 from django.db.utils import OperationalError, IntegrityError
@@ -18,14 +19,18 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
-    ProjectAPIToken
+    ProjectAPIToken, ProjectConnections
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search
 
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, \
+    get_connection_table_name
 
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import ConnectionType
+
+from seahub.project.utils import get_file_from_s3_web_crawl, url_to_filename
 
 logger = logging.getLogger(__name__)
 
@@ -402,8 +407,6 @@ class SearchView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
         search_type = request.data.get('search_type', 'normal_search')
-        
-
         try:
             count = int(request.GET.get('count', '20'))
         except ValueError:
@@ -442,5 +445,5 @@ class SearchView(APIView):
             'search_type': search_type
         }
         results = search(params)
-
+        
         return Response({'results': results})

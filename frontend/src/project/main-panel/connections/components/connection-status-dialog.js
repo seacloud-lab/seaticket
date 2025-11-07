@@ -7,6 +7,7 @@ import { connectionsAPI } from '../../../api';
 import { Utils } from '@/utils/utils';
 import { Connection } from '../models';
 import DateFormatter from './cell-formatter/date-formatter';
+import { CONNECTION_TYPE } from '../constants';
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   const [record, setRecord] = useState(null);
@@ -47,6 +48,13 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             <p>{gettext('Last AI indexed count')}: {record.ai_status.last_ai_indexed_count}</p>
             <p>{gettext('Last AI indexed status')}: {record.ai_status.last_ai_index_status}</p>
             <p>{gettext('Last AI indexed time')}: <DateFormatter value={record.ai_indexed_at} /></p>
+            {record.type === CONNECTION_TYPE.SITE &&
+              <>
+                <p>{gettext('Last vector indexed count')}: {record.content_vector_status.last_content_vector_indexed_count}</p>
+                <p>{gettext('Last vector indexed status')}: {record.content_vector_status.last_content_vector_index_status}</p>
+                <p>{gettext('Last vector indexed time')}: <DateFormatter value={record.vector_indexed_at} /></p>
+              </>
+            }
           </>
         }
       </ModalBody>

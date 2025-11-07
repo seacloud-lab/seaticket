@@ -235,7 +235,6 @@ class ConnectionsAPI {
     };
     return this.req.post(url, data);
   }
-
 }
 
 const connectionsAPI = new ConnectionsAPI();
