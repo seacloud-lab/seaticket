@@ -44,7 +44,12 @@ class ConnectionField(object):
 
 CONNECTION_FIELDS = {
     ConnectionType.EMAIL.value: [
-        ConnectionField('host', True, False).to_dict(),
+        ConnectionField('sender_name', False, False).to_dict(),
+        ConnectionField('sender_email', False, False).to_dict(),
+        ConnectionField('smtp_host', False, False).to_dict(),
+        ConnectionField('smtp_port', False, False).to_dict(),
+        ConnectionField('imap_host', False, False).to_dict(),
+        ConnectionField('imap_port', False, False).to_dict(),
         ConnectionField('username', True, False).to_dict(),
         ConnectionField('password', True, False).to_dict(),
     ],
@@ -210,7 +215,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
-    ConnectionType.EMAIL.value: {},
+    ConnectionType.EMAIL.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -270,7 +293,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_at', 'updated_at'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
-    ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at'],
+    ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at', 'content'],
+    ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'subject', 'cc', 'content', 'html_content', 'email_date', 'is_sender'],
 }
 
 

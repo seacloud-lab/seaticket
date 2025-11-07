@@ -3,6 +3,7 @@ import GithubIssue from './github-issue';
 import DiscourseForum from './discourse-forum';
 import WebCrawl from './web-crawl';
 import Seafile from './seafile';
+import Email from './email';
 
 export {
   Connection,
@@ -10,4 +11,5 @@ export {
   DiscourseForum,
   WebCrawl,
   Seafile,
+  Email
 };

@@ -20,13 +20,14 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews
-from seahub.project.utils import check_project_admin_permission, add_init_crawl_task, \
-    add_index_seafile_task, add_github_issues_index_task, manual_sync_connection, \
+from seahub.project.utils import check_project_admin_permission, add_connection_sync_task, \
+    manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
     url_to_filename, update_discourse_topic_by_webhook
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
-    list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, list_seafile_record_details
+    list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
+    list_seafile_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
@@ -139,29 +140,19 @@ class ProjectConnectionsView(APIView):
                 init_github_issues_seadb_table(seadb_api, project.uuid, connection_id)
             elif connection_type == ConnectionType.SEAFILE.value:
                 init_seafile_seadb_table(seadb_api, project.uuid, connection_id)
+            elif connection_type == ConnectionType.EMAIL.value:
+                init_email_seadb_table(seadb_api, project.uuid, connection_id)
         except Exception as e:
             logger.error(e)
             record.delete()
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if connection_type == ConnectionType.SEAFILE.value:
-            params = {
-                'connection_id': connection_id
-            }
-            add_index_seafile_task(params)
-        elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-            params = {
-                'connection_id': connection_id
-            }
-            add_github_issues_index_task(params)
-
-        else:
-            params = {
-                'connection_id': connection_id,
-                'type': connection_type,
-            }
-            add_init_crawl_task(params)
+        params = {
+            'connection_id': connection_id,
+            'type': connection_type,
+        }
+        add_connection_sync_task(params)
         return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
 

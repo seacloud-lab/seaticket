@@ -43,7 +43,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password']
 
 
 def encrypt_config(config):
@@ -237,7 +237,7 @@ class ProjectsManager(models.Manager):
         else:
             return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).count()
-    
+
     def search_project_in_org(self, org_id, query_str, start, end):
         workspace_ids = Workspaces.objects.filter(org_id=org_id).values('id')
         if is_valid_uuid(query_str):
@@ -246,13 +246,13 @@ class ProjectsManager(models.Manager):
         else:
             return super(ProjectsManager, self).filter(
                 workspace_id__in=workspace_ids, deleted=False, name__icontains=query_str).order_by('id')[start:end]
-        
+
     def search_projects_count(self, query_str):
         if is_valid_uuid(query_str):
             return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).count()
         else:
             return super(ProjectsManager, self).filter(deleted=False, name__icontains=query_str).count()
-        
+
     def search_projects(self, query_str, start, end):
         if is_valid_uuid(query_str):
             return super(ProjectsManager, self).filter(deleted=False, uuid=query_str).order_by('id')[start:end]
@@ -1355,6 +1355,7 @@ class TicketViews(models.Model):
     def folders_views_ids(self):
         return self.folders_ids + self.views_ids
 
+
 class ChatSessionsManager(models.Manager):
     def create_session(self, project_uuid, session_name, username):
         """Create a new chat session"""
@@ -1482,7 +1483,7 @@ class ProjectAPITokenManager(models.Manager):
     def generate_key(self):
         unique = str(uuid.uuid4())
         return hmac.new(unique.encode('utf-8'), digestmod=sha1).hexdigest()
-    
+
     def get_by_token(self, token):
         try:
             api_token_obj = self.get(token=token)
@@ -1490,14 +1491,14 @@ class ProjectAPITokenManager(models.Manager):
             return api_token_obj
         except self.model.DoesNotExist:
             return None
-    
+
     def get_by_project_and_app_name(self, project, app_name):
         """Check if API token already exists for project and app"""
         try:
             return self.get(project=project, app_name=app_name)
         except self.model.DoesNotExist:
             return None
-    
+
     def list_by_project(self, project):
         return self.filter(project=project).order_by('-generated_at')
 
@@ -1510,13 +1511,13 @@ class ProjectAPIToken(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
     last_access = models.DateTimeField(auto_now=True)
     permission = models.CharField(max_length=15)
-    
+
     objects = ProjectAPITokenManager()
-    
+
     class Meta:
         db_table = 'project_api_token'
         unique_together = ('project', 'app_name')
-    
+
     def update_last_access(self):
         self.last_access = timezone.now()
         self.save(update_fields=['last_access'])

@@ -306,3 +306,23 @@ class TicketRepliesTable(BaseModel):
     updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
     delete_at = MappedColumn('delete_at', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+
+
+class EmailTable(BaseModel):
+    email_from = MappedColumn('email_from', PropertyTypes.TEXT)
+    email_to = MappedColumn('email_to', PropertyTypes.TEXT)
+    message_id = MappedColumn('message_id', PropertyTypes.TEXT)
+    subject = MappedColumn('subject', PropertyTypes.TEXT)
+    cc = MappedColumn('cc', PropertyTypes.TEXT)
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    html_content = MappedColumn('html_content', PropertyTypes.TEXT, {'compressed': True})
+    email_date = MappedColumn('email_date', PropertyTypes.DATETIME)
+    reply_to_message_id = MappedColumn('reply_to_message_id', PropertyTypes.TEXT)
+    attachments = MappedColumn('attachments', PropertyTypes.LIST)
+    is_sender = MappedColumn('is_sender', PropertyTypes.BOOL)
+    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+
+    @classmethod
+    def gen_table_name(cls, connection_id):
+        return ConnectionType.EMAIL.value + '_' + str(connection_id)

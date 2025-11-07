@@ -8,7 +8,7 @@ import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG } from '../../constants';
-import { GithubIssue, DiscourseForum, WebCrawl, Seafile } from '../../models';
+import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader, Loading } from '@/components';
@@ -17,7 +17,8 @@ const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE
+  CONNECTION_TYPE.SEAFILE,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 const MULTIPLE_VIEWS_CONNECTION_TYPE = [
@@ -25,6 +26,7 @@ const MULTIPLE_VIEWS_CONNECTION_TYPE = [
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.SEAFILE,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 const SiteContentDialog = ({ title, content, onClose }) => {
@@ -277,6 +279,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           };
         } else if (type === CONNECTION_TYPE.SEAFILE) {
           rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
+        } else if (type === CONNECTION_TYPE.EMAIL) {
+          rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
         columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {

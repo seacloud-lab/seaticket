@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, DropdownItem } from 'reactstrap';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, PasswordInput, ModalHeader, StepsNavigation, IconTooltip } from '@/components';
 import CopyInput from '@/components/copy-input';
+import Icon from '@components/icon';
 import { STEP, STEPS } from './constants';
 
 import './index.css';
@@ -187,7 +188,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type, placeholder, helpText, defaultValue } = c;
+              const { key, type, placeholder, helpText, defaultValue, options } = c;
               const value = config[key] !== undefined ? config[key] : (defaultValue || '');
               return (
                 <FormGroup key={key}>
@@ -208,6 +209,24 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
                       min="1"
                       max="20"
                     />
+                  ) : type === CONNECTION_FIELD_TYPE.SELECT ? (
+                    options.map((option, i) => {
+                      const isSelected = option.key === value;
+                      return (
+                        <DropdownItem
+                          key={option.key}
+                          tag="div"
+                          tabIndex="-1"
+                          data-toggle={option.key}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onChange={(newValue) => onConfigChange(key, newValue)}
+                          toggle={false}
+                        >
+                          {option.name}
+                          {isSelected && <Icon symbol="check" className="dropdown-item-tick" />}
+                        </DropdownItem>
+                      );
+                    })
                   ) : (
                     <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
                   )}

@@ -90,7 +90,7 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     """
     if not username or not workspace_owner or not ticket:
         return None
-    
+
     if ticket.get('creator') == username:
         return PERMISSION_READ_WRITE
 
@@ -102,7 +102,7 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """
     if not username or not workspace_owner or not comment:
         return None
-    
+
     if comment.get('creator') == username:
         return PERMISSION_READ_WRITE
 
@@ -154,11 +154,11 @@ def restore_trash_project_name(project):
     return new_project_name
 
 
-def add_init_crawl_task(params):
+def add_connection_sync_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-init-crawl-task')
+    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-connection-sync-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)
@@ -173,25 +173,6 @@ def manual_sync_connection(params):
     status_code = resp.status_code
     return json.loads(resp.content), status_code
 
-
-def add_index_seafile_task(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-index-seafile-task')
-    resp = requests.get(url, params=params, headers=headers)
-
-    return json.loads(resp.content)
-
-
-def add_github_issues_index_task(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-github-issues-index-task')
-    resp = requests.get(url, params=params, headers=headers)
-
-    return json.loads(resp.content)
 
 def update_github_issue_by_webhook(params):
     payload = {'exp': int(time.time()) + 300, }

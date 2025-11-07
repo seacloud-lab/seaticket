@@ -21,21 +21,61 @@ export const CONNECTION_FIELD_TYPE = {
   EMPTY: 'empty',
   NUMBER: 'number',
   SYNC_STATUS: 'sync_status',
+  SELECT: 'select',
 };
 
 export const CONNECTION_FIELDS = {
   [CONNECTION_TYPE.EMAIL]: [
     {
-      key: 'name',
-      name: gettext('Name'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: true,
-      is_display: true
+      key: 'server_provider',
+      name: gettext('Server provider'),
+      type: CONNECTION_FIELD_TYPE.SELECT,
+      is_required: false,
+      is_display: true,
+      is_custom: true,
+      options: [
+        { 'key': 'general_email_provider', 'name': gettext('General email provider') }
+      ]
     }, {
-      key: 'host',
-      name: gettext('Host'),
+      key: 'sender_name',
+      name: gettext('"From" display name'),
       type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: true,
+      is_required: false,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'sender_email',
+      name: gettext('"From" address'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'smtp_host',
+      name: gettext('SMTP host'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'smtp_port',
+      name: gettext('SMTP port'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'imap_host',
+      name: gettext('IMAP host'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: false,
+      is_display: true,
+      is_custom: true
+    }, {
+      key: 'imap_port',
+      name: gettext('IMAP port'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
       is_display: true,
       is_custom: true
     }, {
@@ -47,9 +87,17 @@ export const CONNECTION_FIELDS = {
     }, {
       key: 'password',
       name: gettext('Password'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true
+    }, {
+      key: 'sync_years',
+      name: gettext('Only sync email sent within following number of years'),
+      type: CONNECTION_FIELD_TYPE.NUMBER,
+      is_required: false,
+      is_custom: true,
+      placeholder: '5',
+      defaultValue: 5,
     },
   ],
   [CONNECTION_TYPE.GITHUB_ISSUE]: [
@@ -210,6 +258,7 @@ export const SUPPORT_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
   CONNECTION_TYPE.SEAFILE,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 export const CONNECTION_SYNC_STATUS = {
@@ -341,6 +390,47 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     'mtime': {
       display_name: gettext('Last modified time'),
+      type: CellType.MTIME,
+    },
+    'updated_at': {
+      display_name: gettext('Last sync time'),
+      type: CellType.DATE,
+      data: {
+        format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
+      }
+    }
+  },
+  [CONNECTION_TYPE.EMAIL]: {
+    'subject': {
+      display_name: gettext('Subject'),
+      editable: false, is_name_column: true, frozen: true,
+    },
+    'email_from': {
+      display_name: gettext('From'),
+      type: CellType.TEXT,
+    },
+    'email_to': {
+      display_name: gettext('To'),
+      type: CellType.TEXT,
+    },
+    'content': {
+      display_name: gettext('Content'),
+      type: CellType.TEXT,
+    },
+    'html_content': {
+      display_name: gettext('HTML content'),
+      type: CellType.TEXT,
+    },
+    'cc': {
+      display_name: gettext('Cc'),
+      type: CellType.TEXT,
+    },
+    'is_sender': {
+      display_name: gettext('Is sender'),
+      type: CellType.TEXT,
+    },
+    'email_date': {
+      display_name: gettext('Date'),
       type: CellType.MTIME,
     },
     'updated_at': {
