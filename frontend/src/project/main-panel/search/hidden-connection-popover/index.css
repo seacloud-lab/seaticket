@@ -126,3 +126,26 @@
 .seaqa-hide-popover .hide-column-item.hide-column-can-drop-top::before {
   top: 0;
 }
+
+.seaqa-hide-popover .seaqa-hide-connections-operations {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 17px;
+  width: 100%;
+}
+
+.seaqa-hide-popover .seaqa-hide-connections-operations .sea-metadata-hide-connections-operation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bs-tr-hover-bg);
+  border-radius: 3px;
+  color: var(--bs-body-color);
+  height: 28px;
+}
+
+.seaqa-hide-popover .seaqa-hide-connections-operations .sea-metadata-hide-connections-operation:hover {
+  background: var(--bs-hover-bg);
+  color: var(--bs-body-color);
+  cursor: pointer;
+}

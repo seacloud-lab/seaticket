@@ -84,6 +84,14 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
     update(newHiddenConnections);
   }, [hiddenConnectionIDs, update]);
 
+  const hideAll = useCallback(() => {
+    update(displayItems.map(connection => connection.id));
+  }, [hiddenConnectionIDs, update]);
+
+  const showAll = useCallback(() => {
+    update([]);
+  }, [update]);
+
   return (
     <UncontrolledPopover
       placement={placement}
@@ -110,6 +118,24 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
           hiddenConnectionIDs={hiddenConnectionIDs}
           onChange={hideConnection}
         />
+        {!readOnly && !searchValue && (
+          <div className="seaqa-hide-connections-operations">
+            <div
+              className="sea-metadata-hide-connections-operation px-2"
+              onClick={hideAll}
+              aria-label={gettext('Close all')}
+            >
+              {gettext('Close all')}
+            </div>
+            <div
+              className="sea-metadata-hide-connections-operation px-2"
+              onClick={showAll}
+              aria-label={gettext('Open all')}
+            >
+              {gettext('Open all')}
+            </div>
+          </div>
+        )}
       </div>
     </UncontrolledPopover>
   );
