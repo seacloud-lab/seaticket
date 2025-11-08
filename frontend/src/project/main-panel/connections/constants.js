@@ -417,10 +417,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Content'),
       type: CellType.TEXT,
     },
-    'html_content': {
-      display_name: gettext('HTML content'),
-      type: CellType.TEXT,
-    },
     'cc': {
       display_name: gettext('Cc'),
       type: CellType.TEXT,
