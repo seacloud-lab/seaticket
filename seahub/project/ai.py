@@ -100,10 +100,27 @@ class ChatView(APIView):
         try:
             ai_reply, agent_memory, sources = get_ai_reply(params)
         except Exception as e:
-            logger.error(f'AI service error: {e}')
+            logger.warning(f'AI service error: {e}')
             ai_reply = 'Sorry, the AI service is temporarily unavailable, please try again later.'
             sources = []
             agent_memory = {}
+
+        try:
+            connection_ids = set([
+                source['connection_id']
+                for source in sources
+            ])
+
+            connections = ProjectConnections.objects.filter(id__in=connection_ids)
+            connection_id_name_map = {}
+            for connection in connections:
+                connection_dict = connection.to_dict()
+                connection_id_name_map[connection_dict['id']] = connection_dict['name']
+
+            for source in sources:
+                source['connection_name'] = connection_id_name_map[source['connection_id']]
+        except Exception as e:
+            logger.warning(f'Failure to query connection info: {e}')
 
         user_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'user', query, resolve_type == 'agent')
         ai_reply_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))

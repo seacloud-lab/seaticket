@@ -365,7 +365,7 @@ def replace_file_url_in_content(content, new_file_urls_dict):
 def delete_session(session_id):
     try:
         chat_messages = ChatMessages.objects.filter(session_id=session_id)
-        ChatToolCalls.objects.filter(chat_uuid__in=chat_messages.values_list('chat_uuid', flat=True)).delete()
+        ChatToolCalls.objects.filter(chat_uuid__in=set(chat_messages.values_list('chat_uuid', flat=True))).delete()
         chat_messages.delete()
         ChatSessions.objects.filter(pk=session_id).delete()
         return True
@@ -385,6 +385,9 @@ def delete_project(project):
     try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
+        delete_session_ids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('id', flat=True)
+        for session_id in delete_session_ids:
+            delete_session(session_id)
         seadb_api = SeaDBAPI()
         seadb_api.delete_base(project_uuid)
     except Exception as e:
