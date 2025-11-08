@@ -56,8 +56,8 @@ const CollaboratorEditor = forwardRef(({
       <Main
         ref={mainRef}
         isShowDeleteArea={true}
-        placeholder={gettext('Search collaborators')}
-        emptyTip={gettext('No collaborators available')}
+        placeholder={gettext('Search users')}
+        emptyTip={gettext('No users available')}
         value={value}
         collaborators={collaborators}
         onPressTab={onPressTab}
