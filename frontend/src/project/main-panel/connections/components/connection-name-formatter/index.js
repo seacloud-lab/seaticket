@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import Icon from '@components/icon';
-import { mediaUrl } from '@/constants';
+import { getConnectionIcon } from '../../utils';
 import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../constants';
 
 import './index.css';
@@ -15,7 +15,7 @@ const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
       className={classnames('sea-qa-connection-name-formatter', { 'click-able': enableClick })}
       onClick={enableClick ? () => expandRow(row) : () => {}}
     >
-      <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon" />
+      <img src={getConnectionIcon(connectionType)} alt={connectionOption.name} className="connection-icon" />
       <div className="connection-name-wrapper">
         <span className="connection-name">{value}</span>
         {!row.is_active && <Icon symbol="inactive" className="inactive-icon"/>}

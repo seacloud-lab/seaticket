@@ -1,5 +1,5 @@
-import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../../constants';
+import { getConnectionIcon } from '../../../utils';
 
 // import './index.css';
 
@@ -9,7 +9,7 @@ const ConnectionNameFormatter = ({ value, row = {} }) => {
 
   return (
     <div className="sea-qa-connection-name-formatter">
-      <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon" />
+      <img src={getConnectionIcon(connectionType)} alt={connectionOption.name} className="connection-icon" />
       <span className="connection-name">{value}</span>
     </div>
   );

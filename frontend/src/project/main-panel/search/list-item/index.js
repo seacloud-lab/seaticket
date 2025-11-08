@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES } from '../../connections/constants';
+import { getConnectionIcon } from '../../connections/utils';
 import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
 
 import './index.css';
@@ -26,7 +26,7 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
   return (
     <div className="list-item" key={id} onClick={openOriginalURL}>
       <div className="list-item-icon">
-        <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
+        <img src={getConnectionIcon(type)} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
         <div className="list-item-title">
