@@ -16,9 +16,9 @@ class DiscourseSeaDBAPI:
         """Retrieve all topics for the specified connection_id."""
         table_name = DiscourseTopicsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` LIMIT {limit} OFFSET {start}"
-        result = self.seadb_api.query_rows(self.base_id, sql)
-        if result and 'results' in result:
-            return result['results']
+        results = self.seadb_api.query_rows(self.base_id, sql)
+        if results and 'results' in results:
+            return results['results']
         return []
 
     def get_topic_by_pk(self, connection_id, _pk):
@@ -33,7 +33,7 @@ class DiscourseSeaDBAPI:
         """Retrieve all replies for the specified topic_id."""
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id}"
-        result = self.seadb_api.query_rows(self.base_id, sql)
-        if result and 'results' in result:
-            return result['results']
+        results = self.seadb_api.query_rows(self.base_id, sql)
+        if results and 'results' in results:
+            return results['results']
         return []

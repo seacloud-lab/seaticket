@@ -8,7 +8,7 @@ class Email {
     this.email_date = object.email_date || '';
     this.is_sender = object.is_sender || '';
     this.deleted = Boolean(object.deleted);
-    this.updated_at = object.updated_at || '';
+    this.sync_time = object.sync_time || '';
   }
 }
 

@@ -15,9 +15,9 @@ class GitHubSeaDBAPI:
         """Retrieve all issue for the specified connection_id."""
         table_name = GithubIssuesTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` LIMIT {limit} OFFSET {start}"
-        result = self.seadb_api.query_rows(self.base_id, sql)
-        if result and 'results' in result:
-            return result['results']
+        results = self.seadb_api.query_rows(self.base_id, sql)
+        if results and 'results' in results:
+            return results['results']
         return []
 
     def get_issue_by_pk(self, connection_id, _pk):
@@ -32,7 +32,7 @@ class GitHubSeaDBAPI:
     def get_comments_by_issue_id(self, connection_id, issue_id):
         table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `issue_id` = {issue_id}"
-        result = self.seadb_api.query_rows(self.base_id, sql)
-        if result and 'results' in result:
-            return result['results']
+        results = self.seadb_api.query_rows(self.base_id, sql)
+        if results and 'results' in results:
+            return results['results']
         return []
