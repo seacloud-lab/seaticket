@@ -42,7 +42,7 @@ export const MetadataProvider = forwardRef(({
     setMetadata(data);
   }, []);
 
-  const reloadMetadata = Utils.debounce(useCallback(() => {
+  const reloadMetadata = useCallback(() => {
     setLoading(true);
     storeRef.current.reload(PER_LOAD_NUMBER).then(() => {
       setMetadata(storeRef.current.data);
@@ -52,7 +52,7 @@ export const MetadataProvider = forwardRef(({
       setErrorMessage(errorMsg);
       setLoading(false);
     });
-  }, []), 300);
+  }, []);
 
   const modifyFilters = useCallback((filters, filterConjunction, basicFilters) => {
     storeRef.current.modifyFilters(filterConjunction, filters, basicFilters);
