@@ -5,7 +5,6 @@ class Email {
     this.email_to = object.email_to || '';
     this.subject = object.subject || '';
     this.content = object.content || '';
-    this.html_content = object.html_content || '';
     this.email_date = object.email_date || '';
     this.is_sender = object.is_sender || '';
     this.deleted = Boolean(object.deleted);

@@ -294,7 +294,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'bumped_at', 'created_at'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'last_modified'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'filename', 'mtime', 'updated_at', 'content'],
-    ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'subject', 'cc', 'content', 'html_content', 'email_date', 'is_sender'],
+    ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'subject', 'cc', 'content', 'email_date', 'is_sender'],
 }
 
 
