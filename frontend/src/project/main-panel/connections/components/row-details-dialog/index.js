@@ -148,7 +148,7 @@ const RowDetailsDialog = ({
                             <div className="author-name">{detail.author}</div>
                           </div>
                           <div className="author-time" title={formatWithTimezone(detail.time)}>
-                            {dayjs(detail.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                            {dayjs(detail.time).format('YYYY-MM-DD HH:mm:ss')}
                           </div>
                         </div>
                         {renderContentByType(connection.type, detail.body)}
