@@ -23,6 +23,9 @@ from seahub.options.models import UserOptions
 from seahub.profile.models import Profile
 from seahub.utils import is_org_context
 import seahub.settings as settings
+from seahub.project.utils import get_ai_credit_by_org_id, get_ai_cost_by_org_id, \
+    get_ai_credit_by_owner_id, get_ai_cost_by_owner_id
+
 
 logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
@@ -161,6 +164,22 @@ class AccountInfo(APIView):
         project_collaborate_email_interval = UserOptions.objects.get_project_collaborate_email_interval(email)
         info[
             'project_collaborate_email_interval'] = project_collaborate_email_interval if project_collaborate_email_interval is not None else 0
+
+        # AI statistics
+        if getattr(settings, 'SEAQA_AI_SERVER_URL', ''):
+            if is_org_context(request):
+                org_id = request.user.org.org_id
+                info['ai_credit'] = get_ai_credit_by_org_id(org_id)
+                info['ai_cost'] = round(get_ai_cost_by_org_id(org_id), 2)
+            else:
+                info['ai_credit'] = get_ai_credit_by_owner_id(request.user.username)
+                info['ai_cost'] = round(get_ai_cost_by_owner_id(request.user.username), 2)
+
+            if info['ai_credit'] <= 0:
+                info['ai_usage_rate'] = '0%'
+            else:
+                info['ai_usage_rate'] = str(info['ai_cost'] / info['ai_credit'] * 100) + '%'
+
         return info
 
     def get(self, request, format=None):

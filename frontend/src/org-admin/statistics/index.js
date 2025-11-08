@@ -1,0 +1,414 @@
+import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
+import dayjs from 'dayjs';
+import { Link } from '@gatsbyjs/reach-router';
+import { Loading } from '@/components';
+import { gettext, siteRoot, orgID } from '@/constants';
+import { Utils } from '@/utils/utils';
+import toaster from '@/components/toaster';
+import orgAdminAPI from '../api';
+import MainPanelTopbar from '../main-panel/top-bar';
+import Paginator from '@/components/paginator';
+import StatisticNav from './statistic-nav';
+import '@/css/statistics.css';
+
+const propTypes = {
+  onCloseSidePanel: PropTypes.func
+};
+
+const itemPropTypes = {
+  item: PropTypes.object.isRequired,
+  groupBy: PropTypes.string.isRequired
+};
+
+class Item extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      highlight: false
+    };
+  }
+
+  handleMouseEnter = () => {
+    this.setState({ highlight: true });
+  };
+
+  handleMouseLeave = () => {
+    this.setState({ highlight: false });
+  };
+
+  getUserURL = (owner) => {
+    return `${siteRoot}org/users/info/${encodeURIComponent(owner)}/`;
+  };
+
+  getGroupURL = (owner) => {
+    const groupID = owner.split('@')[0];
+    return `${siteRoot}org/groups/${groupID}/`;
+  };
+
+  getOwnerURL = (owner) => {
+    if (owner.indexOf('@seafile_group') !== -1) {
+      return this.getGroupURL(owner);
+    } else {
+      return this.getUserURL(owner);
+    }
+  };
+
+  render() {
+    const { item, groupBy } = this.props;
+    const { highlight } = this.state;
+
+    return (
+      <tr
+        className={highlight ? 'tr-highlight' : ''}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
+      >
+        {groupBy === 'owner' && (
+          <>
+            <td>
+              {(item.nickname || item.group_name) && (
+                <Link to={this.getOwnerURL(item.owner)}>
+                  {item.group_name ? item.group_name : item.nickname}
+                </Link>
+              )}
+              {!(item.nickname || item.group_name) && item.owner}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
+        {groupBy === 'project_uuid' && (
+          <>
+            <td>
+              <span className="dtable-icon-table"></span>
+            </td>
+            <td>{item.project_name || item.project_uuid}</td>
+            <td>
+              {(item.nickname || item.group_name) && (
+                <Link to={this.getOwnerURL(item.owner)}>
+                  {item.group_name ? item.group_name : item.nickname}
+                </Link>
+              )}
+              {!(item.nickname || item.group_name) && item.owner}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
+      </tr>
+    );
+  }
+}
+
+Item.propTypes = itemPropTypes;
+
+const contentPropTypes = {
+  loading: PropTypes.bool.isRequired,
+  errorMsg: PropTypes.string,
+  items: PropTypes.array.isRequired,
+  curPerPage: PropTypes.number.isRequired,
+  pageInfo: PropTypes.object.isRequired,
+  getStatisticsByPage: PropTypes.func.isRequired,
+  resetPerPage: PropTypes.func.isRequired,
+  groupBy: PropTypes.string.isRequired
+};
+
+class Content extends Component {
+  getPreviousPage = () => {
+    this.props.getStatisticsByPage(this.props.pageInfo.current_page - 1);
+  };
+
+  getNextPage = () => {
+    this.props.getStatisticsByPage(this.props.pageInfo.current_page + 1);
+  };
+
+  render() {
+    const { loading, errorMsg, items, pageInfo, groupBy, curPerPage, resetPerPage } = this.props;
+
+    if (loading) {
+      return <Loading />;
+    }
+
+    if (errorMsg) {
+      return <p className="error text-center">{errorMsg}</p>;
+    }
+
+    if (items.length === 0) {
+      return (
+        <div className="text-center text-muted py-5">
+          {gettext('No items')}
+        </div>
+      );
+    }
+
+    return (
+      <Fragment>
+        <table className="table table-hover table-vcenter">
+          <thead>
+            {groupBy === 'owner' && (
+              <tr>
+                <th>{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th>{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'project_uuid' && (
+              <tr>
+                <th width="5%"></th>
+                <th width="35%">{gettext('Project')}</th>
+                <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th width="25%">{gettext('Cost')}</th>
+              </tr>
+            )}
+          </thead>
+          <tbody>
+            {items.map((item, index) => (
+              <Item key={index} item={item} groupBy={groupBy} />
+            ))}
+          </tbody>
+        </table>
+        <Paginator
+          gotoPreviousPage={this.getPreviousPage}
+          gotoNextPage={this.getNextPage}
+          currentPage={pageInfo.current_page}
+          hasNextPage={pageInfo.has_next_page}
+          canResetPerPage={true}
+          curPerPage={curPerPage}
+          resetPerPage={resetPerPage}
+        />
+      </Fragment>
+    );
+  }
+}
+
+Content.propTypes = contentPropTypes;
+
+class StatisticsAI extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      perPage: 25,
+      currentPage: 1,
+      date: dayjs(),
+      month: dayjs().format('YYYYMM'),
+      isLoading: true,
+      errorMsg: '',
+      pageInfo: {
+        current_page: 1,
+        has_next_page: false
+      },
+      results: [],
+      groupBy: 'owner',
+      queryDate: 'date'
+    };
+    this.initPage = 1;
+  }
+
+  componentDidMount() {
+    this.getStatisticsByPage(this.state.currentPage);
+  }
+
+  getStatisticsByPage = (page) => {
+    const { perPage, date, month, groupBy, queryDate } = this.state;
+    this.setState({ isLoading: true });
+
+    let dateParam = null;
+    let monthParam = null;
+
+    if (queryDate === 'month' && groupBy === 'project_uuid') {
+      monthParam = month;
+    } else {
+      dateParam = date.format('YYYY-MM-DD');
+    }
+
+    orgAdminAPI.orgAdminGetAIStatistics(orgID, dateParam, monthParam, groupBy, page, perPage)
+      .then(res => {
+        this.setState({
+          isLoading: false,
+          results: res.data.results,
+          currentPage: page,
+          pageInfo: {
+            current_page: page,
+            has_next_page: Utils.hasNextPage(page, perPage, res.data.count)
+          },
+          errorMsg: ''
+        });
+      })
+      .catch(error => {
+        let errMessage = Utils.getErrorMsg(error);
+        toaster.danger(errMessage);
+        this.setState({
+          isLoading: false,
+          errorMsg: errMessage
+        });
+      });
+  };
+
+  onDateChange = (e) => {
+    const date = dayjs(e.target.value);
+    if (date.isValid()) {
+      this.setState({
+        date: date,
+        currentPage: this.initPage,
+        results: []
+      }, () => {
+        this.getStatisticsByPage(this.initPage);
+      });
+    }
+  };
+
+  onMonthChange = (e) => {
+    const value = e.target.value;
+    if (value) {
+      const month = value.replace('-', '');
+      this.setState({
+        month: month,
+        currentPage: this.initPage,
+        results: []
+      }, () => {
+        this.getStatisticsByPage(this.initPage);
+      });
+    }
+  };
+
+  resetPerPage = (newPerPage) => {
+    this.setState({
+      perPage: newPerPage,
+      currentPage: this.initPage
+    }, () => {
+      this.getStatisticsByPage(this.initPage);
+    });
+  };
+
+  changeTabActive = (groupBy) => {
+    if (groupBy === this.state.groupBy) {
+      return;
+    }
+    const newState = {
+      groupBy: groupBy,
+      currentPage: this.initPage,
+      results: []
+    };
+
+    if (groupBy === 'owner') {
+      newState.queryDate = 'date';
+    }
+
+    this.setState(newState, () => {
+      this.getStatisticsByPage(this.initPage);
+    });
+  };
+
+  changeQueryDateTab = (queryDate) => {
+    if (queryDate === this.state.queryDate) {
+      return;
+    }
+    this.setState({
+      queryDate: queryDate,
+      currentPage: this.initPage,
+      results: []
+    }, () => {
+      this.getStatisticsByPage(this.initPage);
+    });
+  };
+
+  renderTabs = () => {
+    const { groupBy } = this.state;
+    return (
+      <div className="statistic-tabs">
+        <div
+          className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('owner')}
+        >
+          {`${gettext('Users')} / ${gettext('Group')}`}
+        </div>
+        <div
+          className={`statistic-tab-item ${groupBy === 'project_uuid' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('project_uuid')}
+        >
+          {gettext('Project')}
+        </div>
+      </div>
+    );
+  };
+
+  renderQueryDateTabs = () => {
+    const { groupBy, queryDate } = this.state;
+    if (groupBy === 'owner') {
+      return null;
+    }
+    return (
+      <div className="statistic-tabs">
+        <div
+          className={`statistic-tab-item ${queryDate === 'date' ? 'active' : ''}`}
+          onClick={() => this.changeQueryDateTab('date')}
+        >
+          {gettext('By date')}
+        </div>
+        <div
+          className={`statistic-tab-item ${queryDate === 'month' ? 'active' : ''}`}
+          onClick={() => this.changeQueryDateTab('month')}
+        >
+          {gettext('By month')}
+        </div>
+      </div>
+    );
+  };
+
+  render() {
+    const { isLoading, results, groupBy, queryDate, perPage, pageInfo, errorMsg, date, month } = this.state;
+
+    return (
+      <Fragment>
+        <MainPanelTopbar />
+        <div className="main-panel-center flex-row">
+          <div className="cur-view-container">
+            <StatisticNav currentItem="ai" />
+            <div className="cur-view-content">
+              {this.renderTabs()}
+              {this.renderQueryDateTabs()}
+              <div className="d-flex align-items-center mt-4 mb-4">
+                {queryDate === 'date' && (
+                  <>
+                    <span className="mr-2">{`${gettext('Date')}:`}</span>
+                    <input
+                      type="date"
+                      className="form-control"
+                      style={{ width: '200px' }}
+                      value={date.format('YYYY-MM-DD')}
+                      onChange={this.onDateChange}
+                    />
+                  </>
+                )}
+                {queryDate === 'month' && (
+                  <>
+                    <span className="mr-2">{`${gettext('Month')}:`}</span>
+                    <input
+                      type="month"
+                      className="form-control"
+                      style={{ width: '200px' }}
+                      value={month.slice(0, 4) + '-' + month.slice(4)}
+                      onChange={this.onMonthChange}
+                    />
+                  </>
+                )}
+              </div>
+              <Content
+                loading={isLoading}
+                errorMsg={errorMsg}
+                items={results}
+                curPerPage={perPage}
+                pageInfo={pageInfo}
+                getStatisticsByPage={this.getStatisticsByPage}
+                resetPerPage={this.resetPerPage}
+                groupBy={groupBy}
+              />
+            </div>
+          </div>
+        </div>
+      </Fragment>
+    );
+  }
+}
+
+StatisticsAI.propTypes = propTypes;
+
+export default StatisticsAI;

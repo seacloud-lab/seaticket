@@ -4,6 +4,7 @@ import { gettext, siteRoot, isDefaultAdmin, canViewSystemInfo, canManageUser, ca
 
 export const BAR_TYPE = {
   INFO: 'info',
+  STATISTICS: 'statistics',
   PROJECTS: 'projects',
   USERS: 'users',
   GROUPS: 'groups',
@@ -17,6 +18,13 @@ export const BAR_CONFIG = {
     value: BAR_TYPE.INFO,
     link: `${siteRoot}sys/${BAR_TYPE.INFO}/`,
     isActive: (bar) => bar === BAR_TYPE.INFO,
+  },
+  [BAR_TYPE.STATISTICS]: {
+    icon: 'statistics',
+    name: gettext('Statistics'),
+    value: BAR_TYPE.STATISTICS,
+    link: `${siteRoot}sys/${BAR_TYPE.STATISTICS}/`,
+    isActive: (bar) => bar === BAR_TYPE.STATISTICS,
   },
   [BAR_TYPE.PROJECTS]: {
     icon: 'home',
@@ -50,6 +58,7 @@ export const BAR_CONFIG = {
 
 export const BARS = [
   canViewSystemInfo ? BAR_CONFIG[BAR_TYPE.INFO] : null,
+  isDefaultAdmin ? BAR_CONFIG[BAR_TYPE.STATISTICS] : null,
   isDefaultAdmin ? BAR_CONFIG[BAR_TYPE.PROJECTS] : null,
   canManageUser ? BAR_CONFIG[BAR_TYPE.USERS] : null,
   canManageGroup ? BAR_CONFIG[BAR_TYPE.GROUPS] : null,

@@ -8,6 +8,7 @@ import { siteRoot, lang } from '@/constants';
 import SidePanel from './side-panel';
 
 import Info from './info';
+import Statistics from './statistics';
 
 import AllProjects from './projects/all-projects';
 import TrashProjects from './projects/trash-projects';
@@ -85,6 +86,9 @@ class SysAdmin extends React.Component {
         <div className="main-panel">
           <Router className="reach-router" role='group'>
             <Info path={siteRoot + 'sys/info'} onCloseSidePanel={this.onCloseSidePanel} />
+
+            {/* statistics */}
+            <Statistics path={siteRoot + 'sys/statistics'} onCloseSidePanel={this.onCloseSidePanel} />
 
             {/* projects */}
             <AllProjects path={siteRoot + 'sys/all-projects'} onCloseSidePanel={this.onCloseSidePanel} />

@@ -649,6 +649,8 @@ SEAQA_INDEXER_SERVER_URL = 'http://127.0.0.1:8888'
 SEAQA_AI_SERVER_URL = 'http://127.0.0.1:8887'
 AI_CHAT_TICKET_MAX_REPLIES_NUM = 20
 
+AI_PRICES = {}
+
 #####################
 # External settings #
 #####################

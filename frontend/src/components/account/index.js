@@ -194,6 +194,16 @@ class Account extends Component {
             </div>
           </div>
         </div>
+        {this.state.aiCredit !== undefined && (
+          <div className="item">
+            <div className="account-info row-used">
+              <p>{gettext('AI credit used')}{': '}{this.state.aiCost} / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'} </p>
+              <div id="quota-bar">
+                <span id="ai-credit-usage" className="usage sea-qa-bg-orange" style={{ width: this.state.aiUsageRate }}></span>
+              </div>
+            </div>
+          </div>
+        )}
         <a href={siteRoot + 'profile/'} className="item">{gettext('Personal settings')}</a>
         {this.renderMenu()}
         {!this.isWorkWX && <a href={siteRoot + 'accounts/logout/'} className="item">{gettext('Log out')}</a>}

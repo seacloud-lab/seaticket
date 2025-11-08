@@ -1411,3 +1411,56 @@ class ProjectAPIToken(models.Model):
     def update_last_access(self):
         self.last_access = timezone.now()
         self.save(update_fields=['last_access'])
+
+
+# AI Usage Statistics Models
+
+class StatsAIByTeam(models.Model):
+    org_id = models.IntegerField(db_index=True)
+    month = models.DateField(db_index=True)
+    model = models.CharField(max_length=64)
+    input_tokens = models.IntegerField(default=0)
+    output_tokens = models.IntegerField(default=0)
+    cost = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'stats_ai_by_team'
+        unique_together = [['org_id', 'month', 'model']]
+
+
+class StatsAIByOwner(models.Model):
+    owner_id = models.CharField(max_length=255, db_index=True)
+    month = models.DateField(db_index=True)
+    model = models.CharField(max_length=64)
+    input_tokens = models.IntegerField(default=0)
+    output_tokens = models.IntegerField(default=0)
+    cost = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'stats_ai_by_owner'
+        unique_together = [['owner_id', 'month', 'model']]
+
+
+class StatsAIByProject(models.Model):
+    project_uuid = models.CharField(max_length=36, db_index=True)
+    date = models.DateField()
+    model = models.CharField(max_length=64)
+    owner = models.CharField(max_length=255)
+    org_id = models.IntegerField()
+    input_tokens = models.IntegerField(default=0)
+    output_tokens = models.IntegerField(default=0)
+    cost = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'stats_ai_by_project'
+        unique_together = [['project_uuid', 'date', 'model']]
+        indexes = [
+            models.Index(fields=['date', 'owner']),
+            models.Index(fields=['date', 'org_id']),
+        ]

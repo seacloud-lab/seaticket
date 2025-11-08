@@ -278,6 +278,23 @@ class OrgAdminAPI {
     return this.req.put(url, data);
   }
 
+  // AI statistics
+  orgAdminGetAIStatistics(orgID, date, month, groupBy, page, perPage) {
+    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/statistics/ai/';
+    let params = {
+      group_by: groupBy,
+      page: page,
+      per_page: perPage
+    };
+    if (date) {
+      params.date = date;
+    }
+    if (month) {
+      params.month = month;
+    }
+    return this.req.get(url, { params: params });
+  }
+
 }
 
 const orgAdminAPI = new OrgAdminAPI();

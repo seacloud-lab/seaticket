@@ -18,7 +18,7 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections
 from seahub.project.utils import check_project_permission, get_ai_reply, \
-    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, gen_message_id, url_to_filename, \
+    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
     get_file_from_s3_web_crawl
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -95,6 +95,13 @@ class ChatView(APIView):
             error_msg = 'Internal server error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        # Check AI quota
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            error_msg = 'AI credit not enough.'
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
@@ -102,6 +109,8 @@ class ChatView(APIView):
             'query': query,
             'resolve_type': resolve_type,
             'username': username,
+            'session_id': session.id,
+            'org_id': org_id
         }
 
         try:
@@ -180,6 +189,13 @@ class ConvertRecordToTicket(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        # Check AI quota
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            error_msg = 'AI credit not enough.'
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
+
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
@@ -251,7 +267,9 @@ class ConvertRecordToTicket(APIView):
 
         params = {
             'username': username,
-            'record_detail': record_detail
+            'record_detail': record_detail,
+            'project_uuid': project_uuid,
+            'org_id': org_id
         }
         try:
             ai_title, ai_description = convert_record_to_ticket(params)
@@ -304,6 +322,13 @@ class GenerateAISummaryView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # Check AI quota
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            error_msg = 'AI credit not enough.'
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not connection:
@@ -391,7 +416,7 @@ class GenerateAISummaryView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            ai_summary, ai_summary_vector = generate_ai_summary(content, username, connection.type)
+            ai_summary, ai_summary_vector = generate_ai_summary(content, username, connection.type, project_uuid, org_id)
         except Exception as e:
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'

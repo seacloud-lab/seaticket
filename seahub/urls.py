@@ -130,6 +130,7 @@ urlpatterns = [
     ### system admin page ###
     re_path(r'^sys/info/$', sysadmin_react_fake_view, name="sys_info"),
     re_path(r'^sys/sudo/', sys_sudo_mode, name='sys_sudo_mode'),
+    re_path(r'^sys/statistics/$', sysadmin_react_fake_view, name="sys_statistics"),
     re_path(r'^sys/web-settings/$', sysadmin_react_fake_view, name="sys_web_settings"),
 
     re_path(r'^sys/users/$', sysadmin_react_fake_view, name="sys_users"),

@@ -641,6 +641,18 @@ class SysAdminServiceApi {
     formData.append('license', file);
     return this._sendPostRequest(url, formData);
   }
+
+  // AI statistics
+  sysAdminGetAIStatistics(date, groupBy, page, perPage) {
+    const url = this.server + '/api/v2.1/admin/statistics/ai/';
+    let params = {
+      date: date,
+      group_by: groupBy,
+      page: page,
+      per_page: perPage
+    };
+    return this.req.get(url, { params: params });
+  }
 }
 
 const sysAdminAPI = new SysAdminServiceApi();
