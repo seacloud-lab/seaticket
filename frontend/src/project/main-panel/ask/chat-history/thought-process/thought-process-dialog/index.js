@@ -128,40 +128,32 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
               children: [
                 {
                   name: gettext('Arguments'),
-                  children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
-                    return {
-                      name: `${gettext('Argument')} ${argumentIndex + 1}: ${argumentKey}`,
-                      children: [
-                        { value: argumentValue }
-                      ]
-                    };
+                  children: Object.entries(action.tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
+                    return `${argumentKey}: ${argumentValue}`;
                   })
                 },
                 ...otherInfos
               ],
             };
           }
+          let stepChildren = [];
+          if (action.tool_calls.length > 1){
+            stepChildren.push({
+              name: gettext('Substep'),
+              children: action.tool_calls.map((too_call, toolIndex) => {
+                return {
+                  name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
+                  children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue]) => {
+                    return `${argumentKey}: ${argumentValue}`;
+                  })
+                };
+              })
+            });
+          }
+          stepChildren = [...stepChildren, ...otherInfos];
           return {
             name: `${gettext('Step')} ${stepNumber + 1}`,
-            children: [
-              {
-                name: gettext('Substep'),
-                children: action.tool_calls.map((too_call, toolIndex) => {
-                  return {
-                    name: `${gettext('Substep')} ${toolIndex + 1}: ${too_call.name}`,
-                    children: Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue], argumentIndex) => {
-                      return {
-                        name: `${gettext('Argument')}: ${argumentKey}`,
-                        children: [
-                          { value: argumentValue }
-                        ]
-                      };
-                    })
-                  };
-                })
-              },
-              ...otherInfos
-            ]
+            children: stepChildren
           };
         })
       });
