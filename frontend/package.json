@@ -5,7 +5,7 @@
   "dependencies": {
     "@gatsbyjs/reach-router": "2.0.1",
     "@seafile/seafile-calendar": "1.0.0",
-    "@seafile/seafile-editor": "2.0.36-beta5",
+    "@seafile/seafile-editor": "2.0.37",
     "autoprefixer": "7.1.6",
     "axios": "~1.12.2",
     "classnames": "^2.3.2",
