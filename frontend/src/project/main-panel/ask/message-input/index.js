@@ -13,7 +13,13 @@ import Ticket from './ticket';
 
 import './index.css';
 
-const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }, ref) => {
+const MessageInput = forwardRef(({
+  isReply,
+  readOnly,
+  projectUuid,
+  placeholder = gettext('What problem you want to solve?'),
+  sendMessage,
+}, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
@@ -170,7 +176,7 @@ const MessageInput = forwardRef(({ isReply, readOnly, sendMessage, projectUuid }
               onMouseUp={onMouseUp}
               onPaste={onPaste}
               onChange={onValueChange}
-              placeholder={gettext('What problem you want to solve?')}
+              placeholder={placeholder}
               tabIndex={-1}
               rows={1}
               disabled={disabled}

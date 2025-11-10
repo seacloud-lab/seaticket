@@ -239,6 +239,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, workspaceID }) => {
           isReply={loading || isReply}
           readOnly={readOnly}
           projectUuid={projectUuid}
+          placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
         />
       </div>
