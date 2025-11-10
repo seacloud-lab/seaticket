@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, DropdownItem } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext, mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader, StepsNavigation, IconTooltip } from '@/components';
+import { TextInput, ModalHeader, StepsNavigation } from '@/components';
 import CopyInput from '@/components/copy-input';
-import Icon from '@components/icon';
 import { STEP, STEPS } from './constants';
+import ConnectionConfigEditor from '../connection-config-editor';
 
 import './index.css';
 
@@ -23,19 +23,31 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.EMAIL) {
       return _columns.slice(0, -1);
     }
     return _columns;
   }, [type]);
-  const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
+
+  const customColumns = useMemo(() => columns.filter(c => {
+    if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
+    return c.is_custom;
+  }), [columns]);
 
   const initializeConfig = useCallback((newType) => {
     const fields = CONNECTION_FIELDS[newType] || [];
     const defaultConfig = {};
     fields.forEach(field => {
-      if (field.defaultValue !== undefined) {
-        defaultConfig[field.key] = field.defaultValue;
+      if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
+        field.children.forEach(children => {
+          if (children.default_value !== undefined) {
+            defaultConfig[children.key] = children.default_value;
+          }
+        });
+      } else {
+        if (field.default_value !== undefined) {
+          defaultConfig[field.key] = field.default_value;
+        }
       }
     });
     return defaultConfig;
@@ -44,6 +56,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
+      if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
+        return c.children.every(child => {
+          if (child.is_required) return Boolean(config[child.key]);
+          return true;
+        });
+      }
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
@@ -137,7 +155,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     }
   }, [isGithub, isDiscourse]);
 
-  const step = customSteps[stepIndex];
   const handleSubmitDiscourse = useCallback(() => {
     setSubmitting(true);
     onSubmit({ type, name: name.trim(), config }, () => {
@@ -151,10 +168,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
     );
   }, [name, type, config, onSubmit, stepIndex]);
 
+  const step = customSteps[stepIndex];
+
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-new-connection-dialog">
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Add connection')}</ModalHeader>
-      <ModalBody className="sea-qa-project-new-connection-body">
+      <ModalBody className="sea-qa-project-connection-body">
         <StepsNavigation
           className="sea-qa-project-new-connection-steps"
           steps={customSteps}
@@ -188,50 +207,19 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
             {customColumns.map(c => {
-              const { key, type, placeholder, helpText, defaultValue, options } = c;
-              const value = config[key] !== undefined ? config[key] : (defaultValue || '');
-              return (
-                <FormGroup key={key}>
-                  <Label>
-                    {c.name}
-                    {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
-                    {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
-                  </Label>
-                  {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
-                    <PasswordInput value={value} placeholder={placeholder} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
-                  ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
-                    <Input
-                      type="number"
-                      value={value}
-                      placeholder={placeholder}
-                      disabled={isSubmitting}
-                      onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
-                      min="1"
-                      max="20"
-                    />
-                  ) : type === CONNECTION_FIELD_TYPE.SELECT ? (
-                    options.map((option, i) => {
-                      const isSelected = option.key === value;
-                      return (
-                        <DropdownItem
-                          key={option.key}
-                          tag="div"
-                          tabIndex="-1"
-                          data-toggle={option.key}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onChange={(newValue) => onConfigChange(key, newValue)}
-                          toggle={false}
-                        >
-                          {option.name}
-                          {isSelected && <Icon symbol="check" className="dropdown-item-tick" />}
-                        </DropdownItem>
-                      );
-                    })
-                  ) : (
-                    <TextInput placeholder={placeholder} value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
-                  )}
-                </FormGroup>
-              );
+              const { type, key, children } = c;
+              if (type === CONNECTION_FIELD_TYPE.GROUP) {
+                return (
+                  <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+                    {children.map((child, index) => (
+                      <ConnectionConfigEditor className="mx-0 px-0 width-half" column={child} key={`${key}-${index}`} row={config} readonly={isSubmitting} onChange={onConfigChange} />
+                    ))}
+                  </Row>
+                );
+              }
+              return ((
+                <ConnectionConfigEditor column={c} key={key} row={config} readonly={isSubmitting} onChange={onConfigChange} />
+              ));
             })}
           </div>
         )}

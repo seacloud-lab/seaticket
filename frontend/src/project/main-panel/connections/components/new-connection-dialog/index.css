@@ -1,19 +1,19 @@
-.sea-qa-project-new-connection-dialog {
+.sea-qa-project-connection-dialog {
   height: fit-content;
   max-height: calc(100% - 56px);
   max-width: 600px;
 }
 
-.sea-qa-project-new-connection-dialog .modal-content {
+.sea-qa-project-connection-dialog .modal-content {
   height: 100%;
   overflow: hidden;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-steps {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-steps {
   margin: 0 0 24px;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-types {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-types {
   width: 100%;
   height: fit-content;
   display: flex;
@@ -22,7 +22,7 @@
   padding-bottom: 16px;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-type {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type {
   height: 52px;
   width: calc((100% - 10px) / 2);
   display: inline-flex;
@@ -34,15 +34,15 @@
   padding: 14px;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-type.selected {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type.selected {
   border-color: #ff8000;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-type:not(.selected):hover {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type:not(.selected):hover {
   border-color: #bdbdbd;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-icon {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-icon {
   height: 24px;
   width: 24px;
   overflow: hidden;
@@ -50,25 +50,9 @@
   margin-right: 8px;
 }
 
-.sea-qa-project-new-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-name {
+.sea-qa-project-connection-dialog .sea-qa-project-new-connection-type .sea-qa-project-new-connection-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.sea-qa-project-new-connection-config .help-icon {
-  cursor: pointer;
-  font-size: 14px;
-  color: #bdbdbd;
-}
-
-.sea-qa-project-new-connection-config .help-icon:hover {
-  color: #999999;
-}
-
-.sea-qa-project-new-connection-config .help-icon:focus,
-.sea-qa-project-new-connection-config .help-icon:active {
-  outline: none;
-  box-shadow: none;
 }

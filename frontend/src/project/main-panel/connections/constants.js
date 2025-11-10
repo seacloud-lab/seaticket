@@ -22,6 +22,7 @@ export const CONNECTION_FIELD_TYPE = {
   NUMBER: 'number',
   SYNC_STATUS: 'sync_status',
   SELECT: 'select',
+  GROUP: 'group'
 };
 
 export const CONNECTION_FIELDS = {
@@ -34,62 +35,87 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       options: [
-        { 'key': 'general_email_provider', 'name': gettext('General email provider') }
-      ]
+        { value: 'general_email_provider', label: gettext('General email provider') }
+      ],
+      default_value: 'general_email_provider',
+      tip: gettext('The authentication type for third-party accounts to log in to the email service provider. For most email service providers, you can use \"General Email Service Provider\", which is authenticated by username and password; for Gmail accounts, users can choose \"General Email Service Provider\" or \"Gmail\", the latter will authenticate Google accounts in OAuth2 mode; for MS365 mailbox users, only \"Outlook\" mode can be selected to authenticate accounts through OAuth2"')
     }, {
       key: 'sender_name',
-      name: gettext('"From" display name'),
+      name: gettext('"From" display name (optional)'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: false,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: \'Bill Smith <william.smith@example.com>\''),
     }, {
       key: 'sender_email',
-      name: gettext('"From" address'),
+      name: gettext('"From" address (optional)'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: false,
       is_display: true,
-      is_custom: true
+      is_custom: true,
+      tip: gettext('The address is the full email address of the sender. It need not be identical to the username of the account.')
     }, {
-      key: 'smtp_host',
-      name: gettext('SMTP host'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: false,
-      is_display: true,
-      is_custom: true
+      type: CONNECTION_FIELD_TYPE.GROUP,
+      key: '1',
+      children: [
+        {
+          key: 'smtp_host',
+          name: gettext('SMTP host'),
+          type: CONNECTION_FIELD_TYPE.TEXT,
+          is_required: false,
+          is_display: true,
+          is_custom: true
+        }, {
+          key: 'smtp_port',
+          name: gettext('SMTP port'),
+          type: CONNECTION_FIELD_TYPE.NUMBER,
+          is_required: false,
+          is_display: true,
+          is_custom: true,
+          default_value: 587,
+        }
+      ]
     }, {
-      key: 'smtp_port',
-      name: gettext('SMTP port'),
-      type: CONNECTION_FIELD_TYPE.NUMBER,
-      is_required: false,
-      is_display: true,
-      is_custom: true
+      type: CONNECTION_FIELD_TYPE.GROUP,
+      key: '2',
+      children: [
+        {
+          key: 'imap_host',
+          name: gettext('IMAP host (optional)'),
+          type: CONNECTION_FIELD_TYPE.TEXT,
+          is_required: false,
+          is_display: true,
+          is_custom: true
+        }, {
+          key: 'imap_port',
+          name: gettext('IMAP port'),
+          type: CONNECTION_FIELD_TYPE.NUMBER,
+          is_required: false,
+          is_display: true,
+          is_custom: true,
+          default_value: 993,
+        }
+      ]
     }, {
-      key: 'imap_host',
-      name: gettext('IMAP host'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: false,
-      is_display: true,
-      is_custom: true
-    }, {
-      key: 'imap_port',
-      name: gettext('IMAP port'),
-      type: CONNECTION_FIELD_TYPE.NUMBER,
-      is_required: false,
-      is_display: true,
-      is_custom: true
-    }, {
-      key: 'username',
-      name: gettext('Username'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: true,
-      is_custom: true
-    }, {
-      key: 'password',
-      name: gettext('Password'),
-      type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
-      is_custom: true
+      type: CONNECTION_FIELD_TYPE.GROUP,
+      key: '3',
+      children: [
+        {
+          key: 'username',
+          name: gettext('Username'),
+          type: CONNECTION_FIELD_TYPE.TEXT,
+          is_required: true,
+          is_custom: true
+        }, {
+          key: 'password',
+          name: gettext('Password'),
+          type: CONNECTION_FIELD_TYPE.PASSWORD,
+          is_required: true,
+          is_custom: true,
+          can_edit_multiple_times: false,
+        }
+      ]
     }, {
       key: 'sync_years',
       name: gettext('Only sync email sent within following number of years'),
@@ -97,7 +123,7 @@ export const CONNECTION_FIELDS = {
       is_required: false,
       is_custom: true,
       placeholder: '5',
-      defaultValue: 5,
+      default_value: 5,
     },
   ],
   [CONNECTION_TYPE.GITHUB_ISSUE]: [
@@ -114,14 +140,14 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-      helpText: gettext('Your The URL of the repository, like https://github.com/haiwen/seafile')
+      tip: gettext('Your The URL of the repository, like https://github.com/haiwen/seafile')
     }, {
       key: 'access_token',
       name: gettext('Access token'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true,
-      helpText: gettext('Your personal access token in GitHub Developer Settings')
+      tip: gettext('Your personal access token in GitHub Developer Settings')
     }, {
       key: 'webhook_secret',
       name: gettext('Webhook secret (optional)'),
@@ -163,7 +189,7 @@ export const CONNECTION_FIELDS = {
       is_required: false,
       is_custom: true,
       placeholder: '5',
-      defaultValue: 5,
+      default_value: 5,
     },
   ],
   [CONNECTION_TYPE.SITE]: [
