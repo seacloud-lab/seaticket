@@ -6,6 +6,7 @@ import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
+import { getType } from '@/utils/type-detection';
 
 
 const ProcessDetails = ({ value }) => {
@@ -16,6 +17,16 @@ const ProcessDetails = ({ value }) => {
   }, [isShowDetails]);
 
   if (!value) return null;
+
+  const valueType = getType(value);
+
+  if (valueType === 'String') {
+    return (
+      <Label className="sea-qa-ai-thought-process-content-title">{value}</Label>
+    );
+  }
+
+  if (valueType !== 'Object') return null;
 
   const hasChildren = hasOwnProperty(value, 'children');
   const hasName = hasOwnProperty(value, 'name');
