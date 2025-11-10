@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
+import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
 import { CONNECTION_PAGE_TYPE } from '../constants';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const ConnectionsPageContext = React.createContext(null);
 
@@ -30,6 +32,11 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     setViewID(viewID);
     setPageType(pageType);
     setTimeout(() => setLoading(false), 1);
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    const eventBus = context.eventBus;
+    eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
   }, []);
 
   // init page type
@@ -76,6 +83,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       pageType,
       isLoading,
       pageName,
+      onRefresh,
       togglePageType,
       updatePageName: setPageName,
       updateViewID: setViewID,
