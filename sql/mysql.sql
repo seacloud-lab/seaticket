@@ -319,7 +319,7 @@ CREATE TABLE `social_auth_usersocialauth` (
   `uid` varchar(255) NOT NULL,
   `extra_data` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `social_auth_usersocialauth_provider_uid_e6b5e668_uniq` (`provider`,`uid`),
+  UNIQUE KEY `social_auth_usersocialauth_uid_e6b5e668_uniq` (`uid`),
   KEY `social_auth_usersocialauth_username_3f06b5cf` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
