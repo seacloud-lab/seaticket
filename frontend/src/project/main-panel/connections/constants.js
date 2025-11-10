@@ -401,7 +401,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     }
   },
   [CONNECTION_TYPE.EMAIL]: {
-    'subject': {
+    'title': {
       display_name: gettext('Subject'),
       editable: false, is_name_column: true, frozen: true,
     },
@@ -425,7 +425,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Is sender'),
       type: CellType.TEXT,
     },
-    'email_date': {
+    'modified_time': {
       display_name: gettext('Date'),
       type: CellType.MTIME,
     },
