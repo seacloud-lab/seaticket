@@ -45,7 +45,7 @@ class FilterItemUtils {
       value: { columnOption: option },
       label: (
         <div className="select-option-name single-option-name">
-          <div className="single-select-option" style={{ background: option.color, color: option.textColor || null }} title={name} aria-label={name}>{name}</div>
+          <div className="single-select-option" style={{ background: option.color, color: option.text_color || null }} title={name} aria-label={name}>{name}</div>
           <div className="single-check-icon">
             {selectedOption?.id === option.id && (<Icon symbol="check-mark" />)}
           </div>
@@ -61,7 +61,7 @@ class FilterItemUtils {
         <div className="select-option-name multiple-option-name">
           <div
             className={classnames('multiple-select-option', { 'multiple-select-option-white': isWhiteColor(option.color) })}
-            style={{ background: option.color, color: option.textColor }}
+            style={{ background: option.color, color: option.text_color }}
             title={option.name}
             aria-label={option.name}
           >

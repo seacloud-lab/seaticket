@@ -276,7 +276,7 @@ const getNotDuplicateOption = (options) => {
 export const generateNewOption = (options, name) => {
   const defaultOption = getNotDuplicateOption(options);
   const { COLOR: color, TEXT_COLOR: textColor, BORDER_COLOR: borderColor } = defaultOption;
-  const newOption = { name, color, textColor, borderColor };
+  const newOption = { name, color, text_color: textColor, border_color: borderColor };
   newOption.id = generateOptionID(options);
   return newOption;
 };

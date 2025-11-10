@@ -9,7 +9,7 @@ export const getTypesOptions = (typesData) => {
       id: o._id,
       name: o.name,
       color: o.color,
-      textColor: o.text_color,
+      text_color: o.text_color,
     };
   });
 };

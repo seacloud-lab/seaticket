@@ -63,10 +63,10 @@ export const TICKET_STATUS_CONFIG = {
 };
 
 export const TICKET_STATUS_OPTIONS = [
-  { id: '0001', value: TICKET_STATUS.OPEN, name: gettext('Open'), textColor: '#FFF', color: '#1a7f37', borderColor: '#1a7f37' },
-  { id: '0002', value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), textColor: '#FFF', color: '#8250df', borderColor: '#8250df' },
-  { id: '0003', value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
-  { id: '0004', value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), textColor: '#FFF', color: '#59636e', borderColor: '#59636e' },
+  { id: '0001', value: TICKET_STATUS.OPEN, name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0002', value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+  { id: '0003', value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
+  { id: '0004', value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
 ];
 
 export const PREDEFINED_TICKET_TAG_NAME = {

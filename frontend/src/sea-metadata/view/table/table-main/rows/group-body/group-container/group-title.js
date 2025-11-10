@@ -39,7 +39,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         const style = selectedOption ?
           {
             backgroundColor: selectedOption.color,
-            color: selectedOption.textColor
+            color: selectedOption.text_color
           } :
           { backgroundColor: DELETED_OPTION_BACKGROUND_COLOR };
         const optionName = selectedOption ? getOptionDisplayNameByOption(selectedOption) : deletedOptionTip;
@@ -58,7 +58,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         return (
           <>
             {selectedOptions.map(option => {
-              const style = { backgroundColor: option.color, color: option.textColor };
+              const style = { backgroundColor: option.color, color: option.text_color };
               return (<div className="sea-metadata-multiple-select-option" style={style} key={option.id} title={option.name}>{option.name}</div>);
             })}
             {invalidOptions.map(option => {

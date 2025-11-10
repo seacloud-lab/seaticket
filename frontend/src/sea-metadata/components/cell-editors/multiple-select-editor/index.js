@@ -226,7 +226,7 @@ const MultipleSelectEditor = forwardRef(({
             <div className="single-select">
               <span
                 className="single-select-name"
-                style={{ backgroundColor: option.color, color: option.textColor || null }}
+                style={{ backgroundColor: option.color, color: option.text_color || null }}
                 title={option.name}
                 aria-label={option.name}
               >
