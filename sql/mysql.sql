@@ -418,7 +418,7 @@ CREATE TABLE `projects`  (
   `color` varchar(50) DEFAULT NULL,
   `text_color` varchar(50) DEFAULT NULL,
   `icon` varchar(50) DEFAULT NULL,
-  `settings` longtext NOT NULL,
+  `settings` longtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid`(`uuid`),
   UNIQUE KEY `projects_workspace_id_name_0b89d91b_uniq`(`workspace_id`, `name`),
