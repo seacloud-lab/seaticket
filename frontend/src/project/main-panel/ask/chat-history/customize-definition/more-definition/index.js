@@ -46,6 +46,11 @@ const MoreDefinition = ({ element, attributes, editor, onClick, sources, setting
     setDefinitionIndex(nextDefinitionIndex);
   }, [definitionIndex, sourcesCount]);
 
+  const handleClick = useCallback((event) => {
+    setIsShowMore(false);
+    onClick && onClick(event);
+  }, [onClick]);
+
   return (
     <>
       <div
@@ -83,7 +88,7 @@ const MoreDefinition = ({ element, attributes, editor, onClick, sources, setting
               editor={editor}
               sources={sources}
               settings={settings}
-              onClick={onClick}
+              onClick={handleClick}
             />
           </div>
         </CustomizePopover>

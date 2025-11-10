@@ -10,36 +10,28 @@ const CustomizeDefinition = ({ element, sources, ...props }) => {
 
   if (sources.length < 4) {
     return (
-      <Definition
-        element={element}
-        sources={sources}
-        { ...props }
-      />
+      <Definition element={element} sources={sources} { ...props }/>
     );
   }
 
   const identifier = Number(element.identifier);
   if (identifier < 3) {
     return (
-      <Definition
-        element={element}
-        sources={sources}
-        { ...props }
-      />
+      <Definition element={element} sources={sources} { ...props } />
     );
   }
 
   if (identifier === 3) {
     return (
-      <MoreDefinition
-        sources={sources}
-        { ...props }
-      />
+      <>
+        <MoreDefinition sources={sources} { ...props } />
+        <div data-id={element.id} { ...props?.attributes } className="sea-ai-chat-customize-definition-hidden"></div>
+      </>
     );
   }
 
   return (
-    <div data-id={element.id} { ...props?.attributes }></div>
+    <div data-id={element.id} { ...props?.attributes } className="sea-ai-chat-customize-definition-hidden"></div>
   );
 };
 

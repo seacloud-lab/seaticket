@@ -106,3 +106,7 @@
   height: 20px;
   line-height: 20px;
 }
+
+.sea-ai-chat-customize-definition-hidden {
+  opacity: 0;
+}
