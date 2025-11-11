@@ -102,6 +102,11 @@ const AllConnections = ({ projectUuid }) => {
     });
   }, [projectUuid, modifyLocalConnectionRecord]);
 
+  const { registerManualSyncCallback } = useConnectionsPage();
+  useEffect(() => {
+    registerManualSyncCallback(onManualSync);
+  }, [onManualSync, registerManualSyncCallback]);
+
   const getConnectionStatus = useCallback((connectionId) => {
     return connectionsAPI.getConnection(projectUuid, connectionId).then(res => {
       const newRecord = new Connection(res.data.record);

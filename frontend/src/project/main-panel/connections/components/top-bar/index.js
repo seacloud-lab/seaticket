@@ -11,8 +11,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 import './index.css';
 
 const TopBar = ({ title }) => {
-  const { pageType, pageName, togglePageType } = useConnectionsPage();
-
+  const { pageType, pageName, togglePageType, manualSyncCallbackRef } = useConnectionsPage();
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);
   }, []);
@@ -44,9 +43,17 @@ const TopBar = ({ title }) => {
           {gettext('Add connection')}
         </Button>
       );
+    } else {
+      return (
+        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => {
+          manualSyncCallbackRef.current && manualSyncCallbackRef.current({ id: pageType });
+        }}>
+          <Icon symbol="sync" className="mr-2" />
+          {gettext('Sync now')}
+        </Button>
+      );
     }
-    return null;
-  }, [pageType, handleNewConnection]);
+  }, [pageType, handleNewConnection, manualSyncCallbackRef]);
 
   return (
     <BasicTopBar>
