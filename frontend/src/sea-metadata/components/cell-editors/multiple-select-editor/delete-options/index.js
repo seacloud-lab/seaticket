@@ -34,8 +34,8 @@ const DeleteOption = ({ value, options, onDelete }) => {
           maxWidth: '250px',
           fontSize: 13,
           backgroundColor: option.color,
-          color: option.textColor || null,
-          fill: option.textColor || '#666',
+          color: option.text_color || null,
+          fill: option.text_color || '#666',
         };
         return (
           <div key={id} className="sea-metadata-delete-select-option" style={style}>

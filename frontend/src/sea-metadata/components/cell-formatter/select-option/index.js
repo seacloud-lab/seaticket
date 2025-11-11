@@ -17,7 +17,7 @@ const SelectOption = ({ option, fontSize }) => {
       maxWidth: '250px',
       fontSize: fontSize ? fontSize : 13,
       backgroundColor: option.color,
-      color: option.textColor || null,
+      color: option.text_color || null,
     };
     if (isWhiteColor(option.color)) {
       _style['border'] = '1px solid #d1d9e0b3';

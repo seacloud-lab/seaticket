@@ -1,11 +1,10 @@
 class Type {
   constructor(object) {
-    this._id = String(object.id) || '';
-    this.id = String(object.id) || '';
+    this._id = String(object.id) || ''; // used for types page
+    this.id = String(object.id) || ''; // used for tickets page
     this.name = object.name || '';
     this.color = object.color || '';
-    this.text_color = object.text_color || '';
-    this.textColor = object.text_color || '';
+    this.text_color = object.text_color || object.textColor || '';
     this.tickets_count = object.tickets_count || 0;
   }
 

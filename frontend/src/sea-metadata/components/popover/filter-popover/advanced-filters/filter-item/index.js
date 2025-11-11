@@ -319,7 +319,7 @@ class FilterItem extends React.Component {
         if (inOption) {
           optionName = inOption.name;
           optionStyle.background = inOption.color;
-          optionStyle.color = inOption.textColor || null;
+          optionStyle.color = inOption.text_color || null;
         } else {
           optionStyle.background = DELETED_OPTION_BACKGROUND_COLOR;
           optionName = DELETED_OPTION_TIPS;
@@ -437,7 +437,7 @@ class FilterItem extends React.Component {
           let selectedOption = options.find(option => option.id === filter_term);
           const className = 'select-option-name single-select-option';
           const style = selectedOption ?
-            { background: selectedOption.color, color: selectedOption.textColor || null } :
+            { background: selectedOption.color, color: selectedOption.text_color || null } :
             { background: DELETED_OPTION_BACKGROUND_COLOR };
           const selectedOptionName = selectedOption ? getOptionDisplayNameByOption(selectedOption) : DELETED_OPTION_TIPS;
           selectedOptionDom = { label: (

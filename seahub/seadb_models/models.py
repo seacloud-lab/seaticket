@@ -54,25 +54,25 @@ class SelectTypes:
           "id": "0001",
           "name": "open",
           "color": "#1A7F37",
-          "textColor": "#FFFFFF",
+          "text_color": "#FFFFFF",
         },
         {
           "id": "0002",
           "name": "completed",
           "color": "#8250DF",
-          "textColor": "#FFFFFF",
+          "text_color": "#FFFFFF",
         },
         {
           "id": "0003",
           "name": "not_planned",
           "color": "#59636E",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         },
         {
           "id": "0004",
           "name": "duplicate",
           "color": "#59636E",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         },
       ]
     }
@@ -82,14 +82,14 @@ class SelectTypes:
           "id": "0001",
           "name": "open",
           "color": "#1A7F37",
-          "textColor": "#FFFFFF",
+          "text_color": "#FFFFFF",
 
         },
         {
           "id": "0002",
           "name": "closed",
           "color": "#8250DF",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         }
       ]
     }
@@ -100,25 +100,25 @@ class SelectTypes:
           "id": "0001",
           "name": "completed",
           "color": "#8250DF",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         },
         {
           "id": "0002",
           "name": "not_planned",
           "color": "#59636E",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         },
         {
           "id": "0003",
           "name": "duplicate",
           "color": "#59636E",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         },
         {
           "id": "0004",
           "name": "reopened",
           "color": "#1A7F37",
-          "textColor": "#FFFFFF"
+          "text_color": "#FFFFFF"
         }
       ]
     }
@@ -129,19 +129,19 @@ class SelectTypes:
           "id": "0001",
           "name": "Bug",
           "color": "#ffebe9",
-          "textColor": "#d1242f"
+          "text_color": "#d1242f"
         },
         {
           "id": "0002",
           "name": "Feature",
           "color": "#ddf4ff",
-          "textColor": "#0969da"
+          "text_color": "#0969da"
         },
         {
           "id": "0003",
           "name": "Task",
           "color": "#fff8c5",
-          "textColor": "#9a6700"
+          "text_color": "#9a6700"
         }
       ]
     }
