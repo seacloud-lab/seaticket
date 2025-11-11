@@ -1,10 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
-import { TextInput, PasswordInput, ModalHeader, IconTooltip } from '@/components';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
+import { ModalHeader } from '@/components';
+import ConnectionConfigEditor from '../connection-config-editor';
+
+import '../new-connection-dialog/index.css';
 
 const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [name, setName] = useState(record?.name || '');
@@ -14,12 +17,27 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const type = useMemo(() => record.type, [record]);
-  const columns = useMemo(() => CONNECTION_FIELDS[type] || [], [type]);
-  const customColumns = useMemo(() => columns.filter(c => c.is_custom), [columns]);
+  const columns = useMemo(() => {
+    const _columns = CONNECTION_FIELDS[type] || [];
+    if (type === CONNECTION_TYPE.EMAIL) {
+      return _columns.slice(0, -1);
+    }
+    return _columns;
+  }, [type]);
+  const customColumns = useMemo(() => columns.filter(c => {
+    if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
+    return c.is_custom;
+  }), [columns]);
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
+      if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
+        return c.children.every(child => {
+          if (child.is_required) return Boolean(config[child.key]);
+          return true;
+        });
+      }
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
@@ -62,9 +80,9 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   }, [record, name, config, onSubmit, onToggle]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false}>
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog" >
       <ModalHeader toggle={onToggle}>{gettext('Edit connection')}</ModalHeader>
-      <ModalBody>
+      <ModalBody className="sea-qa-project-connection-body">
         <FormGroup>
           <Label>
             {gettext('Connection name')}
@@ -73,39 +91,34 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
         {customColumns.map(c => {
-          const { key, type, can_edit_multiple_times = true, placeholder, helpText, defaultValue } = c;
-          const value = config[key] !== undefined ? config[key] : (defaultValue || '');
-
-          return (
-            <FormGroup key={key}>
-              <Label>
-                {c.name}
-                {c.is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
-                {helpText && (<IconTooltip tip={helpText} className={c.is_required ? 'ml-0' : ''} />)}
-              </Label>
-              {type === CONNECTION_FIELD_TYPE.PASSWORD ? (
-                <>
-                  {!can_edit_multiple_times ? (
-                    <Input value="********" disabled={true} />
-                  ) : (
-                    <PasswordInput value={value} enableCheckStrength={false} disabled={isSubmitting} onChange={(newValue) => onConfigChange(key, newValue)} />
-                  )}
-                </>
-              ) : type === CONNECTION_FIELD_TYPE.NUMBER ? (
-                <Input
-                  type="number"
-                  value={value}
-                  placeholder={placeholder}
-                  disabled={isSubmitting}
-                  onChange={(e) => onConfigChange(key, parseInt(e.target.value) || defaultValue)}
-                  min="1"
-                  max="20"
-                />
-              ) : (
-                <TextInput value={value} onChange={(newValue) => onConfigChange(key, newValue)} disabled={isSubmitting} />
-              )}
-            </FormGroup>
-          );
+          const { type, key, children } = c;
+          if (type === CONNECTION_FIELD_TYPE.GROUP) {
+            return (
+              <Row className="mx-0 sea-qa-project-connection-group-config" key={key}>
+                {children.map((child, index) => (
+                  <ConnectionConfigEditor
+                    key={`${key}-${index}`}
+                    column={child}
+                    className="mx-0 px-0 width-half"
+                    row={config}
+                    readonly={isSubmitting}
+                    canModifyPassword={false}
+                    onChange={onConfigChange}
+                  />
+                ))}
+              </Row>
+            );
+          }
+          return ((
+            <ConnectionConfigEditor
+              column={c}
+              key={key}
+              row={config}
+              readonly={isSubmitting}
+              canModifyPassword={false}
+              onChange={onConfigChange}
+            />
+          ));
         })}
         {errorMsg && (<Alert color="danger">{errorMsg}</Alert>)}
       </ModalBody>

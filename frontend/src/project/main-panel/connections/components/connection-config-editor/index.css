@@ -1,0 +1,9 @@
+.sea-qa-project-connection-group-config {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sea-qa-project-connection-group-config .width-half {
+  width: calc((100% - 12px) / 2);
+}
