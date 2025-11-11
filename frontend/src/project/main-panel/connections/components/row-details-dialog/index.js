@@ -40,8 +40,8 @@ const RowDetailsDialog = ({
         } else {
           detailData = res.data.row_details.map(detail => ({
             ...detail,
-            time: detail.created_at || detail.updated_at,
-            body: detail.body || detail.content,
+            time: detail.created_time || detail.modified_time,
+            body: detail.content,
           }));
         }
         setRowDetails(detailData);

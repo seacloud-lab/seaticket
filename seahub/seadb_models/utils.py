@@ -35,7 +35,7 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            web_crawl_table.updated_at.name,
+            web_crawl_table.modified_time.name,
         ]
     )
 
@@ -118,7 +118,7 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            github_issues_table.created_at.name
+            github_issues_table.created_time.name
         ],
     )
 
@@ -202,7 +202,7 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         topics_table_id,
         [
-            discourse_topics_table.updated_at.name
+            discourse_topics_table.sync_time.name
         ],
     )
 
@@ -249,7 +249,7 @@ def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         replies_table_id,
         [
-            discourse_replies_table.updated_at.name,
+            discourse_replies_table.modified_time.name,
         ]
     )
 
@@ -279,7 +279,7 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            SeafileTable.filename.name,
+            SeafileTable.title.name,
         ]
     )
 
@@ -532,7 +532,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_n
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
         topic_id = topics_res.get('results')[0].get('topic_id')
-        replies_sql = f"SELECT author,content,updated_at FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+        replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         records = replies_res.get('results', [])
     except Exception as e:
@@ -543,12 +543,12 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_n
 
 def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk):
     """Query github issue comments from SeaDB"""
-    issue_sql = f"SELECT author, body, created_at, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results', [])
         issue_id = issue_record[0].get('issue_id')
-        comments_sql = f"SELECT author, body, created_at, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+        comments_sql = f"SELECT author, content, created_time, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
         issue_record.extend(comments_record)
@@ -559,7 +559,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, 
 
 
 def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk):
-    sql = f"SELECT `path`, `filename`, `mtime`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results', [])

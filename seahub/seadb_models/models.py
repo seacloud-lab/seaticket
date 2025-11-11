@@ -196,10 +196,10 @@ class DiscourseTopicsTable(BaseModel):
     slug = MappedColumn('slug', PropertyTypes.TEXT)
     views = MappedColumn('views', PropertyTypes.INT)
     category_id = MappedColumn('category_id', PropertyTypes.INT)
-    bumped_at = MappedColumn('bumped_at', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -211,7 +211,7 @@ class DiscourseRepliesTable(BaseModel):
     post_number = MappedColumn('post_number', PropertyTypes.INT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     author = MappedColumn('author', PropertyTypes.TEXT)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -222,8 +222,8 @@ class WebCrawlTable(BaseModel):
     url = MappedColumn('url', PropertyTypes.TEXT)
     title = MappedColumn('title', PropertyTypes.TEXT)
     etag = MappedColumn('etag', PropertyTypes.TEXT)
-    last_modified = MappedColumn('last_modified', PropertyTypes.DATETIME)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     hash = MappedColumn('hash', PropertyTypes.TEXT)
 
@@ -237,7 +237,7 @@ class GithubIssuesTable(BaseModel):
     issue_number = MappedColumn('issue_number', PropertyTypes.INT)
     title = MappedColumn('title', PropertyTypes.TEXT)
     ai_title = MappedColumn('ai_title', PropertyTypes.TEXT)
-    body = MappedColumn('body', PropertyTypes.TEXT, {'compressed': True})
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, SelectTypes.state)
     state_reason = MappedColumn('state_reason', PropertyTypes.SINGLE_SELECT, SelectTypes.state_reason)
     labels = MappedColumn('labels', PropertyTypes.MULTIPLE_SELECT)
@@ -245,8 +245,9 @@ class GithubIssuesTable(BaseModel):
     author = MappedColumn('author', PropertyTypes.TEXT)
     assignees = MappedColumn('assignees', PropertyTypes.TEXT)
     url = MappedColumn('url', PropertyTypes.TEXT)
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     closed_at = MappedColumn('closed_at', PropertyTypes.DATETIME)
     comments_count = MappedColumn('comments_count', PropertyTypes.INT)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
@@ -260,9 +261,9 @@ class GithubIssueCommentsTable(BaseModel):
     comment_id = MappedColumn('comment_id', PropertyTypes.INT)
     issue_id = MappedColumn('issue_id', PropertyTypes.INT)
     author = MappedColumn('author', PropertyTypes.TEXT)
-    body = MappedColumn('body', PropertyTypes.TEXT, {'compressed': True})
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
     @classmethod
@@ -271,10 +272,10 @@ class GithubIssueCommentsTable(BaseModel):
 
 class SeafileTable(BaseModel):
     path = MappedColumn('path', PropertyTypes.TEXT)
-    filename = MappedColumn('filename', PropertyTypes.TEXT)
-    mtime = MappedColumn('mtime', PropertyTypes.DATETIME)
+    title = MappedColumn('title', PropertyTypes.TEXT)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
     @classmethod
@@ -312,15 +313,15 @@ class EmailTable(BaseModel):
     email_from = MappedColumn('email_from', PropertyTypes.TEXT)
     email_to = MappedColumn('email_to', PropertyTypes.TEXT)
     message_id = MappedColumn('message_id', PropertyTypes.TEXT)
-    subject = MappedColumn('subject', PropertyTypes.TEXT)
+    title = MappedColumn('title', PropertyTypes.TEXT)
     cc = MappedColumn('cc', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     html_content = MappedColumn('html_content', PropertyTypes.TEXT, {'compressed': True})
-    email_date = MappedColumn('email_date', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     reply_to_message_id = MappedColumn('reply_to_message_id', PropertyTypes.TEXT)
     attachments = MappedColumn('attachments', PropertyTypes.LIST)
     is_sender = MappedColumn('is_sender', PropertyTypes.BOOL)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
     @classmethod

@@ -196,16 +196,16 @@ class ConvertRecordToTicket(APIView):
                 )
                 title = issue[0].get('title', '') if issue else ''
                 default_title = title
-                body_content = issue[0].get('body', '') if issue else ''
+                body_content = issue[0].get('content', '') if issue else ''
                 issue_id = issue[0].get('issue_id') if issue else ''
                 comments = github_db_api.get_comments_by_issue_id(
                     connection_id, issue_id
                 )
                 for comment in comments:
-                    if not comment.get('body'):
+                    if not comment.get('content'):
                         continue
 
-                    content_to_add = comment.get('body')
+                    content_to_add = comment.get('content')
                     if body_content:
                         content_to_add = '\n\n' + content_to_add
                     if len(body_content) + len(content_to_add) > MAX_LENGTH:

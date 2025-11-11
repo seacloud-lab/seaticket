@@ -5,10 +5,8 @@ class DiscourseForum {
     this.title = object.title || '';
     this.slug = object.slug || '';
     this.views = object.views || 0;
-    this.bumped_at = object.bumped_at || '';
-    this.connection_id = object.connection_id || '';
-    this.deleted = Boolean(object.deleted);
-    this.created_at = object.created_at || '';
+    this.modified_time = object.modified_time || '';
+    this.created_time = object.created_time || '';
   }
 }
 
