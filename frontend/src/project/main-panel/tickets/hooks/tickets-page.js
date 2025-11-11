@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@//utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../constants';
+import context from '@/sea-metadata/context';
 import eventBus from '@//utils/event-bus';
 import { Utils } from '@/utils/utils';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 const TicketsPageContext = React.createContext(null);
 
@@ -37,6 +39,11 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
       setChildrenPageType(newChildrenPageType);
     }
   }, [pageType, childrenPageType]);
+
+  const onRefresh = Utils.debounce(useCallback(() => {
+    const eventBus = context.eventBus;
+    eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
+  }, []), 300);
 
   // init page type
   useEffect(() => {
@@ -93,6 +100,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
       childrenPageType,
       isLoading,
       togglePageType,
+      onRefresh,
       updateViewID: setViewID,
     }}>
       {children}

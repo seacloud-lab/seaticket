@@ -5,20 +5,20 @@ import IconButton from '../icon-button';
 
 import './index.css';
 
-const IconTooltip = ({ icon = 'help', tip, className, placement = 'right', ...props }) => {
+const IconTooltip = ({ icon = 'help', tip, className, placement = 'right', hoverBackground = false, ...props }) => {
   const ref = useRef(null);
   return (
     <>
       <IconButton
         icon={icon}
         ref={ref}
-        className={classnames('sea-qa-tooltip-icon-btn no-hover-bg', className)}
+        className={classnames('sea-qa-tooltip-icon-btn', { 'no-hover-bg': !hoverBackground }, className)}
         { ...props }
       />
       <UncontrolledTooltip
         target={ref}
         placement={placement}
-        fade={false}
+        fade={true}
         className="sea-metadata-tooltip"
       >
         {tip}

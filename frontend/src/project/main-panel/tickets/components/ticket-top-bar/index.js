@@ -4,7 +4,7 @@ import TopBar from '../../../top-bar';
 import { useTags, useTypes, useTicketsPage } from '../../hooks';
 import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from '../../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import { IconButton, Icon } from '@/components';
+import { IconButton, Icon, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -12,14 +12,24 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import './index.css';
 
 const TicketTopBar = ({ title }) => {
-  const { pageType, togglePageType, childrenPageType } = useTicketsPage();
+  const { pageType, togglePageType, onRefresh, childrenPageType } = useTicketsPage();
   const { tagsData } = useTags();
   const { typesData } = useTypes();
 
   const renderLeftChildren = useCallback(() => {
     if (pageType === TICKET_PAGE_TYPE.ALL) {
       return (
-        <div className="w-100 text-truncate">{title}</div>
+        <>
+          <div className="text-truncate">{title}</div>
+          <IconTooltip
+            icon="refresh"
+            tip={gettext('Refresh')}
+            className="sea-qa-project-refresh-tickets-btn"
+            placement="bottom"
+            hoverBackground={true}
+            onClick={onRefresh}
+          />
+        </>
       );
     }
 
