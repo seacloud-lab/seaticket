@@ -520,7 +520,7 @@ CREATE TABLE `chat_sessions` (
 CREATE TABLE `chat_messages` (
   `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
   `session_id` BIGINT(11) NOT NULL,
-  `chat_uuid` VARCHAR(255) NOT NULL,
+  `message_id` VARCHAR(4) NOT NULL,
   `username` VARCHAR(255) NOT NULL,
   `role` ENUM('user', 'assistant') NOT NULL,
   `content` LONGTEXT,
@@ -552,8 +552,9 @@ CREATE TABLE `project_api_token` (
 
 CREATE TABLE chat_tool_calls (
 	`id` BIGINT(11) NOT NULL AUTO_INCREMENT,
-    `chat_uuid` VARCHAR(255) NOT NULL,
-    `tool_calls` LONGTEXT NOT NULL
+  `session_id` INT(11) NOT NULL,
+  `message_id` VARCHAR(4) NOT NULL,
+  `tool_calls` LONGTEXT NOT NULL
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_chat_uuid` (`chat_uuid`)
+	UNIQUE KEY `uniq_session_id_message_id` (`session_id`, `message_id`)
 );

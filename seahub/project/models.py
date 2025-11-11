@@ -1406,31 +1406,39 @@ class ChatSessions(models.Model):
         }
 
 class ChatToolCallsManager(models.Manager):
-    def get_tool_calls_by_chat_uuid(self, chat_uuid):
-        return self.filter(chat_uuid=chat_uuid)
+    pass
 
 class ChatToolCalls(models.Model):
     id = models.BigAutoField(primary_key=True)
-    chat_uuid = models.UUIDField(unique=True, db_index=True)
+    session_id = models.IntegerField(null=False, db_index=True)
+    message_id = models.CharField(max_length=4, null=False)
     tool_calls = models.TextField()
 
     objects = ChatToolCallsManager()
 
     class Meta:
         db_table = 'chat_tool_calls'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['session_id', 'message_id'],
+                name='uniq_session_id_message_id'
+            )
+        ]
 
     def to_dict(self):
         return {
             'id': self.id,
-            'chat_uuid': self.chat_uuid,
+            'session_id': self.session_id,
+            'message_id': self.message_id,
             'tool_calls': json.loads(self.tool_calls),
         }
+
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_id, chat_uuid, username, role, content, is_agent_mode, sources=''):
+    def create_message(self, session_id, message_id, username, role, content, is_agent_mode, sources=''):
         """Create a new chat message"""
         message = self.model(
             session_id=session_id,
-            chat_uuid=chat_uuid,
+            message_id=message_id,
             username=username,
             role=role,
             content=content,
@@ -1453,7 +1461,7 @@ class ChatMessages(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE, db_index=True)
-    chat_uuid = models.UUIDField()
+    message_id = models.CharField(max_length=4, null=False)
     username = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
@@ -1474,7 +1482,7 @@ class ChatMessages(models.Model):
         return {
             'id': self.id,
             'session_id': self.session_id,
-            'chat_uuid': self.chat_uuid,
+            'message_id': self.message_id,
             'username': self.username,
             'role': self.role,
             'content': self.content,

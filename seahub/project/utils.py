@@ -5,6 +5,7 @@ import jwt
 import time
 import requests
 import hashlib
+import uuid
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
@@ -362,11 +363,24 @@ def replace_file_url_in_content(content, new_file_urls_dict):
         content = content.replace(old_file_url, new_file_url)
     return content
 
+def gen_message_id(session_id, max_try = 5):
+    trying = 0
+    new_message_id = ''
+    while not new_message_id and trying < max_try:
+        try_message_id = uuid.uuid4().hex[:4]
+        if ChatToolCalls.objects.filter(session_id=session_id, message_id=try_message_id).count() == 0:
+            new_message_id = try_message_id
+        trying += 1
+
+    if trying == max_try:
+        raise Exception(f'Failure to generate message_id')
+
+    return new_message_id
+
 def delete_session(session_id):
     try:
-        chat_messages = ChatMessages.objects.filter(session_id=session_id)
-        ChatToolCalls.objects.filter(chat_uuid__in=set(chat_messages.values_list('chat_uuid', flat=True))).delete()
-        chat_messages.delete()
+        ChatMessages.objects.filter(session_id=session_id).delete()
+        ChatToolCalls.objects.filter(session_id=session_id).delete()
         ChatSessions.objects.filter(pk=session_id).delete()
         return True
     except Exception as e:

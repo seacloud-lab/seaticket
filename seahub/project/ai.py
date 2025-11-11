@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
-import uuid
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -18,7 +17,7 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections
 from seahub.project.utils import check_project_permission, get_ai_reply, \
-    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_title
+    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_title, gen_message_id
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -86,15 +85,20 @@ class ChatView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
-        chat_uuid = str(uuid.uuid4())
+        try:
+            message_id = gen_message_id(session.id)
+        except Exception as e:
+            logger.exception(f'Failure to generate message id: {e}')
+            error_msg = 'Internal server error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
-            'chat_uuid': chat_uuid,
+            'session_id': session.id,
+            'message_id': message_id,
             'query': query,
             'resolve_type': resolve_type,
             'username': username,
-            'session_id': session.id
         }
 
         try:
@@ -122,8 +126,8 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.id, chat_uuid, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
+        user_message = ChatMessages.objects.create_message(session.id, message_id, request.user.username, 'user', query, resolve_type == 'agent')
+        ai_reply_message = ChatMessages.objects.create_message(session.id, message_id, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
 
         return Response({
             'ai_reply': ai_reply,
