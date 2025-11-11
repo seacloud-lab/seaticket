@@ -11,7 +11,7 @@ import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME
 import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster, ModalHeader, Loading } from '@/components';
+import { toaster, ModalHeader, CenteredLoading } from '@/components';
 
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
@@ -92,38 +92,40 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   return (
     <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
       <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
-      <ModalBody>
-        <div className="d-flex">
-          <div style={{ flex: 2, paddingRight: '1rem' }}>
-            {isLoading && <Loading/>}
-            <Form>
-              <FormGroup>
-                <Label for="ticketTitle">{gettext('Title')}</Label>
-                <Input
-                  type="text"
-                  name="title"
-                  id="ticketTitle"
-                  value={title}
-                  readOnly={isLoading}
-                  onChange={(e) => setTitle(e.target.value)}
-                  style={{ marginBottom: '1rem' }}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="ticketDescription">{gettext('Description')}</Label>
-                <Input
-                  type="textarea"
-                  name="description"
-                  id="ticketDescription"
-                  value={description}
-                  readOnly={isLoading}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ height: '250px' }}
-                />
-              </FormGroup>
-            </Form>
+      <ModalBody style={{ height: 406 }}>
+        {isLoading && <CenteredLoading/>}
+        {!isLoading && (
+          <div className="d-flex">
+            <div style={{ flex: 2, paddingRight: '1rem' }}>
+              <Form>
+                <FormGroup>
+                  <Label for="ticketTitle">{gettext('Title')}</Label>
+                  <Input
+                    type="text"
+                    name="title"
+                    id="ticketTitle"
+                    value={title}
+                    readOnly={isLoading}
+                    onChange={(e) => setTitle(e.target.value)}
+                    style={{ marginBottom: '1rem' }}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="ticketDescription">{gettext('Description')}</Label>
+                  <Input
+                    type="textarea"
+                    name="description"
+                    id="ticketDescription"
+                    value={description}
+                    readOnly={isLoading}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={{ height: '250px' }}
+                  />
+                </FormGroup>
+              </Form>
+            </div>
           </div>
-        </div>
+        )}
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
