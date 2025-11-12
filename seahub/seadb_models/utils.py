@@ -448,7 +448,7 @@ def get_tickets_columns(seadb_api, project_uuid):
     columns = table_metadata.get('columns') or []
     return columns
 
-def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
+def list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
@@ -461,7 +461,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, include_deleted=True)
+    sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, username, include_deleted=True)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
@@ -471,7 +471,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, start, limit):
     return records, display_columns
 
 
-def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
+def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, username=''):
     title_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'title')
     priority_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'priority')
     view = {
@@ -491,11 +491,11 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
         return []
     columns = table_metadata.get('columns') or []
     display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
-    sql = view_data_2_sql('tickets', display_columns, view, start, end, include_deleted=True)
+    sql = view_data_2_sql('tickets', display_columns, view, username, start, end, include_deleted=True)
     ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return ticket_data
 
-def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit):
+def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
     connection_type = connection.type
     table_name = get_connection_table_name(connection)
     columns = get_connection_columns(seadb_api, project_uuid, connection)
@@ -517,7 +517,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
 
 
     view_copy = view.copy()
-    sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, start, limit)
+    sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])

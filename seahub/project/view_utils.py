@@ -720,6 +720,9 @@ class CollaboratorOperator(Operator):
         FilterPredicateTypes.INCLUDE_ME,
     ]
 
+    def __init__(self, column, filter_item):
+        super(CollaboratorOperator, self).__init__(column, filter_item)
+
     def op_has_any_of(self):
         select_collaborators = self.filter_term
         if not select_collaborators:
@@ -784,6 +787,9 @@ class CreatorOperator(Operator):
         FilterPredicateTypes.IS_NOT,
         FilterPredicateTypes.INCLUDE_ME,
     ]
+
+    def __init__(self, column, filter_item):
+        super(CreatorOperator, self).__init__(column, filter_item)
 
     def op_is(self):
         term = self.filter_term
@@ -973,6 +979,12 @@ def _filter2sql(operator):
         return operator.op_has_any_of()
     return ''
 
+def _get_operator_by_name(column_name):
+    if column_name == 'creator':
+        return CreatorOperator
+    elif column_name in ['participants', 'assignees']:
+        return CollaboratorOperator
+    return None
 
 def _get_operator_by_type(column_type):
 
@@ -1108,7 +1120,9 @@ class SQLGenerator(object):
 
             column_type = self._get_column_type(column)
             column['type'] = column_type
-            operator_cls = _get_operator_by_type(column_type)
+            # Compatible with other types
+            column_name = column.get('name')
+            operator_cls = _get_operator_by_name(column_name) or _get_operator_by_type(column_type)
             if not operator_cls:
                 raise ValueError('filter: %s not support to sql' % filter_item)
             operator = operator_cls(column, filter_item)
@@ -1189,9 +1203,9 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, view, start, limit, include_deleted=False):
+def view_data_2_sql(table, columns, view, username, start, limit, include_deleted=False):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, start, limit, include_deleted=include_deleted)
+    sql_generator = SQLGenerator(table, columns, view, username, start, limit, include_deleted=include_deleted)
     sql = sql_generator.to_sql()
     return sql
 

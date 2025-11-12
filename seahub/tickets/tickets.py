@@ -93,7 +93,7 @@ class TicketsAPIView(APIView):
             view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
             tickets, columns = list_tickets_view_records(
-                seadb_api, project_uuid, view, start, limit)
+                seadb_api, project_uuid, view, username, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
