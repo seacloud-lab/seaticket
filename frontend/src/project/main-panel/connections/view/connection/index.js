@@ -13,6 +13,8 @@ import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
 
+import './index.css';
+
 const SERVER_COMPUTABLE_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.SITE,
@@ -90,9 +92,9 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
+    <Modal className="sea-qa-create-ticket-dialog" isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
-      <ModalBody style={{ height: 406 }}>
+      <ModalBody>
         {isLoading && <CenteredLoading/>}
         {!isLoading && (
           <div className="d-flex">
@@ -107,19 +109,19 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
                     value={title}
                     readOnly={isLoading}
                     onChange={(e) => setTitle(e.target.value)}
-                    style={{ marginBottom: '1rem' }}
+                    className="mb-4"
                   />
                 </FormGroup>
                 <FormGroup>
                   <Label for="ticketDescription">{gettext('Description')}</Label>
                   <Input
+                    className="sea-qa-ticket-description"
                     type="textarea"
                     name="description"
                     id="ticketDescription"
                     value={description}
                     readOnly={isLoading}
                     onChange={(e) => setDescription(e.target.value)}
-                    style={{ height: '250px' }}
                   />
                 </FormGroup>
               </Form>
@@ -157,7 +159,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         toaster.closeAll();
         if (res.data && res.data.ai_title) {
           toaster.success(gettext('AI title generated successfully'));
-          console.log('updateLocalRow', updateLocalRow);
           updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_title: res.data.ai_title });
         } else {
           toaster.warning(gettext('Failed to generate AI title'));

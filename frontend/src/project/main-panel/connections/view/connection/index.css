@@ -1,0 +1,11 @@
+.sea-qa-create-ticket-dialog {
+  min-width: 600px;
+}
+
+.sea-qa-create-ticket-dialog .modal-body {
+	height: 406px;
+}
+
+.sea-qa-create-ticket-dialog .sea-qa-ticket-description {
+  height: 250px;
+}
