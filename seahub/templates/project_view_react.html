@@ -58,6 +58,7 @@
             icon: '{{ icon|escapejs }}',
             settings: '{{ settings|escapejs }}',
             langCode: "{{LANGUAGE_CODE|escapejs}}",
+            availableLLMModels: {{ available_llm_models|safe }},
         }
      };
 </script>

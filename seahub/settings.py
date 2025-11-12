@@ -657,6 +657,11 @@ AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
 AI_PRICES = {}
 
+# Available AI Models for user selection
+AVAILABLE_LLM_MODELS = [
+    {'value': 'gpt-4o-mini', 'label': 'GPT-4o Mini'},
+]
+
 #####################
 # External settings #
 #####################

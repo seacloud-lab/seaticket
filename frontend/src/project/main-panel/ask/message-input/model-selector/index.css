@@ -1,0 +1,30 @@
+.sea-qa-ai-model-selector {
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.sea-qa-ai-model-selector-options {
+  padding: 8px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sea-qa-ai-model-selector-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sea-qa-ai-model-selector-option:hover {
+  background-color: #f5f5f5;
+}
+
+.sea-qa-ai-model-selector-option span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

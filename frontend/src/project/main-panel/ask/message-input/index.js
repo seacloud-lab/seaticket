@@ -12,6 +12,7 @@ import ResolveType from './resolve-type';
 import Ticket from './ticket';
 import Issue from './issue';
 import { useProblemToBeResolved } from '../hooks';
+import ModelSelector from './model-selector';
 
 import './index.css';
 
@@ -25,6 +26,7 @@ const MessageInput = forwardRef(({
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [value, setValue] = useState('');
+  const [selectedModel, setSelectedModel] = useState(null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -80,9 +82,9 @@ const MessageInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue });
+    sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue, model: selectedModel });
     clearProblem();
-  }, [resolveType, value, ticket, issue, sendMessage, clearProblem]);
+  }, [resolveType, value, ticket, issue, selectedModel, sendMessage, clearProblem]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -202,12 +204,15 @@ const MessageInput = forwardRef(({
               <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
               <Ticket projectUuid={projectUuid} value={ticket} onChange={updateTicket} />
             </div>
-            <IconButton
-              disabled={disabled}
-              icon="send"
-              className="sea-qa-ai-ask-icon-btn icon-send-wrapper"
-              onClick={disabled ? () => {} : onSendMessage}
-            />
+            <div className="sea-qa-ai-ask-chat-operations-container-right">
+              <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
+              <IconButton
+                disabled={disabled}
+                icon="send"
+                className="sea-qa-ai-ask-icon-btn icon-send-wrapper"
+                onClick={disabled ? () => {} : onSendMessage}
+              />
+            </div>
           </div>
         </div>
       </ClickOutside>
