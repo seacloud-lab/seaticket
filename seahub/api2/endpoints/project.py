@@ -21,7 +21,7 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     ChatSessions, ChatMessages, ProjectAPIToken
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search
+    convert_project_trash_names, check_project_permission, search, delete_session
 
 from seahub.seadb_models.utils import init_ticket_seadb_table
 
@@ -604,8 +604,11 @@ class ChatSessionView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            session.delete()
-            return Response({'success': True})
+            if delete_session(session.id):
+                return Response({'success': True})
+            else:
+                error_msg = 'Failed to delete session.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         except Exception as e:
             logger.error(e)

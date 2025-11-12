@@ -1380,7 +1380,6 @@ class ChatSessionsManager(models.Manager):
         except self.model.DoesNotExist:
             return None
 
-
 class ChatSessions(models.Model):
     id = models.BigAutoField(primary_key=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
@@ -1406,16 +1405,45 @@ class ChatSessions(models.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
+class ChatToolCallsManager(models.Manager):
+    pass
+
+class ChatToolCalls(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    session_id = models.IntegerField(null=False, db_index=True)
+    message_id = models.CharField(max_length=4, null=False)
+    tool_calls = models.TextField()
+
+    objects = ChatToolCallsManager()
+
+    class Meta:
+        db_table = 'chat_tool_calls'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['session_id', 'message_id'],
+                name='uniq_session_id_message_id'
+            )
+        ]
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_id': self.session_id,
+            'message_id': self.message_id,
+            'tool_calls': json.loads(self.tool_calls),
+        }
 
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_id, username, role, content, sources=''):
+    def create_message(self, session_id, message_id, username, role, content, is_agent_mode, sources=''):
         """Create a new chat message"""
         message = self.model(
             session_id=session_id,
+            message_id=message_id,
             username=username,
             role=role,
             content=content,
-            sources=sources
+            sources=sources,
+            is_agent_mode=is_agent_mode
         )
         message.save()
         return message
@@ -1433,12 +1461,14 @@ class ChatMessages(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE, db_index=True)
+    message_id = models.CharField(max_length=4, null=False)
     username = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_agent_mode = models.BooleanField()
 
     objects = ChatMessagesManager()
 
@@ -1452,12 +1482,14 @@ class ChatMessages(models.Model):
         return {
             'id': self.id,
             'session_id': self.session_id,
+            'message_id': self.message_id,
             'username': self.username,
             'role': self.role,
             'content': self.content,
             'sources': self.sources,
             'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'updated_at': self.updated_at,
+            'is_agent_mode': self.is_agent_mode
         }
 
 

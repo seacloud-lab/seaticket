@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import { mediaUrl } from '@/constants';
 import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../main-panel/connections/constants';
+import { getConnectionIcon } from '../../main-panel/connections/utils';
 
 const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
 
@@ -33,7 +33,7 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
       onClick={() => handleClick(connectionOption.type)}
       title={name}
     >
-      <img src={`${mediaUrl}img/connection/${connectionOption.icon}.png`} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon" />
+      <img src={getConnectionIcon(nav.type)} alt={connectionOption.name} className="connection-icon sea-qa-project-navigation-item-icon" />
       <span className="sea-qa-project-navigation-item-name">{name}</span>
     </div>
   );

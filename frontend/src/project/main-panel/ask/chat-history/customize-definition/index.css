@@ -1,0 +1,112 @@
+.sea-ai-chat-customize-definition {
+  display: inline-flex;
+  flex-direction: column;
+  width: calc((100% - 20px) / 3);
+  height: 145px;
+  flex-shrink: 0;
+  margin-left: 10px;
+  margin-bottom: 10px !important;
+  gap: 4px;
+  padding: 14px;
+  background: #F5F5F5;
+  border-radius: 6px;
+  box-shadow: 0px 2px 4px #ECEDF0;
+  cursor: pointer;
+}
+
+.sea-ai-chat-customize-definition:hover {
+  background-color: #f0f0f0;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-simple-info {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-order {
+  height: 20px;
+  width: 20px;
+  display: inline-block;
+  text-align: center;
+  border-radius: 50%;
+  border: 1px solid #AFB3BA;
+  font-size: 12px;
+  color: #666;
+  background-color: #E5E5E5;
+  flex-shrink: 0;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-title-score {
+  flex: 1;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-title {
+  width: fit-content;
+  font-size: 16px;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-score {
+  font-size: 12px;
+  color: #888;
+  background-color: #eaeaea;
+  border-radius: 9px;
+  padding: 0px 6px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-avatar,
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-avatar img,
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-avatars img {
+  height: 24px;
+  width: 24px;
+  border: none;
+  flex-shrink: 0;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-avatars {
+  flex-shrink: 0;
+  height: 24px;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-content {
+  width: 100%;
+  -webkit-line-clamp: 3;
+  line-height: 1.5 !important;
+  max-height: 63px;
+  -webkit-box-orient: vertical;
+  word-wrap: break-word;
+  display: -webkit-box;
+  text-overflow: -o-ellipsis-lastline;
+  white-space: pre-wrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  color: #666;
+}
+
+.sea-ai-chat-customize-definition .sea-ai-chat-customize-definition-mtime {
+  width: fit-content;
+  max-width: 100%;
+  flex-shrink: 0;
+  padding: 0 10px;
+  border-radius: 10px;
+  background-color: #eaeaea;
+  height: 20px;
+  line-height: 20px;
+}
+
+.sea-ai-chat-customize-definition-hidden {
+  opacity: 0;
+}

@@ -2,12 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { TextInput, ModalHeader, StepsNavigation } from '@/components';
 import CopyInput from '@/components/copy-input';
 import { STEP, STEPS } from './constants';
 import ConnectionConfigEditor from '../connection-config-editor';
+import { getConnectionIcon } from '../../utils';
 
 import './index.css';
 
@@ -182,11 +183,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
         {step.key === STEP.TYPE && (
           <div className="sea-qa-project-new-connection-types">
             {CONNECTION_TYPES.map(connection => {
-              const { type: key, name, icon } = connection;
+              const { type: key, name } = connection;
               const isActive = key === type;
               return (
                 <div className={classnames('sea-qa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => onTypeChange(key)}>
-                  <img src={`${mediaUrl}img/connection/${icon}.png`} alt={name} className="sea-qa-project-new-connection-icon" />
+                  <img src={getConnectionIcon(key)} alt={name} className="sea-qa-project-new-connection-icon" />
                   <span className="sea-qa-project-new-connection-name">{name}</span>
                 </div>
               );

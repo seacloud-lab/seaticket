@@ -5,11 +5,12 @@ import jwt
 import time
 import requests
 import hashlib
+import uuid
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews
+from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews, ChatMessages, ChatToolCalls, ChatSessions
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -362,6 +363,30 @@ def replace_file_url_in_content(content, new_file_urls_dict):
         content = content.replace(old_file_url, new_file_url)
     return content
 
+def gen_message_id(session_id, max_try = 5):
+    trying = 0
+    new_message_id = ''
+    while not new_message_id and trying < max_try:
+        try_message_id = uuid.uuid4().hex[:4]
+        if ChatToolCalls.objects.filter(session_id=session_id, message_id=try_message_id).count() == 0:
+            new_message_id = try_message_id
+        trying += 1
+
+    if trying == max_try:
+        raise Exception(f'Failure to generate message_id')
+
+    return new_message_id
+
+def delete_session(session_id):
+    try:
+        ChatMessages.objects.filter(session_id=session_id).delete()
+        ChatToolCalls.objects.filter(session_id=session_id).delete()
+        ChatSessions.objects.filter(pk=session_id).delete()
+        return True
+    except Exception as e:
+        logger.error('delete session: %s error: %s', str(session_id), e)
+        return False
+
 
 def delete_project(project):
     project_uuid = str(project.uuid)
@@ -374,6 +399,9 @@ def delete_project(project):
     try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
+        delete_session_ids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('id', flat=True)
+        for session_id in delete_session_ids:
+            delete_session(session_id)
         seadb_api = SeaDBAPI()
         seadb_api.delete_base(project_uuid)
     except Exception as e:

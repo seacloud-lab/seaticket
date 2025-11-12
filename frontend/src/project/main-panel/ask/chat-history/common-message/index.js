@@ -1,23 +1,29 @@
 import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { ELementTypes } from '@seafile/seafile-editor';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import { CustomizeMarkdownViewer } from '@/components';
-import { gettext } from '@/constants';
 import ThoughtProcess from '../thought-process';
+import CustomizeDefinition from '../customize-definition';
+import CustomizeLinkReference from '../customize-link-reference';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ message }, ref) => {
+const CommonMessage = forwardRef(({ message, settings }, ref) => {
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
 
+  const sources = useMemo(() => {
+    if (Object.keys(message).length === 0) return [];
+    const originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
+    return Array.isArray(originSources) ? originSources.slice(0) : [];
+  }, []);
+
   const aiReply = useMemo(() => {
     if (Object.keys(message).length === 0) return '';
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
-    const originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
-    let sources = Array.isArray(originSources) ? originSources.slice(0) : [];
     if (value && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
@@ -64,16 +70,30 @@ const CommonMessage = forwardRef(({ message }, ref) => {
           return `[${source.title || source.url}][${order}]`;
         });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
-      value = value + `\n## ${gettext('Sources')}\n${sourcesString}` ;
+      value = value + `\n\n${sourcesString}` ;
     }
     return value;
-  }, [message]);
+  }, [message, sources]);
 
   const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
       setAIMessageType('text');
     }
   }, []);
+
+  const options = useMemo(() => {
+    return {
+      'loading': {
+        render: (() => null)()
+      },
+      [ELementTypes.DEFINITION]: {
+        render: (<CustomizeDefinition sources={sources} settings={settings} />)
+      },
+      [ELementTypes.LINK_REFERENCE]: {
+        render: (<CustomizeLinkReference />)
+      }
+    };
+  }, [sources, settings]);
 
   useImperativeHandle(ref, () => ({
 
@@ -91,7 +111,12 @@ const CommonMessage = forwardRef(({ message }, ref) => {
       {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
       {aiReply && (
         <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
-          <CustomizeMarkdownViewer value={aiReply} showTOC={false} beforeRenderCallback={beforeAIReplyRenderCallback} />
+          <CustomizeMarkdownViewer
+            value={aiReply}
+            showTOC={false}
+            options={options}
+            beforeRenderCallback={beforeAIReplyRenderCallback}
+          />
         </div>
       )}
     </div>

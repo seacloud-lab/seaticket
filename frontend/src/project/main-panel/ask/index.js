@@ -13,7 +13,7 @@ const {
   projectUuid, projectName, workspaceID, permission
 } = window.app.pageOptions;
 
-const Main = ({ title }) => {
+const Main = ({ title, settings }) => {
   const { isLoading: isAskPageLoading, pageType, togglePageType } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
 
@@ -37,7 +37,13 @@ const Main = ({ title }) => {
           <CenteredLoading />
         ) : (
           <>
-            <Chat sessionId={pageType} isShowSessions={isShowSessions} workspaceID={workspaceID} projectUuid={projectUuid} />
+            <Chat
+              sessionId={pageType}
+              isShowSessions={isShowSessions}
+              workspaceID={workspaceID}
+              projectUuid={projectUuid}
+              settings={settings}
+            />
             {isShowSessions && (<Sessions sessionId={pageType} permission={permission} />)}
           </>
         )}
@@ -46,11 +52,11 @@ const Main = ({ title }) => {
   );
 };
 
-const Ask = ({ title }) => {
+const Ask = ({ title, settings }) => {
   return (
     <AskPageProvider workspaceID={workspaceID} projectName={projectName} >
       <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} >
-        <Main title={title} />
+        <Main title={title} settings={settings} />
       </SessionsProvider>
     </AskPageProvider>
   );

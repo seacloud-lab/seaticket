@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { MarkdownViewer, processor } from '@seafile/seafile-editor';
+import classnames from 'classnames';
 
 const propTypes = {
   value: PropTypes.string.isRequired,
@@ -42,23 +43,23 @@ class CustomizeMarkdownViewer extends React.PureComponent {
       this.setState({ innerHtml });
     });
   };
-
   render() {
+    const { showTOC, value, beforeRenderCallback, onLinkClick, options, className } = this.props;
     if (this.isWindowsWechat) {
       return (
-        <div className="longtext-preview-container">
+        <div className={classnames('longtext-preview-container', className)}>
           <div className="longtext-container article" dangerouslySetInnerHTML={{ __html: this.state.innerHtml }}></div>
         </div>
       );
     }
-    const { showTOC, value, beforeRenderCallback, onLinkClick } = this.props;
     return (
-      <div className="longtext-preview-container">
+      <div className={classnames('longtext-preview-container', className)}>
         <MarkdownViewer
           value={value}
           isShowOutline={showTOC}
           beforeRenderCallback={beforeRenderCallback}
           onLinkClick={onLinkClick}
+          options={options}
         />
       </div>
     );
