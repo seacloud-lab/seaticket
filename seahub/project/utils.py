@@ -264,8 +264,12 @@ def generate_ai_summary(params):
         raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
     resp_json = resp.json()
     ai_summary = resp_json.get('summary', '')
-    ai_summary_vector = resp_json.get('summary_vector', [])
-    return ai_summary, ai_summary_vector
+    embeddings = resp_json.get('embeddings', [])
+    if embeddings:
+        vector = embeddings[0].get('embedding', [])
+    else:
+        vector = []
+    return ai_summary, vector
 
 
 def gen_s3_file_path(project_uuid, file_path):
