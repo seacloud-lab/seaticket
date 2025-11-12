@@ -135,9 +135,9 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   );
 };
 
-const Connection = ({ projectUuid, permission, connectionID, onRefresh }) => {
+const Connection = ({ projectUuid, permission, connectionID }) => {
   const seaMetaDataRef = useRef(null);
-  const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
+  const { viewID, isLoading, updatePageName, updateViewID, onChangeLocalRow } = useConnectionsPage();
   const { connections } = useConnections();
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
@@ -164,7 +164,7 @@ const Connection = ({ projectUuid, permission, connectionID, onRefresh }) => {
         toaster.closeAll();
         if (res.data && res.data.ai_title) {
           toaster.success(gettext('AI title generated successfully'));
-          onRefresh && onRefresh();
+          onChangeLocalRow && onChangeLocalRow({ rowId: recordID }, { ai_title: res.data.ai_title });
         } else {
           toaster.warning(gettext('Failed to generate AI title'));
         }

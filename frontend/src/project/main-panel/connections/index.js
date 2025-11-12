@@ -10,10 +10,10 @@ const {
 } = window.app.pageOptions;
 
 const Page = () => {
-  const { isLoading, pageType, onRefresh } = useConnectionsPage();
+  const { isLoading, pageType } = useConnectionsPage();
   if (isLoading) return null;
   if (pageType === CONNECTION_PAGE_TYPE.ALL) return (<AllConnections projectUuid={projectUuid} projectName={projectName} />);
-  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} onRefresh={onRefresh} />);
+  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} />);
 };
 
 const Index = ({ title }) => {

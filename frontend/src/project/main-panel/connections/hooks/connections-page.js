@@ -34,9 +34,9 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     setTimeout(() => setLoading(false), 1);
   }, []);
 
-  const onRefresh = useCallback(() => {
+  const onChangeLocalRow = useCallback(({ rowId }, update) => {
     const eventBus = context.eventBus;
-    eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
+    eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, { rowId }, update);
   }, []);
 
   // init page type
@@ -83,7 +83,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       pageType,
       isLoading,
       pageName,
-      onRefresh,
+      onChangeLocalRow,
       togglePageType,
       updatePageName: setPageName,
       updateViewID: setViewID,
