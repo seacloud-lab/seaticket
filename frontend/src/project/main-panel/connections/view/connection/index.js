@@ -137,7 +137,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
 
 const Connection = ({ projectUuid, permission, connectionID }) => {
   const seaMetaDataRef = useRef(null);
-  const { viewID, isLoading, updatePageName, updateViewID, onChangeLocalRow } = useConnectionsPage();
+  const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
@@ -149,22 +149,16 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
-  const generateAITitleForRow = useCallback((row) => {
-    const recordID = row._id || row._pk;
-
-    if (!recordID) {
-      toaster.danger(gettext('Cannot get record ID'));
-      return;
-    }
-
+  const generateAITitleForRow = useCallback((row, updateLocalRow) => {
     toaster.notify(gettext('Generating AI title...'), { duration: 0 });
 
-    connectionsAPI.generateAITitle(projectUuid, connectionID, recordID)
+    connectionsAPI.generateAITitle(projectUuid, connectionID, row._id)
       .then(res => {
         toaster.closeAll();
         if (res.data && res.data.ai_title) {
           toaster.success(gettext('AI title generated successfully'));
-          onChangeLocalRow && onChangeLocalRow({ rowId: recordID }, { ai_title: res.data.ai_title });
+          console.log('updateLocalRow', updateLocalRow);
+          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_title: res.data.ai_title });
         } else {
           toaster.warning(gettext('Failed to generate AI title'));
         }
@@ -389,6 +383,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     table,
     rowMetrics,
     rowGetterByIndex,
+    updateLocalRow,
   }) => {
     // handle selected multiple cells
     if (selectedRange) {
@@ -465,7 +460,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         }
       }, {
         label: gettext('Generate AI title'),
-        callback: () => generateAITitleForRow(row)
+        callback: () => generateAITitleForRow(row, updateLocalRow)
       }];
     }
 
