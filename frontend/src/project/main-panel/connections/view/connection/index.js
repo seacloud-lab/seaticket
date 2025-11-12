@@ -159,7 +159,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         toaster.closeAll();
         if (res.data && res.data.ai_summary) {
           toaster.success(gettext('AI summary generated successfully'));
-          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_title: res.data.ai_title });
+          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
         } else {
           toaster.warning(gettext('Failed to generate AI summary'));
         }
@@ -451,7 +451,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         }
       }, {
         label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row)
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
 
@@ -487,14 +487,14 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         }
       }, {
         label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row)
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
 
     if (connection?.type === CONNECTION_TYPE.SEAFILE) {
       return [{
         label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row)
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
     return [];

@@ -314,17 +314,17 @@ class GenerateAISummaryView(APIView):
             seadb_api = SeaDBAPI(username)
             if connection.type == ConnectionType.GITHUB_ISSUE.value:
                 table_name = GithubIssuesTable.gen_table_name(connection_id)   
-                sql = f"SELECT title, body FROM `{table_name}` WHERE _pk = {record_id}"
+                sql = f"SELECT title, content FROM `{table_name}` WHERE _pk = {record_id}"
                 result = seadb_api.query_rows(project_uuid, sql)
                 row = result['results'][0]
                 title = row.get('title')
-                body = row.get('body')
+                content = row.get('content')
 
-                if not title or not body:
-                    error_msg = 'Title and body are required to generate AI title.'
+                if not title or not content:
+                    error_msg = 'Title and content are required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 
-                content = f"Title: {title}\n\nBody: {body}"
+                content = f"Title: {title}\n\nContent: {content}"
             elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
                 table_name = DiscourseTopicsTable.gen_table_name(connection_id)
                 sql = f"SELECT topic_id, title FROM `{table_name}` WHERE _pk = {record_id}"
@@ -344,26 +344,26 @@ class GenerateAISummaryView(APIView):
                     error_msg = 'Content is required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 row = rows[0]
-                body = row.get('content')
-                if not body:
+                content = row.get('content')
+                if not content:
                     error_msg = 'Content is required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                content = f"Title: {title}\n\nBody: {body}"
+                content = f"Title: {title}\n\nContent: {content}"
             elif connection.type == ConnectionType.SEAFILE.value:
                 table_name = SeafileTable.gen_table_name(connection_id)
-                sql = f"SELECT filename, content FROM `{table_name}` WHERE _pk = {record_id}"
+                sql = f"SELECT title, content FROM `{table_name}` WHERE _pk = {record_id}"
                 result = seadb_api.query_rows(project_uuid, sql)
                 rows = result['results']
                 if not rows:
                     error_msg = 'Content is required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 row = rows[0]
-                filename = row.get('filename')
-                body = row.get('content')
-                if not body:
+                title = row.get('title')
+                content = row.get('content')
+                if not content:
                     error_msg = 'Content is required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                content = f"Filename: {filename}\n\nContent: {body}"
+                content = f"Filename: {title}\n\nContent: {content}"
             elif connection.type == ConnectionType.SITE.value:
                 table_name = WebCrawlTable.gen_table_name(connection_id)
                 sql = f"SELECT url FROM `{table_name}` WHERE _pk = {record_id}"
