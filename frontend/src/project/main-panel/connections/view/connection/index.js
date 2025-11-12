@@ -96,7 +96,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
         {isLoading && <CenteredLoading/>}
         {!isLoading && (
           <div className="d-flex">
-            <div style={{ flex: 2, paddingRight: '1rem' }}>
+            <div className="pr-4 flex-1">
               <Form>
                 <FormGroup>
                   <Label for="ticketTitle">{gettext('Title')}</Label>
