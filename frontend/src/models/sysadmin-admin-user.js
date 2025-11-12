@@ -9,8 +9,6 @@ class SysAdminAdminUser {
     this.create_time = object.create_time;
     this.is_active = object.is_active;
     this.is_staff = object.is_staff;
-    this.quota_total = object.quota_total;
-    this.quota_usage = object.quota_usage;
     this.admin_role = object.admin_role;
     this.isSelected = false;
     this.storage_usage = object.storage_usage;

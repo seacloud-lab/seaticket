@@ -270,7 +270,7 @@ class Orgs extends Component {
         return org.org_id !== orgID;
       });
       this.setState({ orgList: orgList });
-      toaster.success(gettext('Successfully deleted 1 item.'));
+      toaster.success(gettext('%s deleted').replace('%s', gettext('Organization')));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);

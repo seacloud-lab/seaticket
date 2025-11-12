@@ -9,7 +9,6 @@ import SysAdminSetOrgMaxUserNumberDialog from '@/sys-admin/dialog/sysadmin-set-o
 import OrgNav from './org-nav';
 import OrgTitle from './org-title';
 import { Main, TopBar } from '../main-panel';
-import SetQuotaDialog from '@/sys-admin/dialog/set-quota';
 import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
 import sysAdminAPI from '@/sys-admin/api';
 
@@ -18,7 +17,6 @@ const contentPropTypes = {
   loading: PropTypes.bool.isRequired,
   errorMsg: PropTypes.string,
   orgInfo: PropTypes.object.isRequired,
-  updateQuota: PropTypes.func.isRequired,
   updateName: PropTypes.func.isRequired,
   updateMaxUserNumber: PropTypes.func.isRequired,
   updateAPICallsLimitPerUser: PropTypes.func,
@@ -31,7 +29,6 @@ class Content extends Component {
     this.state = {
       isSetNameDialogOpen: false,
       isSetMaxUserNumberDialogOpen: false,
-      isSetQuotaDialogOpen: false,
       isSetAPICallsLimitPerUserDialogOpen: false
     };
   }
@@ -42,10 +39,6 @@ class Content extends Component {
 
   toggleSetMaxUserNumberDialog = () => {
     this.setState({ isSetMaxUserNumberDialogOpen: !this.state.isSetMaxUserNumberDialogOpen });
-  };
-
-  toggleSetQuotaDialog = () => {
-    this.setState({ isSetQuotaDialogOpen: !this.state.isSetQuotaDialogOpen });
   };
 
   toggleAPICallsLimitPerUserDialog = () => {
@@ -65,10 +58,6 @@ class Content extends Component {
     );
   };
 
-  updateQuota = (value) => {
-    this.props.updateQuota(value);
-  };
-
   updateAPICallsLimitPerUser = (value) => {
     this.props.updateAPICallsLimitPerUser(value);
   };
@@ -82,8 +71,7 @@ class Content extends Component {
     } else {
       const { org_name, users_count, max_user_number, groups_count,
         api_calls_count, monthly_api_call_limit_per_user } = orgInfo;
-      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetQuotaDialogOpen,
-        isSetAPICallsLimitPerUserDialogOpen } = this.state;
+      const { isSetNameDialogOpen, isSetMaxUserNumberDialogOpen, isSetAPICallsLimitPerUserDialogOpen } = this.state;
       return (
         <Fragment>
           <dl className="m-0">
@@ -134,12 +122,6 @@ class Content extends Component {
               toggle={this.toggleSetMaxUserNumberDialog}
             />
           }
-          {isSetQuotaDialogOpen && (
-            <SetQuotaDialog
-              toggle={this.toggleSetQuotaDialog}
-              updateQuota={this.updateQuota}
-            />
-          )}
           {isSetAPICallsLimitPerUserDialogOpen && (
             <SetAPICallsLimitPerUser
               toggle={this.toggleAPICallsLimitPerUserDialog}
@@ -200,20 +182,6 @@ class OrgInfo extends Component {
     });
   }
 
-  updateQuota = (quota) => {
-    const data = { assetQuotaMb: quota };
-    sysAdminAPI.sysAdminUpdateOrg(this.props.orgID, data).then(res => {
-      const newOrgInfo = Object.assign(this.state.orgInfo, {
-        storage_quota: res.data.storage_quota
-      });
-      this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set quota.'));
-    }).catch((error) => {
-      let errMessage = Utils.getErrorMsg(error);
-      toaster.danger(errMessage);
-    });
-  };
-
   updateName = (orgName) => {
     let response = validateName(orgName);
     if (!response.isValid) {
@@ -226,7 +194,7 @@ class OrgInfo extends Component {
         org_name: res.data.org_name
       });
       this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set name.'));
+      toaster.success(gettext('%s updated').replace('%s', gettext('Name')));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
@@ -240,7 +208,7 @@ class OrgInfo extends Component {
         max_user_number: res.data.max_user_number
       });
       this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set max number of members.'));
+      toaster.success(gettext('%s updated').replace('%s', 'Max number of members'));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
@@ -254,7 +222,7 @@ class OrgInfo extends Component {
         monthly_api_call_limit_per_user: res.data.monthly_api_call_limit_per_user
       });
       this.setState({ orgInfo: newOrgInfo });
-      toaster.success(gettext('Successfully set API calls limit per user.'));
+      toaster.success(gettext('%s updated').replace('%s', 'API calls limit per user'));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
@@ -273,7 +241,6 @@ class OrgInfo extends Component {
             loading={this.state.loading}
             errorMsg={this.state.errorMsg}
             orgInfo={this.state.orgInfo}
-            updateQuota={this.updateQuota}
             updateName={this.updateName}
             updateMaxUserNumber={this.updateMaxUserNumber}
             updateAPICallsLimitPerUser={this.updateAPICallsLimitPerUser}

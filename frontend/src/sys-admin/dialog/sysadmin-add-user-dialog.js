@@ -149,7 +149,7 @@ class SysAdminAddUserDialog extends React.Component {
                   <Icon
                     className="ml-1 sea-qa-help-icon"
                     symbol="help"
-                    title={gettext('You can also add a user as a guest, who will not be allowed to create tables and groups.')}
+                    title={gettext('You can also add a user as a guest, who will not be allowed to create projects and groups.')}
                   />
                 </Label>
                 <SelectEditor

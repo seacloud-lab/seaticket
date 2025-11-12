@@ -317,7 +317,7 @@ class GroupView(APIView):
         owner = '%s@seafile_group' % group_id
         workspace = Workspaces.objects.get_workspace_by_owner(owner)
         if Projects.objects.filter(workspace=workspace, deleted=False).exists():
-            error_msg = _('Cannot delete group with bases')
+            error_msg = _('Cannot delete group with projects')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # mark group's workspace as deleted

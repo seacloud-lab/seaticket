@@ -1,0 +1,1399 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: seahub\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-17 14:14+0800\n"
+"PO-Revision-Date: 2015-05-09 05:28+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
+"en/)\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: seahub/api2/endpoints/admin/account.py:131 seahub/api2/endpoints/user.py:118
+#: seahub/api2/views.py:178
+msgid "Name is too long (maximum is 64 characters)"
+msgstr "名称太长（最多 64 个字）"
+
+#: seahub/api2/endpoints/admin/account.py:135 seahub/api2/endpoints/user.py:122
+#: seahub/api2/views.py:182 seahub/forms.py:38 seahub/profile/forms.py:27
+msgid "Name should not include '/'."
+msgstr "名称不能包含 \"/\"。"
+
+#: seahub/api2/endpoints/admin/account.py:150
+msgid "Login id can't be empty"
+msgstr "登录 ID 不能为空"
+
+#: seahub/api2/endpoints/admin/account.py:154
+#: seahub/api2/endpoints/admin/users.py:472
+#, python-format
+msgid "Login id %s already exists."
+msgstr "登录 ID %s 已存在。"
+
+#: seahub/api2/endpoints/admin/account.py:229
+#: seahub/api2/endpoints/admin/users.py:291
+#: seahub/api2/endpoints/admin/users.py:441 seahub/forms.py:24
+#: seahub/invitations/views.py:58 seahub/saml/views.py:374
+msgid "The number of users exceeds the limit."
+msgstr "用户数量超过限制。"
+
+#: seahub/api2/endpoints/admin/group_members.py:54
+#: seahub/api2/endpoints/admin/group_members.py:124
+#: seahub/api2/endpoints/admin/group_members.py:232
+#: seahub/api2/endpoints/admin/group_members.py:288
+#: seahub/api2/endpoints/admin/group_projects.py:49
+#: seahub/api2/endpoints/admin/group_projects.py:85
+#: seahub/api2/endpoints/org_admin/groups.py:669
+#: seahub/api2/endpoints/org_admin/groups.py:717
+msgid "Workspace not found"
+msgstr "Workspace 不存在"
+
+#: seahub/api2/endpoints/admin/group_members.py:173
+#: seahub/api2/endpoints/group_members.py:137
+#: seahub/api2/endpoints/group_members.py:369
+#: seahub/api2/endpoints/org_admin/groups.py:518 seahub/group/views.py:151
+msgid "Number of group members exceeds limit."
+msgstr "群组成员数超过限制。"
+
+#: seahub/api2/endpoints/admin/group_projects.py:44
+#: seahub/api2/endpoints/admin/group_projects.py:79
+msgid "Group not found."
+msgstr "未找到群组。"
+
+#: seahub/api2/endpoints/admin/group_projects.py:90
+#: seahub/api2/endpoints/org_admin/groups.py:722
+msgid "Project not found."
+msgstr "未找到项目"
+
+#: seahub/api2/endpoints/admin/groups.py:117
+#: seahub/api2/endpoints/groups.py:117 seahub/api2/endpoints/groups.py:231
+#: seahub/api2/endpoints/org_admin/groups.py:102
+#: seahub/api2/endpoints/org_admin/groups.py:292
+msgid ""
+"Group name can only contain letters, numbers, blank, hyphen, dot, single "
+"quote or underscore"
+msgstr "群组名称只能包含字母、数字、空格、中划线、单引号、下划线或中文"
+
+#: seahub/api2/endpoints/admin/groups.py:124
+#: seahub/api2/endpoints/groups.py:122 seahub/api2/endpoints/groups.py:236
+#: seahub/api2/endpoints/org_admin/groups.py:130
+#: seahub/api2/endpoints/org_admin/groups.py:297
+msgid "There is already a group with that name."
+msgstr "已有同名群组"
+
+#: seahub/api2/endpoints/admin/groups.py:208
+#: seahub/api2/endpoints/groups.py:264
+#: seahub/api2/endpoints/org_admin/groups.py:258
+#, python-format
+msgid "User %s is already group owner."
+msgstr "用户 %s 已经是群组拥有者。"
+
+#: seahub/api2/endpoints/admin/groups.py:267
+#: seahub/api2/endpoints/admin/org_groups.py:117
+#: seahub/api2/endpoints/groups.py:320
+#: seahub/api2/endpoints/org_admin/groups.py:344
+msgid "Cannot delete group with projects"
+msgstr "无法删除包含项目的群组"
+
+#: seahub/api2/endpoints/admin/users.py:363
+#, python-format
+msgid "Successfully added user %(user)s."
+msgstr "成功添加用户 %(user)s"
+
+#: seahub/api2/endpoints/admin/users.py:367 seahub/views/sysadmin.py:75
+#, python-format
+msgid "You are invited to join %s"
+msgstr "你被邀请加入 %s"
+
+#: seahub/api2/endpoints/admin/users.py:369
+#, python-format
+msgid "Successfully added user %(user)s. An email notification has been sent."
+msgstr "成功添加用户 %(user)s。一封通知邮件已发送。"
+
+#: seahub/api2/endpoints/admin/users.py:374
+#, python-format
+msgid ""
+"Successfully added user %(user)s. But email notification can not be sent, "
+"because email service is not properly configured."
+msgstr ""
+"成功添加用户 user %(user)s 。但由于邮件服务未正确配置，通知邮件无法发送。"
+
+#: seahub/api2/endpoints/admin/users.py:559
+msgid "Edit succeeded"
+msgstr "修改成功。"
+
+#: seahub/api2/endpoints/admin/users.py:566
+#: seahub/api2/endpoints/org_admin/users.py:391
+#, python-format
+msgid "Your account on %s is activated"
+msgstr "您在 %s 上的帐户已激活"
+
+#: seahub/api2/endpoints/admin/users.py:569
+msgid "Edit succeeded, an email has been sent."
+msgstr "编辑成功，已发送电子邮件。"
+
+#: seahub/api2/endpoints/admin/users.py:573
+msgid ""
+"Edit succeeded, but failed to send email, please check your email "
+"configuration."
+msgstr "编辑成功，但电子邮件发送失败，请检查您的电子邮件配置。"
+
+#: seahub/api2/endpoints/admin/users.py:726 seahub/auth/views.py:387
+msgid "Unable to reset password."
+msgstr "无法重置密码。"
+
+#: seahub/api2/endpoints/admin/users.py:756 seahub/views/sysadmin.py:64
+#, python-format
+msgid "Password has been reset on %s"
+msgstr "密码已于 %s 重置"
+
+#: seahub/api2/endpoints/admin/users.py:758
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s, an email has been sent to "
+"%(user)s."
+msgstr "已成功将密码重置为 %(passwd)s，电子邮件已发送至 %(user)s。"
+
+#: seahub/api2/endpoints/admin/users.py:763
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s, but failed to send email to "
+"%(user)s, please check your email configuration."
+msgstr ""
+"已成功将密码重置为 %(passwd)s，但未能向 %(user)s 发送电子邮件，请检查您的电子"
+"邮件配置。"
+
+#: seahub/api2/endpoints/admin/users.py:766
+#, python-format
+msgid "Successfully reset password to %(passwd)s for user %(user)s"
+msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s。"
+
+#: seahub/api2/endpoints/admin/users.py:770
+#, python-format
+msgid ""
+"Successfully reset password to %(passwd)s for user %(user)s But email "
+"notification can not be sent, because email service is not properly "
+"configured."
+msgstr ""
+"成功将用户 %(user)s 的密码重置为 %(passwd)s。但未能向 %(user)s 发送电子邮件，"
+"请检查您的电子邮件配置。"
+
+#: seahub/api2/endpoints/admin/web_settings.py:80
+msgid "setting invalid."
+msgstr "设置无效。"
+
+#: seahub/api2/endpoints/admin/web_settings.py:85
+#: seahub/api2/endpoints/admin/web_settings.py:91
+#: seahub/api2/endpoints/admin/web_settings.py:95
+#: seahub/api2/endpoints/admin/web_settings.py:100
+msgid "value invalid."
+msgstr "值无效。"
+
+#: seahub/api2/endpoints/group_members.py:126
+#: seahub/api2/endpoints/group_members.py:338
+#, python-format
+msgid "User %s is already a group member."
+msgstr "用户 %s 已经是群组成员。"
+
+#: seahub/api2/endpoints/group_members.py:348
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:53
+#: seahub/api2/endpoints/org_admin/two_factor_auth.py:92
+#: seahub/api2/endpoints/org_admin/users.py:250
+#, python-format
+msgid "User %s not found in organization."
+msgstr "机构内无用户 %s"
+
+#: seahub/api2/endpoints/groups.py:131 seahub/api2/endpoints/groups.py:133
+#: seahub/api2/endpoints/groups.py:135 seahub/api2/endpoints/groups.py:146
+#: seahub/api2/endpoints/org_admin/groups.py:137
+#: seahub/api2/endpoints/org_admin/groups.py:139
+#: seahub/api2/endpoints/org_admin/groups.py:141
+#: seahub/api2/endpoints/org_admin/groups.py:148 seahub/group/views.py:161
+#, python-format
+msgid "Number of groups exceeds the %s limit."
+msgstr "群组数超出 %s 限制。"
+
+#: seahub/api2/endpoints/org_admin/settings.py:55
+#: seahub/api2/endpoints/org_admin/settings.py:73
+#: seahub/api2/endpoints/org_admin/settings.py:105 seahub/auth/sms_login.py:74
+#: seahub/auth/sms_two_factor_auth.py:60 seahub/auth/views.py:336
+#: seahub/auth/views.py:350 seahub/oauth/views.py:259 seahub/oauth/views.py:271
+#: seahub/views/sso.py:116
+msgid "Feature is not enabled."
+msgstr "功能未启用。"
+
+#: seahub/api2/endpoints/org_admin/settings.py:88
+#: seahub/api2/endpoints/user_avatar.py:39 seahub/utils/error_msg.py:8
+#, python-format
+msgid ""
+"%(ext)s is an invalid file extension. Authorized extensions are : "
+"%(valid_exts_list)s"
+msgstr ""
+"%(ext)s 是一个无效文件扩展名，已认证的文件扩展名为: %(valid_exts_list)s"
+
+#: seahub/api2/endpoints/org_admin/settings.py:92
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/utils/error_msg.py:13
+#, python-format
+msgid ""
+"Your file is too big (%(size)s), the maximum allowed size is "
+"%(max_valid_size)s"
+msgstr "文件过大 (%(size)s), 最大允许文件大小为 %(max_valid_size)s"
+
+#: seahub/api2/endpoints/org_admin/users.py:185
+#: seahub/api2/endpoints/org_admin/users.py:191
+#, python-format
+msgid "User %s already exists."
+msgstr "应用用户 %s 已存在。"
+
+#: seahub/api2/endpoints/project.py:214 seahub/api2/endpoints/project.py:232
+#, python-format
+msgid "Project %s already exists in this workspace."
+msgstr "这个 Workspace 中已经有项目 %s 了。"
+
+#: seahub/api2/endpoints/project.py:229 seahub/api2/endpoints/project.py:327
+msgid "Project name contains illegal characters"
+msgstr "项目名包含非法字符"
+
+#: seahub/api2/endpoints/project.py:269
+msgid "Project name is invalid"
+msgstr "项目名称无效"
+
+#: seahub/api2/endpoints/project.py:293
+#, python-brace-format
+msgid "Project {project_name} not found."
+msgstr "未找到项目 {project_name} 。"
+
+#: seahub/api2/endpoints/project.py:297
+#, python-brace-format
+msgid "{new_project_name} exists."
+msgstr "{new_project_name} 已存在."
+
+#: seahub/api2/endpoints/user.py:106 seahub/api2/endpoints/user.py:113
+#: seahub/api2/endpoints/user.py:179
+msgid "Feature disabled."
+msgstr "此功能未开启。"
+
+#: seahub/api2/endpoints/user.py:194
+msgid "The email has been bound by someone else!"
+msgstr "该邮箱已被其他人绑定！"
+
+#: seahub/auth/decorators.py:156
+msgid "Please log in."
+msgstr "请登录。"
+
+#: seahub/auth/forms.py:29 seahub/templates/registration/login.html:43
+#: seahub/templates/registration/login.html:44
+#: seahub/templates/registration/login.html:45
+#: seahub/templates/registration/multi_saml_sso.html:14
+#: seahub/templates/registration/multi_saml_sso.html:15
+#: seahub/templates/registration/multi_saml_sso.html:16
+msgid "Email or username"
+msgstr "邮箱或用户名"
+
+#: seahub/auth/forms.py:30 seahub/auth/forms.py:249
+#: seahub/invitations/templates/invitations/token_view.html:13
+#: seahub/templates/organizations/org_register.html:30
+#: seahub/templates/organizations/sms_org_register.html:156
+#: seahub/templates/registration/login.html:66
+#: seahub/templates/registration/login.html:67
+#: seahub/templates/registration/login.html:68
+#: seahub/templates/registration/password_set_form.html:22
+#: seahub/templates/sysadmin/sudo_mode.html:29
+msgid "Password"
+msgstr "密码"
+
+#: seahub/auth/forms.py:56 seahub/auth/forms.py:57 seahub/auth/forms.py:92
+#: seahub/auth/forms.py:93
+msgid "This account is inactive."
+msgstr "该账号未激活。"
+
+#: seahub/auth/forms.py:71
+msgid ""
+"Please enter a correct email/username and password. Note that both fields "
+"are case-sensitive."
+msgstr "请输入正确的邮箱／用户名和密码。字母请注意区分大小写。"
+
+#: seahub/auth/forms.py:77 seahub/auth/forms.py:147
+msgid ""
+"That e-mail address doesn't have an associated user account. Are you sure "
+"you've registered?"
+msgstr "该邮箱没有相关联的用户帐号。确定注册了吗？"
+
+#: seahub/auth/forms.py:108 seahub/auth/forms.py:109
+msgid "You cannot login with email and password."
+msgstr "你不能使用邮箱和密码登录。"
+
+#: seahub/auth/forms.py:114
+msgid ""
+"Your web browser doesn't appear to have cookies enabled. Cookies are "
+"required for logging in."
+msgstr "你的浏览器似乎没启用 cookie. 登录需要 cookie。"
+
+#: seahub/auth/forms.py:130
+msgid "E-mail"
+msgstr "邮箱"
+
+#: seahub/auth/forms.py:137
+msgid ""
+"Failed to send email, email service is not properly configured, please "
+"contact administrator."
+msgstr "邮件发送失败， 邮箱服务没配置好，请联系管理员。"
+
+#: seahub/auth/forms.py:150
+msgid "Can not reset password, please contact LDAP admin."
+msgstr "不能重置密码，请联系 LDAP 管理员。"
+
+#: seahub/auth/forms.py:179
+#, python-format
+msgid "Reset password on %s"
+msgstr "%s 密码重置"
+
+#: seahub/auth/forms.py:187
+#: seahub/templates/registration/password_change_form.html:19
+msgid "New password"
+msgstr "新密码"
+
+#: seahub/auth/forms.py:188
+msgid "New password confirmation"
+msgstr "新密码确认"
+
+#: seahub/auth/forms.py:215 seahub/auth/forms.py:261
+#: seahub/organizations/forms.py:61 seahub/organizations/forms.py:75
+msgid "The two password fields didn't match."
+msgstr "两次输入的密码不一致"
+
+#: seahub/auth/forms.py:229
+msgid "Old password"
+msgstr "旧密码"
+
+#: seahub/auth/forms.py:237
+msgid "Your old password was entered incorrectly. Please enter it again."
+msgstr "旧密码输入错误。请重新输入。"
+
+#: seahub/auth/forms.py:250
+msgid "Password (again)"
+msgstr "请再次输入密码"
+
+#: seahub/auth/forms.py:275
+#: seahub/templates/registration/password_set_form.html:17
+msgid "Contact email"
+msgstr "联系邮箱"
+
+#: seahub/auth/forms.py:281 seahub/forms.py:29 seahub/invitations/views.py:32
+#: seahub/invitations/views.py:47 seahub/organizations/forms.py:42
+#: seahub/organizations/forms.py:49
+msgid "A user with this email already exists."
+msgstr "此用户已存在。"
+
+#: seahub/auth/sms_login.py:133 seahub/auth/sms_login.py:157
+#: seahub/auth/sms_login.py:181 seahub/auth/sms_two_factor_auth.py:83
+#: seahub/auth/sms_two_factor_auth.py:122 seahub/organizations/views.py:409
+#: seahub/organizations/views.py:540 seahub/profile/views.py:210
+#: seahub/utils/__init__.py:101
+msgid "Internal Server Error"
+msgstr "服务器内部错误"
+
+#: seahub/auth/sms_login.py:135 seahub/auth/sms_login.py:183
+#: seahub/auth/sms_two_factor_auth.py:85
+#, python-format
+msgid "User %s not found or inactive."
+msgstr "用户 %s 未找到或未激活。"
+
+#: seahub/auth/sms_login.py:195 seahub/auth/views.py:180
+msgid "This account has been frozen due to too many failed login attempts."
+msgstr "登录出错次数超过限制，该账号已被冻结。"
+
+#: seahub/auth/views.py:308
+msgid "Logged out"
+msgstr "退出"
+
+#: seahub/auth/views.py:406
+msgid "Failed to send email, please contact administrator."
+msgstr "邮件发送失败，请联系管理员。"
+
+#: seahub/auth/views.py:491
+msgid "Unable to change password."
+msgstr "无法修改密码。"
+
+#: seahub/avatar/models.py:149 seahub/avatar/models.py:173
+#, python-format
+msgid "Avatar for %s"
+msgstr "%s 的头像"
+
+#: seahub/base/accounts.py:527
+#, python-format
+msgid "Account %(account)s froze on %(site)s."
+msgstr "%(site)s 上的账号 %(account)s 已被冻结。"
+
+#: seahub/base/management/commands/createsuperuser.py:26
+msgid "Enter a valid e-mail address."
+msgstr "请输入有效的邮箱地址。"
+
+#: seahub/base/templatetags/seahub_tags.py:146
+#: seahub/base/templatetags/seahub_tags.py:182
+msgid "Just now"
+msgstr "刚才"
+
+#: seahub/base/templatetags/seahub_tags.py:157
+#, python-format
+msgid "%(days)d day ago"
+msgid_plural "%(days)d days ago"
+msgstr[0] "%(days)d 天前"
+msgstr[1] "%(days)d 天前"
+
+#: seahub/base/templatetags/seahub_tags.py:164
+#, python-format
+msgid "%(hours)d hour ago"
+msgid_plural "%(hours)d hours ago"
+msgstr[0] "%(hours)d 小时前"
+msgstr[1] "%(hours)d 小时前"
+
+#: seahub/base/templatetags/seahub_tags.py:171
+#, python-format
+msgid "%(minutes)d minute ago"
+msgid_plural "%(minutes)d minutes ago"
+msgstr[0] "%(minutes)d 分钟前"
+msgstr[1] "%(minutes)d 分钟前"
+
+#: seahub/base/templatetags/seahub_tags.py:177
+#, python-format
+msgid "%(seconds)d second ago"
+msgid_plural "%(seconds)d seconds ago"
+msgstr[0] "%(seconds)d 秒前"
+msgstr[1] "%(seconds)d 秒前"
+
+#: seahub/forms.py:53
+msgid "The two passwords didn't match."
+msgstr "两次填写的密码不一致。"
+
+#: seahub/group/error_msg.py:8
+msgid "The group has already created"
+msgstr "名称重复，请重新输入。"
+
+#: seahub/group/error_msg.py:9
+msgid "Failed to create group"
+msgstr "创建失败"
+
+#: seahub/group/error_msg.py:12
+msgid "The group has already created in this org."
+msgstr "群组在该团体内已经存在。"
+
+#: seahub/group/error_msg.py:13
+msgid "Failed to create org group."
+msgstr "创建团体群组失败。"
+
+#: seahub/group/error_msg.py:16
+msgid "Permission error: only group staff can add member"
+msgstr "只有群组管理员可以添加成员"
+
+#: seahub/group/error_msg.py:17 seahub/group/error_msg.py:23
+msgid "Group does not exist"
+msgstr "群组不存在"
+
+#: seahub/group/error_msg.py:18
+msgid "Group is full"
+msgstr "群组已满，无法再添加成员"
+
+#: seahub/group/error_msg.py:19
+msgid "Failed to add member to group"
+msgstr "添加成员失败"
+
+#: seahub/group/error_msg.py:22
+msgid "Only group staff can remove member"
+msgstr "只有群组管理员可以删除成员"
+
+#: seahub/group/error_msg.py:24
+msgid "Can not remove myself"
+msgstr "无法删除自己"
+
+#: seahub/group/views.py:98
+msgid "Permission denied"
+msgstr "没有权限"
+
+#: seahub/group/views.py:110
+#, python-format
+msgid "You are invited to join a group on %s"
+msgstr "你被邀请加入 %s 上的一个群组"
+
+#: seahub/group/views.py:124
+msgid "Group invite link does not exist"
+msgstr "群组邀请链接不存在"
+
+#: seahub/group/views.py:137 seahub/group/views.py:141
+msgid "You cannot join this group"
+msgstr "你不能加入此群组"
+
+#: seahub/invitations/models.py:17 seahub/invitations/models.py:45
+msgid "Guest"
+msgstr "访客"
+
+#: seahub/invitations/models.py:99
+#, python-format
+msgid "%(user)s invited you to join %(site_name)s."
+msgstr "%(user)s 邀请你加入 %(site_name)s。"
+
+#: seahub/invitations/templates/invitations/invitation_email.html:9
+#: seahub/invitations/templates/invitations/invitation_revoke_email.html:9
+#: seahub/templates/organizations/user_activation_email.html:9
+#: seahub/templates/profile/update_contact_email.html:9
+#: seahub/templates/registration/activation_email.html:9
+#: seahub/templates/registration/password_reset_email.html:9
+#: seahub/templates/sysadmin/user_activation_email.html:9
+#: seahub/templates/sysadmin/user_add_email.html:9
+#: seahub/templates/sysadmin/user_batch_add_email.html:9
+#: seahub/templates/sysadmin/user_freeze_email.html:9
+#: seahub/templates/sysadmin/user_reset_email.html:9
+msgid "Hi,"
+msgstr "你好，"
+
+#: seahub/invitations/templates/invitations/invitation_email.html:12
+#, python-format
+msgid ""
+"%(inviter)s invited you to join %(site_name)s. Please click the link below:"
+msgstr "%(inviter)s 邀请你加入 %(site_name)s。请点击以下链接："
+
+#: seahub/invitations/templates/invitations/invitation_revoke_email.html:12
+#, python-format
+msgid "%(inviter)s revoke your access to %(site_name)s."
+msgstr "%(inviter)s 撤销了你访问 %(site_name)s 的权限。"
+
+#: seahub/invitations/templates/invitations/token_view.html:4
+msgid "Create account"
+msgstr "创建账号"
+
+#: seahub/invitations/templates/invitations/token_view.html:8
+msgid "Set your password"
+msgstr "设置你的密码"
+
+#: seahub/invitations/templates/invitations/token_view.html:10
+#: seahub/templates/registration/login.html:54
+#: seahub/templates/registration/login.html:55
+#: seahub/templates/registration/login.html:56
+msgid "Email"
+msgstr "邮箱"
+
+#: seahub/invitations/templates/invitations/token_view.html:17
+#: seahub/templates/organizations/org_register.html:41
+#: seahub/templates/organizations/sms_org_register.html:173
+#: seahub/templates/registration/password_change_form.html:25
+#: seahub/templates/registration/password_reset_confirm.html:19
+#: seahub/templates/registration/password_reset_form.html:40
+#: seahub/templates/registration/password_set_form.html:28
+msgid "Submit"
+msgstr "提交"
+
+#: seahub/invitations/templates/invitations/token_view.html:26
+msgid "It is required."
+msgstr "必填项。"
+
+#: seahub/oauth/views.py:86 seahub/oauth/views.py:109 seahub/oauth/views.py:179
+#: seahub/oauth/views.py:195 seahub/templates/remote_user/error.html:8
+msgid "Error, please contact administrator."
+msgstr "出错了，请联系管理员。"
+
+#: seahub/oauth/views.py:155
+msgid ""
+"Error, please contact administrator: token might be expired or security code "
+"is not valid."
+msgstr "错误，请与管理员联系：token 可能已过期或安全代码无效。"
+
+#: seahub/oauth/views.py:198
+#: seahub/templates/remote_user/create_unknown_user_false.html:8
+msgid ""
+"Error, new user registration is not allowed, please contact administrator."
+msgstr "错误，不允许新用户注册，请联系管理员。"
+
+#: seahub/oauth/views.py:221
+msgid ""
+"Error, please contact administrator: contact_email must be unique and might "
+"already be in use."
+msgstr "错误，请与管理员联系：contact_email 必须是唯一，并且可能已被使用。"
+
+#: seahub/oauth/views.py:239 seahub/templates/remote_user/not_active.html:6
+#: seahub/templates/shibboleth/complete.html:8
+msgid ""
+"Your account is created successfully, please wait for administrator to "
+"activate your account."
+msgstr "账号创建成功，请等待管理员激活你的账号。"
+
+#: seahub/organizations/forms.py:39
+msgid "Email address is not valid"
+msgstr "邮箱地址 %s 无效。"
+
+#: seahub/profile/forms.py:24 seahub/profile/views.py:162
+#: seahub/profile/views.py:167
+msgid "Permission denied."
+msgstr "没有权限"
+
+#: seahub/profile/templates/profile/set_profile_react.html:5
+#: seahub/templates/base.html:64
+msgid "Personal settings"
+msgstr "个人设置"
+
+#: seahub/profile/templates/profile/set_profile_react.html:20
+msgctxt "true name"
+msgid "Name:"
+msgstr "名称："
+
+#: seahub/profile/templates/profile/set_profile_react.html:29
+#: seahub/templates/registration/password_set_form.html:4
+#: seahub/templates/registration/password_set_form.html:13
+msgid "Set password"
+msgstr "设置密码"
+
+#: seahub/profile/templates/profile/set_profile_react.html:29
+msgid "Update"
+msgstr "更新"
+
+#: seahub/profile/templates/profile/user_profile.html:4
+msgid "Profile"
+msgstr "个人信息"
+
+#: seahub/profile/views.py:172
+msgid "Demo account can not be deleted."
+msgstr "Demo帐号无法被删除。"
+
+#: seahub/profile/views.py:201
+msgid "The email address has already been bound to another account."
+msgstr "该邮箱已绑定到另一个账号。"
+
+#: seahub/profile/views.py:203 seahub/profile/views.py:214
+msgid "Back to SeaSearch"
+msgstr "返回 SeaSearch"
+
+#: seahub/profile/views.py:212
+msgid "Contact email has been updated."
+msgstr "联系邮箱已更新。"
+
+#: seahub/project/ai.py:71
+msgid "New chat"
+msgstr "新聊天"
+
+#: seahub/project/constants.py:87 seahub/project/constants.py:128
+msgid "Open"
+msgstr "打开"
+
+#: seahub/project/constants.py:102 seahub/project/constants.py:142
+msgid "Closed"
+msgstr "已关闭"
+
+#: seahub/project/constants.py:165 seahub/project/constants.py:184
+#: seahub/project/constants.py:203 seahub/project/constants.py:222
+msgid "All"
+msgstr "全部"
+
+#: seahub/project/views.py:40
+msgid "This project does not exist"
+msgstr "项目不存在"
+
+#: seahub/saml/utils.py:49
+msgid "SAML login relevant settings invalid."
+msgstr "SAML登录相关设置无效。"
+
+#: seahub/saml/views.py:105 seahub/saml/views.py:109 seahub/saml/views.py:129
+#: seahub/saml/views.py:147 seahub/saml/views.py:151 seahub/saml/views.py:189
+#: seahub/saml/views.py:310 seahub/saml/views.py:455 seahub/saml/views.py:459
+#: seahub/saml/views.py:488 seahub/saml/views.py:512 seahub/saml/views.py:516
+#: seahub/saml/views.py:520 seahub/saml/views.py:568 seahub/saml/views.py:572
+#: seahub/saml/views.py:576
+msgid "Internal server error. Please contact system administrator."
+msgstr "服务器内部错误。请与系统管理员联系。"
+
+#: seahub/saml/views.py:125 seahub/saml/views.py:185 seahub/saml/views.py:484
+#: seahub/saml/views.py:541
+msgid ""
+"Login failed: ADFS/SAML service error. Please report to your organization "
+"(company) administrator."
+msgstr "登录失败：ADFS/SAML 服务错误。请向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:168 seahub/saml/views.py:223 seahub/saml/views.py:238
+#: seahub/saml/views.py:255 seahub/saml/views.py:270 seahub/saml/views.py:277
+#: seahub/saml/views.py:304 seahub/saml/views.py:331 seahub/saml/views.py:351
+msgid ""
+"Login failed: Bad response from ADFS/SAML service. Please report to your "
+"organization (company) administrator."
+msgstr "登录失败：ADFS/SAML 服务错误。请向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:209
+msgid ""
+"Login failed: Bad response from ADFS/SAML service. Please make sure your SSO "
+"account has verified email and retry later, or report to your organization "
+"(company) administrator."
+msgstr ""
+"登录失败：来自 ADFS/SAML 服务的错误响应。请确保你的 SSO 账号已验证电子邮件，"
+"稍后重试，或向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:287
+msgid "Failed to bind SAML, please login first."
+msgstr "绑定 SAML 失败，请先登录。"
+
+#: seahub/saml/views.py:361
+msgid ""
+"This email address is already used by an existing account.You can connect "
+"both accounts from the personal settings of your local account."
+msgstr ""
+"此电子邮件地址已被现有帐户使用。您可以在本地帐户的个人设置中连接这两个帐户。"
+
+#: seahub/saml/views.py:389
+msgid ""
+"Failed to create new user: the number of users exceeds the organization "
+"quota. Please report to your organization (company) administrator."
+msgstr "无法创建新用户：用户数超过了组织配额。请向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:406
+msgid ""
+"Login failed: failed to create user. Please report to your organization "
+"(company) administrator."
+msgstr "登录失败：无法创建用户。请向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:431
+msgid ""
+"Login failed: user is deactivated. Please report to your organization "
+"(company) administrator."
+msgstr "登录失败：用户被停用。请向你的组织（公司）管理员报告。"
+
+#: seahub/saml/views.py:545
+msgid "Failed to get ADFS/SAML config, please check your ADFS/SAML service."
+msgstr "无法获取 ADFS/SAML 配置，请检查你的 ADFS/SAML 服务。"
+
+#: seahub/templates/404.html:6
+msgid "Sorry, but the requested page could not be found."
+msgstr "对不起，你访问的页面不存在。"
+
+#: seahub/templates/base.html:12 seahub/templates/base_clean.html:12
+#: seahub/templates/base_for_react.html:11
+msgid "SeaSearch - Solving issues with AI"
+msgstr "SeaSearch - 利用 AI 解决问题"
+
+#: seahub/templates/base.html:14 seahub/templates/base.html:23
+#: seahub/templates/base_clean.html:14 seahub/templates/base_for_react.html:13
+#: seahub/templates/base_for_react.html:23 seahub/templates/home.html:17
+#: seahub/templates/project_view_react.html:17
+msgid "File, Collaboration, Team, Organization"
+msgstr "文件 合作 团队 团体"
+
+#: seahub/templates/base.html:43
+msgid "Side nav menu"
+msgstr "侧边导航菜单"
+
+#: seahub/templates/base.html:50 seahub/templates/base.html:53
+msgid "View profile and more"
+msgstr "查看个人资料"
+
+#: seahub/templates/base.html:67
+msgid "System admin"
+msgstr "系统管理"
+
+#: seahub/templates/base.html:70 seahub/templates/base.html:73
+msgid "Admin"
+msgstr "管理"
+
+#: seahub/templates/base.html:70
+msgid "Team admin"
+msgstr "团队管理"
+
+#: seahub/templates/base.html:76
+#: seahub/templates/registration/logged_out.html:4
+#: seahub/templates/registration/logout.html:4
+msgid "Log out"
+msgstr "退出"
+
+#: seahub/templates/base.html:122
+msgid "Yes"
+msgstr "确定"
+
+#: seahub/templates/base.html:123
+msgid "No"
+msgstr "取消"
+
+#: seahub/templates/choose_register.html:3
+#: seahub/templates/choose_register.html:8
+#: seahub/templates/organizations/org_register.html:4
+#: seahub/templates/organizations/org_register.html:13
+#: seahub/templates/organizations/sms_org_register.html:4
+#: seahub/templates/organizations/sms_org_register.html:132
+#: seahub/templates/registration/login.html:148
+#: seahub/templates/registration/registration_form.html:4
+#: seahub/templates/registration/registration_form.html:18
+#: seahub/templates/registration/sms_registration_form.html:4
+#: seahub/templates/registration/sms_registration_form.html:25
+msgid "Signup"
+msgstr "注册"
+
+#: seahub/templates/email_base.html:9
+msgid "Thanks for using our site!"
+msgstr "感谢使用！"
+
+#: seahub/templates/email_base.html:13
+#, python-format
+msgid "The %(site_name)s team"
+msgstr "%(site_name)s 团队"
+
+#: seahub/templates/organizations/org_register.html:15
+#: seahub/templates/organizations/sms_org_register.html:134
+#: seahub/templates/registration/registration_form.html:20
+#: seahub/templates/registration/sms_registration_form.html:27
+msgid "Welcome back, you are already signed in."
+msgstr "欢迎回来，你已登录！"
+
+#: seahub/templates/organizations/org_register.html:15
+#: seahub/templates/organizations/sms_org_register.html:134
+#: seahub/templates/registration/registration_form.html:20
+#: seahub/templates/registration/sms_registration_form.html:27
+msgid "Return to the homepage"
+msgstr "返回首页"
+
+#: seahub/templates/organizations/org_register.html:18
+#: seahub/templates/organizations/sms_org_register.html:149
+msgid "Team name"
+msgstr "团队名称"
+
+#: seahub/templates/organizations/org_register.html:22
+#: seahub/templates/organizations/sms_org_register.html:152
+msgid "Admin name"
+msgstr "管理员邮箱"
+
+#: seahub/templates/organizations/org_register.html:26
+msgid "Admin email"
+msgstr "管理员邮箱"
+
+#: seahub/templates/organizations/org_register.html:34
+#: seahub/templates/organizations/sms_org_register.html:161
+#: seahub/templates/registration/password_change_form.html:22
+#: seahub/templates/registration/password_set_form.html:25
+#: seahub/templates/sysadmin/sudo_mode.html:5
+#: seahub/templates/sysadmin/sudo_mode.html:37
+msgid "Confirm password"
+msgstr "确认密码"
+
+#: seahub/templates/organizations/sms_org_register.html:228
+#: seahub/templates/registration/sms_registration_form.html:171
+msgid "Name cannot be blank"
+msgstr "名称不能为空"
+
+#: seahub/templates/organizations/sms_org_register.html:232
+#: seahub/templates/registration/login.html:249
+#: seahub/templates/registration/password_change_form.html:53
+#: seahub/templates/registration/password_set_form.html:51
+#: seahub/templates/registration/registration_form.html:126
+#: seahub/templates/registration/sms_registration_form.html:175
+#: seahub/templates/sysadmin/sudo_mode.html:52
+msgid "Password cannot be blank"
+msgstr "密码不能为空"
+
+#: seahub/templates/organizations/sms_org_register.html:236
+#: seahub/templates/registration/password_change_form.html:57
+#: seahub/templates/registration/password_set_form.html:55
+#: seahub/templates/registration/registration_form.html:130
+#: seahub/templates/registration/sms_registration_form.html:179
+msgid "Please enter the password again"
+msgstr "请再次输入密码"
+
+#: seahub/templates/organizations/sms_org_register.html:240
+#: seahub/templates/registration/password_change_form.html:61
+#: seahub/templates/registration/password_set_form.html:59
+#: seahub/templates/registration/registration_form.html:134
+#: seahub/templates/registration/sms_registration_form.html:183
+msgid "Passwords don't match"
+msgstr "两次输入的密码不一致"
+
+#: seahub/templates/organizations/user_activation_email.html:12
+#: seahub/templates/sysadmin/user_activation_email.html:12
+#, python-format
+msgid "Your account %(username)s on %(site_name)s has been activated."
+msgstr "你的 %(site_name)s 账号 %(username)s 已被激活。"
+
+#: seahub/templates/organizations/user_activation_email.html:15
+#: seahub/templates/registration/login.html:5
+#: seahub/templates/registration/login.html:37
+#: seahub/templates/registration/login.html:112
+#: seahub/templates/registration/multi_saml_sso.html:4
+#: seahub/templates/registration/multi_saml_sso.html:9
+#: seahub/templates/registration/multi_saml_sso.html:35
+#: seahub/templates/registration/password_reset_complete.html:8
+#: seahub/templates/sysadmin/user_activation_email.html:15
+#: seahub/templates/sysadmin/user_add_email.html:30
+#: seahub/templates/sysadmin/user_batch_add_email.html:21
+msgid "Log in"
+msgstr "登录"
+
+#: seahub/templates/police_service_link.html:25
+#: seahub/templates/police_service_link.html:29
+msgid "Privacy policy"
+msgstr "隐私政策"
+
+#: seahub/templates/police_service_link.html:27
+#: seahub/templates/police_service_link.html:31
+msgid "Terms of service"
+msgstr "服务条款"
+
+#: seahub/templates/profile/update_contact_email.html:12
+#, python-format
+msgid ""
+"You (or someone pretending to be you) have asked to update contact email at "
+"%(site_name)s. If this wasn't you, please ignore this email and your address "
+"will be removed from our records."
+msgstr ""
+"你（或冒充你的人）被要求更新 %(site_name)s 上的联系邮箱。 如果不是你的操作，"
+"请忽略此邮件，你的邮箱地址将从我们的记录中删除。"
+
+#: seahub/templates/profile/update_contact_email.html:14
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "To update email, please click the following link within the next "
+#| "%(count)s day:\n"
+msgid ""
+"\n"
+"To update email, please click the following link within the next %(count)s "
+"day:\n"
+msgid_plural ""
+"\n"
+"To update email, please click the following link within the next %(count)s "
+"days:\n"
+msgstr[0] ""
+"\n"
+"要更新邮件，请在接下来的 %(count)s 天内点击以下链接：\n"
+msgstr[1] ""
+"\n"
+"要更新邮件，请在接下来的 %(count)s 天内点击以下链接：\n"
+
+#: seahub/templates/profile/update_contact_email.html:22
+#: seahub/two_factor/templates/two_factor/core/login.html:35
+#: seahub/two_factor/templates/two_factor/core/login.html:55
+msgid "Verify"
+msgstr "验证"
+
+#: seahub/templates/profile/update_contact_email_complete.html:4
+msgid "Update contact email"
+msgstr "更新联系邮箱"
+
+#: seahub/templates/registration/activation_email.html:12
+#, python-format
+msgid ""
+"You (or someone pretending to be you) have asked to register an account at "
+"%(site_name)s. If this wasn't you, please ignore this email and your address "
+"will be removed from our records."
+msgstr ""
+"你在 %(site_name)s 申请注册帐号，如果你未进行过此操作，请忽略，此邮件地址不会"
+"被保存。"
+
+#: seahub/templates/registration/activation_email.html:14
+#, python-format
+msgid ""
+"To activate this account, please click the following link within the next "
+"%(expiration_days)s days: "
+msgstr "请在 %(expiration_days)s 天内，点击以下链接激活你的账号："
+
+#: seahub/templates/registration/activation_email.html:18
+#: seahub/templates/registration/registration_form.html:48
+#: seahub/templates/registration/sms_registration_form.html:53
+msgid "Sign up"
+msgstr "注册"
+
+#: seahub/templates/registration/logged_out.html:8
+#: seahub/templates/registration/logout.html:8
+msgid "Thanks for your participation! "
+msgstr "感谢参与！"
+
+#: seahub/templates/registration/logged_out.html:8
+#: seahub/templates/registration/logout.html:8
+#: seahub/templates/registration/password_change_done.html:10
+msgid "Log in again"
+msgstr "重新登录"
+
+#: seahub/templates/registration/login.html:79
+msgid "Refresh"
+msgstr "刷新"
+
+#: seahub/templates/registration/login.html:99
+msgid "Incorrect account or password"
+msgstr "你输入的账号或密码不正确"
+
+#: seahub/templates/registration/login.html:108
+#: seahub/templates/registration/multi_saml_sso.html:31
+#, python-format
+msgid "Remember me for %(remember_days)s days "
+msgstr "%(remember_days)s天内保持登录"
+
+#: seahub/templates/registration/login.html:116
+#: seahub/templates/registration/login.html:120
+msgid "Single Sign-On"
+msgstr "单点登录"
+
+#: seahub/templates/registration/login.html:127
+msgid "Login with"
+msgstr "其他登录方式"
+
+#: seahub/templates/registration/login.html:144
+msgid "Forgot password?"
+msgstr "忘记密码？"
+
+#: seahub/templates/registration/login.html:223
+msgid "Failed to refresh the CAPTCHA, please try again later."
+msgstr ""
+
+#: seahub/templates/registration/login.html:242
+#: seahub/templates/registration/multi_saml_sso.html:72
+msgid "Email or username cannot be blank"
+msgstr "刷新验证码失败，请稍后尝试。"
+
+#: seahub/templates/registration/login.html:244
+#: seahub/templates/registration/registration_form.html:122
+msgid "Email cannot be blank"
+msgstr "邮箱不能为空"
+
+#: seahub/templates/registration/password_change_done.html:4
+msgid "Password changed"
+msgstr "密码已修改"
+
+#: seahub/templates/registration/password_change_done.html:9
+msgid "Your password has been changed successfully."
+msgstr "密码修改成功。"
+
+#: seahub/templates/registration/password_change_form.html:3
+#: seahub/templates/registration/password_change_form.html:12
+msgid "Password modification"
+msgstr "密码修改"
+
+#: seahub/templates/registration/password_change_form.html:15
+msgid "Please update your password before continue."
+msgstr "继续前请更新你的密码。"
+
+#: seahub/templates/registration/password_change_form.html:17
+msgid "Current password"
+msgstr "当前密码"
+
+#: seahub/templates/registration/password_change_form.html:49
+msgid "Current password cannot be blank"
+msgstr "当前密码不能为空"
+
+#: seahub/templates/registration/password_reset_complete.html:4
+msgid "Successfully reset password"
+msgstr "密码重置成功"
+
+#: seahub/templates/registration/password_reset_complete.html:8
+msgid "Successfully reset password."
+msgstr "密码重置成功。"
+
+#: seahub/templates/registration/password_reset_confirm.html:4
+#: seahub/templates/registration/password_reset_done.html:4
+#: seahub/templates/registration/password_reset_done.html:25
+#: seahub/templates/registration/password_reset_form.html:4
+#: seahub/templates/registration/password_reset_form.html:35
+msgid "Password reset"
+msgstr "密码重置"
+
+#: seahub/templates/registration/password_reset_confirm.html:11
+msgid "Reset password"
+msgstr "重置密码"
+
+#: seahub/templates/registration/password_reset_confirm.html:13
+msgid "New password: "
+msgstr "新密码："
+
+#: seahub/templates/registration/password_reset_confirm.html:16
+msgid "Confirm password: "
+msgstr "确认密码："
+
+#: seahub/templates/registration/password_reset_confirm.html:26
+msgid "Failed to reset password: this link is no longer available."
+msgstr "密码重置失败：重置链接失效。请重新重置。"
+
+#: seahub/templates/registration/password_reset_done.html:27
+msgid "We've sent a password reset email to your mailbox."
+msgstr "我们已经给你发了一封密码重置邮件，请查收。"
+
+#: seahub/templates/registration/password_reset_done.html:28
+msgid "Back to the login page"
+msgstr "返回到登录页"
+
+#: seahub/templates/registration/password_reset_email.html:12
+#, python-format
+msgid ""
+"To reset the password of your account %(account)s on %(site_name)s, please "
+"click the following link: "
+msgstr ""
+"要重置你在 %(site_name)s 上的账号 %(account)s 的密码， 请点击下面的链接："
+
+#: seahub/templates/registration/password_reset_email.html:20
+msgid "If you did not request it, just skip it."
+msgstr "要是你没有请求重置密码，请直接忽略本邮件。"
+
+#: seahub/templates/registration/password_reset_form.html:36
+msgid "We will send you an email to set new password"
+msgstr "我们会把新密码设置说明通过邮件发送给你"
+
+#: seahub/templates/registration/password_reset_form.html:38
+msgid "Your email used in login"
+msgstr "你用于登录的电子邮件"
+
+#: seahub/templates/registration/register_complete_email.html:1
+#, python-format
+msgid ""
+"You're receiving this e-mail because you are the admin of %(site_name)s, and "
+"a new user %(reg_email)s is joined."
+msgstr ""
+"你收到此封邮件是因为你是%(site_name)s的系统管理员，有新用户%(reg_email)s加"
+"入。"
+
+#: seahub/templates/registration/register_complete_email.html:3
+msgid "Please click the following link to view the new account:"
+msgstr "请点击下面链接查看该账号："
+
+#: seahub/templates/registration/register_complete_email_subject.html:1
+#, python-format
+msgid "New account created on %(site_name)s"
+msgstr "%(site_name)s上有新账号创建"
+
+#: seahub/templates/registration/registration_complete.html:4
+#: seahub/templates/shibboleth/complete.html:4
+msgid "Registration complete"
+msgstr "注册完成"
+
+#: seahub/templates/registration/registration_complete.html:10
+msgid ""
+"An activation email has been sent. Please check your email and click on the "
+"link to activate your account."
+msgstr "激活邮件已发送。请点击邮件里的链接来激活账号。"
+
+#: seahub/templates/registration/registration_complete.html:12
+msgid ""
+"Registration complete, please wait for administrator to activate your "
+"account."
+msgstr "注册成功，请等待管理员激活你的账号。"
+
+#: seahub/templates/registration/registration_complete.html:15
+msgid "Signup function is not enabled."
+msgstr "注册功能未启用。"
+
+#: seahub/templates/registration/registration_form.html:35
+msgid "Telephone"
+msgstr "电话"
+
+#: seahub/templates/registration/registration_form.html:40
+msgid "Note"
+msgstr "备注"
+
+#: seahub/templates/registration/registration_form.html:98
+#, python-format
+msgid ""
+"Passwords must have at least %(min_len)s characters and contain %(level)s of "
+"the following: uppercase letters, lowercase letters, numbers, and symbols."
+msgstr ""
+"密码至少包含 %(min_len)s 个字符，其中至少包括 %(level)s 种字符: 大写字母、小"
+"写字母、数字和符号。"
+
+#: seahub/templates/remote_user/create_unknown_user_false.html:4
+#: seahub/templates/remote_user/error.html:4
+msgid "Error"
+msgstr "错误"
+
+#: seahub/templates/snippets/password_strength_js.html:7
+msgid "Password strength should be strong or very strong"
+msgstr "密码强度应该强或非常强"
+
+#: seahub/templates/snippets/password_strength_js.html:11
+#: seahub/templates/snippets/password_strength_js.html:97
+msgid "Password strength"
+msgstr "密码强度"
+
+#: seahub/templates/snippets/password_strength_js.html:18
+msgid ""
+"The password should contain different types of characters to make it strong: "
+"uppercase letters, lowercase letters, numbers and special characters."
+msgstr ""
+"密码应包含不同类型的字符以提高强度：大写字母、小写字母、数字和特殊字符。"
+
+#: seahub/templates/sysadmin/sudo_mode.html:25
+msgid "Confirm password to continue"
+msgstr "请确认密码以便继续"
+
+#: seahub/templates/sysadmin/sudo_mode.html:26
+msgid ""
+"You are entering admin area, we won't ask for your password again for a few "
+"hours."
+msgstr "你进入到了管理员区域，在接下来的几小时内我们不会再向你询问密码。"
+
+#: seahub/templates/sysadmin/sudo_mode.html:33
+msgid "Incorrect password"
+msgstr "密码错误"
+
+#: seahub/templates/sysadmin/user_add_email.html:13
+#, python-format
+msgid ""
+"%(escaped_nickname)s invited you to join organization \"%(org_name)s\" on "
+"%(site_name)s."
+msgstr "%(escaped_nickname)s 邀请你加入 %(site_name)s 上的机构 %(org_name)s： "
+
+#: seahub/templates/sysadmin/user_add_email.html:15
+#: seahub/templates/sysadmin/user_batch_add_email.html:12
+#, python-format
+msgid "%(escaped_nickname)s invited you to join %(site_name)s."
+msgstr "%(escaped_nickname)s 邀请你加入 %(site_name)s。"
+
+#: seahub/templates/sysadmin/user_add_email.html:21
+#: seahub/templates/sysadmin/user_batch_add_email.html:16
+msgid "Here is your account information:"
+msgstr "以下是你的账号信息："
+
+#: seahub/templates/sysadmin/user_add_email.html:22
+#: seahub/templates/sysadmin/user_batch_add_email.html:17
+#, python-format
+msgid "Email: %(email)s"
+msgstr "邮箱：%(email)s"
+
+#: seahub/templates/sysadmin/user_add_email.html:23
+#: seahub/templates/sysadmin/user_batch_add_email.html:18
+#, python-format
+msgid "Password: %(password)s"
+msgstr "密码：%(password)s"
+
+#: seahub/templates/sysadmin/user_add_email.html:28
+msgid "Create account and log in"
+msgstr "创建账号并登录"
+
+#: seahub/templates/sysadmin/user_freeze_email.html:12
+#, python-format
+msgid "Account %(user)s froze due to excessive failed logins. Please check at:"
+msgstr "账号 %(user)s 由于过多失败登录而冻结。 请检查："
+
+#: seahub/templates/sysadmin/user_reset_email.html:12
+#, python-format
+msgid ""
+"Your password on %(site_name)s has been reset. Now it is %(password)s. "
+"Please change it as soon as possible. "
+msgstr "你在 %(site_name)s 的密码已被重置, 现在是 %(password)s, 请尽快修改。"
+
+#: seahub/two_factor/forms.py:39 seahub/two_factor/forms.py:63
+#: seahub/two_factor/forms.py:167 seahub/two_factor/forms.py:173
+#: seahub/two_factor/forms.py:297
+msgid "Token"
+msgstr "验证码"
+
+#: seahub/two_factor/templates/two_factor/_wizard_actions.html:4
+#: seahub/two_factor/templates/two_factor/profile/disable.html:12
+msgid "Cancel"
+msgstr "取校"
+
+#: seahub/two_factor/templates/two_factor/_wizard_actions.html:5
+msgid "Next"
+msgstr "下一页"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:6
+msgid "Backup Tokens"
+msgstr "备用验证码"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:8
+msgid ""
+"Backup tokens can be used when your primary and backup\n"
+"      phone numbers aren't available. The backup tokens below can be used\n"
+"      for login verification. If you've used up all your backup tokens, you\n"
+"      can generate a new set of backup tokens. Only the backup tokens shown\n"
+"      below will be valid."
+msgstr ""
+"当你的主用和备用电话号码都不可用时，备用验证码就有用武之地了。备用验证码可以"
+"用于登录验证。如果用完了所有的备用验证码，你可以再次生成新的备用验证码。只有"
+"在下方列出的备用验证码是有效的。"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:20
+msgid "Print these tokens and keep them somewhere safe."
+msgstr "打印这些验证码并将它们保存在安全的地方。"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:22
+msgid "You don't have any backup codes yet."
+msgstr "你还没有任何备用验证码。"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:26
+msgid "Back"
+msgstr "返回"
+
+#: seahub/two_factor/templates/two_factor/core/backup_tokens.html:27
+msgid "Generate Tokens"
+msgstr "生成验证码"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:7
+msgid "Two-Factor Authentication"
+msgstr "两步验证"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:19
+msgid ""
+"Open the two-factor authentication app on your device to view your "
+"authentication token and verify your identify."
+msgstr "打开你手机上的两步认证应用，输入登录验证码验证你的身份。"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:22
+msgid "Authentication token"
+msgstr "登录验证码"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:27
+#, python-format
+msgid "Remember this computer for %(remember_days)s days"
+msgstr "%(remember_days)s天内记住该设备"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:31
+#: seahub/two_factor/templates/two_factor/core/login.html:50
+msgid "Incorrect code"
+msgstr "验证码错误"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:40
+msgid "Don't have your phone?"
+msgstr "没有手机？"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:41
+msgid "Enter a two-factor backup code"
+msgstr "输入两步验证备用码"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:47
+msgid "Backup code"
+msgstr "备用验证码"
+
+#: seahub/two_factor/templates/two_factor/core/login.html:54
+msgid ""
+"You can enter one of your backup codes in case you lost access to your "
+"mobile device."
+msgstr "如果你的手机丢了，你可以输入一个备用验证码。"
+
+#: seahub/two_factor/templates/two_factor/core/setup.html:6
+msgid "Enable Two-Factor Authentication"
+msgstr "开启两步验证"
+
+#: seahub/two_factor/templates/two_factor/core/setup.html:16
+msgid ""
+"To start using a token generator, please use your\n"
+"        smartphone to scan the QR code below. For example, use Google\n"
+"        Authenticator. Then, enter the token generated by the app.\n"
+"        "
+msgstr ""
+"为了开启一个验证码生成器，请使用你的智能机扫描下面的二维码。比如，使用 "
+"Google 身份验证器。然后输入该应用所生成的验证码。"
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:6
+msgid "Disable Two-Factor Authentication"
+msgstr "关闭两步验证"
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:8
+msgid ""
+"You are about to disable two-factor authentication. This\n"
+"    compromises your account security, are you sure?"
+msgstr "你即将禁用两步验证。这将削弱你账号的安全性，你确定要这么做？"
+
+#: seahub/two_factor/templates/two_factor/profile/disable.html:11
+msgid "Disable"
+msgstr "禁用"
+
+#: seahub/utils/__init__.py:87
+msgid "Permission error"
+msgstr "权限错误"
+
+#: seahub/utils/http.py:82
+msgid "Too many requests"
+msgstr "请求太多"

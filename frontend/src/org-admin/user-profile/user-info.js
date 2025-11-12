@@ -5,7 +5,6 @@ import { IconButton, CenteredLoading, CenteredError } from '@/components';
 import { enableUserSetContactEmail, gettext } from '@/constants';
 import SetUserName from './set-user-name';
 import SetUserContactEmail from './set-user-contact-email';
-import SetUserQuota from './set-user-quota';
 
 const { orgID, twoFactorAuthEnabled } = window.org.pageOptions;
 
@@ -16,7 +15,6 @@ class UserInfo extends Component {
     this.state = {
       isSetNameDialogOpen: false,
       isSetContactEmailDialogOpen: false,
-      isSetQuotaDialogOpen: false,
     };
   }
 
@@ -32,19 +30,13 @@ class UserInfo extends Component {
     });
   };
 
-  toggleSetQuotaDialog = () => {
-    this.setState({
-      isSetQuotaDialogOpen: !this.state.isSetQuotaDialogOpen
-    });
-  };
-
   render() {
     const {
       loading, errorMsg,
       avatar_url, email, contact_email,
-      name, quota_total, has_default_device, is_force_2fa
+      name, has_default_device, is_force_2fa
     } = this.props.data;
-    const { isSetNameDialogOpen, isSetContactEmailDialogOpen, isSetQuotaDialogOpen } = this.state;
+    const { isSetNameDialogOpen, isSetContactEmailDialogOpen } = this.state;
 
     if (loading) {
       return (<CenteredLoading />);
@@ -114,15 +106,6 @@ class UserInfo extends Component {
             contactEmail={contact_email}
             updateContactEmail={this.props.updateContactEmail}
             toggleDialog={this.toggleSetContactEmailDialog}
-          />
-        )}
-        {isSetQuotaDialogOpen && (
-          <SetUserQuota
-            orgID={orgID}
-            email={email}
-            quotaTotal={quota_total}
-            updateQuota={this.props.updateQuota}
-            toggleDialog={this.toggleSetQuotaDialog}
           />
         )}
       </Fragment>

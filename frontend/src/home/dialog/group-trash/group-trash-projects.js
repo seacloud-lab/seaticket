@@ -22,7 +22,7 @@ class GroupTrashProjects extends React.Component {
     return (
       <Fragment>
         <p className="sea-qa-tip-default">
-          {gettext('Tip: tables deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
+          {gettext('Tip: projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
         </p>
         <table className="trash-projects">
           <thead>

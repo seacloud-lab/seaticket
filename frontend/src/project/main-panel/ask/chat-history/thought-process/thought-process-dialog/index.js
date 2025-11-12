@@ -57,7 +57,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                   { value: record.user_input }
                 ],
               }, {
-                name: gettext('Assistant reponse'),
+                name: gettext('Assistant response'),
                 children: record.assistant_response.length <= 1 ? [
                   {
                     name: gettext('Answer'),
@@ -170,7 +170,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
         name: gettext('Answer generation'),
         children: [
           {
-            name: propsValue.final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
+            name: propsValue.final_answer.reach_max_steps ? gettext('Result reached max steps') : gettext('Result'),
             children: [
               { value: result, formatter: result ? StepMarkdownViewer : null }
             ]

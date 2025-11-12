@@ -26,9 +26,6 @@ class MobileMine extends React.Component {
       contactEmail: '',
       isStaff: false,
       isOrgStaff: false,
-      quotaTotal: '',
-      quotaUsage: '',
-      usageRate: ''
     };
   }
 
@@ -45,12 +42,6 @@ class MobileMine extends React.Component {
         isInstAdmin: resp.data.is_inst_admin,
         isOrgStaff: resp.data.is_org_staff === 1 ? true : false,
         showInfo: !this.state.showInfo,
-        quotaUsage: Utils.bytesToSize(resp.data.usage),
-        quotaTotal: Utils.bytesToSize(resp.data.total),
-        usageRate: resp.data.space_usage,
-        rowUsage: resp.data.row_usage,
-        rowTotal: resp.data.row_total > 0 ? resp.data.row_total : '--',
-        rowUsageRate: resp.data.row_usage_rate,
       });
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
@@ -112,7 +103,7 @@ class MobileMine extends React.Component {
   };
 
   render() {
-    const { userName, quotaTotal, quotaUsage, usageRate, rowTotal, rowUsage, rowUsageRate } = this.state;
+    const { userName } = this.state;
     const data = this.renderMenu();
     return (
       <div className="mobile-mine">
@@ -121,25 +112,6 @@ class MobileMine extends React.Component {
             thumb={this.renderAvatar()}
             className='mine-info-item'
           >{userName}
-          </Item>
-        </List>
-
-        <List className="mt-4">
-          <Item>
-            <div className="account-info">
-              <p>{gettext('Storage used')}{': '}{quotaUsage} / {quotaTotal}</p>
-              <div id="quota-bar">
-                <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: usageRate }}></span>
-              </div>
-            </div>
-          </Item>
-          <Item>
-            <div className="account-info row-used">
-              <p>{gettext('Rows used')}{': '}{rowUsage} / {rowTotal}</p>
-              <div id="quota-bar">
-                <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: rowUsageRate }}></span>
-              </div>
-            </div>
           </Item>
         </List>
 

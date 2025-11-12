@@ -56,7 +56,7 @@ class ProjectItemPopover extends React.Component {
           {this.props.onAPITokenToggle &&
             <button className="dropdown-item project-item-operation" onClick={this.onAPITokenToggle}>
               <Icon symbol="settings" className="project-item-operation-icon" />
-              {gettext('API Token')}
+              {gettext('API token')}
             </button>
           }
         </PopoverBody>

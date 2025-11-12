@@ -140,7 +140,7 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('Your The URL of the repository, like https://github.com/haiwen/seafile')
+      tip: gettext('Your the URL of the repository, like https://github.com/haiwen/seafile')
     }, {
       key: 'access_token',
       name: gettext('Access token'),
@@ -172,13 +172,13 @@ export const CONNECTION_FIELDS = {
       is_custom: true
     }, {
       key: 'api_key',
-      name: gettext('API Key'),
+      name: gettext('API key'),
       type: CONNECTION_FIELD_TYPE.PASSWORD,
       is_required: true,
       is_custom: true
     }, {
       key: 'api_username',
-      name: gettext('API Username'),
+      name: gettext('API username'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_custom: true

@@ -95,7 +95,7 @@ def oauth_check(func):
 @oauth_check
 def oauth_login(request):
     """Step 1: User Authorization.
-    Redirect the user/resource owner to the OAuth provider (i.e. Github)
+    Redirect the user/resource owner to the OAuth provider (i.e. GitHub)
     using an URL with a few key OAuth parameters.
     """
     session = OAuth2Session(client_id=CLIENT_ID,

@@ -763,11 +763,11 @@ class AdminUserResetPassword(APIView):
                         'Successfully reset password to %(passwd)s, but failed to send email to %(user)s, please check your email configuration.') % \
                                 {'passwd': new_password, 'user': contact_email}
             else:
-                reset_tip = _('Successfully reset password to %(passwd)s for user %(user)s.') % \
+                reset_tip = _('Successfully reset password to %(passwd)s for user %(user)s') % \
                             {'passwd': new_password, 'user': user_name}
         else:
             reset_tip = _(
-                'Successfully reset password to %(passwd)s for user %(user)s. But email notification can not be sent, because email service is not properly configured.') % \
+                'Successfully reset password to %(passwd)s for user %(user)s But email notification can not be sent, because email service is not properly configured.') % \
                         {'passwd': new_password, 'user': user_name}
 
         return Response({'new_password': new_password, 'reset_tip': reset_tip})

@@ -153,8 +153,8 @@ class SAMLConfig extends Component {
                 </Fragment>
               </Section>
 
-              <Section headingText={gettext('Configure SeaQA')}>
-                <p className="text-secondary mt-1">{gettext('Use information from your Identity Provider to configure SeaQA')}</p>
+              <Section headingText={gettext('Configure SeaSearch')}>
+                <p className="text-secondary mt-1">{gettext('Use information from your Identity Provider to configure SeaSearch')}</p>
                 <Fragment>
                   <InputItem
                     value={metadataUrl}

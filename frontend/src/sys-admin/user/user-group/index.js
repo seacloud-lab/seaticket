@@ -60,7 +60,7 @@ const UserGroups = ({ email, onCloseSidePanel }) => {
             ref={groupsTableRef}
             columns={[
               { name: gettext('Name'), key: 'name', width: 0.2 },
-              { name: gettext('role'), key: 'owner', width: 0.2 },
+              { name: gettext('Role'), key: 'owner', width: 0.2 },
               { name: '', key: 'placeholder', width: 0.4 },
               { name: gettext('Created at'), key: 'created_at', width: 0.2 },
               { name: '', key: 'op', width: 44, isFixed: true }

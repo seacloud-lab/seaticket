@@ -57,7 +57,7 @@ class User extends React.Component {
     toaster.success(gettext('Resetting user\'s password, please wait for a moment.'));
     orgAdminAPI.orgAdminResetOrgUserPassword(orgID, email).then(res => {
       let msg;
-      msg = gettext('Successfully reset password to %(passwd)s for user %(user)s.');
+      msg = gettext('Successfully reset password to %(passwd)s for user %(user)s');
       msg = msg.replace('%(passwd)s', res.data.new_password);
       msg = msg.replace('%(user)s', name);
       toaster.success(msg, {
@@ -99,14 +99,14 @@ class User extends React.Component {
         highlight: false,
         showMenu: false,
       });
-      toaster.success(gettext('Edit succeeded.'));
+      toaster.success(gettext('%s updated').replace('%s', gettext('Permission')));
     }).catch(error => {
       if (error.response && error.response.status === 409) { // maybe over limit
         toaster.danger(gettext('The number of users exceeds the limit of your current plan.'));
       } else {
         let errMessage = Utils.getErrorMsg(error);
         if (errMessage === gettext('Error')) {
-          errMessage = gettext('Edit failed.');
+          errMessage = gettext('Failed to update the permission');
         }
         toaster.danger(errMessage);
       }

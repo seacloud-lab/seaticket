@@ -32,9 +32,6 @@ logger = logging.getLogger(__name__)
 
 try:
     current_path = os.path.dirname(os.path.abspath(__file__))
-    seafile_conf_dir = os.path.join(current_path, \
-            '../../../../../conf')
-    sys.path.append(seafile_conf_dir)
     from seahub_custom_functions import custom_search_user
     CUSTOM_SEARCH_USER = True
 except ImportError as e:

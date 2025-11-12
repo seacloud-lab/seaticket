@@ -116,8 +116,8 @@ class Header extends React.Component {
               height={logoHeight}
               width={logoWidth}
               title={siteTitle}
-              alt={gettext('SeaTable logo')}
-              aria-label={gettext('SeaTable logo')}
+              alt={gettext('SeaSearch logo')}
+              aria-label={gettext('SeaSearch logo')}
             />
           </a>
         </div>

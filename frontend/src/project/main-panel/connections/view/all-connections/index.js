@@ -146,7 +146,7 @@ const AllConnections = ({ projectUuid }) => {
               >
                 <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => handleModify()}>
                   <Icon symbol="add" className="mr-1" />
-                  {gettext('Add connection')}
+                  {gettext('New connection')}
                 </Button>
               </EmptyTip>
             </>

@@ -1,0 +1,4371 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: seahub\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-17 16:03+0800\n"
+"PO-Revision-Date: 2015-05-09 05:28+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
+"en/)\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: frontend/src/components/account/index.js:143
+#: frontend/src/home/mobile/mobile-mine/index.js:70
+msgid "Exit system admin"
+msgstr "退出系统管理"
+
+#: frontend/src/components/account/index.js:148
+#: frontend/src/home/mobile/mobile-mine/index.js:75
+msgid "Exit team admin"
+msgstr "退出团队管理"
+
+#: frontend/src/components/account/index.js:153
+#: frontend/src/home/mobile/mobile-mine/index.js:80
+msgid "Exit institution admin"
+msgstr "退出机构管理"
+
+#: frontend/src/components/account/index.js:160
+#: frontend/src/home/mobile/mobile-mine/index.js:88
+#: frontend/src/sys-admin/side-panel.js:32
+#: frontend/src/utils/role-status-utils.js:28
+msgid "System admin"
+msgstr "系统管理"
+
+#: frontend/src/components/account/index.js:165
+#: frontend/src/home/mobile/mobile-mine/index.js:93
+#: frontend/src/project/components/account/index.js:57
+msgid "Team admin"
+msgstr "团队管理"
+
+#: frontend/src/components/account/index.js:170
+#: frontend/src/home/mobile/mobile-mine/index.js:98
+msgid "Institution admin"
+msgstr "机构管理"
+
+#: frontend/src/components/account/index.js:191
+#: frontend/src/sys-admin/org/org-info.js:100
+#: frontend/src/sys-admin/user/user-info.js:153
+msgid "API calls count"
+msgstr "API 调用计数"
+
+#: frontend/src/components/account/index.js:197
+#: frontend/src/home/mobile/mobile-mine/index.js:123
+#: frontend/src/profile-settings/index.js:151
+#: frontend/src/project/components/account/index.js:56
+msgid "Personal settings"
+msgstr "个人设置"
+
+#: frontend/src/components/account/index.js:199
+#: frontend/src/home/mobile/mobile-mine/index.js:141
+#: frontend/src/profile-settings/session-logs/index.js:64
+#: frontend/src/profile-settings/session-logs/index.js:165
+#: frontend/src/profile-settings/session-logs/index.js:167
+#: frontend/src/project/components/account/index.js:58
+msgid "Log out"
+msgstr "退出"
+
+#: frontend/src/components/account/index.js:211
+#: frontend/src/components/account/index.js:212
+#: frontend/src/components/account/index.js:220
+#: frontend/src/components/account/index.js:221
+msgid "View profile and more"
+msgstr "查看个人资料"
+
+#: frontend/src/components/admin-projects/index.js:14
+#: frontend/src/home/main-panel/pc-main-panel/workspace-in-main-panel/index.js:43
+#: frontend/src/home/workspace/body/index.js:60
+#: frontend/src/org-admin/projects/search-projects.js:59
+#: frontend/src/sys-admin/projects/search-projects.js:59
+msgid "No projects"
+msgstr "没有项目"
+
+#: frontend/src/components/admin-projects/index.js:39
+#: frontend/src/org-admin/group-info/index.js:32
+#: frontend/src/org-admin/group-members/index.js:32
+#: frontend/src/org-admin/user-profile/index.js:35
+#: frontend/src/org-admin/users/search-users.js:70
+#: frontend/src/profile-settings/session-logs/index.js:282
+#: frontend/src/sys-admin/group/group-members.js:214
+#: frontend/src/sys-admin/groups/groups-table/index.js:35
+#: frontend/src/sys-admin/info/index.js:39
+#: frontend/src/sys-admin/org/org-info.js:167
+#: frontend/src/sys-admin/orgs/index.js:310
+#: frontend/src/sys-admin/orgs/search-orgs.js:51
+#: frontend/src/sys-admin/user/user-info.js:238
+#: frontend/src/sys-admin/users/users-table/index.js:76
+#: frontend/src/sys-admin/users/users.js:81 frontend/src/utils/utils.js:172
+msgid "Permission denied"
+msgstr "没有权限"
+
+#: frontend/src/components/admin-projects/index.js:79
+#: frontend/src/components/dialog/project-api-token-dialog.js:227
+#: frontend/src/org-admin/groups/index.js:73
+#: frontend/src/org-admin/users/index.js:86
+#: frontend/src/org-admin/users/index.js:112
+#: frontend/src/org-admin/users/search-users.js:111
+#: frontend/src/sys-admin/groups/groups-table/index.js:75
+#: frontend/src/sys-admin/orgs/index.js:273
+#: frontend/src/sys-admin/orgs/search-orgs.js:93
+#: frontend/src/sys-admin/users/search-users.js:28
+#: frontend/src/sys-admin/users/search-users.js:29
+#: frontend/src/sys-admin/users/users-table/index.js:116
+#: frontend/src/sys-admin/users/users.js:98
+#: frontend/src/sys-admin/users/users.js:99
+#, javascript-format
+msgid "%s deleted"
+msgstr "%s 已删除"
+
+#: frontend/src/components/admin-projects/index.js:94
+#: frontend/src/home/dialog/group-trash/group-trash-projects-item.js:47
+#: frontend/src/home/mobile/group-trash-view/deleted-group-base-item.js:22
+#, javascript-format
+msgid "%s restored"
+msgstr "%s 已恢复"
+
+#: frontend/src/components/admin-projects/project.js:32
+#: frontend/src/components/admin-projects/project.js:129
+#: frontend/src/components/dialog/confirm-delete-account.js:37
+#: frontend/src/components/dialog/confirm-delete-org.js:65
+#: frontend/src/components/dialog/confirm-delete-org.js:66
+#: frontend/src/components/dialog/project-api-token-dialog.js:142
+#: frontend/src/home/workspace/body/project-item-popover/index.js:54
+#: frontend/src/home/workspace/index.js:475
+#: frontend/src/home/workspace/index.js:515
+#: frontend/src/org-admin/groups/group.js:116
+#: frontend/src/org-admin/groups/group.js:127
+#: frontend/src/org-admin/users/user.js:192
+#: frontend/src/org-admin/users/user.js:215
+#: frontend/src/profile-settings/delete-account.js:38
+#: frontend/src/profile-settings/session-logs/index.js:67
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:63
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:82
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:21
+#: frontend/src/project/main-panel/connections/hooks/connections.js:218
+#: frontend/src/project/main-panel/connections/hooks/connections.js:221
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:145
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:195
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:174
+#: frontend/src/sea-metadata/components/view-toolbar/rows-toolbar/index.js:52
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:129
+#: frontend/src/sys-admin/groups/groups-table/group.js:31
+#: frontend/src/sys-admin/groups/groups-table/group.js:177
+#: frontend/src/sys-admin/orgs/index.js:176
+#: frontend/src/sys-admin/orgs/index.js:177
+#: frontend/src/sys-admin/orgs/op-menu.js:52
+#: frontend/src/sys-admin/orgs/orgs-content.js:166
+#: frontend/src/sys-admin/orgs/orgs-content.js:167
+#: frontend/src/sys-admin/orgs/orgs-content.js:178
+#: frontend/src/sys-admin/users/search-users.js:71
+#: frontend/src/sys-admin/users/users-table/user.js:42
+#: frontend/src/sys-admin/users/users-table/user.js:261
+#: frontend/src/sys-admin/users/users.js:212
+msgid "Delete"
+msgstr "删除"
+
+#: frontend/src/components/admin-projects/project.js:38
+msgid "Restore"
+msgstr "恢复"
+
+#: frontend/src/components/admin-projects/project.js:126
+#: frontend/src/home/workspace/index.js:472
+msgid "Delete project"
+msgstr "删除项目"
+
+#: frontend/src/components/admin-projects/project.js:127
+#: frontend/src/home/workspace/index.js:473
+msgid "Are you sure you want to delete the project {placeholder} ?"
+msgstr "确定要删除项目 {placeholder} 吗？"
+
+#: frontend/src/components/copy-input.js:10
+msgid "Connection URL has been copied to clipboard"
+msgstr "连接 URL 已复制到剪贴板"
+
+#: frontend/src/components/customize-dropdown-more-toggle/index.js:14
+#: frontend/src/components/customize-dropdown-more-toggle/index.js:15
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:75
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:76
+#: frontend/src/home/workspace/body/project.js:198
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:314
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:315
+msgid "More operations"
+msgstr "更多操作"
+
+#: frontend/src/components/customize-name-dialog/index.js:42
+#: frontend/src/project/main-panel/tickets/constants.js:57
+msgid "New"
+msgstr "新建"
+
+#: frontend/src/components/customize-name-dialog/index.js:48
+#: frontend/src/components/dialog/common-operation-confirmation-dialog.js:50
+#: frontend/src/components/dialog/confirm-delete-account.js:36
+#: frontend/src/components/dialog/confirm-delete-org.js:63
+#: frontend/src/components/dialog/confirm-disconnect-wechat.js:36
+#: frontend/src/components/dialog/set-contact-email-dialog.js:71
+#: frontend/src/home/dialog/create-group-dialog.js:87
+#: frontend/src/home/dialog/leave-group-dialog.js:30
+#: frontend/src/home/dialog/rename-group-name-dialog.js:83
+#: frontend/src/home/mobile/rename-project-view.js:115
+#: frontend/src/org-admin/groups/transfer-dialog.js:48
+#: frontend/src/org-admin/saml/input-item.js:94
+#: frontend/src/org-admin/settings/input-item.js:84
+#: frontend/src/org-admin/user-profile/set-user-contact-email.js:66
+#: frontend/src/org-admin/user-profile/set-user-name.js:68
+#: frontend/src/org-admin/users/add-admin-dialog.js:57
+#: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:38
+#: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:33
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:166
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:70
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:80
+#: frontend/src/profile-settings/update-webdav-password.js:42
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:126
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:254
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:263
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:272
+#: frontend/src/project/main-panel/connections/view/connection/index.js:109
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:172
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:120
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:148
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:166
+#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:100
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:148
+#: frontend/src/sea-metadata/components/popover/column-popover/index.js:89
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:70
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:138
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:183
+#: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:51
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:87
+#: frontend/src/sys-admin/dialog/sysadmin-group-add-member-dialog.js:51
+#: frontend/src/sys-admin/dialog/sysadmin-group-transfer-dialog.js:61
+#: frontend/src/sys-admin/dialog/sysadmin-import-user-dialog.js:59
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog.js:66
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:66
+#: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:46
+#: frontend/src/sys-admin/dialog/update-user.js:61
+#: frontend/src/sys-admin/sys-popover/index.js:70
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:97
+msgid "Cancel"
+msgstr "取消"
+
+#: frontend/src/components/customize-name-dialog/index.js:49
+#: frontend/src/components/dialog/project-api-token-dialog.js:319
+#: frontend/src/components/dialog/set-contact-email-dialog.js:72
+#: frontend/src/home/dialog/create-group-dialog.js:88
+#: frontend/src/home/dialog/list-and-add-group-members.js:150
+#: frontend/src/home/dialog/list-and-add-group-members.js:151
+#: frontend/src/home/dialog/rename-group-name-dialog.js:84
+#: frontend/src/home/dialog/transfer-group-dialog.js:67
+#: frontend/src/org-admin/groups/transfer-dialog.js:49
+#: frontend/src/org-admin/projects/search-projects.js:84
+#: frontend/src/org-admin/saml/input-item.js:91
+#: frontend/src/org-admin/settings/input-item.js:81
+#: frontend/src/org-admin/user-profile/set-user-contact-email.js:67
+#: frontend/src/org-admin/user-profile/set-user-name.js:69
+#: frontend/src/org-admin/users/add-admin-dialog.js:58
+#: frontend/src/org-admin/users/add-user-dialog.js:134
+#: frontend/src/org-admin/users/search-users.js:161
+#: frontend/src/profile-settings/email-notice.js:83
+#: frontend/src/profile-settings/update-webdav-password.js:43
+#: frontend/src/profile-settings/user-basic-info-form.js:83
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:127
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:258
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:267
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:275
+#: frontend/src/project/main-panel/connections/view/connection/index.js:110
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:121
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:149
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:167
+#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:103
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:149
+#: frontend/src/sea-metadata/components/popover/column-popover/index.js:90
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:71
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:139
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:184
+#: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:52
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:88
+#: frontend/src/sys-admin/dialog/sysadmin-group-add-member-dialog.js:52
+#: frontend/src/sys-admin/dialog/sysadmin-group-transfer-dialog.js:62
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog.js:67
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:67
+#: frontend/src/sys-admin/dialog/update-user.js:62
+#: frontend/src/sys-admin/groups/search-groups.js:87
+#: frontend/src/sys-admin/orgs/search-orgs.js:136
+#: frontend/src/sys-admin/projects/search-projects.js:84
+#: frontend/src/sys-admin/sys-popover/index.js:71
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:98
+#: frontend/src/sys-admin/users/search-users.js:162
+msgid "Submit"
+msgstr "提交"
+
+#: frontend/src/components/dialog/clean-trash-dialog.js:12
+#: frontend/src/components/dialog/clean-trash-dialog.js:15
+#: frontend/src/org-admin/projects/index.js:48
+#: frontend/src/org-admin/projects/index.js:49
+msgid "Clean"
+msgstr "清空"
+
+#: frontend/src/components/dialog/clean-trash-dialog.js:13
+msgid "Are you sure to clean the trash?"
+msgstr "你确定要清空回收站吗？"
+
+#: frontend/src/components/dialog/common-operation-confirmation-dialog.js:51
+#: frontend/src/home/dialog/leave-group-dialog.js:31
+#: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:39
+#: frontend/src/profile-settings/user-convert-to-team.js:34
+msgid "Confirm"
+msgstr "确认"
+
+#: frontend/src/components/dialog/confirm-delete-account.js:28
+#: frontend/src/profile-settings/delete-account.js:36
+#: frontend/src/profile-settings/index.js:58
+msgid "Delete account"
+msgstr "注销帐号"
+
+#: frontend/src/components/dialog/confirm-delete-account.js:30
+msgid "Really want to delete your account?"
+msgstr "确定要注销该帐号吗？"
+
+#: frontend/src/components/dialog/confirm-disconnect-wechat.js:28
+#: frontend/src/components/dialog/confirm-disconnect-wechat.js:37
+#: frontend/src/profile-settings/social-login.js:56
+msgid "Disconnect"
+msgstr "断开连接"
+
+#: frontend/src/components/dialog/confirm-disconnect-wechat.js:30
+msgid "Are you sure you want to disconnect?"
+msgstr "你确定要断开连接吗？"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:49
+msgid "API token copied to clipboard"
+msgstr "API 令牌已复制到剪贴板"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:95
+#: frontend/src/components/dialog/project-api-token-dialog.js:106
+#: frontend/src/components/dialog/project-api-token-dialog.js:301
+#: frontend/src/components/dialog/project-api-token-dialog.js:305
+msgid "Read-Write"
+msgstr "可读写"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:95
+#: frontend/src/components/dialog/project-api-token-dialog.js:109
+#: frontend/src/components/dialog/project-api-token-dialog.js:301
+#: frontend/src/components/dialog/project-api-token-dialog.js:308
+msgid "Read-Only"
+msgstr "只读"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:139
+msgid "Delete API token"
+msgstr "删除 API 令牌"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:140
+msgid "Are you sure you want to delete the API token for {placeholder} ?"
+msgstr "你确定要删除 API 令牌 {placeholder} 吗？"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:202
+msgid "App name is required"
+msgstr "应用名称是必填项"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:215
+#, javascript-format
+msgid "%s created"
+msgstr "%s 已创建"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:215
+#: frontend/src/components/dialog/project-api-token-dialog.js:227
+#: frontend/src/components/dialog/project-api-token-dialog.js:236
+#: frontend/src/components/dialog/project-api-token-dialog.js:267
+#: frontend/src/home/workspace/body/project-item-popover/index.js:59
+msgid "API token"
+msgstr "API token"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:236
+#: frontend/src/org-admin/settings/index.js:71
+#: frontend/src/org-admin/users/user.js:102
+#: frontend/src/sys-admin/org/org-info.js:197
+#: frontend/src/sys-admin/org/org-info.js:211
+#: frontend/src/sys-admin/org/org-info.js:225
+#, javascript-format
+msgid "%s updated"
+msgstr "%s 已更新"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:273
+#: frontend/src/components/dialog/project-api-token-dialog.js:336
+msgid "App name"
+msgstr "应用名称"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:274
+#: frontend/src/components/dialog/project-api-token-dialog.js:337
+#: frontend/src/org-admin/users/user.js:102
+msgid "Permission"
+msgstr "权限"
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:319
+msgid "Creating..."
+msgstr "正在创建..."
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:338
+msgid "Token"
+msgstr "Token"
+
+#: frontend/src/components/dialog/restore-project-dialog.js:13
+msgid ""
+"The owner of this project has been deleted. Do you want to restore the "
+"project to your account?"
+msgstr "此项目的所有者已被删除。你想要把项目恢复到你的账号吗？"
+
+#: frontend/src/components/dialog/restore-project-dialog.js:15
+msgid "Are you sure you want to restore {placeholder} ?"
+msgstr "你确定要恢复 {placeholder} ？"
+
+#: frontend/src/components/dialog/set-contact-email-dialog.js:29
+msgid "Email address invalid!"
+msgstr "邮箱地址无效！"
+
+#: frontend/src/components/dialog/set-contact-email-dialog.js:62
+msgid "Bind contact email"
+msgstr "绑定联系邮箱"
+
+#: frontend/src/components/group-select.js:76
+#: frontend/src/org-admin/group-info/index.js:38
+#: frontend/src/org-admin/group-members/index.js:38
+#: frontend/src/sys-admin/group/group-members.js:220
+msgid "Group not found"
+msgstr "未找到群组"
+
+#: frontend/src/components/group-select.js:76
+#: frontend/src/components/sync-option-editor/main/index.js:223
+#: frontend/src/components/user-select/index.js:279
+msgid "Enter characters to start searching"
+msgstr "输入字符以开始搜索"
+
+#: frontend/src/components/load-more.js:18
+msgid "Load more"
+msgstr "加载更多"
+
+#: frontend/src/components/option-editor/main/index.js:29
+msgid "Add tag"
+msgstr "添加标签"
+
+#: frontend/src/components/paginator/index.js:59
+msgid "{number_placeholder} / Page"
+msgstr "{number_placeholder} / 页"
+
+#: frontend/src/components/password-input/strength-checker/index.js:27
+msgid "Password strength"
+msgstr "密码强度"
+
+#: frontend/src/components/password-input/strength-checker/index.js:41
+msgid ""
+"The password should contain different types of characters to make it strong: "
+"uppercase letters, lowercase letters, numbers and special characters."
+msgstr ""
+"密码应包含不同类型的字符以提高强度：大写字母、小写字母、数字和特殊字符。"
+
+#: frontend/src/components/permission-denied-tip.js:6
+msgid ""
+"Permission denied. Please try {placeholder-left}login again.{placeholder-"
+"right}"
+msgstr "没有权限。请尝试{placeholder-left}重新登录。{placeholder-right}"
+
+#: frontend/src/components/popover/user-info-popover/index.js:56
+#: frontend/src/components/user-select/index.js:279
+#: frontend/src/org-admin/user-profile/index.js:41
+#: frontend/src/sys-admin/user/user-info.js:244
+msgid "User not found"
+msgstr "未找到用户"
+
+#: frontend/src/components/popover/user-info-popover/index.js:75
+#: frontend/src/org-admin/users/add-user-dialog.js:109
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:138
+msgid "Email"
+msgstr "邮箱"
+
+#: frontend/src/components/role-editor.js:20
+#: frontend/src/home/dialog/group-members.js:124
+#: frontend/src/org-admin/group-members/member.js:17
+#: frontend/src/org-admin/side-panel.js:28
+#: frontend/src/org-admin/users/index.js:215
+#: frontend/src/sys-admin/groups/groups-table/group.js:72
+#: frontend/src/utils/role-status-utils.js:18
+msgid "Admin"
+msgstr "管理"
+
+#: frontend/src/components/role-editor.js:24
+#: frontend/src/home/dialog/group-members.js:127
+#: frontend/src/org-admin/group-members/member.js:19
+#: frontend/src/sys-admin/groups/groups-table/group.js:75
+#: frontend/src/utils/role-status-utils.js:20
+msgid "Member"
+msgstr "群组成员"
+
+#: frontend/src/components/select-editor/index.js:102
+#: frontend/src/org-admin/user-profile/user-info.js:58
+#: frontend/src/org-admin/user-profile/user-info.js:65
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:18
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:139
+#: frontend/src/sys-admin/org/org-info.js:51
+#: frontend/src/sys-admin/org/org-info.js:52
+#: frontend/src/sys-admin/user/user-info.js:83
+#: frontend/src/sys-admin/user/user-info.js:84
+msgid "Edit"
+msgstr "编辑"
+
+#: frontend/src/components/upload-file/index.js:22
+msgid "File upload failed"
+msgstr "文件上传失败"
+
+#: frontend/src/components/upload-file/index.js:27
+msgid "File loading failed"
+msgstr "文件加载失败"
+
+#: frontend/src/components/user-item/index.js:40
+#: frontend/src/profile-settings/index.js:171
+#: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:34
+#: frontend/src/sys-admin/group/group-members.js:157
+#: frontend/src/sys-admin/group/group-members.js:158
+#: frontend/src/sys-admin/group/group-members.js:170
+#: frontend/src/sys-admin/groups/groups-table/group.js:196
+msgid "Remove"
+msgstr "删除"
+
+#: frontend/src/components/user-select/index.js:235
+#: frontend/src/components/user-select/index.js:252
+#: frontend/src/home/dialog/list-and-add-group-members.js:143
+#: frontend/src/home/dialog/transfer-group-dialog.js:60
+#: frontend/src/org-admin/users/index.js:176
+#: frontend/src/org-admin/users/search-users.js:149
+#: frontend/src/org-admin/users/search-users.js:153
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:72
+#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:59
+#: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:46
+#: frontend/src/sys-admin/users/search-users.js:152
+msgid "Search users"
+msgstr "搜索用户"
+
+#: frontend/src/constants/long-text.js:3
+#: frontend/src/sea-metadata/constants/column/limit.js:15
+msgid ""
+"The content of the document has exceeded the limit of 100000 characters, and "
+"the content cannot be saved"
+msgstr "文档内容已超过 100000 字符限制，内容无法保存"
+
+#: frontend/src/home/dialog/create-group-dialog.js:55
+#: frontend/src/org-admin/users/add-user-dialog.js:76
+#: frontend/src/utils/validate/name.js:9
+msgid "Name is required"
+msgstr "名称是必填项"
+
+#: frontend/src/home/dialog/create-group-dialog.js:73
+#: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-title.js:20
+#: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-title.js:21
+#: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-title.js:24
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:60
+#: frontend/src/sys-admin/groups/groups.js:53
+#: frontend/src/sys-admin/groups/groups.js:58
+msgid "New group"
+msgstr "新建群组"
+
+#: frontend/src/home/dialog/create-group-dialog.js:75
+#: frontend/src/home/dialog/group-members.js:30
+#: frontend/src/home/dialog/group-trash/group-trash-projects.js:31
+#: frontend/src/home/mobile/group-trash-view/index.js:26
+#: frontend/src/org-admin/group-info/index.js:67
+#: frontend/src/org-admin/group-members/index.js:67
+#: frontend/src/org-admin/group-projects/index.js:30
+#: frontend/src/org-admin/groups/index.js:122
+#: frontend/src/org-admin/projects/index.js:70
+#: frontend/src/org-admin/projects/search-projects.js:63
+#: frontend/src/org-admin/projects/trash-projects.js:33
+#: frontend/src/org-admin/settings/index.js:71
+#: frontend/src/org-admin/user-profile/user-info.js:55
+#: frontend/src/org-admin/users/admins/index.js:16
+#: frontend/src/org-admin/users/users.js:15
+#: frontend/src/project/main-panel/connections/constants.js:132
+#: frontend/src/project/main-panel/connections/constants.js:162
+#: frontend/src/project/main-panel/connections/constants.js:198
+#: frontend/src/project/main-panel/connections/constants.js:219
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:112
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:120
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:112
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:111
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:64
+#: frontend/src/sys-admin/group/group-members.js:45
+#: frontend/src/sys-admin/group/group-projects.js:31
+#: frontend/src/sys-admin/groups/groups.js:67
+#: frontend/src/sys-admin/groups/search-groups.js:64
+#: frontend/src/sys-admin/groups/search-groups.js:79
+#: frontend/src/sys-admin/org/org-admin-users.js:29
+#: frontend/src/sys-admin/org/org-groups.js:34
+#: frontend/src/sys-admin/org/org-info.js:78
+#: frontend/src/sys-admin/org/org-info.js:197
+#: frontend/src/sys-admin/org/org-projects.js:37
+#: frontend/src/sys-admin/org/org-users.js:66
+#: frontend/src/sys-admin/orgs/search-orgs.js:124
+#: frontend/src/sys-admin/projects/search-projects.js:63
+#: frontend/src/sys-admin/user/user-group/index.js:62
+#: frontend/src/sys-admin/user/user-info.js:126
+#: frontend/src/sys-admin/user/user-projects/index.js:40
+#: frontend/src/sys-admin/users/users-table/index.js:57
+msgid "Name"
+msgstr "名称"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:64
+msgid "Invitation link has been copied to clipboard"
+msgstr "邀请链接已复制到剪贴板"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:79
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:96
+msgid "Invite members"
+msgstr "邀请成员"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:83
+msgid "Group invitation link"
+msgstr "群组邀请链接"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:95
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:257
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:202
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:203
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:202
+msgid "Copy link"
+msgstr "复制链接"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:101
+msgid "Delete link"
+msgstr "删除链接"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:105
+msgid ""
+"Users in your team can join the group via group invitation link. If the user "
+"has not registered yet, you should ask your team admin to add the user first."
+msgstr ""
+"团队中的用户可以通过群组邀请链接加入群组。如果用户尚未注册，您应该先请团队管"
+"理员添加该用户。"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:111
+msgid ""
+"No group invitation link yet. Group invitation link let registered users to "
+"join the group by clicking a link."
+msgstr "目前还没有群组邀请链接。群组邀请链接允许已注册用户点击链接加入群组。"
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:113
+msgid "Generate"
+msgstr "生成链接"
+
+#: frontend/src/home/dialog/group-members.js:31
+#: frontend/src/org-admin/group-members/index.js:68
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:148
+#: frontend/src/sys-admin/orgs/index.js:68
+#: frontend/src/sys-admin/orgs/orgs-content.js:59
+#: frontend/src/sys-admin/sys-popover/index.js:60
+#: frontend/src/sys-admin/user/user-group/index.js:63
+#: frontend/src/sys-admin/users/users-table/index.js:60
+msgid "Role"
+msgstr "用户角色"
+
+#: frontend/src/home/dialog/group-members.js:130
+#: frontend/src/org-admin/group-info/index.js:69
+#: frontend/src/org-admin/group-members/member.js:15
+#: frontend/src/org-admin/groups/index.js:123
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:73
+#: frontend/src/sys-admin/groups/groups-table/group.js:69
+#: frontend/src/sys-admin/groups/groups.js:68
+#: frontend/src/sys-admin/groups/search-groups.js:65
+msgid "Owner"
+msgstr "拥有者"
+
+#: frontend/src/home/dialog/group-trash-dialog/index.js:55
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:111
+#: frontend/src/home/mobile/group-trash-view/index.js:14
+#: frontend/src/org-admin/projects/index.js:60
+#: frontend/src/sys-admin/projects/project-nav.js:16
+msgid "Trash"
+msgstr "回收站"
+
+#: frontend/src/home/dialog/group-trash/group-trash-projects.js:19
+#: frontend/src/home/mobile/group-trash-view/index.js:34
+#: frontend/src/org-admin/projects/trash-projects.js:29
+msgid "No deleted projects"
+msgstr "没有已删除的项目"
+
+#: frontend/src/home/dialog/group-trash/group-trash-projects.js:25
+#: frontend/src/home/mobile/group-trash-view/index.js:22
+#: frontend/src/org-admin/projects/trash-projects.js:44
+msgid ""
+"Tip: projects deleted {expireDays} days ago will be cleaned automatically."
+msgstr "提示：项目在 {expireDays} 天前删除的内容将被自动清理。"
+
+#: frontend/src/home/dialog/group-trash/group-trash-projects.js:32
+#: frontend/src/home/mobile/group-trash-view/index.js:27
+#: frontend/src/org-admin/projects/trash-projects.js:36
+msgid "Deleted at"
+msgstr "删除时间"
+
+#: frontend/src/home/dialog/leave-group-dialog.js:25
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:108
+msgid "Leave group"
+msgstr "离开群组"
+
+#: frontend/src/home/dialog/leave-group-dialog.js:27
+msgid "Are you sure to leave group"
+msgstr "你确定要离开群组吗"
+
+#: frontend/src/home/dialog/list-and-add-group-members.js:140
+msgid "Add group member"
+msgstr "添加群组成员"
+
+#: frontend/src/home/dialog/list-and-add-group-members.js:166
+msgid "Search group members"
+msgstr "搜索群组成员"
+
+#: frontend/src/home/dialog/manage-members-dialog/index.js:29
+msgid "Manage group members"
+msgstr "管理群组成员"
+
+#: frontend/src/home/dialog/manage-members-dialog/index.js:42
+#: frontend/src/home/dialog/transfer-group-dialog.js:66
+#: frontend/src/project/main-panel/tickets/constants.js:44
+#: frontend/src/project/main-panel/tickets/constants.js:46
+msgid "Close"
+msgstr "关闭"
+
+#: frontend/src/home/dialog/rename-group-name-dialog.js:70
+msgid "Rename group"
+msgstr "重命名群组"
+
+#: frontend/src/home/dialog/rename-group-name-dialog.js:72
+msgid "Rename group to"
+msgstr "重命名群组为"
+
+#: frontend/src/home/dialog/transfer-group-dialog.js:52
+msgid "Transfer group"
+msgstr "转让群组"
+
+#: frontend/src/home/dialog/transfer-group-dialog.js:54
+msgid "Transfer group to"
+msgstr "转换群组给"
+
+#: frontend/src/home/dialog/workspace-member-dialog/index.js:69
+#: frontend/src/home/dialog/workspace-member-dialog/index.js:80
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:93
+msgid "Group members"
+msgstr "群组成员"
+
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:87
+msgid "Add a blank project"
+msgstr "添加一个空项目"
+
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:90
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:59
+msgid "Rename"
+msgstr "重命名"
+
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:99
+msgid "Manage members"
+msgstr "管理成员"
+
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:102
+#: frontend/src/org-admin/groups/group.js:117
+#: frontend/src/sys-admin/groups/groups-table/group.js:37
+msgid "Transfer"
+msgstr "转让"
+
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:105
+#: frontend/src/home/workspace/index.js:512
+#: frontend/src/org-admin/groups/group.js:125
+#: frontend/src/sys-admin/groups/groups-table/group.js:174
+msgid "Delete group"
+msgstr "删除群组"
+
+#: frontend/src/home/header/index.js:119 frontend/src/home/header/index.js:120
+#: frontend/src/home/side-panel/index.js:200
+#: frontend/src/home/side-panel/index.js:201
+msgid "SeaSearch logo"
+msgstr "SeaSearch logo"
+
+#: frontend/src/home/main-panel/mb-main-panel/index.js:25
+#: frontend/src/home/side-panel/index.js:216
+#: frontend/src/home/side-panel/index.js:220
+#: frontend/src/org-admin/group-nav.js:18
+#: frontend/src/org-admin/projects/index.js:57
+#: frontend/src/org-admin/projects/search-projects.js:57
+#: frontend/src/sys-admin/group/group-nav.js:20
+#: frontend/src/sys-admin/groups/search-groups.js:58
+#: frontend/src/sys-admin/org/org-nav.js:25
+#: frontend/src/sys-admin/projects/project-nav.js:15
+#: frontend/src/sys-admin/projects/search-projects.js:57
+#: frontend/src/sys-admin/user/user-nav.js:20
+msgid "Projects"
+msgstr "项目"
+
+#: frontend/src/home/main-panel/mb-main-panel/index.js:31
+#: frontend/src/home/mobile/mobile-header.js:10
+msgid "Mine"
+msgstr "我的"
+
+#: frontend/src/home/main-panel/mb-main-panel/index.js:71
+#: frontend/src/home/main-panel/pc-main-panel/index.js:47
+#: frontend/src/home/side-panel/index.js:74
+#: frontend/src/org-admin/group-info/index.js:43
+#: frontend/src/org-admin/group-members/index.js:43
+#: frontend/src/org-admin/user-profile/index.js:46
+#: frontend/src/org-admin/users/search-users.js:76
+#: frontend/src/org-admin/users/user.js:108
+#: frontend/src/profile-settings/session-logs/index.js:288
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:104
+#: frontend/src/sys-admin/group/group-members.js:225
+#: frontend/src/sys-admin/info/index.js:44
+#: frontend/src/sys-admin/org/org-info.js:173
+#: frontend/src/sys-admin/orgs/index.js:316
+#: frontend/src/sys-admin/orgs/search-orgs.js:57
+#: frontend/src/sys-admin/user/user-info.js:249 frontend/src/utils/utils.js:184
+msgid "Error"
+msgstr "错误"
+
+#: frontend/src/home/main-panel/mb-main-panel/index.js:75
+#: frontend/src/home/main-panel/pc-main-panel/index.js:51
+#: frontend/src/home/side-panel/index.js:76
+#: frontend/src/org-admin/group-info/index.js:49
+#: frontend/src/org-admin/group-members/index.js:49
+#: frontend/src/org-admin/user-profile/index.js:52
+#: frontend/src/org-admin/users/search-users.js:82
+#: frontend/src/profile-settings/session-logs/index.js:294
+#: frontend/src/sys-admin/group/group-members.js:231
+#: frontend/src/sys-admin/info/index.js:50
+#: frontend/src/sys-admin/org/org-info.js:179
+#: frontend/src/sys-admin/orgs/index.js:322
+#: frontend/src/sys-admin/orgs/search-orgs.js:63
+#: frontend/src/sys-admin/user/user-info.js:255
+#: frontend/src/sys-admin/users/users.js:86 frontend/src/utils/utils.js:190
+msgid "Please check the network."
+msgstr "请检查网络是否已连接。"
+
+#: frontend/src/home/main-panel/pc-main-panel/index.js:97
+msgid "Main panel"
+msgstr "主面板"
+
+#: frontend/src/home/mobile/mobile-mine/index.js:58
+#: frontend/src/org-admin/user-profile/user-info.js:50
+#: frontend/src/project/components/account/index.js:40
+#: frontend/src/project/components/account/index.js:41
+#: frontend/src/sys-admin/user/user-info.js:105
+msgid "Avatar"
+msgstr "头像"
+
+#: frontend/src/home/mobile/rename-project-view.js:114
+msgid "Change name and icon"
+msgstr "更改名称和图标"
+
+#: frontend/src/home/mobile/rename-project-view.js:116
+msgid "Done"
+msgstr "完成"
+
+#: frontend/src/home/mobile/rename-project-view.js:124
+msgid "Choose icon and color"
+msgstr "选择图标和颜色"
+
+#: frontend/src/home/popover/project-setting-popover/index.js:54
+msgid "Enter project name"
+msgstr "输入项目名称"
+
+#: frontend/src/home/popover/project-setting-popover/index.js:55
+msgid "Enter a description of the project name"
+msgstr "输入项目名称的描述"
+
+#: frontend/src/home/popover/project-setting-popover/index.js:78
+#: frontend/src/home/popover/project-setting-popover/index.js:79
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:119
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:137
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:119
+msgid "Color"
+msgstr "颜色"
+
+#: frontend/src/home/popover/project-setting-popover/index.js:107
+#: frontend/src/home/popover/project-setting-popover/index.js:108
+msgid "Icon"
+msgstr "图标"
+
+#: frontend/src/home/search/project-searcher/index.js:141
+#: frontend/src/home/search/project-searcher/index.js:183
+#: frontend/src/home/search/search-project.js:199
+msgid "No results matching"
+msgstr "没有匹配的结果"
+
+#: frontend/src/home/search/project-searcher/index.js:148
+msgid "Search results visited recently"
+msgstr "最近访问的搜索结果"
+
+#: frontend/src/home/search/project-searcher/index.js:169
+msgid "Type characters to start search"
+msgstr "输入字符开始搜索"
+
+#: frontend/src/home/search/project-searcher/index.js:176
+msgid "Type more characters to start search"
+msgstr "输入更多字符开始搜索"
+
+#: frontend/src/home/search/project-searcher/index.js:209
+#: frontend/src/project/constants/bar.js:13
+#: frontend/src/project/main-panel/search/index.js:143
+#: frontend/src/sea-metadata/components/searcher/index.js:60
+msgid "Search"
+msgstr "搜索"
+
+#: frontend/src/home/search/search-result-item.js:23
+#: frontend/src/home/side-panel/index.js:159
+#: frontend/src/home/workspace/header.js:34
+msgid "My projects"
+msgstr "我的项目"
+
+#: frontend/src/home/side-panel/index.js:188
+msgid "Side panel"
+msgstr "侧边栏"
+
+#: frontend/src/home/side-panel/index.js:208
+msgid "Workspace"
+msgstr "工作区"
+
+#: frontend/src/home/side-panel/index.js:224
+msgid "Expand all workspaces"
+msgstr "展开所有工作区"
+
+#: frontend/src/home/workspace/body/project-item-popover/index.js:50
+msgid "Edit name and icon"
+msgstr "编辑名称和图标"
+
+#: frontend/src/home/workspace/body/virtual-project.js:25
+msgid "Untitled project"
+msgstr "未命名的项目"
+
+#: frontend/src/home/workspace/index.js:233
+msgid "Internal Server Error."
+msgstr "服务器内部错误"
+
+#: frontend/src/home/workspace/index.js:333
+msgid "Cannot delete group with projects"
+msgstr "无法删除包含项目的群组"
+
+#: frontend/src/home/workspace/index.js:337
+msgid "Group deleted"
+msgstr "群组已删除"
+
+#: frontend/src/home/workspace/index.js:347
+msgid "You have left the group"
+msgstr "你已离开群组"
+
+#: frontend/src/home/workspace/index.js:513
+msgid "Are you sure you want to delete group {placeholder} ?"
+msgstr "确定要删除群组 {placeholder} 吗？"
+
+#: frontend/src/org-admin/constants.js:15
+#: frontend/src/org-admin/info/index.js:60
+#: frontend/src/org-admin/settings/index.js:92
+#: frontend/src/sys-admin/constants.js:16
+#: frontend/src/sys-admin/info/index.js:122
+#: frontend/src/sys-admin/org/org-nav.js:21
+#: frontend/src/sys-admin/user/user-nav.js:18
+msgid "Info"
+msgstr "信息"
+
+#: frontend/src/org-admin/constants.js:43
+#: frontend/src/sys-admin/constants.js:37
+#: frontend/src/sys-admin/group/group-title/index.js:11
+#: frontend/src/sys-admin/groups/groups.js:63
+#: frontend/src/sys-admin/info/index.js:170
+#: frontend/src/sys-admin/org/org-nav.js:24
+#: frontend/src/sys-admin/user/user-nav.js:19
+msgid "Groups"
+msgstr "群组"
+
+#: frontend/src/org-admin/group-nav.js:21
+#: frontend/src/sys-admin/group/group-nav.js:21
+#: frontend/src/sys-admin/org/org-nav.js:22
+msgid "Members"
+msgstr "成员"
+
+#: frontend/src/org-admin/group-projects/index.js:33
+#: frontend/src/org-admin/groups/index.js:125
+#: frontend/src/org-admin/projects/index.js:73
+#: frontend/src/org-admin/projects/search-projects.js:66
+#: frontend/src/project/main-panel/connections/constants.js:395
+#: frontend/src/sys-admin/group/group-projects.js:34
+#: frontend/src/sys-admin/groups/groups.js:70
+#: frontend/src/sys-admin/groups/search-groups.js:67
+#: frontend/src/sys-admin/org/org-admin-users.js:32
+#: frontend/src/sys-admin/org/org-groups.js:37
+#: frontend/src/sys-admin/org/org-projects.js:40
+#: frontend/src/sys-admin/org/org-users.js:69
+#: frontend/src/sys-admin/orgs/index.js:70
+#: frontend/src/sys-admin/projects/search-projects.js:66
+#: frontend/src/sys-admin/user/user-group/index.js:65
+#: frontend/src/sys-admin/user/user-projects/index.js:43
+#: frontend/src/sys-admin/users/users-table/index.js:62
+msgid "Created at"
+msgstr "创建于"
+
+#: frontend/src/org-admin/groups/group.js:126
+msgid "Are you sure you want to delete {group} ?"
+msgstr "确定要删除 {group} 吗？"
+
+#: frontend/src/org-admin/groups/index.js:118
+msgid "All groups"
+msgstr "所有群组"
+
+#: frontend/src/org-admin/groups/index.js:124
+msgid "Size"
+msgstr "大小"
+
+#: frontend/src/org-admin/groups/index.js:126
+msgid "Operations"
+msgstr "操作"
+
+#: frontend/src/org-admin/groups/transfer-dialog.js:32
+#: frontend/src/sys-admin/dialog/sysadmin-group-transfer-dialog.js:44
+msgid "Transfer group {name} to"
+msgstr "转移群组 {name} 给"
+
+#: frontend/src/org-admin/groups/transfer-dialog.js:43
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:79
+#: frontend/src/sys-admin/dialog/sysadmin-group-add-member-dialog.js:46
+#: frontend/src/sys-admin/dialog/sysadmin-group-transfer-dialog.js:56
+msgid "Select a user"
+msgstr "选择一个用户"
+
+#: frontend/src/org-admin/info/index.js:62
+#: frontend/src/org-admin/settings/index.js:95
+msgid "Team name"
+msgstr "团队名称"
+
+#: frontend/src/org-admin/info/index.js:67
+msgid "Active users"
+msgstr "活跃用户"
+
+#: frontend/src/org-admin/info/index.js:68
+#: frontend/src/sys-admin/info/index.js:161
+#: frontend/src/sys-admin/info/index.js:165
+msgid "Total users"
+msgstr "总用户数"
+
+#: frontend/src/org-admin/info/index.js:69
+#: frontend/src/sys-admin/info/index.js:161
+msgid "Limits"
+msgstr "用户数限制"
+
+#: frontend/src/org-admin/info/index.js:74
+msgid "API calls count this month"
+msgstr "本月 API 调用次数"
+
+#: frontend/src/org-admin/projects/index.js:36
+#: frontend/src/org-admin/projects/search-projects.js:74
+#: frontend/src/sys-admin/projects/all-projects.js:13
+#: frontend/src/sys-admin/projects/search-projects.js:74
+msgid "Search projects"
+msgstr "搜索项目"
+
+#: frontend/src/org-admin/projects/search-projects.js:91
+#: frontend/src/org-admin/users/search-users.js:168
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:173
+#: frontend/src/sys-admin/groups/search-groups.js:94
+#: frontend/src/sys-admin/orgs/search-orgs.js:143
+#: frontend/src/sys-admin/projects/search-projects.js:91
+#: frontend/src/sys-admin/users/search-users.js:169
+msgid "Result"
+msgstr "结果"
+
+#: frontend/src/org-admin/projects/trash-projects.js:16
+msgid "Trash cleaned"
+msgstr "回收站已清空"
+
+#: frontend/src/org-admin/saml/index.js:66
+msgid "SAML updated"
+msgstr "SAML 已更新"
+
+#: frontend/src/org-admin/saml/index.js:77
+msgid "Domain verified"
+msgstr "域名已验证"
+
+#: frontend/src/org-admin/saml/index.js:86
+msgid "Copied"
+msgstr "已复制"
+
+#: frontend/src/org-admin/saml/index.js:98
+msgid "SAML configuration"
+msgstr "SAML 配置"
+
+#: frontend/src/org-admin/saml/index.js:103
+msgid "Configure your Identity Provider"
+msgstr "配置你的身份提供商"
+
+#: frontend/src/org-admin/saml/index.js:104
+msgid "Use these values to configure your Identity Provider"
+msgstr "使用这些值来配置你的身份提供商"
+
+#: frontend/src/org-admin/saml/index.js:113
+#: frontend/src/org-admin/saml/index.js:125
+#: frontend/src/org-admin/saml/index.js:137
+#: frontend/src/org-admin/saml/index.js:149
+#: frontend/src/org-admin/saml/index.js:195
+msgid "Copy"
+msgstr "复制"
+
+#: frontend/src/org-admin/saml/index.js:156
+msgid "Configure SeaSearch"
+msgstr "配置 SeaSearch"
+
+#: frontend/src/org-admin/saml/index.js:157
+msgid "Use information from your Identity Provider to configure SeaSearch"
+msgstr "使用来自身份提供商的信息来配置 SeaSearch"
+
+#: frontend/src/org-admin/saml/index.js:170
+msgid "Certificate"
+msgstr "证书"
+
+#: frontend/src/org-admin/saml/index.js:176
+msgid "Verify Domain"
+msgstr "验证域名"
+
+#: frontend/src/org-admin/saml/index.js:177
+msgid "Create a DNS TXT record to confirm the ownership of your Email Domain."
+msgstr "创建 DNS TXT 记录以确认你的邮件域名的所有权。"
+
+#: frontend/src/org-admin/saml/index.js:183
+msgid "Email Domain"
+msgstr "电子邮件域名"
+
+#: frontend/src/org-admin/saml/index.js:189
+msgid "DNS TXT Value"
+msgstr "DNS TXT 记录值"
+
+#: frontend/src/org-admin/saml/index.js:200
+msgid ""
+"Copy the domain DNS TXT and add it to your domain's DNS records, then click "
+"the button to verify domain ownership. You must verify the ownership of "
+"domain before Single Sign-On."
+msgstr ""
+"复制域 DNS TXT 并将其添加到域的 DNS 记录中，然后单击按钮验证域所有权。你必须"
+"在单点登录前验证域的所有权。"
+
+#: frontend/src/org-admin/saml/index.js:206
+msgid "Verify"
+msgstr "验证"
+
+#: frontend/src/org-admin/saml/input-item.js:73
+msgid "Verified"
+msgstr "已验证"
+
+#: frontend/src/org-admin/saml/input-item.js:78
+msgid ""
+"Copy the IdP's certificate and paste it here. The certificate format is as "
+"follows:"
+msgstr "复制 IdP 的证书并将其粘贴到此处。证书格式如下："
+
+#: frontend/src/org-admin/settings/index.js:88
+#: frontend/src/project/constants/bar.js:16
+msgid "Settings"
+msgstr "设置"
+
+#: frontend/src/org-admin/settings/index.js:103
+msgid "Two factor authentication"
+msgstr "两步验证"
+
+#: frontend/src/org-admin/settings/index.js:106
+#: frontend/src/org-admin/settings/index.js:109
+msgid "Enable force two factor authentication"
+msgstr "启用强制两步验证"
+
+#: frontend/src/org-admin/settings/index.js:113
+msgid "User management"
+msgstr "用户管理"
+
+#: frontend/src/org-admin/settings/index.js:116
+#: frontend/src/org-admin/settings/index.js:119
+msgid "Enable sending email on adding users"
+msgstr "启用添加用户时发送邮件"
+
+#: frontend/src/org-admin/settings/index.js:123
+#: frontend/src/org-admin/settings/index.js:126
+msgid "Enable members modify their own name"
+msgstr "允许成员修改他们自己的名字"
+
+#: frontend/src/org-admin/user-profile/index.js:103
+#: frontend/src/profile-settings/index.js:48
+msgid "Profile"
+msgstr "个人信息"
+
+#: frontend/src/org-admin/user-profile/set-user-contact-email.js:58
+msgid "Set user contact email"
+msgstr "设置用户的联系邮箱"
+
+#: frontend/src/org-admin/user-profile/set-user-name.js:60
+msgid "Set user name"
+msgstr "设置用户名称"
+
+#: frontend/src/org-admin/user-profile/user-info.js:61
+#: frontend/src/profile-settings/bind-contact-email.js:50
+#: frontend/src/profile-settings/index.js:49
+#: frontend/src/sys-admin/org/org-admin-users.js:29
+#: frontend/src/sys-admin/org/org-users.js:66
+#: frontend/src/sys-admin/user/user-info.js:137
+#: frontend/src/sys-admin/users/users-table/index.js:57
+msgid "Contact email"
+msgstr "联系邮箱"
+
+#: frontend/src/org-admin/user-profile/user-info.js:71
+#: frontend/src/profile-settings/index.js:55
+#: frontend/src/profile-settings/two-factor-auth.js:48
+#: frontend/src/sys-admin/user/user-info.js:166
+msgid "Two-Factor Authentication"
+msgstr "两步验证"
+
+#: frontend/src/org-admin/user-profile/user-info.js:75
+#: frontend/src/sys-admin/user/user-info.js:170
+msgid "Enabled"
+msgstr "启用"
+
+#: frontend/src/org-admin/user-profile/user-info.js:76
+#: frontend/src/org-admin/user-profile/user-info.js:80
+#: frontend/src/profile-settings/two-factor-auth.js:20
+#: frontend/src/sys-admin/user/user-info.js:171
+#: frontend/src/sys-admin/user/user-info.js:175
+msgid "Disable Two-Factor Authentication"
+msgstr "关闭两步验证"
+
+#: frontend/src/org-admin/user-profile/user-info.js:79
+#: frontend/src/sys-admin/user/user-info.js:174
+msgid "Disabled"
+msgstr "关闭"
+
+#: frontend/src/org-admin/user-profile/user-info.js:86
+#: frontend/src/sys-admin/user/user-info.js:181
+msgid "Force Two-Factor Authentication"
+msgstr "强制两步验证"
+
+#: frontend/src/org-admin/users/add-admin-dialog.js:46
+#: frontend/src/org-admin/users/index.js:185
+#: frontend/src/org-admin/users/index.js:186
+#: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:41
+#: frontend/src/sys-admin/users/users.js:133
+#: frontend/src/sys-admin/users/users.js:148
+msgid "Add admin"
+msgstr "添加管理员"
+
+#: frontend/src/org-admin/users/add-admin-dialog.js:51
+msgid "Select a user as admin"
+msgstr "选择一个用户作为管理员"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:70
+msgid "Email is required"
+msgstr "请输入邮箱"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:84
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:98
+msgid "Please enter password"
+msgstr "请输入密码"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:89
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:26
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:31
+msgid "Please enter the password again"
+msgstr "请再次输入密码"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:94
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:102
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:30
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:35
+msgid "Passwords don't match"
+msgstr "两次输入的密码不一致"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:105
+#: frontend/src/org-admin/users/index.js:197
+#: frontend/src/org-admin/users/index.js:198
+#: frontend/src/sys-admin/users/users.js:140
+#: frontend/src/sys-admin/users/users.js:153
+#: frontend/src/sys-admin/users/users.js:200
+msgid "Add user"
+msgstr "添加用户"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:113
+msgid "User name"
+msgstr "用户名"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:117
+#: frontend/src/profile-settings/index.js:50
+#: frontend/src/profile-settings/index.js:161
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:57
+#: frontend/src/project/main-panel/connections/constants.js:112
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:127
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:166
+msgid "Password"
+msgstr "密码"
+
+#: frontend/src/org-admin/users/add-user-dialog.js:127
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:159
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:61
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:71
+msgid "Confirm password"
+msgstr "确认密码"
+
+#: frontend/src/org-admin/users/admins/index.js:17
+#: frontend/src/org-admin/users/users.js:16
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:32
+#: frontend/src/project/main-panel/tickets/constants.js:177
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/status-filter.js:28
+#: frontend/src/sys-admin/org/org-admin-users.js:30
+#: frontend/src/sys-admin/org/org-users.js:67
+#: frontend/src/sys-admin/users/users-table/index.js:58
+msgid "Status"
+msgstr "状态"
+
+#: frontend/src/org-admin/users/admins/index.js:18
+#: frontend/src/org-admin/users/users.js:17
+msgid "Create at / Last login"
+msgstr "创建于/最后登录"
+
+#: frontend/src/org-admin/users/index.js:69
+#: frontend/src/sys-admin/group/group-members.js:246
+#, javascript-format
+msgid "%s added"
+msgstr "%s 已添加"
+
+#: frontend/src/org-admin/users/index.js:69
+#, javascript-format
+msgid "User %s"
+msgstr "用户 %s"
+
+#: frontend/src/org-admin/users/index.js:73
+#: frontend/src/org-admin/users/user.js:105
+msgid "The number of users exceeds the limit of your current plan."
+msgstr "用户数量超出了你当前计划的限制。"
+
+#: frontend/src/org-admin/users/index.js:126
+#, javascript-format
+msgid "Admin permission of user %s revoked"
+msgstr "撤销 %s 的管理权限"
+
+#: frontend/src/org-admin/users/index.js:140
+#, javascript-format
+msgid "%s has been added as admin"
+msgstr "%s 已被添加为管理员"
+
+#: frontend/src/org-admin/users/index.js:212
+#: frontend/src/project/main-panel/connections/view/connection/index.js:212
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:27
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:40
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:27
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:48
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:26
+#: frontend/src/project/main-panel/tickets/view/types/index.js:40
+msgid "All"
+msgstr "全部"
+
+#: frontend/src/org-admin/users/search-users.js:111
+#: frontend/src/sys-admin/users/search-users.js:28
+#: frontend/src/sys-admin/users/users-table/index.js:116
+#: frontend/src/sys-admin/users/users.js:98
+msgid "1 user"
+msgstr "1个用户"
+
+#: frontend/src/org-admin/users/search-users.js:124
+#: frontend/src/sys-admin/users/users-table/index.js:12
+#: frontend/src/translation.js:4
+msgid "No users"
+msgstr "没有用户"
+
+#: frontend/src/org-admin/users/search-users.js:147
+#: frontend/src/sys-admin/constants.js:30
+#: frontend/src/sys-admin/user/user-title/index.js:11
+#: frontend/src/sys-admin/users/search-users.js:142
+msgid "Users"
+msgstr "用户"
+
+#: frontend/src/org-admin/users/user.js:57
+msgid "Resetting user's password, please wait for a moment."
+msgstr "重置用户密码，请稍等。"
+
+#: frontend/src/org-admin/users/user.js:60
+msgid "Successfully reset password to %(passwd)s for user %(user)s"
+msgstr "用户 %(user)s 的密码已重置为 %(passwd)s"
+
+#: frontend/src/org-admin/users/user.js:109
+msgid "Failed to update the permission"
+msgstr "权限更新失败"
+
+#: frontend/src/org-admin/users/user.js:193
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:134
+#: frontend/src/sys-admin/users/users-table/user.js:48
+#: frontend/src/sys-admin/users/users-table/user.js:269
+msgid "Reset password"
+msgstr "重置密码"
+
+#: frontend/src/org-admin/users/user.js:197
+#: frontend/src/sys-admin/users/users-table/user.js:66
+#: frontend/src/sys-admin/users/users-table/user.js:288
+msgid "Revoke admin"
+msgstr "取消管理员"
+
+#: frontend/src/org-admin/users/user.js:211
+#: frontend/src/sys-admin/users/users-table/user.js:258
+msgid "Delete user"
+msgstr "删除用户"
+
+#: frontend/src/org-admin/users/user.js:212
+msgid "Are you sure you want to delete {user} ?"
+msgstr "确定要删除 {user} 吗？"
+
+#: frontend/src/org-admin/users/user.js:220
+#: frontend/src/sys-admin/users/users-table/user.js:279
+msgid "Set user inactive"
+msgstr "设置用户非活动状态"
+
+#: frontend/src/org-admin/users/user.js:221
+msgid "Are you sure you want to set xxx inactive?"
+msgstr "确定要将 xxx 设置为非活动状态吗？"
+
+#: frontend/src/org-admin/users/user.js:224
+#: frontend/src/profile-settings/index.js:165
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:71
+#: frontend/src/sys-admin/users/users-table/user.js:283
+msgid "Set"
+msgstr "设置"
+
+#: frontend/src/profile-settings/bind-contact-email.js:28
+msgid ""
+"An email has been sent to the new email address. Please click the "
+"confirmation link in the email."
+msgstr "邮件已发送到新的邮箱地址。请点击邮件中的确认链接。"
+
+#: frontend/src/profile-settings/bind-contact-email.js:42
+#: frontend/src/profile-settings/index.js:168
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:81
+#: frontend/src/profile-settings/webdav-password.js:60
+msgid "Update"
+msgstr "更新"
+
+#: frontend/src/profile-settings/bind-contact-email.js:44
+msgid "You have not bound an email address"
+msgstr "你尚未绑定邮件地址"
+
+#: frontend/src/profile-settings/bind-contact-email.js:45
+msgid "Bind"
+msgstr "绑定"
+
+#: frontend/src/profile-settings/bind-phone.js:49
+#: frontend/src/profile-settings/bind-phone.js:89
+#: frontend/src/profile-settings/bind-phone.js:184
+#: frontend/src/profile-settings/bind-phone.js:201
+msgid "Send verify code"
+msgstr "发送验证码"
+
+#: frontend/src/profile-settings/bind-phone.js:82
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:52
+msgid "Resend after {count}s"
+msgstr "{count}秒后重新发送"
+
+#: frontend/src/profile-settings/bind-phone.js:108
+msgid "Verify code has been sent."
+msgstr "验证码已发送。"
+
+#: frontend/src/profile-settings/bind-phone.js:120
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:81
+msgid "Send code too often, please send later."
+msgstr "发送验证码的次数过多，请稍后发送。"
+
+#: frontend/src/profile-settings/bind-phone.js:131
+msgid "Phone number is invalid."
+msgstr "电话号码无效。"
+
+#: frontend/src/profile-settings/bind-phone.js:143
+msgid "Phone number has been bound successfully."
+msgstr "电话号码已成功绑定。"
+
+#: frontend/src/profile-settings/bind-phone.js:167
+#: frontend/src/profile-settings/bind-phone.js:225
+msgid "Phone number or code is invalid."
+msgstr "电话号码或验证码无效。"
+
+#: frontend/src/profile-settings/bind-phone.js:180
+msgid "No other login method is set, the phone number cannot be unbound"
+msgstr "未设置其他登录方式，手机号无法解绑"
+
+#: frontend/src/profile-settings/bind-phone.js:200
+msgid "Phone number has been unbound successfully."
+msgstr "电话号码已解绑成功。"
+
+#: frontend/src/profile-settings/bind-phone.js:240
+#: frontend/src/profile-settings/bind-phone.js:292
+#: frontend/src/profile-settings/index.js:51
+msgid "Bind phone number"
+msgstr "绑定电话号码"
+
+#: frontend/src/profile-settings/bind-phone.js:281
+#: frontend/src/profile-settings/bind-phone.js:287
+msgid "Unbind phone number"
+msgstr "解绑电话号码"
+
+#: frontend/src/profile-settings/delete-account.js:37
+#: frontend/src/profile-settings/user-convert-to-team.js:33
+msgid "This operation will not be reverted. Please think twice!"
+msgstr "该操作将不可撤销。请三思！"
+
+#: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:21
+msgid "Converted to team account"
+msgstr "转换为团队账号"
+
+#: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:33
+#: frontend/src/profile-settings/user-convert-to-team.js:32
+msgid "Convert to team account"
+msgstr "转换为团队账号"
+
+#: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:35
+msgid "Do you really want to convert to team account?"
+msgstr "你确实想转换为团队账号吗？"
+
+#: frontend/src/profile-settings/email-notice.js:18
+#: frontend/src/profile-settings/email-notice.js:23
+msgid "Don't send"
+msgstr "不要发送"
+
+#: frontend/src/profile-settings/email-notice.js:19
+msgid "Per day"
+msgstr "每天"
+
+#: frontend/src/profile-settings/email-notice.js:20
+msgid "Per week"
+msgstr "每周"
+
+#: frontend/src/profile-settings/email-notice.js:24
+msgid "Per hour"
+msgstr "每小时"
+
+#: frontend/src/profile-settings/email-notice.js:24
+msgid ""
+"If notifications aren't read within the hour, they will be sent to your "
+"mailbox"
+msgstr "如果通知在一小时内未被读取，它们将被发送到你的邮箱"
+
+#: frontend/src/profile-settings/email-notice.js:53
+msgid "Email notification updated"
+msgstr "邮箱通知已更新"
+
+#: frontend/src/profile-settings/email-notice.js:64
+#: frontend/src/profile-settings/index.js:54
+msgid "Email notification"
+msgstr "邮件通知"
+
+#: frontend/src/profile-settings/email-notice.js:65
+msgid "Notifications of collaboration"
+msgstr "协作通知"
+
+#: frontend/src/profile-settings/email-notice.js:66
+msgid ""
+"Do you want a summary of all notifications of collaboration to be sent to "
+"you by email?"
+msgstr "是否希望通过邮件，向你发送所有协作通知的摘要？"
+
+#: frontend/src/profile-settings/index.js:52
+#: frontend/src/profile-settings/update-webdav-password.js:37
+#: frontend/src/profile-settings/webdav-password.js:52
+msgid "WebDav password"
+msgstr "WebDav 密码"
+
+#: frontend/src/profile-settings/index.js:53
+msgid "Language"
+msgstr "语言"
+
+#: frontend/src/profile-settings/index.js:56
+msgid "Social login"
+msgstr "社交账号登录"
+
+#: frontend/src/profile-settings/index.js:59
+#: frontend/src/profile-settings/index.js:192
+msgid "Session logs"
+msgstr "会话日志"
+
+#: frontend/src/profile-settings/index.js:89
+msgid "User info updated"
+msgstr "用户信息已更新"
+
+#: frontend/src/profile-settings/index.js:154
+msgid "Profile setting"
+msgstr "个人信息设置"
+
+#: frontend/src/profile-settings/index.js:164
+msgid ""
+"You have not set a password yet. Setting a password and binding a phone "
+"number or an email will enable you to login via phone number or email."
+msgstr ""
+"你还没有设置密码。设置密码并绑定电话号码或邮件，你就可以通过电话号码或邮件进"
+"行登录。"
+
+#: frontend/src/profile-settings/index.js:173
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:167
+#: frontend/src/sys-admin/users/users-table/user.js:272
+msgid "Reset"
+msgstr "重置"
+
+#: frontend/src/profile-settings/language-setting.js:26
+msgid "Language setting"
+msgstr "语言设置"
+
+#: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:17
+msgid "Password removed"
+msgstr "密码已移除"
+
+#: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:28
+msgid "Remove password"
+msgstr "删除密码"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:25
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:59
+msgid "Send verification code"
+msgstr "发送验证码"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:94
+msgid "Verification code invalid."
+msgstr "验证码无效。"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:106
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:34
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:42
+msgid "Password strength should be strong or very strong"
+msgstr "密码强度应该强或非常强"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:138
+msgid "Phone number"
+msgstr "电话号码"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:142
+msgid "Verification code"
+msgstr "验证码"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:148
+msgid "Enter verification code"
+msgstr "输入验证码"
+
+#: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:155
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:67
+msgid "New password"
+msgstr "新密码"
+
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:22
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:27
+msgid "Password cannot be blank"
+msgstr "密码不能为空"
+
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:41
+msgid "Password set"
+msgstr "密码已设置"
+
+#: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:53
+#: frontend/src/profile-settings/webdav-password.js:63
+msgid "Set password"
+msgstr "设置密码"
+
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:23
+msgid "Current password cannot be blank"
+msgstr "当前密码不能为空"
+
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:39
+msgid "New password cannot be the same as old password"
+msgstr "新密码不能与旧密码相同"
+
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:48
+#: frontend/src/profile-settings/webdav-password.js:33
+msgid "Password updated"
+msgstr "密码已更新"
+
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:59
+msgid "Update password"
+msgstr "更新密码"
+
+#: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:63
+msgid "Current password"
+msgstr "当前密码"
+
+#: frontend/src/profile-settings/session-logs/index.js:81
+#, javascript-format
+msgid "%s logged out"
+msgstr "%s 已退出"
+
+#: frontend/src/profile-settings/session-logs/index.js:94
+msgid "Deleted 1 item."
+msgstr "已删除 1 项。"
+
+#: frontend/src/profile-settings/session-logs/index.js:166
+msgid "Are you sure to log out {user}?"
+msgstr "确定要退出 {user} 吗"
+
+#: frontend/src/profile-settings/social-login.js:51
+msgid "SSO"
+msgstr "SSO"
+
+#: frontend/src/profile-settings/social-login.js:57
+msgid "Connect"
+msgstr "连接"
+
+#: frontend/src/profile-settings/two-factor-auth.js:18
+msgid "Status: enabled"
+msgstr "状态：已启用"
+
+#: frontend/src/profile-settings/two-factor-auth.js:23
+msgid ""
+"If you don't have any device with you, you can access your account using "
+"backup codes."
+msgstr "如果你身边没有设备，可以通过备用验证码来登录账号。"
+
+#: frontend/src/profile-settings/two-factor-auth.js:24
+msgid "You have only one backup code remaining."
+msgstr "你只有一个备用验证码。"
+
+#: frontend/src/profile-settings/two-factor-auth.js:25
+msgid "You have {num} backup codes remaining."
+msgstr "你还剩余 {num} 个备用验证码。"
+
+#: frontend/src/profile-settings/two-factor-auth.js:28
+msgid "Show codes"
+msgstr "显示验证码"
+
+#: frontend/src/profile-settings/two-factor-auth.js:37
+msgid ""
+"Two-factor authentication is not enabled for your account. Enable two-factor "
+"authentication for enhanced account security."
+msgstr "你的账号并未开启两步验证，请开启两步验证增加账号安全性。"
+
+#: frontend/src/profile-settings/two-factor-auth.js:39
+msgid "Enable Two-Factor Authentication"
+msgstr "开启两步验证"
+
+#: frontend/src/profile-settings/user-avatar-form.js:34
+msgid "Please choose an image file."
+msgstr "两步验证"
+
+#: frontend/src/profile-settings/user-avatar-form.js:43
+msgid "File extensions can only be {placeholder}."
+msgstr " 文件扩展名只能是 {placeholder}。"
+
+#: frontend/src/profile-settings/user-avatar-form.js:51
+msgid "The file is too large. Allowed maximum size is 1MB."
+msgstr " 文件太大。不得超过 1MB。"
+
+#: frontend/src/profile-settings/user-avatar-form.js:61
+msgid "Avatar updated"
+msgstr "头像已更新"
+
+#: frontend/src/profile-settings/user-avatar-form.js:88
+msgid "Avatar:"
+msgstr "头像："
+
+#: frontend/src/profile-settings/webdav-password.js:56
+msgid "Password:"
+msgstr "密码："
+
+#: frontend/src/project/constants/bar.js:12
+msgid "Chat"
+msgstr "聊天"
+
+#: frontend/src/project/constants/bar.js:14
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:118
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:146
+msgid "Tickets"
+msgstr "Tickets"
+
+#: frontend/src/project/constants/bar.js:15
+#: frontend/src/project/main-panel/connections/components/top-bar/index.js:26
+msgid "Connections"
+msgstr "连接"
+
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/definition.js:66
+msgid "Updated"
+msgstr "更新于"
+
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/more-definition/index.js:63
+msgid "See context"
+msgstr "参考内容"
+
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/more-definition/index.js:70
+msgid "See more"
+msgstr "更多参考"
+
+#: frontend/src/project/main-panel/ask/chat-history/message-operations/index.js:20
+msgid "The content has been copied"
+msgstr "内容已复制"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/index.js:20
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:238
+msgid "Thought process"
+msgstr "思考过程"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:20
+msgid "Task step"
+msgstr "任务步骤"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:23
+msgid "System prompts"
+msgstr "系统提示"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:28
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:55
+msgid "User message"
+msgstr "用户消息"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:41
+msgid "Context"
+msgstr "内容"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:46
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:78
+#: frontend/src/project/main-panel/connections/constants.js:499
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:50
+#: frontend/src/sea-metadata/constants/column/icon.js:35
+msgid "Date"
+msgstr "日期"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:60
+msgid "Assistant response"
+msgstr "助手回复"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:63
+msgid "Answer"
+msgstr "回答"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:68
+msgid "Sources"
+msgstr "来源"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:77
+msgid "Response"
+msgstr "回复"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:100
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:200
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:207
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:214
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:223
+msgid "Action steps"
+msgstr "行动步骤"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:106
+msgid "Error type"
+msgstr "错误类型"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:107
+msgid "Error message"
+msgstr "错误消息"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:108
+msgid "Step output"
+msgstr "步骤输出"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:111
+msgid "Observation"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:116
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:178
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:192
+msgid "Statistics"
+msgstr "统计"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:118
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:180
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:198
+msgid "Input tokens"
+msgstr "输入 tokens"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:119
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:181
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:205
+msgid "Output tokens"
+msgstr "输出 tokens"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:120
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:182
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:212
+msgid "Total tokens"
+msgstr "总 tokens"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:121
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:183
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:221
+msgid "Time usage"
+msgstr "用时"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:127
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:155
+msgid "Step"
+msgstr "步"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:130
+msgid "Arguments"
+msgstr "参数"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:142
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:145
+msgid "Substep"
+msgstr "子步骤"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:170
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:201
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:208
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:215
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:224
+msgid "Answer generation"
+msgstr "答案生成"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:173
+msgid "Result reached max steps"
+msgstr "结果已达到最大步数"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:195
+msgid "Token usages"
+msgstr "Token 使用量"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:202
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:209
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:216
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:225
+msgid "Total"
+msgstr "总计"
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/process-details/index.js:63
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:10
+msgid "Empty"
+msgstr "空"
+
+#: frontend/src/project/main-panel/ask/chat/index.js:221
+msgid "How can I help you?"
+msgstr "我怎么帮你？"
+
+#: frontend/src/project/main-panel/ask/chat/index.js:223
+msgid ""
+"You can say \"Help solving the following issue: <issue description>\" to let "
+"AI solving the issue by searching knowledge bases."
+msgstr ""
+"你可以说“请帮忙解决以下问题：<问题描述>”，让AI通过搜索知识库来解决问题。"
+
+#: frontend/src/project/main-panel/ask/message-input/index.js:20
+msgid "What problem you want to solve?"
+msgstr "你想解决什么问题？"
+
+#: frontend/src/project/main-panel/ask/message-input/resolve-type/index.js:9
+msgid "Agent"
+msgstr "Agent"
+
+#: frontend/src/project/main-panel/ask/message-input/resolve-type/index.js:10
+msgid "Ask"
+msgstr "Ask"
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:50
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:145
+msgid "Ticket"
+msgstr "Ticket"
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:58
+msgid "Search ticket"
+msgstr "搜索 ticket"
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:59
+msgid "No tickets"
+msgstr "没有 tickets"
+
+#: frontend/src/project/main-panel/ask/sessions/index.js:15
+msgid "Histories"
+msgstr "历史"
+
+#: frontend/src/project/main-panel/ask/sessions/index.js:20
+msgid "No chats"
+msgstr "没有聊天"
+
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:71
+msgid "Chat name"
+msgstr "聊天名称"
+
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:79
+msgid "Delete chat"
+msgstr "删除聊天"
+
+#: frontend/src/project/main-panel/ask/sessions/session/index.js:80
+msgid "Are you sure you want to delete chat {placeholder} ?"
+msgstr "确定要删除聊天记录 {placeholder} 吗？"
+
+#: frontend/src/project/main-panel/ask/thinking/index.js:12
+msgid "Thinking..."
+msgstr "思考中..."
+
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:38
+msgid "Logs"
+msgstr "日志"
+
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:44
+msgid "Sync now"
+msgstr "立即同步"
+
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
+msgid "Deactivate"
+msgstr "停用"
+
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
+#: frontend/src/utils/role-status-utils.js:54
+msgid "Active"
+msgstr "激活"
+
+#: frontend/src/project/main-panel/connections/components/connection-config-editor/index.js:14
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:89
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:206
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:92
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:99
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:113
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:121
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:113
+msgid "Required"
+msgstr "必填项"
+
+#: frontend/src/project/main-panel/connections/components/connection-logs-dialog.js:28
+msgid "Connection logs"
+msgstr "连接日志"
+
+#: frontend/src/project/main-panel/connections/components/connection-logs-dialog.js:36
+msgid "No logs"
+msgstr "没有日志"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:30
+msgid "Connection status"
+msgstr "连接状态"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:36
+msgid "Total records"
+msgstr "总记录"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:37
+msgid "Last sync count"
+msgstr "上次同步数量"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:38
+msgid "Last sync status"
+msgstr "上次同步状态"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:39
+#: frontend/src/project/main-panel/connections/constants.js:456
+#: frontend/src/project/main-panel/connections/constants.js:503
+msgid "Last sync time"
+msgstr "上次同步时间"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:40
+msgid "Last indexed count"
+msgstr "上次索引数量"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:41
+msgid "Last index status"
+msgstr "上次索引状态"
+
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:42
+msgid "Last index time"
+msgstr "上次所以时间"
+
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:84
+msgid "Edit connection"
+msgstr "编辑连接"
+
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:88
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:205
+msgid "Connection name"
+msgstr "连接名称"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/constants.js:11
+msgid "Select connection type"
+msgstr "选择连接类型"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/constants.js:12
+msgid "Fill in connection details"
+msgstr "填写连接详情"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/constants.js:13
+msgid "Link to GitHub webhook"
+msgstr "GitHub webhook 链接"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/constants.js:14
+msgid "Link to Discourse webhook"
+msgstr "Discourse webhook 链接"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:176
+#: frontend/src/project/main-panel/connections/components/top-bar/index.js:44
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:149
+msgid "New connection"
+msgstr "新建连接"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:200
+msgid "Connection type"
+msgstr "连接类型"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:230
+msgid "Connection URL"
+msgstr "连接 URL"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:234
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:246
+#: frontend/src/project/main-panel/connections/constants.js:153
+msgid "Webhook secret (optional)"
+msgstr "Webhook 密钥（可选）"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:242
+msgid "Webhook URL"
+msgstr "Webhook URL"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:243
+msgid "Loading..."
+msgstr "加载中..."
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:255
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:264
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:273
+msgid "Previous"
+msgstr "上一步"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:256
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:257
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:265
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:266
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:274
+msgid "Next"
+msgstr "下一步"
+
+#: frontend/src/project/main-panel/connections/components/row-details-dialog/index.js:113
+msgid "Previous record"
+msgstr "上一条记录"
+
+#: frontend/src/project/main-panel/connections/components/row-details-dialog/index.js:120
+msgid "Next record"
+msgstr "下一条记录"
+
+#: frontend/src/project/main-panel/connections/constants.js:32
+msgid "Server provider"
+msgstr "服务提供商"
+
+#: frontend/src/project/main-panel/connections/constants.js:38
+msgid "General email provider"
+msgstr "通用电子邮件提供商"
+
+#: frontend/src/project/main-panel/connections/constants.js:41
+msgid ""
+"The authentication type for third-party accounts to log in to the email "
+"service provider. For most email service providers, you can use \"General "
+"Email Service Provider\", which is authenticated by username and password; "
+"for Gmail accounts, users can choose \"General Email Service Provider\" or "
+"\"Gmail\", the latter will authenticate Google accounts in OAuth2 mode; for "
+"MS365 mailbox users, only \"Outlook\" mode can be selected to authenticate "
+"accounts through OAuth2\""
+msgstr ""
+"第三方账号登录电子邮件服务提供商的身份验证类型。对于大多数电子邮件服务提供"
+"商，你可以使用“通用电子邮件服务提供商”，它通过用户名和密码进行身份验证；对于 "
+"Gmail 账号，用户可以选择“通用电子邮件服务提供商”或“ Gmail ”，后者将以 OAuth2 "
+"模式对谷歌账号进行身份验证；对于 MS365 邮箱用户，只能选择“ Outlook ”模式通过 "
+"OAuth2 对账号进行身份验证"
+
+#: frontend/src/project/main-panel/connections/constants.js:44
+msgid "\"From\" display name (optional)"
+msgstr "名称（可选）"
+
+#: frontend/src/project/main-panel/connections/constants.js:49
+msgid ""
+"The display name is an arbitrary description prepended to an email address. "
+"When a display name is used, the email address is enclosed in angle "
+"brackets. Example: 'Bill Smith <william.smith@example.com>'"
+msgstr ""
+"显示名称是附加在电子邮件地址前的任意描述。使用显示名称时，电子邮件地址将括在"
+"尖括号中。示例：比尔·史密斯<william.smith@example.com>'"
+
+#: frontend/src/project/main-panel/connections/constants.js:52
+msgid "\"From\" address (optional)"
+msgstr "地址（可选）"
+
+#: frontend/src/project/main-panel/connections/constants.js:57
+msgid ""
+"The address is the full email address of the sender. It need not be "
+"identical to the username of the account."
+msgstr "该地址是发件人的完整电子邮件地址。它不需要与账号的用户名相同。"
+
+#: frontend/src/project/main-panel/connections/constants.js:64
+msgid "SMTP host"
+msgstr "SMTP 主机"
+
+#: frontend/src/project/main-panel/connections/constants.js:71
+msgid "SMTP port"
+msgstr "SMTP 端口"
+
+#: frontend/src/project/main-panel/connections/constants.js:85
+msgid "IMAP host (optional)"
+msgstr "IMAP 主机（可选）"
+
+#: frontend/src/project/main-panel/connections/constants.js:92
+msgid "IMAP port"
+msgstr "IMAP 端口"
+
+#: frontend/src/project/main-panel/connections/constants.js:106
+#: frontend/src/sys-admin/user/user-info.js:116
+msgid "Username"
+msgstr "用户名"
+
+#: frontend/src/project/main-panel/connections/constants.js:121
+msgid "Only sync email sent within following number of years"
+msgstr "仅同步以下年内发送的电子邮件"
+
+#: frontend/src/project/main-panel/connections/constants.js:138
+msgid "Repository"
+msgstr "存储库"
+
+#: frontend/src/project/main-panel/connections/constants.js:143
+msgid "Your the URL of the repository, like https://github.com/haiwen/seafile"
+msgstr "您的存储库 URL，例如 https://github.com/haiwen/seafile"
+
+#: frontend/src/project/main-panel/connections/constants.js:146
+msgid "Access token"
+msgstr "访问令牌"
+
+#: frontend/src/project/main-panel/connections/constants.js:150
+msgid "Your personal access token in GitHub Developer Settings"
+msgstr "您在 GitHub 开发者设置中的个人访问令牌"
+
+#: frontend/src/project/main-panel/connections/constants.js:168
+#: frontend/src/project/main-panel/connections/constants.js:204
+#: frontend/src/project/main-panel/connections/constants.js:423
+#: frontend/src/sea-metadata/constants/column/icon.js:44
+msgid "URL"
+msgstr "URL"
+
+#: frontend/src/project/main-panel/connections/constants.js:175
+msgid "API key"
+msgstr "API 密钥"
+
+#: frontend/src/project/main-panel/connections/constants.js:181
+msgid "API username"
+msgstr "API 用户名"
+
+#: frontend/src/project/main-panel/connections/constants.js:187
+msgid "Only sync topics updated within following number of years"
+msgstr "仅同步以下年内更新的主题"
+
+#: frontend/src/project/main-panel/connections/constants.js:211
+msgid "Sitemap URL"
+msgstr "网站地图 URL "
+
+#: frontend/src/project/main-panel/connections/constants.js:225
+msgid "Server URL"
+msgstr "服务器 URL"
+
+#: frontend/src/project/main-panel/connections/constants.js:232
+msgid "Library API token"
+msgstr "Library API 令牌"
+
+#: frontend/src/project/main-panel/connections/constants.js:245
+msgid "Emails"
+msgstr "邮箱"
+
+#: frontend/src/project/main-panel/connections/constants.js:249
+msgid "GitHub"
+msgstr "GitHub"
+
+#: frontend/src/project/main-panel/connections/constants.js:253
+#: frontend/src/project/main-panel/connections/view/connection/index.js:201
+msgid "Discourse forums"
+msgstr "讨论论坛"
+
+#: frontend/src/project/main-panel/connections/constants.js:257
+#: frontend/src/project/main-panel/connections/view/connection/index.js:185
+msgid "Sites"
+msgstr "网站"
+
+#: frontend/src/project/main-panel/connections/constants.js:261
+msgid "Seafile libraries"
+msgstr "Seafile 资料库"
+
+#: frontend/src/project/main-panel/connections/constants.js:271
+#: frontend/src/project/main-panel/tickets/constants.js:37
+#: frontend/src/project/main-panel/tickets/constants.js:38
+#: frontend/src/project/main-panel/tickets/constants.js:39
+#: frontend/src/project/main-panel/tickets/constants.js:52
+msgid "Open"
+msgstr "打开"
+
+#: frontend/src/project/main-panel/connections/constants.js:272
+#: frontend/src/project/main-panel/tickets/constants.js:53
+msgid "Closed"
+msgstr "关闭"
+
+#: frontend/src/project/main-panel/connections/constants.js:276
+#: frontend/src/project/main-panel/tickets/constants.js:58
+msgid "Reopen"
+msgstr "重新打开"
+
+#: frontend/src/project/main-panel/connections/constants.js:277
+#: frontend/src/project/main-panel/connections/constants.js:298
+#: frontend/src/project/main-panel/tickets/constants.js:60
+msgid "Completed"
+msgstr "已完成"
+
+#: frontend/src/project/main-panel/connections/constants.js:278
+#: frontend/src/project/main-panel/tickets/constants.js:61
+msgid "Not planned"
+msgstr "未计划"
+
+#: frontend/src/project/main-panel/connections/constants.js:279
+#: frontend/src/project/main-panel/tickets/constants.js:62
+#: frontend/src/project/main-panel/tickets/constants.js:103
+msgid "Duplicate"
+msgstr "重复"
+
+#: frontend/src/project/main-panel/connections/constants.js:299
+msgid "Failed"
+msgstr "失败"
+
+#: frontend/src/project/main-panel/connections/constants.js:300
+msgid "Crawling"
+msgstr "抓取中"
+
+#: frontend/src/project/main-panel/connections/constants.js:301
+msgid "Pending"
+msgstr "待办的"
+
+#: frontend/src/project/main-panel/connections/constants.js:312
+#: frontend/src/project/main-panel/connections/constants.js:378
+#: frontend/src/project/main-panel/connections/constants.js:411
+#: frontend/src/project/main-panel/connections/view/connection/index.js:80
+#: frontend/src/project/main-panel/tickets/constants.js:169
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:91
+msgid "Title"
+msgstr "标题"
+
+#: frontend/src/project/main-panel/connections/constants.js:323
+#: frontend/src/project/main-panel/connections/constants.js:399
+#: frontend/src/project/main-panel/connections/constants.js:432
+#: frontend/src/project/main-panel/connections/constants.js:463
+msgid "AI Summary"
+msgstr "AI 总结"
+
+#: frontend/src/project/main-panel/connections/constants.js:329
+#: frontend/src/project/main-panel/connections/constants.js:404
+#: frontend/src/project/main-panel/connections/constants.js:437
+#: frontend/src/project/main-panel/connections/constants.js:468
+msgid "AI processed time"
+msgstr "AI 处理时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:335
+msgid "Author"
+msgstr "作者"
+
+#: frontend/src/project/main-panel/connections/constants.js:339
+msgid "State"
+msgstr "状态"
+
+#: frontend/src/project/main-panel/connections/constants.js:343
+msgid "State reason"
+msgstr "理由"
+
+#: frontend/src/project/main-panel/connections/constants.js:347
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:46
+#: frontend/src/project/main-panel/tickets/constants.js:186
+#: frontend/src/project/main-panel/tickets/view/types/index.js:20
+#: frontend/src/sea-metadata/components/popover/column-popover/column-type.js:41
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/type-filter.js:33
+msgid "Type"
+msgstr "类型"
+
+#: frontend/src/project/main-panel/connections/constants.js:351
+msgid "Labels"
+msgstr "标签"
+
+#: frontend/src/project/main-panel/connections/constants.js:355
+msgid "Total comments"
+msgstr "评论总数"
+
+#: frontend/src/project/main-panel/connections/constants.js:360
+msgid "Last updated"
+msgstr "最后更新时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:365
+msgid "Closed at"
+msgstr "关闭时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:371
+#: frontend/src/project/main-panel/tickets/constants.js:220
+msgid "Create time"
+msgstr "创建时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:382
+msgid "Topic ID"
+msgstr "主题 ID"
+
+#: frontend/src/project/main-panel/connections/constants.js:386
+msgid "Views count"
+msgstr "视图数量"
+
+#: frontend/src/project/main-panel/connections/constants.js:390
+msgid "Last activity"
+msgstr "上次活动"
+
+#: frontend/src/project/main-panel/connections/constants.js:427
+msgid "Last modify time"
+msgstr "最后修改时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:444
+msgid "File name"
+msgstr "文件名称"
+
+#: frontend/src/project/main-panel/connections/constants.js:448
+msgid "Parent folder"
+msgstr "父目录"
+
+#: frontend/src/project/main-panel/connections/constants.js:452
+#: frontend/src/sea-metadata/constants/column/icon.js:30
+msgid "Last modified time"
+msgstr "最后修改时间"
+
+#: frontend/src/project/main-panel/connections/constants.js:475
+msgid "Subject"
+msgstr "主题"
+
+#: frontend/src/project/main-panel/connections/constants.js:479
+msgid "From"
+msgstr "从"
+
+#: frontend/src/project/main-panel/connections/constants.js:483
+msgid "To"
+msgstr "到"
+
+#: frontend/src/project/main-panel/connections/constants.js:487
+msgid "Content"
+msgstr "内容"
+
+#: frontend/src/project/main-panel/connections/constants.js:491
+msgid "Cc"
+msgstr "Cc"
+
+#: frontend/src/project/main-panel/connections/constants.js:495
+msgid "Is sender"
+msgstr "发件人"
+
+#: frontend/src/project/main-panel/connections/hooks/connections.js:44
+msgid "Activated"
+msgstr "已激活"
+
+#: frontend/src/project/main-panel/connections/hooks/connections.js:44
+msgid "Deactivated"
+msgstr "已停用"
+
+#: frontend/src/project/main-panel/connections/hooks/connections.js:219
+#: frontend/src/sys-admin/orgs/orgs-content.js:138
+msgid "Are you sure you want to delete {placeholder} ?"
+msgstr "确定要删除 {placeholder} 吗？"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:48
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:65
+msgid "Connection"
+msgstr "连接"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:49
+msgid "Sync status"
+msgstr "同步状态"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:50
+msgid "Last synced at"
+msgstr "上次同步时间"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:90
+msgid "Sync task queued"
+msgstr "同步任务已排队"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:144
+msgid "No connections"
+msgstr "没有连接"
+
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:145
+msgid ""
+"Connections enable you to sync contents from third party applications and "
+"search them"
+msgstr "连接功能使您能够同步第三方应用程序的内容并进行搜索"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:65
+msgid "Ticket created"
+msgstr "Ticket 已创建"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:72
+#: frontend/src/project/main-panel/connections/view/connection/index.js:417
+#: frontend/src/project/main-panel/connections/view/connection/index.js:446
+msgid "Create related ticket"
+msgstr "创建相关的 ticket"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:92
+#: frontend/src/project/main-panel/tickets/constants.js:198
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:98
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:105
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:127
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:30
+msgid "Description"
+msgstr "描述"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:130
+msgid "Generating AI summary..."
+msgstr "正在生成 AI 总结..."
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:136
+msgid "AI summary generated"
+msgstr "AI 总结已生成"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:139
+#: frontend/src/project/main-panel/connections/view/connection/index.js:144
+msgid "Failed to generate AI summary"
+msgstr "生成 AI 总结失败"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:152
+#: frontend/src/project/main-panel/connections/view/connection/index.js:164
+#, fuzzy
+#| msgid "Missing required information to open original page"
+msgid "Missing required information"
+msgstr "缺少打开原始页面所需的信息"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:182
+msgid "site"
+msgstr "网站"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:183
+msgid "sites"
+msgstr "网站"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:184
+msgid "Site"
+msgstr "网站"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:190
+#: frontend/src/project/main-panel/connections/view/connection/index.js:192
+msgid "GitHub issue"
+msgstr "GitHub 问题"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:191
+#: frontend/src/project/main-panel/connections/view/connection/index.js:193
+msgid "GitHub issues"
+msgstr "GitHub 问题"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:198
+msgid "discourse forum"
+msgstr "讨论论坛"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:199
+msgid "discourse forums"
+msgstr "讨论论坛"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:200
+msgid "Discourse forum"
+msgstr "讨论论坛"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:353
+#: frontend/src/project/main-panel/connections/view/connection/index.js:368
+msgid "Copy original page link"
+msgstr "复制原始页面链接"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:358
+#: frontend/src/project/main-panel/connections/view/connection/index.js:374
+msgid "The original page link has been copied"
+msgstr "已复制原始页面链接"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:411
+#: frontend/src/project/main-panel/connections/view/connection/index.js:470
+msgid "Open original page"
+msgstr "打开原始页面"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:431
+#: frontend/src/project/main-panel/connections/view/connection/index.js:455
+msgid "Related record"
+msgstr "相关记录"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:439
+#: frontend/src/project/main-panel/connections/view/connection/index.js:463
+#: frontend/src/project/main-panel/connections/view/connection/index.js:475
+#: frontend/src/project/main-panel/connections/view/connection/index.js:482
+msgid "Generate AI summary"
+msgstr "生成 AI 总结"
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:510
+msgid "Connection not found"
+msgstr "未找到连接"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:29
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:28
+msgid "Today"
+msgstr "今天"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:32
+msgid "Last 7 days"
+msgstr "过去 7 天"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:35
+msgid "Last 30 days"
+msgstr "过去 30 天"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:40
+msgid "Custom time"
+msgstr "自定义时间"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:144
+#: frontend/src/project/main-panel/search/filter-by-date.js:145
+#: frontend/src/project/main-panel/tickets/constants.js:225
+msgid "Last updated time"
+msgstr "上次更新时间"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:172
+msgid "Start date"
+msgstr "开始时间"
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:182
+msgid "End date"
+msgstr "结束时间"
+
+#: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:15
+msgid "No connections available"
+msgstr "没有可用的连接"
+
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:108
+msgid "Search connection"
+msgstr "搜索连接"
+
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:126
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:128
+msgid "Close all"
+msgstr "关闭全部"
+
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:133
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:135
+msgid "Open all"
+msgstr "打开全部"
+
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:66
+msgid "1 Connection"
+msgstr "1 连接"
+
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:67
+msgid "{placeholder} Connections"
+msgstr "{placeholder} 连接"
+
+#: frontend/src/project/main-panel/search/index.js:43
+msgid "Select at least one connection to search"
+msgstr "选择至少一个连接进行搜索"
+
+#: frontend/src/project/main-panel/search/index.js:158
+msgid "Please enter search keywords"
+msgstr "请输入搜索关键词"
+
+#: frontend/src/project/main-panel/search/index.js:163
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:603
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:187
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:207
+#: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:160
+msgid "No results"
+msgstr "没有结果"
+
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:21
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:29
+msgid "Developer mode"
+msgstr "开发者模式"
+
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:32
+msgid ""
+"Enable developer mode to show advanced features for development and "
+"debugging purposes."
+msgstr "启用开发者模式，以显示用于开发和调试的高级功能。"
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:122
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:214
+msgid "opened"
+msgstr "打开于"
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
+msgid "Reply"
+msgstr "回复"
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:179
+msgid "Update comment"
+msgstr "更新评论"
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:192
+msgid "Delete comment"
+msgstr "删除评论"
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:193
+msgid "Are you sure you want to delete the comment ?"
+msgstr "确定要删除评论吗?"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:14
+msgid "Collaborators"
+msgstr "协作人"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:65
+msgid "No one assigned"
+msgstr "无人指派"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:73
+#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:60
+msgid "No users available"
+msgstr "没有可用的用户"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/rate-settings/index.js:40
+#: frontend/src/project/main-panel/tickets/constants.js:161
+#: frontend/src/sea-metadata/constants/column/icon.js:45
+msgid "Priority"
+msgstr "优先级"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/tags-settings/index.js:84
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:49
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:54
+#: frontend/src/project/main-panel/tickets/constants.js:209
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:201
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/tags-filter.js:75
+#: frontend/src/sea-metadata/constants/column/icon.js:42
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:280
+msgid "Tags"
+msgstr "标签"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/tags-settings/index.js:91
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/tags-settings/index.js:101
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/tags-filter.js:85
+msgid "No tags"
+msgstr "没有标签"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/tags-settings/index.js:100
+#: frontend/src/sea-metadata/components/cell-editors/tags-editor/index.js:106
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/tags-filter.js:84
+msgid "Search tags"
+msgstr "搜索标签"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:48
+msgid "No type"
+msgstr "没有类型"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:56
+msgid "Search type"
+msgstr "搜索类型"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:57
+msgid "No types"
+msgstr "没有类型"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:27
+msgid "Refresh"
+msgstr "刷新"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:71
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:76
+#: frontend/src/project/main-panel/tickets/view/types/index.js:190
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:287
+msgid "Types"
+msgstr "类型"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:92
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:157
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:86
+msgid "New ticket"
+msgstr "新建 ticket"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:101
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:106
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:85
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:295
+msgid "Substates"
+msgstr "子状态"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:132
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:110
+msgid "New tag"
+msgstr "新建标签"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:140
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:102
+msgid "New type"
+msgstr "新建类型"
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:148
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:102
+msgid "New substate"
+msgstr "新建子状态"
+
+#: frontend/src/project/main-panel/tickets/components/upload-files-btn/index.js:27
+msgid "Paste, drop, or click to add files"
+msgstr "粘贴、拖放或点击添加文件"
+
+#: frontend/src/project/main-panel/tickets/constants.js:45
+msgid "Close ticket"
+msgstr "关闭 ticket"
+
+#: frontend/src/project/main-panel/tickets/constants.js:47
+msgid "Done, closed, fixed, resolved"
+msgstr "已完成、已关闭、已修复、已解决"
+
+#: frontend/src/project/main-panel/tickets/constants.js:59
+msgid "Working on"
+msgstr "正在处理"
+
+#: frontend/src/project/main-panel/tickets/constants.js:91
+msgid "Bug"
+msgstr "漏洞"
+
+#: frontend/src/project/main-panel/tickets/constants.js:92
+msgid "Something isn't working"
+msgstr "某些功能无法正常工作"
+
+#: frontend/src/project/main-panel/tickets/constants.js:97
+msgid "Documentation"
+msgstr "文档"
+
+#: frontend/src/project/main-panel/tickets/constants.js:98
+msgid "Improvements or additions to documentation"
+msgstr "对文档的改进或补充"
+
+#: frontend/src/project/main-panel/tickets/constants.js:104
+msgid "This ticket or pull request already exists"
+msgstr "此 ticket 或拉取请求已存在"
+
+#: frontend/src/project/main-panel/tickets/constants.js:109
+msgid "Enhancement"
+msgstr "增强"
+
+#: frontend/src/project/main-panel/tickets/constants.js:110
+msgid "New feature or request"
+msgstr "新功能或请求"
+
+#: frontend/src/project/main-panel/tickets/constants.js:115
+msgid "Good first ticket"
+msgstr "很好的第一个 ticket"
+
+#: frontend/src/project/main-panel/tickets/constants.js:116
+msgid "Good for newcomers"
+msgstr "对新手友好"
+
+#: frontend/src/project/main-panel/tickets/constants.js:121
+msgid "Help wanted"
+msgstr "想要的帮助"
+
+#: frontend/src/project/main-panel/tickets/constants.js:122
+msgid "Extra attention is needed"
+msgstr "需要格外注意"
+
+#: frontend/src/project/main-panel/tickets/constants.js:127
+msgid "Invalid"
+msgstr "无效的"
+
+#: frontend/src/project/main-panel/tickets/constants.js:128
+msgid "This doesn't seem right"
+msgstr "这似乎不太对劲"
+
+#: frontend/src/project/main-panel/tickets/constants.js:133
+msgid "Question"
+msgstr "问题"
+
+#: frontend/src/project/main-panel/tickets/constants.js:134
+msgid "Further information is requested"
+msgstr "需要更多信息"
+
+#: frontend/src/project/main-panel/tickets/constants.js:139
+msgid "Wontfix"
+msgstr "不会修复"
+
+#: frontend/src/project/main-panel/tickets/constants.js:140
+msgid "This will not be worked on"
+msgstr "这将不会被开展"
+
+#: frontend/src/project/main-panel/tickets/constants.js:192
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:20
+msgid "Substate"
+msgstr "子状态"
+
+#: frontend/src/project/main-panel/tickets/constants.js:204
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:127
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:333
+msgid "Assignees"
+msgstr "受让人"
+
+#: frontend/src/project/main-panel/tickets/constants.js:215
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:336
+msgid "Participants"
+msgstr "参与者"
+
+#: frontend/src/project/main-panel/tickets/constants.js:230
+#: frontend/src/sea-metadata/constants/column/icon.js:27
+#: frontend/src/sys-admin/org/org-groups.js:35
+msgid "Creator"
+msgstr "创建者"
+
+#: frontend/src/project/main-panel/tickets/constants.js:235
+msgid "Deleted"
+msgstr "已删除"
+
+#: frontend/src/project/main-panel/tickets/constants.js:240
+msgid "Delete at"
+msgstr "删除时间"
+
+#: frontend/src/project/main-panel/tickets/constants.js:246
+msgid "Comment updated at"
+msgstr "评论更新时间"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:143
+msgid "ticket"
+msgstr "ticket"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:144
+msgid "tickets"
+msgstr "tickets"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:183
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:128
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:120
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:129
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:118
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:128
+#: frontend/src/project/main-panel/tickets/view/types/index.js:110
+msgid "Clear selected"
+msgstr "清空选中"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:188
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:133
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:125
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:134
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:123
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:133
+#: frontend/src/project/main-panel/tickets/view/types/index.js:115
+msgid "Copy selected"
+msgstr "复制选中"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:203
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:148
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:140
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:149
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:138
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:148
+#: frontend/src/project/main-panel/tickets/view/types/index.js:130
+msgid "Delete selected"
+msgstr "删除选中"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:228
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:173
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:174
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:173
+msgid "Delete tickets"
+msgstr "删除 tickets"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:244
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:189
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:190
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:189
+msgid "Open ticket"
+msgstr "打开 ticket"
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:252
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:197
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:198
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:197
+msgid "Delete ticket"
+msgstr "删除 ticket"
+
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:79
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:87
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:79
+msgid "Color is invalid"
+msgstr "颜色无效"
+
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:102
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:181
+msgid "Edit substate"
+msgstr "编辑子状态"
+
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:107
+msgid "Preview substate"
+msgstr "预览子状态"
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:30
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:38
+#: frontend/src/project/main-panel/tickets/view/types/index.js:30
+msgid "Tickets count"
+msgstr "Tickets 数量"
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:83
+msgid "substate"
+msgstr "子状态"
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:84
+msgid "substates"
+msgstr "子状态"
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:165
+msgid "Delete substates"
+msgstr "删除子状态"
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:186
+msgid "Delete substate"
+msgstr "删除子状态"
+
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:110
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:179
+msgid "Edit tag"
+msgstr "编辑标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:115
+msgid "Preview tag"
+msgstr "预览标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:20
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:200
+#: frontend/src/sea-metadata/constants/column/icon.js:43
+msgid "Tag"
+msgstr "标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:163
+msgid "Delete tags"
+msgstr "删除标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:187
+msgid "Delete tag"
+msgstr "删除标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:198
+msgid "tag"
+msgstr "标签"
+
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:199
+msgid "tags"
+msgstr "标签"
+
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:109
+msgid "The ticket link has been copied"
+msgstr "ticket 链接已复制"
+
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:251
+msgid "Not found ticket"
+msgstr "没有找到 ticket"
+
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:300
+msgid "Add a comment"
+msgstr "添加品论"
+
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:326
+msgid "Comment"
+msgstr "评论"
+
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:102
+#: frontend/src/project/main-panel/tickets/view/types/index.js:171
+msgid "Edit type"
+msgstr "编辑类型"
+
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:107
+msgid "Preview type"
+msgstr "预览类型"
+
+#: frontend/src/project/main-panel/tickets/view/types/index.js:155
+msgid "Delete types"
+msgstr "删除类型"
+
+#: frontend/src/project/main-panel/tickets/view/types/index.js:176
+msgid "Delete type"
+msgstr "删除类型"
+
+#: frontend/src/project/main-panel/tickets/view/types/index.js:188
+msgid "type"
+msgstr "类型"
+
+#: frontend/src/project/main-panel/tickets/view/types/index.js:189
+msgid "types"
+msgstr "类型"
+
+#: frontend/src/sea-metadata/components/cell-editors/date-editor.js:194
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-calendar.js:122
+msgid "Enter date"
+msgstr "输入日期"
+
+#: frontend/src/sea-metadata/components/cell-editors/date-editor.js:222
+msgid "Please select"
+msgstr "请选择"
+
+#: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:212
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:93
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:348
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:462
+#: frontend/src/translation.js:10
+msgid "No options available"
+msgstr "没有可用的选项"
+
+#: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:212
+msgid "No option"
+msgstr "没有选项"
+
+#: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:251
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:347
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:461
+msgid "Search option"
+msgstr "搜索选项"
+
+#: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:264
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:94
+msgid "Add option"
+msgstr "添加选项"
+
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/priority-item.js:29
+#: frontend/src/sea-metadata/components/popover/row-height-popover/index.js:37
+msgid "Selected"
+msgstr "选中"
+
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:92
+msgid "Search options"
+msgstr "搜索选项"
+
+#: frontend/src/sea-metadata/components/cell-editors/tags-editor/index.js:107
+msgid "No tags available"
+msgstr "没有可用的标签"
+
+#: frontend/src/sea-metadata/components/data-process-setter/filter-setter.js:50
+msgid "1 filter"
+msgstr "1 个过滤条件"
+
+#: frontend/src/sea-metadata/components/data-process-setter/filter-setter.js:51
+msgid "filters"
+msgstr "个过滤条件"
+
+#: frontend/src/sea-metadata/components/data-process-setter/filter-setter.js:52
+#: frontend/src/sys-admin/orgs/orgs-nav.js:57
+msgid "Filter"
+msgstr "过滤条件"
+
+#: frontend/src/sea-metadata/components/data-process-setter/groupby-setter.js:34
+msgid "Group"
+msgstr "分组"
+
+#: frontend/src/sea-metadata/components/data-process-setter/manage-setter.js:28
+msgid "Manage tags"
+msgstr "管理标签"
+
+#: frontend/src/sea-metadata/components/data-process-setter/row-height-setter.js:35
+#: frontend/src/sea-metadata/components/data-process-setter/row-height-setter.js:36
+msgid "Set row height"
+msgstr "设置行高"
+
+#: frontend/src/sea-metadata/components/data-process-setter/sort-setter.js:21
+msgid "1 sort"
+msgstr "1 列排序"
+
+#: frontend/src/sea-metadata/components/data-process-setter/sort-setter.js:22
+msgid "sorts"
+msgstr "列排序"
+
+#: frontend/src/sea-metadata/components/data-process-setter/sort-setter.js:23
+msgid "Sort"
+msgstr "排序"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:34
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:137
+msgid "ISO"
+msgstr "国际标准格式"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:38
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:138
+msgid "US"
+msgstr "美国格式"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:42
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:139
+msgid "European"
+msgstr "欧洲格式"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:46
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:140
+msgid "Germany Russia etc"
+msgstr "德国，俄罗斯等"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:77
+msgid "Format"
+msgstr "格式"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:91
+msgid "Accurate to minute"
+msgstr "精确到分钟"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/rate-data/index.js:55
+msgid "Style"
+msgstr "样式"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/data/rate-data/index.js:94
+msgid "Max"
+msgstr "最大值"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:15
+#: frontend/src/sea-metadata/constants/column/icon.js:31
+#: frontend/src/sea-metadata/constants/column/icon.js:32
+msgid "Text"
+msgstr "文本"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:22
+#: frontend/src/sea-metadata/constants/column/icon.js:36
+msgid "Long text"
+msgstr "长文本"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:29
+#: frontend/src/sea-metadata/constants/column/icon.js:40
+msgid "Number"
+msgstr "数字"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:36
+#: frontend/src/sea-metadata/constants/column/icon.js:34
+msgid "Collaborator"
+msgstr "协作人"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:43
+#: frontend/src/sea-metadata/constants/column/icon.js:33
+msgid "Checkbox"
+msgstr "勾选"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:58
+#: frontend/src/sea-metadata/constants/column/icon.js:37
+#: frontend/src/sea-metadata/constants/column/icon.js:38
+msgid "Single select"
+msgstr "单选"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:65
+#: frontend/src/sea-metadata/constants/column/icon.js:39
+msgid "Multiple select"
+msgstr "多选"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:72
+#: frontend/src/sea-metadata/constants/column/icon.js:41
+msgid "Rate"
+msgstr ""
+
+#: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:156
+msgid "Custom properties"
+msgstr "自定义属性"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:9
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:68
+msgid "This is required"
+msgstr "必填项"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:13
+msgid "Name cannot contain dots"
+msgstr "名称不能包含点"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:19
+msgid "Name cannot contain backtick"
+msgstr "名称不能包含反引号"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:25
+msgid "Name cannot contain curly braces"
+msgstr "名称不能包含花括号"
+
+#: frontend/src/sea-metadata/components/popover/column-popover/utils.js:56
+msgid "Invalid regular expression"
+msgstr "无效的正则表达式"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item-utils.js:82
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item-utils.js:95
+msgid "And"
+msgstr "并且"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item-utils.js:86
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item-utils.js:100
+msgid "Or"
+msgstr "或者"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/collaborator-filter/index.js:86
+msgid "Search collaborator"
+msgstr "搜索协作人"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/collaborator-filter/index.js:88
+msgid "No collaborators"
+msgstr "没有协作人"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:345
+msgid "Select option(s)"
+msgstr "选择选项"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:459
+msgid "Select an option"
+msgstr "选择一个选项"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:477
+msgid "Select collaborators"
+msgstr "选择协作人"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:538
+msgid ""
+"If there are multiple items in the cell, a random one will be chosen and be "
+"compared with the filter value."
+msgstr "如果单元格中有多个条目，将随机选择一个条目，并与过滤器的值进行比较。"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:559
+msgid "Invalid filter"
+msgstr "无效的过滤器"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/index.js:50
+msgid "Basic"
+msgstr "基础"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/index.js:153
+msgid "Advanced"
+msgstr "高级"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/index.js:160
+msgid "No filters"
+msgstr "没有过滤器"
+
+#: frontend/src/sea-metadata/components/popover/filter-popover/index.js:177
+msgid "Add filter"
+msgstr "添加过滤条件"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:91
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:21
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:183
+msgid "Up"
+msgstr "升序"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:94
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:24
+msgid "Down"
+msgstr "降序"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:105
+msgid "By day"
+msgstr "按天"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:106
+msgid "By week"
+msgstr "按周"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:107
+msgid "By month"
+msgstr "按月"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:108
+msgid "By quarter"
+msgstr "按季度"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:109
+msgid "By year"
+msgstr "按年"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/index.js:23
+msgid "No groupings applied to this view."
+msgstr "没有应用于此视图的分组。"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/index.js:121
+msgid "Add group"
+msgstr "添加分组"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/index.js:126
+msgid "Collapse all"
+msgstr "折叠全部"
+
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/index.js:127
+msgid "Expand all"
+msgstr "展开全部"
+
+#: frontend/src/sea-metadata/components/popover/hidden-column-popover/index.js:129
+msgid "Hide all"
+msgstr "隐藏全部"
+
+#: frontend/src/sea-metadata/components/popover/hidden-column-popover/index.js:130
+msgid "Show all"
+msgstr "展示全部"
+
+#: frontend/src/sea-metadata/components/popover/row-height-popover/index.js:29
+msgid "Select row height"
+msgstr "选择行高"
+
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:244
+#: frontend/src/translation.js:13
+msgid "No sorts"
+msgstr "没有排序规则"
+
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:251
+#: frontend/src/translation.js:14
+msgid "Add sort"
+msgstr "添加排序"
+
+#: frontend/src/sea-metadata/components/view-toolbar/rows-toolbar/index.js:49
+msgid "{count} selected"
+msgstr "{count} 已选择"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:111
+msgid "All {count} views"
+msgstr "全部{count}个视图"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:127
+msgid "Search view"
+msgstr "搜索视图"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:178
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:143
+msgid "Rename view"
+msgstr "重命名视图"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:178
+msgid "New view"
+msgstr "新建视图"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:127
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:155
+msgid "Delete view"
+msgstr "删除视图"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:128
+msgid "Are you sure you want to delete view {placeholder} ?"
+msgstr "确定要删除视图 {placeholder} 吗？"
+
+#: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:149
+msgid "Duplicate view"
+msgstr "复制视图"
+
+#: frontend/src/sea-metadata/constants/column/icon.js:28
+msgid "Last modifier"
+msgstr "修改者"
+
+#: frontend/src/sea-metadata/constants/column/icon.js:29
+msgid "CTime"
+msgstr "创建时间"
+
+#: frontend/src/sea-metadata/constants/column/limit.js:16
+msgid ""
+"The content of the document has exceeded the limit of 100000 characters, and "
+"only the first 100000 characters are saved"
+msgstr "文档内容已超过 100000 个字符的限制，仅保存前 100000 个字符"
+
+#: frontend/src/sea-metadata/constants/column/priority.js:5
+msgid "No priority"
+msgstr "没有优先级"
+
+#: frontend/src/sea-metadata/constants/column/priority.js:11
+msgid "Urgent"
+msgstr "紧迫的"
+
+#: frontend/src/sea-metadata/constants/column/priority.js:17
+msgid "High"
+msgstr "高的"
+
+#: frontend/src/sea-metadata/constants/column/priority.js:23
+msgid "Medium"
+msgstr "中等的"
+
+#: frontend/src/sea-metadata/constants/column/priority.js:29
+msgid "Low"
+msgstr "低的"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:29
+msgid "Tomorrow"
+msgstr "明天"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:30
+msgid "Yesterday"
+msgstr "昨天"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:31
+msgid "One week ago"
+msgstr "一周前"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:32
+msgid "One week from now"
+msgstr "一周后"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:33
+msgid "One month ago"
+msgstr "一个月前"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:34
+msgid "One month from now"
+msgstr "一个月后"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:35
+msgid "Number of days ago"
+msgstr "特定天数前"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:36
+msgid "Number of days from now"
+msgstr "特定天数后"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:37
+msgid "Exact date"
+msgstr "精确日期"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:38
+msgid "The past week"
+msgstr "上个星期"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:39
+msgid "The past month"
+msgstr "上个月"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:40
+msgid "The past year"
+msgstr "去年"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:41
+msgid "The next week"
+msgstr "下个星期"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:42
+msgid "The next month"
+msgstr "下个月"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:43
+msgid "The next year"
+msgstr "下一年"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:44
+msgid "The next numbers of days"
+msgstr "天之后的指定天数"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:45
+msgid "The past numbers of days"
+msgstr "天之前的指定天数"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:46
+msgid "This week"
+msgstr "这个星期"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:47
+msgid "This month"
+msgstr "这个月"
+
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:48
+msgid "This year"
+msgstr "今年"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:32
+msgid "contains"
+msgstr "包含"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:33
+msgid "does not contain"
+msgstr "不包含"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:34
+msgid "is"
+msgstr "是"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:35
+msgid "is not"
+msgstr "不是"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:42
+msgid "is empty"
+msgstr "是空"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:43
+msgid "is not empty"
+msgstr "不是空"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:44
+msgid "is within..."
+msgstr "在某段时间内"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:45
+msgid "is before..."
+msgstr "在某天之前"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:46
+msgid "is after..."
+msgstr "在某天之后"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:47
+msgid "is on or before..."
+msgstr "在某天或之前"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:48
+msgid "is on or after..."
+msgstr "在某天或之后"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:49
+msgid "has any of..."
+msgstr "包含其中一个"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:50
+msgid "has all of..."
+msgstr "包含所有"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:51
+msgid "has none of..."
+msgstr "不包含"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:52
+msgid "is exactly..."
+msgstr "精确筛选"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:53
+msgid "is current user's ID"
+msgstr "是当前用户的 ID"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:54
+msgid "include the current user"
+msgstr "包含当前用户"
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:55
+msgid "is any of..."
+msgstr "是任意一个..."
+
+#: frontend/src/sea-metadata/constants/filter/filter-predicate.js:56
+msgid "is none of..."
+msgstr "不是任意一个..."
+
+#: frontend/src/sea-metadata/constants/grid-body.js:27
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:120
+#: frontend/src/utils/role-status-utils.js:22
+msgid "Default"
+msgstr "默认"
+
+#: frontend/src/sea-metadata/constants/grid-body.js:28
+msgid "Double"
+msgstr "两倍"
+
+#: frontend/src/sea-metadata/constants/grid-body.js:29
+msgid "Triple"
+msgstr "三倍"
+
+#: frontend/src/sea-metadata/constants/grid-body.js:30
+msgid "Quadruple"
+msgstr "四倍"
+
+#: frontend/src/sea-metadata/constants/view/table.js:84
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:11
+msgid "Deleted option"
+msgstr "已删除的选项"
+
+#: frontend/src/sea-metadata/store/server-operator.js:49
+msgid "Number of rows exceeds the limit of 1000"
+msgstr "行数超过了1000行的限制"
+
+#: frontend/src/sea-metadata/store/server-operator.js:152
+msgid "Failed to modify filter"
+msgstr "更改过滤失败"
+
+#: frontend/src/sea-metadata/store/server-operator.js:161
+msgid "Failed to modify sort"
+msgstr "更改排序失败"
+
+#: frontend/src/sea-metadata/store/server-operator.js:170
+msgid "Failed to modify group"
+msgstr "更改分组失败"
+
+#: frontend/src/sea-metadata/store/server-operator.js:179
+msgid "Failed to modify row height"
+msgstr "更改行高失败"
+
+#: frontend/src/sea-metadata/store/server-operator.js:197
+msgid "Failed to modify settings"
+msgstr "更改设置失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:8
+msgid "row"
+msgstr "行"
+
+#: frontend/src/sea-metadata/utils/translate.js:9
+msgid "rows"
+msgstr "行"
+
+#: frontend/src/sea-metadata/utils/translate.js:10
+msgid "Row"
+msgstr "行"
+
+#: frontend/src/sea-metadata/utils/translate.js:11
+msgid "Rows"
+msgstr "行"
+
+#: frontend/src/sea-metadata/utils/translate.js:12
+msgid "Column"
+msgstr "列"
+
+#: frontend/src/sea-metadata/utils/translate.js:13
+msgid "column"
+msgstr "列"
+
+#: frontend/src/sea-metadata/utils/translate.js:14
+msgid "columns"
+msgstr "列"
+
+#: frontend/src/sea-metadata/utils/translate.js:18
+msgid "Grouped by 1 {column}"
+msgstr "按 1 个{column}分组"
+
+#: frontend/src/sea-metadata/utils/translate.js:19
+msgid "Grouped by {count} {columns}"
+msgstr "按照 {count} {columns}分组"
+
+#: frontend/src/sea-metadata/utils/translate.js:20
+msgid "1 hidden {column}"
+msgstr "1 个隐藏{column}"
+
+#: frontend/src/sea-metadata/utils/translate.js:21
+msgid "{count} hidden {columns}"
+msgstr "{count} 个隐藏{column}"
+
+#: frontend/src/sea-metadata/utils/translate.js:22
+msgid "No {columns} available to be hidden"
+msgstr "没有隐藏的{columns}"
+
+#: frontend/src/sea-metadata/utils/translate.js:23
+msgid "Search {column}"
+msgstr "搜索{column}"
+
+#: frontend/src/sea-metadata/utils/translate.js:24
+msgid "No {rows}"
+msgstr "没有{rows}"
+
+#: frontend/src/sea-metadata/utils/translate.js:25
+msgid "{Row} deleted"
+msgstr "{Row}已删除"
+
+#: frontend/src/sea-metadata/utils/translate.js:26
+msgid "{Rows} deleted"
+msgstr "{Rows}已删除"
+
+#: frontend/src/sea-metadata/utils/translate.js:27
+msgid "Failed to modify {row}"
+msgstr "更改{row}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:28
+msgid "Failed to modify {rows}"
+msgstr "更改{rows}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:29
+msgid "Failed to delete {row}"
+msgstr "删除{row}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:30
+msgid "Failed to delete {rows}"
+msgstr "删除{rows}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:31
+msgid "Failed to restore {rows}"
+msgstr "还原{rows}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:32
+msgid "Failed to insert {column}"
+msgstr "插入{column}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:33
+msgid "Failed to delete {column}"
+msgstr "删除{column}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:34
+msgid "Failed to rename {column}"
+msgstr "重命名{column}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:35
+msgid "Failed to modify {column} data"
+msgstr "更改{column}数据失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:36
+msgid "Failed to modify {column} order"
+msgstr "更改{column}顺序失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:37
+msgid "Failed to modify hidden {columns}"
+msgstr "更改隐藏{columns}失败"
+
+#: frontend/src/sea-metadata/utils/translate.js:38
+msgid "This {column} is not editable"
+msgstr "这个{column}不支持编辑"
+
+#: frontend/src/sea-metadata/utils/translate.js:39
+msgid "This {column} does not support sorting"
+msgstr "这个{column}不支持排序"
+
+#: frontend/src/sea-metadata/utils/translate.js:40
+msgid "Hide {columns}"
+msgstr "隐藏{columns}"
+
+#: frontend/src/sea-metadata/utils/translate.js:41
+msgid "{Column} name"
+msgstr "{Column}名称"
+
+#: frontend/src/sea-metadata/utils/translate.js:42
+msgid "There is another {column} with this name"
+msgstr "还有另一个具有此名称的{column}"
+
+#: frontend/src/sea-metadata/utils/translate.js:43
+msgid "Another {column} has this {column} type"
+msgstr "另一个属性具有此属性类型"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:621
+#, fuzzy, javascript-format
+#| msgid "%s cells cut"
+msgid "%s cells cut"
+msgstr "{count} 个单元格已剪切"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:621
+msgid "1 cell cut"
+msgstr "1 个单元格已剪切"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:663
+msgid "{count} rows are copied."
+msgstr "已复制 {count} 行。"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:663
+msgid "1 row is copied."
+msgstr "已复制 1 行。"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:697
+#, fuzzy, javascript-format
+#| msgid "%s cells copied"
+msgid "%s cells copied"
+msgstr "已复制 {count} 单元格"
+
+#: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:697
+msgid "1 cell copied"
+msgstr "已复制 1 个单元格"
+
+#: frontend/src/sea-metadata/view/table/table-main/load-all-tip.js:16
+msgid "Loaded 50,000 rows."
+msgstr "已加载 50,000 行。"
+
+#: frontend/src/sea-metadata/view/table/table-main/load-all-tip.js:17
+msgid "Click to load more"
+msgstr "点击加载更多"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:55
+msgid "All rows loaded"
+msgstr "所有行已加载"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:113
+msgid "{count} rows selected"
+msgstr "{count} 行已选中"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:113
+msgid "1 row selected"
+msgstr "1 行已选中"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:117
+msgid "{count} cells selected"
+msgstr "{count} 单元格已选中"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:122
+msgid "{count} rows"
+msgstr "{count} 行"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:124
+msgid "{count} row"
+msgstr "{count} 行"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:142
+msgid "Load all"
+msgstr "加载全部"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-footer/index.js:146
+msgid "Loading"
+msgstr "加载中"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:127
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:156
+msgid "Edit format settings"
+msgstr "编辑格式设置"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:128
+msgid "You do not have permission"
+msgstr "你没有权限"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/select-all.js:83
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/select-all.js:84
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/select-all.js:85
+msgid "Select all"
+msgstr "全选"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-header-left.js:42
+msgid "Count"
+msgstr "数量"
+
+#: frontend/src/sea-metadata/view/table/table-main/rows/row/actions-cell/index.js:74
+#: frontend/src/sea-metadata/view/table/table-main/rows/row/actions-cell/index.js:75
+#: frontend/src/sea-metadata/view/table/table-main/rows/row/actions-cell/index.js:76
+msgid "Select"
+msgstr "选择"
+
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:50
+msgid "Set API calls limit per user"
+msgstr "设置每个用户的 API 调用限制"
+
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:62
+msgid "An integer that is greater than or equal to 0."
+msgstr "大于或等于0的整数。"
+
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:64
+msgid "Tip: 0 means default limit"
+msgstr "Tip: 设置为0表示重置为默认上限"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:90
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:104
+msgid "Passwords do not match."
+msgstr "两次输入的密码不一致"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:107
+#: frontend/src/sys-admin/orgs/index.js:372
+#: frontend/src/sys-admin/orgs/index.js:378
+msgid "Add organization"
+msgstr "添加组织"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:116
+msgid "Admin email"
+msgstr "管理员邮箱"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:122
+msgid "Admin name"
+msgstr "管理员姓名"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:131
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:176
+msgid "Password again"
+msgstr "请再次输入密码"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:122
+#: frontend/src/utils/role-status-utils.js:24
+msgid "Guest"
+msgstr "访客"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:134
+#: frontend/src/sys-admin/dialog/sysadmin-group-add-member-dialog.js:39
+#: frontend/src/sys-admin/group/group-members.js:316
+#: frontend/src/sys-admin/group/group-members.js:318
+#: frontend/src/sys-admin/org/org-users.js:55
+#: frontend/src/sys-admin/org/org-users.js:57
+msgid "Add member"
+msgstr "添加成员"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:142
+msgid "Name(optional)"
+msgstr "名称（可选）"
+
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:152
+msgid ""
+"You can also add a user as a guest, who will not be allowed to create "
+"projects and groups."
+msgstr "你还可以将用户添加为访客，不允许其创建项目和群组。"
+
+#: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:74
+msgid "(If left blank, owner will be admin)"
+msgstr "（如果为空，拥有者将为管理员）"
+
+#: frontend/src/sys-admin/dialog/sysadmin-import-user-dialog.js:38
+msgid "Please choose a .xlsx file."
+msgstr "请选择一个.xlsx文件。"
+
+#: frontend/src/sys-admin/dialog/sysadmin-import-user-dialog.js:51
+msgid "Import users from a .xlsx file"
+msgstr "从.xlsx后缀文件导入用户"
+
+#: frontend/src/sys-admin/dialog/sysadmin-import-user-dialog.js:53
+msgid "Download an example file"
+msgstr "下载示例文件"
+
+#: frontend/src/sys-admin/dialog/sysadmin-import-user-dialog.js:54
+msgid "Upload file"
+msgstr "上传文件"
+
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog.js:51
+msgid "Set max number of members"
+msgstr "设置用户数限制"
+
+#: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:51
+#: frontend/src/sys-admin/user/user-info.js:45
+msgid "Set name"
+msgstr "设置名称"
+
+#: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:37
+msgid "Unlink device"
+msgstr "断开连接设备"
+
+#: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:39
+msgid "Are you sure you want to unlink this device?"
+msgstr "确定要断开此设备的连接吗？"
+
+#: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:42
+msgid "Delete files from this device the next time it comes online."
+msgstr "在此设备下次上线时删除此设备上的文件。"
+
+#: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:47
+msgid "Unlink"
+msgstr "断开连接"
+
+#: frontend/src/sys-admin/group/group-members.js:37
+msgid "No members"
+msgstr "暂无成员"
+
+#: frontend/src/sys-admin/group/group-members.js:128
+msgid "Are you sure you want to remove {placeholder} ?"
+msgstr "确定要移除 {placeholder} 吗？"
+
+#: frontend/src/sys-admin/group/group-members.js:167
+msgid "Remove member"
+msgstr "删除成员"
+
+#: frontend/src/sys-admin/group/group-members.js:257
+msgid "Failed to add {email_placeholder}: {error_msg_placeholder}"
+msgstr "无法添加 {email_placeholder}：{error_msg_placeholder}"
+
+#: frontend/src/sys-admin/group/group-members.js:277
+#, javascript-format
+msgid "%s removed"
+msgstr "已移除 %s "
+
+#: frontend/src/sys-admin/group/group-nav.js:47
+#: frontend/src/sys-admin/org/org-nav.js:51
+msgid "Search member"
+msgstr "搜索成员"
+
+#: frontend/src/sys-admin/groups/groups-table/group.js:43
+#: frontend/src/sys-admin/groups/groups-table/group.js:193
+msgid "Remove from group"
+msgstr "从群组中移除"
+
+#: frontend/src/sys-admin/groups/groups-table/group.js:175
+msgid "Are you sure you want to delete the group {name} ?"
+msgstr "确定要删除群组 {name} 吗？"
+
+#: frontend/src/sys-admin/groups/groups-table/group.js:194
+msgid "Are you sure you want to remove from {name} ?"
+msgstr "确定要从{name}中移除吗？"
+
+#: frontend/src/sys-admin/groups/groups-table/index.js:9
+#: frontend/src/sys-admin/groups/search-groups.js:60
+#: frontend/src/translation.js:3
+msgid "No groups"
+msgstr "没有群组"
+
+#: frontend/src/sys-admin/groups/groups-table/index.js:90
+msgid "1 user has been removed from the {groupName}"
+msgstr "一个用户已从 {groupName} 中移除"
+
+#: frontend/src/sys-admin/groups/groups.js:49
+msgid "Search groups by name"
+msgstr "通过名称查找群组"
+
+#: frontend/src/sys-admin/groups/groups.js:54
+#: frontend/src/sys-admin/groups/groups.js:59
+#: frontend/src/sys-admin/users/users.js:141
+msgid "Export Excel"
+msgstr "导出到 Excel"
+
+#: frontend/src/sys-admin/groups/search-groups.js:75
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:89
+msgid "Search groups"
+msgstr "搜索群组"
+
+#: frontend/src/sys-admin/groups/search-groups.js:76
+#: frontend/src/sys-admin/orgs/search-orgs.js:121
+msgid "Tip: you can search by keyword in name."
+msgstr "提示：你可以按名称搜索关键字。"
+
+#: frontend/src/sys-admin/info/index.js:85
+#: frontend/src/sys-admin/info/index.js:88
+msgid "licensed to "
+msgstr "授权给 "
+
+#: frontend/src/sys-admin/info/index.js:85
+msgid "upgrade service expired in "
+msgstr "升级服务到期 "
+
+#: frontend/src/sys-admin/info/index.js:88
+msgid "expires on "
+msgstr "到期 "
+
+#: frontend/src/sys-admin/info/index.js:98
+msgid "Item"
+msgstr "项目"
+
+#: frontend/src/sys-admin/info/index.js:99
+msgid "Value"
+msgstr "值"
+
+#: frontend/src/sys-admin/info/index.js:104
+msgid "Number of projects"
+msgstr "项目数量"
+
+#: frontend/src/sys-admin/info/index.js:127
+msgid "System info"
+msgstr "系统信息"
+
+#: frontend/src/sys-admin/info/index.js:130
+msgid "Enterprise Edition"
+msgstr "企业版"
+
+#: frontend/src/sys-admin/info/index.js:142
+msgid "Upload license"
+msgstr "上传许可证书"
+
+#: frontend/src/sys-admin/info/index.js:149
+msgid "Developer edition"
+msgstr "开发人员版"
+
+#: frontend/src/sys-admin/info/index.js:152
+msgid "Version info"
+msgstr "版本信息"
+
+#: frontend/src/sys-admin/info/index.js:155
+msgid "Bases"
+msgstr "表格"
+
+#: frontend/src/sys-admin/info/index.js:161
+#: frontend/src/sys-admin/info/index.js:165
+msgid "Activated users"
+msgstr "激活用户数"
+
+#: frontend/src/sys-admin/info/index.js:175
+#: frontend/src/sys-admin/org/org-title/index.js:11
+#: frontend/src/sys-admin/orgs/orgs-nav.js:22
+#: frontend/src/sys-admin/orgs/search-orgs.js:118
+msgid "Organizations"
+msgstr "机构"
+
+#: frontend/src/sys-admin/org/org-admin-users.js:32
+#: frontend/src/sys-admin/org/org-users.js:69
+#: frontend/src/sys-admin/users/users-table/index.js:62
+#: frontend/src/translation.js:8
+msgid "Last login"
+msgstr "上次登录"
+
+#: frontend/src/sys-admin/org/org-info.js:84 frontend/src/translation.js:6
+msgid "Number of members"
+msgstr "用户数"
+
+#: frontend/src/sys-admin/org/org-info.js:89 frontend/src/translation.js:7
+msgid "Max number of members"
+msgstr "用户数限制"
+
+#: frontend/src/sys-admin/org/org-info.js:97
+msgid "Number of groups"
+msgstr "群组数量"
+
+#: frontend/src/sys-admin/org/org-info.js:105
+#: frontend/src/sys-admin/user/user-info.js:158
+msgid "API calls limit per user"
+msgstr "每个用户的 API 调用限制"
+
+#: frontend/src/sys-admin/org/org-nav.js:23
+#: frontend/src/sys-admin/users/users-nav.js:10
+msgid "Admins"
+msgstr "管理员"
+
+#: frontend/src/sys-admin/orgs/index.js:59
+#: frontend/src/sys-admin/orgs/orgs-content.js:50 frontend/src/translation.js:5
+msgid "No organizations"
+msgstr "没有机构"
+
+#: frontend/src/sys-admin/orgs/index.js:147
+msgid "Please type {placeholder} to confirm."
+msgstr "请输入 {placeholder} 进行确认。"
+
+#: frontend/src/sys-admin/orgs/index.js:185
+#: frontend/src/sys-admin/orgs/orgs-content.js:175
+msgid "Delete organization"
+msgstr "删除机构"
+
+#: frontend/src/sys-admin/orgs/index.js:273
+#: frontend/src/sys-admin/orgs/search-orgs.js:93
+#: frontend/src/sys-admin/user/user-info.js:121
+msgid "Organization"
+msgstr "机构"
+
+#: frontend/src/sys-admin/orgs/index.js:281
+#: frontend/src/sys-admin/orgs/search-orgs.js:120
+msgid "Search organizations"
+msgstr "搜索机构"
+
+#: frontend/src/sys-admin/orgs/op-menu.js:49
+msgid "Visit"
+msgstr "访问"
+
+#: frontend/src/sys-admin/orgs/op-menu.js:55
+msgid "Copy to clipboard"
+msgstr "复制到剪切板"
+
+#: frontend/src/sys-admin/orgs/search-orgs.js:80
+#: frontend/src/sys-admin/user/user-info.js:273
+#: frontend/src/sys-admin/users/users-table/index.js:143
+#: frontend/src/sys-admin/users/users-table/index.js:160
+msgid "Edit succeeded"
+msgstr "修改成功"
+
+#: frontend/src/sys-admin/sys-popover/filter-widgets/filters-item.js:27
+msgid "Clear"
+msgstr "清空"
+
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:30
+msgid "Added to {placeholder}"
+msgstr "添加到 {placeholder}"
+
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:85
+msgid "Add user to groups"
+msgstr "将用户添加到群组"
+
+#: frontend/src/sys-admin/user/user-group/index.js:46
+#: frontend/src/translation.js:15
+msgid "Add to groups"
+msgstr "增加到群组"
+
+#: frontend/src/sys-admin/user/user-info.js:49
+msgid "Set contact email"
+msgstr "设置联系邮箱"
+
+#: frontend/src/sys-admin/user/user-info.js:53
+msgid "Set phone"
+msgstr "设置电话"
+
+#: frontend/src/sys-admin/user/user-info.js:57
+msgid "Set ID"
+msgstr "设置 ID"
+
+#: frontend/src/sys-admin/user/user-info.js:61
+msgid "Set unit"
+msgstr "设置单位"
+
+#: frontend/src/sys-admin/user/user-info.js:131
+msgid "Phone"
+msgstr "手机号"
+
+#: frontend/src/sys-admin/user/user-info.js:145
+#: frontend/src/sys-admin/users/users-table/index.js:59
+msgid "Unit"
+msgstr "单位"
+
+#: frontend/src/sys-admin/users/search-users.js:29
+#: frontend/src/sys-admin/users/users.js:99
+#, javascript-format
+msgid "%s users"
+msgstr "%s用户"
+
+#: frontend/src/sys-admin/users/search-users.js:52
+#: frontend/src/sys-admin/users/search-users.js:60
+#: frontend/src/sys-admin/users/search-users.js:68
+#: frontend/src/sys-admin/users/users.js:170
+#: frontend/src/sys-admin/users/users.js:182
+#: frontend/src/sys-admin/users/users.js:209
+msgid "Delete users"
+msgstr "删除用户"
+
+#: frontend/src/sys-admin/users/search-users.js:69
+#: frontend/src/sys-admin/users/users.js:210
+msgid "Are you sure you want to delete the selected user(s) ?"
+msgstr "确定要删除选中的用户吗？"
+
+#: frontend/src/sys-admin/users/users-nav.js:9
+msgid "Database"
+msgstr "数据库"
+
+#: frontend/src/sys-admin/users/users-table/index.js:61
+msgid "Institution"
+msgstr "机构"
+
+#: frontend/src/sys-admin/users/users-table/index.js:174
+msgid "The admin permission of {placeholder} revoked"
+msgstr "已取消 {placeholder} 的管理权限"
+
+#: frontend/src/sys-admin/users/users-table/user.js:54
+msgid "Set as admin"
+msgstr "设置为管理员"
+
+#: frontend/src/sys-admin/users/users-table/user.js:60
+msgid "Unset as admin"
+msgstr "取消设置为管理员"
+
+#: frontend/src/sys-admin/users/users-table/user.js:91
+#: frontend/src/sys-admin/users/users.js:54
+#: frontend/src/sys-admin/users/users.js:71
+msgid "It may take some time, please wait."
+msgstr "可能需要一些时间，请稍候。"
+
+#: frontend/src/sys-admin/users/users-table/user.js:259
+msgid "Are you sure you want to delete the user {user} ?"
+msgstr "确定要删除用户 {user} 吗？"
+
+#: frontend/src/sys-admin/users/users-table/user.js:270
+msgid "Are you sure you want to reset the password of {user} ?"
+msgstr "确定要重置 {user} 的密码吗？"
+
+#: frontend/src/sys-admin/users/users-table/user.js:280
+msgid "Are you sure you want to set {user} inactive?"
+msgstr "你确定要将 {user} 设置为非活动状态吗？"
+
+#: frontend/src/sys-admin/users/users-table/user.js:289
+msgid "Are you sure you want to revoke the admin permission of {user} ?"
+msgstr "确定要取消 {user} 的管理权限吗？"
+
+#: frontend/src/sys-admin/users/users-table/user.js:291
+msgid "Revoke"
+msgstr "撤销"
+
+#: frontend/src/sys-admin/users/users.js:139
+msgid "Import users"
+msgstr "导入用户"
+
+#: frontend/src/translation.js:9
+msgid "Select a group"
+msgstr "选择一个群组"
+
+#: frontend/src/translation.js:11
+msgid "Group Info"
+msgstr "群组信息"
+
+#: frontend/src/translation.js:12
+msgid "Current browser"
+msgstr "当前浏览器"
+
+#: frontend/src/utils/role-status-utils.js:26
+msgid "Default admin"
+msgstr "默认管理员"
+
+#: frontend/src/utils/role-status-utils.js:30
+msgid "Daily admin"
+msgstr "日常管理员"
+
+#: frontend/src/utils/role-status-utils.js:32
+msgid "Audit admin"
+msgstr "审核管理员"
+
+#: frontend/src/utils/role-status-utils.js:56
+msgid "Inactive"
+msgstr "未激活"
+
+#: frontend/src/utils/utils.js:170
+msgid "The number of users exceeds the limit."
+msgstr "用户数超过限制。"
+
+#: frontend/src/utils/validate/name.js:5
+msgid "Name should be string"
+msgstr "名称应该是字符串"
+
+#: frontend/src/utils/validate/name.js:12
+msgid "Name cannot contain slash"
+msgstr "名称不能包含斜杠"
+
+#: frontend/src/utils/validate/name.js:15
+msgid "Name cannot contain backslash"
+msgstr "名称不能包含反斜杠"
+
+#: frontend/src/utils/validate/title.js:5
+msgid "Title should be string"
+msgstr "标题应该是字符串"
+
+#: frontend/src/utils/validate/title.js:9
+msgid "Title is required"
+msgstr "标题是必填项"
+
+#: frontend/src/utils/validate/title.js:12
+msgid "Title cannot contain slash"
+msgstr "标题不能包含斜杠"
+
+#: frontend/src/utils/validate/title.js:15
+msgid "Title cannot contain backslash"
+msgstr "标题不能包含反斜杠"
+
+#, fuzzy
+#~| msgid "Projects"
+#~ msgid "projects"
+#~ msgstr "项目"
+
+#~ msgid "Failed to load content"
+#~ msgstr "加载内容失败"

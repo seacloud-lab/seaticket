@@ -25,8 +25,8 @@ const CustomizeTopBar = ({ onCloseSidePanel, deleteUsers }) => {
       if (deletedUsers.length) {
         const length = deletedUsers.length;
         const msg = length === 1 ?
-          gettext('Successfully deleted 1 user.') :
-          gettext('Successfully deleted {count} users.').replace('{count}', length);
+          gettext('%s deleted').replace('%s', gettext('1 user')) :
+          gettext('%s deleted').replace('%s', gettext('%s users').replace('%s', length));
         toaster.success(msg);
         deleteUsers(deletedUsers);
       }

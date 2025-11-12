@@ -173,7 +173,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="sea-qa-project-connection-dialog">
-      <ModalHeader toggle={onToggle}>{gettext('Add connection')}</ModalHeader>
+      <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="sea-qa-project-connection-body">
         <StepsNavigation
           className="sea-qa-project-new-connection-steps"
@@ -243,7 +243,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
               <CopyInput value={newRecord ? `${server}/webhook/discourse/?connection_id=${newRecord.id}` : gettext('Loading...')} />
             </FormGroup>
             <FormGroup>
-              <Label>{gettext('Webhook secret')}{' '}{gettext('(optional)')}</Label>
+              <Label>{gettext('Webhook secret (optional)')}</Label>
               <TextInput value={config['webhook_secret'] || ''} onChange={(newValue) => onConfigChange('webhook_secret', newValue)} />
             </FormGroup>
           </div>

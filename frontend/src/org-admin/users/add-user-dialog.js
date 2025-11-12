@@ -67,7 +67,7 @@ class AddOrgUserDialog extends React.Component {
     let errMessage;
     let email = this.state.email;
     if (!email.length) {
-      errMessage = gettext('email is required');
+      errMessage = gettext('Email is required');
       this.setState({ errMessage: errMessage });
       return false;
     }

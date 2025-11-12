@@ -67,12 +67,6 @@ class UserProfile extends Component {
     });
   };
 
-  updateQuota = (quota) => {
-    this.setState({
-      quota_total: quota
-    });
-  };
-
   disable2FA = () => {
     const email = decodeURIComponent(this.props.email);
     orgAdminAPI.orgAdminDeleteTwoFactorAuth(orgID, email).then(res => {
@@ -116,7 +110,6 @@ class UserProfile extends Component {
             data={this.state}
             updateName={this.updateName}
             updateContactEmail={this.updateContactEmail}
-            updateQuota={this.updateQuota}
             disable2FA={this.disable2FA}
             toggleForce2fa={this.toggleForce2fa}
           />

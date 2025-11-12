@@ -181,14 +181,6 @@ class OrgAdminAPI {
     return this.req.put(url, data);
   }
 
-  orgAdminSetOrgUserQuota(orgID, email, quota) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/users/' + encodeURIComponent(email) + '/';
-    const data = {
-      quota_total: quota
-    };
-    return this.req.put(url, data);
-  }
-
   // projects
   orgAdminListProjects(orgID, page, perPage) {
     const url = this.server + '/api/v2.1/org/' + orgID + '/admin/projects/';

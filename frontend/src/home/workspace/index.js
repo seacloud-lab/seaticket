@@ -344,7 +344,7 @@ class Workspace extends React.Component {
   onLeaveGroup = () => {
     let groupID = this.props.workspace.group_id;
     homeAPI.deleteGroupMember(groupID, username).then((res) => {
-      toaster.success(gettext('Successfully left group'));
+      toaster.success(gettext('You have left the group'));
       this.props.onDeleteGroup(groupID);
     }).catch(error => {
       this.handleError(error);
