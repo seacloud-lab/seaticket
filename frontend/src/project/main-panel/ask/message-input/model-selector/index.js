@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Icon, IconButton, CustomizePopover } from '@/components';
 import { gettext } from '@/constants';
 
@@ -11,6 +11,11 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
 
   const AVAILABLE_MODELS = window.app?.pageOptions?.availableLLMModels || [];
 
+  useEffect(() => {
+    if (!selectedModel && AVAILABLE_MODELS.length > 0) {
+      updateModel(AVAILABLE_MODELS[0].value);
+    }
+  }, []);
 
   const updateModelChange = useCallback((newModel) => {
     if (selectedModel !== newModel) {
@@ -28,13 +33,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
   }, []);
 
   if (AVAILABLE_MODELS.length === 0) {
-    return (
-      <div className="sea-qa-select custom-select sea-qa-customize-select sea-qa-ai-chat-tool-select sea-qa-ai-model-selector">
-        <div className="selected-option">
-          <div className="selected-option-show">{gettext('Default')}</div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const currentModel = AVAILABLE_MODELS.find(m => m.value === selectedModel);
@@ -47,7 +46,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         onClick={onMenuToggle}
       >
         <div className="selected-option">
-          <div className="selected-option-show">{currentModel?.label || gettext('Default')}</div>
+          <div className="selected-option-show">{currentModel?.label || AVAILABLE_MODELS[0]?.label || gettext('Default')}</div>
           <Icon symbol="down" />
         </div>
       </div>
