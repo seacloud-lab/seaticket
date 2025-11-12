@@ -659,6 +659,7 @@ class Rows extends Component {
           selectNone={this.selectNone}
           target={this.resultContainerRef}
           createContextMenuOptions={this.props.createContextMenuOptions}
+          updateLocalRow={this.props.updateLocalRow}
         />
       ),
       hasSelectedRow: this.hasSelectedRow(),

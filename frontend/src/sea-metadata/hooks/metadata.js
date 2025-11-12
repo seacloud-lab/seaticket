@@ -308,6 +308,7 @@ export const MetadataProvider = forwardRef(({
         modifyColumnData,
         modifyColumnWidth,
         insertColumn,
+        updateLocalRow,
         createContextMenuOptions,
       }}
     >
