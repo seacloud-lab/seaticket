@@ -363,12 +363,12 @@ def replace_file_url_in_content(content, new_file_urls_dict):
         content = content.replace(old_file_url, new_file_url)
     return content
 
-def gen_message_id(session_id, max_try = 5):
+def gen_message_id(session_uuid, max_try = 5):
     trying = 0
     new_message_id = ''
     while not new_message_id and trying < max_try:
         try_message_id = uuid.uuid4().hex[:4]
-        if ChatToolCalls.objects.filter(session_id=session_id, message_id=try_message_id).count() == 0:
+        if ChatToolCalls.objects.filter(session_uuid=session_uuid, message_id=try_message_id).count() == 0:
             new_message_id = try_message_id
         trying += 1
 
@@ -377,14 +377,14 @@ def gen_message_id(session_id, max_try = 5):
 
     return new_message_id
 
-def delete_session(session_id):
+def delete_session(session_uuid):
     try:
-        ChatMessages.objects.filter(session_id=session_id).delete()
-        ChatToolCalls.objects.filter(session_id=session_id).delete()
-        ChatSessions.objects.filter(pk=session_id).delete()
+        ChatMessages.objects.filter(session_uuid=session_uuid).delete()
+        ChatToolCalls.objects.filter(session_uuid=session_uuid).delete()
+        ChatSessions.objects.filter(pk=session_uuid).delete()
         return True
     except Exception as e:
-        logger.error('delete session: %s error: %s', str(session_id), e)
+        logger.error('delete session: %s error: %s', str(session_uuid), e)
         return False
 
 
@@ -399,9 +399,9 @@ def delete_project(project):
     try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
-        delete_session_ids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('id', flat=True)
-        for session_id in delete_session_ids:
-            delete_session(session_id)
+        delete_session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
+        for session_uuid in set(delete_session_uuids):
+            delete_session(session_uuid)
         seadb_api = SeaDBAPI()
         seadb_api.delete_base(project_uuid)
     except Exception as e:

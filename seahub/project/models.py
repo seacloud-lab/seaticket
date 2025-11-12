@@ -1410,7 +1410,7 @@ class ChatToolCallsManager(models.Manager):
 
 class ChatToolCalls(models.Model):
     id = models.BigAutoField(primary_key=True)
-    session_id = models.IntegerField(null=False, db_index=True)
+    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
     message_id = models.CharField(max_length=4, null=False)
     tool_calls = models.TextField()
 
@@ -1420,24 +1420,24 @@ class ChatToolCalls(models.Model):
         db_table = 'chat_tool_calls'
         constraints = [
             models.UniqueConstraint(
-                fields=['session_id', 'message_id'],
-                name='uniq_session_id_message_id'
+                fields=['session_uuid', 'message_id'],
+                name='uniq_session_uuid_message_id'
             )
         ]
 
     def to_dict(self):
         return {
             'id': self.id,
-            'session_id': self.session_id,
+            'session_uuid': self.session_uuid,
             'message_id': self.message_id,
             'tool_calls': json.loads(self.tool_calls),
         }
 
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_id, message_id, username, role, content, is_agent_mode, sources=''):
+    def create_message(self, session_uuid, message_id, username, role, content, is_agent_mode, sources=''):
         """Create a new chat message"""
         message = self.model(
-            session_id=session_id,
+            session_uuid=session_uuid,
             message_id=message_id,
             username=username,
             role=role,
@@ -1448,9 +1448,9 @@ class ChatMessagesManager(models.Manager):
         message.save()
         return message
 
-    def get_messages_by_session(self, session_id):
+    def get_messages_by_session(self, session_uuid):
         """Retrieve all messages of the session"""
-        return self.filter(session_id=session_id).order_by('created_at')
+        return self.filter(session_uuid=session_uuid).order_by('created_at')
 
 
 class ChatMessages(models.Model):
@@ -1460,7 +1460,7 @@ class ChatMessages(models.Model):
     ]
 
     id = models.BigAutoField(primary_key=True)
-    session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE, db_index=True)
+    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
     message_id = models.CharField(max_length=4, null=False)
     username = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
@@ -1474,14 +1474,17 @@ class ChatMessages(models.Model):
 
     class Meta:
         db_table = 'chat_messages'
-        indexes = [
-            models.Index(fields=['session_id']),
+        constraints = [
+            models.Index(
+                fields=['session_uuid', 'message_id'],
+                name='idx_session_uuid_message_id'
+            )
         ]
 
     def to_dict(self):
         return {
             'id': self.id,
-            'session_id': self.session_id,
+            'session_uuid': self.session_uuid,
             'message_id': self.message_id,
             'username': self.username,
             'role': self.role,
