@@ -518,21 +518,19 @@ CREATE TABLE `chat_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `chat_messages` (
-  `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
-  `session_id` BIGINT(11) NOT NULL,
-  `message_id` VARCHAR(4) NOT NULL,
-  `username` VARCHAR(255) NOT NULL,
-  `role` ENUM('user', 'assistant') NOT NULL,
-  `content` LONGTEXT,
-  `sources` LONGTEXT,
-  `created_at` DATETIME(6) NOT NULL,
-  `updated_at` DATETIME(6),
-  `is_agent_mode` TINYINT NOT NULL,
+  `id` bigint(11) NOT NULL AUTO_INCREMENT,
+  `session_uuid` varchar(36) NOT NULL,
+  `message_id` varchar(4) DEFAULT NULL,
+  `username` varchar(255) NOT NULL,
+  `role` enum('user','assistant') NOT NULL,
+  `content` longtext DEFAULT NULL,
+  `sources` longtext DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `is_agent_mode` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_session_id` (`session_id`),
-  CONSTRAINT `fk_chat_messages_session`
-    FOREIGN KEY (`session_id`) REFERENCES `chat_sessions` (`id`)
-    ON DELETE CASCADE
+  KEY `idx_session_uuid` (`session_uuid`),
+  KEY `idx_session_uuid_message_id` (`session_uuid`,`message_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_api_token` (
@@ -550,11 +548,12 @@ CREATE TABLE `project_api_token` (
   KEY `project_api_token_app_name_idx` (`app_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE chat_tool_calls (
-	`id` BIGINT(11) NOT NULL AUTO_INCREMENT,
-  `session_id` INT(11) NOT NULL,
-  `message_id` VARCHAR(4) NOT NULL,
-  `tool_calls` LONGTEXT NOT NULL
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `uniq_session_id_message_id` (`session_id`, `message_id`)
-);
+CREATE TABLE `chat_tool_calls` (
+  `id` bigint(11) NOT NULL AUTO_INCREMENT,
+  `session_uuid` varchar(36) NOT NULL,
+  `message_id` varchar(4) NOT NULL,
+  `tool_calls` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_session_uuid_message_id` (`session_uuid`,`message_id`),
+  KEY `idx_session_uuid` (`session_uuid`) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

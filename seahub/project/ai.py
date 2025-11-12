@@ -86,7 +86,7 @@ class ChatView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         
         try:
-            message_id = gen_message_id(session.id)
+            message_id = gen_message_id(session.session_uuid)
         except Exception as e:
             logger.exception(f'Failure to generate message id: {e}')
             error_msg = 'Internal server error'
@@ -94,7 +94,7 @@ class ChatView(APIView):
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
-            'session_id': session.id,
+            'session_uuid': session.session_uuid,
             'message_id': message_id,
             'query': query,
             'resolve_type': resolve_type,
@@ -126,8 +126,8 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.id, message_id, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.id, message_id, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent')
+        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
 
         return Response({
             'ai_reply': ai_reply,

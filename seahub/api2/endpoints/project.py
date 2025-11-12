@@ -651,7 +651,7 @@ class ChatMessagesView(APIView):
                 error_msg = 'Session not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            messages = ChatMessages.objects.get_messages_by_session(session.id)
+            messages = ChatMessages.objects.get_messages_by_session(session_uuid)
             messages_data = [message.to_dict() for message in messages]
 
             return Response({'messages': messages_data})
