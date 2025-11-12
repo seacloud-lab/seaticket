@@ -319,11 +319,17 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
         }
       }
     },
-    'ai_title': {
-      display_name: gettext('AI Title'),
+    'ai_summary': {
+      display_name: gettext('AI Summary'),
       type: CellType.TEXT,
       is_predefined: true,
       editable: true,
+    },
+    'ai_processed_time': {
+      display_name: gettext('AI processed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      is_predefined: true,
     },
     'author': {
       display_name: gettext('Author'),
@@ -388,7 +394,17 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'created_time': {
       display_name: gettext('Created at'),
       type: CellType.CTIME,
-    }
+    },
+    'ai_summary': {
+      display_name: gettext('AI Summary'),
+      type: CellType.TEXT,
+      editable: false,
+    },
+    'ai_processed_time': {
+      display_name: gettext('AI processed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
   },
   [CONNECTION_TYPE.SITE]: {
     'title': {
@@ -403,7 +419,17 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Last modify time'),
       type: CellType.MTIME,
       sort_able: true, filter_able: true
-    }
+    },
+    'ai_summary': {
+      display_name: gettext('AI Summary'),
+      type: CellType.TEXT,
+      editable: false, expand_able: true
+    },
+    'ai_processed_time': {
+      display_name: gettext('AI processed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+    },
   },
   [CONNECTION_TYPE.SEAFILE]: {
     'title': {
@@ -424,6 +450,16 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       data: {
         format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
       }
+    },
+    'ai_summary': {
+      display_name: gettext('AI Summary'),
+      type: CellType.TEXT,
+      editable: false, expand_able: true,
+    },
+    'ai_processed_time': {
+      display_name: gettext('AI processed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
     }
   },
   [CONNECTION_TYPE.EMAIL]: {
@@ -461,7 +497,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       data: {
         format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
       }
-    }
+    },
   }
 };
 

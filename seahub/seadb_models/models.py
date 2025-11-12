@@ -47,6 +47,11 @@ class PropertyTypes:
     LIST = 'list'
 
 
+class ListTypes:
+    vector = {
+        "list_type": "float64",
+    }
+    
 class SelectTypes:
     ticket_status = {
       "options": [
@@ -241,6 +246,9 @@ class DiscourseTopicsTable(BaseModel):
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -267,6 +275,9 @@ class WebCrawlTable(BaseModel):
     sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     hash = MappedColumn('hash', PropertyTypes.TEXT)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -292,6 +303,9 @@ class GithubIssuesTable(BaseModel):
     closed_at = MappedColumn('closed_at', PropertyTypes.DATETIME)
     comments_count = MappedColumn('comments_count', PropertyTypes.INT)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
 
     @classmethod
     def gen_table_name(cls, connection_id):
@@ -318,6 +332,9 @@ class SeafileTable(BaseModel):
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
 
     @classmethod
     def gen_table_name(cls, connection_id):

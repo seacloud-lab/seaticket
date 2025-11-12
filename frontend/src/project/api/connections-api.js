@@ -202,8 +202,8 @@ class ConnectionsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  generateAITitle(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v2.1/ai/generate-ai-title/';
+  generateAISummary(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v2.1/ai/generate-ai-summary/';
     let data = {
       project_uuid: projectUuid,
       connection_id: connectionID,

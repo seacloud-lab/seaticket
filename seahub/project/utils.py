@@ -254,17 +254,18 @@ def convert_record_to_ticket(params):
     return title, description
 
 
-def generate_ai_title(params):
+def generate_ai_summary(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-title')
+    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-summary')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
-        raise Exception('generate ai title error status: %s body: %s' % (resp.status_code, resp.text))
+        raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
     resp_json = resp.json()
-    ai_title = resp_json.get('title', '')
-    return ai_title
+    ai_summary = resp_json.get('summary', '')
+    ai_summary_vector = resp_json.get('summary_vector', [])
+    return ai_summary, ai_summary_vector
 
 
 def gen_s3_file_path(project_uuid, file_path):
