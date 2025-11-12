@@ -17,8 +17,9 @@ const CommonMessage = forwardRef(({ message, settings }, ref) => {
 
   const sources = useMemo(() => {
     if (Object.keys(message).length === 0) return [];
-    const originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
-    return Array.isArray(originSources) ? originSources.slice(0) : [];
+    let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
+    originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
+    return originSources.map(source => ({ ...source, url: encodeURIComponent(source.url) }));
   }, []);
 
   const aiReply = useMemo(() => {
