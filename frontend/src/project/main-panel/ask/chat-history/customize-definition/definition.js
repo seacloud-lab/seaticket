@@ -24,7 +24,7 @@ const Definition = ({ element, attributes, editor, onClick, sources, settings })
       title: connection_name,
       url: server_url,
       content: content_preview,
-      mtime: bumped_at || mtime || updated_at || '2014-09-09',
+      mtime: bumped_at || mtime || updated_at || '',
       score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
     };
   }, [element, sources]);
