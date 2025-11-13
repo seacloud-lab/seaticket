@@ -145,7 +145,7 @@ const RowDetailsDialog = ({
               </Fragment>
             )}
             {SUPPORT_DETAILS_LIST.includes(connection.type) && rowDetails && (
-              <div className="sea-qa-row-details-non-seafile">
+              <div className="sea-qa-row-details-type-list">
                 {rowDetails.length === 0 && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
                 {rowDetails.length > 0 && (
                   <Fragment>

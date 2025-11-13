@@ -14,7 +14,7 @@ const TextFormatter = ({ value, className, column, onClick, children: emptyForma
   if (!validValue) return emptyFormatter || null;
   return (
     <div
-      className={classnames('123 sea-metadata-ui cell-formatter-container text-formatter', className, { 'hover-decoration': column?.click } )}
+      className={classnames('sea-metadata-ui cell-formatter-container text-formatter', className, { 'hover-decoration': column?.click } )}
       title={validValue}
       onClick={column?.click && onClick ? onClick : () => {}}
     >

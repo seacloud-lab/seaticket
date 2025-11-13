@@ -112,6 +112,7 @@ class ConnectionsAPI {
 
   getConnectionRowDetail(projectUuid, connectionID, params) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
+
     return this.req.get(url, { params: params });
   }
 
