@@ -350,7 +350,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.NUMBER,
       is_predefined: true,
     },
-    'sync_time': {
+    'modified_time': {
       display_name: gettext('Last updated'),
       type: CellType.MTIME,
       is_predefined: true,

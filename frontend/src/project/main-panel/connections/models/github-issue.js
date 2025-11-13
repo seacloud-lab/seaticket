@@ -12,7 +12,7 @@ class GithubIssue {
     this.assignees = object.assignees || '';
     this.url = object.url || '';
     this.created_time = object.created_time || '';
-    this.sync_time = object.sync_time || '';
+    this.modified_time = object.modified_time || '';
     this.closed_at = object.closed_at || '';
     this.comments_count = object.comments_count || '';
   }
