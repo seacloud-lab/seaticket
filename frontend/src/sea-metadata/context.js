@@ -168,6 +168,7 @@ class Context {
 
   canModifyColumnData = (column) => {
     if (!this.canModify()) return false;
+    if (column?.name === 'substate') return Boolean(column?.modify_data_able);
     if (column.type === CellType.TAGS || column.type === CellType.TYPE) return Boolean(column?.modify_data_able);
     if (!this.api?.modifyColumnData) return false;
     return Boolean(column?.modify_data_able);

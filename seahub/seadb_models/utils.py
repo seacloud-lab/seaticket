@@ -4,7 +4,7 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.tickets.ticket_utils import get_column_key_by_name
+from seahub.tickets.ticket_utils import get_column_by_name
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable
 
@@ -301,11 +301,12 @@ def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, li
         records = []
     return records
 
-def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
+def init_ticket_seadb_table(seadb_api, project_uuid):
     """Initialize SeaDB tables for Ticket"""
     # Create tickets table
     res = seadb_api.create_table(project_uuid, 'tickets')
     tickets_table_id = res['table_id']
+    status_column_key = None
     for column in TicketsTable.get_fields():
         mapped_column = {
             'column_name': column.name,
@@ -313,11 +314,16 @@ def init_ticket_seadb_table(seadb_api, project_uuid, workspace_owner):
         }
         if column.data:
             mapped_column["column_data"] = column.data
-        seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
+        if column.name == 'substate' and status_column_key:
+            mapped_column['column_data']['cascade_column_key'] = status_column_key
+        added_column = seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
+        if column.name == 'status':
+            status_column_key = added_column['column_key']
     # Create tickets table index for seadb
     ticket_index_columns = [
         TicketsTable.priority.name,
         TicketsTable.status.name,
+        TicketsTable.substate.name,
         TicketsTable.type.name,
         TicketsTable.tags.name,
         TicketsTable.assignees.name,
@@ -472,8 +478,8 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
 
 
 def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, username=''):
-    title_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'title')
-    priority_column_key = get_column_key_by_name(seadb_api, project_uuid, 'tickets', 'priority')
+    title_column, title_column_key = get_column_by_name(seadb_api, project_uuid, 'tickets', 'title')
+    priority_column, priority_column_key = get_column_by_name(seadb_api, project_uuid, 'tickets', 'priority')
     view = {
             'basic_filters': [],
             'filters': [

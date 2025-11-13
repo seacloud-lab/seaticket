@@ -1,0 +1,32 @@
+.sea-qa-substate-dialog .substate-preview {
+  width: 100%;
+  height: 52px;
+  padding:  16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F5F5F5;
+  border-radius: 6px;
+}
+
+.sea-qa-substate-dialog .sea-qa-substate-color-editor {
+  flex: 1;
+}
+
+.sea-qa-substate-dialog .sea-qa-substate-color-editor-btn {
+  height: 38px;
+  width: 38px;
+  border: 6px;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.sea-qa-substate-dialog .sea-qa-substate-color-editor-btn .sea-qa-icon-svg,
+.sea-qa-substate-dialog .sea-qa-substate-color-editor-btn:hover .sea-qa-icon-svg {
+  color: inherit;
+}
+
+.sea-qa-substate-dialog .sea-qa-substate-color-editor.invalid {
+  border-color: red;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, .25);
+}

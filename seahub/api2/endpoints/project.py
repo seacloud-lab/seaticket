@@ -239,7 +239,7 @@ class ProjectsView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             seadb_api.create_base(project.uuid)
-            init_ticket_seadb_table(seadb_api, project.uuid, workspace.owner)
+            init_ticket_seadb_table(seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

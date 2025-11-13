@@ -37,6 +37,7 @@ class Ticket {
     this.title = object.title || '';
     this.content = object.description || '';
     this.status = object.status || TICKET_STATUS.OPEN;
+    this.substate = object.substate || '';
     this.type = object.type || '';
     this.tags = object.tags || [];
     this.priority = object.priority || 0;
@@ -111,6 +112,7 @@ class TicketForTickets {
     this.title = object.title || '';
     this.description = object.description || '';
     this.status = object.status || TICKET_STATUS.OPEN;
+    this.substate = object.substate || '';
     this.type = object.type || '';
     this.tags = object.tags || [];
     this.priority = object.priority || 0;
@@ -123,7 +125,7 @@ class TicketForTickets {
 
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
-    this.reply_updated_at = object.reply_updated_at || '';
+    this.reply_updated_at = object.updated_at || '';
 
     this.updated_at = object.updated_at || '';
 

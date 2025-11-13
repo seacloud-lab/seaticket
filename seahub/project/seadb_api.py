@@ -141,6 +141,13 @@ class SeaDBAPI:
             data['column_data'] = column['column_data']
         response = requests.post(url, json=data, headers=headers, timeout=self.timeout)
         return parse_response(response)
+    
+    def update_column(self, base_id, column_data):
+        base_id = uuid_str_to_36_chars(base_id)
+        headers = self.gen_headers(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/columns'
+        response = requests.put(url, json=column_data, headers=headers, timeout=self.timeout)
+        return parse_response(response)
 
 
     def delete_column(self, base_id, table_id, column_key):

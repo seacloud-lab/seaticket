@@ -3,22 +3,31 @@ import { CellType } from '@/sea-metadata';
 
 export const TICKET_STATUS = {
   OPEN: '0001',
-  REOPEN: 're_open',
-  COMPLETED: '0002',
-  NOT_PLANNED: '0003',
-  DUPLICATE: '0004',
+  CLOSED: '0002'
+};
+
+export const TICKET_SUBSTATE = {
+  NEW: '0010',
+  REOPEN: '0011',
+  WORKING_ON: '0012',
+  COMPLETED: '0013',
+  NOT_PLANNED: '0014',
+  DUPLICATE: '0015',
 };
 
 export const TICKET_OPENED_STATUS = [
   '',
-  TICKET_STATUS.REOPEN,
   TICKET_STATUS.OPEN,
+  TICKET_SUBSTATE.REOPEN,
+  TICKET_SUBSTATE.WORKING_ON,
+  TICKET_SUBSTATE.NEW,
 ];
 
 export const TICKET_CLOSED_STATUS = [
-  TICKET_STATUS.COMPLETED,
-  TICKET_STATUS.NOT_PLANNED,
-  TICKET_STATUS.DUPLICATE,
+  TICKET_STATUS.CLOSED,
+  TICKET_SUBSTATE.COMPLETED,
+  TICKET_SUBSTATE.NOT_PLANNED,
+  TICKET_SUBSTATE.DUPLICATE,
 ];
 
 export const TICKET_STATUS_CONFIG = {
@@ -29,44 +38,28 @@ export const TICKET_STATUS_CONFIG = {
     shortName: gettext('Open'), // Applied to status toggle btn
     name: gettext('Open'), // Applied to status editor
   },
-  [TICKET_STATUS.REOPEN]: {
-    value: TICKET_STATUS.REOPEN,
-    icon: 'loop-dot',
-    statusName: gettext('Reopen'),
-    shortName: gettext('Reopen ticket'),
-    name: gettext('Reopen ticket'),
-  },
-  [TICKET_STATUS.COMPLETED]: {
-    value: TICKET_STATUS.COMPLETED,
+  [TICKET_STATUS.CLOSED]: {
+    value: TICKET_STATUS.CLOSED,
     icon: 'circle-check',
     statusName: gettext('Close'),
     shortName: gettext('Close ticket'),
-    name: gettext('Close as completed'),
+    name: gettext('Close'),
     description: gettext('Done, closed, fixed, resolved'),
-  },
-  [TICKET_STATUS.NOT_PLANNED]: {
-    value: TICKET_STATUS.NOT_PLANNED,
-    icon: 'circle-invalid',
-    statusName: gettext('Not planned'),
-    shortName: gettext('Close ticket'),
-    name: gettext('Close as not planned'),
-    description: gettext('Won\'t fix, can\'t repro, stale'),
-  },
-  [TICKET_STATUS.DUPLICATE]: {
-    value: TICKET_STATUS.DUPLICATE,
-    icon: 'circle-invalid',
-    statusName: gettext('Duplicate'),
-    shortName: gettext('Close as duplicate'),
-    name: gettext('Close as duplicate'),
-    description: gettext('Duplicate of another ticket'),
   }
 };
 
 export const TICKET_STATUS_OPTIONS = [
   { id: '0001', value: TICKET_STATUS.OPEN, name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
-  { id: '0002', value: TICKET_STATUS.COMPLETED, name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
-  { id: '0003', value: TICKET_STATUS.NOT_PLANNED, name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
-  { id: '0004', value: TICKET_STATUS.DUPLICATE, name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
+  { id: '0002', value: TICKET_STATUS.CLOSED, name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+];
+
+export const TICKET_SUBSTATE_OPTIONS = [
+  { id: '0010', value: TICKET_SUBSTATE.NEW, name: gettext('New'), text_color: '#FFF', color: '#1a7f37', border_color: '#59CB74' },
+  { id: '0011', value: TICKET_SUBSTATE.REOPEN, name: gettext('Reopen'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0012', value: TICKET_SUBSTATE.WORKING_ON, name: gettext('Working on'), text_color: '#FFF', color: '#1a7f37', border_color: '#46A1FD' },
+  { id: '0013', value: TICKET_SUBSTATE.COMPLETED, name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+  { id: '0014', value: TICKET_SUBSTATE.NOT_PLANNED, name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
+  { id: '0015', value: TICKET_SUBSTATE.DUPLICATE, name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
 ];
 
 export const PREDEFINED_TICKET_TAG_NAME = {
@@ -155,6 +148,7 @@ export const TICKET_PAGE_TYPE = {
   NEW: 'new',
   TAGS: 'tags',
   TYPES: 'types',
+  SUBSTATES: 'substates',
 };
 
 export const TICKET_CHILDREN_PAGE_TYPE = {
@@ -190,6 +184,12 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   'type': {
     type: CellType.TYPE,
     display_name: gettext('Type'),
+    editable: true,
+    modify_data_able: true,
+  },
+  'substate': {
+    type: CellType.SINGLE_SELECT,
+    display_name: gettext('Substate'),
     editable: true,
     modify_data_able: true,
   },

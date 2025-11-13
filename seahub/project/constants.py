@@ -102,7 +102,7 @@ TICKET_DEFAULT_DETAILS = {
             'name': _('Closed'),
             'type': 'table',
             'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['completed', 'not_planned', 'duplicate']},
+                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
                 {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
@@ -288,8 +288,8 @@ class FilterTermModifier(object):
     THIS_MONTH = 'this_month'
     THIS_YEAR = 'this_year'
 
-TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'description', 'status', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_at', 'updated_at']
 
+TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'description', 'status', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_at', 'updated_at']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'ai_title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_time', 'modified_time'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'topic_id', 'views', 'modified_time', 'created_time'],

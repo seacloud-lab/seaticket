@@ -14,15 +14,16 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
-from seahub.tickets.ticket_utils import get_type_column, filter_tickets_by_type, get_type_option_by_id, \
-    update_type_option, delete_type_option, add_type_option, get_ticket_counts_group_by_column_name, \
-    convert_ticket_select_column_name_to_option_id
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.tickets.ticket_utils import get_substate_column_details, get_substate_column, add_substate_option, \
+    update_substate_option, delete_substate_option, get_substate_option_by_id, filter_tickets_by_substate, \
+    get_ticket_counts_group_by_column_name, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id
+
 
 logger = logging.getLogger(__name__)
 
 
-class TicketTypesAPIView(APIView):
+class TicketSubstatesAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -36,6 +37,10 @@ class TicketTypesAPIView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        status_id = request.GET.get('status_id')  # optional: filter substates by status id
+
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -52,19 +57,31 @@ class TicketTypesAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            project_types, _ = get_type_column(seadb_api, project_uuid)
+            substate_options, column_key, substate_data = get_substate_column_details(seadb_api, project_uuid)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        tickets_count_dict = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
-        if not tickets_count_dict:
-            tickets_count_dict = {}
-        for project_type in project_types:
-            project_type['tickets_count'] = tickets_count_dict.get(project_type['name'], 0)
+        # optional cascade filter
+        if status_id:
+            try:
+                substate_options = get_substate_options_by_status_option_id(seadb_api, project_uuid, status_id) or []
+            except Exception as e:
+                logger.error(e)
+
+        tickets_count_dict = {}
+        try:
+            tickets_count_dict = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
+            for option in substate_options:
+                option['tickets_count'] = tickets_count_dict.get(option.get('name'), 0)
+        except Exception as e:
+            logger.error(e)
+
         return Response({
-            'project_types': project_types,
+            'project_substates': substate_options,
+            'cascade_column_key': substate_data.get('cascade_column_key'),
+            'cascade_settings': substate_data.get('cascade_settings') or {},
         })
 
     def post(self, request, project_uuid):
@@ -109,34 +126,27 @@ class TicketTypesAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            project_types, _ = get_type_column(seadb_api, project_uuid)
+            existing_options, _ = get_substate_column(seadb_api, project_uuid)
+            if any(opt.get('name') == name for opt in (existing_options or [])):
+                error_msg = 'substate already exists.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            substate_option = add_substate_option(seadb_api, project_uuid, name, color, text_color)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if name in [project_type['name'] for project_type in project_types]:
-            error_msg = 'type already exists.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # main
-        try:
-            project_type = add_type_option(seadb_api, project_uuid, name, color, text_color)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'project_type': project_type}, status=status.HTTP_201_CREATED)
+        return Response({'project_substate': substate_option}, status=status.HTTP_201_CREATED)
 
 
-class TicketTypeAPIView(APIView):
+class TicketSubstateAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid, type_id):
+    def get(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
@@ -161,20 +171,19 @@ class TicketTypeAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not type_option:
-            error_msg = 'type option not found.'
+        if not substate_option:
+            error_msg = 'Project substate not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # main
         try:
-            tickets, columns = filter_tickets_by_type(
-                    seadb_api, project_uuid, [type_id])
+            tickets, columns = filter_tickets_by_substate(seadb_api, project_uuid, [substate_id])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -182,12 +191,13 @@ class TicketTypeAPIView(APIView):
 
         for ticket in tickets:
             convert_ticket_select_column_name_to_option_id(seadb_api, project_uuid, ticket)
+
         return Response({
             'tickets': tickets,
             'columns': columns,
         })
 
-    def put(self, request, project_uuid, type_id):
+    def put(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
@@ -220,14 +230,14 @@ class TicketTypeAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not type_option:
-            error_msg = 'type not found.'
+        if not substate_option:
+            error_msg = 'Project substate not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # main
@@ -239,7 +249,7 @@ class TicketTypeAPIView(APIView):
                 update_data['color'] = color
             if text_color:
                 update_data['text_color'] = text_color
-            update_type_option(seadb_api, project_uuid, type_id, update_data)
+            update_substate_option(seadb_api, project_uuid, substate_id, update_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -247,7 +257,7 @@ class TicketTypeAPIView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, type_id):
+    def delete(self, request, project_uuid, substate_id):
         """
         Permission:
         1. owner
@@ -272,18 +282,18 @@ class TicketTypeAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        if not type_option:
-            error_msg = 'type not found.'
+        if not substate_option:
+            error_msg = 'Project substate not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            delete_type_option(seadb_api, project_uuid, type_id)
+            delete_substate_option(seadb_api, project_uuid, substate_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

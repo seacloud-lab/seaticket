@@ -16,14 +16,13 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_tags_column, add_tag_option, update_tag_option, delete_tag_option, \
-    get_tag_option_by_id, get_type_option_by_name, get_tag_ids_by_names, get_ticket_counts_group_by_tag, \
-    get_status_option_by_name
+    get_tag_option_by_id, get_ticket_counts_group_by_column_name, filter_tickets_by_tag, convert_ticket_select_column_name_to_option_id
 
 
 logger = logging.getLogger(__name__)
 
 
-class ProjectTagsAPIView(APIView):
+class TicketTagsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -37,9 +36,6 @@ class ProjectTagsAPIView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # argument check
-        tickets_count = request.GET.get('tickets_count', '0')
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -57,20 +53,19 @@ class ProjectTagsAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            tag_options, _ = get_tags_column(seadb_api, project_uuid)
+            tag_options, column_key = get_tags_column(seadb_api, project_uuid)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         tickets_count_dict = {}
-        if tickets_count == '1':
-            try:
-                tickets_count_dict = get_ticket_counts_group_by_tag(seadb_api, project_uuid) or {}
-                for tag_option in tag_options:
-                    tag_option['tickets_count'] = tickets_count_dict.get(tag_option.get('name'), 0)
-            except Exception as e:
-                logger.error(e)
+        try:
+            tickets_count_dict = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'tags') or {}
+            for tag_option in tag_options:
+                tag_option['tickets_count'] = tickets_count_dict.get(tag_option.get('name'), 0)
+        except Exception as e:
+            logger.error(e)
 
         return Response({'project_tags': tag_options})
 
@@ -134,11 +129,51 @@ class ProjectTagsAPIView(APIView):
         return Response({'project_tag': tag_option}, status=status.HTTP_201_CREATED)
 
 
-class ProjectTagAPIView(APIView):
+class TicketTagAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, tag_id):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI(username)
+            tickets, columns = filter_tickets_by_tag(seadb_api, project_uuid, tag_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        for row in tickets:
+            convert_ticket_select_column_name_to_option_id(seadb_api, project_uuid, row)
+
+        return Response({
+            'tickets': tickets,
+            'columns': columns,
+        })
 
     def put(self, request, project_uuid, tag_id):
         """
@@ -238,64 +273,3 @@ class ProjectTagAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
-
-
-class ProjectTagTicketsAPIView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
-    def get(self, request, project_uuid, tag_id):
-        """
-        Permission:
-        1. owner
-        2. group member
-        """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # main
-        try:
-            seadb_api = SeaDBAPI(username)
-            tag_name = get_tag_option_by_id(seadb_api, project_uuid, tag_id).get('name')
-            sql = f"""
-                SELECT * 
-                FROM `tickets` 
-                WHERE `deleted` = False 
-                AND `tags` in ('{tag_name}')
-            """
-            res = seadb_api.query_rows(project_uuid, sql)
-            columns = res.get('metadata') or []
-            tickets = res.get('results') or []
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        for row in tickets:
-            if row.get('status'):
-                option = get_status_option_by_name(seadb_api, project_uuid, row.get('status'))
-                row['status'] = option.get('id')
-            if row.get('type'):
-                option = get_type_option_by_name(seadb_api, project_uuid, row.get('type'))
-                row['type'] = option.get('id')
-            if row.get('tags'):
-                row['tags'] = get_tag_ids_by_names(seadb_api, project_uuid, row.get('tags'))
-
-        return Response({
-            'tickets': tickets,
-            'columns': columns,
-        })

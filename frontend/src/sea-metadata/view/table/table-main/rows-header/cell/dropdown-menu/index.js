@@ -11,7 +11,7 @@ import { isMobile } from '@/utils/utils';
 import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
 import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
 import context from '@/sea-metadata/context';
-import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
+import { useTagsData, useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
 
 import './index.css';
 
@@ -29,6 +29,7 @@ const HeaderDropdownMenu = forwardRef(({
 
   const { toggleAllTags } = useTagsData();
   const { toggleAllTypes } = useTypesData();
+  const { toggleAllSubstates } = useSubstatesData();
 
   const isPrivateColumn = useMemo(() => {
     return checkIsPredefinedColumn(column);
@@ -288,6 +289,15 @@ const HeaderDropdownMenu = forwardRef(({
               onMouseEnter={hideSubMenu}
             />
           }
+
+          {CellType.SINGLE_SELECT === type && column?.name === 'substate' && (
+            <DropdownItem
+              title={gettext('Substates')}
+              onChange={toggleAllSubstates}
+              onMouseEnter={hideSubMenu}
+            />
+          )}
+
         </div>
       </DropdownMenu>
     );
