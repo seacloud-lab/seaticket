@@ -167,7 +167,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   'title': {
     type: CellType.TEXT,
     display_name: gettext('Title'),
-    editable: true,
+    editable: false,
     is_name_column: true,
     frozen: true,
     is_required: true,
