@@ -5,7 +5,8 @@ import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
-import { chatAPI } from '../../../api';
+import { chatAPI, ticketsAPI } from '../../../api';
+import { TicketForAI } from '../../tickets/models';
 import ChatHistory from '../chat-history';
 import Thinking from '../thinking';
 import { Utils } from '@/utils/utils';
@@ -22,6 +23,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
+  const [initialResolveType, setInitialResolveType] = useState(null);
+  const [initialTicket, setInitialTicket] = useState(null);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -164,6 +167,32 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
   }, [session?.is_replying]);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resolveType = urlParams.get('resolve_type');
+    const ticketId = urlParams.get('ticket_id');
+
+    if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
+      setInitialResolveType(resolveType);
+    }
+
+    if (ticketId) {
+      ticketsAPI.getProjectTicket(projectUuid, ticketId).then(res => {
+        const ticket = res.data.ticket;
+        if (ticket) {
+          const ticketData = {
+            ...ticket,
+            number: ticket._pk
+          };
+          const ticketForAI = new TicketForAI(ticketData);
+          setInitialTicket(ticketForAI);
+        }
+      }).catch(error => {
+        console.error('Failed to fetch ticket:', error);
+      });
+    }
+  }, [projectUuid]);
+
+  useEffect(() => {
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
       messageInputRef.current?.setAsk([session?.problem || '']);
     } else {
@@ -241,6 +270,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
+          initialResolveType={initialResolveType}
+          initialTicket={initialTicket}
         />
       </div>
     </div>

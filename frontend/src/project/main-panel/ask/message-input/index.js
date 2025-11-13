@@ -19,12 +19,14 @@ const MessageInput = forwardRef(({
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
   sendMessage,
+  initialResolveType,
+  initialTicket,
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
-  const [resolveType, setResolveType] = useState(AI_RESOLVE_TYPE.ASK);
+  const [resolveType, setResolveType] = useState(initialResolveType || AI_RESOLVE_TYPE.ASK);
   const [value, setValue] = useState('');
-  const [ticket, setTicket] = useState(null);
+  const [ticket, setTicket] = useState(initialTicket || null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -134,6 +136,18 @@ const MessageInput = forwardRef(({
     }
   }, [value]);
 
+  useEffect(() => {
+    if (initialResolveType) {
+      setResolveType(initialResolveType);
+    }
+  }, [initialResolveType]);
+
+  useEffect(() => {
+    if (initialTicket) {
+      setTicket(initialTicket);
+    }
+  }, [initialTicket]);
+
   useImperativeHandle(ref, () => ({
 
     clearInput: () => {
@@ -205,6 +219,8 @@ MessageInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
+  initialResolveType: PropTypes.string,
+  initialTicket: PropTypes.object,
 };
 
 export default MessageInput;

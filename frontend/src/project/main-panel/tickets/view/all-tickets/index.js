@@ -244,6 +244,14 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       label: gettext('Open ticket'),
       callback: () => togglePageType(row._id),
     });
+    list.push({
+      label: gettext('Resolve ticket by AI'),
+      callback: () => {
+        const { origin } = location;
+        const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/?resolve_type=agent&ticket_id=${row.number}`;
+        window.location.href = url;
+      }
+    });
 
     list.push('Divider');
 

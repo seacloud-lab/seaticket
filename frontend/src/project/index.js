@@ -29,7 +29,7 @@ const Project = () => {
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && isKeepSearch) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);
