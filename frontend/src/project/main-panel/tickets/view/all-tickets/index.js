@@ -62,7 +62,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
-          'title': { click: expandRow },
+          'title': { click: (row) => togglePageType(row._id) },
         };
         columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
           const { name } = c;
