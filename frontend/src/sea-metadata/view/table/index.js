@@ -6,7 +6,7 @@ import { Utils } from '@/utils/utils';
 import { isFunction } from '@/utils/type-detection';
 import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { getValidGroupbys } from '../../utils/group';
-import { EVENT_BUS_TYPE, PER_LOAD_NUMBER, MAX_LOAD_NUMBER } from '../../constants';
+import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../../constants';
 import context from '../../context';
 import { useMetadata, useCollaborators, useTagsData, useSelectedRows } from '../../hooks';
 
@@ -95,29 +95,6 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
       return;
     }
 
-  }, [isLoadingMore, metadata, store]);
-
-  const loadAll = useCallback(async (maxLoadNumber, callback) => {
-    if (!metadata.hasMore) return;
-    if (isLoadingMore) return;
-    setLoadingMore(true);
-    const rowsCount = metadata.row_ids.length;
-    const loadNumber = rowsCount % MAX_LOAD_NUMBER !== 0 ? MAX_LOAD_NUMBER - rowsCount % MAX_LOAD_NUMBER : MAX_LOAD_NUMBER;
-    try {
-      await store.loadMore(loadNumber);
-      setLoadingMore(false);
-    } catch (error) {
-      const errorMsg = Utils.getErrorMsg(error);
-      toaster.danger(errorMsg);
-      setLoadingMore(false);
-      return;
-    }
-    if (store.data.hasMore && store.data.row_ids.length < maxLoadNumber) {
-      loadAll(maxLoadNumber, callback);
-    } else {
-      typeof callback === 'function' && callback(store.data.hasMore);
-      setLoadingMore(false);
-    }
   }, [isLoadingMore, metadata, store]);
 
   const getAdjacentRowsIds = useCallback((rowIds) => {
@@ -209,7 +186,6 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           rowGetterByIndex={rowGetterByIndex}
           getTableContentRect={getTableContentRect}
           getAdjacentRowsIds={getAdjacentRowsIds}
-          loadAll={loadAll}
           insertColumn={insertColumn}
           renameColumn={renameColumn}
           deleteColumn={deleteColumn}

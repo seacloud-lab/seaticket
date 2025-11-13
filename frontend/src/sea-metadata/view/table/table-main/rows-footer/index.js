@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Loading from '@/components/loading';
-import toaster from '@/components/toaster';
-import LoadAllTip from '../load-all-tip';
 import RowMetrics from '../../utils/row-metrics';
 import { gettext } from '@/constants';
 import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, seaTableZIndexes } from '../../../../constants';
@@ -47,14 +45,7 @@ class RowsFooter extends React.Component {
     if (this.props.isLoadingMore) {
       return;
     }
-    const loadNumber = this.props.rowsCount < 50000 ? 50000 : 100000;
-    this.props.loadAll(loadNumber, (hasMore) => {
-      if (hasMore) {
-        toaster.success(<LoadAllTip load={this.props.loadAll} />, { duration: 5 });
-      } else {
-        toaster.success(gettext('All rows loaded'));
-      }
-    });
+    this.props.loadMore();
   };
 
   setSummaryScrollLeft = (scrollLeft) => {
@@ -139,7 +130,7 @@ class RowsFooter extends React.Component {
         <div className="rows-row d-flex text-nowrap" style={{ width: rowWidth }}>
           <span>{this.getRow()}</span>
           {!isLoadingMore && hasMore &&
-            <span className="load-all ml-4" onClick={this.onClick}>{gettext('Load all')}</span>
+            <span className="load-all ml-4" onClick={this.onClick}>{gettext('Load More')}</span>
           }
           {isLoadingMore &&
             <span className="loading-message ml-4">
