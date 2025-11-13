@@ -492,10 +492,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   const handleExpandRow = useCallback((row) => {
     setCurrentRow(row);
-    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE && connection.type !== CONNECTION_TYPE.SITE) {
-      window.open(row.url);
-      return;
-    }
     setIsShowRowDetailsDialog(true);
   }, [projectUuid, connectionID, connection]);
 

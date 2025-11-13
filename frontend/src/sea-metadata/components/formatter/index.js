@@ -26,9 +26,7 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
   const className = `sea-metadata-${columnType}-formatter`;
   const props = {
     column: column,
-    onClick: () => {
-      onClick && onClick(row);
-    }
+    onClick: () => onClick && onClick(row)
   };
   switch (columnType) {
     case CellType.TEXT: {
