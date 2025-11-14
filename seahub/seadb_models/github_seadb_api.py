@@ -29,9 +29,11 @@ class GitHubSeaDBAPI:
             return response['results']
         return []
 
-    def get_comments_by_issue_id(self, connection_id, issue_id):
+    def get_comments_by_issue_id(self, connection_id, issue_id, limit=None):
         table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
         sql = f"SELECT * FROM `{table_name}` WHERE `issue_id` = {issue_id}"
+        if limit is not None:
+            sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']

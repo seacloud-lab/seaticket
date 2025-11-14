@@ -19,4 +19,15 @@ class GithubIssue {
   }
 }
 
+class IssueForAI {
+  constructor(object) {
+    this._id = String(object._id || object._pk || '') || '';
+    this.title = object.title || '';
+    this.connection_id = object.connection_id || '';
+  }
+}
+
 export default GithubIssue;
+export {
+  IssueForAI,
+};

@@ -12,6 +12,7 @@ export const ProblemToBeResolvedProvider = ({ children }) => {
   const updateTicket = useCallback((ticket, resolveType = AI_RESOLVE_TYPE.AGENT) => {
     if (ticket) {
       setTicket(ticket instanceof TicketForAI ? ticket : new TicketForAI(ticket));
+      setIssue(null);
     } else {
       setTicket(null);
     }

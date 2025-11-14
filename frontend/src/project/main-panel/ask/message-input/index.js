@@ -30,7 +30,7 @@ const MessageInput = forwardRef(({
   const rangeRef = useRef(null);
   const previewContentRef = useRef(null);
 
-  const { ticket, resolveType, clearProblem, updateResolveType, updateTicket, resetResolveType } = useProblemToBeResolved();
+  const { ticket, issue, updateIssue, resolveType, clearProblem, updateResolveType, updateTicket, resetResolveType } = useProblemToBeResolved();
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
@@ -76,9 +76,10 @@ const MessageInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage({ resolveType, message: value, ticket: ticket?._id });
+    sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue });
     updateTicket(null, resolveType);
-  }, [resolveType, value, ticket, sendMessage]);
+    updateIssue(null);
+  }, [resolveType, value, ticket, issue, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -174,6 +175,21 @@ const MessageInput = forwardRef(({
     <div className={classnames('sea-qa-ai-ask-chat-input-wrapper', { 'disabled': disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
+          {issue && (
+            <div className="sea-qa-ai-issue-reference-container">
+              <div className="sea-qa-ai-issue-reference">
+                <span className="sea-qa-ai-issue-reference-title">{issue.title}</span>
+                <IconButton
+                  icon="x"
+                  className="sea-qa-ai-issue-reference-close"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateIssue(null);
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -216,6 +232,7 @@ MessageInput.propTypes = {
   sendMessage: PropTypes.func.isRequired,
   initialResolveType: PropTypes.string,
   initialTicket: PropTypes.object,
+  initialIssue: PropTypes.object,
 };
 
 export default MessageInput;

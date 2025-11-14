@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { getPreviewContent } from '@seafile/seafile-editor';
@@ -6,8 +6,11 @@ import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
+import { IssueForAI } from '../../models/github-issue';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../models';
 import context from '@/sea-metadata/context';
@@ -114,7 +117,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   );
 };
 
-const Connection = ({ projectUuid, permission, connectionID }) => {
+const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
@@ -127,6 +130,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
+  const { updateIssue } = useProblemToBeResolved();
+
 
   const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
     toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
@@ -373,6 +378,17 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return [];
   }, [connection]);
 
+  const handleResolveIssueByAI = useCallback((issue) => {
+    if (!issue) return;
+    const issueForAI = new IssueForAI({
+      ...issue,
+      connection_id: connectionID
+    });
+    updateIssue(issueForAI);
+    toggleBar([BAR_TYPE.CHAT]);
+  }, [toggleBar, updateIssue, connectionID]);
+
+
   const createContextMenuOptions = useCallback(({
     isGroupView,
     selectedRange,
@@ -455,6 +471,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       }, {
         label: gettext('Generate AI summary'),
         callback: () => generateAISummaryForRow(row, updateLocalRow)
+      }, {
+        label: gettext('Resolve issue by AI'),
+        callback: () => handleResolveIssueByAI(row)
       }];
     }
 
@@ -477,7 +496,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       }];
     }
     return [];
-  }, [connection, generateAISummaryForRow]);
+  }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
