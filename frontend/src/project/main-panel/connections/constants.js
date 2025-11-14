@@ -378,10 +378,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Title'),
       editable: false, is_name_column: true, frozen: true,
     },
-    'topic_id': {
-      display_name: gettext('Topic ID'),
-      type: CellType.NUMBER,
-    },
     'views': {
       display_name: gettext('Views count'),
       type: CellType.NUMBER,
