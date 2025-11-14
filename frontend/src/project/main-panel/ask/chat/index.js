@@ -178,7 +178,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
           const ticketForAI = new TicketForAI(ticket);
           setInitialTicket(ticketForAI);
         }
-        // Clear the data after reading
         sessionStorage.removeItem('resolve_ticket_data');
       } catch (error) {
         console.error('Failed to parse stored ticket data:', error);

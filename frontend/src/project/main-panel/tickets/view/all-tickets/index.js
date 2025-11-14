@@ -247,7 +247,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     list.push({
       label: gettext('Resolve ticket by AI'),
       callback: () => {
-        // Store complete ticket data in sessionStorage
         sessionStorage.setItem('resolve_ticket_data', JSON.stringify({
           resolveType: 'agent',
           ticket: row
