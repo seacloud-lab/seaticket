@@ -708,7 +708,7 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
         'PORT': 'SEAQA_MYSQL_DB_PORT',
         'USER': 'SEAQA_MYSQL_DB_USER',
         'PASSWORD': 'SEAQA_MYSQL_DB_PASSWORD',
-        'NAME': 'SEAQA_MYSQL_DB_DTABLE_DB_NAME'
+        'NAME': 'SEAQA_MYSQL_SEAQA_DB_NAME'
     }
 
     for db_key, env_key in _rewrite_db_env_key_map.items():
