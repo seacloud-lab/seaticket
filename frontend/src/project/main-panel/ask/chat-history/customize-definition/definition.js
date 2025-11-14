@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import dayjs from 'dayjs';
 import { gettext } from '@/constants';
+import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
 
 import './index.css';
 
-const Definition = ({ element, attributes, editor, onClick, sources, settings }) => {
+const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick, sources, settings }) => {
   const isShowScore = useMemo(() => settings?.developer_mode, [settings]);
 
   const source = useMemo(() => {
@@ -16,17 +16,7 @@ const Definition = ({ element, attributes, editor, onClick, sources, settings })
     if (!Array.isArray(sources) || sources.length === 0) return {};
     const identifier = Number(element.identifier);
     const sourceIndex = identifier - 1;
-    const originSource = sources[sourceIndex];
-    const { type, connection_name, server_url, content_preview, bumped_at, mtime, updated_at, score } = originSource;
-    return {
-      identifier: identifier,
-      icon: getConnectionIcon(type),
-      title: connection_name,
-      url: server_url,
-      content: content_preview,
-      mtime: bumped_at || mtime || updated_at || '',
-      score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
-    };
+    return { ...sources[sourceIndex], identifier: identifier };
   }, [element, sources]);
 
   const renderContent = useCallback((content) => {
@@ -36,29 +26,38 @@ const Definition = ({ element, attributes, editor, onClick, sources, settings })
     return previewText;
   }, []);
 
+  const handleClick = useCallback((event) => {
+    const { type } = source;
+    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type)) {
+      openDefinitionRecord && openDefinitionRecord(event, source);
+      return;
+    }
+    onClick && onClick(event);
+  }, [source, onClick, openDefinitionRecord]);
+
   if (!element) return null;
 
-  const { identifier, icon, title, content, mtime, score } = source;
+  const { identifier, icon, connection_name, content, mtime, score } = source;
 
   const identifierIndex = identifier - 1;
 
   return (
     <div
       className={classnames('sea-ai-chat-customize-definition', { 'ml-0': identifierIndex % 3 === 0 })}
-      onClick={onClick}
+      onClick={handleClick}
       data-id={element.id}
       { ...attributes }
     >
       <div className="sea-ai-chat-customize-definition-simple-info">
         <div className="sea-ai-chat-customize-definition-order">{identifier}</div>
         <div className="sea-ai-chat-customize-definition-title-score">
-          <div className="sea-ai-chat-customize-definition-title text-truncate">{title}</div>
+          <div className="sea-ai-chat-customize-definition-title text-truncate">{connection_name}</div>
           {isShowScore && (
             <div className="sea-ai-chat-customize-definition-score">{score}</div>
           )}
         </div>
         <div className="sea-ai-chat-customize-definition-avatar">
-          <img src={icon} alt={title} />
+          <img src={icon} alt={connection_name} />
         </div>
       </div>
       {(mtime) && (

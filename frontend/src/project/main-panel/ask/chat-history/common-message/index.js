@@ -3,28 +3,50 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ELementTypes } from '@seafile/seafile-editor';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
-import { CustomizeMarkdownViewer } from '@/components';
+import { CustomizeMarkdownViewer, LinkVerifiedDialog } from '@/components';
 import ThoughtProcess from '../thought-process';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
+import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { getNumberDisplayString } from '@/sea-metadata/utils/column';
+import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ message, settings }, ref) => {
+const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
+  const [isShowConnectionRecord, setIsShowConnectionRecord] = useState(false);
+  const [currentConnectionRecord, setCurrentConnectionRecord] = useState(null);
+  const [currentConnection, setCurrentConnection] = useState(null);
+  const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
 
-  const sources = useMemo(() => {
+  const { aiReply, sources } = useMemo(() => {
+    if (Object.keys(message).length === 0) return '';
+    let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
+
     if (Object.keys(message).length === 0) return [];
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
-    return originSources.map(source => ({ ...source, url: encodeURIComponent(source.url) }));
-  }, []);
+    let sources = originSources.map(source => {
+      const { type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title } = source;
+      const urlObject = new URL(url);
+      return {
+        type,
+        connection_id,
+        connection_record_id: _id,
+        icon: getConnectionIcon(type),
+        connection_name: connection_name,
+        url: urlObject.href,
+        title: title,
+        content: content_preview,
+        mtime: bumped_at || mtime || updated_at || '',
+        score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
+      };
+    });
 
-  const aiReply = useMemo(() => {
-    if (Object.keys(message).length === 0) return '';
-    let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
     if (value && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
@@ -73,13 +95,18 @@ const CommonMessage = forwardRef(({ message, settings }, ref) => {
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;
     }
-    return value;
-  }, [message, sources]);
+    return { aiReply: value, sources };
+  }, [message]);
 
-  const beforeAIReplyRenderCallback = useCallback((value) => {
-    if (value.length === 1 && value[0].type === 'paragraph') {
-      setAIMessageType('text');
-    }
+  const openConnectionRecord = useCallback((event, connectionInfo) => {
+    setCurrentConnection({ type: connectionInfo.type, id: connectionInfo.connection_id });
+    setCurrentConnectionRecord({ _id: connectionInfo.connection_record_id, title: connectionInfo.title, connection_id: connectionInfo.connection_id });
+    setIsShowConnectionRecord(true);
+  }, []);
+
+  const closeConnectionRecord = useCallback(() => {
+    setCurrentConnectionRecord(null);
+    setIsShowConnectionRecord(false);
   }, []);
 
   const options = useMemo(() => {
@@ -88,13 +115,41 @@ const CommonMessage = forwardRef(({ message, settings }, ref) => {
         render: (() => null)()
       },
       [ELementTypes.DEFINITION]: {
-        render: (<CustomizeDefinition sources={sources} settings={settings} />)
+        render: (<CustomizeDefinition sources={sources} settings={settings} openDefinitionRecord={openConnectionRecord} />)
       },
       [ELementTypes.LINK_REFERENCE]: {
         render: (<CustomizeLinkReference />)
       }
     };
-  }, [sources, settings]);
+  }, [sources, settings, openConnectionRecord]);
+
+  const beforeAIReplyRenderCallback = useCallback((value) => {
+    if (value.length === 1 && value[0].type === 'paragraph') {
+      setAIMessageType('text');
+    }
+  }, []);
+
+  const switchRow = useCallback((step) => {
+    const index = sources.findIndex(r => r.connection_record_id === currentConnectionRecord._id && r.connection_id === currentConnectionRecord.connection_id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > sources.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = sources.length - 1;
+    }
+    const currentRow = sources[newIndex];
+    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(currentRow.type)) {
+      setCurrentConnectionRecord({ _id: currentRow.connection_record_id, title: currentRow.title, connection_id: currentRow.connection_id, url: currentRow.url });
+      setCurrentConnection({ type: currentRow.type, id: currentRow.connection_id });
+      return;
+    }
+    setIsShowConnectionRecord(false);
+    setCurrentConnectionRecord({ _id: currentRow.connection_record_id, title: currentRow.title, connection_id: currentRow.connection_id, url: currentRow.url });
+    setIsShowLinkVerifiedDialog(true);
+  }, [sources, currentConnectionRecord]);
 
   useImperativeHandle(ref, () => ({
 
@@ -107,20 +162,35 @@ const CommonMessage = forwardRef(({ message, settings }, ref) => {
   }), [message, aiReply, contentRef]);
 
   return (
-    <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
-      <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
-      {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
-      {aiReply && (
-        <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
-          <CustomizeMarkdownViewer
-            value={aiReply}
-            showTOC={false}
-            options={options}
-            beforeRenderCallback={beforeAIReplyRenderCallback}
-          />
-        </div>
+    <>
+      <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
+        <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
+        {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
+        {aiReply && (
+          <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
+            <CustomizeMarkdownViewer
+              value={aiReply}
+              showTOC={false}
+              options={options}
+              beforeRenderCallback={beforeAIReplyRenderCallback}
+              onDefinitionClick={openConnectionRecord}
+            />
+          </div>
+        )}
+      </div>
+      {isShowConnectionRecord && (
+        <RowDetailsDialog
+          projectUuid={projectUuid}
+          connection={currentConnection}
+          row={currentConnectionRecord}
+          switchRow={switchRow}
+          onToggle={closeConnectionRecord}
+        />
       )}
-    </div>
+      {isShowLinkVerifiedDialog && (
+        <LinkVerifiedDialog link={currentConnectionRecord.url} onToggle={() => setIsShowLinkVerifiedDialog(false)} />
+      )}
+    </>
   );
 
 });

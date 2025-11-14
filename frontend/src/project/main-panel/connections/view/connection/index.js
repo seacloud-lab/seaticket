@@ -493,6 +493,21 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     setIsShowRowDetailsDialog(true);
   }, [projectUuid, connectionID, connection]);
 
+  const switchRow = useCallback((step) => {
+    const rowsData = seaMetaDataRef.current.getOrderRows();
+    const index = rowsData.findIndex(r => r._id === currentRow._id);
+    if (index === -1) return;
+
+    let newIndex = index + step;
+    if (newIndex > rowsData.length - 1) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = rowsData.length - 1;
+    }
+    setCurrentRow(rowsData[newIndex]);
+  }, [currentRow, seaMetaDataRef]);
+
   useEffect(() => {
     const connection = connections.find(c => c.id === connectionID);
     if (connection) {
@@ -545,9 +560,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         <RowDetailsDialog
           projectUuid={projectUuid}
           connection={connection}
-          currentRow={currentRow}
-          seaMetaDataRef={seaMetaDataRef}
-          setIsShowRowDetailsDialog={setIsShowRowDetailsDialog}
+          row={currentRow}
+          switchRow={switchRow}
+          onToggle={() => setIsShowRowDetailsDialog(false)}
         />
       )}
       {isTicketDialogOpen && (
