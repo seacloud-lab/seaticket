@@ -247,8 +247,13 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     list.push({
       label: gettext('Resolve ticket by AI'),
       callback: () => {
+        // Store complete ticket data in sessionStorage
+        sessionStorage.setItem('resolve_ticket_data', JSON.stringify({
+          resolveType: 'agent',
+          ticket: row
+        }));
         const { origin } = location;
-        const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/?resolve_type=agent&ticket_id=${row.number}`;
+        const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
         window.location.href = url;
       }
     });
