@@ -5,6 +5,7 @@ import { ELementTypes } from '@seafile/seafile-editor';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import { CustomizeMarkdownViewer, LinkVerifiedDialog } from '@/components';
 import ThoughtProcess from '../thought-process';
+import ToolCalls from '../tool-calls';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
 import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
@@ -165,6 +166,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
     <>
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
+        <ToolCalls value={message[CHAT_MESSAGE_TYPE.TOOL_CALLS]} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
         {aiReply && (
           <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>

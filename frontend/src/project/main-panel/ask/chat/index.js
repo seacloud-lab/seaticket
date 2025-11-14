@@ -119,20 +119,28 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
         try {
           msgContent = {
             ai_reply: item.content,
-            sources: Array.isArray(item.sources)
-              ? item.sources
-              : typeof item.sources === 'string'
-                ? JSON.parse(item.sources)
-                : []
+            sources: Array.isArray(item.sources) ? item.sources : []
           };
+          if (item.tool_calls) {
+            msgContent.tool_calls = Array.isArray(item.tool_calls) ? item.tool_calls : [];
+          }
+          if (item.thought_process) {
+            msgContent.thought_process = item.thought_process;
+          }
         } catch (e) {
           console.error(e);
           msgContent = { ai_reply: item.content, sources: [] };
         }
-        const newChatData = {
+        let newChatData = {
           [CHAT_MESSAGE_TYPE.AI_REPLY]: msgContent.ai_reply,
-          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
+          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources
         };
+        if (msgContent.tool_calls) {
+          newChatData[CHAT_MESSAGE_TYPE.TOOL_CALLS] = msgContent.tool_calls;
+        }
+        if (msgContent.thought_process) {
+          newChatData[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS] = msgContent.thought_process;
+        }
         return new ChatMessage({
           _id: item.id,
           message: newChatData,

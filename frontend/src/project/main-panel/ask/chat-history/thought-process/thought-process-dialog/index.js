@@ -15,24 +15,28 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
 
   useEffect(() => {
     // task
-    let value = [
-      {
+    let value = [];
+
+    // task
+    const taskValue = propsValue?.task;
+    if (taskValue) {
+      value.push({
         name: gettext('Task step'),
         children: [
           {
             name: gettext('System prompts'),
             children: [
-              { value: propsValue.task?.system_prompts, formatter: StepMarkdownViewer }
+              { value: taskValue.system_prompts, formatter: StepMarkdownViewer }
             ]
           }, {
             name: gettext('User message'),
             children: [
-              { value: propsValue.task?.user_input, formatter: StepMarkdownViewer }
+              { value: taskValue.user_input, formatter: StepMarkdownViewer }
             ]
           }
         ]
-      }
-    ];
+      });
+    }
 
     // context
     const contextValue = propsValue?.context;
@@ -112,16 +116,23 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
               children: [
                 { value: action.result, formatter: StepMarkdownViewer }
               ]
-            }, {
-              name: gettext('Statistics'),
-              children: [
-                { name: gettext('Input tokens'), value: action.token_usage?.input_tokens || 0 },
-                { name: gettext('Output tokens'), value: action.token_usage?.output_tokens || 0 },
-                { name: gettext('Total tokens'), value: action.token_usage?.total_tokens || 0 },
-                { name: gettext('Time usage'), value: `${action.time_usage || 0} s` },
-              ]
             }
           ];
+          if (action.token_usage || action.time_usage) {
+            let staticValue = [];
+            if (action.token_usage) {
+              staticValue.push({ name: gettext('Input tokens'), value: action.token_usage.input_tokens || 0 });
+              staticValue.push({ name: gettext('Total tokens'), value: action.token_usage.total_tokens || 0 });
+              staticValue.push({ name: gettext('Total tokens'), value: action.token_usage.total_tokens || 0 });
+            }
+            if (action.time_usage) {
+              staticValue.push({ name: gettext('Time usage'), value: `${action.time_usage || 0} s` });
+            }
+            otherInfos.push({
+              name: gettext('Statistics'),
+              children: staticValue
+            });
+          }
           if (action.tool_calls?.length === 1) {
             return {
               name: `${gettext('Step')} ${stepNumber + 1}: ${action.tool_calls?.[0].name}`,
@@ -165,67 +176,78 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       if (result && isObject(result)) {
         result = JSON.stringify(result);
       }
-
+      let finalAnswerValue = [{
+        name: propsValue.final_answer.reach_max_steps ? gettext('Result_reached_max_steps') : gettext('Result'),
+        children: [
+          { value: result, formatter: result ? StepMarkdownViewer : null }
+        ]
+      }];
+      if (propsValue.final_answer.token_usage || propsValue.final_answer.time_usage) {
+        let staticValue = [];
+        if (propsValue.final_answer.token_usage) {
+          staticValue.push({ name: gettext('Input tokens'), value: propsValue.final_answer.token_usage.input_tokens || 0 });
+          staticValue.push({ name: gettext('Output tokens'), value: propsValue.final_answer.token_usage.output_tokens || 0 });
+          staticValue.push({ name: gettext('Total tokens'), value: propsValue.final_answer.token_usage.total_tokens || 0 });
+        }
+        if (propsValue.final_answer.time_usage) {
+          staticValue.push({ name: gettext('Time usage'), value: `${propsValue.final_answer.time_usage || 0 } s` });
+        }
+        finalAnswerValue.push({
+          name: gettext('Statistics'),
+          children: staticValue
+        });
+      }
       value.push({
         name: gettext('Answer generation'),
-        children: [
-          {
-            name: propsValue.final_answer.reach_max_steps ? gettext('Result reached max steps') : gettext('Result'),
-            children: [
-              { value: result, formatter: result ? StepMarkdownViewer : null }
-            ]
-          }, {
-            name: gettext('Statistics'),
-            children: [
-              { name: gettext('Input tokens'), value: propsValue.final_answer.token_usage?.input_tokens || 0 },
-              { name: gettext('Output tokens'), value: propsValue.final_answer.token_usage?.output_tokens || 0 },
-              { name: gettext('Total tokens'), value: propsValue.final_answer.token_usage?.total_tokens || 0 },
-              { name: gettext('Time usage'), value: `${propsValue.final_answer.time_usage || 0} s` },
-            ]
-          }
-        ]
+        children: finalAnswerValue
       });
     }
 
-    if (propsValue?.static) {
+    // static
+    if (propsValue?.static && (propsValue.static.token_usage || propsValue.static.time_usage)) {
+      let staticValue = [];
+      if (propsValue.static.token_usage) {
+        staticValue.push({
+          name: gettext('Token usages'),
+          children: [
+            {
+              name: gettext('Input tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.input_tokens?.action_steps || 0 },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.input_tokens?.answer_generation || 0 },
+                { name: gettext('Total'), value: propsValue.static.token_usage.input_tokens?.total || 0 }
+              ]
+            }, {
+              name: gettext('Output tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.output_tokens?.action_steps || 0 },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.output_tokens?.answer_generation || 0 },
+                { name: gettext('Total'), value: propsValue.static.token_usage.output_tokens?.total || 0 }
+              ]
+            }, {
+              name: gettext('Total tokens'),
+              children: [
+                { name: gettext('Action steps'), value: propsValue.static.token_usage.total_tokens?.action_steps || 0 },
+                { name: gettext('Answer generation'), value: propsValue.static.token_usage.total_tokens?.answer_generation || 0 },
+                { name: gettext('Total'), value: propsValue.static.token_usage.total_tokens?.total || 0 }
+              ]
+            }
+          ]
+        });
+      }
+      if (propsValue.static.time_usage) {
+        staticValue.push({
+          name: gettext('Time usage'),
+          children: [
+            { name: gettext('Action steps'), value: `${propsValue.static.time_usage.action_steps || 0 } s` },
+            { name: gettext('Answer generation'), value: `${propsValue.static.time_usage.answer_generation || 0 } s` },
+            { name: gettext('Total'), value: `${propsValue.static.time_usage.total || 0 } s` },
+          ]
+        });
+      }
       value.push({
         name: gettext('Statistics'),
-        children: [
-          {
-            name: gettext('Token usages'),
-            children: [
-              {
-                name: gettext('Input tokens'),
-                children: [
-                  { name: gettext('Action steps'), value: propsValue.static.token_usage.input_tokens.action_steps },
-                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.input_tokens.answer_generation },
-                  { name: gettext('Total'), value: propsValue.static.token_usage.input_tokens.total }
-                ]
-              }, {
-                name: gettext('Output tokens'),
-                children: [
-                  { name: gettext('Action steps'), value: propsValue.static.token_usage.output_tokens.action_steps },
-                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.output_tokens.answer_generation },
-                  { name: gettext('Total'), value: propsValue.static.token_usage.output_tokens.total }
-                ]
-              }, {
-                name: gettext('Total tokens'),
-                children: [
-                  { name: gettext('Action steps'), value: propsValue.static.token_usage.total_tokens.action_steps },
-                  { name: gettext('Answer generation'), value: propsValue.static.token_usage.total_tokens.answer_generation },
-                  { name: gettext('Total'), value: propsValue.static.token_usage.total_tokens.total }
-                ]
-              }
-            ]
-          }, {
-            name: gettext('Time usage'),
-            children: [
-              { name: gettext('Action steps'), value: `${propsValue.static.time_usage.action_steps} s` },
-              { name: gettext('Answer generation'), value: `${propsValue.static.time_usage.answer_generation} s` },
-              { name: gettext('Total'), value: `${propsValue.static.time_usage.total} s` },
-            ]
-          }
-        ]
+        children: staticValue
       });
     }
 

@@ -18,10 +18,11 @@ from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.organizations.models import OrgGroup
 from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
-    ChatSessions, ChatMessages, ProjectAPIToken
+    ChatSessions, ChatMessages, ProjectAPIToken, ChatToolCalls
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search, delete_session
+    convert_project_trash_names, check_project_permission, search, \
+    delete_session, format_tool_calls, format_thought_process
 
 from seahub.seadb_models.utils import init_ticket_seadb_table
 
@@ -599,12 +600,7 @@ class ChatSessionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
-            if not session:
-                error_msg = 'Session not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            if delete_session(session.id):
+            if delete_session(session_uuid):
                 return Response({'success': True})
             else:
                 error_msg = 'Failed to delete session.'
@@ -652,7 +648,20 @@ class ChatMessagesView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
             messages = ChatMessages.objects.get_messages_by_session(session_uuid)
-            messages_data = [message.to_dict() for message in messages]
+
+            message_ids = set([message.message_id for message in messages])
+
+            tool_calls_history = ChatToolCalls.objects.get_tool_calls_from_session_uuid_and_message_ids(session_uuid, message_ids)
+
+            messages_data = []
+            for message in messages:
+                data = message.to_dict()
+                if message.is_agent_mode:
+                    if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
+                        data['thought_process'] = thought_process
+                elif tool_calls := format_tool_calls(tool_calls_history.get(message.message_id, {})):
+                    data['tool_calls'] = tool_calls
+                messages_data.append(data)
 
             return Response({'messages': messages_data})
 
