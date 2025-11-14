@@ -25,6 +25,7 @@ from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import time_str_to_utc_time
+from seahub.project.constants import LLM_INPUT_CHARACTERS_LIMIT
 
 
 logger = logging.getLogger(__name__)
@@ -254,7 +255,13 @@ def convert_record_to_ticket(params):
     return title, description
 
 
-def generate_ai_summary(params):
+def generate_ai_summary(content, username, connection_type, include_vector=True):
+    params = {
+        'content': content[:LLM_INPUT_CHARACTERS_LIMIT],
+        'username': username,
+        'connection_type': connection_type,
+        'include_vector': include_vector,
+    }
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
@@ -264,11 +271,7 @@ def generate_ai_summary(params):
         raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
     resp_json = resp.json()
     ai_summary = resp_json.get('summary', '')
-    embeddings = resp_json.get('embeddings', [])
-    if embeddings:
-        vector = embeddings[0].get('embedding', [])
-    else:
-        vector = []
+    vector = resp_json.get('embedding', [])
     return ai_summary, vector
 
 

@@ -50,7 +50,7 @@ class ChatView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         ticket_id = request.data.get('ticket_id')
         if ticket_id:
             try:
@@ -64,7 +64,7 @@ class ChatView(APIView):
                 error_msg = 'ticket not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
-            
+
         resolve_type = request.data.get('resolve_type', 'ask')
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
@@ -87,7 +87,7 @@ class ChatView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         try:
             message_id = gen_message_id(session.session_uuid)
         except Exception as e:
@@ -313,7 +313,7 @@ class GenerateAISummaryView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                table_name = GithubIssuesTable.gen_table_name(connection_id)   
+                table_name = GithubIssuesTable.gen_table_name(connection_id)
                 sql = f"SELECT title, content FROM `{table_name}` WHERE _pk = {record_id}"
                 result = seadb_api.query_rows(project_uuid, sql)
                 row = result['results'][0]
@@ -323,7 +323,7 @@ class GenerateAISummaryView(APIView):
                 if not title or not content:
                     error_msg = 'Title and content are required to generate AI title.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                
+
                 content = f"Title: {title}\n\nContent: {content}"
             elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
                 table_name = DiscourseTopicsTable.gen_table_name(connection_id)
@@ -381,7 +381,7 @@ class GenerateAISummaryView(APIView):
                 uuid_32_chars = uuid_str_to_32_chars(project_uuid)
                 file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
                 file_json = json.loads(file.read())
-                content = file_json.get('content', '')[:MAX_LENGTH]
+                content = file_json.get('content', '')
             else:
                 error_msg = 'Currently only GitHub Issue connections are supported for AI title generation.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -389,16 +389,9 @@ class GenerateAISummaryView(APIView):
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
-        params = {
-            'content': content,
-            'username': username,
-            'connection_type': connection.type,
-            'include_vector': True,
-        }
 
         try:
-            ai_summary, ai_summary_vector = generate_ai_summary(params)
+            ai_summary, ai_summary_vector = generate_ai_summary(content, username, connection.type)
         except Exception as e:
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
@@ -440,7 +433,7 @@ class GenerateAISummaryView(APIView):
                 table_id = table_metadata.get('id')
                 for column in add_columns:
                     seadb_api.add_column(project_uuid, table_id, column)
-        
+
         ai_processed_time = datetime.datetime.now(datetime.UTC).isoformat()
         updates = [{
             'pk': record_id,
