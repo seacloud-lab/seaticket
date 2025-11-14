@@ -409,15 +409,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.SITE]: {
     'title': {
       display_name: gettext('Title'),
-      editable: false,
-      is_name_column: true,
-      frozen: true,
-      expand_able: true,
-      click: (row) => {
-        if (row && row.url) {
-          window.open(row.url);
-        }
-      }
+      editable: false, is_name_column: true, frozen: true, expand_able: true,
     },
     'url': {
       display_name: gettext('URL'),
