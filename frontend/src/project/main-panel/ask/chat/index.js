@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
 import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
-import { chatAPI, ticketsAPI } from '../../../api';
+import { chatAPI } from '../../../api';
 import { TicketForAI } from '../../tickets/models';
 import ChatHistory from '../chat-history';
 import Thinking from '../thinking';
@@ -165,30 +165,25 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   }, [session?.is_replying]);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const resolveType = urlParams.get('resolve_type');
-    const ticketId = urlParams.get('ticket_id');
-
-    if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
-      setInitialResolveType(resolveType);
-    }
-
-    if (ticketId) {
-      ticketsAPI.getProjectTicket(projectUuid, ticketId).then(res => {
-        const ticket = res.data.ticket;
+    const storedData = sessionStorage.getItem('resolve_ticket_data');
+    if (storedData) {
+      try {
+        const { resolveType, ticket } = JSON.parse(storedData);
+        if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
+          setInitialResolveType(resolveType);
+        }
         if (ticket) {
-          const ticketData = {
-            ...ticket,
-            number: ticket._pk
-          };
-          const ticketForAI = new TicketForAI(ticketData);
+          const ticketForAI = new TicketForAI(ticket);
           setInitialTicket(ticketForAI);
         }
-      }).catch(error => {
-        console.error('Failed to fetch ticket:', error);
-      });
+        // Clear the data after reading
+        sessionStorage.removeItem('resolve_ticket_data');
+      } catch (error) {
+        console.error('Failed to parse stored ticket data:', error);
+        sessionStorage.removeItem('resolve_ticket_data');
+      }
     }
-  }, [projectUuid]);
+  }, []);
 
   useEffect(() => {
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
