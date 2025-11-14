@@ -15,6 +15,12 @@ const SUPPORT_DETAILS_CONNECTION_TYPE = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.SEAFILE,
+  CONNECTION_TYPE.SITE
+];
+
+const SUPPORT_DETAILS_LIST = [
+  CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.DISCOURSE_FORUM,
 ];
 
 const RowDetailsDialog = ({
@@ -27,23 +33,28 @@ const RowDetailsDialog = ({
   const [errMessage, setErrMessage] = useState('');
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
 
+  const getFormatParamsByType = useCallback((row) => {
+    if (connection.type === CONNECTION_TYPE.SITE) return { url: row.url };
+    return { _pk: row._id };
+  }, [connection]);
+
+  const getFormatDetailDataByType = useCallback((res) => {
+    if (connection.type === CONNECTION_TYPE.SITE) return { body: res.data.row_details.content };
+    if (connection.type === CONNECTION_TYPE.SEAFILE) return { body: res.data.row_details[0].content };
+    return res.data.row_details.map(detail => ({
+      ...detail,
+      time: detail.created_time || detail.modified_time,
+      body: detail.content,
+    }));
+  }, [connection]);
+
   const getRowDetails = useCallback((row) => {
     setStatus('loading');
     if (SUPPORT_DETAILS_CONNECTION_TYPE.includes(connection.type)) {
       setRowDetailsTitle(row.title || row.filename);
-      connectionsAPI.getConnectionRowDetail(projectUuid, connection.id, { _pk: row._id }).then((res) => {
-        let detailData = null;
-        if (connection.type === CONNECTION_TYPE.SEAFILE) {
-          detailData = {
-            body: res.data.row_details[0].content,
-          };
-        } else {
-          detailData = res.data.row_details.map(detail => ({
-            ...detail,
-            time: detail.created_time || detail.modified_time,
-            body: detail.content,
-          }));
-        }
+      const params = getFormatParamsByType(row);
+      connectionsAPI.getConnectionRowDetail(projectUuid, connection.id, params).then((res) => {
+        const detailData = getFormatDetailDataByType(res);
         setRowDetails(detailData);
         setStatus('loaded');
       }).catch((error) => {
@@ -124,17 +135,17 @@ const RowDetailsDialog = ({
         )}
         {status === 'loaded' && (
           <Fragment>
-            {connection.type === CONNECTION_TYPE.SEAFILE && rowDetails && (
+            {!SUPPORT_DETAILS_LIST.includes(connection.type) && rowDetails && (
               <Fragment>
                 {
                   rowDetails.body
-                    ? renderContentByType(connection.type, rowDetails.body)
+                    ? <MarkdownViewer value={rowDetails.body} showTOC={false} />
                     : <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />
                 }
               </Fragment>
             )}
-            {connection.type !== CONNECTION_TYPE.SEAFILE && rowDetails && (
-              <div className="sea-qa-row-details-non-seafile">
+            {SUPPORT_DETAILS_LIST.includes(connection.type) && rowDetails && (
+              <div className="sea-qa-row-details-type-list">
                 {rowDetails.length === 0 && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
                 {rowDetails.length > 0 && (
                   <Fragment>

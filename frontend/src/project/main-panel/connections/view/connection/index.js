@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { processor, getPreviewContent } from '@seafile/seafile-editor';
+import { getPreviewContent } from '@seafile/seafile-editor';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
@@ -30,30 +30,6 @@ const MULTIPLE_VIEWS_CONNECTION_TYPE = [
   CONNECTION_TYPE.SEAFILE,
   CONNECTION_TYPE.EMAIL,
 ];
-
-const SiteContentDialog = ({ title, content, onClose }) => {
-  const [innerHtml, setInnerHtml] = useState('');
-
-  useEffect(() => {
-    // replace error markdown format -\n to \n\n
-    const newContent = content.replace(/-\n/ig, '\n\n');
-    processor.process(newContent).then((result) => {
-      let innerHtml = String(result).replace(/<a /ig, '<a target="_blank" tabindex="-1"').replace(/<table>/ig, '<table class="table table-bordered w-100">');
-      setInnerHtml(innerHtml);
-    });
-  }, [content]);
-
-  return (
-    <Modal isOpen={true} toggle={onClose} style={{ minWidth: 900 }}>
-      <ModalHeader toggle={onClose}>{title || gettext('Description')}</ModalHeader>
-      <ModalBody style={{ padding: 0 }}>
-        <div style={{ maxHeight: '70vh', overflow: 'auto', padding: '16px' }}>
-          <div className="site-page-content" dangerouslySetInnerHTML={{ __html: innerHtml }}></div>
-        </div>
-      </ModalBody>
-    </Modal>
-  );
-};
 
 const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
   const [title, setTitle] = useState('');
@@ -141,7 +117,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const seaMetaDataRef = useRef(null);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
-  const [siteDetails, setSiteDetails] = useState(null);
   const [connection, setConnection] = useState({});
   const [currentRow, setCurrentRow] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
@@ -171,18 +146,29 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       });
   }, [projectUuid, connectionID]);
 
-  const handleClickSiteTitle = useCallback((row) => {
-    if (!row || !row.url) return;
-    // open dialog first with loading state
-    setSiteDetails({ title: row.title, content: '' });
-    const params = { url: row.url };
-    connectionsAPI.getConnectionRowDetail(projectUuid, connectionID, params).then((res) => {
-      const raw = res.data.row_details || '';
-      setSiteDetails({ title: row.title, content: raw.content });
-    }).catch(() => {
-      setSiteDetails({ title: row.title, content: gettext('Failed to load content.') });
-    });
-  }, [projectUuid, connectionID]);
+  const getDiscourseOriginalPageUrl = useCallback((connection, row) => {
+    const discourseBaseUrl = connection.config?.url;
+    if (!discourseBaseUrl || !row.slug || !row.topic_id) {
+      toaster.danger(gettext('Missing required information'));
+      return;
+    }
+    const baseUrl = discourseBaseUrl.replace(/\/$/, '');
+    const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
+    return originalPageUrl;
+  }, []);
+
+  const getSeafileOriginalPageUrl = useCallback((connection, row) => {
+    const { server_url, repo_id } = connection.config;
+    const { path, title } = row;
+    if (!server_url || !repo_id || !title || !path) {
+      toaster.danger(gettext('Missing required information'));
+      return;
+    }
+    const baseUrl = server_url.replace(/\/$/, '');
+    const filePath = path.replace(/\/$/, '');
+    const originalPageUrl = `${baseUrl}/lib/${repo_id}/file${filePath}/${title}`;
+    return originalPageUrl;
+  }, []);
 
   const handleClickSiteSummary = useCallback((row) => {
     if (!row || !row.ai_summary) return;
@@ -271,16 +257,24 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           notDisplayColumnNames.push('url');
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
-        } else if (type === CONNECTION_TYPE.SITE) {
-          rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
           columnConfig['title'] = {
             ...columnConfig['title'],
             click: (row) => {
-              handleClickSiteTitle(row);
+              const discourseOriginalPageUrl = getDiscourseOriginalPageUrl(connection, row);
+              window.open(discourseOriginalPageUrl, '_blank', 'noopener,noreferrer');
             }
           };
+        } else if (type === CONNECTION_TYPE.SITE) {
+          rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
         } else if (type === CONNECTION_TYPE.SEAFILE) {
           rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
+          columnConfig['title'] = {
+            ...columnConfig['title'],
+            click: (row) => {
+              const seafileOriginalPageUrl = getSeafileOriginalPageUrl(connection, row);
+              window.open(seafileOriginalPageUrl, '_blank', 'noopener,noreferrer');
+            }
+          };
         } else if (type === CONNECTION_TYPE.EMAIL) {
           rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
@@ -418,14 +412,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       return [{
         label: gettext('Open original page'),
         callback: () => {
-          const discourseBaseUrl = connection.config?.url;
-          if (!discourseBaseUrl || !row.slug || !row.topic_id) {
-            toaster.danger(gettext('Missing required information to open original page'));
-            return;
-          }
-          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
-          const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
-          window.open(originalPageUrl, '_blank', 'noopener,noreferrer');
+          const discourseOriginalPageUrl = getDiscourseOriginalPageUrl(connection, row);
+          window.open(discourseOriginalPageUrl, '_blank', 'noopener,noreferrer');
         }
       }, {
         label: gettext('Create related ticket'),
@@ -504,10 +492,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
 
   const handleExpandRow = useCallback((row) => {
     setCurrentRow(row);
-    if (row && row.url && connection.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
-      window.open(row.url);
-      return;
-    }
     setIsShowRowDetailsDialog(true);
   }, [projectUuid, connectionID, connection]);
 
@@ -566,13 +550,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           currentRow={currentRow}
           seaMetaDataRef={seaMetaDataRef}
           setIsShowRowDetailsDialog={setIsShowRowDetailsDialog}
-        />
-      )}
-      {siteDetails && (
-        <SiteContentDialog
-          title={siteDetails.title}
-          content={siteDetails.content}
-          onClose={() => setSiteDetails(null)}
         />
       )}
       {isTicketDialogOpen && (
