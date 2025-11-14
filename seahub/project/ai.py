@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 import json
 
@@ -17,11 +18,13 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections
 from seahub.project.utils import check_project_permission, get_ai_reply, \
-    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_title, gen_message_id
+    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, gen_message_id, url_to_filename, \
+    get_file_from_s3_web_crawl
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GithubIssuesTable
+from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, SeafileTable, \
+    DiscourseRepliesTable, WebCrawlTable
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
@@ -47,7 +50,7 @@ class ChatView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         ticket_id = request.data.get('ticket_id')
         if ticket_id:
             try:
@@ -61,7 +64,7 @@ class ChatView(APIView):
                 error_msg = 'ticket not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
-            
+
         resolve_type = request.data.get('resolve_type', 'ask')
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
@@ -84,7 +87,7 @@ class ChatView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         try:
             message_id = gen_message_id(session.session_uuid)
         except Exception as e:
@@ -264,7 +267,7 @@ class ConvertRecordToTicket(APIView):
         })
 
 
-class GenerateAITitleView(APIView):
+class GenerateAISummaryView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
@@ -307,74 +310,143 @@ class GenerateAITitleView(APIView):
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if connection.type != ConnectionType.GITHUB_ISSUE.value:
-            error_msg = 'Currently only GitHub Issue connections are supported for AI title generation.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         try:
             seadb_api = SeaDBAPI(username)
-            table_name = GithubIssuesTable.gen_table_name(connection_id)   
-            sql = f"SELECT title, body FROM `{table_name}` WHERE _pk = {record_id}"
-            result = seadb_api.query_rows(project_uuid, sql)
-            row = result['results'][0]
-            title = row.get('title')
-            body = row.get('body')
+            if connection.type == ConnectionType.GITHUB_ISSUE.value:
+                table_name = GithubIssuesTable.gen_table_name(connection_id)
+                sql = f"SELECT title, content FROM `{table_name}` WHERE _pk = {record_id}"
+                result = seadb_api.query_rows(project_uuid, sql)
+                row = result['results'][0]
+                title = row.get('title')
+                content = row.get('content')
 
-            if not title or not body:
-                error_msg = 'Title and body are required to generate AI title.'
+                if not title or not content:
+                    error_msg = 'Title and content are required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+                content = f"Title: {title}\n\nContent: {content}"
+            elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
+                table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+                sql = f"SELECT topic_id, title FROM `{table_name}` WHERE _pk = {record_id}"
+                result = seadb_api.query_rows(project_uuid, sql)
+                row = result['results'][0]
+                topic_id = row.get('topic_id')
+                title = row.get('title')
+
+                if not topic_id or not title:
+                    error_msg = 'Topic ID and title are required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                discourse_replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
+                sql = f"SELECT content FROM `{discourse_replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC LIMIT 1"
+                result = seadb_api.query_rows(project_uuid, sql)
+                rows = result['results']
+                if not rows:
+                    error_msg = 'Content is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                row = rows[0]
+                content = row.get('content')
+                if not content:
+                    error_msg = 'Content is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                content = f"Title: {title}\n\nContent: {content}"
+            elif connection.type == ConnectionType.SEAFILE.value:
+                table_name = SeafileTable.gen_table_name(connection_id)
+                sql = f"SELECT title, content FROM `{table_name}` WHERE _pk = {record_id}"
+                result = seadb_api.query_rows(project_uuid, sql)
+                rows = result['results']
+                if not rows:
+                    error_msg = 'Content is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                row = rows[0]
+                title = row.get('title')
+                content = row.get('content')
+                if not content:
+                    error_msg = 'Content is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                content = f"Filename: {title}\n\nContent: {content}"
+            elif connection.type == ConnectionType.SITE.value:
+                table_name = WebCrawlTable.gen_table_name(connection_id)
+                sql = f"SELECT url FROM `{table_name}` WHERE _pk = {record_id}"
+                result = seadb_api.query_rows(project_uuid, sql)
+                rows = result['results']
+                if not rows:
+                    error_msg = 'URL is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                row = rows[0]
+                url = row.get('url')
+                if not url:
+                    error_msg = 'URL is required to generate AI title.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                filename = url_to_filename(url)
+                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
+                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+                file_json = json.loads(file.read())
+                content = file_json.get('content', '')
+            else:
+                error_msg = 'Currently only GitHub Issue connections are supported for AI title generation.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            params = {
-                'title': title,
-                'body': body,
-                'username': username
-            }
-            try:
-                ai_title = generate_ai_title(params)
-            except Exception as e:
-                logger.error(f'AI service error: {e}')
-                error_msg = 'AI service error.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            columns = get_connection_columns(seadb_api, project_uuid, connection)
-            base_info = seadb_api.get_base_info(project_uuid)
-            tables = base_info.get('tables', [])
-
-            table_metadata = None
-            for table in tables:
-                if table.get('name') == table_name:
-                    table_metadata = table
-                    break
-
-            if table_metadata:
-                has_ai_title_column = False
-                for col in columns:
-                    if col.get('name') == 'ai_title':
-                        has_ai_title_column = True
-                        break
-
-                if not has_ai_title_column:
-                    column = {
-                        'column_name': 'ai_title',
-                        'column_type': 'text',
-                    }
-                    table_id = table_metadata.get('id')
-                    seadb_api.add_column(project_uuid, table_id, column)
-
-            updates = [{
-                'pk': record_id,
-                'row': {
-                    'ai_title': ai_title
-                }
-            }]
-            seadb_api.update_rows(project_uuid, table_name, updates)
-
-
         except Exception as e:
-            logger.error(f'AI title generation error: {e}')
-            error_msg = 'Failed to generate AI title.'
+            logger.error(f'AI service error: {e}')
+            error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        try:
+            ai_summary, ai_summary_vector = generate_ai_summary(content, username, connection.type)
+        except Exception as e:
+            logger.error(f'AI service error: {e}')
+            error_msg = 'AI service error.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        columns = get_connection_columns(seadb_api, project_uuid, connection)
+        base_info = seadb_api.get_base_info(project_uuid)
+        tables = base_info.get('tables', [])
+
+        table_metadata = None
+        for table in tables:
+            if table.get('name') == table_name:
+                table_metadata = table
+                break
+
+        # Compatibility handling
+        if table_metadata:
+            has_ai_summary_column = False
+            for col in columns:
+                if col.get('name') == 'ai_summary':
+                    has_ai_summary_column = True
+                    break
+
+            if not has_ai_summary_column:
+                add_columns = [
+                    {
+                        'column_name': 'ai_summary',
+                        'column_type': 'text',
+                    },
+                    {
+                        'column_name': 'ai_summary_vector',
+                        'column_type': 'list',
+                        'list_type': 'float64',
+                    },
+                    {
+                        'column_name': 'ai_processed_time',
+                        'column_type': 'datetime',
+                    },
+                ]
+                table_id = table_metadata.get('id')
+                for column in add_columns:
+                    seadb_api.add_column(project_uuid, table_id, column)
+
+        ai_processed_time = datetime.datetime.now(datetime.UTC).isoformat()
+        updates = [{
+            'pk': record_id,
+            'row': {
+                'ai_summary': ai_summary,
+                'ai_summary_vector': ai_summary_vector,
+                'ai_processed_time': ai_processed_time,
+            }
+        }]
+        seadb_api.update_rows(project_uuid, table_name, updates)
+
         return Response({
-            'ai_title': ai_title,
+            'ai_summary': ai_summary,
+            'ai_processed_time': ai_processed_time,
             'success': True
         })

@@ -25,6 +25,7 @@ from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import time_str_to_utc_time
+from seahub.project.constants import LLM_INPUT_CHARACTERS_LIMIT
 
 
 logger = logging.getLogger(__name__)
@@ -254,17 +255,24 @@ def convert_record_to_ticket(params):
     return title, description
 
 
-def generate_ai_title(params):
+def generate_ai_summary(content, username, connection_type, include_vector=True):
+    params = {
+        'content': content[:LLM_INPUT_CHARACTERS_LIMIT],
+        'username': username,
+        'connection_type': connection_type,
+        'include_vector': include_vector,
+    }
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-title')
+    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-summary')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
-        raise Exception('generate ai title error status: %s body: %s' % (resp.status_code, resp.text))
+        raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
     resp_json = resp.json()
-    ai_title = resp_json.get('title', '')
-    return ai_title
+    ai_summary = resp_json.get('summary', '')
+    vector = resp_json.get('embedding', [])
+    return ai_summary, vector
 
 
 def gen_s3_file_path(project_uuid, file_path):

@@ -11,7 +11,7 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import ChatView, ConvertRecordToTicket, GenerateAITitleView
+from .ai import ChatView, ConvertRecordToTicket, GenerateAISummaryView
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
@@ -59,7 +59,7 @@ urlpatterns = [
     # ai
     re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
-    re_path(r'^api/v2.1/ai/generate-ai-title/$', GenerateAITitleView.as_view(), name='api-v2.1-ai-generate-title'),
+    re_path(r'^api/v2.1/ai/generate-ai-summary/$', GenerateAISummaryView.as_view(), name='api-v2.1-ai-generate-summary'),
 
 ]
 

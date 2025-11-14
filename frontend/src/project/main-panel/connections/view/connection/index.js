@@ -151,22 +151,22 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
-  const generateAITitleForRow = useCallback((row, updateLocalRow) => {
-    toaster.notify(gettext('Generating AI title...'), { duration: 0 });
+  const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
+    toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
 
-    connectionsAPI.generateAITitle(projectUuid, connectionID, row._id)
+    connectionsAPI.generateAISummary(projectUuid, connectionID, row._id)
       .then(res => {
         toaster.closeAll();
-        if (res.data && res.data.ai_title) {
-          toaster.success(gettext('AI title generated successfully'));
-          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_title: res.data.ai_title });
+        if (res.data && res.data.ai_summary) {
+          toaster.success(gettext('AI summary generated successfully'));
+          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
         } else {
-          toaster.warning(gettext('Failed to generate AI title'));
+          toaster.warning(gettext('Failed to generate AI summary'));
         }
       })
       .catch(error => {
         toaster.closeAll();
-        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI title');
+        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI summary');
         toaster.danger(errorMessage);
       });
   }, [projectUuid, connectionID]);
@@ -183,6 +183,11 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       setSiteDetails({ title: row.title, content: gettext('Failed to load content.') });
     });
   }, [projectUuid, connectionID]);
+
+  const handleClickSiteSummary = useCallback((row) => {
+    if (!row || !row.ai_summary) return;
+    setSiteDetails({ title: gettext('AI Summary'), content: row.ai_summary });
+  }, []);
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -279,6 +284,12 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         } else if (type === CONNECTION_TYPE.EMAIL) {
           rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
+        columnConfig['ai_summary'] = {
+          ...columnConfig['ai_summary'],
+          click: (row) => {
+            handleClickSiteSummary(row);
+          }
+        };
         columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
           data: {
@@ -438,6 +449,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
             setTicketLoading(false);
           });
         }
+      }, {
+        label: gettext('Generate AI summary'),
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
 
@@ -460,8 +474,8 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           });
         }
       }, {
-        label: gettext('Generate AI title'),
-        callback: () => generateAITitleForRow(row, updateLocalRow)
+        label: gettext('Generate AI summary'),
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
 
@@ -471,10 +485,20 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         callback: () => {
           window.open(row.url, '_blank', 'noopener,noreferrer');
         }
+      }, {
+        label: gettext('Generate AI summary'),
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
+      }];
+    }
+
+    if (connection?.type === CONNECTION_TYPE.SEAFILE) {
+      return [{
+        label: gettext('Generate AI summary'),
+        callback: () => generateAISummaryForRow(row, updateLocalRow)
       }];
     }
     return [];
-  }, [connection, generateAITitleForRow]);
+  }, [connection, generateAISummaryForRow]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 

@@ -7,6 +7,8 @@ class DiscourseForum {
     this.views = object.views || 0;
     this.modified_time = object.modified_time || '';
     this.created_time = object.created_time || '';
+    this.ai_summary = object.ai_summary || '';
+    this.ai_processed_time = object.ai_processed_time || '';
   }
 }
 
