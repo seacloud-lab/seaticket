@@ -170,9 +170,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return originalPageUrl;
   }, []);
 
-  const handleClickSiteSummary = useCallback((row) => {
+  const handleClickSummary = useCallback((row) => {
     if (!row || !row.ai_summary) return;
-    setSiteDetails({ title: gettext('AI Summary'), content: row.ai_summary });
+    // Show dialog To do
   }, []);
 
   const t = useMemo(() => {
@@ -280,9 +280,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         }
         columnConfig['ai_summary'] = {
           ...columnConfig['ai_summary'],
-          click: (row) => {
-            handleClickSiteSummary(row);
-          }
+          click: (row) => handleClickSummary(row)
         };
         columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
