@@ -81,7 +81,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
     if (dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
     loadTime.current = currentTime;
     setReLoading(true);
-    ticketsAPI.listTicketSubstates(projectUuid).then(res => {
+    ticketsAPI.listTicketSubstates(projectUuid, 'all').then(res => {
       const substates = Array.isArray(res.data.project_substates) ? res.data.project_substates : [];
       applyCreateSubstates(substates, true);
       setReLoading(false);
@@ -94,7 +94,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
 
   const load = useCallback(() => {
     setLoading(true);
-    ticketsAPI.listTicketSubstates(projectUuid).then(res => {
+    ticketsAPI.listTicketSubstates(projectUuid, 'all').then(res => {
       const substates = Array.isArray(res.data.project_substates) ? res.data.project_substates : [];
       applyCreateSubstates(substates);
       setLoading(false);

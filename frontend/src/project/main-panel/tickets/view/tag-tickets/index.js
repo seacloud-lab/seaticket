@@ -31,7 +31,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return ticketsAPI.listTicketsByTag(projectUuid, childrenPageType).then(res => {
+      return ticketsAPI.listTicketsByTag(projectUuid, 'all', childrenPageType).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {

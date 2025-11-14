@@ -58,7 +58,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
           return res;
         });
       }
-      return ticketsAPI.listProjectTickets(projectUuid, ...params).then(res => {
+      return ticketsAPI.listProjectTickets(projectUuid, 'all', ...params).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
@@ -104,7 +104,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
           });
         });
       }
-      return ticketsAPI.listViews(projectUuid);
+      return ticketsAPI.listViews(projectUuid, 'all');
     },
 
     // view
@@ -118,13 +118,13 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
           });
         });
       }
-      return ticketsAPI.getView(projectUuid, viewID);
+      return ticketsAPI.getView(projectUuid, 'all', viewID);
     },
     insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
-    modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
-    deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
-    moveView: (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, sourceViewID, targetViewID),
-    duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
+    modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, 'all', viewID, viewData),
+    deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, 'all', viewID),
+    moveView: (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, 'all', sourceViewID, targetViewID),
+    duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, 'all', viewID),
 
     // row
     insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),

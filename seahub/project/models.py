@@ -937,17 +937,19 @@ class TicketViewsManager(models.Manager):
             details['views'] = views
         return details
 
-    def get_record(self, project_uuid):
+    def get_record(self, project_uuid, ticket_type):
         """
             get record from database, if not record, create it
         """
         project_uuid = uuid_str_to_32_chars(project_uuid)
-        record = self.filter(project_uuid=project_uuid).first()
+        record = self.filter(project_uuid=project_uuid, ticket_type=ticket_type).first()
         if not record:
-            details = self.update_init_view_details(project_uuid, TICKET_DEFAULT_DETAILS)
+            ticket_default_details = TICKET_DEFAULT_DETAILS[ticket_type]
+            details = self.update_init_view_details(project_uuid, ticket_default_details)
             record = self.create(
                 project_uuid=project_uuid,
-                details=json.dumps(details)
+                details=json.dumps(details),
+                ticket_type = ticket_type
             )
         return record
 
@@ -1000,20 +1002,20 @@ class TicketViewsManager(models.Manager):
         return view_details
 
     # view op
-    def list_views(self, project_uuid):
-        record = self.get_record(project_uuid)
+    def list_views(self, project_uuid, ticket_type):
+        record = self.get_record(project_uuid, ticket_type)
         return json.loads(record.details)
 
-    def get_view(self, project_uuid, view_id):
-        record = self.get_record(project_uuid)
+    def get_view(self, project_uuid,ticket_type, view_id):
+        record = self.get_record(project_uuid, ticket_type)
         view_details = json.loads(record.details)
         for v in view_details['views']:
             if v.get('_id') == view_id:
                 return v
         return None
 
-    def add_view(self, project_uuid, view_name, view_type='table', view_data={}, folder_id=None):
-        record = self.get_record(project_uuid)
+    def add_view(self, project_uuid, ticket_type, view_name, view_type='table', view_data={}, folder_id=None):
+        record = self.get_record(project_uuid, ticket_type)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         view_name = get_no_duplicate_obj_name(view_name, record.views_names)
@@ -1028,16 +1030,17 @@ class TicketViewsManager(models.Manager):
             folder = next((folder for folder in navigation if folder.get('_id') == folder_id), None)
             if not folder:
                 return None
-            folderChildren = folder.get('children', [])
-            folderChildren.append(new_view_nav)
+            folder_children = folder.get('children', [])
+            folder_children.append(new_view_nav)
         else:
             navigation.append(new_view_nav)
         record.details = json.dumps(view_details)
+        record.ticket_type = ticket_type
         record.save()
         return new_view.details
 
-    def update_view(self, project_uuid, view_id, view_dict):
-        record = self.get_record(project_uuid)
+    def update_view(self, project_uuid, ticket_type, view_id, view_dict):
+        record = self.get_record(project_uuid, ticket_type)
         view_dict.pop('_id', '')
         if 'name' in view_dict:
             exist_obj_names = record.views_names
@@ -1077,8 +1080,8 @@ class TicketViewsManager(models.Manager):
 
         return duplicate_view
 
-    def delete_view(self, project_uuid, view_id, folder_id=None):
-        record = self.get_record(project_uuid)
+    def delete_view(self, project_uuid, ticket_type, view_id, folder_id=None):
+        record = self.get_record(project_uuid, ticket_type)
         view_details = json.loads(record.details)
         navigation = view_details.get('navigation', [])
         views = view_details.get('views', [])
@@ -1178,6 +1181,7 @@ class TicketViewsManager(models.Manager):
 class TicketViews(models.Model):
     project_uuid = models.UUIDField(db_index=True)
     details = models.TextField()
+    ticket_type = models.TextField()
 
     objects = TicketViewsManager()
 

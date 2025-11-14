@@ -67,13 +67,15 @@ class TicketsAPI {
     return this.req.get(url, { params: params, signal: signal });
   }
 
-  listProjectTickets(projectUuid, { view_id = '0000', start = 0, limit = 100 }) {
+  listProjectTickets(projectUuid, ticketType, { view_id = '0000', start = 0, limit = 100 }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
     const params = {
+      ticket_type: ticketType,
       view_id,
       start,
       limit
     };
+    console.log('listProjectTickets params', params);
     return this.req.get(url, { params: params });
   }
 
@@ -179,8 +181,10 @@ class TicketsAPI {
   }
 
   // views
-  listViews(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/';
+  listViews(projectUuid, ticketType) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + ticketType + '/';//ticketType=all or my_ticket;
+    const params = { ticket_type: ticketType };
+    console.log('listViews params', params);
     return this.req.get(url);
   }
 
@@ -196,26 +200,26 @@ class TicketsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  getView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + viewID + '/';
+  getView(projectUuid, ticketType, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + ticketType + '/' + viewID + '/';
     return this.req.get(url);
   }
 
-  modifyView(projectUuid, viewID, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + viewID + '/';
+  modifyView(projectUuid, ticketType, viewID, viewData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + ticketType + '/' + viewID + '/';
     const params = {
       view_data: viewData,
     };
     return this.req.put(url, params);
   }
 
-  deleteView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + viewID + '/';
+  deleteView(projectUuid, ticketType, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-views/' + ticketType + '/' + viewID + '/';
     return this.req.delete(url);
   }
 
-  moveView(projectUuid, sourceViewID, targetViewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-move-views/';
+  moveView(projectUuid, ticketType, sourceViewID, targetViewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-move-views/' + ticketType + '/';
     let form = new FormData();
     if (sourceViewID) {
       form.append('source_view_id', sourceViewID);
@@ -226,8 +230,8 @@ class TicketsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  duplicateView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-duplicate-view/';
+  duplicateView(projectUuid, ticketType, viewID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket-duplicate-view/' + ticketType + '/';
 
     let form = new FormData();
     if (viewID) {
@@ -237,9 +241,9 @@ class TicketsAPI {
   }
 
   // substates
-  listTicketSubstates(projectUuid, { status_id = '' } = {}) {
-    let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
-    const params = {};
+  listTicketSubstates(projectUuid, ticketType, { status_id = '' } = {}) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';//?ticketType= all or my_ticket;
+    const params = { ticket_type: ticketType };
     if (status_id) params.status_id = status_id;
     return this.req.get(url, { params });
   }
@@ -267,9 +271,10 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
-  listTicketsBySubstate(projectUuid, substateId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
-    return this.req.get(url);
+  listTicketsBySubstate(projectUuid, ticketType, substateId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';//?ticketType= all or my_ticket;
+    const params = { ticket_type: ticketType };
+    return this.req.get(url, { params: params });
   }
 
   // tags
@@ -310,9 +315,10 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
-  listTicketsByTag(projectUuid, tagId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
-    return this.req.get(url);
+  listTicketsByTag(projectUuid, ticketType, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';//?ticketType= all or my_ticket;
+    const params = { ticket_type: ticketType };
+    return this.req.get(url, { params: params });
   }
 
   // types
@@ -350,9 +356,10 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
-  listTicketsByType(projectUuid, typeId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
-    return this.req.get(url);
+  listTicketsByType(projectUuid, ticketType, typeId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';//?ticketType=all or my_ticket;
+    const params = { ticket_type: ticketType };
+    return this.req.get(url, { params: params });
   }
 
 }

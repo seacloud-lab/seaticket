@@ -26,7 +26,7 @@ class TicketFolders(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, ticket_type):
         # add folder
         folder_name = request.data.get('name')
 
@@ -48,7 +48,7 @@ class TicketFolders(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # check record
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The ticket views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -64,7 +64,7 @@ class TicketFolders(APIView):
 
         return Response({'folder': new_folder})
 
-    def put(self, request, project_uuid):
+    def put(self, request, project_uuid, ticket_type):
         # update folder: name etc.
         folder_id = request.data.get('folder_id', None)
         folder_data = request.data.get('folder_data', None)
@@ -92,7 +92,7 @@ class TicketFolders(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = f'The project {project_uuid} views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -110,7 +110,7 @@ class TicketFolders(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid):
+    def delete(self, request, project_uuid, ticket_type):
         # delete folder by id
         # check folder_id
         folder_id = request.data.get('folder_id', None)
@@ -130,7 +130,7 @@ class TicketFolders(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The project views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -154,7 +154,7 @@ class TicketViewsAPI(APIView):
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def get(self, request, project_uuid):
+    def get(self, request, project_uuid, ticket_type):
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -169,7 +169,7 @@ class TicketViewsAPI(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            views = TicketViews.objects.list_views(project_uuid)
+            views = TicketViews.objects.list_views(project_uuid, ticket_type)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -177,7 +177,7 @@ class TicketViewsAPI(APIView):
 
         return Response(views)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, ticket_type):
         #  Add a view
         view_name = request.data.get('name')
         folder_id = request.data.get('folder_id', None)
@@ -202,7 +202,7 @@ class TicketViewsAPI(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, view_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -217,7 +217,7 @@ class TicketViewsAPI(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'folder %s does not exists' % folder_id)
 
         try:
-            new_view = TicketViews.objects.add_view(project_uuid, view_name, view_type, view_data, folder_id)
+            new_view = TicketViews.objects.add_view(project_uuid, ticket_type, view_name, view_type, view_data, folder_id)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'add view failed')
         except Exception as e:
@@ -233,7 +233,7 @@ class TicketViewView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid, view_id):
+    def get(self, request, project_uuid, ticket_type, view_id):
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -247,13 +247,13 @@ class TicketViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            view = TicketViews.objects.get_view(project_uuid, view_id)
+            view = TicketViews.objects.get_view(project_uuid, ticket_type, view_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -261,7 +261,7 @@ class TicketViewView(APIView):
 
         return Response({'view': view})
 
-    def put(self, request, project_uuid, view_id):
+    def put(self, request, project_uuid, ticket_type, view_id):
         # Update a view, including rename, change filters and so on
         # by a json data
         view_data = request.data.get('view_data', None)
@@ -282,7 +282,7 @@ class TicketViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -292,7 +292,7 @@ class TicketViewView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            result = TicketViews.objects.update_view(project_uuid, view_id, view_data)
+            result = TicketViews.objects.update_view(project_uuid, ticket_type, view_id, view_data)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -300,7 +300,7 @@ class TicketViewView(APIView):
 
         return Response({'success': True})
 
-    def delete(self, request, project_uuid, view_id):
+    def delete(self, request, project_uuid, ticket_type, view_id):
         folder_id = request.data.get('folder_id', None)
         if not view_id:
             error_msg = 'view_id is invalid.'
@@ -319,7 +319,7 @@ class TicketViewView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -334,7 +334,7 @@ class TicketViewView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, f'folder {folder_id} does not exists')
 
         try:
-            result = TicketViews.objects.delete_view(project_uuid, view_id, folder_id)
+            result = TicketViews.objects.delete_view(project_uuid, ticket_type, view_id, folder_id)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
@@ -348,7 +348,7 @@ class TicketViewsDuplicateView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, ticket_type):
         view_id = request.data.get('view_id')
         folder_id = request.data.get('folder_id', None)
         if not view_id:
@@ -368,7 +368,7 @@ class TicketViewsDuplicateView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -382,7 +382,7 @@ class TicketViewsDuplicateView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'folder %s does not exists' % folder_id)
 
         try:
-            new_view = TicketViews.objects.duplicate_view(project_uuid, view_id, folder_id)
+            new_view = TicketViews.objects.duplicate_view(record, view_id, folder_id)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'duplicate view failed')
         except Exception as e:
@@ -398,7 +398,7 @@ class TicketViewsMoveView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def post(self, request, project_uuid):
+    def post(self, request, project_uuid, ticket_type):
         # move view or folder to another position
         source_view_id = request.data.get('source_view_id')
         source_folder_id = request.data.get('source_folder_id')
@@ -431,7 +431,7 @@ class TicketViewsMoveView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = TicketViews.objects.get_record(project_uuid)
+        record = TicketViews.objects.get_record(project_uuid, ticket_type)
         if not record:
             error_msg = 'The views does not exists.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)

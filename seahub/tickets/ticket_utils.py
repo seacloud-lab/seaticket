@@ -84,8 +84,8 @@ def get_tickets(seadb_api, project_uuid):
     tickets_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return tickets_data
 
-def filter_tickets_by_type(seadb_api, project_uuid, types):
-    return filter_tickets_by_select(seadb_api, project_uuid, 'type', types)
+def filter_tickets_by_type(seadb_api, project_uuid, types, username):
+    return filter_tickets_by_select(seadb_api, project_uuid, 'type', types, username)
 
 def get_ticket_replies(seadb_api, project_uuid, ticket_id, start, end):
     ticket_replies_sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
@@ -227,7 +227,7 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name)
         return {row.get('tags')[0]: row.get('count') for row in rows if row.get('tags')}
     return {row.get(column_name): row.get('count') for row in rows if row.get(column_name)}
 
-def filter_tickets_by_select(seadb_api, project_uuid, column_name, option_ids):
+def filter_tickets_by_select(seadb_api, project_uuid, column_name, option_ids, username):
     if not option_ids:
         return []
     # map ids to names
@@ -242,6 +242,10 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, option_ids):
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
         f"WHERE `{column_name}` IN ({names_str}) AND `deleted` = False"
     )
+
+    if username:
+        sql += f" AND `username` = {username}"
+
     res = seadb_api.query_rows(project_uuid, sql)
     tickets = res.get('results')
     columns = res.get('metadata') or []
@@ -350,8 +354,8 @@ def update_tag_option(seadb_api, project_uuid, tag_id, update_data):
 def delete_tag_option(seadb_api, project_uuid, tag_id):
     return delete_select_option(seadb_api, project_uuid, 'tags', tag_id)
 
-def filter_tickets_by_tag(seadb_api, project_uuid, tag_id):
-    return filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_id])
+def filter_tickets_by_tag(seadb_api, project_uuid, tag_id, username):
+    return filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_id], username)
 
 
 ### substate
@@ -412,8 +416,8 @@ def delete_substate_option(seadb_api, project_uuid, substate_id):
             seadb_api.update_column(project_uuid, column_data)
     return res.get('success')
 
-def filter_tickets_by_substate(seadb_api, project_uuid, substate_ids):
-    return filter_tickets_by_select(seadb_api, project_uuid, 'substate', substate_ids)
+def filter_tickets_by_substate(seadb_api, project_uuid, substate_ids, username):
+    return filter_tickets_by_select(seadb_api, project_uuid, 'substate', substate_ids, username)
 
 def get_substate_options_by_status_option_id(seadb_api, project_uuid, status_id):
     options, column_key, data = get_substate_column_details(seadb_api, project_uuid)

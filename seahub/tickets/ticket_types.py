@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
+from seahub.project.constants import TicketType
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
@@ -159,6 +160,11 @@ class TicketTypeAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        ticket_type = request.GET.get('ticket_type')
+        if not ticket_type:
+            error_msg = 'ticket_type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             seadb_api = SeaDBAPI(username)
             type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
@@ -172,9 +178,13 @@ class TicketTypeAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # main
+        current_user = ''
+        if ticket_type == TicketType.MY_TICKET:
+            current_user = username
         try:
             tickets, columns = filter_tickets_by_type(
-                    seadb_api, project_uuid, [type_id])
+                    seadb_api, project_uuid, [type_id], current_user)
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

@@ -79,45 +79,91 @@ class CrawlStatus:
     FAILED = 'failed'
 
 
+class TicketType:
+    ALL = 'all'
+    MY_TICKET = 'my_ticket'
+
+
 # tickets
 TICKET_DEFAULT_DETAILS = {
-    'views': [
-        {
-            '_id': 'open',
-            'name': _('Open'),
-            'type': 'table',
-            'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
-                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
-                {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
+    'all':{
+        'views': [
+            {
+                '_id': 'open',
+                'name': _('Open'),
+                'type': 'table',
+                'basic_filters': [
+                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                ],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }, {
+                '_id': 'closed',
+                'name': _('Closed'),
+                'type': 'table',
+                'basic_filters': [
+                    {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                    {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                ],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': 'open', 'type': 'view'},
+            {'_id': 'closed', 'type': 'view'}
+        ]
+    },
+    'my_ticket':{
+        'views': [
+                {
+                    '_id': 'open',
+                    'name': _('Open'),
+                    'type': 'table',
+                    'basic_filters': [
+                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                        {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    ],
+                    'columns_keys': [],
+                    'filter_conjunction': 'Or',
+                    'filters': [{'column_key': 'creator', 'filter_predicate': 'include_me', 'filter_term': []}],
+                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                    'groupbys': [],
+                    'hidden_columns': [],
+                }, {
+                    '_id': 'closed',
+                    'name': _('Closed'),
+                    'type': 'table',
+                    'basic_filters': [
+                        {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                        {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                        {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
+                    ],
+                    'columns_keys': [],
+                    'filter_conjunction': 'Or',
+                    'filters': [{'column_key': 'creator', 'filter_predicate': 'include_me', 'filter_term': []}],
+                    'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                    'groupbys': [],
+                    'hidden_columns': [],
+                }
             ],
-            'columns_keys': [],
-            'filter_conjunction': 'Or',
-            'filters': [],
-            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
-            'groupbys': [],
-            'hidden_columns': [],
-        }, {
-            '_id': 'closed',
-            'name': _('Closed'),
-            'type': 'table',
-            'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
-                {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
-                {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
-            ],
-            'columns_keys': [],
-            'filter_conjunction': 'Or',
-            'filters': [],
-            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
-            'groupbys': [],
-            'hidden_columns': [],
-        }
-    ],
-    'navigation': [
-        {'_id': 'open', 'type': 'view'},
-        {'_id': 'closed', 'type': 'view'}
-    ]
+        'navigation': [
+            {'_id': 'open', 'type': 'view'},
+            {'_id': 'closed', 'type': 'view'}
+        ]
+    }
 }
 
 CONNECTION_DEFAULT_DETAILS = {

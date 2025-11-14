@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-import uuid
 import logging
 import json
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
-from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -88,9 +86,14 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        ticket_type = request.GET.get('ticket_type')
+        if not ticket_type:
+            error_msg = 'ticket_type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         # main
         try:
-            view = TicketViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
+            view = TicketViews.objects.get_view(project_uuid=project_uuid, ticket_type=ticket_type, view_id=view_id)
             seadb_api = SeaDBAPI(username)
             tickets, columns = list_tickets_view_records(
                 seadb_api, project_uuid, view, username, start, limit)
