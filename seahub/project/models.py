@@ -1051,7 +1051,7 @@ class TicketViewsManager(models.Manager):
         record.save()
         return view_details
 
-    def duplicate_view(self, record, view_id, folder_id=None):
+    def duplicate_view(self, view_id, record, folder_id=None):
         view_details = json.loads(record.details)
         exist_folders_views_ids = record.folders_views_ids
         new_view_id = generate_views_unique_id(4, exist_folders_views_ids)

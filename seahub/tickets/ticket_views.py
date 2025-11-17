@@ -382,7 +382,7 @@ class TicketViewsDuplicateView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'folder %s does not exists' % folder_id)
 
         try:
-            new_view = TicketViews.objects.duplicate_view(project_uuid, view_id, folder_id)
+            new_view = TicketViews.objects.duplicate_view(view_id, record, folder_id)
             if not new_view:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'duplicate view failed')
         except Exception as e:
