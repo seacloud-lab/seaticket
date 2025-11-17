@@ -569,7 +569,7 @@ class TicketAPIView(APIView):
                 update_row['priority'] = priority
             if is_update_assignees:
                 update_row['assignees'] = assignees
-            participants = ticket.get('participants', [])
+            participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
             update_row['participants'] = participants
@@ -840,12 +840,11 @@ class TicketRepliesAPIView(APIView):
                     'updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
-            participants = ticket.get('participants', [])
+            participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
             update_ticket['row']['participants'] = participants
             seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
-
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -960,7 +959,7 @@ class TicketReplyAPIView(APIView):
             update_row = {
                 'updated_at': ticket_reply_data.get('updated_at'),
             }
-            participants = ticket.get('participants', [])
+            participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
                 update_row['participants'] = participants
@@ -1014,7 +1013,7 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            participants = ticket.get('participants', [])
+            participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
                 update_ticket = {
