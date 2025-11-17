@@ -92,7 +92,7 @@ class APITokenItem extends React.Component {
           <td style={{ width: '20%' }}>{item.app_name}</td>
           <td style={{ width: '20%' }}>
             <div className="d-inline-flex align-items-center">
-              <span>{item.permission === PERMISSIONS.READ_WRITE ? gettext('Read/Write') : gettext('Read Only')}</span>
+              <span>{item.permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
               {isOperationShow && (
                 <Dropdown isOpen={isPermissionDropdownOpen} toggle={this.togglePermissionDropdown} className="d-inline-block ml-1">
                   <DropdownToggle tag="span" style={{ cursor: 'pointer' }}>
@@ -103,10 +103,10 @@ class APITokenItem extends React.Component {
                   </DropdownToggle>
                   <DropdownMenu>
                     <DropdownItem onClick={() => this.onUpdatePermission(PERMISSIONS.READ_WRITE)}>
-                      {gettext('Read/Write')}
+                      {gettext('Read-Write')}
                     </DropdownItem>
                     <DropdownItem onClick={() => this.onUpdatePermission(PERMISSIONS.READ_ONLY)}>
-                      {gettext('Read Only')}
+                      {gettext('Read-Only')}
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
@@ -136,8 +136,8 @@ class APITokenItem extends React.Component {
         </tr>
         {isDeleteDialogOpen && (
           <CommonOperationConfirmationDialog
-            title={gettext('Delete API Token')}
-            message={gettext('Are you sure you want to delete the API token for <b>{app_name}</b>?').replace('{app_name}', item.app_name)}
+            title={gettext('Delete API token')}
+            message={gettext('Are you sure you want to delete the API token for {placeholder} ?').replace('{placeholder}', `<b>${item.app_name}</b>`)}
             executeOperation={this.onDeleteAPIToken}
             confirmBtnText={gettext('Delete')}
             toggleDialog={this.toggleDeleteDialog}
@@ -212,7 +212,7 @@ class ProjectAPITokenDialog extends React.Component {
           isCreating: false
         });
         this.loadTokens();
-        toaster.success(gettext('API token created successfully'));
+        toaster.success(gettext('%s created').replace('%s', gettext('API token')));
       })
       .catch(error => {
         this.handleError(error);
@@ -224,7 +224,7 @@ class ProjectAPITokenDialog extends React.Component {
     homeAPI.deleteProjectAPIToken(this.props.projectUuid, tokenId)
       .then(() => {
         this.loadTokens();
-        toaster.success(gettext('API token deleted successfully'));
+        toaster.success(gettext('%s deleted').replace('%s', gettext('API token')));
       })
       .catch(this.handleError);
   };
@@ -233,7 +233,7 @@ class ProjectAPITokenDialog extends React.Component {
     homeAPI.updateProjectAPIToken(this.props.projectUuid, tokenId, permission)
       .then(() => {
         this.loadTokens();
-        toaster.success(gettext('API token updated successfully'));
+        toaster.success(gettext('%s updated').replace('%s', gettext('API token')));
       })
       .catch(this.handleError);
   };
@@ -264,13 +264,13 @@ class ProjectAPITokenDialog extends React.Component {
 
     return (
       <Modal isOpen toggle={toggle} size="lg" style={{ maxWidth: '800px' }}>
-        <ModalHeader toggle={toggle}>{gettext('API Token')} <span className="text-primary">{projectName}</span></ModalHeader>
+        <ModalHeader toggle={toggle}>{gettext('API token')} <span className="text-primary">{projectName}</span></ModalHeader>
         <ModalBody style={{ minHeight: '400px', maxHeight: '600px', display: 'flex', flexDirection: 'column', overflow: 'visible' }}>
           <div style={{ flexShrink: 0, position: 'relative', zIndex: 1000 }}>
             <Table>
               <thead>
                 <tr>
-                  <th style={{ width: '45%' }}>{gettext('App Name')}</th>
+                  <th style={{ width: '45%' }}>{gettext('App name')}</th>
                   <th style={{ width: '40%' }}>{gettext('Permission')}</th>
                   <th style={{ width: '15%' }}></th>
                 </tr>
@@ -298,14 +298,14 @@ class ProjectAPITokenDialog extends React.Component {
                           height: '38px'
                         }}
                       >
-                        <span>{permission === PERMISSIONS.READ_WRITE ? gettext('Read/Write') : gettext('Read Only')}</span>
+                        <span>{permission === PERMISSIONS.READ_WRITE ? gettext('Read-Write') : gettext('Read-Only')}</span>
                       </DropdownToggle>
                       <DropdownMenu className="w-100">
                         <DropdownItem onClick={() => this.setPermission(PERMISSIONS.READ_WRITE)}>
-                          {gettext('Read/Write')}
+                          {gettext('Read-Write')}
                         </DropdownItem>
                         <DropdownItem onClick={() => this.setPermission(PERMISSIONS.READ_ONLY)}>
-                          {gettext('Read Only')}
+                          {gettext('Read-Only')}
                         </DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
@@ -333,7 +333,7 @@ class ProjectAPITokenDialog extends React.Component {
               <Table>
                 <thead>
                   <tr>
-                    <th style={{ width: '20%' }}>{gettext('App Name')}</th>
+                    <th style={{ width: '20%' }}>{gettext('App name')}</th>
                     <th style={{ width: '20%' }}>{gettext('Permission')}</th>
                     <th style={{ width: '45%' }}>{gettext('Token')}</th>
                     <th style={{ width: '15%' }} />

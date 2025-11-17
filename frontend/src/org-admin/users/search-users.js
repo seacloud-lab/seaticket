@@ -108,7 +108,7 @@ class SearchUsers extends Component {
         return item.email !== user.email;
       });
       this.setState({ userList: newUserList });
-      toaster.success(gettext('Successfully deleted 1 user.'));
+      toaster.success(gettext('%s deleted').replace('%s', gettext('1 user')));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);

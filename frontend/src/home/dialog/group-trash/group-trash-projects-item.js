@@ -44,7 +44,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
     homeAPI.restoreGroupTrashProject(uuid, groupID).then(() => {
       this.setState({ isRestoring: false });
       this.props.restoreProject(item);
-      const msg = gettext('Successfully restored {name}.').replace('{name}', name);
+      const msg = gettext('%s restored').replace('%s', name);
       toaster.success(msg);
     }).catch((error) => {
       this.setState({ isRestoring: false });

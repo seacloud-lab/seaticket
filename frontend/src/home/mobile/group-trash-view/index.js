@@ -19,9 +19,7 @@ function GroupTrashView(props) {
         <>
           <div className="group-trash-tips">
             <p>
-              {gettext(
-                'Tip: tables deleted {expireDays} days ago will be cleaned automatically.'
-              ).replace('{expireDays}', trashCleanExpireDays)}
+              {gettext('Tip: projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
             </p>
           </div>
           <div className="trash-view-content-header d-flex">

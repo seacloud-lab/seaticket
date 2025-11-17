@@ -1,5 +1,3 @@
-import { gettext } from '@/constants';
-import { VIEW_TYPE } from '../../constants';
 import { getValidFilters } from '../filter';
 import { getValidGroupbys } from '../group';
 import { getValidSorts } from '../sort';
@@ -10,8 +8,7 @@ import { getValidSorts } from '../sort';
  * @returns view name, string
  */
 const getViewName = (view = {}) => {
-  const { type, name } = view;
-  if (type === VIEW_TYPE.FACE_RECOGNITION) return gettext('People');
+  const { name } = view;
   return name;
 };
 

@@ -219,9 +219,6 @@ class SysAdminServiceApi {
       case 'contact_email':
         formData.append('contact_email', value);
         break;
-      case 'quota_total':
-        formData.append('quota_total', value);
-        break;
       case 'is_admin':
         formData.append('is_admin', value);
         break;
@@ -312,9 +309,6 @@ class SysAdminServiceApi {
         break;
       case 'reference_id':
         formData.append('reference_id', value);
-        break;
-      case 'quota_total':
-        formData.append('quota_total', value);
         break;
       case 'institution':
         formData.append('institution', value);

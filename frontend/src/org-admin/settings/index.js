@@ -68,7 +68,7 @@ class OrgSettings extends React.Component {
       this.setState({
         orgName: message
       });
-      toaster.success(gettext('Successfully set name.'));
+      toaster.success(gettext('%s updated').replace('%s', gettext('Name')));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);

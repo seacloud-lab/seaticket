@@ -76,7 +76,7 @@ const AdminProjects = forwardRef(({
     onDelete(project).then(res => {
       newProjects = newProjects.filter(p => p.uuid !== projectUuid);
       setProjects(newProjects);
-      const msg = gettext('Successfully deleted {name}.').replace('{name}', project.name);
+      const msg = gettext('%s deleted').replace('%s', project.name);
       toaster.success(msg);
     }).catch(error => {
       const errMessage = Utils.getErrorMsg(error);
@@ -91,7 +91,7 @@ const AdminProjects = forwardRef(({
     onRestore(project).then(() => {
       newProjects = newProjects.filter(p => p.uuid !== projectUuid);
       setProjects(newProjects);
-      const msg = gettext('Successfully restore {name}.').replace('{name}', project.name);
+      const msg = gettext('%s restored').replace('%s', project.name);
       toaster.success(msg);
     }).catch((error) => {
       const errMessage = Utils.getErrorMsg(error);

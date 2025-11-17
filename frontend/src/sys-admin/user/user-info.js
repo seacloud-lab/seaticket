@@ -5,10 +5,8 @@ import { IconButton, toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled } from '@/constants';
 import Loading from '@/components/loading';
-import SysAdminSetQuotaDialog from '@/sys-admin/dialog/set-quota';
 import SysAdminUpdateUserDialog from '@/sys-admin/dialog/update-user';
 import Nav from './user-nav';
-import SetRowLimitDialog from '@/sys-admin/dialog/set-row-limit';
 import sysAdminAPI from '../api';
 import SetAPICallsLimitPerUser from '@/sys-admin/dialog/set-api-calls-limit-per-user';
 import { TopBar, Main } from '../main-panel';
@@ -30,28 +28,10 @@ class Content extends Component {
     this.state = {
       currentKey: '',
       dialogTitle: '',
-      isSetQuotaDialogOpen: false,
       isUpdateUserDialogOpen: false,
-      isSetRowLimitDialogOpen: false,
       isSetAPICallsLimitPerUserDialogOpen: false,
     };
   }
-
-  toggleSetQuotaDialog = () => {
-    this.setState({ isSetQuotaDialogOpen: !this.state.isSetQuotaDialogOpen });
-  };
-
-  toggleSetRowLimitDialog = () => {
-    this.setState({ isSetRowLimitDialogOpen: !this.state.isSetRowLimitDialogOpen });
-  };
-
-  updateQuota = (value) => {
-    this.props.updateUser('asset_quota_mb', value);
-  };
-
-  updateRowLimit = (value) => {
-    this.props.updateUser('row_limit', value);
-  };
 
   toggleDialog = (key, dialogTitle) => {
     this.setState({
@@ -118,11 +98,7 @@ class Content extends Component {
       return <p className="error text-center mt-4">{errorMsg}</p>;
     } else {
       const user = this.props.userInfo;
-      const {
-        currentKey, dialogTitle,
-        isSetQuotaDialogOpen, isUpdateUserDialogOpen, isSetRowLimitDialogOpen,
-        isSetAPICallsLimitPerUserDialogOpen
-      } = this.state;
+      const { currentKey, dialogTitle, isUpdateUserDialogOpen, isSetAPICallsLimitPerUserDialogOpen } = this.state;
       return (
         <Fragment>
           <dl className="m-0">
@@ -209,25 +185,14 @@ class Content extends Component {
               </Fragment>
             }
           </dl>
-          {isSetQuotaDialogOpen &&
-          <SysAdminSetQuotaDialog
-            updateQuota={this.updateQuota}
-            toggle={this.toggleSetQuotaDialog}
-          />
-          }
           {isUpdateUserDialogOpen &&
-          <SysAdminUpdateUserDialog
-            dialogTitle={dialogTitle}
-            value={user[currentKey]}
-            updateValue={this.updateValue}
-            toggleDialog={this.toggleUpdateUserDialog}
-          />
+            <SysAdminUpdateUserDialog
+              dialogTitle={dialogTitle}
+              value={user[currentKey]}
+              updateValue={this.updateValue}
+              toggleDialog={this.toggleUpdateUserDialog}
+            />
           }
-          {isSetRowLimitDialogOpen &&
-          <SetRowLimitDialog
-            updateRowLimit={this.updateRowLimit}
-            toggle={this.toggleSetRowLimitDialog}
-          />}
           {isSetAPICallsLimitPerUserDialogOpen &&
             <SetAPICallsLimitPerUser
               updateLimit={this.updateAPICallsLimitPerUser}

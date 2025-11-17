@@ -64,7 +64,7 @@ const TopBar = ({ title }) => {
       return (
         <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={handleNewConnection}>
           <Icon symbol="add" className="mr-2" />
-          {gettext('Add connection')}
+          {gettext('New connection')}
         </Button>
       );
     } else {

@@ -243,8 +243,8 @@ class GroupMembers extends Component {
       let newMemberList = res.data.success;
       if (newMemberList.length) {
         newMemberList.map(item => {
-          const msg = gettext('Successfully added {email_placeholder}')
-            .replace('{email_placeholder}', item.email);
+          const msg = gettext('%s added')
+            .replace('%s', item.email);
           toaster.success(msg);
           return item;
         });
@@ -274,7 +274,7 @@ class GroupMembers extends Component {
       this.setState({
         memberList: newRepoList
       });
-      toaster.success(gettext('Successfully removed {placeholder}.').replace('{placeholder}', name));
+      toaster.success(gettext('%s removed').replace('%s', name));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);

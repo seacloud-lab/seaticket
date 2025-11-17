@@ -133,7 +133,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       .then(res => {
         toaster.closeAll();
         if (res.data && res.data.ai_summary) {
-          toaster.success(gettext('AI summary generated successfully'));
+          toaster.success(gettext('AI summary generated'));
           updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
         } else {
           toaster.warning(gettext('Failed to generate AI summary'));
@@ -187,10 +187,10 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     }
     if (connectionType === CONNECTION_TYPE.GITHUB_ISSUE) {
       return {
-        row: gettext('github issue'),
-        rows: gettext('github issues'),
-        Row: gettext('Github issue'),
-        Rows: gettext('Github issues'),
+        row: gettext('GitHub issue'),
+        rows: gettext('GitHub issues'),
+        Row: gettext('GitHub issue'),
+        Rows: gettext('GitHub issues'),
       };
     }
     if (connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) {

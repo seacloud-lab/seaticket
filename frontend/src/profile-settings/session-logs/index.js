@@ -78,7 +78,7 @@ class Item extends Component {
     const { session_id, user_name } = item;
     profileSettingsAPI.logOutSession(session_id).then(() => {
       this.props.logOutSession(item);
-      const msg = gettext('Successfully log out {name}.').replace('{name}', user_name);
+      const msg = gettext('%s logged out').replace('%s', user_name);
       toaster.success(msg);
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);

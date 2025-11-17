@@ -19,7 +19,7 @@ function DeletedGroupBaseItem(props) {
       await homeAPI.restoreGroupTrashProject(uuid, groupID);
       setLoading(false);
       props.restoreProject(baseItem);
-      const msg = gettext('Successfully restored {name}.').replace('{name}', name);
+      const msg = gettext('%s restored').replace('%s', name);
       toaster.success(msg);
     } catch (error) {
       setLoading(false);

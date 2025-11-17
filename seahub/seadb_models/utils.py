@@ -551,7 +551,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_n
 
 
 def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk):
-    """Query github issue comments from SeaDB"""
+    """Query GitHub issue comments from SeaDB"""
     issue_sql = f"SELECT author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)

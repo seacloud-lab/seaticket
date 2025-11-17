@@ -54,14 +54,6 @@ class AddUserForm(forms.Form):
         return self.cleaned_data
 
 
-class SetUserQuotaForm(forms.Form):
-    """
-    Form for setting user quota.
-    """
-    space_quota = forms.IntegerField(min_value=0,
-                               error_messages={'required': _('Space quota can\'t be empty'),
-                                               'min_value': _('Space quota is too low (minimum value is 0)')})
-
 class BatchAddUserForm(forms.Form):
     """
     Form for importing users from XLSX file.

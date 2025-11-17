@@ -51,8 +51,8 @@ class ProjectSettingPopover extends React.Component {
           value={this.props.name}
           onChange={this.onChangeName}
           autoFocus={true}
-          aria-label={gettext('Enter base name')}
-          aria-describedby={gettext('Enter a description of the base name')}
+          aria-label={gettext('Enter project name')}
+          aria-describedby={gettext('Enter a description of the project name')}
         />
       </div>
     );

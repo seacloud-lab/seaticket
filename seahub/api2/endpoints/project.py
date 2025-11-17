@@ -226,10 +226,10 @@ class ProjectsView(APIView):
         try:
             project = Projects.objects.create_project(username, workspace, project_name, color=color, text_color=text_color, icon=icon)
         except OperationalError:
-            error_msg = _('Base name contains illegal characters')
+            error_msg = _('Project name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         except IntegrityError:
-            error_msg = _('Base %s already exists in this workspace.') % project_name
+            error_msg = _('Project %s already exists in this workspace.') % project_name
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         except Exception as e:
             logger.error(e)
@@ -266,7 +266,7 @@ class ProjectView(APIView):
         # name
         project_name = request.data.get('name')
         if not project_name:
-            error_msg = _('Base name is invalid')
+            error_msg = _('Project name is invalid')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         new_project_name = request.data.get('new_name')

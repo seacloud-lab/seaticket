@@ -113,7 +113,7 @@ const UsersTable = forwardRef(({
     onDelete(userEmail).then(res => {
       newUsers = newUsers.filter(p => p.email !== userEmail);
       setUsers(newUsers);
-      toaster.success(gettext('Successfully deleted 1 user.'));
+      toaster.success(gettext('%s deleted').replace('%s', gettext('1 user')));
     }).catch(error => {
       const errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
@@ -171,7 +171,7 @@ const UsersTable = forwardRef(({
     revokeAdmin(userEmail, 'is_staff', false).then(res => {
       newUsers = newUsers.filter(p => p.email !== userEmail);
       setUsers(newUsers);
-      toaster.success(gettext('Successfully revoked the admin permission of {placeholder}'.replace('{placeholder}', name)));
+      toaster.success(gettext('The admin permission of {placeholder} revoked'.replace('{placeholder}', name)));
     }).catch((error) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);

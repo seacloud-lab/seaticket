@@ -72,7 +72,7 @@ const GroupsTable = forwardRef(({
     onDelete(group).then(res => {
       newGroups = newGroups.filter(p => p.id !== groupId);
       setGroups(newGroups);
-      const msg = gettext('Successfully deleted {name}.').replace('{name}', group.name);
+      const msg = gettext('%s deleted').replace('%s', group.name);
       toaster.success(msg);
     }).catch(error => {
       const errMessage = Utils.getErrorMsg(error);
@@ -87,7 +87,7 @@ const GroupsTable = forwardRef(({
     onUserRemove(group).then(() => {
       newGroups = newGroups.filter(p => p.id !== groupId);
       setGroups(newGroups);
-      const msg = gettext('Successfully remove from 1 item.');
+      const msg = gettext('1 user has been removed from the {groupName}').replace('{groupName}', group.name);
       toaster.success(msg);
     }).catch((error) => {
       const errMessage = Utils.getErrorMsg(error);

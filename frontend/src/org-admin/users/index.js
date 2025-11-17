@@ -66,8 +66,7 @@ class OrgUsers extends Component {
         orgUsers: this.state.orgUsers
       });
       this.toggleAddOrgUser();
-      let msg = gettext('successfully added user %s.');
-      msg = msg.replace('%s', email);
+      const msg = gettext('%s added').replace('%s', gettext('User %s').replace('%s', email));
       toaster.success(msg);
     }).catch(error => {
       if (error.response && error.response.status === 409) { // maybe over limit
@@ -84,7 +83,7 @@ class OrgUsers extends Component {
     orgAdminAPI.orgAdminDeleteOrgUser(orgID, user.email).then(res => {
       let users = this.state.orgUsers.filter(item => item.email !== user.email);
       this.setState({ orgUsers: users });
-      let msg = gettext('Successfully deleted %s');
+      let msg = gettext('%s deleted');
       msg = msg.replace('%s', user.name);
       toaster.success(msg);
     }).catch(error => {
@@ -110,7 +109,7 @@ class OrgUsers extends Component {
       this.setState({
         orgAdminUsers: this.state.orgAdminUsers.filter(item => item.email !== email)
       });
-      let msg = gettext('Successfully deleted %s');
+      let msg = gettext('%s deleted');
       msg = msg.replace('%s', email);
       toaster.success(msg);
     }).catch(error => {
@@ -138,7 +137,7 @@ class OrgUsers extends Component {
     this.setState({
       orgAdminUsers: this.state.orgAdminUsers
     });
-    let msg = gettext('Successfully added %s as admin.');
+    let msg = gettext('%s has been added as admin');
     msg = msg.replace('%s', userInfo.name);
     toaster.success(msg);
     this.toggleAddOrgAdmin();

@@ -1,52 +1,71 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: seahub\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-17 16:02+0800\n"
+"PO-Revision-Date: 2015-05-09 05:28+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
+"en/)\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: frontend/src/components/account/index.js:143
-#: frontend/src/home/mobile/mobile-mine/index.js:79
+#: frontend/src/home/mobile/mobile-mine/index.js:70
 msgid "Exit system admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:148
-#: frontend/src/home/mobile/mobile-mine/index.js:84
+#: frontend/src/home/mobile/mobile-mine/index.js:75
 msgid "Exit team admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:153
-#: frontend/src/home/mobile/mobile-mine/index.js:89
+#: frontend/src/home/mobile/mobile-mine/index.js:80
 msgid "Exit institution admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:160
-#: frontend/src/home/mobile/mobile-mine/index.js:97
+#: frontend/src/home/mobile/mobile-mine/index.js:88
 #: frontend/src/sys-admin/side-panel.js:32
-#: frontend/src/sys-admin/users/users-content.js:252
-#: frontend/src/sys-admin/users/users.js:284
 #: frontend/src/utils/role-status-utils.js:28
 msgid "System admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:165
-#: frontend/src/home/mobile/mobile-mine/index.js:102
+#: frontend/src/home/mobile/mobile-mine/index.js:93
 #: frontend/src/project/components/account/index.js:57
 msgid "Team admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:170
-#: frontend/src/home/mobile/mobile-mine/index.js:107
+#: frontend/src/home/mobile/mobile-mine/index.js:98
 msgid "Institution admin"
 msgstr ""
 
 #: frontend/src/components/account/index.js:191
-#: frontend/src/sys-admin/users/user-info.js:175
+#: frontend/src/sys-admin/org/org-info.js:100
+#: frontend/src/sys-admin/user/user-info.js:153
 msgid "API calls count"
 msgstr ""
 
 #: frontend/src/components/account/index.js:197
-#: frontend/src/home/mobile/mobile-mine/index.js:151
+#: frontend/src/home/mobile/mobile-mine/index.js:123
 #: frontend/src/profile-settings/index.js:151
 #: frontend/src/project/components/account/index.js:56
 msgid "Personal settings"
 msgstr ""
 
 #: frontend/src/components/account/index.js:199
-#: frontend/src/home/mobile/mobile-mine/index.js:169
+#: frontend/src/home/mobile/mobile-mine/index.js:141
 #: frontend/src/profile-settings/session-logs/index.js:64
 #: frontend/src/profile-settings/session-logs/index.js:165
 #: frontend/src/profile-settings/session-logs/index.js:167
@@ -61,37 +80,55 @@ msgstr ""
 msgid "View profile and more"
 msgstr ""
 
+#: frontend/src/components/admin-projects/index.js:14
+#: frontend/src/home/main-panel/pc-main-panel/workspace-in-main-panel/index.js:43
+#: frontend/src/home/workspace/body/index.js:60
+#: frontend/src/org-admin/projects/search-projects.js:59
+#: frontend/src/sys-admin/projects/search-projects.js:59
+msgid "No projects"
+msgstr ""
+
 #: frontend/src/components/admin-projects/index.js:39
 #: frontend/src/org-admin/group-info/index.js:32
 #: frontend/src/org-admin/group-members/index.js:32
 #: frontend/src/org-admin/user-profile/index.js:35
 #: frontend/src/org-admin/users/search-users.js:70
 #: frontend/src/profile-settings/session-logs/index.js:282
-#: frontend/src/sys-admin/groups/group-members.js:213
-#: frontend/src/sys-admin/groups/groups.js:308
-#: frontend/src/sys-admin/groups/search-groups.js:53
+#: frontend/src/sys-admin/group/group-members.js:214
+#: frontend/src/sys-admin/groups/groups-table/index.js:35
 #: frontend/src/sys-admin/info/index.js:39
-#: frontend/src/sys-admin/orgs/index.js:314
-#: frontend/src/sys-admin/orgs/org-admin-users.js:280
-#: frontend/src/sys-admin/orgs/org-groups.js:185
-#: frontend/src/sys-admin/orgs/org-info.js:191
-#: frontend/src/sys-admin/orgs/org-projects.js:254
-#: frontend/src/sys-admin/orgs/org-users.js:308
+#: frontend/src/sys-admin/org/org-info.js:167
+#: frontend/src/sys-admin/orgs/index.js:310
 #: frontend/src/sys-admin/orgs/search-orgs.js:51
-#: frontend/src/sys-admin/users/search-users.js:137
-#: frontend/src/sys-admin/users/user-groups.js:283
-#: frontend/src/sys-admin/users/users.js:684
-#: frontend/src/sys-admin/users/users.js:717
-#: frontend/src/sys-admin/users/users.js:821 frontend/src/utils/utils.js:172
+#: frontend/src/sys-admin/user/user-info.js:238
+#: frontend/src/sys-admin/users/users-table/index.js:76
+#: frontend/src/sys-admin/users/users.js:81 frontend/src/utils/utils.js:172
 msgid "Permission denied"
 msgstr ""
 
 #: frontend/src/components/admin-projects/index.js:79
-msgid "Successfully deleted {name}."
+#: frontend/src/components/dialog/project-api-token-dialog.js:227
+#: frontend/src/org-admin/groups/index.js:73
+#: frontend/src/org-admin/users/index.js:86
+#: frontend/src/org-admin/users/index.js:112
+#: frontend/src/org-admin/users/search-users.js:111
+#: frontend/src/sys-admin/groups/groups-table/index.js:75
+#: frontend/src/sys-admin/orgs/index.js:273
+#: frontend/src/sys-admin/orgs/search-orgs.js:93
+#: frontend/src/sys-admin/users/search-users.js:28
+#: frontend/src/sys-admin/users/search-users.js:29
+#: frontend/src/sys-admin/users/users-table/index.js:116
+#: frontend/src/sys-admin/users/users.js:98
+#: frontend/src/sys-admin/users/users.js:99
+#, javascript-format
+msgid "%s deleted"
 msgstr ""
 
 #: frontend/src/components/admin-projects/index.js:94
-msgid "Successfully restore {name}."
+#: frontend/src/home/dialog/group-trash/group-trash-projects-item.js:47
+#: frontend/src/home/mobile/group-trash-view/deleted-group-base-item.js:22
+#, javascript-format
+msgid "%s restored"
 msgstr ""
 
 #: frontend/src/components/admin-projects/project.js:32
@@ -99,9 +136,10 @@ msgstr ""
 #: frontend/src/components/dialog/confirm-delete-account.js:37
 #: frontend/src/components/dialog/confirm-delete-org.js:65
 #: frontend/src/components/dialog/confirm-delete-org.js:66
-#: frontend/src/home/workspace/body/project-item-popover/index.js:49
-#: frontend/src/home/workspace/index.js:455
-#: frontend/src/home/workspace/index.js:488
+#: frontend/src/components/dialog/project-api-token-dialog.js:142
+#: frontend/src/home/workspace/body/project-item-popover/index.js:54
+#: frontend/src/home/workspace/index.js:475
+#: frontend/src/home/workspace/index.js:515
 #: frontend/src/org-admin/groups/group.js:116
 #: frontend/src/org-admin/groups/group.js:127
 #: frontend/src/org-admin/users/user.js:192
@@ -113,33 +151,23 @@ msgstr ""
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:21
 #: frontend/src/project/main-panel/connections/hooks/connections.js:218
 #: frontend/src/project/main-panel/connections/hooks/connections.js:221
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:141
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:184
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:145
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:195
 #: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:174
 #: frontend/src/sea-metadata/components/view-toolbar/rows-toolbar/index.js:52
 #: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:129
-#: frontend/src/sys-admin/groups/groups-content.js:238
-#: frontend/src/sys-admin/groups/groups.js:236
-#: frontend/src/sys-admin/groups/op-menu.js:49
+#: frontend/src/sys-admin/groups/groups-table/group.js:31
+#: frontend/src/sys-admin/groups/groups-table/group.js:177
+#: frontend/src/sys-admin/orgs/index.js:176
 #: frontend/src/sys-admin/orgs/index.js:177
-#: frontend/src/sys-admin/orgs/index.js:178
 #: frontend/src/sys-admin/orgs/op-menu.js:52
-#: frontend/src/sys-admin/orgs/org-admin-users.js:227
-#: frontend/src/sys-admin/orgs/org-groups.js:130
-#: frontend/src/sys-admin/orgs/org-groups.js:131
-#: frontend/src/sys-admin/orgs/org-groups.js:141
-#: frontend/src/sys-admin/orgs/org-users.js:244
 #: frontend/src/sys-admin/orgs/orgs-content.js:166
 #: frontend/src/sys-admin/orgs/orgs-content.js:167
 #: frontend/src/sys-admin/orgs/orgs-content.js:178
-#: frontend/src/sys-admin/orgs/user-op-menu.js:51
-#: frontend/src/sys-admin/users/search-users.js:344
-#: frontend/src/sys-admin/users/user-groups.js:229
-#: frontend/src/sys-admin/users/users-content.js:313
-#: frontend/src/sys-admin/users/users-content.js:466
-#: frontend/src/sys-admin/users/users.js:341
-#: frontend/src/sys-admin/users/users.js:510
-#: frontend/src/sys-admin/users/users.js:1071
+#: frontend/src/sys-admin/users/search-users.js:71
+#: frontend/src/sys-admin/users/users-table/user.js:42
+#: frontend/src/sys-admin/users/users-table/user.js:261
+#: frontend/src/sys-admin/users/users.js:212
 msgid "Delete"
 msgstr ""
 
@@ -148,12 +176,12 @@ msgid "Restore"
 msgstr ""
 
 #: frontend/src/components/admin-projects/project.js:126
-#: frontend/src/home/workspace/index.js:452
+#: frontend/src/home/workspace/index.js:472
 msgid "Delete project"
 msgstr ""
 
 #: frontend/src/components/admin-projects/project.js:127
-#: frontend/src/home/workspace/index.js:453
+#: frontend/src/home/workspace/index.js:473
 msgid "Are you sure you want to delete the project {placeholder} ?"
 msgstr ""
 
@@ -163,15 +191,16 @@ msgstr ""
 
 #: frontend/src/components/customize-dropdown-more-toggle/index.js:14
 #: frontend/src/components/customize-dropdown-more-toggle/index.js:15
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:71
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:72
-#: frontend/src/home/workspace/body/project.js:197
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:304
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:305
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:75
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:76
+#: frontend/src/home/workspace/body/project.js:198
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:314
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:315
 msgid "More operations"
 msgstr ""
 
 #: frontend/src/components/customize-name-dialog/index.js:42
+#: frontend/src/project/main-panel/tickets/constants.js:57
 msgid "New"
 msgstr ""
 
@@ -187,9 +216,9 @@ msgstr ""
 #: frontend/src/home/mobile/rename-project-view.js:115
 #: frontend/src/org-admin/groups/transfer-dialog.js:48
 #: frontend/src/org-admin/saml/input-item.js:94
+#: frontend/src/org-admin/settings/input-item.js:84
 #: frontend/src/org-admin/user-profile/set-user-contact-email.js:66
 #: frontend/src/org-admin/user-profile/set-user-name.js:68
-#: frontend/src/org-admin/user-profile/set-user-quota.js:78
 #: frontend/src/org-admin/users/add-admin-dialog.js:57
 #: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:38
 #: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:33
@@ -197,23 +226,20 @@ msgstr ""
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:70
 #: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:80
 #: frontend/src/profile-settings/update-webdav-password.js:42
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:130
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:126
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:254
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:263
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:272
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:281
-#: frontend/src/project/main-panel/connections/view/connection/index.js:128
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:168
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:116
+#: frontend/src/project/main-panel/connections/view/connection/index.js:109
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:172
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:120
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:148
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:166
-#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:94
+#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:100
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:148
 #: frontend/src/sea-metadata/components/popover/column-popover/index.js:89
 #: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:70
-#: frontend/src/sys-admin/dialog/set-quota.js:73
-#: frontend/src/sys-admin/dialog/set-row-limit.js:72
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:138
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-notification-dialog.js:58
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-user-notification-dialog.js:60
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:183
 #: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:51
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:87
@@ -223,14 +249,14 @@ msgstr ""
 #: frontend/src/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog.js:66
 #: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:66
 #: frontend/src/sys-admin/dialog/sysadmin-unlink-device-dialog.js:46
-#: frontend/src/sys-admin/dialog/sysadmin-update-sys-notification-dialog.js:60
 #: frontend/src/sys-admin/dialog/update-user.js:61
 #: frontend/src/sys-admin/sys-popover/index.js:70
-#: frontend/src/sys-admin/users/common-operations/add-user-to-groups.js:118
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:97
 msgid "Cancel"
 msgstr ""
 
 #: frontend/src/components/customize-name-dialog/index.js:49
+#: frontend/src/components/dialog/project-api-token-dialog.js:319
 #: frontend/src/components/dialog/set-contact-email-dialog.js:72
 #: frontend/src/home/dialog/create-group-dialog.js:88
 #: frontend/src/home/dialog/list-and-add-group-members.js:150
@@ -238,33 +264,30 @@ msgstr ""
 #: frontend/src/home/dialog/rename-group-name-dialog.js:84
 #: frontend/src/home/dialog/transfer-group-dialog.js:67
 #: frontend/src/org-admin/groups/transfer-dialog.js:49
-#: frontend/src/org-admin/projects/search-projects.js:67
+#: frontend/src/org-admin/projects/search-projects.js:84
 #: frontend/src/org-admin/saml/input-item.js:91
+#: frontend/src/org-admin/settings/input-item.js:81
 #: frontend/src/org-admin/user-profile/set-user-contact-email.js:67
 #: frontend/src/org-admin/user-profile/set-user-name.js:69
-#: frontend/src/org-admin/user-profile/set-user-quota.js:79
 #: frontend/src/org-admin/users/add-admin-dialog.js:58
 #: frontend/src/org-admin/users/add-user-dialog.js:134
 #: frontend/src/org-admin/users/search-users.js:161
 #: frontend/src/profile-settings/email-notice.js:83
 #: frontend/src/profile-settings/update-webdav-password.js:43
 #: frontend/src/profile-settings/user-basic-info-form.js:83
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:131
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:127
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:258
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:267
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:276
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:284
-#: frontend/src/project/main-panel/connections/view/connection/index.js:129
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:117
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:275
+#: frontend/src/project/main-panel/connections/view/connection/index.js:110
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:121
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:149
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:167
-#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:97
+#: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:103
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:149
 #: frontend/src/sea-metadata/components/popover/column-popover/index.js:90
 #: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:71
-#: frontend/src/sys-admin/dialog/set-quota.js:74
-#: frontend/src/sys-admin/dialog/set-row-limit.js:73
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:139
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-notification-dialog.js:59
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-user-notification-dialog.js:61
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:184
 #: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:52
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:88
@@ -272,14 +295,13 @@ msgstr ""
 #: frontend/src/sys-admin/dialog/sysadmin-group-transfer-dialog.js:62
 #: frontend/src/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog.js:67
 #: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:67
-#: frontend/src/sys-admin/dialog/sysadmin-update-sys-notification-dialog.js:61
 #: frontend/src/sys-admin/dialog/update-user.js:62
-#: frontend/src/sys-admin/groups/search-groups.js:144
-#: frontend/src/sys-admin/orgs/search-orgs.js:139
-#: frontend/src/sys-admin/projects/search-projects.js:67
+#: frontend/src/sys-admin/groups/search-groups.js:87
+#: frontend/src/sys-admin/orgs/search-orgs.js:136
+#: frontend/src/sys-admin/projects/search-projects.js:84
 #: frontend/src/sys-admin/sys-popover/index.js:71
-#: frontend/src/sys-admin/users/common-operations/add-user-to-groups.js:119
-#: frontend/src/sys-admin/users/search-users.js:307
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:98
+#: frontend/src/sys-admin/users/search-users.js:162
 msgid "Submit"
 msgstr ""
 
@@ -321,6 +343,78 @@ msgstr ""
 msgid "Are you sure you want to disconnect?"
 msgstr ""
 
+#: frontend/src/components/dialog/project-api-token-dialog.js:49
+msgid "API token copied to clipboard"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:95
+#: frontend/src/components/dialog/project-api-token-dialog.js:106
+#: frontend/src/components/dialog/project-api-token-dialog.js:301
+#: frontend/src/components/dialog/project-api-token-dialog.js:305
+msgid "Read-Write"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:95
+#: frontend/src/components/dialog/project-api-token-dialog.js:109
+#: frontend/src/components/dialog/project-api-token-dialog.js:301
+#: frontend/src/components/dialog/project-api-token-dialog.js:308
+msgid "Read-Only"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:139
+msgid "Delete API token"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:140
+msgid "Are you sure you want to delete the API token for {placeholder} ?"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:202
+msgid "App name is required"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:215
+#, javascript-format
+msgid "%s created"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:215
+#: frontend/src/components/dialog/project-api-token-dialog.js:227
+#: frontend/src/components/dialog/project-api-token-dialog.js:236
+#: frontend/src/components/dialog/project-api-token-dialog.js:267
+#: frontend/src/home/workspace/body/project-item-popover/index.js:59
+msgid "API token"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:236
+#: frontend/src/org-admin/settings/index.js:71
+#: frontend/src/org-admin/users/user.js:102
+#: frontend/src/sys-admin/org/org-info.js:197
+#: frontend/src/sys-admin/org/org-info.js:211
+#: frontend/src/sys-admin/org/org-info.js:225
+#, javascript-format
+msgid "%s updated"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:273
+#: frontend/src/components/dialog/project-api-token-dialog.js:336
+msgid "App name"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:274
+#: frontend/src/components/dialog/project-api-token-dialog.js:337
+#: frontend/src/org-admin/users/user.js:102
+msgid "Permission"
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:319
+msgid "Creating..."
+msgstr ""
+
+#: frontend/src/components/dialog/project-api-token-dialog.js:338
+msgid "Token"
+msgstr ""
+
 #: frontend/src/components/dialog/restore-project-dialog.js:13
 msgid ""
 "The owner of this project has been deleted. Do you want to restore the "
@@ -342,11 +436,12 @@ msgstr ""
 #: frontend/src/components/group-select.js:76
 #: frontend/src/org-admin/group-info/index.js:38
 #: frontend/src/org-admin/group-members/index.js:38
-#: frontend/src/sys-admin/groups/group-members.js:219
+#: frontend/src/sys-admin/group/group-members.js:220
 msgid "Group not found"
 msgstr ""
 
 #: frontend/src/components/group-select.js:76
+#: frontend/src/components/sync-option-editor/main/index.js:223
 #: frontend/src/components/user-select/index.js:279
 msgid "Enter characters to start searching"
 msgstr ""
@@ -382,6 +477,7 @@ msgstr ""
 #: frontend/src/components/popover/user-info-popover/index.js:56
 #: frontend/src/components/user-select/index.js:279
 #: frontend/src/org-admin/user-profile/index.js:41
+#: frontend/src/sys-admin/user/user-info.js:244
 msgid "User not found"
 msgstr ""
 
@@ -395,7 +491,8 @@ msgstr ""
 #: frontend/src/home/dialog/group-members.js:124
 #: frontend/src/org-admin/group-members/member.js:17
 #: frontend/src/org-admin/side-panel.js:28
-#: frontend/src/org-admin/users/index.js:216
+#: frontend/src/org-admin/users/index.js:215
+#: frontend/src/sys-admin/groups/groups-table/group.js:72
 #: frontend/src/utils/role-status-utils.js:18
 msgid "Admin"
 msgstr ""
@@ -403,19 +500,20 @@ msgstr ""
 #: frontend/src/components/role-editor.js:24
 #: frontend/src/home/dialog/group-members.js:127
 #: frontend/src/org-admin/group-members/member.js:19
+#: frontend/src/sys-admin/groups/groups-table/group.js:75
 #: frontend/src/utils/role-status-utils.js:20
 msgid "Member"
 msgstr ""
 
 #: frontend/src/components/select-editor/index.js:102
-#: frontend/src/org-admin/user-profile/user-info.js:66
-#: frontend/src/org-admin/user-profile/user-info.js:73
+#: frontend/src/org-admin/user-profile/user-info.js:58
+#: frontend/src/org-admin/user-profile/user-info.js:65
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:18
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:135
-#: frontend/src/sys-admin/orgs/org-info.js:57
-#: frontend/src/sys-admin/orgs/org-info.js:58
-#: frontend/src/sys-admin/users/user-info.js:102
-#: frontend/src/sys-admin/users/user-info.js:103
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:139
+#: frontend/src/sys-admin/org/org-info.js:51
+#: frontend/src/sys-admin/org/org-info.js:52
+#: frontend/src/sys-admin/user/user-info.js:83
+#: frontend/src/sys-admin/user/user-info.js:84
 msgid "Edit"
 msgstr ""
 
@@ -430,10 +528,10 @@ msgstr ""
 #: frontend/src/components/user-item/index.js:40
 #: frontend/src/profile-settings/index.js:171
 #: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:34
-#: frontend/src/sys-admin/groups/group-members.js:156
-#: frontend/src/sys-admin/groups/group-members.js:157
-#: frontend/src/sys-admin/groups/group-members.js:169
-#: frontend/src/sys-admin/users/user-groups.js:238
+#: frontend/src/sys-admin/group/group-members.js:157
+#: frontend/src/sys-admin/group/group-members.js:158
+#: frontend/src/sys-admin/group/group-members.js:170
+#: frontend/src/sys-admin/groups/groups-table/group.js:196
 msgid "Remove"
 msgstr ""
 
@@ -441,13 +539,13 @@ msgstr ""
 #: frontend/src/components/user-select/index.js:252
 #: frontend/src/home/dialog/list-and-add-group-members.js:143
 #: frontend/src/home/dialog/transfer-group-dialog.js:60
-#: frontend/src/org-admin/users/index.js:177
+#: frontend/src/org-admin/users/index.js:176
 #: frontend/src/org-admin/users/search-users.js:149
 #: frontend/src/org-admin/users/search-users.js:153
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:72
+#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:59
 #: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:46
-#: frontend/src/sys-admin/users/search-users.js:293
-#: frontend/src/sys-admin/users/search-users.js:297
-#: frontend/src/sys-admin/users/users.js:977
+#: frontend/src/sys-admin/users/search-users.js:152
 msgid "Search users"
 msgstr ""
 
@@ -469,39 +567,52 @@ msgstr ""
 #: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-title.js:21
 #: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-title.js:24
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:60
-#: frontend/src/sys-admin/groups/groups.js:396
-#: frontend/src/sys-admin/groups/groups.js:403
+#: frontend/src/sys-admin/groups/groups.js:53
+#: frontend/src/sys-admin/groups/groups.js:58
 msgid "New group"
 msgstr ""
 
 #: frontend/src/home/dialog/create-group-dialog.js:75
 #: frontend/src/home/dialog/group-members.js:30
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:31
-#: frontend/src/home/mobile/group-trash-view/index.js:28
+#: frontend/src/home/mobile/group-trash-view/index.js:26
 #: frontend/src/org-admin/group-info/index.js:67
 #: frontend/src/org-admin/group-members/index.js:67
 #: frontend/src/org-admin/group-projects/index.js:30
-#: frontend/src/org-admin/groups/index.js:123
+#: frontend/src/org-admin/groups/index.js:122
 #: frontend/src/org-admin/projects/index.js:70
-#: frontend/src/org-admin/projects/search-projects.js:46
+#: frontend/src/org-admin/projects/search-projects.js:63
 #: frontend/src/org-admin/projects/trash-projects.js:33
-#: frontend/src/org-admin/user-profile/user-info.js:63
+#: frontend/src/org-admin/settings/index.js:71
+#: frontend/src/org-admin/user-profile/user-info.js:55
 #: frontend/src/org-admin/users/admins/index.js:16
 #: frontend/src/org-admin/users/users.js:15
-#: frontend/src/project/main-panel/connections/constants.js:30
-#: frontend/src/project/main-panel/connections/constants.js:58
-#: frontend/src/project/main-panel/connections/constants.js:88
-#: frontend/src/project/main-panel/connections/constants.js:124
-#: frontend/src/project/main-panel/connections/constants.js:145
+#: frontend/src/project/main-panel/connections/constants.js:132
+#: frontend/src/project/main-panel/connections/constants.js:162
+#: frontend/src/project/main-panel/connections/constants.js:198
+#: frontend/src/project/main-panel/connections/constants.js:219
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:112
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:120
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:112
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:111
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:64
-#: frontend/src/sys-admin/groups/group-members.js:44
-#: frontend/src/sys-admin/groups/search-groups.js:132
-#: frontend/src/sys-admin/orgs/org-projects.js:149
-#: frontend/src/sys-admin/orgs/search-orgs.js:127
-#: frontend/src/sys-admin/projects/search-projects.js:46
+#: frontend/src/sys-admin/group/group-members.js:45
+#: frontend/src/sys-admin/group/group-projects.js:31
+#: frontend/src/sys-admin/groups/groups.js:67
+#: frontend/src/sys-admin/groups/search-groups.js:64
+#: frontend/src/sys-admin/groups/search-groups.js:79
+#: frontend/src/sys-admin/org/org-admin-users.js:29
+#: frontend/src/sys-admin/org/org-groups.js:34
+#: frontend/src/sys-admin/org/org-info.js:78
+#: frontend/src/sys-admin/org/org-info.js:197
+#: frontend/src/sys-admin/org/org-projects.js:37
+#: frontend/src/sys-admin/org/org-users.js:66
+#: frontend/src/sys-admin/orgs/search-orgs.js:124
+#: frontend/src/sys-admin/projects/search-projects.js:63
+#: frontend/src/sys-admin/user/user-group/index.js:62
+#: frontend/src/sys-admin/user/user-info.js:126
+#: frontend/src/sys-admin/user/user-projects/index.js:40
+#: frontend/src/sys-admin/users/users-table/index.js:57
 msgid "Name"
 msgstr ""
 
@@ -510,88 +621,93 @@ msgid "Invitation link has been copied to clipboard"
 msgstr ""
 
 #: frontend/src/home/dialog/group-invite-members-dialog/index.js:79
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:96
 msgid "Invite members"
 msgstr ""
 
-#: frontend/src/home/dialog/group-invite-members-dialog/index.js:84
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:83
 msgid "Group invitation link"
 msgstr ""
 
-#: frontend/src/home/dialog/group-invite-members-dialog/index.js:89
-#: frontend/src/org-admin/saml/index.js:116
-#: frontend/src/org-admin/saml/index.js:128
-#: frontend/src/org-admin/saml/index.js:140
-#: frontend/src/org-admin/saml/index.js:152
-#: frontend/src/org-admin/saml/index.js:198
-msgid "Copy"
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:95
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:257
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:202
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:203
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:202
+msgid "Copy link"
 msgstr ""
 
-#: frontend/src/home/dialog/group-invite-members-dialog/index.js:99
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:101
+msgid "Delete link"
+msgstr ""
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:105
+msgid ""
+"Users in your team can join the group via group invitation link. If the user "
+"has not registered yet, you should ask your team admin to add the user first."
+msgstr ""
+
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:111
 msgid ""
 "No group invitation link yet. Group invitation link let registered users to "
 "join the group by clicking a link."
 msgstr ""
 
-#: frontend/src/home/dialog/group-invite-members-dialog/index.js:101
+#: frontend/src/home/dialog/group-invite-members-dialog/index.js:113
 msgid "Generate"
 msgstr ""
 
 #: frontend/src/home/dialog/group-members.js:31
 #: frontend/src/org-admin/group-members/index.js:68
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:148
-#: frontend/src/sys-admin/orgs/index.js:69
+#: frontend/src/sys-admin/orgs/index.js:68
 #: frontend/src/sys-admin/orgs/orgs-content.js:59
 #: frontend/src/sys-admin/sys-popover/index.js:60
-#: frontend/src/sys-admin/users/user-groups.js:57
-#: frontend/src/sys-admin/users/users-content.js:81
-#: frontend/src/sys-admin/users/users.js:92
+#: frontend/src/sys-admin/user/user-group/index.js:63
+#: frontend/src/sys-admin/users/users-table/index.js:60
 msgid "Role"
 msgstr ""
 
 #: frontend/src/home/dialog/group-members.js:130
 #: frontend/src/org-admin/group-info/index.js:69
 #: frontend/src/org-admin/group-members/member.js:15
-#: frontend/src/org-admin/groups/index.js:124
+#: frontend/src/org-admin/groups/index.js:123
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:73
-#: frontend/src/sys-admin/groups/groups-content.js:63
-#: frontend/src/sys-admin/groups/groups.js:69
-#: frontend/src/sys-admin/orgs/org-projects.js:152
+#: frontend/src/sys-admin/groups/groups-table/group.js:69
+#: frontend/src/sys-admin/groups/groups.js:68
+#: frontend/src/sys-admin/groups/search-groups.js:65
 msgid "Owner"
 msgstr ""
 
 #: frontend/src/home/dialog/group-trash-dialog/index.js:55
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:104
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:111
 #: frontend/src/home/mobile/group-trash-view/index.js:14
 #: frontend/src/org-admin/projects/index.js:60
 #: frontend/src/sys-admin/projects/project-nav.js:16
 msgid "Trash"
 msgstr ""
 
-#: frontend/src/home/dialog/group-trash/group-trash-projects-item.js:47
-#: frontend/src/home/mobile/group-trash-view/deleted-group-base-item.js:23
-msgid "Successfully restored {name}."
-msgstr ""
-
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:19
-#: frontend/src/home/mobile/group-trash-view/index.js:36
+#: frontend/src/home/mobile/group-trash-view/index.js:34
 #: frontend/src/org-admin/projects/trash-projects.js:29
 msgid "No deleted projects"
 msgstr ""
 
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:25
-#: frontend/src/home/mobile/group-trash-view/index.js:23
+#: frontend/src/home/mobile/group-trash-view/index.js:22
+#: frontend/src/org-admin/projects/trash-projects.js:44
 msgid ""
-"Tip: tables deleted {expireDays} days ago will be cleaned automatically."
+"Tip: projects deleted {expireDays} days ago will be cleaned automatically."
 msgstr ""
 
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:32
-#: frontend/src/home/mobile/group-trash-view/index.js:29
+#: frontend/src/home/mobile/group-trash-view/index.js:27
 #: frontend/src/org-admin/projects/trash-projects.js:36
 msgid "Deleted at"
 msgstr ""
 
 #: frontend/src/home/dialog/leave-group-dialog.js:25
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:101
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:108
 msgid "Leave group"
 msgstr ""
 
@@ -613,7 +729,8 @@ msgstr ""
 
 #: frontend/src/home/dialog/manage-members-dialog/index.js:42
 #: frontend/src/home/dialog/transfer-group-dialog.js:66
-#: frontend/src/project/main-panel/tickets/constants.js:42
+#: frontend/src/project/main-panel/tickets/constants.js:44
+#: frontend/src/project/main-panel/tickets/constants.js:46
 msgid "Close"
 msgstr ""
 
@@ -635,43 +752,40 @@ msgstr ""
 
 #: frontend/src/home/dialog/workspace-member-dialog/index.js:69
 #: frontend/src/home/dialog/workspace-member-dialog/index.js:80
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:89
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:93
 msgid "Group members"
 msgstr ""
 
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:83
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:87
 msgid "Add a blank project"
 msgstr ""
 
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:86
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:90
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:59
 msgid "Rename"
 msgstr ""
 
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:92
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:99
 msgid "Manage members"
 msgstr ""
 
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:95
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:102
 #: frontend/src/org-admin/groups/group.js:117
-#: frontend/src/sys-admin/groups/op-menu.js:52
+#: frontend/src/sys-admin/groups/groups-table/group.js:37
 msgid "Transfer"
 msgstr ""
 
-#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:98
-#: frontend/src/home/workspace/index.js:485
+#: frontend/src/home/dropdown-menu/header-dropdown-menu.js:105
+#: frontend/src/home/workspace/index.js:512
 #: frontend/src/org-admin/groups/group.js:125
-#: frontend/src/sys-admin/groups/groups-content.js:235
-#: frontend/src/sys-admin/groups/groups.js:233
-#: frontend/src/sys-admin/orgs/org-groups.js:138
-#: frontend/src/sys-admin/users/user-groups.js:226
+#: frontend/src/sys-admin/groups/groups-table/group.js:174
 msgid "Delete group"
 msgstr ""
 
 #: frontend/src/home/header/index.js:119 frontend/src/home/header/index.js:120
 #: frontend/src/home/side-panel/index.js:200
 #: frontend/src/home/side-panel/index.js:201
-msgid "SeaTable logo"
+msgid "SeaSearch logo"
 msgstr ""
 
 #: frontend/src/home/main-panel/mb-main-panel/index.js:25
@@ -679,12 +793,13 @@ msgstr ""
 #: frontend/src/home/side-panel/index.js:220
 #: frontend/src/org-admin/group-nav.js:18
 #: frontend/src/org-admin/projects/index.js:57
-#: frontend/src/org-admin/projects/search-projects.js:40
-#: frontend/src/sys-admin/groups/group-nav.js:20
-#: frontend/src/sys-admin/orgs/org-nav.js:24
+#: frontend/src/org-admin/projects/search-projects.js:57
+#: frontend/src/sys-admin/group/group-nav.js:20
+#: frontend/src/sys-admin/groups/search-groups.js:58
+#: frontend/src/sys-admin/org/org-nav.js:25
 #: frontend/src/sys-admin/projects/project-nav.js:15
-#: frontend/src/sys-admin/projects/search-projects.js:40
-#: frontend/src/sys-admin/users/user-nav.js:19
+#: frontend/src/sys-admin/projects/search-projects.js:57
+#: frontend/src/sys-admin/user/user-nav.js:20
 msgid "Projects"
 msgstr ""
 
@@ -702,22 +817,13 @@ msgstr ""
 #: frontend/src/org-admin/users/search-users.js:76
 #: frontend/src/org-admin/users/user.js:108
 #: frontend/src/profile-settings/session-logs/index.js:288
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:110
-#: frontend/src/sys-admin/groups/group-members.js:224
-#: frontend/src/sys-admin/groups/groups.js:314
-#: frontend/src/sys-admin/groups/search-groups.js:59
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:104
+#: frontend/src/sys-admin/group/group-members.js:225
 #: frontend/src/sys-admin/info/index.js:44
-#: frontend/src/sys-admin/orgs/index.js:320
-#: frontend/src/sys-admin/orgs/org-admin-users.js:286
-#: frontend/src/sys-admin/orgs/org-groups.js:191
-#: frontend/src/sys-admin/orgs/org-info.js:197
-#: frontend/src/sys-admin/orgs/org-projects.js:260
-#: frontend/src/sys-admin/orgs/org-users.js:314
+#: frontend/src/sys-admin/org/org-info.js:173
+#: frontend/src/sys-admin/orgs/index.js:316
 #: frontend/src/sys-admin/orgs/search-orgs.js:57
-#: frontend/src/sys-admin/users/search-users.js:143
-#: frontend/src/sys-admin/users/user-groups.js:289
-#: frontend/src/sys-admin/users/users.js:690
-#: frontend/src/sys-admin/users/users.js:722 frontend/src/utils/utils.js:184
+#: frontend/src/sys-admin/user/user-info.js:249 frontend/src/utils/utils.js:184
 msgid "Error"
 msgstr ""
 
@@ -729,22 +835,13 @@ msgstr ""
 #: frontend/src/org-admin/user-profile/index.js:52
 #: frontend/src/org-admin/users/search-users.js:82
 #: frontend/src/profile-settings/session-logs/index.js:294
-#: frontend/src/sys-admin/groups/group-members.js:230
-#: frontend/src/sys-admin/groups/groups.js:320
-#: frontend/src/sys-admin/groups/search-groups.js:65
+#: frontend/src/sys-admin/group/group-members.js:231
 #: frontend/src/sys-admin/info/index.js:50
-#: frontend/src/sys-admin/orgs/index.js:326
-#: frontend/src/sys-admin/orgs/org-admin-users.js:292
-#: frontend/src/sys-admin/orgs/org-groups.js:197
-#: frontend/src/sys-admin/orgs/org-info.js:203
-#: frontend/src/sys-admin/orgs/org-projects.js:266
-#: frontend/src/sys-admin/orgs/org-users.js:320
+#: frontend/src/sys-admin/org/org-info.js:179
+#: frontend/src/sys-admin/orgs/index.js:322
 #: frontend/src/sys-admin/orgs/search-orgs.js:63
-#: frontend/src/sys-admin/users/search-users.js:149
-#: frontend/src/sys-admin/users/user-groups.js:295
-#: frontend/src/sys-admin/users/users.js:696
-#: frontend/src/sys-admin/users/users.js:728
-#: frontend/src/sys-admin/users/users.js:826 frontend/src/utils/utils.js:190
+#: frontend/src/sys-admin/user/user-info.js:255
+#: frontend/src/sys-admin/users/users.js:86 frontend/src/utils/utils.js:190
 msgid "Please check the network."
 msgstr ""
 
@@ -752,29 +849,12 @@ msgstr ""
 msgid "Main panel"
 msgstr ""
 
-#: frontend/src/home/main-panel/pc-main-panel/workspace-in-main-panel/index.js:43
-#: frontend/src/home/workspace/body/index.js:59
-#: frontend/src/org-admin/projects/search-projects.js:42
-#: frontend/src/sys-admin/orgs/org-projects.js:141
-#: frontend/src/sys-admin/projects/search-projects.js:42
-msgid "No projects"
-msgstr ""
-
-#: frontend/src/home/mobile/mobile-mine/index.js:67
-#: frontend/src/org-admin/user-profile/user-info.js:58
+#: frontend/src/home/mobile/mobile-mine/index.js:58
+#: frontend/src/org-admin/user-profile/user-info.js:50
 #: frontend/src/project/components/account/index.js:40
 #: frontend/src/project/components/account/index.js:41
+#: frontend/src/sys-admin/user/user-info.js:105
 msgid "Avatar"
-msgstr ""
-
-#: frontend/src/home/mobile/mobile-mine/index.js:130
-#: frontend/src/sys-admin/users/users-content.js:76
-#: frontend/src/sys-admin/users/users.js:86
-msgid "Storage used"
-msgstr ""
-
-#: frontend/src/home/mobile/mobile-mine/index.js:138
-msgid "Rows used"
 msgstr ""
 
 #: frontend/src/home/mobile/rename-project-view.js:114
@@ -790,15 +870,16 @@ msgid "Choose icon and color"
 msgstr ""
 
 #: frontend/src/home/popover/project-setting-popover/index.js:54
-msgid "Enter base name"
+msgid "Enter project name"
 msgstr ""
 
 #: frontend/src/home/popover/project-setting-popover/index.js:55
-msgid "Enter a description of the base name"
+msgid "Enter a description of the project name"
 msgstr ""
 
 #: frontend/src/home/popover/project-setting-popover/index.js:78
 #: frontend/src/home/popover/project-setting-popover/index.js:79
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:119
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:137
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:119
 msgid "Color"
@@ -828,8 +909,8 @@ msgid "Type more characters to start search"
 msgstr ""
 
 #: frontend/src/home/search/project-searcher/index.js:209
-#: frontend/src/project/constants/bar.js:12
-#: frontend/src/project/main-panel/search/index.js:110
+#: frontend/src/project/constants/bar.js:13
+#: frontend/src/project/main-panel/search/index.js:143
 #: frontend/src/sea-metadata/components/searcher/index.js:60
 msgid "Search"
 msgstr ""
@@ -852,7 +933,7 @@ msgstr ""
 msgid "Expand all workspaces"
 msgstr ""
 
-#: frontend/src/home/workspace/body/project-item-popover/index.js:45
+#: frontend/src/home/workspace/body/project-item-popover/index.js:50
 msgid "Edit name and icon"
 msgstr ""
 
@@ -860,65 +941,69 @@ msgstr ""
 msgid "Untitled project"
 msgstr ""
 
-#: frontend/src/home/workspace/index.js:221
+#: frontend/src/home/workspace/index.js:233
 msgid "Internal Server Error."
 msgstr ""
 
-#: frontend/src/home/workspace/index.js:321
+#: frontend/src/home/workspace/index.js:333
 msgid "Cannot delete group with projects"
 msgstr ""
 
-#: frontend/src/home/workspace/index.js:325
+#: frontend/src/home/workspace/index.js:337
 msgid "Group deleted"
 msgstr ""
 
-#: frontend/src/home/workspace/index.js:335
-msgid "Successfully left group"
+#: frontend/src/home/workspace/index.js:347
+msgid "You have left the group"
 msgstr ""
 
-#: frontend/src/home/workspace/index.js:486
+#: frontend/src/home/workspace/index.js:513
 msgid "Are you sure you want to delete group {placeholder} ?"
 msgstr ""
 
 #: frontend/src/org-admin/constants.js:15
 #: frontend/src/org-admin/info/index.js:60
+#: frontend/src/org-admin/settings/index.js:92
 #: frontend/src/sys-admin/constants.js:16
-#: frontend/src/sys-admin/info/index.js:124
-#: frontend/src/sys-admin/orgs/org-nav.js:20
-#: frontend/src/sys-admin/users/user-nav.js:17
+#: frontend/src/sys-admin/info/index.js:122
+#: frontend/src/sys-admin/org/org-nav.js:21
+#: frontend/src/sys-admin/user/user-nav.js:18
 msgid "Info"
 msgstr ""
 
 #: frontend/src/org-admin/constants.js:43
 #: frontend/src/sys-admin/constants.js:37
-#: frontend/src/sys-admin/groups/group-nav.js:30
-#: frontend/src/sys-admin/groups/groups.js:413
-#: frontend/src/sys-admin/groups/search-groups.js:125
-#: frontend/src/sys-admin/info/index.js:173
-#: frontend/src/sys-admin/orgs/org-nav.js:23
-#: frontend/src/sys-admin/users/user-nav.js:18
+#: frontend/src/sys-admin/group/group-title/index.js:11
+#: frontend/src/sys-admin/groups/groups.js:63
+#: frontend/src/sys-admin/info/index.js:170
+#: frontend/src/sys-admin/org/org-nav.js:24
+#: frontend/src/sys-admin/user/user-nav.js:19
 msgid "Groups"
 msgstr ""
 
 #: frontend/src/org-admin/group-nav.js:21
-#: frontend/src/sys-admin/groups/group-nav.js:21
-#: frontend/src/sys-admin/orgs/org-nav.js:21
+#: frontend/src/sys-admin/group/group-nav.js:21
+#: frontend/src/sys-admin/org/org-nav.js:22
 msgid "Members"
 msgstr ""
 
 #: frontend/src/org-admin/group-projects/index.js:33
-#: frontend/src/org-admin/groups/index.js:126
+#: frontend/src/org-admin/groups/index.js:125
 #: frontend/src/org-admin/projects/index.js:73
-#: frontend/src/org-admin/projects/search-projects.js:49
-#: frontend/src/project/main-panel/connections/constants.js:308
-#: frontend/src/sys-admin/groups/groups-content.js:65
-#: frontend/src/sys-admin/groups/groups.js:71
-#: frontend/src/sys-admin/orgs/index.js:71
-#: frontend/src/sys-admin/orgs/org-groups.js:45
-#: frontend/src/sys-admin/orgs/org-projects.js:153
-#: frontend/src/sys-admin/projects/search-projects.js:49
-#: frontend/src/sys-admin/users/users-content.js:75
-#: frontend/src/sys-admin/users/users.js:85
+#: frontend/src/org-admin/projects/search-projects.js:66
+#: frontend/src/project/main-panel/connections/constants.js:395
+#: frontend/src/sys-admin/group/group-projects.js:34
+#: frontend/src/sys-admin/groups/groups.js:70
+#: frontend/src/sys-admin/groups/search-groups.js:67
+#: frontend/src/sys-admin/org/org-admin-users.js:32
+#: frontend/src/sys-admin/org/org-groups.js:37
+#: frontend/src/sys-admin/org/org-projects.js:40
+#: frontend/src/sys-admin/org/org-users.js:69
+#: frontend/src/sys-admin/orgs/index.js:70
+#: frontend/src/sys-admin/projects/search-projects.js:66
+#: frontend/src/sys-admin/user/user-group/index.js:65
+#: frontend/src/sys-admin/user/user-projects/index.js:43
+#: frontend/src/sys-admin/users/users-table/index.js:62
 msgid "Created at"
 msgstr ""
 
@@ -926,20 +1011,15 @@ msgstr ""
 msgid "Are you sure you want to delete {group} ?"
 msgstr ""
 
-#: frontend/src/org-admin/groups/index.js:73
-msgid "Successfully deleted {name}"
-msgstr ""
-
-#: frontend/src/org-admin/groups/index.js:119
+#: frontend/src/org-admin/groups/index.js:118
 msgid "All groups"
 msgstr ""
 
-#: frontend/src/org-admin/groups/index.js:125
-#: frontend/src/sys-admin/orgs/org-projects.js:155
+#: frontend/src/org-admin/groups/index.js:124
 msgid "Size"
 msgstr ""
 
-#: frontend/src/org-admin/groups/index.js:127
+#: frontend/src/org-admin/groups/index.js:126
 msgid "Operations"
 msgstr ""
 
@@ -956,6 +1036,7 @@ msgid "Select a user"
 msgstr ""
 
 #: frontend/src/org-admin/info/index.js:62
+#: frontend/src/org-admin/settings/index.js:95
 msgid "Team name"
 msgstr ""
 
@@ -964,13 +1045,13 @@ msgid "Active users"
 msgstr ""
 
 #: frontend/src/org-admin/info/index.js:68
-#: frontend/src/sys-admin/info/index.js:164
-#: frontend/src/sys-admin/info/index.js:168
+#: frontend/src/sys-admin/info/index.js:161
+#: frontend/src/sys-admin/info/index.js:165
 msgid "Total users"
 msgstr ""
 
 #: frontend/src/org-admin/info/index.js:69
-#: frontend/src/sys-admin/info/index.js:164
+#: frontend/src/sys-admin/info/index.js:161
 msgid "Limits"
 msgstr ""
 
@@ -979,29 +1060,24 @@ msgid "API calls count this month"
 msgstr ""
 
 #: frontend/src/org-admin/projects/index.js:36
-#: frontend/src/org-admin/projects/search-projects.js:57
+#: frontend/src/org-admin/projects/search-projects.js:74
 #: frontend/src/sys-admin/projects/all-projects.js:13
-#: frontend/src/sys-admin/projects/search-projects.js:57
+#: frontend/src/sys-admin/projects/search-projects.js:74
 msgid "Search projects"
 msgstr ""
 
-#: frontend/src/org-admin/projects/search-projects.js:74
+#: frontend/src/org-admin/projects/search-projects.js:91
 #: frontend/src/org-admin/users/search-users.js:168
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:146
-#: frontend/src/sys-admin/groups/search-groups.js:151
-#: frontend/src/sys-admin/orgs/search-orgs.js:146
-#: frontend/src/sys-admin/projects/search-projects.js:74
-#: frontend/src/sys-admin/users/search-users.js:314
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:173
+#: frontend/src/sys-admin/groups/search-groups.js:94
+#: frontend/src/sys-admin/orgs/search-orgs.js:143
+#: frontend/src/sys-admin/projects/search-projects.js:91
+#: frontend/src/sys-admin/users/search-users.js:169
 msgid "Result"
 msgstr ""
 
 #: frontend/src/org-admin/projects/trash-projects.js:16
 msgid "Trash cleaned"
-msgstr ""
-
-#: frontend/src/org-admin/projects/trash-projects.js:44
-msgid ""
-"Tip: projects deleted {expireDays} days ago will be cleaned automatically."
 msgstr ""
 
 #: frontend/src/org-admin/saml/index.js:66
@@ -1016,54 +1092,62 @@ msgstr ""
 msgid "Copied"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:100
+#: frontend/src/org-admin/saml/index.js:98
 msgid "SAML configuration"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:106
+#: frontend/src/org-admin/saml/index.js:103
 msgid "Configure your Identity Provider"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:107
+#: frontend/src/org-admin/saml/index.js:104
 msgid "Use these values to configure your Identity Provider"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:159
-msgid "Configure SeaQA"
+#: frontend/src/org-admin/saml/index.js:113
+#: frontend/src/org-admin/saml/index.js:125
+#: frontend/src/org-admin/saml/index.js:137
+#: frontend/src/org-admin/saml/index.js:149
+#: frontend/src/org-admin/saml/index.js:195
+msgid "Copy"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:160
-msgid "Use information from your Identity Provider to configure SeaQA"
+#: frontend/src/org-admin/saml/index.js:156
+msgid "Configure SeaSearch"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:173
+#: frontend/src/org-admin/saml/index.js:157
+msgid "Use information from your Identity Provider to configure SeaSearch"
+msgstr ""
+
+#: frontend/src/org-admin/saml/index.js:170
 msgid "Certificate"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:179
+#: frontend/src/org-admin/saml/index.js:176
 msgid "Verify Domain"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:180
+#: frontend/src/org-admin/saml/index.js:177
 msgid "Create a DNS TXT record to confirm the ownership of your Email Domain."
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:186
+#: frontend/src/org-admin/saml/index.js:183
 msgid "Email Domain"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:192
+#: frontend/src/org-admin/saml/index.js:189
 msgid "DNS TXT Value"
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:203
+#: frontend/src/org-admin/saml/index.js:200
 msgid ""
 "Copy the domain DNS TXT and add it to your domain's DNS records, then click "
 "the button to verify domain ownership. You must verify the ownership of "
 "domain before Single Sign-On."
 msgstr ""
 
-#: frontend/src/org-admin/saml/index.js:209
+#: frontend/src/org-admin/saml/index.js:206
 msgid "Verify"
 msgstr ""
 
@@ -1077,34 +1161,35 @@ msgid ""
 "follows:"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:65
+#: frontend/src/org-admin/settings/index.js:88
+#: frontend/src/project/constants/bar.js:16
 msgid "Settings"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:70
+#: frontend/src/org-admin/settings/index.js:103
 msgid "Two factor authentication"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:73
-#: frontend/src/org-admin/settings/index.js:76
+#: frontend/src/org-admin/settings/index.js:106
+#: frontend/src/org-admin/settings/index.js:109
 msgid "Enable force two factor authentication"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:80
+#: frontend/src/org-admin/settings/index.js:113
 msgid "User management"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:83
-#: frontend/src/org-admin/settings/index.js:86
+#: frontend/src/org-admin/settings/index.js:116
+#: frontend/src/org-admin/settings/index.js:119
 msgid "Enable sending email on adding users"
 msgstr ""
 
-#: frontend/src/org-admin/settings/index.js:90
-#: frontend/src/org-admin/settings/index.js:93
+#: frontend/src/org-admin/settings/index.js:123
+#: frontend/src/org-admin/settings/index.js:126
 msgid "Enable members modify their own name"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/index.js:109
+#: frontend/src/org-admin/user-profile/index.js:103
 #: frontend/src/profile-settings/index.js:48
 msgid "Profile"
 msgstr ""
@@ -1117,63 +1202,52 @@ msgstr ""
 msgid "Set user name"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/set-user-quota.js:41
-msgid "It is required."
-msgstr ""
-
-#: frontend/src/org-admin/user-profile/set-user-quota.js:66
-msgid "Set user quota"
-msgstr ""
-
-#: frontend/src/org-admin/user-profile/set-user-quota.js:73
-#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:64
-#: frontend/src/sys-admin/dialog/set-quota.js:67
-#: frontend/src/sys-admin/dialog/set-row-limit.js:66
-msgid "Tip: 0 means default limit"
-msgstr ""
-
-#: frontend/src/org-admin/user-profile/user-info.js:69
+#: frontend/src/org-admin/user-profile/user-info.js:61
 #: frontend/src/profile-settings/bind-contact-email.js:50
 #: frontend/src/profile-settings/index.js:49
-#: frontend/src/sys-admin/users/users-content.js:74
-#: frontend/src/sys-admin/users/users.js:84
+#: frontend/src/sys-admin/org/org-admin-users.js:29
+#: frontend/src/sys-admin/org/org-users.js:66
+#: frontend/src/sys-admin/user/user-info.js:137
+#: frontend/src/sys-admin/users/users-table/index.js:57
 msgid "Contact email"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/user-info.js:79
+#: frontend/src/org-admin/user-profile/user-info.js:71
 #: frontend/src/profile-settings/index.js:55
 #: frontend/src/profile-settings/two-factor-auth.js:48
-#: frontend/src/sys-admin/users/user-info.js:188
+#: frontend/src/sys-admin/user/user-info.js:166
 msgid "Two-Factor Authentication"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/user-info.js:83
+#: frontend/src/org-admin/user-profile/user-info.js:75
+#: frontend/src/sys-admin/user/user-info.js:170
 msgid "Enabled"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/user-info.js:84
-#: frontend/src/org-admin/user-profile/user-info.js:88
+#: frontend/src/org-admin/user-profile/user-info.js:76
+#: frontend/src/org-admin/user-profile/user-info.js:80
 #: frontend/src/profile-settings/two-factor-auth.js:20
-#: frontend/src/sys-admin/users/user-info.js:193
+#: frontend/src/sys-admin/user/user-info.js:171
+#: frontend/src/sys-admin/user/user-info.js:175
 msgid "Disable Two-Factor Authentication"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/user-info.js:87
-#: frontend/src/sys-admin/users/user-info.js:196
+#: frontend/src/org-admin/user-profile/user-info.js:79
+#: frontend/src/sys-admin/user/user-info.js:174
 msgid "Disabled"
 msgstr ""
 
-#: frontend/src/org-admin/user-profile/user-info.js:94
-#: frontend/src/sys-admin/users/user-info.js:203
+#: frontend/src/org-admin/user-profile/user-info.js:86
+#: frontend/src/sys-admin/user/user-info.js:181
 msgid "Force Two-Factor Authentication"
 msgstr ""
 
 #: frontend/src/org-admin/users/add-admin-dialog.js:46
+#: frontend/src/org-admin/users/index.js:185
 #: frontend/src/org-admin/users/index.js:186
-#: frontend/src/org-admin/users/index.js:187
 #: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:41
-#: frontend/src/sys-admin/users/users.js:898
-#: frontend/src/sys-admin/users/users.js:919
+#: frontend/src/sys-admin/users/users.js:133
+#: frontend/src/sys-admin/users/users.js:148
 msgid "Add admin"
 msgstr ""
 
@@ -1182,7 +1256,7 @@ msgid "Select a user as admin"
 msgstr ""
 
 #: frontend/src/org-admin/users/add-user-dialog.js:70
-msgid "email is required"
+msgid "Email is required"
 msgstr ""
 
 #: frontend/src/org-admin/users/add-user-dialog.js:84
@@ -1204,11 +1278,11 @@ msgid "Passwords don't match"
 msgstr ""
 
 #: frontend/src/org-admin/users/add-user-dialog.js:105
+#: frontend/src/org-admin/users/index.js:197
 #: frontend/src/org-admin/users/index.js:198
-#: frontend/src/org-admin/users/index.js:199
-#: frontend/src/sys-admin/users/users.js:909
-#: frontend/src/sys-admin/users/users.js:930
-#: frontend/src/sys-admin/users/users.js:1059
+#: frontend/src/sys-admin/users/users.js:140
+#: frontend/src/sys-admin/users/users.js:153
+#: frontend/src/sys-admin/users/users.js:200
 msgid "Add user"
 msgstr ""
 
@@ -1220,7 +1294,7 @@ msgstr ""
 #: frontend/src/profile-settings/index.js:50
 #: frontend/src/profile-settings/index.js:161
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:57
-#: frontend/src/project/main-panel/connections/constants.js:49
+#: frontend/src/project/main-panel/connections/constants.js:112
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:127
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:166
 msgid "Password"
@@ -1236,14 +1310,11 @@ msgstr ""
 #: frontend/src/org-admin/users/admins/index.js:17
 #: frontend/src/org-admin/users/users.js:16
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:32
-#: frontend/src/project/main-panel/tickets/constants.js:187
+#: frontend/src/project/main-panel/tickets/constants.js:177
 #: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/status-filter.js:28
-#: frontend/src/sys-admin/orgs/org-admin-users.js:56
-#: frontend/src/sys-admin/orgs/org-users.js:59
-#: frontend/src/sys-admin/users/users-content.js:80
-#: frontend/src/sys-admin/users/users-content.js:86
-#: frontend/src/sys-admin/users/users.js:91
-#: frontend/src/sys-admin/users/users.js:98
+#: frontend/src/sys-admin/org/org-admin-users.js:30
+#: frontend/src/sys-admin/org/org-users.js:67
+#: frontend/src/sys-admin/users/users-table/index.js:58
 msgid "Status"
 msgstr ""
 
@@ -1253,58 +1324,59 @@ msgid "Create at / Last login"
 msgstr ""
 
 #: frontend/src/org-admin/users/index.js:69
+#: frontend/src/sys-admin/group/group-members.js:246
 #, javascript-format
-msgid "successfully added user %s."
+msgid "%s added"
 msgstr ""
 
-#: frontend/src/org-admin/users/index.js:74
+#: frontend/src/org-admin/users/index.js:69
+#, javascript-format
+msgid "User %s"
+msgstr ""
+
+#: frontend/src/org-admin/users/index.js:73
 #: frontend/src/org-admin/users/user.js:105
 msgid "The number of users exceeds the limit of your current plan."
 msgstr ""
 
-#: frontend/src/org-admin/users/index.js:87
-#: frontend/src/org-admin/users/index.js:113
-#, javascript-format
-msgid "Successfully deleted %s"
-msgstr ""
-
-#: frontend/src/org-admin/users/index.js:127
+#: frontend/src/org-admin/users/index.js:126
 #, javascript-format
 msgid "Admin permission of user %s revoked"
 msgstr ""
 
-#: frontend/src/org-admin/users/index.js:141
+#: frontend/src/org-admin/users/index.js:140
 #, javascript-format
-msgid "Successfully added %s as admin."
+msgid "%s has been added as admin"
 msgstr ""
 
-#: frontend/src/org-admin/users/index.js:213
-#: frontend/src/project/main-panel/connections/view/connection/index.js:234
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:37
+#: frontend/src/org-admin/users/index.js:212
+#: frontend/src/project/main-panel/connections/view/connection/index.js:212
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:27
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:40
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:27
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:48
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:37
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:26
 #: frontend/src/project/main-panel/tickets/view/types/index.js:40
 msgid "All"
 msgstr ""
 
 #: frontend/src/org-admin/users/search-users.js:111
-#: frontend/src/sys-admin/users/search-users.js:161
-#: frontend/src/sys-admin/users/search-users.js:186
-#: frontend/src/sys-admin/users/users.js:740
-#: frontend/src/sys-admin/users/users.js:765
-msgid "Successfully deleted 1 user."
+#: frontend/src/sys-admin/users/search-users.js:28
+#: frontend/src/sys-admin/users/users-table/index.js:116
+#: frontend/src/sys-admin/users/users.js:98
+msgid "1 user"
 msgstr ""
 
 #: frontend/src/org-admin/users/search-users.js:124
-#: frontend/src/sys-admin/users/users-content.js:71
-#: frontend/src/sys-admin/users/users.js:80 frontend/src/translation.js:4
+#: frontend/src/sys-admin/users/users-table/index.js:12
+#: frontend/src/translation.js:4
 msgid "No users"
 msgstr ""
 
 #: frontend/src/org-admin/users/search-users.js:147
 #: frontend/src/sys-admin/constants.js:30
-#: frontend/src/sys-admin/users/search-users.js:290
-#: frontend/src/sys-admin/users/user-nav.js:28
+#: frontend/src/sys-admin/user/user-title/index.js:11
+#: frontend/src/sys-admin/users/search-users.js:142
 msgid "Users"
 msgstr ""
 
@@ -1313,40 +1385,28 @@ msgid "Resetting user's password, please wait for a moment."
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:60
-msgid "Successfully reset password to %(passwd)s for user %(user)s."
-msgstr ""
-
-#: frontend/src/org-admin/users/user.js:102
-msgid "Edit succeeded."
+msgid "Successfully reset password to %(passwd)s for user %(user)s"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:109
-msgid "Edit failed."
+msgid "Failed to update the permission"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:193
 #: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:134
-#: frontend/src/sys-admin/orgs/org-admin-users.js:233
-#: frontend/src/sys-admin/orgs/org-users.js:250
-#: frontend/src/sys-admin/orgs/user-op-menu.js:54
-#: frontend/src/sys-admin/users/users-content.js:316
-#: frontend/src/sys-admin/users/users-content.js:472
-#: frontend/src/sys-admin/users/users.js:344
-#: frontend/src/sys-admin/users/users.js:516
+#: frontend/src/sys-admin/users/users-table/user.js:48
+#: frontend/src/sys-admin/users/users-table/user.js:269
 msgid "Reset password"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:197
-#: frontend/src/sys-admin/users/users-content.js:319
-#: frontend/src/sys-admin/users/users-content.js:481
-#: frontend/src/sys-admin/users/users.js:347
-#: frontend/src/sys-admin/users/users.js:525
+#: frontend/src/sys-admin/users/users-table/user.js:66
+#: frontend/src/sys-admin/users/users-table/user.js:288
 msgid "Revoke admin"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:211
-#: frontend/src/sys-admin/users/users-content.js:463
-#: frontend/src/sys-admin/users/users.js:507
+#: frontend/src/sys-admin/users/users-table/user.js:258
 msgid "Delete user"
 msgstr ""
 
@@ -1355,22 +1415,18 @@ msgid "Are you sure you want to delete {user} ?"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:220
-#: frontend/src/sys-admin/orgs/org-users.js:259
-#: frontend/src/sys-admin/users/users.js:542
+#: frontend/src/sys-admin/users/users-table/user.js:279
 msgid "Set user inactive"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:221
-#: frontend/src/sys-admin/orgs/org-users.js:260
-#: frontend/src/sys-admin/users/users.js:543
 msgid "Are you sure you want to set xxx inactive?"
 msgstr ""
 
 #: frontend/src/org-admin/users/user.js:224
 #: frontend/src/profile-settings/index.js:165
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:71
-#: frontend/src/sys-admin/orgs/org-users.js:263
-#: frontend/src/sys-admin/users/users.js:546
+#: frontend/src/sys-admin/users/users-table/user.js:283
 msgid "Set"
 msgstr ""
 
@@ -1543,10 +1599,7 @@ msgstr ""
 
 #: frontend/src/profile-settings/index.js:173
 #: frontend/src/profile-settings/password-widgets/user-reset-password-dialog/index.js:167
-#: frontend/src/sys-admin/orgs/org-admin-users.js:236
-#: frontend/src/sys-admin/orgs/org-users.js:253
-#: frontend/src/sys-admin/users/users-content.js:475
-#: frontend/src/sys-admin/users/users.js:519
+#: frontend/src/sys-admin/users/users-table/user.js:272
 msgid "Reset"
 msgstr ""
 
@@ -1630,11 +1683,11 @@ msgid "Current password"
 msgstr ""
 
 #: frontend/src/profile-settings/session-logs/index.js:81
-msgid "Successfully log out {name}."
+#, javascript-format
+msgid "%s logged out"
 msgstr ""
 
 #: frontend/src/profile-settings/session-logs/index.js:94
-#: frontend/src/sys-admin/users/user-groups.js:307
 msgid "Deleted 1 item."
 msgstr ""
 
@@ -1706,24 +1759,31 @@ msgstr ""
 msgid "Password:"
 msgstr ""
 
-#: frontend/src/project/constants/bar.js:11
+#: frontend/src/project/constants/bar.js:12
 msgid "Chat"
 msgstr ""
 
-#: frontend/src/project/constants/bar.js:13
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:85
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:132
+#: frontend/src/project/constants/bar.js:14
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:118
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:146
 msgid "Tickets"
 msgstr ""
 
-#: frontend/src/project/constants/bar.js:14
+#: frontend/src/project/constants/bar.js:15
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:26
 msgid "Connections"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/common-message/index.js:67
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:58
-msgid "Sources"
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/definition.js:66
+msgid "Updated"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/more-definition/index.js:63
+msgid "See context"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/customize-definition/more-definition/index.js:70
+msgid "See more"
 msgstr ""
 
 #: frontend/src/project/main-panel/ask/chat-history/message-operations/index.js:20
@@ -1731,142 +1791,144 @@ msgid "The content has been copied"
 msgstr ""
 
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/index.js:20
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:209
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:238
 msgid "Thought process"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:19
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:20
 msgid "Task step"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:22
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:23
 msgid "System prompts"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:27
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:45
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:28
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:55
 msgid "User message"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:39
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:41
 msgid "Context"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:42
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:65
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:46
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:78
+#: frontend/src/project/main-panel/connections/constants.js:499
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:50
-#: frontend/src/sea-metadata/constants/column/icon.js:34
+#: frontend/src/sea-metadata/constants/column/icon.js:35
 msgid "Date"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:50
-msgid "Assistant reponse"
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:60
+msgid "Assistant response"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:53
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:63
 msgid "Answer"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:65
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:68
+msgid "Sources"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:77
 msgid "Response"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:80
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:172
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:179
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:186
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:195
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:100
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:200
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:207
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:214
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:223
 msgid "Action steps"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:83
-msgid "Step"
-msgstr ""
-
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:87
-msgid "Arguments"
-msgstr ""
-
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:90
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:101
-msgid "Argument"
-msgstr ""
-
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:98
-msgid "Substep"
-msgstr ""
-
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:112
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:106
 msgid "Error type"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:113
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:107
 msgid "Error message"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:114
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:108
 msgid "Step output"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:117
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:111
 msgid "Observation"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:122
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:151
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:164
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:116
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:178
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:192
 msgid "Statistics"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:124
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:153
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:170
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:118
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:180
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:198
 msgid "Input tokens"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:125
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:154
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:177
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:119
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:181
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:205
 msgid "Output tokens"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:126
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:155
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:184
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:120
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:182
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:212
 msgid "Total tokens"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:127
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:156
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:193
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:121
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:183
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:221
 msgid "Time usage"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:143
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:173
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:180
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:187
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:196
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:127
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:155
+msgid "Step"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:130
+msgid "Arguments"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:142
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:145
+msgid "Substep"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:170
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:201
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:208
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:215
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:224
 msgid "Answer generation"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:146
-msgid "Result_reached_max_steps"
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:173
+msgid "Result reached max steps"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:167
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:195
 msgid "Token usages"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:174
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:181
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:188
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:197
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:202
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:209
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:216
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:225
 msgid "Total"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/process-details/index.js:52
-#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:12
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/process-details/index.js:63
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:10
 msgid "Empty"
 msgstr ""
 
@@ -1880,7 +1942,7 @@ msgid ""
 "AI solving the issue by searching knowledge bases."
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/message-input/index.js:158
+#: frontend/src/project/main-panel/ask/message-input/index.js:20
 msgid "What problem you want to solve?"
 msgstr ""
 
@@ -1890,6 +1952,19 @@ msgstr ""
 
 #: frontend/src/project/main-panel/ask/message-input/resolve-type/index.js:10
 msgid "Ask"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:50
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:145
+msgid "Ticket"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:58
+msgid "Search ticket"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/message-input/ticket/index.js:59
+msgid "No tickets"
 msgstr ""
 
 #: frontend/src/project/main-panel/ask/sessions/index.js:15
@@ -1916,17 +1991,40 @@ msgstr ""
 msgid "Thinking..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:39
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:38
+msgid "Logs"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:44
 msgid "Sync now"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:45
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
 msgid "Deactivate"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:45
+#: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
 #: frontend/src/utils/role-status-utils.js:54
 msgid "Active"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-config-editor/index.js:14
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:89
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:206
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:92
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:99
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:113
+#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:121
+#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:113
+msgid "Required"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-logs-dialog.js:28
+msgid "Connection logs"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-logs-dialog.js:36
+msgid "No logs"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:30
@@ -1946,6 +2044,8 @@ msgid "Last sync status"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-status-dialog.js:39
+#: frontend/src/project/main-panel/connections/constants.js:456
+#: frontend/src/project/main-panel/connections/constants.js:503
 msgid "Last sync time"
 msgstr ""
 
@@ -1961,23 +2061,13 @@ msgstr ""
 msgid "Last index time"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:66
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:84
 msgid "Edit connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:70
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:184
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:88
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:205
 msgid "Connection name"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:71
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:83
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:185
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:196
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:91
-#: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:121
-#: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:113
-msgid "Required"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/constants.js:11
@@ -1996,259 +2086,353 @@ msgstr ""
 msgid "Link to Discourse webhook"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:155
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:176
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:44
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:137
-msgid "Add connection"
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:149
+msgid "New connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:179
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:200
 msgid "Connection type"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:239
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:230
 msgid "Connection URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:243
-#: frontend/src/project/main-panel/connections/constants.js:79
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:234
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:246
+#: frontend/src/project/main-panel/connections/constants.js:153
 msgid "Webhook secret (optional)"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:251
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:242
 msgid "Webhook URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:252
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:243
 msgid "Loading..."
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:255
-msgid "Webhook secret"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:255
-msgid "(optional)"
-msgstr ""
-
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:264
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:273
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:282
 msgid "Previous"
 msgstr ""
 
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:256
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:257
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:265
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:266
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:274
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:275
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:283
 msgid "Next"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:36
-msgid "Host"
+#: frontend/src/project/main-panel/connections/components/row-details-dialog/index.js:113
+msgid "Previous record"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:43
-#: frontend/src/sys-admin/users/user-info.js:138
-msgid "Username"
+#: frontend/src/project/main-panel/connections/components/row-details-dialog/index.js:120
+msgid "Next record"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:32
+msgid "Server provider"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:38
+msgid "General email provider"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:41
+msgid ""
+"The authentication type for third-party accounts to log in to the email "
+"service provider. For most email service providers, you can use \"General "
+"Email Service Provider\", which is authenticated by username and password; "
+"for Gmail accounts, users can choose \"General Email Service Provider\" or "
+"\"Gmail\", the latter will authenticate Google accounts in OAuth2 mode; for "
+"MS365 mailbox users, only \"Outlook\" mode can be selected to authenticate "
+"accounts through OAuth2\""
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:44
+msgid "\"From\" display name (optional)"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:49
+msgid ""
+"The display name is an arbitrary description prepended to an email address. "
+"When a display name is used, the email address is enclosed in angle "
+"brackets. Example: 'Bill Smith <william.smith@example.com>'"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:52
+msgid "\"From\" address (optional)"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:57
+msgid ""
+"The address is the full email address of the sender. It need not be "
+"identical to the username of the account."
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/constants.js:64
+msgid "SMTP host"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:71
+msgid "SMTP port"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:85
+msgid "IMAP host (optional)"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:92
+msgid "IMAP port"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:106
+#: frontend/src/sys-admin/user/user-info.js:116
+msgid "Username"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:121
+msgid "Only sync email sent within following number of years"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:138
 msgid "Repository"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:69
-msgid "Your The URL of the repository, like https://github.com/haiwen/seafile"
+#: frontend/src/project/main-panel/connections/constants.js:143
+msgid "Your the URL of the repository, like https://github.com/haiwen/seafile"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:72
+#: frontend/src/project/main-panel/connections/constants.js:146
 msgid "Access token"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:76
+#: frontend/src/project/main-panel/connections/constants.js:150
 msgid "Your personal access token in GitHub Developer Settings"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:94
-#: frontend/src/project/main-panel/connections/constants.js:130
-#: frontend/src/project/main-panel/connections/constants.js:318
-#: frontend/src/sea-metadata/constants/column/icon.js:43
+#: frontend/src/project/main-panel/connections/constants.js:168
+#: frontend/src/project/main-panel/connections/constants.js:204
+#: frontend/src/project/main-panel/connections/constants.js:423
+#: frontend/src/sea-metadata/constants/column/icon.js:44
 msgid "URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:101
-msgid "API Key"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:107
-msgid "API Username"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:113
-msgid "Only sync topics updated within following number of years"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:137
-msgid "Sitemap URL"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:151
-msgid "Server URL"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:158
-msgid "Library API token"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:171
-msgid "Emails"
-msgstr ""
-
 #: frontend/src/project/main-panel/connections/constants.js:175
-msgid "GitHub"
+msgid "API key"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:179
-#: frontend/src/project/main-panel/connections/view/connection/index.js:223
-msgid "Discourse forums"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:183
-#: frontend/src/project/main-panel/connections/view/connection/index.js:207
-msgid "Sites"
+#: frontend/src/project/main-panel/connections/constants.js:181
+msgid "API username"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/constants.js:187
-msgid "Seafile libraries"
+msgid "Only sync topics updated within following number of years"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:197
-#: frontend/src/project/main-panel/tickets/constants.js:28
-#: frontend/src/project/main-panel/tickets/constants.js:29
-#: frontend/src/project/main-panel/tickets/constants.js:30
-#: frontend/src/project/main-panel/tickets/constants.js:66
-msgid "Open"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:198
-msgid "Closed"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:202
-#: frontend/src/project/main-panel/tickets/constants.js:35
-msgid "Reopen"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:203
-#: frontend/src/project/main-panel/connections/constants.js:223
-#: frontend/src/project/main-panel/tickets/constants.js:67
-msgid "Completed"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:204
-#: frontend/src/project/main-panel/tickets/constants.js:50
-#: frontend/src/project/main-panel/tickets/constants.js:68
-msgid "Not planned"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:205
-#: frontend/src/project/main-panel/tickets/constants.js:58
-#: frontend/src/project/main-panel/tickets/constants.js:69
-#: frontend/src/project/main-panel/tickets/constants.js:110
-msgid "Duplicate"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:224
-msgid "Failed"
+#: frontend/src/project/main-panel/connections/constants.js:211
+msgid "Sitemap URL"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/constants.js:225
+msgid "Server URL"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:232
+msgid "Library API token"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:245
+msgid "Emails"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:249
+msgid "GitHub"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:253
+#: frontend/src/project/main-panel/connections/view/connection/index.js:201
+msgid "Discourse forums"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:257
+#: frontend/src/project/main-panel/connections/view/connection/index.js:185
+msgid "Sites"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:261
+msgid "Seafile libraries"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:271
+#: frontend/src/project/main-panel/tickets/constants.js:37
+#: frontend/src/project/main-panel/tickets/constants.js:38
+#: frontend/src/project/main-panel/tickets/constants.js:39
+#: frontend/src/project/main-panel/tickets/constants.js:52
+msgid "Open"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:272
+#: frontend/src/project/main-panel/tickets/constants.js:53
+msgid "Closed"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:276
+#: frontend/src/project/main-panel/tickets/constants.js:58
+msgid "Reopen"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:277
+#: frontend/src/project/main-panel/connections/constants.js:298
+#: frontend/src/project/main-panel/tickets/constants.js:60
+msgid "Completed"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:278
+#: frontend/src/project/main-panel/tickets/constants.js:61
+msgid "Not planned"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:279
+#: frontend/src/project/main-panel/tickets/constants.js:62
+#: frontend/src/project/main-panel/tickets/constants.js:103
+msgid "Duplicate"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:299
+msgid "Failed"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:300
 msgid "Crawling"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:226
+#: frontend/src/project/main-panel/connections/constants.js:301
 msgid "Pending"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:237
-#: frontend/src/project/main-panel/connections/constants.js:291
-#: frontend/src/project/main-panel/connections/constants.js:314
-#: frontend/src/project/main-panel/connections/view/connection/index.js:100
-#: frontend/src/project/main-panel/tickets/constants.js:178
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:90
+#: frontend/src/project/main-panel/connections/constants.js:312
+#: frontend/src/project/main-panel/connections/constants.js:378
+#: frontend/src/project/main-panel/connections/constants.js:411
+#: frontend/src/project/main-panel/connections/view/connection/index.js:80
+#: frontend/src/project/main-panel/tickets/constants.js:169
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:91
 msgid "Title"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:248
+#: frontend/src/project/main-panel/connections/constants.js:323
+#: frontend/src/project/main-panel/connections/constants.js:399
+#: frontend/src/project/main-panel/connections/constants.js:432
+#: frontend/src/project/main-panel/connections/constants.js:463
+msgid "AI Summary"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:329
+#: frontend/src/project/main-panel/connections/constants.js:404
+#: frontend/src/project/main-panel/connections/constants.js:437
+#: frontend/src/project/main-panel/connections/constants.js:468
+msgid "AI processed time"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:335
 msgid "Author"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:252
+#: frontend/src/project/main-panel/connections/constants.js:339
 msgid "State"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:256
+#: frontend/src/project/main-panel/connections/constants.js:343
 msgid "State reason"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:260
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:47
-#: frontend/src/project/main-panel/tickets/constants.js:195
+#: frontend/src/project/main-panel/connections/constants.js:347
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:46
+#: frontend/src/project/main-panel/tickets/constants.js:186
 #: frontend/src/project/main-panel/tickets/view/types/index.js:20
 #: frontend/src/sea-metadata/components/popover/column-popover/column-type.js:41
 #: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/type-filter.js:33
 msgid "Type"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:264
+#: frontend/src/project/main-panel/connections/constants.js:351
 msgid "Labels"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:268
+#: frontend/src/project/main-panel/connections/constants.js:355
 msgid "Total comments"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:273
+#: frontend/src/project/main-panel/connections/constants.js:360
 msgid "Last updated"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:278
+#: frontend/src/project/main-panel/connections/constants.js:365
 msgid "Closed at"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:284
-#: frontend/src/project/main-panel/tickets/constants.js:228
+#: frontend/src/project/main-panel/connections/constants.js:371
+#: frontend/src/project/main-panel/tickets/constants.js:220
 msgid "Create time"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:295
+#: frontend/src/project/main-panel/connections/constants.js:382
 msgid "Topic ID"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:299
+#: frontend/src/project/main-panel/connections/constants.js:386
 msgid "Views count"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:303
+#: frontend/src/project/main-panel/connections/constants.js:390
 msgid "Last activity"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:322
+#: frontend/src/project/main-panel/connections/constants.js:427
 msgid "Last modify time"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:329
+#: frontend/src/project/main-panel/connections/constants.js:444
 msgid "File name"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:333
+#: frontend/src/project/main-panel/connections/constants.js:448
 msgid "Parent folder"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:337
-#: frontend/src/sea-metadata/constants/column/icon.js:29
+#: frontend/src/project/main-panel/connections/constants.js:452
+#: frontend/src/sea-metadata/constants/column/icon.js:30
 msgid "Last modified time"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:475
+msgid "Subject"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:479
+msgid "From"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:483
+msgid "To"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:487
+msgid "Content"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:491
+msgid "Cc"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:495
+msgid "Is sender"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/hooks/connections.js:44
@@ -2260,220 +2444,272 @@ msgid "Deactivated"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/hooks/connections.js:219
-#: frontend/src/sys-admin/groups/groups-content.js:203
-#: frontend/src/sys-admin/groups/groups.js:193
-#: frontend/src/sys-admin/orgs/org-admin-users.js:187
-#: frontend/src/sys-admin/orgs/org-groups.js:108
-#: frontend/src/sys-admin/orgs/org-users.js:206
 #: frontend/src/sys-admin/orgs/orgs-content.js:138
-#: frontend/src/sys-admin/users/user-groups.js:201
-#: frontend/src/sys-admin/users/users-content.js:355
-#: frontend/src/sys-admin/users/users.js:508
 msgid "Are you sure you want to delete {placeholder} ?"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:46
-#: frontend/src/project/main-panel/search/hide-connection-setter.js:58
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:48
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:65
 msgid "Connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:47
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:49
 msgid "Sync status"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:48
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:50
 msgid "Last synced at"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:78
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:90
 msgid "Sync task queued"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:132
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:144
 msgid "No connections"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:133
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:145
 msgid ""
 "Connections enable you to sync contents from third party applications and "
 "search them"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:45
-#: frontend/src/project/main-panel/connections/view/connection/index.js:112
-#: frontend/src/project/main-panel/tickets/constants.js:202
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:96
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:101
+#: frontend/src/project/main-panel/connections/view/connection/index.js:65
+msgid "Ticket created"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:72
+#: frontend/src/project/main-panel/connections/view/connection/index.js:417
+#: frontend/src/project/main-panel/connections/view/connection/index.js:446
+msgid "Create related ticket"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:92
+#: frontend/src/project/main-panel/tickets/constants.js:198
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:98
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:105
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:127
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:30
 msgid "Description"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:86
-msgid "Ticket created"
+#: frontend/src/project/main-panel/connections/view/connection/index.js:130
+msgid "Generating AI summary..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:93
-#: frontend/src/project/main-panel/connections/view/connection/index.js:430
-msgid "Create related ticket"
+#: frontend/src/project/main-panel/connections/view/connection/index.js:136
+msgid "AI summary generated"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:196
-msgid "Failed to load content."
+#: frontend/src/project/main-panel/connections/view/connection/index.js:139
+#: frontend/src/project/main-panel/connections/view/connection/index.js:144
+msgid "Failed to generate AI summary"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:204
+#: frontend/src/project/main-panel/connections/view/connection/index.js:152
+#: frontend/src/project/main-panel/connections/view/connection/index.js:164
+msgid "Missing required information"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/view/connection/index.js:182
 msgid "site"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:205
+#: frontend/src/project/main-panel/connections/view/connection/index.js:183
 msgid "sites"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:206
+#: frontend/src/project/main-panel/connections/view/connection/index.js:184
 msgid "Site"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:212
-msgid "github issue"
+#: frontend/src/project/main-panel/connections/view/connection/index.js:190
+#: frontend/src/project/main-panel/connections/view/connection/index.js:192
+msgid "GitHub issue"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:213
-msgid "github issues"
+#: frontend/src/project/main-panel/connections/view/connection/index.js:191
+#: frontend/src/project/main-panel/connections/view/connection/index.js:193
+msgid "GitHub issues"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:214
-msgid "Github issue"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/view/connection/index.js:215
-msgid "Github issues"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/view/connection/index.js:220
+#: frontend/src/project/main-panel/connections/view/connection/index.js:198
 msgid "discourse forum"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:221
+#: frontend/src/project/main-panel/connections/view/connection/index.js:199
 msgid "discourse forums"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:222
+#: frontend/src/project/main-panel/connections/view/connection/index.js:200
 msgid "Discourse forum"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:361
-#: frontend/src/project/main-panel/connections/view/connection/index.js:376
+#: frontend/src/project/main-panel/connections/view/connection/index.js:353
+#: frontend/src/project/main-panel/connections/view/connection/index.js:368
 msgid "Copy original page link"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:366
-#: frontend/src/project/main-panel/connections/view/connection/index.js:382
+#: frontend/src/project/main-panel/connections/view/connection/index.js:358
+#: frontend/src/project/main-panel/connections/view/connection/index.js:374
 msgid "The original page link has been copied"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:418
-#: frontend/src/project/main-panel/connections/view/connection/index.js:464
+#: frontend/src/project/main-panel/connections/view/connection/index.js:411
+#: frontend/src/project/main-panel/connections/view/connection/index.js:470
 msgid "Open original page"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:422
-msgid "Missing required information to open original page"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/view/connection/index.js:444
+#: frontend/src/project/main-panel/connections/view/connection/index.js:431
+#: frontend/src/project/main-panel/connections/view/connection/index.js:455
 msgid "Related record"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:456
-msgid "Create new ticket"
+#: frontend/src/project/main-panel/connections/view/connection/index.js:439
+#: frontend/src/project/main-panel/connections/view/connection/index.js:463
+#: frontend/src/project/main-panel/connections/view/connection/index.js:475
+#: frontend/src/project/main-panel/connections/view/connection/index.js:482
+msgid "Generate AI summary"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/view/connection/index.js:509
+#: frontend/src/project/main-panel/connections/view/connection/index.js:510
 msgid "Connection not found"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:29
+#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:28
+msgid "Today"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:32
+msgid "Last 7 days"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:35
+msgid "Last 30 days"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:40
+msgid "Custom time"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:144
+#: frontend/src/project/main-panel/search/filter-by-date.js:145
+#: frontend/src/project/main-panel/tickets/constants.js:225
+msgid "Last updated time"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:172
+msgid "Start date"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/filter-by-date.js:182
+msgid "End date"
 msgstr ""
 
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:15
 msgid "No connections available"
 msgstr ""
 
-#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:100
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:108
 msgid "Search connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/search/hide-connection-setter.js:59
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:126
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:128
+msgid "Close all"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:133
+#: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:135
+msgid "Open all"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:66
 msgid "1 Connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/search/hide-connection-setter.js:60
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:67
 msgid "{placeholder} Connections"
 msgstr ""
 
-#: frontend/src/project/main-panel/search/index.js:124
+#: frontend/src/project/main-panel/search/index.js:43
+msgid "Select at least one connection to search"
+msgstr ""
+
+#: frontend/src/project/main-panel/search/index.js:158
 msgid "Please enter search keywords"
 msgstr ""
 
-#: frontend/src/project/main-panel/search/index.js:129
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:606
+#: frontend/src/project/main-panel/search/index.js:163
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:603
 #: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:187
-#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:217
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:207
 #: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:160
 msgid "No results"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:118
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:203
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:21
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:29
+msgid "Developer mode"
+msgstr ""
+
+#: frontend/src/project/main-panel/settings/developer-mode-settings/index.js:32
+msgid ""
+"Enable developer mode to show advanced features for development and "
+"debugging purposes."
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:122
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:214
 msgid "opened"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:155
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:275
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
 msgid "Reply"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:169
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:179
 msgid "Update comment"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:181
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:192
 msgid "Delete comment"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:182
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:193
 msgid "Are you sure you want to delete the comment ?"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/assignees-settings/index.js:46
-#: frontend/src/project/main-panel/tickets/constants.js:209
-msgid "Assignees"
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:14
+msgid "Collaborators"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/assignees-settings/index.js:64
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:65
 msgid "No one assigned"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/assignees-settings/index.js:71
-msgid "Search assignees"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/assignees-settings/index.js:72
-msgid "No assignees"
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:73
+#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:60
+msgid "No users available"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/rate-settings/index.js:40
-#: frontend/src/project/main-panel/tickets/constants.js:169
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/index.js:170
+#: frontend/src/project/main-panel/tickets/constants.js:161
+#: frontend/src/sea-metadata/constants/column/icon.js:45
 msgid "Priority"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/tags-settings/index.js:84
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:38
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:43
-#: frontend/src/project/main-panel/tickets/constants.js:215
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:49
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:54
+#: frontend/src/project/main-panel/tickets/constants.js:209
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:201
 #: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/tags-filter.js:75
-#: frontend/src/sea-metadata/constants/column/icon.js:41
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:279
+#: frontend/src/sea-metadata/constants/column/icon.js:42
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:280
 msgid "Tags"
 msgstr ""
 
@@ -2489,221 +2725,269 @@ msgstr ""
 msgid "Search tags"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:49
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:48
 msgid "No type"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:57
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:56
 msgid "Search type"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:58
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:57
 msgid "No types"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:60
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:65
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:27
+msgid "Refresh"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:71
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:76
 #: frontend/src/project/main-panel/tickets/view/types/index.js:190
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:286
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:287
 msgid "Types"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:81
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:116
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:85
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:92
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:157
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:86
 msgid "New ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:99
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:101
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:106
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:85
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:295
+msgid "Substates"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:132
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:110
 msgid "New tag"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:107
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:140
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:102
 msgid "New type"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:148
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:102
+msgid "New substate"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/components/upload-files-btn/index.js:27
 msgid "Paste, drop, or click to add files"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:36
-#: frontend/src/project/main-panel/tickets/constants.js:37
-msgid "Reopen ticket"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/constants.js:43
-#: frontend/src/project/main-panel/tickets/constants.js:51
+#: frontend/src/project/main-panel/tickets/constants.js:45
 msgid "Close ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:44
-msgid "Close as completed"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/constants.js:45
+#: frontend/src/project/main-panel/tickets/constants.js:47
 msgid "Done, closed, fixed, resolved"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:52
-msgid "Close as not planned"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/constants.js:53
-msgid "Won't fix, can't repro, stale"
-msgstr ""
-
 #: frontend/src/project/main-panel/tickets/constants.js:59
-#: frontend/src/project/main-panel/tickets/constants.js:60
-msgid "Close as duplicate"
+msgid "Working on"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:61
-msgid "Duplicate of another ticket"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/constants.js:98
+#: frontend/src/project/main-panel/tickets/constants.js:91
 msgid "Bug"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:99
+#: frontend/src/project/main-panel/tickets/constants.js:92
 msgid "Something isn't working"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:104
+#: frontend/src/project/main-panel/tickets/constants.js:97
 msgid "Documentation"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:105
+#: frontend/src/project/main-panel/tickets/constants.js:98
 msgid "Improvements or additions to documentation"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:111
+#: frontend/src/project/main-panel/tickets/constants.js:104
 msgid "This ticket or pull request already exists"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:116
+#: frontend/src/project/main-panel/tickets/constants.js:109
 msgid "Enhancement"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:117
+#: frontend/src/project/main-panel/tickets/constants.js:110
 msgid "New feature or request"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:122
+#: frontend/src/project/main-panel/tickets/constants.js:115
 msgid "Good first ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:123
+#: frontend/src/project/main-panel/tickets/constants.js:116
 msgid "Good for newcomers"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:128
+#: frontend/src/project/main-panel/tickets/constants.js:121
 msgid "Help wanted"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:129
+#: frontend/src/project/main-panel/tickets/constants.js:122
 msgid "Extra attention is needed"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:134
+#: frontend/src/project/main-panel/tickets/constants.js:127
 msgid "Invalid"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:135
+#: frontend/src/project/main-panel/tickets/constants.js:128
 msgid "This doesn't seem right"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:140
+#: frontend/src/project/main-panel/tickets/constants.js:133
 msgid "Question"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:141
+#: frontend/src/project/main-panel/tickets/constants.js:134
 msgid "Further information is requested"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:146
+#: frontend/src/project/main-panel/tickets/constants.js:139
 msgid "Wontfix"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:147
+#: frontend/src/project/main-panel/tickets/constants.js:140
 msgid "This will not be worked on"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:222
+#: frontend/src/project/main-panel/tickets/constants.js:192
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:20
+msgid "Substate"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/constants.js:204
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:127
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:333
+msgid "Assignees"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/constants.js:215
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:336
 msgid "Participants"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/constants.js:234
-#: frontend/src/sea-metadata/constants/column/icon.js:26
-#: frontend/src/sys-admin/orgs/org-groups.js:43
+#: frontend/src/project/main-panel/tickets/constants.js:230
+#: frontend/src/sea-metadata/constants/column/icon.js:27
+#: frontend/src/sys-admin/org/org-groups.js:35
 msgid "Creator"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:129
+#: frontend/src/project/main-panel/tickets/constants.js:235
+msgid "Deleted"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/constants.js:240
+msgid "Delete at"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/constants.js:246
+msgid "Comment updated at"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:143
 msgid "ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:130
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:144
 msgid "tickets"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:131
-msgid "Ticket"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:169
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:125
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:183
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:128
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:120
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:129
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:118
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:125
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:128
 #: frontend/src/project/main-panel/tickets/view/types/index.js:110
 msgid "Clear selected"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:174
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:130
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:188
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:133
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:125
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:134
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:123
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:130
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:133
 #: frontend/src/project/main-panel/tickets/view/types/index.js:115
 msgid "Copy selected"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:189
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:145
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:203
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:148
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:140
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:149
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:138
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:145
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:148
 #: frontend/src/project/main-panel/tickets/view/types/index.js:130
 msgid "Delete selected"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:214
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:170
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:170
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:228
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:173
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:174
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:173
 msgid "Delete tickets"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:230
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:186
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:186
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:244
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:189
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:190
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:189
 msgid "Open ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:238
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:194
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:194
+#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:252
+#: frontend/src/project/main-panel/tickets/view/substate-tickets/index.js:197
+#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:198
+#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:197
 msgid "Delete ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/all-tickets/index.js:243
-#: frontend/src/project/main-panel/tickets/view/tag-tickets/index.js:199
-#: frontend/src/project/main-panel/tickets/view/type-tickets/index.js:199
-msgid "Copy link"
-msgstr ""
-
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:79
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:87
 #: frontend/src/project/main-panel/tickets/view/types/components/type-dialog/index.js:79
 msgid "Color is invalid"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:102
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:181
+msgid "Edit substate"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/components/substate-dialog/index.js:107
+msgid "Preview substate"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:30
+#: frontend/src/project/main-panel/tickets/view/tags/index.js:38
+#: frontend/src/project/main-panel/tickets/view/types/index.js:30
+msgid "Tickets count"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:83
+msgid "substate"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:84
+msgid "substates"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:165
+msgid "Delete substates"
+msgstr ""
+
+#: frontend/src/project/main-panel/tickets/view/substates/index.js:186
+msgid "Delete substate"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/view/tags/components/tag-dialog/index.js:110
@@ -2717,13 +3001,8 @@ msgstr ""
 
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:20
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:200
-#: frontend/src/sea-metadata/constants/column/icon.js:42
+#: frontend/src/sea-metadata/constants/column/icon.js:43
 msgid "Tag"
-msgstr ""
-
-#: frontend/src/project/main-panel/tickets/view/tags/index.js:38
-#: frontend/src/project/main-panel/tickets/view/types/index.js:30
-msgid "Tickets count"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/view/tags/index.js:163
@@ -2742,19 +3021,19 @@ msgstr ""
 msgid "tags"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:91
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:109
 msgid "The ticket link has been copied"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:221
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:251
 msgid "Not found ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:270
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:300
 msgid "Add a comment"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:290
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:326
 msgid "Comment"
 msgstr ""
 
@@ -2783,14 +3062,6 @@ msgstr ""
 msgid "types"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:59
-msgid "Search collaborators"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:60
-msgid "No collaborators available"
-msgstr ""
-
 #: frontend/src/sea-metadata/components/cell-editors/date-editor.js:194
 #: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-calendar.js:122
 msgid "Enter date"
@@ -2801,10 +3072,10 @@ msgid "Please select"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:212
-#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:91
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:347
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:93
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:348
 #: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:462
-#: frontend/src/translation.js:14
+#: frontend/src/translation.js:10
 msgid "No options available"
 msgstr ""
 
@@ -2813,42 +3084,22 @@ msgid "No option"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:251
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:346
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:347
 #: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:461
 msgid "Search option"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/cell-editors/multiple-select-editor/index.js:264
-#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:92
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:94
 msgid "Add option"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:5
-msgid "No priority"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:11
-msgid "Urgent"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:17
-msgid "High"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:23
-msgid "Medium"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/constants.js:29
-msgid "Low"
-msgstr ""
-
-#: frontend/src/sea-metadata/components/cell-editors/priority-editor/rate-item.js:29
+#: frontend/src/sea-metadata/components/cell-editors/priority-editor/priority-item.js:29
 #: frontend/src/sea-metadata/components/popover/row-height-popover/index.js:37
 msgid "Selected"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:90
+#: frontend/src/sea-metadata/components/cell-editors/single-select-editor/index.js:92
 msgid "Search options"
 msgstr ""
 
@@ -2895,22 +3146,22 @@ msgid "Sort"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:34
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:136
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:137
 msgid "ISO"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:38
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:137
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:138
 msgid "US"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:42
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:138
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:139
 msgid "European"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:46
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:139
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:140
 msgid "Germany Russia etc"
 msgstr ""
 
@@ -2931,44 +3182,44 @@ msgid "Max"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:15
-#: frontend/src/sea-metadata/constants/column/icon.js:30
 #: frontend/src/sea-metadata/constants/column/icon.js:31
+#: frontend/src/sea-metadata/constants/column/icon.js:32
 msgid "Text"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:22
-#: frontend/src/sea-metadata/constants/column/icon.js:35
+#: frontend/src/sea-metadata/constants/column/icon.js:36
 msgid "Long text"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:29
-#: frontend/src/sea-metadata/constants/column/icon.js:39
+#: frontend/src/sea-metadata/constants/column/icon.js:40
 msgid "Number"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:36
-#: frontend/src/sea-metadata/constants/column/icon.js:33
+#: frontend/src/sea-metadata/constants/column/icon.js:34
 msgid "Collaborator"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:43
-#: frontend/src/sea-metadata/constants/column/icon.js:32
+#: frontend/src/sea-metadata/constants/column/icon.js:33
 msgid "Checkbox"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:58
-#: frontend/src/sea-metadata/constants/column/icon.js:36
 #: frontend/src/sea-metadata/constants/column/icon.js:37
+#: frontend/src/sea-metadata/constants/column/icon.js:38
 msgid "Single select"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:65
-#: frontend/src/sea-metadata/constants/column/icon.js:38
+#: frontend/src/sea-metadata/constants/column/icon.js:39
 msgid "Multiple select"
 msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/column-popover/dropdown-menu/index.js:72
-#: frontend/src/sea-metadata/constants/column/icon.js:40
+#: frontend/src/sea-metadata/constants/column/icon.js:41
 msgid "Rate"
 msgstr ""
 
@@ -3015,7 +3266,7 @@ msgstr ""
 msgid "No collaborators"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:344
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:345
 msgid "Select option(s)"
 msgstr ""
 
@@ -3027,13 +3278,13 @@ msgstr ""
 msgid "Select collaborators"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:541
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:538
 msgid ""
 "If there are multiple items in the cell, a random one will be chosen and be "
 "compared with the filter value."
 msgstr ""
 
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:562
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:559
 msgid "Invalid filter"
 msgstr ""
 
@@ -3055,7 +3306,7 @@ msgstr ""
 
 #: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:91
 #: frontend/src/sea-metadata/components/popover/sort-popover/index.js:21
-#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:193
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:183
 msgid "Up"
 msgstr ""
 
@@ -3112,13 +3363,13 @@ msgstr ""
 msgid "Select row height"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:254
-#: frontend/src/translation.js:25
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:244
+#: frontend/src/translation.js:13
 msgid "No sorts"
 msgstr ""
 
-#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:261
-#: frontend/src/translation.js:26
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:251
+#: frontend/src/translation.js:14
 msgid "Add sort"
 msgstr ""
 
@@ -3156,11 +3407,11 @@ msgstr ""
 msgid "Duplicate view"
 msgstr ""
 
-#: frontend/src/sea-metadata/constants/column/icon.js:27
+#: frontend/src/sea-metadata/constants/column/icon.js:28
 msgid "Last modifier"
 msgstr ""
 
-#: frontend/src/sea-metadata/constants/column/icon.js:28
+#: frontend/src/sea-metadata/constants/column/icon.js:29
 msgid "CTime"
 msgstr ""
 
@@ -3170,8 +3421,24 @@ msgid ""
 "only the first 100000 characters are saved"
 msgstr ""
 
-#: frontend/src/sea-metadata/constants/filter/filter-modifier.js:28
-msgid "Today"
+#: frontend/src/sea-metadata/constants/column/priority.js:5
+msgid "No priority"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/column/priority.js:11
+msgid "Urgent"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/column/priority.js:17
+msgid "High"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/column/priority.js:23
+msgid "Medium"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/column/priority.js:29
+msgid "Low"
 msgstr ""
 
 #: frontend/src/sea-metadata/constants/filter/filter-modifier.js:29
@@ -3330,8 +3597,26 @@ msgstr ""
 msgid "is none of..."
 msgstr ""
 
+#: frontend/src/sea-metadata/constants/grid-body.js:27
+#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:120
+#: frontend/src/utils/role-status-utils.js:22
+msgid "Default"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/grid-body.js:28
+msgid "Double"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/grid-body.js:29
+msgid "Triple"
+msgstr ""
+
+#: frontend/src/sea-metadata/constants/grid-body.js:30
+msgid "Quadruple"
+msgstr ""
+
 #: frontend/src/sea-metadata/constants/view/table.js:84
-#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:13
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:11
 msgid "Deleted option"
 msgstr ""
 
@@ -3372,7 +3657,6 @@ msgid "Row"
 msgstr ""
 
 #: frontend/src/sea-metadata/utils/translate.js:11
-#: frontend/src/sys-admin/orgs/org-projects.js:151
 msgid "Rows"
 msgstr ""
 
@@ -3492,12 +3776,9 @@ msgstr ""
 msgid "Another {column} has this {column} type"
 msgstr ""
 
-#: frontend/src/sea-metadata/utils/view/core.js:14
-msgid "People"
-msgstr ""
-
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:621
-msgid "xxx cells cut"
+#, javascript-format
+msgid "%s cells cut"
 msgstr ""
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:621
@@ -3505,7 +3786,7 @@ msgid "1 cell cut"
 msgstr ""
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:663
-msgid "xxx rows are copied."
+msgid "{count} rows are copied."
 msgstr ""
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:663
@@ -3513,7 +3794,8 @@ msgid "1 row is copied."
 msgstr ""
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:697
-msgid "xxx cells copied"
+#, javascript-format
+msgid "%s cells copied"
 msgstr ""
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:697
@@ -3560,12 +3842,12 @@ msgstr ""
 msgid "Loading"
 msgstr ""
 
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:126
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:155
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:127
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:156
 msgid "Edit format settings"
 msgstr ""
 
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:127
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:128
 msgid "You do not have permission"
 msgstr ""
 
@@ -3590,17 +3872,11 @@ msgid "Set API calls limit per user"
 msgstr ""
 
 #: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:62
-#: frontend/src/sys-admin/dialog/set-quota.js:65
-#: frontend/src/sys-admin/dialog/set-row-limit.js:64
 msgid "An integer that is greater than or equal to 0."
 msgstr ""
 
-#: frontend/src/sys-admin/dialog/set-quota.js:50
-msgid "Set quota"
-msgstr ""
-
-#: frontend/src/sys-admin/dialog/set-row-limit.js:50
-msgid "Set row limit"
+#: frontend/src/sys-admin/dialog/set-api-calls-limit-per-user.js:64
+msgid "Tip: 0 means default limit"
 msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:90
@@ -3609,8 +3885,8 @@ msgid "Passwords do not match."
 msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:107
-#: frontend/src/sys-admin/orgs/index.js:376
-#: frontend/src/sys-admin/orgs/index.js:382
+#: frontend/src/sys-admin/orgs/index.js:372
+#: frontend/src/sys-admin/orgs/index.js:378
 msgid "Add organization"
 msgstr ""
 
@@ -3627,17 +3903,6 @@ msgstr ""
 msgid "Password again"
 msgstr ""
 
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-notification-dialog.js:45
-#: frontend/src/sys-admin/dialog/sysadmin-add-sys-user-notification-dialog.js:47
-#: frontend/src/sys-admin/users/users.js:350
-msgid "Add notification"
-msgstr ""
-
-#: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:120
-#: frontend/src/utils/role-status-utils.js:22
-msgid "Default"
-msgstr ""
-
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:122
 #: frontend/src/utils/role-status-utils.js:24
 msgid "Guest"
@@ -3645,10 +3910,10 @@ msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:134
 #: frontend/src/sys-admin/dialog/sysadmin-group-add-member-dialog.js:39
-#: frontend/src/sys-admin/groups/group-members.js:315
-#: frontend/src/sys-admin/groups/group-members.js:321
-#: frontend/src/sys-admin/orgs/org-users.js:406
-#: frontend/src/sys-admin/orgs/org-users.js:412
+#: frontend/src/sys-admin/group/group-members.js:316
+#: frontend/src/sys-admin/group/group-members.js:318
+#: frontend/src/sys-admin/org/org-users.js:55
+#: frontend/src/sys-admin/org/org-users.js:57
 msgid "Add member"
 msgstr ""
 
@@ -3658,8 +3923,8 @@ msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:152
 msgid ""
-"You can also add a user as a guest, who will not be allowed to create tables "
-"and groups."
+"You can also add a user as a guest, who will not be allowed to create "
+"projects and groups."
 msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:74
@@ -3687,7 +3952,7 @@ msgid "Set max number of members"
 msgstr ""
 
 #: frontend/src/sys-admin/dialog/sysadmin-set-org-name-dialog.js:51
-#: frontend/src/sys-admin/users/user-info.js:64
+#: frontend/src/sys-admin/user/user-info.js:45
 msgid "Set name"
 msgstr ""
 
@@ -3707,80 +3972,72 @@ msgstr ""
 msgid "Unlink"
 msgstr ""
 
-#: frontend/src/sys-admin/dialog/sysadmin-update-sys-notification-dialog.js:47
-msgid "Modify notification"
-msgstr ""
-
-#: frontend/src/sys-admin/groups/group-members.js:36
-#: frontend/src/sys-admin/orgs/org-admin-users.js:48
-#: frontend/src/sys-admin/orgs/org-users.js:51
+#: frontend/src/sys-admin/group/group-members.js:37
 msgid "No members"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/group-members.js:127
+#: frontend/src/sys-admin/group/group-members.js:128
 msgid "Are you sure you want to remove {placeholder} ?"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/group-members.js:166
+#: frontend/src/sys-admin/group/group-members.js:167
 msgid "Remove member"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/group-members.js:245
-msgid "Successfully added {email_placeholder}"
-msgstr ""
-
-#: frontend/src/sys-admin/groups/group-members.js:256
+#: frontend/src/sys-admin/group/group-members.js:257
 msgid "Failed to add {email_placeholder}: {error_msg_placeholder}"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/group-members.js:276
-msgid "Successfully removed {placeholder}."
+#: frontend/src/sys-admin/group/group-members.js:277
+#, javascript-format
+msgid "%s removed"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/group-nav.js:46
-#: frontend/src/sys-admin/orgs/org-nav.js:55
+#: frontend/src/sys-admin/group/group-nav.js:47
+#: frontend/src/sys-admin/org/org-nav.js:51
 msgid "Search member"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/groups-content.js:55
-#: frontend/src/sys-admin/groups/groups.js:61
-#: frontend/src/sys-admin/orgs/org-groups.js:35
-#: frontend/src/sys-admin/users/user-groups.js:49 frontend/src/translation.js:3
+#: frontend/src/sys-admin/groups/groups-table/group.js:43
+#: frontend/src/sys-admin/groups/groups-table/group.js:193
+msgid "Remove from group"
+msgstr ""
+
+#: frontend/src/sys-admin/groups/groups-table/group.js:175
+msgid "Are you sure you want to delete the group {name} ?"
+msgstr ""
+
+#: frontend/src/sys-admin/groups/groups-table/group.js:194
+msgid "Are you sure you want to remove from {name} ?"
+msgstr ""
+
+#: frontend/src/sys-admin/groups/groups-table/index.js:9
+#: frontend/src/sys-admin/groups/search-groups.js:60
+#: frontend/src/translation.js:3
 msgid "No groups"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/groups.js:348
-#: frontend/src/sys-admin/groups/search-groups.js:79
-#: frontend/src/sys-admin/orgs/index.js:274
-#: frontend/src/sys-admin/orgs/org-admin-users.js:327
-#: frontend/src/sys-admin/orgs/org-groups.js:209
-#: frontend/src/sys-admin/orgs/org-users.js:369
-#: frontend/src/sys-admin/orgs/search-orgs.js:93
-msgid "Successfully deleted 1 item."
+#: frontend/src/sys-admin/groups/groups-table/index.js:90
+msgid "1 user has been removed from the {groupName}"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/groups.js:374
+#: frontend/src/sys-admin/groups/groups.js:49
 msgid "Search groups by name"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/groups.js:397
-#: frontend/src/sys-admin/groups/groups.js:404
-#: frontend/src/sys-admin/users/users.js:910
-#: frontend/src/sys-admin/users/users.js:931
+#: frontend/src/sys-admin/groups/groups.js:54
+#: frontend/src/sys-admin/groups/groups.js:59
+#: frontend/src/sys-admin/users/users.js:141
 msgid "Export Excel"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/search-groups.js:97
-msgid "Successfully transferred the group."
-msgstr ""
-
-#: frontend/src/sys-admin/groups/search-groups.js:128
-#: frontend/src/sys-admin/users/common-operations/add-user-to-groups.js:109
+#: frontend/src/sys-admin/groups/search-groups.js:75
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:89
 msgid "Search groups"
 msgstr ""
 
-#: frontend/src/sys-admin/groups/search-groups.js:129
-#: frontend/src/sys-admin/orgs/search-orgs.js:124
+#: frontend/src/sys-admin/groups/search-groups.js:76
+#: frontend/src/sys-admin/orgs/search-orgs.js:121
 msgid "Tip: you can search by keyword in name."
 msgstr ""
 
@@ -3809,58 +4066,93 @@ msgstr ""
 msgid "Number of projects"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:130
+#: frontend/src/sys-admin/info/index.js:127
 msgid "System info"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:133
+#: frontend/src/sys-admin/info/index.js:130
 msgid "Enterprise Edition"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:145
+#: frontend/src/sys-admin/info/index.js:142
 msgid "Upload license"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:152
+#: frontend/src/sys-admin/info/index.js:149
 msgid "Developer edition"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:155
+#: frontend/src/sys-admin/info/index.js:152
 msgid "Version info"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:158
+#: frontend/src/sys-admin/info/index.js:155
 msgid "Bases"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:164
-#: frontend/src/sys-admin/info/index.js:168
+#: frontend/src/sys-admin/info/index.js:161
+#: frontend/src/sys-admin/info/index.js:165
 msgid "Activated users"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:178
-#: frontend/src/sys-admin/orgs/org-nav.js:35
+#: frontend/src/sys-admin/info/index.js:175
+#: frontend/src/sys-admin/org/org-title/index.js:11
 #: frontend/src/sys-admin/orgs/orgs-nav.js:22
-#: frontend/src/sys-admin/orgs/search-orgs.js:120
+#: frontend/src/sys-admin/orgs/search-orgs.js:118
 msgid "Organizations"
 msgstr ""
 
-#: frontend/src/sys-admin/orgs/index.js:60
-#: frontend/src/sys-admin/orgs/orgs-content.js:50 frontend/src/translation.js:7
+#: frontend/src/sys-admin/org/org-admin-users.js:32
+#: frontend/src/sys-admin/org/org-users.js:69
+#: frontend/src/sys-admin/users/users-table/index.js:62
+#: frontend/src/translation.js:8
+msgid "Last login"
+msgstr ""
+
+#: frontend/src/sys-admin/org/org-info.js:84 frontend/src/translation.js:6
+msgid "Number of members"
+msgstr ""
+
+#: frontend/src/sys-admin/org/org-info.js:89 frontend/src/translation.js:7
+msgid "Max number of members"
+msgstr ""
+
+#: frontend/src/sys-admin/org/org-info.js:97
+msgid "Number of groups"
+msgstr ""
+
+#: frontend/src/sys-admin/org/org-info.js:105
+#: frontend/src/sys-admin/user/user-info.js:158
+msgid "API calls limit per user"
+msgstr ""
+
+#: frontend/src/sys-admin/org/org-nav.js:23
+#: frontend/src/sys-admin/users/users-nav.js:10
+msgid "Admins"
+msgstr ""
+
+#: frontend/src/sys-admin/orgs/index.js:59
+#: frontend/src/sys-admin/orgs/orgs-content.js:50 frontend/src/translation.js:5
 msgid "No organizations"
 msgstr ""
 
-#: frontend/src/sys-admin/orgs/index.js:148
+#: frontend/src/sys-admin/orgs/index.js:147
 msgid "Please type {placeholder} to confirm."
 msgstr ""
 
-#: frontend/src/sys-admin/orgs/index.js:186
+#: frontend/src/sys-admin/orgs/index.js:185
 #: frontend/src/sys-admin/orgs/orgs-content.js:175
 msgid "Delete organization"
 msgstr ""
 
-#: frontend/src/sys-admin/orgs/index.js:283
-#: frontend/src/sys-admin/orgs/search-orgs.js:123
+#: frontend/src/sys-admin/orgs/index.js:273
+#: frontend/src/sys-admin/orgs/search-orgs.js:93
+#: frontend/src/sys-admin/user/user-info.js:121
+msgid "Organization"
+msgstr ""
+
+#: frontend/src/sys-admin/orgs/index.js:281
+#: frontend/src/sys-admin/orgs/search-orgs.js:120
 msgid "Search organizations"
 msgstr ""
 
@@ -3872,309 +4164,147 @@ msgstr ""
 msgid "Copy to clipboard"
 msgstr ""
 
-#: frontend/src/sys-admin/orgs/org-admin-users.js:188
-#: frontend/src/sys-admin/orgs/org-users.js:207
-#: frontend/src/sys-admin/users/users-content.js:356
-#: frontend/src/sys-admin/users/users.js:517
-msgid "Are you sure you want to reset the password of {placeholder} ?"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-admin-users.js:224
-#: frontend/src/sys-admin/orgs/org-users.js:241
-msgid "Delete member"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-admin-users.js:311
-#: frontend/src/sys-admin/orgs/org-users.js:353
-msgid "Set {user} as admin"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-admin-users.js:313
-#: frontend/src/sys-admin/orgs/org-users.js:355
-msgid "Unset {user} as admin"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:107
-msgid "Number of groups"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:110
-msgid "Storage usage"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:216
-msgid "Successfully set quota."
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:235
-msgid "Successfully set name."
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:249
-msgid "Successfully set max number of members."
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-info.js:263
-msgid "Successfully set API calls limit per user."
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-nav.js:22
-#: frontend/src/sys-admin/users/users-nav.js:25
-msgid "Admins"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/org-projects.js:161
-msgid "The size of the assets of the project is not included"
-msgstr ""
-
 #: frontend/src/sys-admin/orgs/search-orgs.js:80
-#: frontend/src/sys-admin/users/search-users.js:212
-#: frontend/src/sys-admin/users/search-users.js:229
-#: frontend/src/sys-admin/users/users.js:850
-#: frontend/src/sys-admin/users/users.js:867
+#: frontend/src/sys-admin/user/user-info.js:273
+#: frontend/src/sys-admin/users/users-table/index.js:143
+#: frontend/src/sys-admin/users/users-table/index.js:160
 msgid "Edit succeeded"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/user-op-menu.js:57
-msgid "Set as admin"
-msgstr ""
-
-#: frontend/src/sys-admin/orgs/user-op-menu.js:60
-msgid "Unset as admin"
 msgstr ""
 
 #: frontend/src/sys-admin/sys-popover/filter-widgets/filters-item.js:27
 msgid "Clear"
 msgstr ""
 
-#: frontend/src/sys-admin/users/common-operations/add-user-to-groups.js:39
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:30
 msgid "Added to {placeholder}"
 msgstr ""
 
-#: frontend/src/sys-admin/users/common-operations/add-user-to-groups.js:105
+#: frontend/src/sys-admin/user/user-group/add-user-to-groups.js:85
 msgid "Add user to groups"
 msgstr ""
 
-#: frontend/src/sys-admin/users/search-users.js:187
-#: frontend/src/sys-admin/users/users.js:766
-msgid "Successfully deleted {user_number_placeholder} users."
-msgstr ""
-
-#: frontend/src/sys-admin/users/search-users.js:244
-#: frontend/src/sys-admin/users/users.js:882
-msgid "Successfully revoked the admin permission of {placeholder}"
-msgstr ""
-
-#: frontend/src/sys-admin/users/search-users.js:275
-#: frontend/src/sys-admin/users/search-users.js:341
-#: frontend/src/sys-admin/users/users.js:1002
-#: frontend/src/sys-admin/users/users.js:1014
-#: frontend/src/sys-admin/users/users.js:1068
-msgid "Delete users"
-msgstr ""
-
-#: frontend/src/sys-admin/users/search-users.js:342
-#: frontend/src/sys-admin/users/users.js:1069
-msgid "Are you sure you want to delete the selected user(s) ?"
-msgstr ""
-
-#: frontend/src/sys-admin/users/user-groups.js:202
-msgid "Are you sure you want to remove from {placeholder} ?"
-msgstr ""
-
-#: frontend/src/sys-admin/users/user-groups.js:235
-msgid "Remove from group"
-msgstr ""
-
-#: frontend/src/sys-admin/users/user-groups.js:321
-msgid "Successfully remove from 1 item."
-msgstr ""
-
-#: frontend/src/sys-admin/users/user-groups.js:343
-#: frontend/src/translation.js:34
+#: frontend/src/sys-admin/user/user-group/index.js:46
+#: frontend/src/translation.js:15
 msgid "Add to groups"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:68
+#: frontend/src/sys-admin/user/user-info.js:49
 msgid "Set contact email"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:72
+#: frontend/src/sys-admin/user/user-info.js:53
 msgid "Set phone"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:76
+#: frontend/src/sys-admin/user/user-info.js:57
 msgid "Set ID"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:80
+#: frontend/src/sys-admin/user/user-info.js:61
 msgid "Set unit"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:143
-msgid "Organization"
+#: frontend/src/sys-admin/user/user-info.js:131
+msgid "Phone"
 msgstr ""
 
-#: frontend/src/sys-admin/users/user-info.js:180
-msgid "API calls limit per user"
+#: frontend/src/sys-admin/user/user-info.js:145
+#: frontend/src/sys-admin/users/users-table/index.js:59
+msgid "Unit"
 msgstr ""
 
-#: frontend/src/sys-admin/users/users-content.js:92
-#: frontend/src/sys-admin/users/users.js:109
+#: frontend/src/sys-admin/users/search-users.js:29
+#: frontend/src/sys-admin/users/users.js:99
+#, javascript-format
+msgid "%s users"
+msgstr ""
+
+#: frontend/src/sys-admin/users/search-users.js:52
+#: frontend/src/sys-admin/users/search-users.js:60
+#: frontend/src/sys-admin/users/search-users.js:68
+#: frontend/src/sys-admin/users/users.js:170
+#: frontend/src/sys-admin/users/users.js:182
+#: frontend/src/sys-admin/users/users.js:209
+msgid "Delete users"
+msgstr ""
+
+#: frontend/src/sys-admin/users/search-users.js:69
+#: frontend/src/sys-admin/users/users.js:210
+msgid "Are you sure you want to delete the selected user(s) ?"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-nav.js:9
+msgid "Database"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/index.js:61
 msgid "Institution"
 msgstr ""
 
-#: frontend/src/sys-admin/users/users-content.js:234
-#: frontend/src/sys-admin/users/users-content.js:279
-#: frontend/src/sys-admin/users/users.js:260
-#: frontend/src/sys-admin/users/users.js:782
-#: frontend/src/sys-admin/users/users.js:807
+#: frontend/src/sys-admin/users/users-table/index.js:174
+msgid "The admin permission of {placeholder} revoked"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:54
+msgid "Set as admin"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:60
+msgid "Unset as admin"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:91
+#: frontend/src/sys-admin/users/users.js:54
+#: frontend/src/sys-admin/users/users.js:71
 msgid "It may take some time, please wait."
 msgstr ""
 
-#: frontend/src/sys-admin/users/users-content.js:250
-#: frontend/src/sys-admin/users/users.js:282
+#: frontend/src/sys-admin/users/users-table/user.js:259
+msgid "Are you sure you want to delete the user {user} ?"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:270
+msgid "Are you sure you want to reset the password of {user} ?"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:280
+msgid "Are you sure you want to set {user} inactive?"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:289
+msgid "Are you sure you want to revoke the admin permission of {user} ?"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users-table/user.js:291
+msgid "Revoke"
+msgstr ""
+
+#: frontend/src/sys-admin/users/users.js:139
+msgid "Import users"
+msgstr ""
+
+#: frontend/src/translation.js:9
+msgid "Select a group"
+msgstr ""
+
+#: frontend/src/translation.js:11
+msgid "Group Info"
+msgstr ""
+
+#: frontend/src/translation.js:12
+msgid "Current browser"
+msgstr ""
+
 #: frontend/src/utils/role-status-utils.js:26
 msgid "Default admin"
 msgstr ""
 
-#: frontend/src/sys-admin/users/users-content.js:254
-#: frontend/src/sys-admin/users/users.js:286
 #: frontend/src/utils/role-status-utils.js:30
 msgid "Daily admin"
 msgstr ""
 
-#: frontend/src/sys-admin/users/users-content.js:256
-#: frontend/src/sys-admin/users/users.js:288
 #: frontend/src/utils/role-status-utils.js:32
 msgid "Audit admin"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users-content.js:357
-#: frontend/src/sys-admin/users/users.js:526
-msgid "Are you sure you want to revoke the admin permission of {placeholder} ?"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users-content.js:484
-#: frontend/src/sys-admin/users/users.js:528
-msgid "Revoke"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users-nav.js:15
-msgid "Database"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users.js:103
-msgid "Unit"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users.js:380
-msgid "User notification added"
-msgstr ""
-
-#: frontend/src/sys-admin/users/users.js:908
-#: frontend/src/sys-admin/users/users.js:929
-msgid "Import users"
-msgstr ""
-
-#: frontend/src/translation.js:5
-msgid "No statistics"
-msgstr ""
-
-#: frontend/src/translation.js:6
-msgid "No notifications"
-msgstr ""
-
-#: frontend/src/translation.js:8
-msgid "No admin login logs."
-msgstr ""
-
-#: frontend/src/translation.js:9
-msgid "No admin operation logs."
-msgstr ""
-
-#: frontend/src/translation.js:10
-msgid "Number of members"
-msgstr ""
-
-#: frontend/src/translation.js:11
-msgid "Max number of members"
-msgstr ""
-
-#: frontend/src/translation.js:12
-msgid "Last login"
-msgstr ""
-
-#: frontend/src/translation.js:13
-msgid "Select a group"
-msgstr ""
-
-#: frontend/src/translation.js:15
-msgid "Group Info"
-msgstr ""
-
-#: frontend/src/translation.js:16
-msgid "Run condition"
-msgstr ""
-
-#: frontend/src/translation.js:17
-msgid "No installed plugins"
-msgstr ""
-
-#: frontend/src/translation.js:18
-msgid "Plugin name"
-msgstr ""
-
-#: frontend/src/translation.js:19
-msgid "Last install time"
-msgstr ""
-
-#: frontend/src/translation.js:20
-msgid "Tip: Emails sent via third party email accounts are listed here."
-msgstr ""
-
-#: frontend/src/translation.js:21
-msgid "Cannot display creator column or last modifier column"
-msgstr ""
-
-#: frontend/src/translation.js:22
-msgid "Link table is deleted, unable to add related content."
-msgstr ""
-
-#: frontend/src/translation.js:23
-msgid "current browser"
-msgstr ""
-
-#: frontend/src/translation.js:24
-msgid "Help text"
-msgstr ""
-
-#: frontend/src/translation.js:27
-msgid "Browse documents"
-msgstr ""
-
-#: frontend/src/translation.js:28
-msgid "Condition"
-msgstr ""
-
-#: frontend/src/translation.js:29
-msgid "Base ID"
-msgstr ""
-
-#: frontend/src/translation.js:30
-msgid "Phone"
-msgstr ""
-
-#: frontend/src/translation.js:31
-msgid "modified"
-msgstr ""
-
-#: frontend/src/translation.js:32
-msgid "Insert row"
-msgstr ""
-
-#: frontend/src/translation.js:33
-msgid "Delete row"
 msgstr ""
 
 #: frontend/src/utils/role-status-utils.js:56

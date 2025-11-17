@@ -113,9 +113,6 @@ class OrgAdminUsers(APIView):
             user_info['is_active'] = user.is_active
             user_info['ctime'] = timestamp_to_isoformat_timestr(user.ctime)
 
-            # these two fields are designed to be compatible with the old API
-            user_info['self_usage'] = user_info.get('quota_usage')
-            user_info['quota'] = user_info.get('quota_total')
             try:
                 user_info['is_org_admin'] = True if is_org_staff(org.org_id, user.email) == 1 else False
             except Exception as e:
@@ -524,10 +521,6 @@ class OrgAdminSearchUsers(APIView):
             user_info['id'] = user.id
             user_info['is_active'] = user.is_active
             user_info['ctime'] = timestamp_to_isoformat_timestr(user.ctime)
-
-            # these two fields are designed to be compatible with the old API
-            user_info['self_usage'] = user_info.get('quota_usage')
-            user_info['quota'] = user_info.get('quota_total')
             user_info['workspace_id'] = workspace and workspace.id or None
             try:
                 user_info['is_org_admin'] = True if is_org_staff(org.org_id, user.email) == 1 else False

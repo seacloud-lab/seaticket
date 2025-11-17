@@ -66,17 +66,7 @@ def is_pro_version():
 
 
 def is_cluster_mode():
-    cfg = configparser.ConfigParser()
-    if 'SEAFILE_CENTRAL_CONF_DIR' in os.environ:
-        confdir = os.environ['SEAFILE_CENTRAL_CONF_DIR']
-    else:
-        confdir = os.environ['SEAFILE_CONF_DIR']
-    conf = os.path.join(confdir, 'seafile.conf')
-    cfg.read(conf)
-    if cfg.has_option('cluster', 'enabled'):
-        enabled = cfg.getboolean('cluster', 'enabled')
-    else:
-        enabled = False
+    enabled = False
 
     if enabled:
         logging.debug('cluster mode is enabled')
@@ -94,7 +84,7 @@ def render_permission_error(request, msg=None, extra_ctx=None):
 
     """
     ctx = {}
-    ctx['error_msg'] = msg or _('permission error')
+    ctx['error_msg'] = msg or _('Permission error')
 
     if extra_ctx:
         for k in extra_ctx:

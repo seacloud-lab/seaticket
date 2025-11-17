@@ -1,3 +1,5 @@
+import { gettext } from '@/constants';
+
 const ROW_HEIGHT_TYPE = {
   DEFAULT: 'default',
   DOUBLE: 'double',
@@ -21,9 +23,17 @@ const ROW_HEIGHT_CLASS_MAP = {
   128: 'sea-metadata-table-row-height-128-cell',
 };
 
+const ROW_HEIGHTS = [
+  { name: gettext('Default'), value: ROW_HEIGHT_TYPE.DEFAULT, icon: `row-height-${ROW_HEIGHT_TYPE.DEFAULT}` },
+  { name: gettext('Double'), value: ROW_HEIGHT_TYPE.DOUBLE, icon: `row-height-${ROW_HEIGHT_TYPE.DOUBLE}` },
+  { name: gettext('Triple'), value: ROW_HEIGHT_TYPE.TRIPLE, icon: `row-height-${ROW_HEIGHT_TYPE.TRIPLE}` },
+  { name: gettext('Quadruple'), value: ROW_HEIGHT_TYPE.QUADRUPLE, icon: `row-height-${ROW_HEIGHT_TYPE.QUADRUPLE}` },
+];
+
 export {
   ROW_HEIGHT_TYPE,
   ROW_HEIGHT_DEFAULT,
   ROW_HEIGHT_MAP,
-  ROW_HEIGHT_CLASS_MAP
+  ROW_HEIGHT_CLASS_MAP,
+  ROW_HEIGHTS,
 };

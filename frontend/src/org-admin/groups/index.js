@@ -70,8 +70,7 @@ class Groups extends Component {
       this.setState({
         orgGroups: this.state.orgGroups.filter(item => item.id !== group.id)
       });
-      let msg = gettext('Successfully deleted {name}');
-      msg = msg.replace('{name}', group.groupName);
+      const msg = gettext('%s deleted').replace('%s', group.groupName);
       toaster.success(msg);
     }).catch(error => {
       let errMessage = Utils.getErrorMsg(error);
