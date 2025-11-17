@@ -173,8 +173,11 @@ class Store {
 
   sendOperationCallback = (undoRedoHandler, { operation, error }) => {
     if (error) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.TABLE_ERROR, { error });
-      operation && operation.fail_callback && operation.fail_callback(error);
+      if (operation && operation.fail_callback) {
+        operation.fail_callback(error);
+      } else {
+        context.eventBus.dispatch(EVENT_BUS_TYPE.TABLE_ERROR, { error });
+      }
       this.sendNextOperation(undoRedoHandler);
       return;
     }
