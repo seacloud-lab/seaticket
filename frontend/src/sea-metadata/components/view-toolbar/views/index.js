@@ -19,7 +19,7 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, viewID, visibleViewsCount, insertView, modifyView, moveView, duplicateView, deleteView } = useViewsData();
+  const { isLoading, viewsData, viewID, visibleViewsCount, insertView, modifyView, moveView, duplicateView, deleteView, getViewById } = useViewsData();
 
   const allViews = useMemo(() => {
     if (isLoading) return [];
@@ -176,7 +176,7 @@ const Views = ({ view, toggleView }) => {
       {isShowViewNameDialog && (
         <CustomizeNameDialog
           title={isRenameRef.current ? gettext('Rename view') : gettext('New view')}
-          value={isRenameRef.current ? view.name : ''}
+          value={isRenameRef.current ? (getViewById(view._id)?.name || '') : ''}
           onToggle={closeViewNameDialog}
           onSubmit={isRenameRef.current ? (name) => modifyView(view._id, { name }) : insertView}
         />

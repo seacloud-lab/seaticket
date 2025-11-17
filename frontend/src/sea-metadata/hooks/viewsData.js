@@ -16,6 +16,10 @@ export const ViewsDataProvider = forwardRef(({
   const [isLoading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState({});
 
+  const getViewById = useCallback((viewID) => {
+    return viewsData.views.find(v => v._id === viewID);
+  }, [viewsData]);
+
   const insertView = useCallback((name) => {
     return context.insertView(name).then(res => {
       const view = res.data.view;
@@ -118,6 +122,7 @@ export const ViewsDataProvider = forwardRef(({
         duplicateView,
         moveView,
         toggleView,
+        getViewById,
       }}
     >
       {children}
