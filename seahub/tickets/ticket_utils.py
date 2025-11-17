@@ -213,6 +213,19 @@ def delete_select_option(seadb_api, project_uuid, column_name, option_id):
     res = seadb_api.delete_column_option(project_uuid, option_data)
     return res.get('success')
 
+def batch_delete_select_option(seadb_api, project_uuid, column_name, option_ids):
+    options, column_key = get_select_column(seadb_api, project_uuid, column_name)
+    tickets_table = get_tickets_table(seadb_api, project_uuid)
+    if not tickets_table or not column_key:
+        return None
+    option_data = {
+        'table_id': tickets_table.get('id'),
+        'column_key': column_key,
+        'option_ids': option_ids,
+    }
+    res = seadb_api.delete_column_option(project_uuid, option_data)
+    return res.get('success')
+
 def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name):
     sql = (
         f"SELECT {column_name}, COUNT(*) AS count "
@@ -284,11 +297,6 @@ def get_type_option_by_name(seadb_api, project_uuid, type_name):
 def update_type_option(seadb_api, project_uuid, type_id, update_data):
     return update_select_option(seadb_api, project_uuid, 'type', type_id, update_data)
 
-
-def delete_type_option(seadb_api, project_uuid, type_id):
-    return delete_select_option(seadb_api, project_uuid, 'type', type_id)
-
-
 def add_type_option(seadb_api, project_uuid, name, color, text_color):
     return add_select_option(
         seadb_api,
@@ -346,9 +354,6 @@ def add_tag_option(seadb_api, project_uuid, name, color, text_color, description
 
 def update_tag_option(seadb_api, project_uuid, tag_id, update_data):
     return update_select_option(seadb_api, project_uuid, 'tags', tag_id, update_data)
-
-def delete_tag_option(seadb_api, project_uuid, tag_id):
-    return delete_select_option(seadb_api, project_uuid, 'tags', tag_id)
 
 def filter_tickets_by_tag(seadb_api, project_uuid, tag_id):
     return filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_id])

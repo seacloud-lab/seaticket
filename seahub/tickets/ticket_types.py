@@ -15,8 +15,8 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
 from seahub.tickets.ticket_utils import get_type_column, filter_tickets_by_type, get_type_option_by_id, \
-    update_type_option, delete_type_option, add_type_option, get_ticket_counts_group_by_column_name, \
-    convert_ticket_select_column_name_to_option_id
+    update_type_option, delete_select_option, add_type_option, get_ticket_counts_group_by_column_name, \
+    convert_ticket_select_column_name_to_option_id, batch_delete_select_option
 from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
@@ -128,6 +128,47 @@ class TicketTypesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_type': project_type}, status=status.HTTP_201_CREATED)
+    
+
+    def delete(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        type_ids = request.data.get('type_ids', [])
+        if not type_ids:
+            error_msg = 'type_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI(username)
+            batch_delete_select_option(seadb_api, project_uuid, 'type', type_ids)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        return Response({'success': True})
 
 
 class TicketTypeAPIView(APIView):
@@ -283,7 +324,7 @@ class TicketTypeAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         try:
-            delete_type_option(seadb_api, project_uuid, type_id)
+            delete_select_option(seadb_api, project_uuid, 'type', type_id)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

@@ -70,6 +70,13 @@ export const TagsProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyDeleteTags]);
 
+  const deleteTags = useCallback((tagIDs) => {
+    return ticketsAPI.deleteTicketTags(projectUuid, tagIDs).then(res => {
+      applyDeleteTags(tagIDs);
+      return tagIDs;
+    });
+  }, [projectUuid, applyDeleteTags]);
+
   const modifyTag = useCallback((tagID, update) => {
     return ticketsAPI.modifyTicketTag(projectUuid, tagID, update).then(res => {
       applyModifyTags({ [tagID]: update });
@@ -117,6 +124,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
       createTag,
       modifyTag,
       deleteTag,
+      deleteTags,
       reload,
     }}>
       {children}

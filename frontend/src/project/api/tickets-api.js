@@ -267,6 +267,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  deleteTicketSubstates(projectUuid, substateIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
+    return this.req.delete(url, { data: { substate_ids: substateIds } });
+  }
+
   listTicketsBySubstate(projectUuid, substateId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
     return this.req.get(url);
@@ -353,6 +358,11 @@ class TicketsAPI {
   deleteTicketType(projectUuid, typeId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
     return this.req.delete(url);
+  }
+
+  deleteTicketTypes(projectUuid, typeIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/';
+    return this.req.delete(url, { data: { type_ids: typeIds } });
   }
 
   listTicketsByType(projectUuid, typeId) {
