@@ -450,6 +450,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `deleted` tinyint(1) NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `last_sync_log` longtext NULL,
+  `last_ai_processing_time` datetime(6) NULL,
   PRIMARY KEY (`id`),
   KEY `project_connection_created_at_e5618f4b`(`created_at`),
   KEY `project_connection_deleted_5n3d6`(`deleted`),

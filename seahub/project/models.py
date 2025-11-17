@@ -531,6 +531,7 @@ class ProjectConnections(models.Model):
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     is_active = models.BooleanField(default=True, null=False, db_index=True)
     last_sync_log = models.TextField(null=True)
+    last_ai_processing_time = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
@@ -549,6 +550,7 @@ class ProjectConnections(models.Model):
             'last_sync_time': self.last_sync_time,
             'status': self.status,
             'is_active': self.is_active,
+            'last_ai_processing_time': self.last_ai_processing_time,
         }
 
 
