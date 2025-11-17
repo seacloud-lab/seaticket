@@ -649,6 +649,8 @@ SEAQA_INDEXER_SERVER_URL = 'http://127.0.0.1:8888'
 SEAQA_AI_SERVER_URL = 'http://127.0.0.1:8887'
 AI_CHAT_TICKET_MAX_REPLIES_NUM = 20
 
+AI_PRICES = {}
+
 #####################
 # External settings #
 #####################
@@ -706,7 +708,7 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
         'PORT': 'SEAQA_MYSQL_DB_PORT',
         'USER': 'SEAQA_MYSQL_DB_USER',
         'PASSWORD': 'SEAQA_MYSQL_DB_PASSWORD',
-        'NAME': 'SEAQA_MYSQL_DB_DTABLE_DB_NAME'
+        'NAME': 'SEAQA_MYSQL_SEAQA_DB_NAME'
     }
 
     for db_key, env_key in _rewrite_db_env_key_map.items():

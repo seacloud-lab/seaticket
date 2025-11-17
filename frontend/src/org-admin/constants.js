@@ -3,6 +3,7 @@ import { gettext, siteRoot, enableMultiSAML, canUseSAML } from '@/constants';
 export const BAR_TYPE = {
   MANAGE: 'manage',
   SETTINGS: 'settings',
+  STATISTICS: 'statistics',
   PROJECTS: 'projects',
   USERS: 'users',
   GROUPS: 'groups',
@@ -23,6 +24,13 @@ export const BAR_CONFIG = {
     value: BAR_TYPE.SETTINGS,
     link: `${siteRoot}org/${BAR_TYPE.SETTINGS}/`,
     isActive: (bar) => bar === BAR_TYPE.SETTINGS,
+  },
+  [BAR_TYPE.STATISTICS]: {
+    icon: 'statistics',
+    name: gettext('Statistics'),
+    value: BAR_TYPE.STATISTICS,
+    link: `${siteRoot}org/${BAR_TYPE.STATISTICS}/`,
+    isActive: (bar) => bar === BAR_TYPE.STATISTICS,
   },
   [BAR_TYPE.PROJECTS]: {
     icon: 'home',
@@ -57,6 +65,7 @@ export const BAR_CONFIG = {
 export const BARS = [
   BAR_CONFIG[BAR_TYPE.MANAGE],
   BAR_CONFIG[BAR_TYPE.SETTINGS],
+  BAR_CONFIG[BAR_TYPE.STATISTICS],
   BAR_CONFIG[BAR_TYPE.PROJECTS],
   BAR_CONFIG[BAR_TYPE.USERS],
   BAR_CONFIG[BAR_TYPE.GROUPS],

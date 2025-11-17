@@ -19,6 +19,7 @@ import GroupInfo from './group-info';
 import GroupProjects from './group-projects';
 import GroupMembers from './group-members';
 import OrgSAMLConfig from './saml';
+import StatisticsAI from './statistics';
 import { BAR_CONFIG, BAR_TYPE, BARS } from './constants';
 
 import '@/css/layout.css';
@@ -80,6 +81,9 @@ class Org extends React.Component {
             <GroupInfo path={siteRoot + 'org/groups/:groupID/'} onCloseSidePanel={this.onCloseSidePanel} />
             <GroupProjects path={siteRoot + 'org/groups/:groupID/projects/'} onCloseSidePanel={this.onCloseSidePanel} />
             <GroupMembers path={siteRoot + 'org/groups/:groupID/members/'} onCloseSidePanel={this.onCloseSidePanel} />
+
+            {/* statistics */}
+            <StatisticsAI path={siteRoot + 'org/statistics'} onCloseSidePanel={this.onCloseSidePanel} />
 
             {enableMultiSAML && canUseSAML &&
               <OrgSAMLConfig path={siteRoot + 'org/saml-config'} onCloseSidePanel={this.onCloseSidePanel} />

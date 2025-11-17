@@ -11,6 +11,7 @@ from seahub.api2.endpoints.org_admin.settings import OrgAdminSettingsView
 from seahub.api2.endpoints.org_admin.projects import OrgAdminProjectsView, OrgAdminProjectView, \
     OrgAdminTrashProjectsView, OrgAdminTrashProjectView, OrgAdminSearchProjectsView
 from seahub.api2.endpoints.org_admin.saml_config import OrgSAMLConfigView, OrgVerifyDomain
+from seahub.api2.endpoints.org_admin.statistics import OrgAdminAIStatisticsView
 
 urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/groups/$', OrgAdminGroups.as_view(), name='api-v2.1-org-admin-groups'),
@@ -38,4 +39,7 @@ urlpatterns = [
 
     re_path(r'^(?P<org_id>\d+)/admin/saml-config/$', OrgSAMLConfigView.as_view(), name='api-v2.1-org-admin-saml-config'),
     re_path(r'^(?P<org_id>\d+)/admin/verify-domain/$', OrgVerifyDomain.as_view(), name='api-v2.1-org-admin-verify-domain'),
+
+    # AI statistics
+    re_path(r'^(?P<org_id>\d+)/admin/statistics/ai/$', OrgAdminAIStatisticsView.as_view(), name='api-v2.1-org-admin-ai-statistics'),
 ]

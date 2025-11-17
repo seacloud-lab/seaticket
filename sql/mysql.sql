@@ -548,6 +548,54 @@ CREATE TABLE `project_api_token` (
   KEY `project_api_token_app_name_idx` (`app_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `stats_ai_by_team` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `org_id` bigint(20) NOT NULL,
+  `month` date NOT NULL,
+  `model` varchar(100) NOT NULL,
+  `input_tokens` int(11) DEFAULT NULL,
+  `output_tokens` int(11) DEFAULT NULL,
+  `cost` double NOT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_month_model_h5f4v6m9_uniq_key` (`org_id`,`month`,`model`),
+  KEY `month_h3o2b6k7_key` (`month`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `stats_ai_by_owner` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `owner_id` varchar(255) NOT NULL,
+  `month` date NOT NULL,
+  `model` varchar(100) NOT NULL,
+  `input_tokens` int(11) DEFAULT NULL,
+  `output_tokens` int(11) DEFAULT NULL,
+  `cost` double NOT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `owner_month_model_g2u6b9c7_uniq_key` (`owner_id`,`month`,`model`),
+  KEY `month_g5v4l0d2_key` (`month`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `stats_ai_by_project` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(36) NOT NULL,
+  `date` date DEFAULT NULL,
+  `model` varchar(100) NOT NULL,
+  `owner` varchar(255) DEFAULT NULL,
+  `org_id` bigint(20) DEFAULT NULL,
+  `input_tokens` int(11) DEFAULT NULL,
+  `output_tokens` int(11) DEFAULT NULL,
+  `cost` double NOT NULL,
+  `created_at` datetime(6) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_date_model_uniq_key` (`project_uuid`,`date`,`model`),
+  KEY `date_owner_j3g9o2p1_key` (`date`,`owner`),
+  KEY `date_org_id_owner_h4b5k3v9_key` (`date`,`org_id`,`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `chat_tool_calls` (
   `id` bigint(11) NOT NULL AUTO_INCREMENT,
   `session_uuid` varchar(36) NOT NULL,

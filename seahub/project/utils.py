@@ -10,7 +10,14 @@ import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews, ChatMessages, ChatToolCalls, ChatSessions
+from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews, ChatMessages, ChatToolCalls, ChatSessions, \
+    StatsAIByTeam, StatsAIByOwner, StatsAIByProject
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
+from django.utils import timezone as django_timezone
+from seahub.organizations.models import OrgSettings, OrgMemberQuota
+from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
+from seahub.role_permissions.models import UserRole
 from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
@@ -20,7 +27,7 @@ from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
-from seahub.constants import PERMISSION_READ_WRITE
+from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
 from seahub.project.seadb_api import SeaDBAPI
@@ -255,11 +262,13 @@ def convert_record_to_ticket(params):
     return title, description
 
 
-def generate_ai_summary(content, username, connection_type, include_vector=True):
+def generate_ai_summary(content, username, connection_type, project_uuid, org_id, include_vector=True):
     params = {
         'content': content[:LLM_INPUT_CHARACTERS_LIMIT],
         'username': username,
         'connection_type': connection_type,
+        'project_uuid': project_uuid,
+        'org_id': org_id,
         'include_vector': include_vector,
     }
     payload = {'exp': int(time.time()) + 300, }
@@ -517,3 +526,65 @@ def ticket_to_json(project_uuid, ticket_id):
             'replied_at': replied_at
         })
     return json.dumps(whole_ticket_data, indent=4)
+
+
+def get_ai_credit_by_org_id(org_id):
+    role = ORG_DEFAULT
+    os = OrgSettings.objects.filter(org_id=org_id).first()
+    if os:
+        role = os.role
+    ai_credit_per_user = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
+    if ai_credit_per_user < 0:
+        return -1
+    max_user = OrgMemberQuota.objects.get_quota(org_id)
+    ai_credit = ai_credit_per_user * max_user
+
+    return ai_credit
+
+
+def get_ai_credit_by_owner_id(owner_id):
+    if '@seafile_group' in owner_id:
+        return -1
+
+    try:
+        user_role = UserRole.objects.get_user_role(owner_id)
+        role = user_role.role
+    except UserRole.DoesNotExist:
+        role = DEFAULT_USER
+
+    ai_credit = get_enabled_role_permissions_by_role(role).get('ai_credit_per_user', -1)
+    return ai_credit
+
+
+def get_ai_cost_by_org_id(org_id):
+    month = django_timezone.now().replace(day=1)
+    cost = StatsAIByTeam.objects.filter(org_id=org_id, month=month).aggregate(
+        total_cost=Coalesce(Sum('cost'), Value(0.0))
+    )['total_cost']
+    return cost
+
+
+def get_ai_cost_by_owner_id(owner_id):
+    month = django_timezone.now().replace(day=1)
+    cost = StatsAIByOwner.objects.filter(owner_id=owner_id, month=month).aggregate(
+        total_cost=Coalesce(Sum('cost'), Value(0.0))
+    )['total_cost']
+    return cost
+
+
+def check_ai_limit(username, org_id):
+    if org_id != -1:
+        # Organization user
+        credit = get_ai_credit_by_org_id(org_id)
+        if credit == -1:
+            return False
+        cost = get_ai_cost_by_org_id(org_id)
+    else:
+        # Personal user
+        credit = get_ai_credit_by_owner_id(username)
+        if credit == -1:
+            return False
+        cost = get_ai_cost_by_owner_id(username)
+
+    is_exceed = cost >= credit
+    return is_exceed

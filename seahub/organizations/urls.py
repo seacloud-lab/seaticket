@@ -36,4 +36,5 @@ urlpatterns = [
     re_path(r'^manage/$', react_fake_view, name='org_manage'),
     re_path(r'^settings/$', react_fake_view, name='org_settings'),
     re_path(r'^saml-config/$', react_fake_view, name='saml_config'),
+    re_path(r'^statistics/$', react_fake_view, name='org_statistics'),
 ]
