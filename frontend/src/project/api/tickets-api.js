@@ -310,6 +310,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  deleteTicketTags(projectUuid, tagIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/';
+    return this.req.delete(url, { data: { tag_ids: tagIds } });
+  }
+
   listTicketsByTag(projectUuid, tagId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
     return this.req.get(url);

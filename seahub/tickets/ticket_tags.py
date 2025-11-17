@@ -127,6 +127,9 @@ class TicketTagsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_tag': tag_option}, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, project_uuid):
+        pass
 
 
 class TicketTagAPIView(APIView):
