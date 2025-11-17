@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import eventBus from '@/utils/event-bus';
@@ -12,11 +12,6 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
   const [pageName, setPageName] = useState('');
   const [viewID, setViewID] = useState('');
-
-  const manualSyncCallbackRef = useRef(null);
-  const registerManualSyncCallback = useCallback((fn) => {
-    manualSyncCallbackRef.current = fn;
-  }, []);
 
   const resetURL = useCallback((pageType, viewID) => {
     const { origin } = location;
@@ -84,8 +79,6 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       togglePageType,
       updatePageName: setPageName,
       updateViewID: setViewID,
-      manualSyncCallbackRef,
-      registerManualSyncCallback,
     }}>
       {children}
     </ConnectionsPageContext.Provider>
