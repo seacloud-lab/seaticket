@@ -13,9 +13,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const {
-  projectUuid
-} = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title }) => {
   const { pageType, pageName, togglePageType } = useConnectionsPage();
@@ -44,12 +42,10 @@ const TopBar = ({ title }) => {
     );
   }, [pageType, title, pageName, togglePageType]);
 
-  const onManualSync = useCallback((record) => {
-    const id = record?.id;
-    if (!id) return;
-    connectionsAPI.triggerSync(projectUuid, id).then(() => {
+  const onManualSync = useCallback((connectionID) => {
+    connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {
       toaster.success(gettext('Sync task queued'));
-      modifyLocalConnectionRecord(id, { status: { ...record.status, last_sync_status: 'pending' } });
+      modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: 'pending' } });
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       let error_msg = '';
@@ -61,7 +57,7 @@ const TopBar = ({ title }) => {
       }
       toaster.danger(error_msg);
     });
-  }, [projectUuid, modifyLocalConnectionRecord]);
+  }, [modifyLocalConnectionRecord]);
 
   const renderRightChildren = useCallback(() => {
     if (pageType === CONNECTION_PAGE_TYPE.ALL) {
@@ -73,7 +69,7 @@ const TopBar = ({ title }) => {
       );
     } else {
       return (
-        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => { onManualSync({ id: pageType });}}>
+        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => { onManualSync(pageType);}}>
           <Icon symbol="sync" className="mr-2" />
           {gettext('Sync now')}
         </Button>
