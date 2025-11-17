@@ -384,7 +384,7 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            EmailTable.subject.name,
+            EmailTable.title.name,
         ]
     )
 
@@ -408,7 +408,7 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            EmailTable.updated_at.name,
+            EmailTable.sync_time.name,
         ]
     )
 
