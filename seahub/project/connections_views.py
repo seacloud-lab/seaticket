@@ -237,7 +237,7 @@ class ConnectionViewsDuplicateView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        record = ConnectionsViews.objects.ge_retcord(project_uuid, connection)
+        record = ConnectionsViews.objects.get_record(project_uuid, connection)
         if view_id not in record.views_ids:
             error_msg = 'view_id %s does not exists.' % view_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
