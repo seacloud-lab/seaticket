@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
 import { ModalHeader } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
@@ -19,9 +19,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const type = useMemo(() => record.type, [record]);
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
-    if (type === CONNECTION_TYPE.EMAIL) {
-      return _columns.slice(0, -1);
-    }
     return _columns;
   }, [type]);
   const customColumns = useMemo(() => columns.filter(c => {

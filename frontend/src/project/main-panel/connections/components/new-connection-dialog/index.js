@@ -24,9 +24,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.EMAIL) {
-      return _columns.slice(0, -1);
-    }
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns.slice(0, -1);
     return _columns;
   }, [type]);
 
