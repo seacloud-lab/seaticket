@@ -75,6 +75,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     });
   }, [title, description, type, assignees, tags, priority]);
 
+  const disabled = (!title || !title.trim()) || (!description || !description.text.trim()) || isSubmitting;
+
   return (
     <div className="sea-qa-project-new-ticket">
       <div className="sea-qa-project-ticket-user">
@@ -92,7 +94,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
             <div className="sea-qa-project-ticket-content mb-4">
-              <Label>{gettext('Description')}</Label>
+              <Label>
+                {gettext('Description')}
+                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+              </Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
                 ref={descriptionEditorRef}
@@ -113,7 +118,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               <UploadFilesButton onChange={handleFiles} />
               <div className="ml-2">
                 <Button className="mr-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.ALL)}>{gettext('Cancel')}</Button>
-                <Button onClick={onSubmit} color="primary" disabled={!title || !title.trim() || isSubmitting}>{gettext('Submit')}</Button>
+                <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
               </div>
             </div>
           </div>
