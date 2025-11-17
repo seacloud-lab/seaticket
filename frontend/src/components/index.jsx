@@ -8,6 +8,7 @@ import {
   CommonOperationConfirmationDialog,
   RestoreProjectDialog,
   ClearTrashDialog,
+  LinkVerifiedDialog,
 } from './dialog';
 import EmptyTip from './empty-tip';
 import Icon from './icon';
@@ -114,4 +115,5 @@ export {
   Switch,
   IconTooltip,
   SelectEditor,
+  LinkVerifiedDialog,
 };

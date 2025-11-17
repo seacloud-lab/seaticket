@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useRef, Fragment } from 'react';
+import { useCallback, useState, useEffect, Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading } from '@/components';
@@ -7,16 +7,9 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { MarkdownViewer } from '@seafile/seafile-editor';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { CONNECTION_TYPE } from '../../constants';
+import { CONNECTION_TYPE, SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../constants';
 
 import './index.css';
-
-const SUPPORT_DETAILS_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.SITE
-];
 
 const SUPPORT_DETAILS_LIST = [
   CONNECTION_TYPE.GITHUB_ISSUE,
@@ -24,12 +17,10 @@ const SUPPORT_DETAILS_LIST = [
 ];
 
 const RowDetailsDialog = ({
-  projectUuid, connection, currentRow, seaMetaDataRef,
-  setIsShowRowDetailsDialog
+  projectUuid, connection, row,
+  switchRow, onToggle,
 }) => {
-  const currentRowRef = useRef(null);
   const [rowDetails, setRowDetails] = useState(null);
-  const [rowDetailsTitle, setRowDetailsTitle] = useState('');
   const [errMessage, setErrMessage] = useState('');
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
 
@@ -48,10 +39,9 @@ const RowDetailsDialog = ({
     }));
   }, [connection]);
 
-  const getRowDetails = useCallback((row) => {
+  const getRowDetails = useCallback(() => {
     setStatus('loading');
-    if (SUPPORT_DETAILS_CONNECTION_TYPE.includes(connection.type)) {
-      setRowDetailsTitle(row.title || row.filename);
+    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(connection.type)) {
       const params = getFormatParamsByType(row);
       connectionsAPI.getConnectionRowDetail(projectUuid, connection.id, params).then((res) => {
         const detailData = getFormatDetailDataByType(res);
@@ -63,36 +53,20 @@ const RowDetailsDialog = ({
         setStatus('error');
       });
     }
-  }, [projectUuid, connection]);
+  }, [projectUuid, row, connection]);
 
-  const handleSwitchRows = Utils.debounce(useCallback((count) => {
-    const rowsData = seaMetaDataRef.current.getOrderRows();
-    const index = rowsData.findIndex(r => r._id === currentRowRef.current);
-    if (index === -1) return;
-
-    let newIndex = index + count;
-    if (newIndex > rowsData.length - 1) {
-      newIndex = 0;
-    }
-    if (newIndex < 0) {
-      newIndex = rowsData.length - 1;
-    }
-    const currentRow = rowsData[newIndex];
-    currentRowRef.current = currentRow._id;
-    getRowDetails(currentRow);
-  }, [projectUuid, connection, seaMetaDataRef]), 300);
+  const handleSwitchRows = Utils.debounce(useCallback((step) => {
+    switchRow(step);
+  }, [switchRow]), 300);
 
   const onClose = useCallback(() => {
-    setIsShowRowDetailsDialog(false);
+    onToggle && onToggle();
     setRowDetails(null);
-    setRowDetailsTitle('');
-    currentRowRef.current = null;
-  }, []);
+  }, [onToggle]);
 
   useEffect(() => {
-    currentRowRef.current = currentRow._id;
-    getRowDetails(currentRow);
-  }, []);
+    getRowDetails();
+  }, [projectUuid, row, connection]);
 
   const renderContentByType = useCallback((type, content) => {
     if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
@@ -102,6 +76,8 @@ const RowDetailsDialog = ({
     }
     return <MarkdownViewer value={content} showTOC={false} />;
   }, []);
+
+  const rowTitle = row.title || row.filename;
 
   return (
     <Modal className="sea-qa-row-details-container" isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>
@@ -123,7 +99,7 @@ const RowDetailsDialog = ({
               onClick={() => handleSwitchRows(1)}
             />
           </div>
-          <div className="text-truncate flex-1" title={rowDetailsTitle}>{rowDetailsTitle}</div>
+          <div className="text-truncate flex-1" title={rowTitle}>{rowTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>

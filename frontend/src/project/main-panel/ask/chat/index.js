@@ -226,7 +226,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
           )}
           {!loading && chatHistories.map((chat, chatIndex) => {
             return (
-              <ChatHistory key={`chat-${chatIndex}`} chat={chat} settings={settings} />
+              <ChatHistory key={`chat-${chatIndex}`} chat={chat} settings={settings} projectUuid={projectUuid} />
             );
           })}
           {!loading && isReply && (<Thinking />)}

@@ -10,7 +10,7 @@ import './index.css';
 
 const initDefinitionIndex = 3;
 
-const MoreDefinition = ({ element, attributes, editor, onClick, sources, settings }) => {
+const MoreDefinition = ({ element, attributes, editor, sources, settings, onClick, openDefinitionRecord }) => {
   const [isShowMore, setIsShowMore] = useState(false);
   const [definitionIndex, setDefinitionIndex] = useState(initDefinitionIndex);
 
@@ -51,6 +51,11 @@ const MoreDefinition = ({ element, attributes, editor, onClick, sources, setting
     onClick && onClick(event);
   }, [onClick]);
 
+  const handleOpenDefinitionRecord = useCallback((event, record) => {
+    setIsShowMore(false);
+    openDefinitionRecord && openDefinitionRecord(event, record);
+  }, [openDefinitionRecord]);
+
   return (
     <>
       <div
@@ -89,6 +94,7 @@ const MoreDefinition = ({ element, attributes, editor, onClick, sources, setting
               sources={sources}
               settings={settings}
               onClick={handleClick}
+              openDefinitionRecord={handleOpenDefinitionRecord}
             />
           </div>
         </CustomizePopover>
