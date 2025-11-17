@@ -28,7 +28,8 @@ from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
     check_ticket_reply_creation_interval, get_ticket_reply_by_pk, get_type_option_by_id, get_tags_column, check_ticket_creation_interval,\
-    get_status_option_by_id, get_substate_option_by_id, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id
+    get_status_option_by_id, get_substate_option_by_id, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id, \
+    get_tickets_by_ids
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -304,6 +305,66 @@ class TicketsAPIView(APIView):
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
+
+    def delete(self, request, project_uuid):
+        ticket_ids = request.data.get('ticket_ids')
+        if not ticket_ids:
+            error_msg = 'ticket_ids is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
+        exist_ticket_ids = [ticket.get('_pk') for ticket in tickets]
+        fail_ticket_ids = []
+        for ticket_id in ticket_ids:
+            if int(ticket_id) not in exist_ticket_ids:
+                fail_ticket_ids.append(ticket_id)
+        
+        need_delete_ticket_ids = list(set(ticket_ids) - set(fail_ticket_ids))
+        update_rows = []
+        for ticket_id in need_delete_ticket_ids:
+            update_row = {
+                'pk': int(ticket_id),
+                'row': {
+                    'deleted': True,
+                    'deleted_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                }
+            }
+            update_rows.append(update_row)
+        try:
+            seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'deleted_ticket_ids': need_delete_ticket_ids,
+            'fail_ticket_ids': fail_ticket_ids
+        })
 
 class TicketAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

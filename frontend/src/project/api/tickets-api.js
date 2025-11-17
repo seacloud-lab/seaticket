@@ -116,6 +116,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  deleteProjectTickets(projectUuid, ticketIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    return this.req.delete(url, { data: { ticket_ids: ticketIds } });
+  }
+
   listProjectTicketReplies(projectUuid, ticketNumber, page, perPage) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
     let params = {};

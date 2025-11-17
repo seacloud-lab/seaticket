@@ -78,6 +78,11 @@ def get_ticket(seadb_api, project_uuid, ticket_id):
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
+def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
+    ticket_ids_str = ",".join(ticket_ids)
+    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+    rows = seadb_api.query_rows(project_uuid, sql).get('results')
+    return rows
 
 def get_tickets(seadb_api, project_uuid):
     sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `deleted` = False"
