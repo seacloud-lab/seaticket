@@ -58,10 +58,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
     }
   }, [rows, rowHeight]);
 
-  if (!Array.isArray(rows) || rows.length === 0) {
-    if (typeof(emptyTip) === 'string') return (<EmptyTip text={emptyTip} />);
-    return (emptyTip);
-  }
+  const isEmpty = !Array.isArray(rows) || rows.length === 0;
 
   return (
     <div className="sea-custom-table" onScroll={onScroll} ref={tableRef}>
@@ -71,17 +68,25 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
           return (<div className="sea-custom-table-cell" key={key} style={{ width }}>{name}</div>);
         })}
       </div>
-      {startRenderIndex > 0 && (
-        <div style={{ height: startRenderIndex * rowHeight, width: '100%', flexShrink: 0 }}></div>
-      )}
-      <Rows rows={rows.slice(startRenderIndex, endRenderIndex)} columns={columns} rowHeight={rowHeight} { ...params } />
-      {(rows.length - endRenderIndex) > 0 && (
-        <div style={{ height: (rows.length - endRenderIndex) * rowHeight, width: '100%', flexShrink: 0 }}></div>
-      )}
-      {isLoading && (
-        <div className="sea-custom-table-row sea-custom-table-row-loading">
-          <Loading />
+      {isEmpty ? (
+        <div className="sea-custom-table-row" style={{ height: 'auto', borderBottom: 'none' }}>
+          {typeof(emptyTip) === 'string' ? (<EmptyTip text={emptyTip} />) : (emptyTip)}
         </div>
+      ) : (
+        <>
+          {startRenderIndex > 0 && (
+            <div style={{ height: startRenderIndex * rowHeight, width: '100%', flexShrink: 0 }}></div>
+          )}
+          <Rows rows={rows.slice(startRenderIndex, endRenderIndex)} columns={columns} rowHeight={rowHeight} { ...params } />
+          {(rows.length - endRenderIndex) > 0 && (
+            <div style={{ height: (rows.length - endRenderIndex) * rowHeight, width: '100%', flexShrink: 0 }}></div>
+          )}
+          {isLoading && (
+            <div className="sea-custom-table-row sea-custom-table-row-loading">
+              <Loading />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

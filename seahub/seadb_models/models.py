@@ -383,3 +383,15 @@ class EmailTable(BaseModel):
     @classmethod
     def gen_table_name(cls, connection_id):
         return ConnectionType.EMAIL.value + '_' + str(connection_id)
+
+class KnowledgeBaseTable(BaseModel):
+    question = MappedColumn('question', PropertyTypes.TEXT)
+    answer = MappedColumn('answer', PropertyTypes.TEXT)
+    creator = MappedColumn('creator', PropertyTypes.TEXT)
+    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)
+    last_modified_at = MappedColumn('last_modified_at', PropertyTypes.DATETIME)
+
+    @classmethod
+    def gen_table_name(cls):
+        return 'knowledge_base'

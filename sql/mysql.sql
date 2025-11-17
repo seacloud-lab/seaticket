@@ -605,3 +605,10 @@ CREATE TABLE `chat_tool_calls` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_session_uuid_message_id` (`session_uuid`,`message_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `knowledge_base_views`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(32) NOT NULL,
+  `details` longtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4;

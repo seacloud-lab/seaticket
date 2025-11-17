@@ -15,6 +15,9 @@ from .ai import ChatView, ConvertRecordToTicket, GenerateAISummaryView
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
+from seahub.knowledge_base.knowledge_base import KnowledgeBaseAPIView
+from seahub.knowledge_base.knowledge_base_views import KnowledgeBaseViewsAPI, KnowledgeBaseViewView, \
+    KnowledgeBaseViewsMoveView, KnowledgeBaseViewsDuplicateView
 
 
 urlpatterns = [
@@ -25,6 +28,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/settings/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
     # user: related users
@@ -60,6 +64,15 @@ urlpatterns = [
     re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
     re_path(r'^api/v2.1/ai/generate-ai-summary/$', GenerateAISummaryView.as_view(), name='api-v2.1-ai-generate-summary'),
+
+    # knowledge base
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base/$', KnowledgeBaseAPIView.as_view(), name='api-v2.1-knowledge-base-api'),
+
+    # knowledge base view
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base-views/$', KnowledgeBaseViewsAPI.as_view(), name='api-v2.1-knowledge-base-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base-views/(?P<view_id>.+)/$', KnowledgeBaseViewView.as_view(), name='api-v2.1-knowledge-base-view-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base-move-views/$', KnowledgeBaseViewsMoveView.as_view(),  name='api-v2.1-knowledge-base-move-view'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base-duplicate-views/$', KnowledgeBaseViewsDuplicateView.as_view(), name='api-v2.1-knowledge-base-duplicate-view'),
 
 ]
 

@@ -6,6 +6,7 @@ import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
 import Settings from './settings';
+import KnowledgeBase from './knowledge-base';
 
 import './index.css';
 
@@ -18,6 +19,7 @@ const Container = ({ activeBar, settings, modifySettings }) => {
   if (barKey === BAR_TYPE.SEARCH) return (<Search title={title} settings={settings} />); // search page
   if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} />); // tickets page
   if (barKey === BAR_TYPE.SETTINGS) return (<Settings title={title} settings={settings} modifySettings={modifySettings} />); // settings page
+  if (barKey === BAR_TYPE.KNOWLEDGE) return (<KnowledgeBase title={title} />);
   return (<Connections title={title} />); // connections page
 };
 
