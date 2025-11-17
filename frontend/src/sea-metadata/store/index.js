@@ -172,7 +172,7 @@ class Store {
   }
 
   sendOperationCallback = (undoRedoHandler, { operation, error }) => {
-    if (error) {      
+    if (error) {
       if (operation && operation.fail_callback) {
         operation.fail_callback(error);
       } else {
