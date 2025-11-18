@@ -436,22 +436,6 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
         project_uuid,
         table_id,
         [
-            KnowledgeBaseTable.question.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            KnowledgeBaseTable.answer.name,
-        ]
-    )
-
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
             KnowledgeBaseTable.creator.name,
         ]
     )
