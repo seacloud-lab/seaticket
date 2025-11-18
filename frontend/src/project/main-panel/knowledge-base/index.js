@@ -95,6 +95,9 @@ const Index = ({ title }) => {
     Rows: gettext('Records'),
   }), []);
 
+  const listUserInfo = useCallback((...params) => knowledgeBaseAPI.listUserInfo(...params), []);
+  const getCollaborators = useCallback(() => knowledgeBaseAPI.listProjectRelatedUsers(projectUuid), [projectUuid]);
+
   const openDialog = useCallback(() => {
     setEditMode(false);
     setEditRowId('');
@@ -139,8 +142,8 @@ const Index = ({ title }) => {
         </Button>
       </TopBar>
       <CollaboratorsProvider
-        listUserInfo={(...params) => knowledgeBaseAPI.listUserInfo(...params)}
-        getCollaborators={() => knowledgeBaseAPI.listProjectRelatedUsers(projectUuid)}
+        listUserInfo={listUserInfo}
+        getCollaborators={getCollaborators}
       >
         <SeaMetadata
           viewID={viewID}
