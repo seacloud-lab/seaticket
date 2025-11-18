@@ -8,6 +8,7 @@ import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { getRowById } from '../utils/row';
 import { isModF } from '@/utils/hotkey';
+import { gettext } from '@/constants';
 
 const MetadataContext = React.createContext(null);
 
@@ -243,7 +244,8 @@ export const MetadataProvider = forwardRef(({
       setLoading(false);
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);
-      toaster.danger(errorMsg);
+      setErrorMessage(errorMsg);
+      setLoading(false);
     });
     const eventBus = context.eventBus;
     const unsubscribeServerTableChanged = eventBus.subscribe(EVENT_BUS_TYPE.SERVER_DATA_CHANGED, tableChanged);
