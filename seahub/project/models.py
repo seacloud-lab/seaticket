@@ -430,10 +430,14 @@ class ProjectConnectionsManager(models.Manager):
             'last_index_status': 'pending',
             'total_records': 0,
             'last_sync_count': 0,
-            'last_sync_status': 'pending'
+            'last_sync_status': 'pending',
+        }
+        ai_status = {
+            'last_ai_processing_count': 0,
+            'last_ai_processing_status': 'pending',
         }
 
-        record = self.model(project=project, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status))
+        record = self.model(project=project, type=connection_type, name=name, config=encrypt_config(config), modifier=username, status=json.dumps(status), ai_status=json.dumps(ai_status))
         record.save()
         return record
 
@@ -531,6 +535,7 @@ class ProjectConnections(models.Model):
     deleted = models.BooleanField(default=False, null=False, db_index=True)
     is_active = models.BooleanField(default=True, null=False, db_index=True)
     last_sync_log = models.TextField(null=True)
+    ai_status = models.TextField(null=True)
     last_ai_processing_time = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
@@ -550,6 +555,7 @@ class ProjectConnections(models.Model):
             'last_sync_time': self.last_sync_time,
             'status': self.status,
             'is_active': self.is_active,
+            'ai_status': self.ai_status,
             'last_ai_processing_time': self.last_ai_processing_time,
         }
 

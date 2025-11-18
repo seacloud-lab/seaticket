@@ -40,8 +40,8 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             <p>{gettext('Last indexed count')}: {record.status.last_indexed_count}</p>
             <p>{gettext('Last index status')}: {record.status.last_index_status}</p>
             <p>{gettext('Last index time')}: {record.indexed_at}</p>
-            <p>{gettext('Last AI processing count')}: {record.status.last_ai_processing_count}</p>
-            <p>{gettext('Last AI processing status')}: {record.status.last_ai_processing_status}</p>
+            <p>{gettext('Last AI processing count')}: {record.ai_status.last_ai_processing_count}</p>
+            <p>{gettext('Last AI processing status')}: {record.ai_status.last_ai_processing_status}</p>
             <p>{gettext('Last AI processing time')}: {record.last_ai_processing_time}</p>
           </>
         }
