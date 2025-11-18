@@ -7,9 +7,10 @@ import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_MESSAGE_TYPE, AI_RESOLVE_TYPE } from '../constants';
+import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
 import Ticket from './ticket';
+import { useProblemToBeResolved } from '../hooks';
 
 import './index.css';
 
@@ -19,19 +20,17 @@ const MessageInput = forwardRef(({
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
   sendMessage,
-  initialResolveType,
-  initialTicket,
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
-  const [resolveType, setResolveType] = useState(initialResolveType || AI_RESOLVE_TYPE.ASK);
   const [value, setValue] = useState('');
-  const [ticket, setTicket] = useState(initialTicket || null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
   const rangeRef = useRef(null);
   const previewContentRef = useRef(null);
+
+  const { ticket, resolveType, clearProblem, updateResolveType, updateTicket, resetResolveType } = useProblemToBeResolved();
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
@@ -78,6 +77,7 @@ const MessageInput = forwardRef(({
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
     sendMessage({ resolveType, message: value, ticket: ticket?._id });
+    updateTicket(null, resolveType);
   }, [resolveType, value, ticket, sendMessage]);
 
   const onKeyUp = useCallback((event) => {
@@ -136,18 +136,6 @@ const MessageInput = forwardRef(({
     }
   }, [value]);
 
-  useEffect(() => {
-    if (initialResolveType) {
-      setResolveType(initialResolveType);
-    }
-  }, [initialResolveType]);
-
-  useEffect(() => {
-    if (initialTicket) {
-      setTicket(initialTicket);
-    }
-  }, [initialTicket]);
-
   useImperativeHandle(ref, () => ({
 
     clearInput: () => {
@@ -172,6 +160,13 @@ const MessageInput = forwardRef(({
     inputWrapper: inputRef?.current.parentNode.parentNode.parentNode,
 
   }), [value, setAsk, inputRef]);
+
+  useEffect(() => {
+    return () => {
+      clearProblem();
+      resetResolveType();
+    };
+  }, []);
 
   const disabled = isReply || readOnly;
 
@@ -199,8 +194,8 @@ const MessageInput = forwardRef(({
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
-              <ResolveType resolveType={resolveType} updateResolveType={setResolveType} />
-              <Ticket projectUuid={projectUuid} value={ticket} onChange={setTicket} />
+              <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
+              <Ticket projectUuid={projectUuid} value={ticket} onChange={(newTicket) => updateTicket(newTicket, resolveType)} />
             </div>
             <IconButton
               disabled={disabled}

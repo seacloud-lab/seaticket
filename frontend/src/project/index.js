@@ -10,6 +10,7 @@ import { CONNECTION_PAGE_TYPE } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
+import { ProblemToBeResolvedProvider } from './main-panel/ask/hooks';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 
@@ -100,30 +101,18 @@ const Project = () => {
     setSettings(settings);
   }, []);
 
-  useEffect(() => {
-    const unsubscribeSwitchBar = eventBus.subscribe(EVENT_BUS_TYPE.SWITCH_BAR, (payload = {}) => {
-      const { bar, child, isKeepSearch } = typeof payload === 'string' ? { bar: payload } : payload;
-      if (!bar) return;
-      const targetBar = Object.values(BAR_TYPE).includes(bar) ? bar : BAR_TYPE.CHAT;
-      const nextActiveBar = child ? [targetBar, child] : [targetBar];
-      resetURL(Boolean(isKeepSearch), nextActiveBar, child);
-      setActiveBar(nextActiveBar);
-    });
-    return () => {
-      unsubscribeSwitchBar();
-    };
-  }, [resetURL]);
-
   return (
     <I18nextProvider i18n={i18n}>
       <div className="sea-qa-project">
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <ConnectionsProvider projectUuid={projectUuid} >
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-            <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} />
-          </ConnectionsProvider>
+          <ProblemToBeResolvedProvider >
+            <ConnectionsProvider projectUuid={projectUuid} >
+              <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+              <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
+            </ConnectionsProvider>
+          </ProblemToBeResolvedProvider>
         )}
       </div>
     </I18nextProvider>
