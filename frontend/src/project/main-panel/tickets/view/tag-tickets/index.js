@@ -86,6 +86,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     // row
     insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),
     modifyRow: (...params) => ticketsAPI.modifyProjectTicket(projectUuid, ...params),
+    modifyRows: (...params) => ticketsAPI.modifyProjectTickets(projectUuid, ...params),
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),
     deleteRows: (...params) => ticketsAPI.deleteProjectTickets(projectUuid, ...params),
 

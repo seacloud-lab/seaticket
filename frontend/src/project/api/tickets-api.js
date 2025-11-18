@@ -106,6 +106,11 @@ class TicketsAPI {
     return this.req.put(url, form);
   }
 
+  modifyProjectTickets(projectUuid, tickets, isCopyPaste) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    return this.req.put(url, { 'tickets_data': tickets, 'is_copy_paste': isCopyPaste });
+  }
+
   getProjectTicket(projectUuid, ticketNumber) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     return this.req.get(url);
