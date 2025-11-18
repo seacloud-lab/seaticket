@@ -634,7 +634,10 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
     if not table_metadata:
-        return []
+        init_knowledge_base_seadb_table(seadb_api, project_uuid)
+        metadata = seadb_api.get_base_metadata(project_uuid)
+        tables_metadata = metadata.get('tables') or []
+        table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
     columns = table_metadata.get('columns') or []
     view_copy = view.copy()
     display_columns = []
