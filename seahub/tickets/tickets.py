@@ -177,26 +177,6 @@ class TicketsAPIView(APIView):
                 error_msg = 'type invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        # substate
-        substate_id = request.POST.get('substate')
-        substate_name = None
-        if substate_id is not None:
-            if substate_id == '':
-                substate_name = None
-            else:
-                substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
-                if not substate_option:
-                    error_msg = 'substate invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                # enforce cascade: status defaults to 'open' when creating
-                open_status_option = get_status_option_by_name(seadb_api, project_uuid, 'open')
-                allowed_substates = get_substate_options_by_status_option_id(seadb_api, project_uuid, open_status_option.get('id'))
-                allowed_ids = {opt.get('id') for opt in (allowed_substates or [])}
-                if substate_id not in allowed_ids:
-                    error_msg = 'substate not allowed for current status.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                substate_name = substate_option.get('name')
-
         priority = request.data.get('priority')
         if priority is not None:
             try:
@@ -274,6 +254,7 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_status = 'open'
+            substate_name = 'New'
             row = {
                 TicketsTable.title.name: title,
                 TicketsTable.description.name: description,
