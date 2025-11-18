@@ -610,5 +610,6 @@ CREATE TABLE `knowledge_base_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,
   `details` longtext NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `knowledge_base_views_project_uuid`(`project_uuid`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4;
