@@ -15,7 +15,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
+const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, workspaceID }) => {
   const [isReply, setReply] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [size, setSize] = useState('');
@@ -227,7 +227,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
           )}
           {!loading && chatHistories.map((chat, chatIndex) => {
             return (
-              <ChatHistory key={`chat-${chatIndex}`} chat={chat} settings={settings} projectUuid={projectUuid} />
+              <ChatHistory
+                key={`chat-${chatIndex}`}
+                chat={chat}
+                settings={settings}
+                projectUuid={projectUuid}
+                projectName={projectName}
+                workspaceID={workspaceID}
+              />
             );
           })}
           {!loading && isReply && (<Thinking />)}

@@ -42,6 +42,7 @@ const Main = ({ title, settings }) => {
               isShowSessions={isShowSessions}
               workspaceID={workspaceID}
               projectUuid={projectUuid}
+              projectName={projectName}
               settings={settings}
             />
             {isShowSessions && (<Sessions sessionId={pageType} permission={permission} />)}

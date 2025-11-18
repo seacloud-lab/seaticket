@@ -7,7 +7,7 @@ import { CHAT_MESSAGE_TYPE } from '../constants';
 
 import './index.css';
 
-const ChatHistory = ({ chat, settings, projectUuid }) => {
+const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
   const { message, isUserSpeak, type } = chat;
   const ref = useRef(null);
 
@@ -24,7 +24,14 @@ const ChatHistory = ({ chat, settings, projectUuid }) => {
   if (Object.keys(message).length === 0) return null;
   return (
     <MessageBox isUserSpeak={isUserSpeak}>
-      <CommonMessage message={message} settings={settings} projectUuid={projectUuid} ref={ref} />
+      <CommonMessage
+        message={message}
+        settings={settings}
+        projectUuid={projectUuid}
+        projectName={projectName}
+        workspaceID={workspaceID}
+        ref={ref}
+      />
       {!isUserSpeak && (type !== CHAT_MESSAGE_TYPE.TIP) && (<MessageOperations getAIReply={getAIReply} getMessageHTML={getMessageHTML} />)}
     </MessageBox>
   );

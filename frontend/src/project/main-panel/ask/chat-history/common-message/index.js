@@ -15,7 +15,7 @@ import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/const
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
+const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName, workspaceID }, ref) => {
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
@@ -33,14 +33,19 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
       const { type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title } = source;
-      const urlObject = url ? new URL(url) : '';
+      let validURL = url || '';
+      if (!validURL) {
+        validURL = location.origin + '/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connection_id + '/';
+      }
+      const urlObject = new URL(validURL);
+
       return {
         type,
         connection_id,
         connection_record_id: _id,
         icon: getConnectionIcon(type),
         connection_name: connection_name,
-        url: url ? urlObject.href : '',
+        url: urlObject.href,
         title: title,
         content: content_preview,
         mtime: bumped_at || mtime || updated_at || '',
@@ -97,7 +102,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
       value = value + `\n\n${sourcesString}` ;
     }
     return { aiReply: value, sources };
-  }, [message]);
+  }, [message, projectName, workspaceID]);
 
   const openConnectionRecord = useCallback((event, connectionInfo) => {
     setCurrentConnection({ type: connectionInfo.type, id: connectionInfo.connection_id });
