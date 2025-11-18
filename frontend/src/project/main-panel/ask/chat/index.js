@@ -121,12 +121,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
             ai_reply: item.content,
             sources: Array.isArray(item.sources) ? item.sources : []
           };
-          if (item.tool_calls) {
-            msgContent.tool_calls = Array.isArray(item.tool_calls) ? item.tool_calls : [];
-          }
-          if (item.thought_process) {
-            msgContent.thought_process = item.thought_process;
-          }
+          msgContent.tool_calls = Array.isArray(item.tool_calls) ? item.tool_calls : [];
+          msgContent.thought_process = item.thought_process;
         } catch (e) {
           console.error(e);
           msgContent = { ai_reply: item.content, sources: [] };

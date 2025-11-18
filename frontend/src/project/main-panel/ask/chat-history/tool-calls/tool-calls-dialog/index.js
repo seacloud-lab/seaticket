@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
-import ToolCallDetails from './tool-call-details';
-import StepMarkdownViewer from './markdown-viewer';
+import ProcessDetails from '../../thought-process/thought-process-dialog/process-details';
+import StepMarkdownViewer from '../../thought-process/thought-process-dialog/markdown-viewer';
 
 import './index.css';
 
@@ -56,9 +56,9 @@ const ToolCallsDialog = ({ value: propsValue, onToggle }) => {
       <ModalHeader toggle={onToggle}>{gettext('Tool calls')}</ModalHeader>
       <ModalBody>
         {!isLoading && (
-          <div className="sea-qa-ai-tool-calls">
+          <div className="sea-qa-ai-thought-process">
             {value.map((v, index) => {
-              return (<ToolCallDetails value={v} key={index} />);
+              return (<ProcessDetails value={v} key={index} />);
             })}
           </div>
         )}
