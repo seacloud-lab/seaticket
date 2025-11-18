@@ -5,7 +5,7 @@ import { IconButton, toaster, Icon, Option } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
 import { validateTitle } from '@/utils/validate';
-import { TICKET_STATUS } from '../../../constants';
+import { TICKET_STATE } from '../../../constants';
 
 import './index.css';
 
@@ -14,7 +14,7 @@ const Header = forwardRef(({
   className,
   title: propsTitle,
   id,
-  statusOption,
+  stateOption,
   typeOption,
   copyLink,
   modifyTitle,
@@ -70,10 +70,10 @@ const Header = forwardRef(({
     getDom: () => domRef.current,
   }), [domRef]);
   const statusClassNameMap = {
-    [TICKET_STATUS.OPEN]: 'open',
-    [TICKET_STATUS.COMPLETED]: 'completed',
-    [TICKET_STATUS.NOT_PLANNED]: 'not_planned',
-    [TICKET_STATUS.DUPLICATE]: 'duplicate',
+    [TICKET_STATE.OPEN]: 'open',
+    [TICKET_STATE.COMPLETED]: 'completed',
+    [TICKET_STATE.NOT_PLANNED]: 'not_planned',
+    [TICKET_STATE.DUPLICATE]: 'duplicate',
   };
   return (
     <div className={classnames('sea-qa-project-ticket-header', className)} ref={domRef}>
@@ -109,9 +109,9 @@ const Header = forwardRef(({
         </div>
       </div>
       <div className="sea-qa-project-ticket-status-wrapper">
-        <div className={classnames('sea-qa-project-ticket-status', statusClassNameMap[statusOption?.value])}>
-          <Icon symbol={statusOption?.icon} />
-          <span>{statusOption?.statusName}</span>
+        <div className={classnames('sea-qa-project-ticket-status', statusClassNameMap[stateOption?.value])}>
+          <Icon symbol={stateOption?.icon} />
+          <span>{stateOption?.statusName}</span>
         </div>
         {typeOption && (<Option className="ml-2" option={typeOption} />)}
       </div>

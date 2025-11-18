@@ -452,13 +452,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Last modified time'),
       type: CellType.MTIME,
     },
-    'sync_time': {
-      display_name: gettext('Last sync time'),
-      type: CellType.DATE,
-      data: {
-        format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
-      }
-    },
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,

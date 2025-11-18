@@ -17,17 +17,17 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
   const { tagsData } = useTagsData();
   const { typesData } = useTypesData();
 
-  const statusColumnKey = useMemo(() => context.getSetting('statusColumnKey', 'status'));
+  const stateColumnKey = useMemo(() => context.getSetting('stateColumnKey', 'status'));
   const typeColumnKey = useMemo(() => context.getSetting('typeColumnKey', 'type'));
   const tagsColumnKey = useMemo(() => context.getSetting('tagsColumnKey', 'tags'));
 
   const onStatusChange = useCallback((newValue) => {
-    const filterIndex = filters.findIndex(filter => filter.column_key === statusColumnKey);
+    const filterIndex = filters.findIndex(filter => filter.column_key === stateColumnKey);
     const filter = filters[filterIndex];
     const newFilters = filters.slice(0);
     newFilters[filterIndex] = { ...filter, filter_term: newValue };
     onChange && onChange(newFilters);
-  }, [filters, statusColumnKey, onChange]);
+  }, [filters, stateColumnKey, onChange]);
 
   const onTagsChange = useCallback((newValue) => {
     const filterIndex = filters.findIndex(filter => filter.column_key === tagsColumnKey);
@@ -53,7 +53,7 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
           {filters.map(filter => {
             const { column_key, filter_term } = filter;
             const column = getColumnByKey(columns, column_key);
-            if (column && column_key === statusColumnKey) {
+            if (column && column_key === stateColumnKey) {
               return (<StatusFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
             }
             if (column && column_key === typeColumnKey && typesData) {

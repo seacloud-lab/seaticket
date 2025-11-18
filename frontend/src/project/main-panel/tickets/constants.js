@@ -1,7 +1,7 @@
 import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
 
-export const TICKET_STATUS = {
+export const TICKET_STATE = {
   OPEN: '0001',
   CLOSED: '0002'
 };
@@ -17,29 +17,29 @@ export const TICKET_SUBSTATE = {
 
 export const TICKET_OPENED_STATUS = [
   '',
-  TICKET_STATUS.OPEN,
+  TICKET_STATE.OPEN,
   TICKET_SUBSTATE.REOPEN,
   TICKET_SUBSTATE.WORKING_ON,
   TICKET_SUBSTATE.NEW,
 ];
 
 export const TICKET_CLOSED_STATUS = [
-  TICKET_STATUS.CLOSED,
+  TICKET_STATE.CLOSED,
   TICKET_SUBSTATE.COMPLETED,
   TICKET_SUBSTATE.NOT_PLANNED,
   TICKET_SUBSTATE.DUPLICATE,
 ];
 
-export const TICKET_STATUS_CONFIG = {
-  [TICKET_STATUS.OPEN]: {
-    value: TICKET_STATUS.OPEN,
+export const TICKET_STATE_CONFIG = {
+  [TICKET_STATE.OPEN]: {
+    value: TICKET_STATE.OPEN,
     icon: 'circle-dot',
     statusName: gettext('Open'), // Applied to ticket status display
     shortName: gettext('Open'), // Applied to status toggle btn
     name: gettext('Open'), // Applied to status editor
   },
-  [TICKET_STATUS.CLOSED]: {
-    value: TICKET_STATUS.CLOSED,
+  [TICKET_STATE.CLOSED]: {
+    value: TICKET_STATE.CLOSED,
     icon: 'circle-check',
     statusName: gettext('Close'),
     shortName: gettext('Close ticket'),
@@ -48,9 +48,9 @@ export const TICKET_STATUS_CONFIG = {
   }
 };
 
-export const TICKET_STATUS_OPTIONS = [
-  { id: '0001', value: TICKET_STATUS.OPEN, name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
-  { id: '0002', value: TICKET_STATUS.CLOSED, name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+export const TICKET_STATE_OPTIONS = [
+  { id: '0001', value: TICKET_STATE.OPEN, name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0002', value: TICKET_STATE.CLOSED, name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
 ];
 
 export const TICKET_SUBSTATE_OPTIONS = [
@@ -172,13 +172,13 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     frozen: true,
     is_required: true,
   },
-  'status': {
+  'state': {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('Status'),
     editable: true,
     is_required: true,
     data: {
-      options: TICKET_STATUS_OPTIONS
+      options: TICKET_STATE_OPTIONS
     }
   },
   'type': {
@@ -193,7 +193,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     editable: true,
     modify_data_able: true,
   },
-  'description': {
+  'content': {
     type: CellType.LONG_TEXT,
     display_name: gettext('Description'),
     editable: true,
@@ -215,12 +215,12 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Participants'),
     editable: false,
   },
-  'created_at': {
+  'created_time': {
     type: CellType.CTIME,
     display_name: gettext('Create time'),
     editable: false,
   },
-  'updated_at': {
+  'updated_time': {
     type: CellType.MTIME,
     display_name: gettext('Last updated time'),
     editable: false,
@@ -234,19 +234,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.CHECKBOX,
     display_name: gettext('Deleted'),
     editable: false,
-  },
-  'delete_at': {
-    type: CellType.DATE,
-    display_name: gettext('Delete at'),
-    editable: false,
-    data: { format: 'YYYY-MM-DD HH:mm:ss' }
-  },
-  'reply_updated_at': {
-    type: CellType.DATE,
-    display_name: gettext('Comment updated at'),
-    editable: false,
-    data: { format: 'YYYY-MM-DD HH:mm:ss' }
-  },
+  }
 };
 
 export const TICKET_NOT_DISPLAY_COLUMNS = [

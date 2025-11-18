@@ -1,5 +1,5 @@
 import dayjs from '@/utils/dayjs';
-import { TICKET_STATUS } from '../constants';
+import { TICKET_STATE } from '../constants';
 
 class Reply {
   constructor(object) {
@@ -9,14 +9,14 @@ class Reply {
     this.creator = object.creator || '';
 
     this.content = object.content || '';
-    this.created_at = object.created_at || '';
-    this.updated_at = object.updated_at || '';
+    this.created_time = object.created_time || '';
+    this.updated_time = object.updated_time || '';
 
     // update
-    if (this.created_at) {
-      this.created_at = dayjs(this.created_at).fromNow();
+    if (this.created_time) {
+      this.created_time = dayjs(this.created_time).fromNow();
     }
-    this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
+    this.updated_time = this.updated_time ? dayjs(this.updated_time).fromNow() : '--';
   }
 
   _update = (content = '') => {
@@ -35,8 +35,8 @@ class Ticket {
     this._pk = object._pk || '';
 
     this.title = object.title || '';
-    this.content = object.description || '';
-    this.status = object.status || TICKET_STATUS.OPEN;
+    this.content = object.content || '';
+    this.state = object.state || TICKET_STATE.OPEN;
     this.substate = object.substate || '';
     this.type = object.type || '';
     this.tags = object.tags || [];
@@ -46,21 +46,19 @@ class Ticket {
     this.participants = object.participants || [];
 
     this.creator = object.creator || '';
-    this.created_at = object.created_at || '';
+    this.created_time = object.created_time || '';
 
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
-    this.reply_updated_at = object.reply_updated_at || '';
 
-    this.updated_at = object.updated_at || '';
+    this.updated_time = object.updated_time || '';
 
     // format date
-    if (this.created_at) {
-      this.created_at = dayjs(this.created_at).fromNow();
+    if (this.created_time) {
+      this.created_time = dayjs(this.created_time).fromNow();
     }
 
-    this.updated_at = this.updated_at ? dayjs(this.updated_at).fromNow() : '--';
-    this.reply_updated_at = this.reply_updated_at ? dayjs(this.reply_updated_at).fromNow() : '--';
+    this.updated_time = this.updated_time ? dayjs(this.updated_time).fromNow() : '--';
 
     if (this.replies) {
       this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
@@ -78,19 +76,17 @@ class Ticket {
         this[key] = value;
       }
     });
-    this.updated_at = dayjs(new Date()).fromNow();
+    this.updated_time = dayjs(new Date()).fromNow();
     return this;
   };
 
   _create_reply = (reply) => {
     this.replies.push(new Reply(reply));
-    this.reply_updated_at = dayjs(new Date()).fromNow();
     return this;
   };
 
   _delete_reply = (replyID) => {
     this.replies = this.replies.filter(reply => reply.id !== replyID);
-    this.reply_updated_at = dayjs(new Date()).fromNow();
     return this;
   };
 
@@ -99,7 +95,6 @@ class Ticket {
     let reply = this.replies[replyIndex];
     reply = reply._update(content);
     this.replies[replyIndex] = reply;
-    this.reply_updated_at = dayjs(new Date()).fromNow();
     return this;
   };
 }
@@ -110,8 +105,8 @@ class TicketForTickets {
     this._pk = object._pk || '';
 
     this.title = object.title || '';
-    this.description = object.description || '';
-    this.status = object.status || TICKET_STATUS.OPEN;
+    this.content = object.content || '';
+    this.state = object.state || TICKET_STATE.OPEN;
     this.substate = object.substate || '';
     this.type = object.type || '';
     this.tags = object.tags || [];
@@ -121,13 +116,12 @@ class TicketForTickets {
     this.participants = object.participants || [];
 
     this.creator = object.creator || '';
-    this.created_at = object.created_at || '';
+    this.created_time = object.created_time || '';
 
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
-    this.reply_updated_at = object.updated_at || '';
 
-    this.updated_at = object.updated_at || '';
+    this.updated_time = object.updated_time || '';
 
     if (this.replies) {
       this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));

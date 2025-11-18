@@ -289,14 +289,12 @@ class FilterTermModifier(object):
     THIS_YEAR = 'this_year'
 
 
-TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'description', 'status', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_at', 'updated_at']
-
-
+TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'state', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_time', 'updated_time']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk','title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time'],
-    ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'sync_time', 'ai_summary', 'ai_processed_time'],
+    ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.EMAIL.value: ['_pk', 'email_from', 'email_to', 'title', 'cc', 'content', 'modified_time',
                                  'is_sender']
 }

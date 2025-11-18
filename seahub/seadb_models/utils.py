@@ -325,7 +325,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
     # Create tickets table index for seadb
     ticket_index_columns = [
         TicketsTable.priority.name,
-        TicketsTable.status.name,
+        TicketsTable.state.name,
         TicketsTable.substate.name,
         TicketsTable.type.name,
         TicketsTable.tags.name,

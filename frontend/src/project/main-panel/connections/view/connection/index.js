@@ -238,7 +238,7 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           const stateColumnIndex = columns.findIndex(c => c.name === 'state');
           if (stateColumnIndex > -1) {
             const stateColumn = columns[stateColumnIndex];
-            context.setSetting('statusColumnKey', stateColumn.key);
+            context.setSetting('stateColumnKey', stateColumn.key);
             let options = stateColumn.data?.options || [];
             options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
             columns[stateColumnIndex].data = { ...stateColumn.data, options };

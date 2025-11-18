@@ -173,17 +173,17 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
 
 # format tickets
 def convert_ticket_select_column_name_to_option_id(columns, ticket):
-    """In-place convert ticket fields from names to ids for status/type/tags/substate."""
+    """In-place convert ticket fields from names to ids for state/type/tags/substate."""
 
     if not ticket:
         return ticket
-    if ticket.get('status'):
-        column = get_column_from_columns_by_name(columns, 'status')
+    if ticket.get('state'):
+        column = get_column_from_columns_by_name(columns, 'state')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
-            if opt.get('name') == ticket.get('status'):
-                ticket['status'] = opt.get('id')
+            if opt.get('name') == ticket.get('state'):
+                ticket['state'] = opt.get('id')
     if ticket.get('type'):
         column = get_column_from_columns_by_name(columns, 'type')
         column_data = column.get('data') or {}
