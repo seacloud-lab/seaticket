@@ -5,7 +5,7 @@ import isHotkey from 'is-hotkey';
 import SearchInput from '@/components/search-input';
 import HiddenConnections from './hidden-connections';
 import { gettext } from '@/constants';
-import KeyCodes from '@/components/select-option-group/KeyCodes';
+import { KeyCodes } from '@/constants/keyCodes';
 import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
