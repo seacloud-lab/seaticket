@@ -1269,11 +1269,20 @@ class ChatSessions(models.Model):
         }
 
 class ChatToolCallsManager(models.Manager):
-    pass
+    def get_tool_calls_from_session_uuid_and_message_ids(self, session_uuid, message_ids):
+        """
+        returns a map {message_id: <tool_calls>}
+        """
+        results = {}
+        for record in self.filter(session_uuid=session_uuid, message_id__in=message_ids):
+            record_to_dict = record.to_dict()
+            results[record.message_id] = record_to_dict['tool_calls']
+        
+        return results
 
 class ChatToolCalls(models.Model):
     id = models.BigAutoField(primary_key=True)
-    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
+    session_uuid = models.CharField(max_length=36, null=False)
     message_id = models.CharField(max_length=4, null=False)
     tool_calls = models.TextField()
 
@@ -1289,11 +1298,16 @@ class ChatToolCalls(models.Model):
         ]
 
     def to_dict(self):
+        try:
+            tool_calls = json.loads(self.tool_calls)
+        except:
+            tool_calls = {}
+
         return {
             'id': self.id,
             'session_uuid': self.session_uuid,
             'message_id': self.message_id,
-            'tool_calls': json.loads(self.tool_calls),
+            'tool_calls': tool_calls,
         }
 
 class ChatMessagesManager(models.Manager):
@@ -1323,13 +1337,13 @@ class ChatMessages(models.Model):
     ]
 
     id = models.BigAutoField(primary_key=True)
-    session_uuid = models.CharField(max_length=36, null=False, db_index=True)
+    session_uuid = models.CharField(max_length=36, null=False)
     message_id = models.CharField(max_length=4, null=False)
     username = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
     sources = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_agent_mode = models.BooleanField()
 
@@ -1339,12 +1353,17 @@ class ChatMessages(models.Model):
         db_table = 'chat_messages'
         constraints = [
             models.Index(
-                fields=['session_uuid', 'message_id'],
-                name='idx_session_uuid_message_id'
+                fields=['session_uuid', 'created_at'],
+                name='idx_session_uuid_created_at'
             )
         ]
 
     def to_dict(self):
+        try:
+            sources = json.loads(self.sources)
+        except:
+            sources = []
+
         return {
             'id': self.id,
             'session_uuid': self.session_uuid,
@@ -1352,7 +1371,7 @@ class ChatMessages(models.Model):
             'username': self.username,
             'role': self.role,
             'content': self.content,
-            'sources': self.sources,
+            'sources': sources,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'is_agent_mode': self.is_agent_mode
