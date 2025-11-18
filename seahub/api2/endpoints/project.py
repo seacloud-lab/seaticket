@@ -656,11 +656,12 @@ class ChatMessagesView(APIView):
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if message.is_agent_mode:
-                    if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
-                        data['thought_process'] = thought_process
-                elif tool_calls := format_tool_calls(tool_calls_history.get(message.message_id, {})):
-                    data['tool_calls'] = tool_calls
+                if message.role == 'assistant':
+                    if message.is_agent_mode:
+                        if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
+                            data['thought_process'] = thought_process
+                    elif tool_calls := format_tool_calls(tool_calls_history.get(message.message_id, {})):
+                        data['tool_calls'] = tool_calls
                 messages_data.append(data)
 
             return Response({'messages': messages_data})
