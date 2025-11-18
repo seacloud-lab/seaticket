@@ -100,16 +100,11 @@ const AllViews = ({
 
   return (
     <>
-      <div
-        className='sea-metadata-view-container sea-metadata-all-views-container'
-        onClick={openDropdownMenu}
-      >
-        <div
-          className={classnames('sea-metadata-view-item', { 'active': isSelected })}
-          ref={viewRef}
-        >
-          {gettext('All {count} views').replace('{count}', allViews.length)}
-          <div className="sea-metadata-view-item-operation-down">{<Icon symbol="down" />}</div>
+      <div className='sea-metadata-view-container sea-metadata-all-views-container' onClick={openDropdownMenu}>
+        <div className={classnames('sea-metadata-view-item', { 'active': isSelected })} ref={viewRef}>
+          <div className="sea-metadata-view-item-operation-down">
+            <Icon symbol="down" />
+          </div>
         </div>
       </div>
       {isShowDropdownMenu && (

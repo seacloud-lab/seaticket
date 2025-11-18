@@ -1,4 +1,9 @@
 @import url('../view-item/index.css');
+
+.sea-metadata-views .sea-metadata-all-views-container {
+  padding: 0 8px;
+}
+
 .sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item {
   height: 24px;
   padding: 2px 4px;
@@ -11,6 +16,18 @@
 
 .sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item.active::before {
   display: none;
+}
+
+.sea-metadata-views .sea-metadata-all-views-container .sea-qa-icon-svg-down {
+  width: 1rem !important;
+  height: 1rem !important;
+  color: #666;
+}
+
+.sea-metadata-views .sea-metadata-all-views-container .sea-metadata-view-item {
+  width: 24px;
+  height: 24px;
+  padding: 4px 6px;
 }
 
 .sea-metadata-view-dropdown-menu .all-views-search-wrapper {
