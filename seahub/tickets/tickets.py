@@ -335,7 +335,6 @@ class TicketsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         
-        print(tickets_data, '---tickets_data')
         ticket_id_to_row = {}
         for ticket_data in tickets_data:
             row = ticket_data.get('row', {})
