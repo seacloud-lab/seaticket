@@ -629,7 +629,7 @@ def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk
     return record
 
 
-def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit):
+def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
@@ -642,7 +642,8 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit):
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, start, limit, include_deleted=False)
+    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit,
+                          include_deleted=False)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])

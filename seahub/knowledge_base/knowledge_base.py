@@ -125,7 +125,7 @@ class KnowledgeBaseAPIView(APIView):
             view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
             records, columns = list_knowledge_base_records(
-                seadb_api, project_uuid, view, start, limit)
+                seadb_api, project_uuid, view, start, limit, username)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
