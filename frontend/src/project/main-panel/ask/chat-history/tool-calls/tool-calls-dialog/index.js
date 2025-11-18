@@ -12,40 +12,35 @@ const ToolCallsDialog = ({ value: propsValue, onToggle }) => {
   const [value, setValue] = useState([]);
 
   useEffect(() => {
-    let value = [
-      {
-        name: gettext('Tool calls'),
-        children: propsValue.map((toolCall, toolCallNum) => {
-          let stepInfos = [{
-            name: gettext('Arguments'),
-            children: Object.entries(toolCall.arguments || {}).map(([argumentKey, argumentValue]) => {
-              return `${argumentKey}: ${argumentValue}`;
-            })
-          }];
-          if (toolCall.output) {
-            stepInfos.push({
-              name: gettext('Output'),
-              children: [
-                { value: toolCall.output, formatter: StepMarkdownViewer }
-              ]
-            });
-          }
-          if (toolCall.error) {
-            stepInfos.push({
-              name: gettext('Error'),
-              children: [
-                { name: gettext('Error type'), value: toolCall.error.type },
-                { name: gettext('Error message'), value: toolCall.error.message },
-              ]
-            });
-          }
-          return {
-            name: `${gettext('Step')} ${toolCallNum + 1}: ${toolCall.name}`,
-            children: stepInfos
-          };
+    const value = propsValue.map((toolCall, toolCallNum) => {
+      let stepInfos = [{
+        name: gettext('Arguments'),
+        children: Object.entries(toolCall.arguments || {}).map(([argumentKey, argumentValue]) => {
+          return `${argumentKey}: ${argumentValue}`;
         })
+      }];
+      if (toolCall.output) {
+        stepInfos.push({
+          name: gettext('Output'),
+          children: [
+            { value: toolCall.output, formatter: StepMarkdownViewer }
+          ]
+        });
       }
-    ];
+      if (toolCall.error) {
+        stepInfos.push({
+          name: gettext('Error'),
+          children: [
+            { name: gettext('Error type'), value: toolCall.error.type },
+            { name: gettext('Error message'), value: toolCall.error.message },
+          ]
+        });
+      }
+      return {
+        name: `${gettext('Step')} ${toolCallNum + 1}: ${toolCall.name}`,
+        children: stepInfos
+      };
+    });
 
     setValue(value);
     setLoading(false);

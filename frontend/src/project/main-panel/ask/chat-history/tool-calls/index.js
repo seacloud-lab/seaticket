@@ -12,7 +12,7 @@ const ToolCalls = ({ value }) => {
     setIsShowDetails(true);
   }, []);
 
-  if (!value) return null;
+  if (!Array.isArray(value) || value.length === 0) return null;
 
   return (
     <>

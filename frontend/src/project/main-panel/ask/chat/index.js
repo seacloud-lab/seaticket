@@ -107,6 +107,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
 
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
+        const { is_agent_mode } = item;
         if (item.role === 'user') {
           return new ChatMessage({
             _id: item.id,
@@ -129,14 +130,10 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
         }
         let newChatData = {
           [CHAT_MESSAGE_TYPE.AI_REPLY]: msgContent.ai_reply,
-          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources
+          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
+          [CHAT_MESSAGE_TYPE.TOOL_CALLS]: is_agent_mode ? [] : msgContent.tool_calls,
+          [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: is_agent_mode ? msgContent.thought_process : null,
         };
-        if (msgContent.tool_calls) {
-          newChatData[CHAT_MESSAGE_TYPE.TOOL_CALLS] = msgContent.tool_calls;
-        }
-        if (msgContent.thought_process) {
-          newChatData[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS] = msgContent.thought_process;
-        }
         return new ChatMessage({
           _id: item.id,
           message: newChatData,
