@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import Option from './option';
 import SearchInput from '../search-input';
-import KeyCodes from './KeyCodes';
+import { KeyCodes } from '@/constants/keyCodes';
 import ClickOutside from '../click-outside';
 
 import './index.css';
