@@ -5,12 +5,15 @@ import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useTags, useTypes, useSubstates, useTicketsPage, useDataCache } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
-import { BAR_TYPE } from '@/project/constants/bar';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
+import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE } from '@/project/main-panel/ask/constants';
+import { setResolveTicketData } from '@/project/main-panel/ask/resolve-ticket-store';
+import eventBus from '@/utils/event-bus';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
@@ -159,6 +162,18 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return tools;
   }, [workspaceID, projectName]);
 
+  const handleResolveTicketByAI = useCallback((ticket) => {
+    if (!ticket) return;
+    const data = {
+      resolveType: AI_RESOLVE_TYPE.AGENT,
+      ticket,
+    };
+    setResolveTicketData(data);
+    eventBus.dispatch(EVENT_BUS_TYPE.RESOLVE_TICKET_BY_AI, data);
+    eventBus.dispatch(EVENT_BUS_TYPE.SWITCH_BAR, { bar: BAR_TYPE.CHAT });
+    eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, ASK_PAGE_TYPE.NEW);
+  }, []);
+
   const createContextMenuOptions = useCallback(({
     isGroupView,
     selectedRange,
@@ -246,15 +261,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     });
     list.push({
       label: gettext('Resolve ticket by AI'),
-      callback: () => {
-        sessionStorage.setItem('resolve_ticket_data', JSON.stringify({
-          resolveType: 'agent',
-          ticket: row
-        }));
-        const { origin } = location;
-        const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
-        window.location.href = url;
-      }
+      callback: () => handleResolveTicketByAI(row)
     });
 
     list.push('Divider');
@@ -275,7 +282,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       }
     });
     return list;
-  }, [projectName, workspaceID]);
+  }, [projectName, workspaceID, handleResolveTicketByAI]);
 
   if (isLoading || isTypesLoading || isSubstatesLoading) return null;
 

@@ -8,4 +8,6 @@ export const EVENT_BUS_TYPE = {
   AI_REPLY: 'ai_reply',
   NEW_TYPE: 'new-type',
   NEW_SUBSTATE: 'new-substate',
+  SWITCH_BAR: 'switch_bar',
+  RESOLVE_TICKET_BY_AI: 'resolve_ticket_by_ai',
 };

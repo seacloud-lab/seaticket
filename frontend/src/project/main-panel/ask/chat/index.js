@@ -13,6 +13,7 @@ import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { consumeResolveTicketData } from '../resolve-ticket-store';
 
 import './index.css';
 
@@ -166,25 +167,31 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings }) => {
     setReply(Boolean(session?.is_replying));
   }, [session?.is_replying]);
 
-  useEffect(() => {
-    const storedData = sessionStorage.getItem('resolve_ticket_data');
-    if (storedData) {
-      try {
-        const { resolveType, ticket } = JSON.parse(storedData);
-        if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
-          setInitialResolveType(resolveType);
-        }
-        if (ticket) {
-          const ticketForAI = new TicketForAI(ticket);
-          setInitialTicket(ticketForAI);
-        }
-        sessionStorage.removeItem('resolve_ticket_data');
-      } catch (error) {
-        console.error('Failed to parse stored ticket data:', error);
-        sessionStorage.removeItem('resolve_ticket_data');
-      }
+  const applyResolveTicketData = useCallback((data) => {
+    if (!data) return;
+    const { resolveType, ticket } = data;
+    if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
+      setInitialResolveType(resolveType);
+    } else {
+      setInitialResolveType(null);
+    }
+    if (ticket) {
+      const ticketForAI = new TicketForAI(ticket);
+      setInitialTicket(ticketForAI);
+    } else {
+      setInitialTicket(null);
     }
   }, []);
+
+  useEffect(() => {
+    applyResolveTicketData(consumeResolveTicketData());
+    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.RESOLVE_TICKET_BY_AI, (data) => {
+      applyResolveTicketData(data);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [applyResolveTicketData]);
 
   useEffect(() => {
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
