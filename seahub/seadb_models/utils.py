@@ -470,7 +470,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql('tickets', display_columns, view_copy, start, limit, username, include_deleted=True)
+    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit, include_deleted=True)
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])

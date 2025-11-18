@@ -1045,7 +1045,7 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, view, start=0, limit=0, username='', include_deleted=False):
+    def __init__(self, table_name, columns, view, username='', start=0, limit=0, include_deleted=False):
         self.table_name = table_name
         self.view = view
         self.columns = columns
