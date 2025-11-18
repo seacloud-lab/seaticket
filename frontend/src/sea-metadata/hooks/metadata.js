@@ -8,7 +8,6 @@ import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { getRowById } from '../utils/row';
 import { isModF } from '@/utils/hotkey';
-import { gettext } from '@/constants';
 
 const MetadataContext = React.createContext(null);
 
