@@ -101,20 +101,6 @@ const Project = () => {
     setSettings(settings);
   }, []);
 
-  useEffect(() => {
-    const unsubscribeSwitchBar = eventBus.subscribe(EVENT_BUS_TYPE.SWITCH_BAR, (payload = {}) => {
-      const { bar, child, isKeepSearch } = typeof payload === 'string' ? { bar: payload } : payload;
-      if (!bar) return;
-      const targetBar = Object.values(BAR_TYPE).includes(bar) ? bar : BAR_TYPE.CHAT;
-      const nextActiveBar = child ? [targetBar, child] : [targetBar];
-      resetURL(Boolean(isKeepSearch), nextActiveBar, child);
-      setActiveBar(nextActiveBar);
-    });
-    return () => {
-      unsubscribeSwitchBar();
-    };
-  }, [resetURL]);
-
   return (
     <I18nextProvider i18n={i18n}>
       <div className="sea-qa-project">

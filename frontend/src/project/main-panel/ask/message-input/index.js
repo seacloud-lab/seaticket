@@ -20,8 +20,6 @@ const MessageInput = forwardRef(({
   projectUuid,
   placeholder = gettext('What problem you want to solve?'),
   sendMessage,
-  initialResolveType,
-  initialTicket,
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
@@ -137,18 +135,6 @@ const MessageInput = forwardRef(({
       previewContentRef.current.innerText = value;
     }
   }, [value]);
-
-  useEffect(() => {
-    if (initialResolveType) {
-      setResolveType(initialResolveType);
-    }
-  }, [initialResolveType]);
-
-  useEffect(() => {
-    if (initialTicket) {
-      setTicket(initialTicket);
-    }
-  }, [initialTicket]);
 
   useImperativeHandle(ref, () => ({
 

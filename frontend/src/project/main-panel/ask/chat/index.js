@@ -6,14 +6,12 @@ import { ChatMessage } from '../models';
 import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { chatAPI } from '../../../api';
-import { TicketForAI } from '../../tickets/models';
 import ChatHistory from '../chat-history';
 import Thinking from '../thinking';
 import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import { consumeResolveTicketData } from '../resolve-ticket-store';
 
 import './index.css';
 
@@ -24,8 +22,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   const [height, setHeight] = useState(window.innerHeight - 44);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
-  const [initialResolveType, setInitialResolveType] = useState(null);
-  const [initialTicket, setInitialTicket] = useState(null);
 
   const timer = useRef(null);
   const wrapperRef = useRef(null);
@@ -165,32 +161,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     setReply(Boolean(session?.is_replying));
   }, [session?.is_replying]);
 
-  const applyResolveTicketData = useCallback((data) => {
-    if (!data) return;
-    const { resolveType, ticket } = data;
-    if (resolveType && Object.values(AI_RESOLVE_TYPE).includes(resolveType)) {
-      setInitialResolveType(resolveType);
-    } else {
-      setInitialResolveType(null);
-    }
-    if (ticket) {
-      const ticketForAI = new TicketForAI(ticket);
-      setInitialTicket(ticketForAI);
-    } else {
-      setInitialTicket(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    applyResolveTicketData(consumeResolveTicketData());
-    const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.RESOLVE_TICKET_BY_AI, (data) => {
-      applyResolveTicketData(data);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [applyResolveTicketData]);
-
   useEffect(() => {
     if (sessionId !== ASK_PAGE_TYPE.NEW) {
       messageInputRef.current?.setAsk([session?.problem || '']);
@@ -274,8 +244,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           projectUuid={projectUuid}
           placeholder={isEmpty ? undefined : ''}
           sendMessage={sendMessage}
-          initialResolveType={initialResolveType}
-          initialTicket={initialTicket}
         />
       </div>
     </div>
