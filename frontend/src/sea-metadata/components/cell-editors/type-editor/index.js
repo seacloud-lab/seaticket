@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getTypesOptions } from '../../../utils/column';
 import Main from '@/components/option-editor/main';
 import { useTypesData } from '../../../hooks';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -60,6 +61,7 @@ const TypeEditor = forwardRef(({
         isMultiple={false}
         isSearchEnabled={false}
         value={value}
+        emptyTip={gettext('No types available')}
         options={options}
         onChange={onSubmit}
         onPressTab={onPressTab}
