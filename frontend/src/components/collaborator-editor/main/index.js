@@ -24,7 +24,7 @@ const Main = forwardRef(({
   onToggle,
   onHidden,
 }, ref) => {
-  const [value, setValue] = useState(propsValue);
+  const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const displayCollaborators = useMemo(() => {
@@ -171,9 +171,9 @@ const Main = forwardRef(({
 
   return (
     <div className="collaborator-editor-container">
-      {isShowDeleteArea && (
+      {isMultiple && isShowDeleteArea && (
         <div className="collaborator-editor-selected-container">
-          {value.map(email => {
+          {Array.isArray(value) && value.map(email => {
             const collaborator = collaboratorsMap[email];
             if (!collaborator) return null;
             return (

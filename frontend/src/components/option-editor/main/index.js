@@ -16,7 +16,7 @@ const Main = forwardRef(({
   isMultiple = false,
   isSearchEnabled = true,
   placeholder,
-  emptyTip,
+  emptyTip = gettext('No options available'),
   value: propsValue = '',
   options = [],
   maxHeight = 200,
@@ -28,7 +28,7 @@ const Main = forwardRef(({
   onPressTab,
   addToolText = gettext('Add tag'),
 }, ref) => {
-  const [value, setValue] = useState(propsValue);
+  const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [displayOptions, setDisplayOptions] = useState(options);
   const [highlightIndex, setHighlightIndex] = useState(-1);

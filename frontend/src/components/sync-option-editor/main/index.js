@@ -23,7 +23,7 @@ const Main = forwardRef(({
   onPressTab,
   onSearch,
 }, ref) => {
-  const [value, setValue] = useState(propsValue);
+  const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [options, setOptions] = useState([]);
   const [highlightIndex, setHighlightIndex] = useState(-1);
