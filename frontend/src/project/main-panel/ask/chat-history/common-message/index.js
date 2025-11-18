@@ -33,14 +33,14 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid }, ref) => {
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
       const { type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title } = source;
-      const urlObject = new URL(url);
+      const urlObject = url ? new URL(url) : '';
       return {
         type,
         connection_id,
         connection_record_id: _id,
         icon: getConnectionIcon(type),
         connection_name: connection_name,
-        url: urlObject.href,
+        url: url ? urlObject.href : '',
         title: title,
         content: content_preview,
         mtime: bumped_at || mtime || updated_at || '',
