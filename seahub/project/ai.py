@@ -20,7 +20,7 @@ from seahub.project.models import Projects, ChatSessions, \
 from seahub.project.utils import check_project_permission, get_ai_reply, \
     convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
     get_file_from_s3_web_crawl, generate_embeddings_2d_with_tsne
-from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT
+from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, MAX_EMBEDDING_ANALYSIS_RECORDS
 from seahub.seadb_models.utils import list_connection_view_records_with_columns
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -531,7 +531,7 @@ class EmbeddingAnalysisView(APIView):
             column_names=['_pk', 'title', 'ai_summary', 'ai_summary_vector']
             records = list_connection_view_records_with_columns(
                 seadb_api, project_uuid, project_connection, view, column_names, 
-                 start=0, limit=10000, username=username
+                 start=0, limit=MAX_EMBEDDING_ANALYSIS_RECORDS, username=username
             )
         except Exception as e:
             logger.error(f'Error fetching records for embedding analysis: {e}')
