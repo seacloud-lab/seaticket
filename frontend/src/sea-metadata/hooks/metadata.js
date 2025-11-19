@@ -43,6 +43,7 @@ export const MetadataProvider = forwardRef(({
   }, []);
 
   const reloadMetadata = useCallback(() => {
+    if (!storeRef.current?.data) return;
     setLoading(true);
     storeRef.current.reload(PER_LOAD_NUMBER).then(() => {
       setMetadata(storeRef.current.data);
@@ -232,6 +233,7 @@ export const MetadataProvider = forwardRef(({
 
   // init
   useEffect(() => {
+    let isCancelled = false;
     setLoading(true);
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
@@ -239,13 +241,25 @@ export const MetadataProvider = forwardRef(({
     storeRef.current = new Store({ viewId: viewID, typesData, tagsData });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
-      setMetadata(storeRef.current.data);
-      setLoading(false);
+      if (!isCancelled) {
+        setMetadata(storeRef.current.data);
+        setLoading(false);
+      }
     }).catch(error => {
-      const errorMsg = Utils.getErrorMsg(error);
-      setErrorMessage(errorMsg);
-      setLoading(false);
+      if (!isCancelled) {
+        const errorMsg = Utils.getErrorMsg(error);
+        setErrorMessage(errorMsg);
+        setLoading(false);
+      }
     });
+
+    return () => {
+      isCancelled = true;
+      storeRef.current.destroy();
+    };
+  }, [localStorageNamePrefix, viewID]);
+
+  useEffect(() => {
     const eventBus = context.eventBus;
     const unsubscribeServerTableChanged = eventBus.subscribe(EVENT_BUS_TYPE.SERVER_DATA_CHANGED, tableChanged);
     const unsubscribeTableChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED, tableChanged);
@@ -258,10 +272,6 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
 
     return () => {
-      // if (context) {
-      //   context.destroy();
-      // }
-      storeRef.current.destroy();
       unsubscribeServerTableChanged();
       unsubscribeTableChanged();
       unsubscribeHandleTableError();
@@ -272,8 +282,7 @@ export const MetadataProvider = forwardRef(({
       unsubscribeMoveRow();
       unsubscribeLoading();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localStorageNamePrefix, viewID]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,

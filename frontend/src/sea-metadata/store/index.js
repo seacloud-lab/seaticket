@@ -52,8 +52,8 @@ class Store {
     if (!view) {
       throw Error('View_not_exist');
     }
-    return context.getMetadata({ view_id: view._id, start: this.startIndex, limit })?.then(res => {
-      if (!this.mounted) return;
+    if (!this.mounted) return;
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit })?.then(res => {
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || []);
       let data = new Metadata({ rows, columns, view });
