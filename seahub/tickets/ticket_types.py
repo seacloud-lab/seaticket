@@ -13,10 +13,10 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_permission
-from seahub.tickets.ticket_utils import get_type_column, filter_tickets_by_type, get_type_option_by_id, \
-    update_type_option, delete_select_option, add_type_option, get_ticket_counts_group_by_column_name, \
-    convert_ticket_select_column_name_to_option_id, batch_delete_select_option
+from seahub.project.utils import check_project_permission, get_current_table_metadata
+from seahub.tickets.ticket_utils import update_select_option, add_select_option, get_ticket_counts_group_by_column_name, \
+    convert_ticket_select_column_name_to_option_id, filter_tickets_by_select, TABLE_TICKETS, \
+    get_column_from_metadata_by_name, batch_delete_select_option
 from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
@@ -50,21 +50,10 @@ class TicketTypesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        try:
-            seadb_api = SeaDBAPI(username)
-            project_types, _ = get_type_column(seadb_api, project_uuid)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        tickets_count_dict = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
-        if not tickets_count_dict:
-            tickets_count_dict = {}
-        for project_type in project_types:
-            project_type['tickets_count'] = tickets_count_dict.get(project_type['name'], 0)
+        seadb_api = SeaDBAPI(username)
+        type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
         return Response({
-            'project_types': project_types,
+            'project_types': type_options,
         })
 
     def post(self, request, project_uuid):
@@ -107,28 +96,28 @@ class TicketTypesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # main
-        try:
-            seadb_api = SeaDBAPI(username)
-            project_types, _ = get_type_column(seadb_api, project_uuid)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        seadb_api = SeaDBAPI(username)
+        base_metadata = seadb_api.get_base_metadata(project_uuid)
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+        table_id = table_meta.get('id')
+        type_column = get_column_from_metadata_by_name(table_meta, 'type')
+        column_data = type_column.get('data') or {}
+        existing_options = column_data.get('options', []) or []
 
-        if name in [project_type['name'] for project_type in project_types]:
+        if any(opt.get('name') == name for opt in (existing_options or [])):
             error_msg = 'type already exists.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # main
         try:
-            project_type = add_type_option(seadb_api, project_uuid, name, color, text_color)
+            option_data = {'color': color, 'text_color': text_color}
+            project_type = add_select_option(seadb_api, project_uuid, table_id, type_column.get('key'), name, option_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_type': project_type}, status=status.HTTP_201_CREATED)
-    
 
     def delete(self, request, project_uuid):
         """
@@ -162,12 +151,15 @@ class TicketTypesAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            batch_delete_select_option(seadb_api, project_uuid, 'type', type_ids)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(table_meta, 'type')
+            batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), type_ids)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         return Response({'success': True})
 
 
@@ -200,9 +192,18 @@ class TicketTypeAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+
         try:
+            type_option = None
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(table_meta, 'type')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            for opt in options:
+                if opt.get('id') == type_id:
+                    type_option = opt
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -212,17 +213,15 @@ class TicketTypeAPIView(APIView):
             error_msg = 'type option not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        # main
         try:
-            tickets, columns = filter_tickets_by_type(
-                    seadb_api, project_uuid, [type_id])
+            tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'type', [type_option.get('name')])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         for ticket in tickets:
-            convert_ticket_select_column_name_to_option_id(seadb_api, project_uuid, ticket)
+            convert_ticket_select_column_name_to_option_id(table_meta, ticket)
         return Response({
             'tickets': tickets,
             'columns': columns,
@@ -260,8 +259,16 @@ class TicketTypeAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            type_option = None
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(table_meta, 'type')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            for opt in options:
+                if opt.get('id') == type_id:
+                    type_option = opt
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -280,7 +287,9 @@ class TicketTypeAPIView(APIView):
                 update_data['color'] = color
             if text_color:
                 update_data['text_color'] = text_color
-            update_type_option(seadb_api, project_uuid, type_id, update_data)
+            table_id = table_meta.get('id')
+            column_key = column.get('key')
+            update_select_option(seadb_api, project_uuid, table_id, column_key, type_option, type_id, update_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -313,18 +322,26 @@ class TicketTypeAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            type_option = get_type_option_by_id(seadb_api, project_uuid, type_id)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not type_option:
-            error_msg = 'type not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        try:
-            delete_select_option(seadb_api, project_uuid, 'type', type_id)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(tickets_table_metadata, 'type')
+            table_id = tickets_table_metadata.get('id')
+            column_key = column.get('key')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            option = None
+            for opt in options:
+                if opt.get('id') == type_id:
+                    option = opt
+            if not option:
+                error_msg = 'type not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            option_data = {
+                'table_id': table_id,
+                'column_key': column_key,
+                'option_id': type_id,
+            }
+            seadb_api.delete_column_option(project_uuid, option_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
