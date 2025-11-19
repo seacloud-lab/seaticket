@@ -74,9 +74,9 @@ const Index = ({ title }) => {
           question: gettext('Question'),
           answer: gettext('Answer'),
           creator: gettext('Creator'),
-          created_at: gettext('Created at'),
+          created_time: gettext('Created time'),
           last_modifier: gettext('Last modifier'),
-          last_modified_at: gettext('Last modified at'),
+          modified_time: gettext('Modified time'),
         };
         let columns = (res?.data?.columns || [])
           .filter(c => c.name !== '_pk')
@@ -84,8 +84,8 @@ const Index = ({ title }) => {
             let col = c;
             if (c.name === 'creator') col = { ...col, type: 'creator' };
             if (c.name === 'last_modifier') col = { ...col, type: 'last-modifier' };
-            if (c.name === 'created_at') col = { ...col, type: 'ctime' };
-            if (c.name === 'last_modified_at') col = { ...col, type: 'mtime' };
+            if (c.name === 'created_time') col = { ...col, type: 'ctime' };
+            if (c.name === 'modified_time') col = { ...col, type: 'mtime' };
             if (c.name === 'answer') col = { ...col, type: 'long-text' };
             return { ...col, display_name: DISPLAY_NAME_MAP[c.name] || col.display_name || col.name };
           });
@@ -121,6 +121,8 @@ const Index = ({ title }) => {
   const openDialog = useCallback(() => {
     setEditMode(false);
     setEditRowId('');
+    setQuestion('');
+    setAnswer('');
     setDialogOpen(true);
   }, []);
   const openEditDialog = useCallback((row) => {
@@ -130,7 +132,13 @@ const Index = ({ title }) => {
     setAnswer(row.answer || '');
     setDialogOpen(true);
   }, []);
-  const closeDialog = useCallback(() => setDialogOpen(false), []);
+  const closeDialog = useCallback(() => {
+    setDialogOpen(false);
+    setEditMode(false);
+    setEditRowId('');
+    setQuestion('');
+    setAnswer('');
+  }, []);
 
   const onSubmit = useCallback(() => {
     const q = question.trim();

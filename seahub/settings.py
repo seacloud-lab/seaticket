@@ -210,6 +210,8 @@ INSTALLED_APPS = [
     'seahub.two_factor',
     'seahub.role_permissions',
     'seahub.project',
+    'seahub.tickets',
+    'seahub.knowledge_base',
     'seahub.organizations',
     'seahub.registration',
     'seahub.sysadmin_extra',

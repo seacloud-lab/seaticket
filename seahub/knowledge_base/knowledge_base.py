@@ -12,7 +12,8 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
-from seahub.project.models import Projects, KnowledgeBaseViews
+from seahub.project.models import Projects
+from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission
 from seahub.seadb_models.models import KnowledgeBaseTable
@@ -73,9 +74,9 @@ class KnowledgeBaseAPIView(APIView):
                 KnowledgeBaseTable.question.name: question,
                 KnowledgeBaseTable.answer.name: answer_text,
                 KnowledgeBaseTable.creator.name: username,
-                KnowledgeBaseTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                KnowledgeBaseTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 KnowledgeBaseTable.last_modifier.name: username,
-                KnowledgeBaseTable.last_modified_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                KnowledgeBaseTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
 
              }
             res = seadb_api.insert_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [row])
@@ -198,7 +199,7 @@ class KnowledgeBaseAPIView(APIView):
             KnowledgeBaseTable.question.name: question,
             KnowledgeBaseTable.answer.name: answer_text,
             KnowledgeBaseTable.last_modifier.name: username,
-            KnowledgeBaseTable.last_modified_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+            KnowledgeBaseTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
 
          }
         seadb_api = SeaDBAPI(request.user.username)

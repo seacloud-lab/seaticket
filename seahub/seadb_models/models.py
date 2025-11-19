@@ -386,11 +386,11 @@ class EmailTable(BaseModel):
 
 class KnowledgeBaseTable(BaseModel):
     question = MappedColumn('question', PropertyTypes.TEXT)
-    answer = MappedColumn('answer', PropertyTypes.TEXT)
+    answer = MappedColumn('answer', PropertyTypes.TEXT, {'compressed': True})
     creator = MappedColumn('creator', PropertyTypes.TEXT)
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)
-    last_modified_at = MappedColumn('last_modified_at', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
 
     @classmethod
     def gen_table_name(cls):

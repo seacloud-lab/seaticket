@@ -444,7 +444,7 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
         project_uuid,
         table_id,
         [
-            KnowledgeBaseTable.created_at.name,
+            KnowledgeBaseTable.created_time.name,
         ]
     )
 
@@ -460,7 +460,7 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
         project_uuid,
         table_id,
         [
-            KnowledgeBaseTable.last_modified_at.name,
+            KnowledgeBaseTable.modified_time.name,
         ]
     )
 
