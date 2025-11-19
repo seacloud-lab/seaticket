@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import CustomizePopover from '../customize-popover';
 import Main from './main';
+import { areArraysEqual } from '../../utils/array-utils';
 
 import './index.css';
 
@@ -20,11 +21,13 @@ const CollaboratorEditor = ({
 
   const handleSubmit = useCallback(() => {
     if (isMultiple) {
-      const value = mainRef.current.getValue();
-      onChange(value);
+      const newValue = mainRef.current.getValue();
+      if (!areArraysEqual(newValue, value)) {
+        onChange(newValue);
+      }
     }
     onClose();
-  }, [onChange, onClose]);
+  }, [value, onChange, onClose]);
 
   return (
     <CustomizePopover
@@ -42,7 +45,6 @@ const CollaboratorEditor = ({
         emptyTip={emptyTip}
         value={value}
         collaborators={collaborators}
-        onChange={onChange}
         onToggle={onClose}
         onHidden={handleSubmit}
       />
