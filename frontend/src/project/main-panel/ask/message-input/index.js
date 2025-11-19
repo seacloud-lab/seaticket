@@ -230,9 +230,6 @@ MessageInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
-  initialResolveType: PropTypes.string,
-  initialTicket: PropTypes.object,
-  initialIssue: PropTypes.object,
 };
 
 export default MessageInput;

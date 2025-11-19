@@ -1,6 +1,7 @@
 import React, { useContext, useState, useCallback } from 'react';
 import { AI_RESOLVE_TYPE } from '../constants';
 import { TicketForAI } from '../../tickets/models';
+import { IssueForAI } from '../../connections/models/github-issue.js';
 
 const ProblemToBeResolvedContext = React.createContext(null);
 
@@ -20,7 +21,12 @@ export const ProblemToBeResolvedProvider = ({ children }) => {
   }, []);
 
   const updateIssue = useCallback((issue, resolveType = AI_RESOLVE_TYPE.AGENT) => {
-    setIssue(issue);
+    if (issue) {
+      setIssue(issue instanceof IssueForAI ? issue : new IssueForAI(issue));
+      setTicket(null);
+    } else {
+      setIssue(null);
+    }
     setResolveType(resolveType);
   }, []);
 

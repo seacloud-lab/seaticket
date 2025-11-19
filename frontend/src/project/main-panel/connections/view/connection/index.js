@@ -6,7 +6,6 @@ import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
-import { IssueForAI } from '../../models/github-issue';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
@@ -379,12 +378,12 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [connection]);
 
   const handleResolveIssueByAI = useCallback((issue) => {
-    if (!issue) return;
-    const issueForAI = new IssueForAI({
+    if (!issue || !connectionID) return;
+    const updatedIssue = {
       ...issue,
       connection_id: connectionID
-    });
-    updateIssue(issueForAI);
+    };
+    updateIssue(updatedIssue);
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateIssue, connectionID]);
 
