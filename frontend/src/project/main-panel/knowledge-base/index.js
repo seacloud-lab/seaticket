@@ -1,16 +1,18 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { Modal, ModalBody, ModalHeader, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import { gettext } from '@/constants';
+import { LongTextInlineEditor } from '@seafile/seafile-editor';
+import { gettext, lang, server } from '@/constants';
 import { Icon, toaster } from '@/components';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
 import TopBar from '../top-bar';
 import { knowledgeBaseAPI } from '../../api';
+import LongTextEditorUtilities from '@/utils/long-text';
 
 const { projectUuid, permission } = window.app.pageOptions;
 
-const AddKnowledgeDialog = ({ isOpen, toggle, isSubmitting, question, answer, setQuestion, setAnswer, onSubmit }) => {
+const AddKnowledgeDialog = ({ isOpen, toggle, isSubmitting, question, answer, setQuestion, setAnswer, onSubmit, editorAPI }) => {
   return (
     <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
       <ModalHeader toggle={toggle}>{gettext('Add knowledge record')}</ModalHeader>
@@ -21,14 +23,27 @@ const AddKnowledgeDialog = ({ isOpen, toggle, isSubmitting, question, answer, se
             <Input type="text" id="kbQuestion" value={question} readOnly={isSubmitting} onChange={(e) => setQuestion(e.target.value)} />
           </FormGroup>
           <FormGroup>
-            <Label for="kbAnswer">{gettext('Answer')}</Label>
-            <Input type="textarea" id="kbAnswer" value={answer} readOnly={isSubmitting} onChange={(e) => setAnswer(e.target.value)} style={{ height: '200px' }} />
+            <Label>{gettext('Answer')}</Label>
+            <LongTextInlineEditor
+              isAlwaysEnableEdit={true}
+              lang={lang}
+              headerName={gettext('Answer')}
+              value={answer || ''}
+              autoSave={true}
+              saveDelay={20 * 1000}
+              isCheckBrowser={true}
+              isImageUploadOnly={false}
+              isSupportMultipleFiles={true}
+              editorApi={editorAPI}
+              autoFocus={false}
+              onSaveEditorValue={setAnswer}
+            />
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
         <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={onSubmit} disabled={isSubmitting || !question.trim() || !answer.trim()}>{gettext('Submit')}</Button>
+        <Button color="primary" onClick={onSubmit} disabled={isSubmitting || !question.trim() || !(typeof answer === 'string' ? answer.trim() : (answer && answer.text && answer.text.trim()))}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>
   );
@@ -42,6 +57,9 @@ const Index = ({ title }) => {
   const [editRowId, setEditRowId] = useState('');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+  const editorAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
+    uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
+  } }), []);
 
   const toggleView = useCallback((newViewID) => {
     setViewID(newViewID);
@@ -68,6 +86,7 @@ const Index = ({ title }) => {
             if (c.name === 'last_modifier') col = { ...col, type: 'last-modifier' };
             if (c.name === 'created_at') col = { ...col, type: 'ctime' };
             if (c.name === 'last_modified_at') col = { ...col, type: 'mtime' };
+            if (c.name === 'answer') col = { ...col, type: 'long-text' };
             return { ...col, display_name: DISPLAY_NAME_MAP[c.name] || col.display_name || col.name };
           });
         return { data: { rows, columns } };
@@ -83,6 +102,7 @@ const Index = ({ title }) => {
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
       deleteRow: (recordNumber) => knowledgeBaseAPI.deleteRecord(projectUuid, recordNumber),
+      uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     };
   }, []);
 
@@ -114,8 +134,8 @@ const Index = ({ title }) => {
 
   const onSubmit = useCallback(() => {
     const q = question.trim();
-    const a = answer.trim();
-    if (!q || !a) return;
+    const a = answer;
+    if (!q || !a || !((typeof a === 'object' ? a.text : a).trim())) return;
     setSubmitting(true);
     const action = isEditMode
       ? knowledgeBaseAPI.updateRecord(projectUuid, editRowId, { question: q, answer: a })
@@ -180,6 +200,7 @@ const Index = ({ title }) => {
         setQuestion={setQuestion}
         setAnswer={setAnswer}
         onSubmit={onSubmit}
+        editorAPI={editorAPI}
       />
     </>
   );

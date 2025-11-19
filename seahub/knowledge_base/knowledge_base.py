@@ -1,5 +1,6 @@
 import datetime
 import logging
+import json
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -49,8 +50,20 @@ class KnowledgeBaseAPIView(APIView):
         if not question:
             error_msg = 'question invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        answer = request.data.get('answer')
-        if not answer:
+        raw_answer = request.data.get('answer')
+        if not raw_answer:
+            error_msg = 'answer invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        answer_text = None
+        if isinstance(raw_answer, dict):
+            answer_text = raw_answer.get('text')
+        else:
+            try:
+                ans_obj = json.loads(raw_answer)
+                answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
+            except Exception:
+                answer_text = raw_answer
+        if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
             error_msg = 'answer invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -58,7 +71,7 @@ class KnowledgeBaseAPIView(APIView):
         try:
             row = {
                 KnowledgeBaseTable.question.name: question,
-                KnowledgeBaseTable.answer.name: answer,
+                KnowledgeBaseTable.answer.name: answer_text,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 KnowledgeBaseTable.last_modifier.name: username,
@@ -164,14 +177,26 @@ class KnowledgeBaseAPIView(APIView):
         if not question:
             error_msg = 'question invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        answer = request.data.get('answer')
-        if not answer:
+        raw_answer = request.data.get('answer')
+        if not raw_answer:
+            error_msg = 'answer invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        answer_text = None
+        if isinstance(raw_answer, dict):
+            answer_text = raw_answer.get('text')
+        else:
+            try:
+                ans_obj = json.loads(raw_answer)
+                answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
+            except Exception:
+                answer_text = raw_answer
+        if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
             error_msg = 'answer invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         row = {
             KnowledgeBaseTable.question.name: question,
-            KnowledgeBaseTable.answer.name: answer,
+            KnowledgeBaseTable.answer.name: answer_text,
             KnowledgeBaseTable.last_modifier.name: username,
             KnowledgeBaseTable.last_modified_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
 

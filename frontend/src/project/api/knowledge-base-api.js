@@ -128,12 +128,14 @@ class KnowledgeBaseAPI {
 
   createRecord(projectUuid, { question, answer }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
-    return this.req.post(url, { question, answer });
+    const payload = { question, answer: (answer && typeof answer === 'object') ? JSON.stringify(answer) : answer };
+    return this.req.post(url, payload);
   }
 
   updateRecord(projectUuid, recordNumber, { question, answer }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
-    return this.req.put(url, { question, answer }, { params: { record_number: recordNumber } });
+    const payload = { question, answer: (answer && typeof answer === 'object') ? JSON.stringify(answer) : answer };
+    return this.req.put(url, payload, { params: { record_number: recordNumber } });
   }
 
   deleteRecord(projectUuid, recordNumber) {
@@ -154,6 +156,12 @@ class KnowledgeBaseAPI {
     return this._sendPostRequest(url, params, { headers: { 'Content-type': 'application/json' } });
   }
 
+  uploadFile(projectUuid, file, onUploadProgress = null) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this._sendPostRequest(url, formData, { onUploadProgress });
+  }
 }
 
 const knowledgeBaseAPI = new KnowledgeBaseAPI();
