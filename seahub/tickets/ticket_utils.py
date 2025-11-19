@@ -207,3 +207,20 @@ def convert_ticket_select_column_name_to_option_id(table_meta, ticket):
             if opt.get('name') == ticket.get('substate'):
                 ticket['substate'] = opt.get('id')
     return ticket
+
+
+def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
+    ticket_ids_str = ",".join(ticket_ids)
+    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+    rows = seadb_api.query_rows(project_uuid, sql).get('results')
+    return rows
+
+
+def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, option_ids):
+    option_data = {
+        'table_id': table_id,
+        'column_key': column_key,
+        'option_ids': option_ids,
+    }
+    res = seadb_api.delete_column_option(project_uuid, option_data)
+    return res.get('success')

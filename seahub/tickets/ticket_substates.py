@@ -17,7 +17,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_group_by_column_name, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_metadata_by_name, \
-    filter_tickets_by_select, add_select_option
+    filter_tickets_by_select, add_select_option, batch_delete_select_option
 
 
 
@@ -122,11 +122,7 @@ class TicketSubstatesAPIView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
-            substate_column = None
-            for column in table_meta.get('columns', []):
-                if column.get('name') == 'substate':
-                    substate_column = column
-                    break
+            substate_column = get_column_from_metadata_by_name(table_meta, 'status')
             column_data = substate_column.get('data') or {}
             existing_options = column_data.get('options', []) or []
 
@@ -142,6 +138,49 @@ class TicketSubstatesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_substate': substate_option}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        substate_ids = request.data.get('substate_ids', [])
+        if not substate_ids:
+            error_msg = 'substate_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI(username)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(table_meta, 'substate')
+            batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), substate_ids)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
 
 
 class TicketSubstateAPIView(APIView):
