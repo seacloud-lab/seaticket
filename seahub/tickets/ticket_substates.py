@@ -17,7 +17,8 @@ from seahub.project.utils import check_project_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_substate_column_details, get_substate_column, add_substate_option, \
     update_substate_option, delete_substate_option, get_substate_option_by_id, filter_tickets_by_substate, \
-    get_ticket_counts_group_by_column_name, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id
+    get_ticket_counts_group_by_column_name, get_substate_options_by_status_option_id, \
+    convert_ticket_select_column_name_to_option_id, batch_delete_select_option
 
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,46 @@ class TicketSubstatesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_substate': substate_option}, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, project_uuid):
+        """
+        Permission:
+        1. owner
+        2. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # argument check
+        substate_ids = request.data.get('substate_ids', [])
+        if not substate_ids:
+            error_msg = 'substate_ids invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # main
+        try:
+            seadb_api = SeaDBAPI(username)
+            batch_delete_select_option(seadb_api, project_uuid, 'substate', substate_ids)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        return Response({'success': True})
 
 
 class TicketSubstateAPIView(APIView):

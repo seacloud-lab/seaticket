@@ -36,7 +36,7 @@ export default function apply(data, operation) {
     data.rows = updatedRows;
   };
 
-  const updateDataByDeleteRows = (deletedIds) => {
+  const updateDataByDeleteRows = (deletedIds = []) => {
     const idNeedDeletedMap = deletedIds.reduce((currIdNeedDeletedMap, rowId) => ({ ...currIdNeedDeletedMap, [rowId]: true }), {});
     data.rows = data.rows.filter((row) => !idNeedDeletedMap[row._id]);
 
@@ -82,8 +82,8 @@ export default function apply(data, operation) {
       return data;
     }
     case OPERATION_TYPE.DELETE_ROWS: {
-      const { rows_ids } = operation;
-      updateDataByDeleteRows(rows_ids);
+      const { success_rows } = operation;
+      updateDataByDeleteRows(success_rows);
       return data;
     }
     case OPERATION_TYPE.RESTORE_ROWS: {

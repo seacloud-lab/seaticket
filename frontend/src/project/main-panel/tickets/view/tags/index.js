@@ -9,7 +9,7 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
-  const { isLoading, tagsData, createTag, modifyTag, deleteTag, reload } = useTags();
+  const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, reload } = useTags();
   const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -91,6 +91,7 @@ const AllTags = ({ projectUuid, permission }) => {
     insertRow: createTag,
     modifyRow: (...params) => modifyTag(...params),
     deleteRow: (...params) => deleteTag(...params),
+    deleteRows: (...params) => deleteTags(...params),
 
   }), [projectUuid, columns, viewsData, createTag, tagsData]);
 

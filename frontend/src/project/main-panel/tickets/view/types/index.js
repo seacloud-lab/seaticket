@@ -9,7 +9,7 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTypes = ({ projectUuid, permission }) => {
-  const { isLoading, typesData, createType, modifyType, deleteType, reload } = useTypes();
+  const { isLoading, typesData, createType, modifyType, deleteType, deleteTypes, reload } = useTypes();
   const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -83,8 +83,9 @@ const AllTypes = ({ projectUuid, permission }) => {
     insertRow: createType,
     modifyRow: (...params) => modifyType(...params),
     deleteRow: (...params) => deleteType(...params),
+    deleteRows: (...params) => deleteTypes(...params),
 
-  }), [projectUuid, columns, viewsData, createType, deleteType, typesData]);
+  }), [projectUuid, columns, viewsData, createType, deleteType, deleteTypes, typesData]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

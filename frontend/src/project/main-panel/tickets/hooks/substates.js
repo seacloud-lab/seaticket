@@ -70,6 +70,18 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyDeleteSubstates]);
 
+  const deleteSubstates = useCallback((substateIDs) => {
+    return ticketsAPI.deleteTicketSubstates(projectUuid, substateIDs).then(res => {
+      applyDeleteSubstates(substateIDs);
+      return {
+        data: {
+          success: substateIDs,
+          failed: [],
+        }
+      };
+    });
+  }, [projectUuid, applyDeleteSubstates]);
+
   const modifySubstate = useCallback((substateID, update) => {
     return ticketsAPI.modifyTicketSubstate(projectUuid, substateID, update).then(res => {
       applyModifySubstates({ [substateID]: update });
@@ -117,6 +129,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
       createSubstate,
       modifySubstate,
       deleteSubstate,
+      deleteSubstates,
       reload,
     }}>
       {children}

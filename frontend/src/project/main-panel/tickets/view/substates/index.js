@@ -9,7 +9,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import SubstateDialog from './components/substate-dialog';
 
 const AllSubstates = ({ projectUuid, permission }) => {
-  const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, reload } = useSubstates();
+  const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, reload } = useSubstates();
   const { pageType, togglePageType } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -74,8 +74,9 @@ const AllSubstates = ({ projectUuid, permission }) => {
     insertRow: createSubstate,
     modifyRow: (...params) => modifySubstate(...params),
     deleteRow: (...params) => deleteSubstate(...params),
+    deleteRows: deleteSubstates,
 
-  }), [columns, viewsData, createSubstate, modifySubstate, deleteSubstate, substatesData]);
+  }), [columns, viewsData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, substatesData]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-substates`, [projectUuid]);
 

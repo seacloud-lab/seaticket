@@ -75,6 +75,18 @@ export const TypesProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyDeleteTypes]);
 
+  const deleteTypes = useCallback((typeIDs) => {
+    return ticketsAPI.deleteTicketTypes(projectUuid, typeIDs).then(res => {
+      applyDeleteTypes(typeIDs);
+      return {
+        data: {
+          success: typeIDs,
+          failed: [],
+        }
+      };
+    });
+  }, [projectUuid, applyDeleteTypes]);
+
   const modifyType = useCallback((typeID, update) => {
     return ticketsAPI.modifyTicketType(projectUuid, typeID, update).then(res => {
       applyModifyTypes({ [typeID]: update });
@@ -122,6 +134,7 @@ export const TypesProvider = ({ projectUuid, children }) => {
       createType,
       modifyType,
       deleteType,
+      deleteTypes,
       reload,
     }}>
       {children}

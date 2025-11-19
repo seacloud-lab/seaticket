@@ -64,9 +64,14 @@ class ServerOperator {
         break;
       }
       case OPERATION_TYPE.DELETE_ROWS: {
-        const { deleted_rows } = operation;
-        const rowIds = deleted_rows.map((row) => row._id).filter(Boolean);
+        const { rows_ids } = operation;
+        const rowIds = rows_ids.filter(Boolean);
         context.deleteRows(rowIds).then(res => {
+          const { success, failed = [] } = res.data;
+          const successRows = success === true ? rowIds : success;
+          const failedRows = failed;
+          operation.success_rows = successRows;
+          operation.failed_rows = failedRows;
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: context.translate('Failed to delete {rows}') });

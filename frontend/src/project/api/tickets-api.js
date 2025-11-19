@@ -106,6 +106,11 @@ class TicketsAPI {
     return this.req.put(url, form);
   }
 
+  modifyProjectTickets(projectUuid, tickets, isCopyPaste) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    return this.req.put(url, { 'tickets_data': tickets, 'is_copy_paste': isCopyPaste });
+  }
+
   getProjectTicket(projectUuid, ticketNumber) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     return this.req.get(url);
@@ -114,6 +119,11 @@ class TicketsAPI {
   deleteProjectTicket(projectUuid, ticketNumber) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/';
     return this.req.delete(url);
+  }
+
+  deleteProjectTickets(projectUuid, ticketIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/';
+    return this.req.delete(url, { data: { ticket_ids: ticketIds } });
   }
 
   listProjectTicketReplies(projectUuid, ticketNumber, page, perPage) {
@@ -267,6 +277,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  deleteTicketSubstates(projectUuid, substateIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
+    return this.req.delete(url, { data: { substate_ids: substateIds } });
+  }
+
   listTicketsBySubstate(projectUuid, substateId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/' + substateId + '/';
     return this.req.get(url);
@@ -310,6 +325,11 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
+  deleteTicketTags(projectUuid, tagIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/';
+    return this.req.delete(url, { data: { tag_ids: tagIds } });
+  }
+
   listTicketsByTag(projectUuid, tagId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/tags/' + tagId + '/';
     return this.req.get(url);
@@ -348,6 +368,11 @@ class TicketsAPI {
   deleteTicketType(projectUuid, typeId) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/' + typeId + '/';
     return this.req.delete(url);
+  }
+
+  deleteTicketTypes(projectUuid, typeIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/types/';
+    return this.req.delete(url, { data: { type_ids: typeIds } });
   }
 
   listTicketsByType(projectUuid, typeId) {

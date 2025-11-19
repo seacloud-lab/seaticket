@@ -28,7 +28,8 @@ from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_status_option_by_name, get_tag_option_by_id, get_ticket, get_ticket_replies, \
     check_ticket_reply_creation_interval, get_ticket_reply_by_pk, get_type_option_by_id, get_tags_column, check_ticket_creation_interval,\
-    get_status_option_by_id, get_substate_option_by_id, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id
+    get_status_option_by_id, get_substate_option_by_id, get_substate_options_by_status_option_id, convert_ticket_select_column_name_to_option_id, \
+    get_tickets_by_ids
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -202,7 +203,7 @@ class TicketsAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                tag_options, _ = get_tags_column(seadb_api, project_uuid)
+                tag_options, column_key = get_tags_column(seadb_api, project_uuid)
                 valid_tag_ids = set([opt.get('id') for opt in (tag_options or [])])
                 for tag in tags:
                     if tag not in valid_tag_ids:
@@ -285,6 +286,182 @@ class TicketsAPIView(APIView):
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
+    def put(self, request, project_uuid):
+        tickets_data = request.data.get('tickets_data')
+        if not tickets_data:
+            error_msg = 'tickets_data is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        ticket_id_to_row = {}
+        for ticket_data in tickets_data:
+            row = ticket_data.get('row', {})
+            if not row:
+                continue
+            row_id = ticket_data.get('row_id', '')
+            if not row_id:
+                error_msg = 'row_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            ticket_id_to_row[row_id] = row
+
+        try:
+            ticket_ids = ticket_id_to_row.keys()
+            ticket_ids_str = ','.join(ticket_ids)
+            sql = f'SELECT `_pk` FROM `tickets` WHERE `_pk` IN ({ticket_ids_str})'
+            query_result = seadb_api.query_rows(project_uuid, sql)
+        except Exception as e:
+            logger.exception(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        results = query_result.get('results')
+        if not results:
+            # file or folder has been deleted
+            return Response({'success': True})
+        
+        update_rows = []
+        for row in results:
+            updated_row = {}
+            row_data = ticket_id_to_row.get(str(row.get('_pk')))
+            if not row_data:
+                continue
+            if 'status' in row_data:
+                status_option = get_status_option_by_id(seadb_api, project_uuid, row_data.get('status'))
+                updated_row[TicketsTable.status.name] = status_option.get('name') if status_option else None
+            if 'substate' in row_data:
+                substate_option = get_substate_option_by_id(seadb_api, project_uuid, row_data.get('substate'))
+                updated_row[TicketsTable.substate.name] = substate_option.get('name') if substate_option else None
+            if 'tags' in row_data:
+                tag_options, column_key = get_tags_column(seadb_api, project_uuid)
+                tag_id_to_name = {opt.get('id'): opt.get('name') for opt in tag_options}
+                tag_names = []
+                tags = row_data.get('tags') or []
+                for tag_id in tags:
+                    tag_names.append(tag_id_to_name.get(tag_id))
+                updated_row[TicketsTable.tags.name] = tag_names
+            if 'type' in row_data:
+                type_option = get_type_option_by_id(seadb_api, project_uuid, row_data.get('type'))
+                updated_row[TicketsTable.type.name] = type_option.get('name') if type_option else None
+            if 'description' in row_data:
+                description_dict = row_data.get('description')
+                if not isinstance(description_dict, dict):
+                    error_msg = 'description invalid.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                description = description_dict.get('text')
+                if not description:
+                    error_msg = 'description invalid.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                file_urls = description_dict.get('images')
+                if file_urls and not isinstance(file_urls, list):
+                    error_msg = 'description invalid.'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                link_urls = description_dict.get('links')
+                if link_urls and isinstance(link_urls, list):
+                    file_urls = (file_urls or []) + link_urls
+                updated_row[TicketsTable.description.name] = description
+            for key, value in row_data.items():
+                if key in ('substate', 'tags', 'type', '_pk', 'updated_at', 'description', 'status'):
+                    continue
+                updated_row[key] = value
+            
+            updated_row[TicketsTable.updated_at.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_rows.append(
+                {
+                    'pk': row.get('_pk'),
+                    'row': updated_row,
+                }
+            )
+        if update_rows:
+            try:
+                seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+            except Exception as e:
+                logger.exception(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+    def delete(self, request, project_uuid):
+        ticket_ids = request.data.get('ticket_ids')
+        if not ticket_ids:
+            error_msg = 'ticket_ids is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
+        exist_ticket_ids = [ticket.get('_pk') for ticket in tickets]
+        fail_ticket_ids = []
+        for ticket_id in ticket_ids:
+            if int(ticket_id) not in exist_ticket_ids:
+                fail_ticket_ids.append(ticket_id)
+        
+        need_delete_ticket_ids = list(set(ticket_ids) - set(fail_ticket_ids))
+        update_rows = []
+        for ticket_id in need_delete_ticket_ids:
+            update_row = {
+                'pk': int(ticket_id),
+                'row': {
+                    'deleted': True,
+                    'deleted_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                }
+            }
+            update_rows.append(update_row)
+        try:
+            seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'success': need_delete_ticket_ids,
+            'failed': fail_ticket_ids
+        })
 
 class TicketAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -455,7 +632,7 @@ class TicketAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                tag_options, _ = get_tags_column(seadb_api, project_uuid)
+                tag_options, column_key = get_tags_column(seadb_api, project_uuid)
             except Exception as e:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)

@@ -8,6 +8,7 @@ import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
 import { getRowById } from '../utils/row';
 import { isModF } from '@/utils/hotkey';
+import { useSelectedRows } from './selected-rows';
 
 const MetadataContext = React.createContext(null);
 
@@ -29,6 +30,7 @@ export const MetadataProvider = forwardRef(({
   const storeRef = useRef(null);
 
   const { collaborators, collaboratorsCache } = useCollaborators();
+  const { updateSelectedRowIdsByDelete } = useSelectedRows();
 
   const tableChanged = useCallback(() => {
     setMetadata(storeRef.current.data);
@@ -116,23 +118,25 @@ export const MetadataProvider = forwardRef(({
     });
   }, [metadata, storeRef]);
 
-  const deleteRows = (rowsIds, { success_callback, fail_callback } = {}) => {
+  const deleteRows = useCallback((rowsIds, { success_callback, fail_callback } = {}) => {
     if (!Array.isArray(rowsIds) || rowsIds.length === 0) return;
     storeRef.current.deleteRows(rowsIds, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
       },
-      success_callback: () => {
-        if (rowsIds.length === 1) {
+      success_callback: (operation) => {
+        const successRows = operation.success_rows;
+        if (successRows.length === 1) {
           toaster.success(context.translate('{Row} deleted'));
         } else {
           toaster.success(context.translate('{Rows} deleted'));
         }
         success_callback && success_callback();
+        updateSelectedRowIdsByDelete(successRows);
       },
     });
-  };
+  }, [updateSelectedRowIdsByDelete]);
 
   const modifyRowByRowExpand = (rowId, update, { success_callback, fail_callback } = {}) => {
     const updates = update;
