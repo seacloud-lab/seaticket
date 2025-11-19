@@ -15,5 +15,5 @@ export const BAR_TYPES = [
   { key: BAR_TYPE.TICKET, name: gettext('Tickets'), icon: 'ticket' },
   { key: BAR_TYPE.CONNECTION, name: gettext('Connections'), icon: 'connection' },
   { key: BAR_TYPE.SETTINGS, name: gettext('Settings'), icon: 'settings-thin' },
-  { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'help' },
+  { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'knowledge-base' },
 ];
