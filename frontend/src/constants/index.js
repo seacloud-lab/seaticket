@@ -1,5 +1,4 @@
 export * from './project-icon';
-export * from './event-operation-type';
 export * from './permission';
 export * from './config';
 export * from './zIndexes';
