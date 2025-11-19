@@ -73,7 +73,12 @@ export const TagsProvider = ({ projectUuid, children }) => {
   const deleteTags = useCallback((tagIDs) => {
     return ticketsAPI.deleteTicketTags(projectUuid, tagIDs).then(res => {
       applyDeleteTags(tagIDs);
-      return tagIDs;
+      return {
+        data: {
+          success: tagIDs,
+          failed: [],
+        }
+      };
     });
   }, [projectUuid, applyDeleteTags]);
 

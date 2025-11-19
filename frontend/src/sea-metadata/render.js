@@ -60,14 +60,14 @@ const Main = forwardRef(({
     <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
         <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
-          <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
-            <SelectedRowsProvider>
+          <SelectedRowsProvider>
+            <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
               <div className={classnames('sea-metadata', className)}>
                 <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} createRowsTools={createRowsTools} toggleView={toggleView} />
                 <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
               </div>
-            </SelectedRowsProvider>
-          </MetadataProvider>
+            </MetadataProvider>
+          </SelectedRowsProvider>
         </SubstatesDataProvider>
       </TypesDataProvider>
     </TagsDataProvider>

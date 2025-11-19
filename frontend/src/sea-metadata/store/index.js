@@ -337,11 +337,9 @@ class Store {
     });
 
     if (valid_rows_ids.length === 0) return;
-    const deleted_rows = valid_rows_ids.map((rowId) => getRowById(this.data, rowId));
     const operation = this.createOperation({
       type,
       rows_ids: valid_rows_ids,
-      deleted_rows,
       fail_callback,
       success_callback,
     });

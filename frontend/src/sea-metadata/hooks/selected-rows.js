@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 
 const SelectedRowsContext = React.createContext(null);
 
@@ -8,11 +8,17 @@ export const SelectedRowsProvider = ({
 }) => {
   const [selectedRowIds, setSelectedRowIds] = useState([]);
 
+  const updateSelectedRowIdsByDelete = useCallback((deletedRowIds = []) => {
+    const newSelectedRowIds = selectedRowIds.filter(id => !deletedRowIds.includes(id));
+    setSelectedRowIds(newSelectedRowIds);
+  }, [selectedRowIds]);
+
   return (
     <SelectedRowsContext.Provider
       value={{
         selectedRowIds,
         updateSelectedRowIds: setSelectedRowIds,
+        updateSelectedRowIdsByDelete,
       }}
     >
       {children}

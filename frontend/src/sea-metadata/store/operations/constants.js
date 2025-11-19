@@ -48,7 +48,7 @@ export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.MODIFY_ROW]: ['row_id', 'row_update', 'original_update', 'old_row_data', 'original_old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.MODIFY_ROWS]: ['row_ids', 'id_row_updates', 'id_original_row_updates', 'id_old_row_data', 'id_original_old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.DELETE_ROW]: ['row_id', 'row_data'],
-  [OPERATION_TYPE.DELETE_ROWS]: ['rows_ids', 'deleted_rows'],
+  [OPERATION_TYPE.DELETE_ROWS]: ['rows_ids'],
   [OPERATION_TYPE.RELOAD_ROWS]: ['row_ids'],
   [OPERATION_TYPE.MOVE_ROW]: ['row_id', 'update_data'],
   [OPERATION_TYPE.DUPLICATE_ROW]: ['row_id'],
@@ -103,6 +103,7 @@ export const NEED_APPLY_AFTER_SERVER_OPERATION = [
   OPERATION_TYPE.INSERT_COLUMN,
   OPERATION_TYPE.MOVE_ROW,
   OPERATION_TYPE.DUPLICATE_ROW,
+  OPERATION_TYPE.DELETE_ROWS,
 ];
 
 export const NEED_LOADING_OPERATION = [

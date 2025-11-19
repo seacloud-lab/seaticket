@@ -73,7 +73,12 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
   const deleteSubstates = useCallback((substateIDs) => {
     return ticketsAPI.deleteTicketSubstates(projectUuid, substateIDs).then(res => {
       applyDeleteSubstates(substateIDs);
-      return substateIDs;
+      return {
+        data: {
+          success: substateIDs,
+          failed: [],
+        }
+      };
     });
   }, [projectUuid, applyDeleteSubstates]);
 

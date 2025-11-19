@@ -78,7 +78,12 @@ export const TypesProvider = ({ projectUuid, children }) => {
   const deleteTypes = useCallback((typeIDs) => {
     return ticketsAPI.deleteTicketTypes(projectUuid, typeIDs).then(res => {
       applyDeleteTypes(typeIDs);
-      return typeIDs;
+      return {
+        data: {
+          success: typeIDs,
+          failed: [],
+        }
+      };
     });
   }, [projectUuid, applyDeleteTypes]);
 
