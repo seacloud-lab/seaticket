@@ -11,7 +11,6 @@ export const ViewsDataProvider = forwardRef(({
   viewID,
   toggleView,
   children,
-  visibleViewsCount = 5,
 }, ref) => {
   const [isLoading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState({});
@@ -115,7 +114,6 @@ export const ViewsDataProvider = forwardRef(({
         isLoading,
         viewID,
         viewsData,
-        visibleViewsCount,
         insertView,
         deleteView,
         modifyView,

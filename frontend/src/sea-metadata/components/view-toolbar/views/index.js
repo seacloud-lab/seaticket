@@ -19,7 +19,7 @@ const Views = ({ view, toggleView }) => {
   const isRenameRef = useRef(false);
   const viewsNavContainerRef = useRef(null);
 
-  const { isLoading, viewsData, viewID, visibleViewsCount, insertView, modifyView, moveView, duplicateView, deleteView, getViewById } = useViewsData();
+  const { isLoading, viewsData, viewID, insertView, modifyView, moveView, duplicateView, deleteView, getViewById } = useViewsData();
 
   const allViews = useMemo(() => {
     if (isLoading) return [];
@@ -28,14 +28,10 @@ const Views = ({ view, toggleView }) => {
     return navigation.map(n => views.find(v => v._id === n._id));
   }, [isLoading, viewsData, view]);
 
-  const displayViews = useMemo(() => {
-    return allViews.slice(0, visibleViewsCount);
-  }, [visibleViewsCount, allViews]);
-
   const isSelected = useMemo(() => {
-    if (viewID && !displayViews.find(v => v._id === viewID)) return true;
+    if (viewID && !allViews.find(v => v._id === viewID)) return true;
     return false;
-  }, [displayViews, viewID]);
+  }, [allViews, viewID]);
 
   const openViewNameDialog = useCallback((isRename) => {
     isRenameRef.current = Boolean(isRename);
@@ -54,15 +50,33 @@ const Views = ({ view, toggleView }) => {
     if (scrollLeft > 0) {
       _canScrollPrev = true;
     }
-    if (scrollLeft + offsetWidth < scrollWidth) {
+    if (scrollLeft + offsetWidth + 1 < scrollWidth) {
       _canScrollNext = true;
     }
-
     if (_canScrollPrev !== canScrollPrev || _canScrollNext !== canScrollNext) {
       setCanScrollPrev(_canScrollPrev);
       setCanScrollNext(_canScrollNext);
     }
   }, [canScrollPrev, canScrollNext]);
+
+  const isContainerOverflowing = useCallback(() => {
+    if (!viewsNavContainerRef.current) {
+      return false;
+    }
+    const container = viewsNavContainerRef.current;
+    const containerWidth = container.offsetWidth;
+    const childrenTotalWidth = container.scrollWidth;
+    return childrenTotalWidth > containerWidth;
+  }, []);
+
+  useEffect(() => {
+    setViewsScroll(isContainerOverflowing());
+    const handleResize = () => {
+      setViewsScroll(isContainerOverflowing());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isContainerOverflowing]);
 
   const onScroll = useCallback(() => {
     checkAvailableScrollType();
@@ -86,49 +100,47 @@ const Views = ({ view, toggleView }) => {
   const onScrollControlClick = useCallback((type) => {
     const { offsetWidth, scrollWidth, scrollLeft } = viewsNavContainerRef.current;
     let targetScrollLeft;
-    if (type === 'prev') {
+    if (type === 'left') {
       if (scrollLeft === 0) return;
-      targetScrollLeft = scrollLeft - offsetWidth;
-      targetScrollLeft = targetScrollLeft > 0 ? targetScrollLeft : 0;
+      targetScrollLeft = Math.max(scrollLeft - offsetWidth, 0);
     }
-
-    if (type === 'next') {
+    else if (type === 'right') {
       if (scrollLeft + offsetWidth === scrollWidth) return;
-      targetScrollLeft = scrollLeft + offsetWidth;
-      targetScrollLeft = targetScrollLeft > scrollWidth - offsetWidth ? scrollWidth - offsetWidth : targetScrollLeft;
+      targetScrollLeft = Math.min(scrollLeft + offsetWidth, scrollWidth - offsetWidth);
     }
 
-    if (canViewsScroll) {
-      setViewsScroll(false);
-      let timer = null;
-      timer = setInterval(() => {
-        let step = (targetScrollLeft - scrollLeft) / 10;
-        step = step > 0 ? Math.ceil(step) : Math.floor(step);
-        viewsNavContainerRef.current.scrollLeft = viewsNavContainerRef.current.scrollLeft + step;
-        if (Math.abs(targetScrollLeft - viewsNavContainerRef.current.scrollLeft) <= Math.abs(step)) {
-          viewsNavContainerRef.current.scrollLeft = targetScrollLeft;
-          clearInterval(timer);
-          setViewsScroll(true);
-        }
-      }, 15);
-    }
-  }, [canViewsScroll]);
+    let timer = null;
+    const startScrollLeft = scrollLeft;
+    const distance = targetScrollLeft - startScrollLeft;
+    const stepCount = 20;
+    let currentStep = 0;
+    timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / stepCount;
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const newScrollLeft = startScrollLeft + distance * easeProgress;
+      viewsNavContainerRef.current.scrollLeft = newScrollLeft;
+      if (currentStep >= stepCount) {
+        viewsNavContainerRef.current.scrollLeft = targetScrollLeft;
+        clearInterval(timer);
+      }
+    }, 16);
+  }, []);
 
   useEffect(() => {
     checkAvailableScrollType();
-  }, [displayViews, checkAvailableScrollType]);
+  }, [allViews, checkAvailableScrollType]);
 
-  const deleteAble = displayViews.length > 1 && context.canDeleteView();
+  const deleteAble = allViews.length > 1 && context.canDeleteView();
   const moveAble = context.canMoveView();
   const duplicateAble = context.canDuplicateView();
-  const newAble = context.canInsertView();
   const modifyAble = context.canModifyView();
 
   return (
     <>
       <div className="sea-metadata-views">
         <div className="sea-metadata-views-nav-container" ref={viewsNavContainerRef} onScroll={onScroll} onWheel={onWheel}>
-          {displayViews.map(v => {
+          {allViews.map(v => {
             const isSelect = isFunction(toggleView) && v._id === viewID;
             return (
               <ViewItem
@@ -147,7 +159,9 @@ const Views = ({ view, toggleView }) => {
               />
             );
           })}
-          {allViews.length > visibleViewsCount && (
+        </div>
+        {canViewsScroll && (
+          <div className="sea-metadata-views-nav-scroll-btns d-flex align-items-center mr-2">
             <AllViews
               viewID={viewID}
               allViews={allViews}
@@ -155,23 +169,19 @@ const Views = ({ view, toggleView }) => {
               onMove={moveView}
               toggleView={toggleView}
             />
-          )}
-        </div>
-        {(canScrollPrev || canScrollNext) && (
-          <div className="sea-metadata-views-nav-scroll-control mr-2">
             <IconButton
               icon="left"
               className={classnames('scroll-control-btn scroll-prev', { 'scroll-active': canScrollPrev })}
-              onClick={() => onScrollControlClick('prev')}
+              onClick={() => onScrollControlClick('left')}
             />
             <IconButton
               icon="right"
               className={classnames('scroll-control-btn scroll-next ml-2', { 'scroll-active': canScrollNext })}
-              onClick={() => onScrollControlClick('next')}
+              onClick={() => onScrollControlClick('right')}
             />
           </div>
         )}
-        {newAble && (<IconButton icon="add" onClick={() => openViewNameDialog()} />)}
+        {context.canInsertView() && (<IconButton icon="add" onClick={() => openViewNameDialog()} />)}
       </div>
       {isShowViewNameDialog && (
         <CustomizeNameDialog

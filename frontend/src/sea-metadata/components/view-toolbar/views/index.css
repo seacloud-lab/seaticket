@@ -17,11 +17,6 @@
   display: inline-flex;
 }
 
-.sea-metadata-views .sea-metadata-views-nav-scroll-control {
-  display: flex;
-  align-items: center;
-}
-
-.sea-metadata-views .sea-metadata-views-nav-scroll-control .scroll-active {
+.sea-metadata-views .sea-metadata-views-nav-scroll-btns .scroll-active {
   background-color: #efefef;
 }
