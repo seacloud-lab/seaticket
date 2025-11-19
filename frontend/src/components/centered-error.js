@@ -2,11 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-import './index.css';
-
 function CenteredError({ className, children }) {
   return (
-    <div className={classnames('sea-qa-display-center error', className)}>
+    <div className={classnames('d-flex align-items-center justify-content-center h-100 w-100 o-hidden error', className)}>
       {children}
     </div>
   );
