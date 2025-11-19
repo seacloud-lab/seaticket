@@ -6,9 +6,10 @@ import Store from '../store';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import toaster from '@/components/toaster';
 import { Utils } from '@/utils/utils';
-import { getRowById } from '../utils/row';
+import { getRowById, getRowsByIds } from '../utils/row';
 import { isModF } from '@/utils/hotkey';
 import { useSelectedRows } from './selected-rows';
+import { isFunction } from '@/utils/type-detection';
 
 const MetadataContext = React.createContext(null);
 
@@ -20,6 +21,7 @@ export const MetadataProvider = forwardRef(({
   typesData,
   localStorageNamePrefix,
   createContextMenuOptions,
+  cascadeUpdateCells,
   t,
   children,
   ...params
@@ -95,7 +97,20 @@ export const MetadataProvider = forwardRef(({
   }, []);
 
   const modifyRows = useCallback((rowIds, idRowData, idOldRowOldData, isCopyPaste = false, { success_callback, fail_callback } = {}) => {
-    storeRef.current.modifyRows(rowIds, idRowData, idOldRowOldData, isCopyPaste, {
+    const originalRows = getRowsByIds(metadata, rowIds);
+    let validRowIds = [];
+    let validIdRowUpdates = {};
+    let validIdOldRowData = {};
+    originalRows.forEach(row => {
+      if (row && context.canModifyRow(row)) {
+        const rowId = row._id;
+        validRowIds.push(rowId);
+        validIdRowUpdates[rowId] = idRowData[rowId];
+        validIdOldRowData[rowId] = idOldRowOldData[rowId];
+        isFunction(cascadeUpdateCells) && cascadeUpdateCells(metadata, rowId, validIdRowUpdates[rowId], validIdOldRowData[rowId], isCopyPaste);
+      }
+    });
+    storeRef.current.modifyRows(validRowIds, validIdRowUpdates, validIdOldRowData, isCopyPaste, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -104,7 +119,7 @@ export const MetadataProvider = forwardRef(({
         success_callback && success_callback();
       },
     });
-  }, [metadata, storeRef]);
+  }, [metadata, storeRef, cascadeUpdateCells]);
 
   const deleteRow = useCallback((rowId, { success_callback, fail_callback } = {}) => {
     storeRef.current.deleteRow(rowId, {
@@ -139,7 +154,8 @@ export const MetadataProvider = forwardRef(({
     });
   }, [updateSelectedRowIdsByDelete]);
 
-  const modifyRow = (rowId, updates, oldRowData, isCopyPaste, { success_callback, fail_callback } = {}) => {
+  const modifyRow = useCallback((rowId, updates, oldRowData, isCopyPaste, { success_callback, fail_callback } = {}) => {
+    isFunction(cascadeUpdateCells) && cascadeUpdateCells(metadata, rowId, updates, oldRowData, isCopyPaste);
     storeRef.current.modifyRow(rowId, updates, oldRowData, isCopyPaste, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
@@ -149,7 +165,7 @@ export const MetadataProvider = forwardRef(({
         success_callback && success_callback();
       },
     });
-  };
+  }, [metadata, storeRef, cascadeUpdateCells]);
 
   const modifyRowByRowExpand = useCallback((rowId, rowUpdate, { success_callback, fail_callback } = {}) => {
     const row = getRowById(metadata, rowId);

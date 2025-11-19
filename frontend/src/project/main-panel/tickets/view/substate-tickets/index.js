@@ -9,7 +9,11 @@ import { gettext } from '@/constants';
 import { toaster, CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
-import { generatorRowCopyLinkTool, generatorRowsMoreTool, convertRowToServerData, convertRowsToServerData } from '../../utils';
+import {
+  generatorRowCopyLinkTool, generatorRowsMoreTool,
+  convertRowToServerData, convertRowsToServerData,
+  cascadeUpdateSubState
+} from '../../utils';
 
 const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
 
@@ -248,6 +252,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
       tagsData={tagsData}
 
       t={t}
+      cascadeUpdateCells={cascadeUpdateSubState}
     />
   );
 };

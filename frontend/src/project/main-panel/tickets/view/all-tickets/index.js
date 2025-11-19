@@ -9,7 +9,11 @@ import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { toaster, CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
-import { generatorRowCopyLinkTool, generatorRowsMoreTool, convertRowToServerData, convertRowsToServerData } from '../../utils';
+import {
+  generatorRowCopyLinkTool, generatorRowsMoreTool,
+  convertRowToServerData, convertRowsToServerData,
+  cascadeUpdateSubState
+} from '../../utils';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
@@ -351,6 +355,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       createSubstate={createSubstate}
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
       isMyTicket={isMyTicket}
+      cascadeUpdateCells={cascadeUpdateSubState}
     />
   );
 };

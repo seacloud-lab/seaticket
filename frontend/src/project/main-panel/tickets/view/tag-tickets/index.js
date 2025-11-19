@@ -9,7 +9,11 @@ import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_C
 import { gettext } from '@/constants';
 import { CenteredLoading, toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { generatorRowCopyLinkTool, generatorRowsMoreTool, convertRowToServerData, convertRowsToServerData } from '../../utils';
+import {
+  generatorRowCopyLinkTool, generatorRowsMoreTool,
+  convertRowToServerData, convertRowsToServerData,
+  cascadeUpdateSubState
+} from '../../utils';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
@@ -260,6 +264,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
 
       t={t}
+      cascadeUpdateCells={cascadeUpdateSubState}
     />
   );
 };
