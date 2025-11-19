@@ -10,13 +10,13 @@ class Reply {
 
     this.content = object.content || '';
     this.created_time = object.created_time || '';
-    this.updated_time = object.updated_time || '';
+    this.modified_time = object.modified_time || '';
 
     // update
     if (this.created_time) {
       this.created_time = dayjs(this.created_time).fromNow();
     }
-    this.updated_time = this.updated_time ? dayjs(this.updated_time).fromNow() : '--';
+    this.modified_time = this.modified_time ? dayjs(this.modified_time).fromNow() : '--';
   }
 
   _update = (content = '') => {
@@ -51,14 +51,14 @@ class Ticket {
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
 
-    this.updated_time = object.updated_time || '';
+    this.modified_time = object.modified_time || '';
 
     // format date
     if (this.created_time) {
       this.created_time = dayjs(this.created_time).fromNow();
     }
 
-    this.updated_time = this.updated_time ? dayjs(this.updated_time).fromNow() : '--';
+    this.modified_time = this.modified_time ? dayjs(this.modified_time).fromNow() : '--';
 
     if (this.replies) {
       this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
@@ -76,7 +76,7 @@ class Ticket {
         this[key] = value;
       }
     });
-    this.updated_time = dayjs(new Date()).fromNow();
+    this.modified_time = dayjs(new Date()).fromNow();
     return this;
   };
 
@@ -121,7 +121,7 @@ class TicketForTickets {
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
 
-    this.updated_time = object.updated_time || '';
+    this.modified_time = object.modified_time || '';
 
     if (this.replies) {
       this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));

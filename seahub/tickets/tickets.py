@@ -266,7 +266,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.creator.name: username,
                 TicketsTable.reply_count.name: 0,
                 TicketsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketsTable.updated_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketsTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'tickets', [row])
@@ -518,7 +518,7 @@ class TicketAPIView(APIView):
                     'number': ticket_reply.get('_pk'),
                     'content': ticket_reply.get('content'),
                     'created_time': ticket_reply.get('created_time'),
-                    'updated_time': ticket_reply.get('updated_time'),
+                    'modified_time': ticket_reply.get('modified_time'),
                     'creator': ticket_reply.get('creator'),
                 }
                 if not ticket.get('replies'):
@@ -745,7 +745,7 @@ class TicketAPIView(APIView):
             if username not in participants:
                 participants.append(username)
             update_row['participants'] = participants
-            update_row['updated_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_row['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),
@@ -798,7 +798,7 @@ class TicketAPIView(APIView):
             'pk': ticket.get('_pk'),
             'row': {
                 'deleted': True,
-                'updated_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
         }
         try:
@@ -994,7 +994,7 @@ class TicketRepliesAPIView(APIView):
                 TicketRepliesTable.creator.name: username,
                 TicketRepliesTable.content.name: content,
                 TicketRepliesTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.updated_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketRepliesTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketRepliesTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
@@ -1009,7 +1009,7 @@ class TicketRepliesAPIView(APIView):
                 'pk': ticket.get('_pk'),
                 'row': {
                     'reply_count': ticket_replies_count,
-                    'updated_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
             participants = ticket.get('participants') or []
@@ -1095,10 +1095,10 @@ class TicketReplyAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        updated_at = ticket_reply_data.get('updated_time')
-        if updated_at:
-            updated_at = datetime.datetime.fromisoformat(updated_at)
-        if updated_at and updated_at > timezone.now() - relativedelta(seconds=10):
+        modified_time = ticket_reply_data.get('modified_time')
+        if modified_time:
+            modified_time = datetime.datetime.fromisoformat(modified_time)
+        if modified_time and modified_time > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -1118,7 +1118,7 @@ class TicketReplyAPIView(APIView):
                 'pk': ticket_reply_data.get('_pk'),
                 'row': {
                     'content': content,
-                    'updated_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
             seadb_api.update_rows(project_uuid, 'ticket_replies', [ticket_reply_update])
@@ -1129,7 +1129,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             update_row = {
-                'updated_time': ticket_reply_data.get('updated_time'),
+                'modified_time': ticket_reply_data.get('modified_time'),
             }
             participants = ticket.get('participants') or []
             if username not in participants:

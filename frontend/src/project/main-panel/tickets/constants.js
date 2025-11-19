@@ -220,7 +220,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Create time'),
     editable: false,
   },
-  'updated_time': {
+  'modified_time': {
     type: CellType.MTIME,
     display_name: gettext('Last updated time'),
     editable: false,

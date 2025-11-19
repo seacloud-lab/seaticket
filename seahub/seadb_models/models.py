@@ -353,7 +353,7 @@ class TicketsTable(BaseModel):
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     reply_count = MappedColumn('reply_count', PropertyTypes.INT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
-    updated_time = MappedColumn('updated_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 class TicketRepliesTable(BaseModel):
@@ -361,7 +361,7 @@ class TicketRepliesTable(BaseModel):
     content = MappedColumn('content', PropertyTypes.TEXT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
-    updated_time = MappedColumn('updated_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 
