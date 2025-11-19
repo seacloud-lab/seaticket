@@ -13,12 +13,12 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_permission
+from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import get_substate_column_details, get_substate_column, add_substate_option, \
-    update_substate_option, delete_substate_option, get_substate_option_by_id, filter_tickets_by_substate, \
-    get_ticket_counts_group_by_column_name, get_substate_options_by_status_option_id, \
-    convert_ticket_select_column_name_to_option_id, batch_delete_select_option
+from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_group_by_column_name, \
+    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_metadata_by_name, \
+    filter_tickets_by_select, add_select_option
+
 
 
 logger = logging.getLogger(__name__)
@@ -55,34 +55,26 @@ class TicketSubstatesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # main
+        seadb_api = SeaDBAPI(username)
+
         try:
-            seadb_api = SeaDBAPI(username)
-            substate_options, column_key, substate_data = get_substate_column_details(seadb_api, project_uuid)
+            substate_options, substate_column = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        # optional cascade filter
+        # substate_column = TicketsTable.substate.data
+        cascade_settings = substate_column.get('data').get('cascade_settings')
+        cascade_column_key = substate_column.get('data').get('cascade_column_key')
         if status_id:
-            try:
-                substate_options = get_substate_options_by_status_option_id(seadb_api, project_uuid, status_id) or []
-            except Exception as e:
-                logger.error(e)
-
-        tickets_count_dict = {}
-        try:
-            tickets_count_dict = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'substate') or {}
-            for option in substate_options:
-                option['tickets_count'] = tickets_count_dict.get(option.get('name'), 0)
-        except Exception as e:
-            logger.error(e)
+            allowed_ids = set(cascade_settings.get(status_id, []))
+            substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]
 
         return Response({
             'project_substates': substate_options,
-            'cascade_column_key': substate_data.get('cascade_column_key'),
-            'cascade_settings': substate_data.get('cascade_settings') or {},
+            'cascade_column_key': cascade_column_key,
+            'cascade_settings': cascade_settings,
         })
 
     def post(self, request, project_uuid):
@@ -127,58 +119,29 @@ class TicketSubstatesAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            existing_options, _ = get_substate_column(seadb_api, project_uuid)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            table_id = table_meta.get('id')
+            substate_column = None
+            for column in table_meta.get('columns', []):
+                if column.get('name') == 'substate':
+                    substate_column = column
+                    break
+            column_data = substate_column.get('data') or {}
+            existing_options = column_data.get('options', []) or []
+
             if any(opt.get('name') == name for opt in (existing_options or [])):
                 error_msg = 'substate already exists.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            substate_option = add_substate_option(seadb_api, project_uuid, name, color, text_color)
+            option_data = {'color': color, 'text_color': text_color}
+            substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column.get('key'), name, option_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'project_substate': substate_option}, status=status.HTTP_201_CREATED)
-    
-    def delete(self, request, project_uuid):
-        """
-        Permission:
-        1. owner
-        2. group member
-        """
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # argument check
-        substate_ids = request.data.get('substate_ids', [])
-        if not substate_ids:
-            error_msg = 'substate_ids invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # main
-        try:
-            seadb_api = SeaDBAPI(username)
-            batch_delete_select_option(seadb_api, project_uuid, 'substate', substate_ids)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
-        return Response({'success': True})
 
 
 class TicketSubstateAPIView(APIView):
@@ -211,8 +174,16 @@ class TicketSubstateAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            substate_option = None
             seadb_api = SeaDBAPI(username)
-            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(table_meta, 'substate')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            for opt in options:
+                if opt.get('id') == substate_id:
+                    substate_option = opt
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -224,14 +195,14 @@ class TicketSubstateAPIView(APIView):
 
         # main
         try:
-            tickets, columns = filter_tickets_by_substate(seadb_api, project_uuid, [substate_id])
+            tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'substate', [substate_option.get('name')])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         for ticket in tickets:
-            convert_ticket_select_column_name_to_option_id(seadb_api, project_uuid, ticket)
+            convert_ticket_select_column_name_to_option_id(table_meta, ticket)
 
         return Response({
             'tickets': tickets,
@@ -269,13 +240,16 @@ class TicketSubstateAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        try:
-            seadb_api = SeaDBAPI(username)
-            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        substate_option = None
+        seadb_api = SeaDBAPI(username)
+        base_metadata = seadb_api.get_base_metadata(project_uuid)
+        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+        column = get_column_from_metadata_by_name(table_meta, 'substate')
+        column_data = column.get('data') or {}
+        options = column_data.get('options', []) or []
+        for opt in options:
+            if opt.get('id') == substate_id:
+                substate_option = opt
 
         if not substate_option:
             error_msg = 'Project substate not found.'
@@ -290,7 +264,9 @@ class TicketSubstateAPIView(APIView):
                 update_data['color'] = color
             if text_color:
                 update_data['text_color'] = text_color
-            update_substate_option(seadb_api, project_uuid, substate_id, update_data)
+            table_id = table_meta.get('id')
+            column_key = column.get('key')
+            update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -323,18 +299,39 @@ class TicketSubstateAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            substate_option = get_substate_option_by_id(seadb_api, project_uuid, substate_id)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not substate_option:
-            error_msg = 'Project substate not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        try:
-            delete_substate_option(seadb_api, project_uuid, substate_id)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            column = get_column_from_metadata_by_name(tickets_table_metadata, 'substate')
+            column_key = column.get('key')
+            column_data = column.get('data') or {}
+            options = column_data.get('options', []) or []
+            option = None
+            for opt in options:
+                if opt.get('id') == substate_id:
+                    option = opt
+            if not option:
+                error_msg = 'substate not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            option_data = {
+                'table_id': tickets_table_metadata.get('id'),
+                'column_key': column_key,
+                'option_id': substate_id,
+            }
+            seadb_api.delete_column_option(project_uuid, option_data)
+            # delete substate id in cascade settings
+            cascade_settings = column_data.get('cascade_settings')
+            if cascade_settings:
+                for status_id, substate_ids in cascade_settings.items():
+                    if substate_id in substate_ids:
+                        substate_ids.remove(substate_id)
+                    column_data = {
+                        'table_id': tickets_table_metadata.get('id'),
+                        'column_key': column_key,
+                        'update_column_data': {
+                            'cascade_settings': cascade_settings,
+                        },
+                    }
+                    seadb_api.update_column(project_uuid, column_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

@@ -4,9 +4,9 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
-from seahub.tickets.ticket_utils import get_column_by_name
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable
+from seahub.tickets.ticket_utils import convert_ticket_select_column_name_to_option_id
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def init_site_seadb_table(seadb_api, project_uuid, connection_id):
         }
         if column.data:
             mapped_column['column_data'] = column.data
-        
+
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     seadb_api.create_column_index(
@@ -477,27 +477,34 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
     except Exception as e:
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
+    for record in records:
+        convert_ticket_select_column_name_to_option_id(table_metadata, record)
     return records, display_columns
 
 
 def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, username=''):
-    title_column, title_column_key = get_column_by_name(seadb_api, project_uuid, 'tickets', 'title')
-    priority_column, priority_column_key = get_column_by_name(seadb_api, project_uuid, 'tickets', 'priority')
-    view = {
-            'basic_filters': [],
-            'filters': [
-                {'column_key': title_column_key, 'filter_predicate': 'contains', 'filter_term': search_text}
-            ] if search_text else [],
-            'filter_conjunction': 'Or',
-            'sorts': [
-                {'column_key': priority_column_key, 'sort_type': 'down'}
-            ]
-        }
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
     if not table_metadata:
         return []
+    for column in (table_metadata or {}).get('columns', []):
+        if column.get('name') == 'title':
+            title_column = column
+        if column.get('name') == 'priority':
+            priority_column = column
+
+    view = {
+            'basic_filters': [],
+            'filters': [
+                {'column_key': title_column.get('key'), 'filter_predicate': 'contains', 'filter_term': search_text}
+            ] if search_text else [],
+            'filter_conjunction': 'Or',
+            'sorts': [
+                {'column_key': priority_column.get('key'), 'sort_type': 'down'}
+            ]
+        }
+
     columns = table_metadata.get('columns') or []
     display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
     sql = view_data_2_sql('tickets', display_columns, view, username, start, end, include_deleted=True)
