@@ -4,7 +4,7 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ChatSession } from '../models';
 import { useAskPage } from './page-type';
-import { ASK_PAGE_TYPE } from '../constants';
+import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../constants';
 
@@ -16,7 +16,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
   const [isShowSessions, setIsShowSessions] = useState(true);
   const localStorageKeyRef = useRef(`sea-qa-${projectUuid}-ask-sessions-display`);
 
-  const { togglePageType, pageType } = useAskPage();
+  const { togglePageSlugId, pageSlugId } = useAskPage();
 
   const createSession = useCallback((name) => {
     return chatAPI.createChatSession(projectUuid, name).then(res => {
@@ -43,12 +43,12 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
       let newSessions = sessions.slice(0);
       const sessionIdx = newSessions.findIndex(s => s._id === sessionId);
       newSessions.splice(sessionIdx, 1);
-      if (pageType === sessionId) {
-        togglePageType(ASK_PAGE_TYPE.NEW);
+      if (pageSlugId === sessionId) {
+        togglePageSlugId(ASK_PAGE_SLUG_ID.NEW);
       }
       setSessions(newSessions);
     });
-  }, [projectUuid, sessions, pageType, togglePageType]);
+  }, [projectUuid, sessions, pageSlugId, togglePageSlugId]);
 
   const openShowSessions = useCallback(() => {
     setIsShowSessions(true);

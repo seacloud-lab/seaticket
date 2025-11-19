@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
-import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
+import { AI_RESOLVE_TYPE, ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
@@ -31,11 +31,11 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   const newSessionProblem = useRef('');
 
   const { createSession, sessions, modifyLocalSession } = useSessions();
-  const { togglePageType } = useAskPage();
+  const { togglePageSlugId } = useAskPage();
 
   const readOnly = useMemo(() => false, []);
   const session = useMemo(() => {
-    if (sessionId === ASK_PAGE_TYPE.NEW) return null;
+    if (sessionId === ASK_PAGE_SLUG_ID.NEW) return null;
     return sessions.find(s => s._id === sessionId);
   }, [sessionId, sessions]);
 
@@ -71,7 +71,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       messageInputRef.current?.clearInput();
     });
 
-    if (sessionId !== ASK_PAGE_TYPE.NEW) {
+    if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
       eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, ticket });
       return;
     }
@@ -79,17 +79,17 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       const newSessionId = session._id;
       currentSessionId.current = newSessionId;
       newSessionProblem.current = '';
-      togglePageType(newSessionId);
+      togglePageSlugId(newSessionId);
       setTimeout(() => {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, ticket });
       }, 3);
     });
-  }, [sessionId, chatHistories, updateChatHistories, togglePageType]);
+  }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
 
   useEffect(() => {
     if (currentSessionId.current === sessionId) return;
     const problem = messageInputRef.current?.getProblem() || '';
-    if (currentSessionId.current !== ASK_PAGE_TYPE.NEW) {
+    if (currentSessionId.current !== ASK_PAGE_SLUG_ID.NEW) {
       modifyLocalSession(currentSessionId.current, { problem });
     } else {
       newSessionProblem.current = problem;
@@ -100,7 +100,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     setLoading(true);
 
     // new blank chat
-    if (sessionId === ASK_PAGE_TYPE.NEW) {
+    if (sessionId === ASK_PAGE_SLUG_ID.NEW) {
       setLoading(false);
       return;
     }
@@ -165,7 +165,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
   }, [session?.is_replying]);
 
   useEffect(() => {
-    if (sessionId !== ASK_PAGE_TYPE.NEW) {
+    if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
       messageInputRef.current?.setAsk([session?.problem || '']);
     } else {
       messageInputRef.current?.setAsk([newSessionProblem.current || '']);

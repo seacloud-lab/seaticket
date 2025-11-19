@@ -20,7 +20,7 @@ export const CHAT_MESSAGE_FILE_TYPES = [
   CHAT_MESSAGE_TYPE.IMAGE,
 ];
 
-export const ASK_PAGE_TYPE = {
+export const ASK_PAGE_SLUG_ID = {
   NEW: 'new',
 };
 

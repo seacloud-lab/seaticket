@@ -4,7 +4,7 @@ import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
-import { TICKET_PAGE_TYPE } from '../../constants';
+import { TICKET_PAGE_SLUG_ID } from '../../constants';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -33,7 +33,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     };
   }, []);
 
-  const { togglePageType } = useTicketsPage();
+  const { togglePageSlugId } = useTicketsPage();
 
   const onTitleChange = useCallback((event) => {
     const newTitle = event.target.value;
@@ -67,7 +67,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags, priority }).then(res => {
-      togglePageType(res.data.ticket._pk);
+      togglePageSlugId(res.data.ticket._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -117,7 +117,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             <div className="sea-qa-project-ticket-footer">
               <UploadFilesButton onChange={handleFiles} />
               <div className="ml-2">
-                <Button className="mr-4" onClick={() => togglePageType(TICKET_PAGE_TYPE.ALL)}>{gettext('Cancel')}</Button>
+                <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
                 <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
               </div>
             </div>

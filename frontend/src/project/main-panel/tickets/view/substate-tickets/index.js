@@ -4,7 +4,7 @@ import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useSubstates, useTicketsPage, useTypes, useTags } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
@@ -14,7 +14,7 @@ import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
 
-  const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
   const { isLoading: isSubstatesLoading, substatesData } = useSubstates();
   const { typesData } = useTypes();
   const { tagsData } = useTags();
@@ -31,11 +31,11 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return ticketsAPI.listTicketsBySubstate(projectUuid, childrenPageType).then(res => {
+      return ticketsAPI.listTicketsBySubstate(projectUuid, childrenPageSlugId).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
-          'title': { click: (row) => togglePageType(row._id) },
+          'title': { click: (row) => togglePageSlugId(row._id) },
         };
         columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
           const { name } = c;
@@ -83,7 +83,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
     },
 
     // row
-    insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),
+    insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
     modifyRow: (...params) => ticketsAPI.modifyProjectTicket(projectUuid, ...params),
     modifyRows: (...params) => ticketsAPI.modifyProjectTickets(projectUuid, ...params),
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),
@@ -92,7 +92,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, childrenPageType, viewsData, togglePageType]);
+  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
   const createRowsTools = useCallback(({ rows, modifyRows }) => {
     let tools = [];
@@ -189,7 +189,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
     if (!row) return list;
     list.push({
       label: gettext('Open ticket'),
-      callback: () => togglePageType(row._id),
+      callback: () => togglePageSlugId(row._id),
     });
 
     list.push('Divider');
@@ -221,9 +221,9 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
   }), []);
 
   if (isLoading || isSubstatesLoading) return null;
-  const substate = getRowById(substatesData, childrenPageType);
+  const substate = getRowById(substatesData, childrenPageSlugId);
   if (!substate) {
-    togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL);
+    togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
     return null;
   }
 
@@ -234,7 +234,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
       localStorageNamePrefix={localStorageName}
       createRowsTools={createRowsTools}
       createContextMenuOptions={createContextMenuOptions}
-      expandRow={(row) => togglePageType(row._id)}
+      expandRow={(row) => togglePageSlugId(row._id)}
       toggleView={() => {}}
       viewTools={[VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       isViewComputedOnServer={false}

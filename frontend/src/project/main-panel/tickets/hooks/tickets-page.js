@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { isNumber } from '@//utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
-import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE } from '../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID } from '../constants';
 import context from '@/sea-metadata/context';
 import eventBus from '@//utils/event-bus';
 import { Utils } from '@/utils/utils';
@@ -11,44 +11,44 @@ const TicketsPageContext = React.createContext(null);
 
 export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
-  const [pageType, setPageType] = useState(TICKET_PAGE_TYPE.ALL);
-  const [childrenPageType, setChildrenPageType] = useState(TICKET_CHILDREN_PAGE_TYPE.ALL);
+  const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
+  const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
   const [viewID, setViewID] = useState('');
 
-  const resetURL = useCallback((pageType, childrenPageType, viewID) => {
+  const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
     const { origin } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
-    let urlPart = pageType === TICKET_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
-    if (pageType === TICKET_PAGE_TYPE.ALL && viewID) {
+    let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
-    if (pageType === TICKET_PAGE_TYPE.TAGS && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-      urlPart = urlPart + childrenPageType + '/';
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+      urlPart = urlPart + childrenPageSlugId + '/';
     }
-    if (pageType === TICKET_PAGE_TYPE.TYPES && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-      urlPart = urlPart + childrenPageType + '/';
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+      urlPart = urlPart + childrenPageSlugId + '/';
     }
-    if (pageType === TICKET_PAGE_TYPE.SUBSTATES && childrenPageType !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-      urlPart = urlPart + childrenPageType + '/';
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+      urlPart = urlPart + childrenPageSlugId + '/';
     }
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
-  const togglePageType = useCallback((newPageType, newChildrenPageType = TICKET_CHILDREN_PAGE_TYPE.ALL) => {
-    if (pageType !== newPageType) {
-      setPageType(newPageType);
+  const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL) => {
+    if (pageSlugId !== newPageSlugId) {
+      setPageSlugId(newPageSlugId);
     }
-    if (childrenPageType !== newChildrenPageType) {
-      setChildrenPageType(newChildrenPageType);
+    if (childrenPageSlugId !== newChildrenPageSlugId) {
+      setChildrenPageSlugId(newChildrenPageSlugId);
     }
-  }, [pageType, childrenPageType]);
+  }, [pageSlugId, childrenPageSlugId]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
     const eventBus = context.eventBus;
     eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
   }, []), 300);
 
-  // init page type
+  // init page
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -56,58 +56,58 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     const projectNameIndex = decodePathname.indexOf(part);
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
-    const [, pageTypeFromURL = '', childrenPageTypeFromURL = ''] = params;
-    let pageType = TICKET_PAGE_TYPE.ALL;
-    let childrenPageType = TICKET_CHILDREN_PAGE_TYPE.ALL;
-    if (pageTypeFromURL === TICKET_PAGE_TYPE.NEW) {
-      pageType = TICKET_PAGE_TYPE.NEW;
-    } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TAGS) {
-      pageType = TICKET_PAGE_TYPE.TAGS;
-      if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
+    const [, pageTypeFromURL = '', childrenPageSlugIdFromURL = ''] = params;
+    let pageSlugId = TICKET_PAGE_SLUG_ID.ALL;
+    let childrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
+    if (pageTypeFromURL === TICKET_PAGE_SLUG_ID.NEW) {
+      pageSlugId = TICKET_PAGE_SLUG_ID.NEW;
+    } else if (pageTypeFromURL === TICKET_PAGE_SLUG_ID.TAGS) {
+      pageSlugId = TICKET_PAGE_SLUG_ID.TAGS;
+      if (childrenPageSlugIdFromURL !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+        childrenPageSlugId = childrenPageSlugIdFromURL || TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
       }
-    } else if (pageTypeFromURL === TICKET_PAGE_TYPE.TYPES) {
-      pageType = TICKET_PAGE_TYPE.TYPES;
-      if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
+    } else if (pageTypeFromURL === TICKET_PAGE_SLUG_ID.TYPES) {
+      pageSlugId = TICKET_PAGE_SLUG_ID.TYPES;
+      if (childrenPageSlugIdFromURL !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+        childrenPageSlugId = childrenPageSlugIdFromURL || TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
       }
-    } else if (pageTypeFromURL === TICKET_PAGE_TYPE.SUBSTATES) {
-      pageType = TICKET_PAGE_TYPE.SUBSTATES;
-      if (childrenPageTypeFromURL !== TICKET_CHILDREN_PAGE_TYPE.ALL) {
-        childrenPageType = childrenPageTypeFromURL || TICKET_CHILDREN_PAGE_TYPE.ALL;
+    } else if (pageTypeFromURL === TICKET_PAGE_SLUG_ID.SUBSTATES) {
+      pageSlugId = TICKET_PAGE_SLUG_ID.SUBSTATES;
+      if (childrenPageSlugIdFromURL !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
+        childrenPageSlugId = childrenPageSlugIdFromURL || TICKET_CHILDREN_PAGE_SLUG_ID.ALL;
       }
     } else {
       const ticketNumber = Number(pageTypeFromURL);
-      pageType = pageTypeFromURL && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_TYPE.ALL;
+      pageSlugId = pageTypeFromURL && isNumber(ticketNumber) ? ticketNumber : TICKET_PAGE_SLUG_ID.ALL;
     }
-    if (pageType === TICKET_PAGE_TYPE.ALL) {
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
       const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || '';
       setViewID(viewID);
     }
-    setChildrenPageType(childrenPageType);
-    setPageType(pageType);
+    setChildrenPageSlugId(childrenPageSlugId);
+    setPageSlugId(pageSlugId);
     setLoading(false);
   }, [projectName]);
 
   useEffect(() => {
-    const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.TICKET_PAGE, togglePageType);
+    const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.TICKET_PAGE, togglePageSlugId);
     return () => {
       allSubscribe();
     };
-  }, [togglePageType]);
+  }, [togglePageSlugId]);
 
   useEffect(() => {
-    resetURL(pageType, childrenPageType, viewID);
-  }, [pageType, childrenPageType, viewID]);
+    resetURL(pageSlugId, childrenPageSlugId, viewID);
+  }, [pageSlugId, childrenPageSlugId, viewID]);
 
   return (
     <TicketsPageContext.Provider value={{
-      pageType,
+      pageSlugId,
       viewID,
-      childrenPageType,
+      childrenPageSlugId,
       isLoading,
-      togglePageType,
+      togglePageSlugId,
       onRefresh,
       updateViewID: setViewID,
     }}>

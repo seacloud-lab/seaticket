@@ -9,7 +9,7 @@ import SubstateTickets from './view/substate-tickets';
 import AllTickets from './view/all-tickets';
 import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
-import { TICKET_CHILDREN_PAGE_TYPE, TICKET_PAGE_TYPE } from './constants';
+import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
 import TicketTopBar from './components/ticket-top-bar';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { ticketsAPI } from '../../api';
@@ -30,27 +30,27 @@ const Page = () => {
     projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin
   }), []);
 
-  const { isLoading, pageType, childrenPageType } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId } = useTicketsPage();
   if (isLoading) return null;
-  if (pageType === TICKET_PAGE_TYPE.TAGS) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Tags { ...props } />);
-    return (<TagTickets { ...props } tagID={childrenPageType} />);
+  if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
+    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Tags { ...props } />);
+    return (<TagTickets { ...props } tagID={childrenPageSlugId} />);
   }
-  if (pageType === TICKET_PAGE_TYPE.TYPES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
-    return (<TypeTickets { ...props } typeID={childrenPageType}/>);
+  if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
+    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Types projectUuid={projectUuid} permission={permission} />);
+    return (<TypeTickets { ...props } typeID={childrenPageSlugId}/>);
   }
-  if (pageType === TICKET_PAGE_TYPE.SUBSTATES) {
-    if (childrenPageType === TICKET_CHILDREN_PAGE_TYPE.ALL) return (<Substates projectUuid={projectUuid} permission={permission} />);
-    return (<SubstateTickets { ...props } substateID={childrenPageType}/>);
+  if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES) {
+    if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) return (<Substates projectUuid={projectUuid} permission={permission} />);
+    return (<SubstateTickets { ...props } substateID={childrenPageSlugId}/>);
   }
-  if (pageType === TICKET_PAGE_TYPE.ALL) {
+  if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
     return (<AllTickets { ...props }/>);
   }
-  if (pageType === TICKET_PAGE_TYPE.NEW) {
+  if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
     return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
   }
-  return (<Ticket { ...props } ticketID={pageType} editorAPI={longtextAPI} />);
+  return (<Ticket { ...props } ticketID={pageSlugId} editorAPI={longtextAPI} />);
 };
 
 const Index = ({ title }) => {

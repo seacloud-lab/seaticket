@@ -5,7 +5,7 @@ import Sessions from './sessions';
 import Chat from './chat';
 import { AskPageProvider, SessionsProvider, useAskPage, useSessions } from './hooks';
 import { PERMISSION_TYPES } from '@/constants';
-import { ASK_PAGE_TYPE } from './constants';
+import { ASK_PAGE_SLUG_ID } from './constants';
 
 import './index.css';
 
@@ -14,7 +14,7 @@ const {
 } = window.app.pageOptions;
 
 const Main = ({ title, settings }) => {
-  const { isLoading: isAskPageLoading, pageType, togglePageType } = useAskPage();
+  const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
 
   const isLoading = isAskPageLoading || isSessionsLoading;
@@ -26,7 +26,7 @@ const Main = ({ title, settings }) => {
         {!isLoading && (
           <div className="d-flex">
             {permission === PERMISSION_TYPES.READ_WRITE && (
-              <IconButton icon="new-chat" onClick={() => togglePageType(ASK_PAGE_TYPE.NEW)} style={{ marginRight: '10px' }} />
+              <IconButton icon="new-chat" onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)} style={{ marginRight: '10px' }} />
             )}
             <IconButton icon="history" onClick={toggleIsShowSessions} />
           </div>
@@ -38,14 +38,14 @@ const Main = ({ title, settings }) => {
         ) : (
           <>
             <Chat
-              sessionId={pageType}
+              sessionId={pageSlugId}
               isShowSessions={isShowSessions}
               workspaceID={workspaceID}
               projectUuid={projectUuid}
               projectName={projectName}
               settings={settings}
             />
-            {isShowSessions && (<Sessions sessionId={pageType} permission={permission} />)}
+            {isShowSessions && (<Sessions sessionId={pageSlugId} permission={permission} />)}
           </>
         )}
       </div>
