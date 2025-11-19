@@ -2,8 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import { canAddProject, disableAddingPersonalProjects } from '../../constants';
-import './header-dropdown-menu.css';
 import { Icon, CustomizeDropdownMenu, CustomizeDropdownItem } from '../../components';
+
+import './header-dropdown-menu.css';
 
 const gettext = window.gettext;
 

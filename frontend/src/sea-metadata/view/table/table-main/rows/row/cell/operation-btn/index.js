@@ -1,9 +1,9 @@
+import PropTypes from 'prop-types';
 import { IconButton } from '@/components';
 import { CellType } from '@/sea-metadata/constants';
-import PropTypes from 'prop-types';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 import './index.css';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const CellOperationBtn = ({ column, row }) => {
   switch (column.type) {

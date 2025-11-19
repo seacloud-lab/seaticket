@@ -4,9 +4,9 @@ import classnames from 'classnames';
 import ModalPortal from '../modal-portal';
 import OptionGroup from '../select-option-group';
 import IconButton from '../icon-button';
+import { Icon } from '..';
 
 import './index.css';
-import { Icon } from '..';
 
 class GroupSelect extends Component {
 
