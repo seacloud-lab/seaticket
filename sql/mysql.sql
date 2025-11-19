@@ -20,7 +20,7 @@ CREATE TABLE `admin_log_adminlog` (
   PRIMARY KEY (`id`),
   KEY `admin_log_adminlog_email_7213c993` (`email`),
   KEY `admin_log_adminlog_operation_4bad7bd1` (`operation`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_content_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -199,7 +199,7 @@ CREATE TABLE `group_invite_link` (
   PRIMARY KEY (`id`),
   KEY `group_invite_link_token_7f96850f` (`token`),
   KEY `group_invite_link_group_id_4b619114` (`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `id_in_org_tuple` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -402,7 +402,7 @@ CREATE TABLE `workspaces`  (
   UNIQUE KEY `owner`(`owner`),
   INDEX `idx_org_id`(`org_id`),
   INDEX `workspaces_deleted_idx`(`deleted`)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `projects`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -426,7 +426,7 @@ CREATE TABLE `projects`  (
   KEY `projects_created_at_e6716f4b`(`created_at`),
   KEY `updated_at_h3g4o9u6_key`(`updated_at`),
   CONSTRAINT `projects_workspace_id_538ecbbf_fk_workspaces_id` FOREIGN KEY (`workspace_id`) REFERENCES `workspaces` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_group_orders` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -434,7 +434,7 @@ CREATE TABLE `project_group_orders` (
   `detail` longtext NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_group_order_username_uwuyehjb`(`username`)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `project_connection`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -465,7 +465,7 @@ CREATE TABLE `ticket_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ticket_views_project_uuid`(`project_uuid`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `connection_views`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -474,7 +474,7 @@ CREATE TABLE `connection_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `connection_views_connection_id`(`connection_id`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `options_useroptions`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -484,14 +484,14 @@ CREATE TABLE `options_useroptions`  (
   PRIMARY KEY (`id`),
   KEY `options_useroptions_email_77d5726a`(`email`),
   KEY `options_useroptions_option_key_7bf7ae4b`(`option_key`)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `deleted_projects`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `project_uuid` varchar(32) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_uuid`(`project_uuid`)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `org_saml_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -612,4 +612,4 @@ CREATE TABLE `knowledge_base_views`  (
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `knowledge_base_views_project_uuid`(`project_uuid`)
-) ENGINE = InnoDB CHARACTER SET = utf8mb4;
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
