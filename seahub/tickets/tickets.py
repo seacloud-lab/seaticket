@@ -118,27 +118,27 @@ class TicketsAPIView(APIView):
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        description_dict = request.POST.get('description')
-        if not description_dict:
-            error_msg = 'description invalid.'
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         try:
-            description_dict = json.loads(description_dict)
+            content_dict = json.loads(content_dict)
         except:
-            error_msg = 'description invalid.'
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if not isinstance(description_dict, dict):
-            error_msg = 'description invalid.'
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        description = description_dict.get('text')
-        if not description:
-            error_msg = 'description invalid.'
+        content = content_dict.get('text')
+        if not content:
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        file_urls = description_dict.get('images')
+        file_urls = content_dict.get('images')
         if file_urls and not isinstance(file_urls, list):
-            error_msg = 'description invalid.'
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        link_urls = description_dict.get('links')
+        link_urls = content_dict.get('links')
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
@@ -243,7 +243,7 @@ class TicketsAPIView(APIView):
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                description = replace_file_url_in_content(description, new_file_urls_dict)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -255,7 +255,7 @@ class TicketsAPIView(APIView):
             substate_name = 'New'
             row = {
                 TicketsTable.title.name: title,
-                TicketsTable.content.name: description,
+                TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_option.get('name') if type_id and type_option else None,
                 TicketsTable.substate.name: substate_name,
@@ -373,23 +373,23 @@ class TicketsAPIView(APIView):
                 type_options = column_data.get('options', []) or []
                 type_option = next((option for option in type_options if option['id'] == row_data.get('type')), None)
                 updated_row[TicketsTable.type.name] = type_option.get('name') if type_option else None
-            if 'description' in row_data:
-                description_dict = row_data.get('description')
-                if not isinstance(description_dict, dict):
-                    error_msg = 'description invalid.'
+            if 'content' in row_data:
+                content_dict = row_data.get('content')
+                if not isinstance(content_dict, dict):
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                description = description_dict.get('text')
-                if not description:
-                    error_msg = 'description invalid.'
+                content = content_dict.get('text')
+                if not content:
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                file_urls = description_dict.get('images')
+                file_urls = content_dict.get('images')
                 if file_urls and not isinstance(file_urls, list):
-                    error_msg = 'description invalid.'
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                link_urls = description_dict.get('links')
+                link_urls = content_dict.get('links')
                 if link_urls and isinstance(link_urls, list):
                     file_urls = (file_urls or []) + link_urls
-                updated_row[TicketsTable.content.name] = description
+                updated_row[TicketsTable.content.name] = content
             for key, value in row_data.items():
                 if key in ('substate', 'tags', 'type', '_pk', 'updated_at', 'content', 'state'):
                     continue
@@ -545,27 +545,27 @@ class TicketAPIView(APIView):
         title = request.data.get('title')
         username = request.user.username
 
-        description = None
+        content = None
         file_urls = None
-        description_dict = request.data.get('description')
-        if description_dict:
+        content_dict = request.data.get('content')
+        if content_dict:
             try:
-                description_dict = json.loads(description_dict)
+                content_dict = json.loads(content_dict)
             except:
-                error_msg = 'description invalid.'
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(description_dict, dict):
-                error_msg = 'description invalid.'
+            if not isinstance(content_dict, dict):
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            description = description_dict.get('text')
-            if not description:
-                error_msg = 'description invalid.'
+            content = content_dict.get('text')
+            if not content:
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            file_urls = description_dict.get('images')
+            file_urls = content_dict.get('images')
             if file_urls and not isinstance(file_urls, list):
-                error_msg = 'description invalid.'
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            link_urls = description_dict.get('links')
+            link_urls = content_dict.get('links')
             if link_urls and isinstance(link_urls, list):
                 file_urls = (file_urls or []) + link_urls
 
@@ -712,7 +712,7 @@ class TicketAPIView(APIView):
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                description = replace_file_url_in_content(description, new_file_urls_dict)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -723,8 +723,8 @@ class TicketAPIView(APIView):
             update_row = {}
             if title:
                 update_row['title'] = title
-            if description:
-                update_row['content'] = description
+            if content:
+                update_row['content'] = content
             if ticket_state or ticket_state == '':
                 update_row['state'] = state_option.get('name')
             if is_update_type:
