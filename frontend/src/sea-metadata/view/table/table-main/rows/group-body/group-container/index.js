@@ -118,11 +118,11 @@ class GroupContainer extends Component {
           ref={ref => this.leftContainer = ref}
           group={group}
           firstColumnFrozen={firstColumnFrozen}
-          lastColumnFrozen={lastFrozenColumn.key === lastFrozenColumnKey}
+          lastColumnFrozen={(lastFrozenColumn?.key) === lastFrozenColumnKey}
           leftPaneWidth={leftPaneWidth}
           height={height}
           isExpanded={isExpanded}
-          firstColumnKey={firstColumn.key}
+          firstColumnKey={firstColumn?.key}
           maxLevel={maxLevel}
           onExpandGroupToggle={this.onExpandGroupToggle}
         />
