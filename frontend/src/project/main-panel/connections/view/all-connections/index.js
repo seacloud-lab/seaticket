@@ -19,7 +19,7 @@ const AllConnections = ({ projectUuid }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 
-  const { isLoading, isDataLoaded, connections, reload, loadMore, handleModify, handleDelete,
+  const { isLoading, isConnectionsLoaded, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
   } = useConnections();
   const { togglePageType, updatePageName } = useConnectionsPage();
@@ -121,13 +121,13 @@ const AllConnections = ({ projectUuid }) => {
   }, [selfQuery]);
 
   useEffect(() => {
-    reload();
+    reloadConnections();
     return () => {
       selfQuery.clear();
     };
   }, []);
 
-  if (!isDataLoaded) return null;
+  if (!isConnectionsLoaded) return null;
 
   if (isLoading && connections.length === 0) return (<CenteredLoading />);
 

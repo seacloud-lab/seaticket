@@ -21,7 +21,7 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 const SEARCH_STORE_KEY = 'search-project';
 
 const Search = ({ title, settings }) => {
-  const { connections, isDataLoaded, isLoading, reload } = useConnections();
+  const { connections, isConnectionsLoaded, isLoading, reloadConnections } = useConnections();
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -108,7 +108,7 @@ const Search = ({ title, settings }) => {
   }, []);
 
   useEffect(() => {
-    reload();
+    reloadConnections();
     return () => {
       timer.current && clearTimeout(timer.current);
     };
@@ -124,7 +124,7 @@ const Search = ({ title, settings }) => {
     }
   }, []);
 
-  if (!isDataLoaded || (isLoading && connections.length === 0)) return null;
+  if (!isConnectionsLoaded || (isLoading && connections.length === 0)) return null;
 
   return (
     <>
