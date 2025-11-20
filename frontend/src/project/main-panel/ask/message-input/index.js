@@ -10,10 +10,10 @@ import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
 import Ticket from './ticket';
+import Issue from './issue';
 import { useProblemToBeResolved } from '../hooks';
 
 import './index.css';
-import Issue from './issue';
 
 const MessageInput = forwardRef(({
   isReply,
@@ -81,9 +81,8 @@ const MessageInput = forwardRef(({
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
     sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue });
-    updateTicket(null);
-    updateIssue(null);
-  }, [resolveType, value, ticket, issue, sendMessage]);
+    clearProblem();
+  }, [resolveType, value, ticket, issue, sendMessage, clearProblem]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
