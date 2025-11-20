@@ -74,9 +74,9 @@ const Index = ({ title }) => {
           question: gettext('Question'),
           answer: gettext('Answer'),
           creator: gettext('Creator'),
-          created_time: gettext('Created time'),
+          created_time: gettext('Create time'),
           last_modifier: gettext('Last modifier'),
-          modified_time: gettext('Modified time'),
+          modified_time: gettext('Last modified time'),
         };
         let columns = (res?.data?.columns || [])
           .filter(c => c.name !== '_pk')
