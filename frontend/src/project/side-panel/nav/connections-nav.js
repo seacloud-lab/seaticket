@@ -8,16 +8,16 @@ import './index.css';
 
 const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);
-  const { connections, reload } = useConnections();
+  const { connections, reloadConnections } = useConnections();
 
   const toggleShowChildren = useCallback((event) => {
     event.nativeEvent.stopImmediatePropagation();
     event.stopPropagation();
     if (!isShowChildren) {
-      reload();
+      reloadConnections();
     }
     setIsShowChildren(!isShowChildren);
-  }, [isShowChildren, reload]);
+  }, [isShowChildren, reloadConnections]);
 
   const { key, name, icon } = nav;
   let isActive = activeBar[0] === key;

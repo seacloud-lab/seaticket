@@ -23,7 +23,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const pageCountRef = useRef(1000);
   const hasMoreRef = useRef(true);
   const activeConnectionRef = useRef(null);
-  const isDataLoaded = useRef(false);
+  const isConnectionsLoaded = useRef(false);
 
   const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
     setConnections(prev => prev.map(record =>
@@ -144,7 +144,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
           newConnections.push(connection);
         }
       });
-      isDataLoaded.current = true;
+      isConnectionsLoaded.current = true;
       setConnections(newConnections);
       setLoading(false);
     }).catch(error => {
@@ -156,18 +156,18 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
 
   const load = useCallback(() => {
     if (!hasMoreRef.current) return;
-    if (isDataLoaded.current) return;
+    if (isConnectionsLoaded.current) return;
     if (isLoading) return;
     loadMore();
   }, [isLoading, loadMore]);
 
-  const reload = useCallback(() => {
+  const reloadConnections = useCallback(() => {
     const currentTime = new Date();
-    if (isDataLoaded.current && dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
+    if (isConnectionsLoaded.current && dayjs(currentTime).diff(loadTime.current, 'hours') < 1) return;
     loadTime.current = currentTime;
     pageRef.current = 1;
     hasMoreRef.current = true;
-    isDataLoaded.current = false;
+    isConnectionsLoaded.current = false;
     load();
   }, [load]);
 
@@ -183,7 +183,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
 
   return (
     <ConnectionsContext.Provider value={{
-      isDataLoaded: isDataLoaded.current,
+      isConnectionsLoaded: isConnectionsLoaded.current,
       isLoading,
       connections,
       modifyLocalConnectionRecord,
@@ -192,7 +192,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       handleDelete,
       handleModify,
       load,
-      reload,
+      reloadConnections,
       loadMore,
     }}>
       {children}
