@@ -15,6 +15,7 @@ import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../mod
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
+import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
 import './index.css';
 
@@ -129,8 +130,8 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
-  const { updateIssue } = useProblemToBeResolved();
 
+  const { updateIssue } = useProblemToBeResolved();
 
   const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
     toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
@@ -379,14 +380,9 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleResolveIssueByAI = useCallback((issue) => {
     if (!issue || !connectionID) return;
-    const updatedIssue = {
-      ...issue,
-      connection_id: connectionID
-    };
-    updateIssue(updatedIssue);
+    updateIssue({ ...issue, connection_id: connectionID }, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateIssue, connectionID]);
-
+  }, [connectionID, toggleBar, updateIssue]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
