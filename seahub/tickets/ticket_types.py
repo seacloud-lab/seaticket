@@ -16,7 +16,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.tickets.ticket_utils import update_select_option, add_select_option, get_ticket_counts_group_by_column_name, \
     convert_ticket_select_column_name_to_option_id, filter_tickets_by_select, TABLE_TICKETS, \
-    get_column_from_metadata_by_name, batch_delete_select_option
+    get_column_from_columns_by_name, batch_delete_select_option
 from seahub.project.seadb_api import SeaDBAPI
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class TicketTypesAPIView(APIView):
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
         table_id = table_meta.get('id')
-        type_column = get_column_from_metadata_by_name(table_meta, 'type')
+        type_column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
         column_data = type_column.get('data') or {}
         existing_options = column_data.get('options', []) or []
 
@@ -153,7 +153,7 @@ class TicketTypesAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(table_meta, 'type')
+            column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), type_ids)
         except Exception as e:
             logger.error(e)
@@ -198,7 +198,8 @@ class TicketTypeAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(table_meta, 'type')
+            table_columns = table_meta.get('columns')
+            column = get_column_from_columns_by_name(table_columns, 'type')
             column_data = column.get('data') or {}
             options = column_data.get('options', []) or []
             for opt in options:
@@ -221,7 +222,7 @@ class TicketTypeAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         for ticket in tickets:
-            convert_ticket_select_column_name_to_option_id(table_meta, ticket)
+            convert_ticket_select_column_name_to_option_id(table_columns, ticket)
         return Response({
             'tickets': tickets,
             'columns': columns,
@@ -263,7 +264,7 @@ class TicketTypeAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(table_meta, 'type')
+            column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
             column_data = column.get('data') or {}
             options = column_data.get('options', []) or []
             for opt in options:
@@ -324,7 +325,7 @@ class TicketTypeAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(tickets_table_metadata, 'type')
+            column = get_column_from_columns_by_name(tickets_table_metadata.get('columns'), 'type')
             table_id = tickets_table_metadata.get('id')
             column_key = column.get('key')
             column_data = column.get('data') or {}
