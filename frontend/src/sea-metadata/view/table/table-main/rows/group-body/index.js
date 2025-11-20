@@ -381,7 +381,7 @@ class GroupBody extends Component {
 
     // Scroll to the bottom of the page, load more rows
     if (offsetHeight + contentScrollTop >= this.resultContentRef.scrollHeight) {
-      this.props.scrollToLoadMore();
+      this.props.loadMore();
     }
 
     if (!this.isScrollingRightScrollbar) {
@@ -970,7 +970,7 @@ GroupBody.propTypes = {
   setRowsScrollLeft: PropTypes.func,
   hasSelectedCell: PropTypes.func,
   cacheScrollTop: PropTypes.func,
-  scrollToLoadMore: PropTypes.func,
+  loadMore: PropTypes.func,
   getTableContentRect: PropTypes.func,
   getMobileFloatIconStyle: PropTypes.func,
   onToggleMobileMoreOperations: PropTypes.func,

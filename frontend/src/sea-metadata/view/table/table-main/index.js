@@ -9,7 +9,7 @@ import './index.css';
 
 const TableMain = ({
   metadata, tagsData, collaborators,
-  modifyRow, modifyRows, loadMore, loadAll, searchResult, rowGetterByIndex, rowGetterById, insertColumn,
+  modifyRow, modifyRows, loadMore, searchResult, rowGetterByIndex, rowGetterById, insertColumn,
   modifyColumnData, updateFileTags,
   ...props
 }) => {
@@ -70,8 +70,7 @@ const TableMain = ({
         collaborators={collaborators}
         hasMore={metadata.hasMore}
         gridUtils={gridUtils}
-        scrollToLoadMore={loadMore}
-        loadAll={loadAll}
+        loadMore={loadMore}
         paste={paste}
         groupOffsetLeft={groupOffset}
         modifyRow={updateRow}
@@ -95,7 +94,6 @@ TableMain.propTypes = {
   modifyRow: PropTypes.func,
   modifyRows: PropTypes.func,
   loadMore: PropTypes.func,
-  loadAll: PropTypes.func,
   searchResult: PropTypes.object,
 };
 

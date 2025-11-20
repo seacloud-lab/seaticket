@@ -767,7 +767,7 @@ class Rows extends Component {
           rowGetterById={this.props.rowGetterById}
           rowGetterByIndex={this.props.rowGetterByIndex}
           getRowsSummaries={() => { }}
-          loadAll={this.props.loadAll}
+          loadMore={this.props.loadMore}
         />
       </>
     );
@@ -789,11 +789,10 @@ Rows.propTypes = {
   groupbys: PropTypes.array,
   searchResult: PropTypes.object,
   getTableContentRect: PropTypes.func,
-  scrollToLoadMore: PropTypes.func,
+  loadMore: PropTypes.func,
   updateRow: PropTypes.func,
   rowGetterById: PropTypes.func,
   rowGetterByIndex: PropTypes.func,
-  loadAll: PropTypes.func,
   renameColumn: PropTypes.func,
   deleteColumn: PropTypes.func,
   insertColumn: PropTypes.func,
