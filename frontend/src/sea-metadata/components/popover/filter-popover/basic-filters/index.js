@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FormGroup, Label } from 'reactstrap';
 import { gettext } from '@/constants';
 import { VIEW_TYPE } from '../../../../constants';
-import StatusFilter from './status-filter';
+import StateFilter from './state-filter';
 import TypeFilter from './type-filter';
 import TagsFilter from './tags-filter';
 import { getColumnByKey } from '@/sea-metadata/utils/column';
@@ -54,7 +54,7 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
             const { column_key, filter_term } = filter;
             const column = getColumnByKey(columns, column_key);
             if (column && column_key === stateColumnKey) {
-              return (<StatusFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
+              return (<StateFilter readOnly={readOnly} value={filter_term} column={column} key={column_key} onChange={onStatusChange} />);
             }
             if (column && column_key === typeColumnKey && typesData) {
               return (<TypeFilter readOnly={readOnly} value={filter_term} key={column_key} onChange={onTypeChange} />);

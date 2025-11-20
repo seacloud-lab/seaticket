@@ -4,7 +4,7 @@ import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 import { getColumnOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 
-const StatusFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
+const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
 
   const options = useMemo(() => {
     const columnOptions = getColumnOptions(column);
@@ -25,7 +25,7 @@ const StatusFilter = ({ readOnly = true, value = [], column, onChange: onChangeA
     });
   }, [column, value]);
 
-  const displayValue = useMemo(() => ({ label: <>{gettext('Status')}</> }), [value]);
+  const displayValue = useMemo(() => ({ label: <>{gettext('State')}</> }), [value]);
 
   const onChange = useCallback((newValue) => {
     if (value.includes(newValue)) {
@@ -48,4 +48,4 @@ const StatusFilter = ({ readOnly = true, value = [], column, onChange: onChangeA
 
 };
 
-export default StatusFilter;
+export default StateFilter;
