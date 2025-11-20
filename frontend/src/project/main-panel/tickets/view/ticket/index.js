@@ -6,7 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { TICKET_STATUS_CONFIG } from '../../constants';
+import { TICKET_STATE_CONFIG } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -154,8 +154,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [ticket, modifyTicket]);
 
-  const onDescriptionChange = useCallback((description, callback) => {
-    modifyTicket(ticket.id, { description }).then(res => {
+  const onContentChange = useCallback((content, callback) => {
+    modifyTicket(ticket.id, { content }).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -206,9 +206,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [reply, ticket, replyEditorRef, createReply]);
 
-  const toggleStatus = useCallback((status = '') => {
-    const modifyStatus = () => {
-      modifyTicket(ticket.id, { status }).then(res => {
+  const toggleState = useCallback((state = '') => {
+    const modifyState = () => {
+      modifyTicket(ticket.id, { state }).then(res => {
         // todo
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -216,11 +216,11 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       });
     };
     if (reply && reply?.text) {
-      onSubmitReply(modifyStatus);
+      onSubmitReply(modifyState);
       return;
     }
 
-    modifyStatus();
+    modifyState();
   }, [ticket, reply, modifyTicket, onSubmitReply]);
 
   const handleModifyReply = useCallback((replyID, content, callback) => {
@@ -249,10 +249,10 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, status, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
+  const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
-  const statusOption = TICKET_STATUS_CONFIG[status];
+  const stateOption = TICKET_STATE_CONFIG[state];
 
   return (
     <div className="sea-qa-project-ticket" onScroll={handleScroll}>
@@ -261,7 +261,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         readonly={!editable}
         title={title}
         id={id}
-        statusOption={statusOption}
+        stateOption={stateOption}
         typeOption={typeOption}
         copyLink={copyLink}
         modifyTitle={onTitleChange}
@@ -270,7 +270,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
         title={title}
         id={id}
-        statusOption={statusOption}
+        stateOption={stateOption}
         typeOption={typeOption}
       />
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
@@ -281,7 +281,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             readonly={!editable}
             lang={lang}
             editorAPI={editorAPI}
-            onModify={onDescriptionChange}
+            onModify={onContentChange}
           />
           {replies.map(reply => {
             return (
@@ -316,7 +316,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
-              <StatusToggleButton status={status} disabled={isSubmitting} onChange={toggleStatus} />
+              <StatusToggleButton state={state} disabled={isSubmitting} onChange={toggleState} />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
                 disabled={!reply.text || isSubmitting}

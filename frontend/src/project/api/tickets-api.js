@@ -247,10 +247,10 @@ class TicketsAPI {
   }
 
   // substates
-  listTicketSubstates(projectUuid, { status_id = '' } = {}) {
+  listTicketSubstates(projectUuid, { state_id = '' } = {}) {
     let url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
     const params = {};
-    if (status_id) params.status_id = status_id;
+    if (state_id) params.state_id = state_id;
     return this.req.get(url, { params });
   }
 

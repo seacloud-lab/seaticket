@@ -9,7 +9,7 @@ class Context {
   constructor() {
     this.username = '';
     this.settings = {
-      statusColumnKey: 'status',
+      stateColumnKey: 'state',
       typeColumnKey: 'type',
       tagsColumnKey: 'tags',
     };
@@ -62,7 +62,7 @@ class Context {
   destroy = () => {
     this.username = '';
     this.settings = {
-      statusColumnKey: 'status',
+      stateColumnKey: 'state',
       typeColumnKey: 'type',
       tagsColumnKey: 'tags',
     };

@@ -272,7 +272,7 @@ class ConvertRecordToTicket(APIView):
             'org_id': org_id
         }
         try:
-            ai_title, ai_description = convert_record_to_ticket(params)
+            ai_title, ai_content = convert_record_to_ticket(params)
             if not ai_title:
                 ai_title = default_title
         except Exception as e:
@@ -281,7 +281,7 @@ class ConvertRecordToTicket(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({
             'title': ai_title,
-            'description': ai_description,
+            'content': ai_content,
         })
 
 

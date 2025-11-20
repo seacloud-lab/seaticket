@@ -104,7 +104,7 @@ const Reply = ({
   }, [reply.creator]);
 
   if (!reply) return null;
-  const { created_at } = reply;
+  const { created_time } = reply;
 
   if (!readonly && (onDelete || onModify)) {
 
@@ -121,7 +121,7 @@ const Reply = ({
                 {isShowStatus && (
                   <span className="sea-qa-project-ticket-reply-status mr-1">{gettext('opened')}</span>
                 )}
-                <span className="sea-qa-project-ticket-reply-time">{created_at}</span>
+                <span className="sea-qa-project-ticket-reply-time">{created_time}</span>
               </div>
               {!isShowEditor && (
                 <Dropdown
@@ -213,7 +213,7 @@ const Reply = ({
               {isShowStatus && (
                 <span className="sea-qa-project-ticket-reply-status mr-1">{gettext('opened')}</span>
               )}
-              <span className="sea-qa-project-ticket-reply-time">{created_at}</span>
+              <span className="sea-qa-project-ticket-reply-time">{created_time}</span>
             </>
           )}
         </div>

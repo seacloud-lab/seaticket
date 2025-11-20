@@ -342,8 +342,8 @@ class SeafileTable(BaseModel):
 
 class TicketsTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
-    description = MappedColumn('description', PropertyTypes.TEXT)
-    status = MappedColumn('status', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
+    content = MappedColumn('content', PropertyTypes.TEXT)
+    state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)
     tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
@@ -352,16 +352,16 @@ class TicketsTable(BaseModel):
     priority = MappedColumn('priority', PropertyTypes.INT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     reply_count = MappedColumn('reply_count', PropertyTypes.INT)
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 class TicketRepliesTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
     content = MappedColumn('content', PropertyTypes.TEXT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
-    created_at = MappedColumn('created_at', PropertyTypes.DATETIME)
-    updated_at = MappedColumn('updated_at', PropertyTypes.DATETIME)
+    created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
+    modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 

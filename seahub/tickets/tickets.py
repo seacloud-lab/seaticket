@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-import uuid
 import logging
 import json
 from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
-from django.utils.translation import gettext as _
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -120,27 +118,27 @@ class TicketsAPIView(APIView):
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        description_dict = request.POST.get('description')
-        if not description_dict:
-            error_msg = 'description invalid.'
+        content_dict = request.POST.get('content')
+        if not content_dict:
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         try:
-            description_dict = json.loads(description_dict)
+            content_dict = json.loads(content_dict)
         except:
-            error_msg = 'description invalid.'
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if not isinstance(description_dict, dict):
-            error_msg = 'description invalid.'
+        if not isinstance(content_dict, dict):
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        description = description_dict.get('text')
-        if not description:
-            error_msg = 'description invalid.'
+        content = content_dict.get('text')
+        if not content:
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        file_urls = description_dict.get('images')
+        file_urls = content_dict.get('images')
         if file_urls and not isinstance(file_urls, list):
-            error_msg = 'description invalid.'
+            error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        link_urls = description_dict.get('links')
+        link_urls = content_dict.get('links')
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
@@ -245,7 +243,7 @@ class TicketsAPIView(APIView):
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                description = replace_file_url_in_content(description, new_file_urls_dict)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -253,12 +251,12 @@ class TicketsAPIView(APIView):
 
         # main
         try:
-            ticket_status = 'open'
+            ticket_state = 'open'
             substate_name = 'New'
             row = {
                 TicketsTable.title.name: title,
-                TicketsTable.description.name: description,
-                TicketsTable.status.name: ticket_status,
+                TicketsTable.content.name: content,
+                TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_option.get('name') if type_id and type_option else None,
                 TicketsTable.substate.name: substate_name,
                 TicketsTable.priority.name: priority,
@@ -267,8 +265,8 @@ class TicketsAPIView(APIView):
                 TicketsTable.tags.name: tag_names or [],
                 TicketsTable.creator.name: username,
                 TicketsTable.reply_count.name: 0,
-                TicketsTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketsTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketsTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'tickets', [row])
@@ -343,12 +341,12 @@ class TicketsAPIView(APIView):
             row_data = ticket_id_to_row.get(str(row.get('_pk')))
             if not row_data:
                 continue
-            if 'status' in row_data:
+            if 'state' in row_data:
                 column = get_column_from_columns_by_name(table_meta.get('columns'), 'status')
                 column_data = column.get('data') or {}
                 options = column_data.get('options', []) or []
-                status_option = next((option for option in options if option['id'] == row_data.get('status')), None)
-                updated_row[TicketsTable.status.name] = status_option.get('name') if status_option else None
+                state_option = next((option for option in options if option['id'] == row_data.get('state')), None)
+                updated_row[TicketsTable.state.name] = state_option.get('name') if state_option else None
             if 'substate' in row_data:
                 column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
                 column_data = column.get('data') or {}
@@ -375,29 +373,29 @@ class TicketsAPIView(APIView):
                 type_options = column_data.get('options', []) or []
                 type_option = next((option for option in type_options if option['id'] == row_data.get('type')), None)
                 updated_row[TicketsTable.type.name] = type_option.get('name') if type_option else None
-            if 'description' in row_data:
-                description_dict = row_data.get('description')
-                if not isinstance(description_dict, dict):
-                    error_msg = 'description invalid.'
+            if 'content' in row_data:
+                content_dict = row_data.get('content')
+                if not isinstance(content_dict, dict):
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                description = description_dict.get('text')
-                if not description:
-                    error_msg = 'description invalid.'
+                content = content_dict.get('text')
+                if not content:
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                file_urls = description_dict.get('images')
+                file_urls = content_dict.get('images')
                 if file_urls and not isinstance(file_urls, list):
-                    error_msg = 'description invalid.'
+                    error_msg = 'content invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                link_urls = description_dict.get('links')
+                link_urls = content_dict.get('links')
                 if link_urls and isinstance(link_urls, list):
                     file_urls = (file_urls or []) + link_urls
-                updated_row[TicketsTable.description.name] = description
+                updated_row[TicketsTable.content.name] = content
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'updated_at', 'description', 'status'):
+                if key in ('substate', 'tags', 'type', '_pk', 'updated_at', 'content', 'state'):
                     continue
                 updated_row[key] = value
 
-            updated_row[TicketsTable.updated_at.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            updated_row[TicketsTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows.append(
                 {
                     'pk': row.get('_pk'),
@@ -519,8 +517,8 @@ class TicketAPIView(APIView):
                 result = {
                     'number': ticket_reply.get('_pk'),
                     'content': ticket_reply.get('content'),
-                    'created_at': ticket_reply.get('created_at'),
-                    'updated_at': ticket_reply.get('updated_at'),
+                    'created_time': ticket_reply.get('created_time'),
+                    'modified_time': ticket_reply.get('modified_time'),
                     'creator': ticket_reply.get('creator'),
                 }
                 if not ticket.get('replies'):
@@ -547,27 +545,27 @@ class TicketAPIView(APIView):
         title = request.data.get('title')
         username = request.user.username
 
-        description = None
+        content = None
         file_urls = None
-        description_dict = request.data.get('description')
-        if description_dict:
+        content_dict = request.data.get('content')
+        if content_dict:
             try:
-                description_dict = json.loads(description_dict)
+                content_dict = json.loads(content_dict)
             except:
-                error_msg = 'description invalid.'
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(description_dict, dict):
-                error_msg = 'description invalid.'
+            if not isinstance(content_dict, dict):
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            description = description_dict.get('text')
-            if not description:
-                error_msg = 'description invalid.'
+            content = content_dict.get('text')
+            if not content:
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            file_urls = description_dict.get('images')
+            file_urls = content_dict.get('images')
             if file_urls and not isinstance(file_urls, list):
-                error_msg = 'description invalid.'
+                error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            link_urls = description_dict.get('links')
+            link_urls = content_dict.get('links')
             if link_urls and isinstance(link_urls, list):
                 file_urls = (file_urls or []) + link_urls
 
@@ -589,15 +587,15 @@ class TicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        ticket_status_id = request.data.get('status')
+        ticket_state_id = request.data.get('state')
 
-        if ticket_status_id is not None:
-            status_column = get_column_from_columns_by_name(metadata, 'status')
-            status_column_data = status_column.get('data') or {}
-            status_options = status_column_data.get('options', []) or []
-            status_option = next((option for option in status_options if option['id'] == ticket_status_id), None)
-            if not status_option:
-                error_msg = 'status invalid.'
+        if ticket_state_id is not None:
+            state_column = get_column_from_columns_by_name(metadata, 'state')
+            state_column_data = state_column.get('data') or {}
+            state_options = state_column_data.get('options', []) or []
+            state_option = next((option for option in state_options if option['id'] == ticket_state_id), None)
+            if not state_option:
+                error_msg = 'state invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         is_update_type = 'type' in request.data
@@ -686,21 +684,21 @@ class TicketAPIView(APIView):
             if not substate_option:
                 error_msg = 'substate invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            # determine status id to check cascade: prefer target status if provided
-            if ticket_status_id is not None:
-                status_option_id = ticket_status_id
+            # determine state id to check cascade: prefer target state if provided
+            if ticket_state_id is not None:
+                state_option_id = ticket_state_id
             else:
-                current_status_name = ticket.get('status')
-                status_column = get_column_from_columns_by_name(metadata, 'status')
-                status_column_data = status_column.get('data') or {}
-                status_options = status_column_data.get('options', []) or []
-                current_status_option = next((option for option in status_options if option['name'] == current_status_name), None)
-                status_option_id = current_status_option.get('id') if current_status_option else ''
+                current_state_name = ticket.get('state')
+                state_column = get_column_from_columns_by_name(metadata, 'state')
+                state_column_data = state_column.get('data') or {}
+                state_options = state_column_data.get('options', []) or []
+                current_state_option = next((option for option in state_options if option['name'] == current_state_name), None)
+                state_option_id = current_state_option.get('id') if current_state_option else ''
 
             cascade_settings = (substate_column_data or {}).get('cascade_settings') or {}
-            allowed_substate_ids = set(cascade_settings.get(status_option_id, []))
+            allowed_substate_ids = set(cascade_settings.get(state_option_id, []))
             if substate_option.get('id') not in allowed_substate_ids:
-                error_msg = 'substate not allowed for current status.'
+                error_msg = 'substate not allowed for current state.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             substate_name = substate_option.get('name')
 
@@ -714,7 +712,7 @@ class TicketAPIView(APIView):
         if file_urls:
             try:
                 new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                description = replace_file_url_in_content(description, new_file_urls_dict)
+                content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
                 error_msg = 'Upload files failed.'
@@ -725,10 +723,10 @@ class TicketAPIView(APIView):
             update_row = {}
             if title:
                 update_row['title'] = title
-            if description:
-                update_row['description'] = description
-            if ticket_status_id or ticket_status_id == '':
-                update_row['status'] = status_option.get('name')
+            if content:
+                update_row['content'] = content
+            if ticket_state_id or ticket_state_id == '':
+                update_row['state'] = state_option.get('name')
             if is_update_type:
                 update_row['type'] = type_option.get('name') if type_id and type_option else None
             if is_update_substate:
@@ -747,7 +745,7 @@ class TicketAPIView(APIView):
             if username not in participants:
                 participants.append(username)
             update_row['participants'] = participants
-            update_row['updated_at'] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_row['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),
@@ -800,7 +798,7 @@ class TicketAPIView(APIView):
             'pk': ticket.get('_pk'),
             'row': {
                 'deleted': True,
-                'deleted_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
             }
         }
         try:
@@ -995,8 +993,8 @@ class TicketRepliesAPIView(APIView):
                 TicketRepliesTable.ticket_id.name: ticket.get('_pk'),
                 TicketRepliesTable.creator.name: username,
                 TicketRepliesTable.content.name: content,
-                TicketRepliesTable.created_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.updated_at.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketRepliesTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketRepliesTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketRepliesTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
@@ -1011,7 +1009,7 @@ class TicketRepliesAPIView(APIView):
                 'pk': ticket.get('_pk'),
                 'row': {
                     'reply_count': ticket_replies_count,
-                    'updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
             participants = ticket.get('participants') or []
@@ -1097,10 +1095,10 @@ class TicketReplyAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        updated_at = ticket_reply_data.get('updated_at')
-        if updated_at:
-            updated_at = datetime.datetime.fromisoformat(updated_at)
-        if updated_at and updated_at > timezone.now() - relativedelta(seconds=10):
+        modified_time = ticket_reply_data.get('modified_time')
+        if modified_time:
+            modified_time = datetime.datetime.fromisoformat(modified_time)
+        if modified_time and modified_time > timezone.now() - relativedelta(seconds=10):
             error_msg = 'Cannot be updated again within 10 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -1120,7 +1118,7 @@ class TicketReplyAPIView(APIView):
                 'pk': ticket_reply_data.get('_pk'),
                 'row': {
                     'content': content,
-                    'updated_at': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
             seadb_api.update_rows(project_uuid, 'ticket_replies', [ticket_reply_update])
@@ -1131,7 +1129,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             update_row = {
-                'updated_at': ticket_reply_data.get('updated_at'),
+                'modified_time': ticket_reply_data.get('modified_time'),
             }
             participants = ticket.get('participants') or []
             if username not in participants:

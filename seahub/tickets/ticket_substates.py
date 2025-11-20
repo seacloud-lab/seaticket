@@ -40,7 +40,7 @@ class TicketSubstatesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        status_id = request.GET.get('status_id')  # optional: filter substates by status id
+        state_id = request.GET.get('state_id')  # optional: filter substates by state id
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -67,8 +67,8 @@ class TicketSubstatesAPIView(APIView):
         # substate_column = TicketsTable.substate.data
         cascade_settings = substate_column.get('data').get('cascade_settings')
         cascade_column_key = substate_column.get('data').get('cascade_column_key')
-        if status_id:
-            allowed_ids = set(cascade_settings.get(status_id, []))
+        if state_id:
+            allowed_ids = set(cascade_settings.get(state_id, []))
             substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]
 
         return Response({

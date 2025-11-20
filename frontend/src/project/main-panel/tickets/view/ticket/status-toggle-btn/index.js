@@ -1,21 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, } from 'reactstrap';
-import { TICKET_STATUS, TICKET_STATUS_CONFIG } from '../../../constants';
+import { TICKET_STATE, TICKET_STATE_CONFIG } from '../../../constants';
 import { Icon, OptionEditor } from '@/components';
 
 import './index.css';
 
 const BTNS = {
-  [TICKET_STATUS.OPEN]: [
-    TICKET_STATUS_CONFIG[TICKET_STATUS.CLOSED]
+  [TICKET_STATE.OPEN]: [
+    TICKET_STATE_CONFIG[TICKET_STATE.CLOSED]
   ],
-  [TICKET_STATUS.CLOSED]: [
-    TICKET_STATUS_CONFIG[TICKET_STATUS.OPEN],
+  [TICKET_STATE.CLOSED]: [
+    TICKET_STATE_CONFIG[TICKET_STATE.OPEN],
   ]
 };
 
-const getOptions = (status) => {
-  const _options = BTNS[status] || [];
+const getOptions = (state) => {
+  const _options = BTNS[state] || [];
   return _options.map(option => {
     const { icon, name, description } = option;
     return {
@@ -33,11 +33,11 @@ const getOptions = (status) => {
   });
 };
 
-const StatusToggleButton = ({ status: oldStatus, disabled, onChange }) => {
-  const [status, setStatus] = useState(BTNS[oldStatus][0].value);
+const StatusToggleButton = ({ state: oldState, disabled, onChange }) => {
+  const [state, setStatus] = useState(BTNS[oldState][0].value);
   const [isShowPopover, setIsShowPopover] = useState(false);
   const downBtn = useRef(null);
-  const options = useRef(getOptions(oldStatus));
+  const options = useRef(getOptions(oldState));
 
   const openPopover = useCallback(() => {
     setIsShowPopover(true);
@@ -48,30 +48,30 @@ const StatusToggleButton = ({ status: oldStatus, disabled, onChange }) => {
   }, []);
 
   const onStatusChange = useCallback(() => {
-    onChange(status === TICKET_STATUS.REOPEN ? TICKET_STATUS.OPEN : status);
-  }, [status, onChange]);
+    onChange(state === TICKET_STATE.REOPEN ? TICKET_STATE.OPEN : state);
+  }, [state, onChange]);
 
   const onLocalStatusChange = useCallback((newStatus) => {
     if (!newStatus) {
-      setStatus(status);
+      setStatus(state);
       return;
     }
     setStatus(newStatus);
-  }, [status]);
+  }, [state]);
 
   useEffect(() => {
-    options.current = getOptions(oldStatus);
+    options.current = getOptions(oldState);
     setStatus(options.current[0].value);
-  }, [oldStatus]);
+  }, [oldState]);
 
-  const statusOption = options.current.find(o => o.value === status);
+  const stateOption = options.current.find(o => o.value === state);
 
   return (
     <>
       <ButtonGroup className="mr-4">
         <Button className="sea-qa-project-ticket-status-toggle-btn d-flex align-items-center" disabled={disabled} onClick={onStatusChange}>
-          <Icon symbol={statusOption?.icon} className={`mr-2 sea-qa-project-ticket-status-${statusOption?.icon}-icon`} />
-          <span>{statusOption?.shortName}</span>
+          <Icon symbol={stateOption?.icon} className={`mr-2 sea-qa-project-ticket-status-${stateOption?.icon}-icon`} />
+          <span>{stateOption?.shortName}</span>
         </Button>
         <Button className="sea-qa-project-ticket-status-toggle-btn" innerRef={downBtn} onClick={openPopover}>
           <Icon symbol="down" />
@@ -81,7 +81,7 @@ const StatusToggleButton = ({ status: oldStatus, disabled, onChange }) => {
         <OptionEditor
           target={downBtn}
           className="sea-qa-project-ticket-status-toggle-popover"
-          value={status}
+          value={state}
           options={options.current}
           onToggle={closePopover}
           onChange={onLocalStatusChange}

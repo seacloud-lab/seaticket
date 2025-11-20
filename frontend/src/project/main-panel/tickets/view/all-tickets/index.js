@@ -42,9 +42,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           if (typeColum) {
             context.setSetting('typeColumnKey', typeColum.key);
           }
-          const statusColumn = columns.find(c => c.name === 'status');
+          const statusColumn = columns.find(c => c.name === 'state');
           if (statusColumn) {
-            context.setSetting('statusColumnKey', statusColumn.key);
+            context.setSetting('stateColumnKey', statusColumn.key);
           }
           const tagsColumn = columns.find(c => c.name === 'tags');
           if (tagsColumn) {
@@ -81,9 +81,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
         if (typeColum) {
           context.setSetting('typeColumnKey', typeColum.key);
         }
-        const statusColumn = columns.find(c => c.name === 'status');
-        if (statusColumn) {
-          context.setSetting('statusColumnKey', statusColumn.key);
+        const stateColumn = columns.find(c => c.name === 'state');
+        if (stateColumn) {
+          context.setSetting('stateColumnKey', stateColumn.key);
         }
         const tagsColumn = columns.find(c => c.name === 'tags');
         if (tagsColumn) {

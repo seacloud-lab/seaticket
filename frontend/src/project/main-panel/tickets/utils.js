@@ -1,5 +1,5 @@
 import { gettext } from '@/constants';
-import { TICKET_STATUS_OPTIONS } from './constants';
+import { TICKET_STATE_OPTIONS } from './constants';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
@@ -33,7 +33,7 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
       {
         name: gettext('Set status'),
         key: 'status',
-        children: TICKET_STATUS_OPTIONS.map((o) => {
+        children: TICKET_STATE_OPTIONS.map((o) => {
           return {
             key: o.id,
             name: o.name,

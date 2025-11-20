@@ -15,7 +15,7 @@ import './index.css';
 
 const NewTicket = ({ editorAPI, projectUuid }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
@@ -23,7 +23,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const descriptionEditorRef = useRef(null);
+  const contentEditorRef = useRef(null);
 
   const user = useMemo(() => {
     return {
@@ -41,18 +41,18 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     setTitle(newTitle);
   }, [title]);
 
-  const onDescriptionChange = useCallback((value) => {
+  const onContentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
       toaster.closeAll();
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setDescription(value);
+    setContent(value);
   }, []);
 
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
-    const editor = descriptionEditorRef.current.getEditor();
+    const editor = contentEditorRef.current.getEditor();
     const eventBus = EventBus.getInstance();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -66,16 +66,16 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, description, type, assignees, tags, priority }).then(res => {
+    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, content, type, assignees, tags, priority }).then(res => {
       togglePageType(res.data.ticket._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, description, type, assignees, tags, priority]);
+  }, [title, content, type, assignees, tags, priority]);
 
-  const disabled = (!title || !title.trim()) || (!description || !description.text.trim()) || isSubmitting;
+  const disabled = (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
 
   return (
     <div className="sea-qa-project-new-ticket">
@@ -100,10 +100,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               </Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
-                ref={descriptionEditorRef}
+                ref={contentEditorRef}
                 lang={lang}
                 headerName={gettext('Description')}
-                value={description || ''}
+                value={content || ''}
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
@@ -111,7 +111,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
                 isSupportMultipleFiles={true}
                 editorApi={editorAPI}
                 autoFocus={false}
-                onSaveEditorValue={onDescriptionChange}
+                onSaveEditorValue={onContentChange}
               />
             </div>
             <div className="sea-qa-project-ticket-footer">
