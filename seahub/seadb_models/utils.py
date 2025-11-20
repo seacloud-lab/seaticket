@@ -478,7 +478,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
     for record in records:
-        convert_ticket_select_column_name_to_option_id(table_metadata, record)
+        convert_ticket_select_column_name_to_option_id(columns, record)
     return records, display_columns
 
 

@@ -28,7 +28,7 @@ from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_replies, \
     check_ticket_reply_creation_interval, get_ticket_reply_by_pk, check_ticket_creation_interval,\
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_metadata_by_name, get_tickets_by_ids
+    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_columns_by_name, get_tickets_by_ids
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -182,7 +182,7 @@ class TicketsAPIView(APIView):
         type_id = request.POST.get('type')
         if type_id:
             try:
-                column = get_column_from_metadata_by_name(table_meta, 'type')
+                column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
                 column_data = column.get('data') or {}
                 options = column_data.get('options', []) or []
                 type_option = next((option for option in options if option['id'] == type_id), None)
@@ -219,7 +219,7 @@ class TicketsAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                tag_column = get_column_from_metadata_by_name(table_meta, 'tags')
+                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
                 tag_column_data = tag_column.get('data') or {}
                 tag_options = tag_column_data.get('options', []) or []
                 tag_option_id_to_option_name = {opt.get('id'): opt.get('name') for opt in tag_options}
@@ -343,13 +343,13 @@ class TicketsAPIView(APIView):
             if not row_data:
                 continue
             if 'status' in row_data:
-                column = get_column_from_metadata_by_name(table_meta, 'status')
+                column = get_column_from_columns_by_name(table_meta.get('columns'), 'status')
                 column_data = column.get('data') or {}
                 options = column_data.get('options', []) or []
                 status_option = next((option for option in options if option['id'] == row_data.get('status')), None)
                 updated_row[TicketsTable.status.name] = status_option.get('name') if status_option else None
             if 'substate' in row_data:
-                column = get_column_from_metadata_by_name(table_meta, 'substate')
+                column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
                 column_data = column.get('data') or {}
                 options = column_data.get('options', []) or []
                 substate_option = None
@@ -359,7 +359,7 @@ class TicketsAPIView(APIView):
 
                 updated_row[TicketsTable.substate.name] = substate_option.get('name') if substate_option else None
             if 'tags' in row_data:
-                tag_column = get_column_from_metadata_by_name(table_meta, 'tags')
+                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
                 column_data = tag_column.get('data') or {}
                 tag_options = column_data.get('options', []) or []
                 tag_id_to_name = {opt.get('id'): opt.get('name') for opt in tag_options}
@@ -369,7 +369,7 @@ class TicketsAPIView(APIView):
                     tag_names.append(tag_id_to_name.get(tag_id))
                 updated_row[TicketsTable.tags.name] = tag_names
             if 'type' in row_data:
-                tag_column = get_column_from_metadata_by_name(table_meta, 'type')
+                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
                 column_data = tag_column.get('data') or {}
                 type_options = column_data.get('options', []) or []
                 type_option = next((option for option in type_options if option['id'] == row_data.get('type')), None)
@@ -591,7 +591,7 @@ class TicketAPIView(APIView):
         ticket_status_id = request.data.get('status')
 
         if ticket_status_id is not None:
-            status_column = get_column_from_metadata_by_name(metadata, 'status')
+            status_column = get_column_from_columns_by_name(metadata, 'status')
             status_column_data = status_column.get('data') or {}
             status_options = status_column_data.get('options', []) or []
             status_option = next((option for option in status_options if option['id'] == ticket_status_id), None)
@@ -604,7 +604,7 @@ class TicketAPIView(APIView):
 
         if is_update_type and type_id is not None:
             try:
-                type_column = get_column_from_metadata_by_name(metadata, 'type')
+                type_column = get_column_from_columns_by_name(metadata, 'type')
                 type_column_data = type_column.get('data') or {}
                 type_options = type_column_data.get('options', []) or []
                 type_option = next((option for option in type_options if option['id'] == type_id), None)
@@ -659,7 +659,7 @@ class TicketAPIView(APIView):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            tag_column = get_column_from_metadata_by_name(metadata, 'tags')
+            tag_column = get_column_from_columns_by_name(metadata, 'tags')
             tag_column_data = tag_column.get('data') or {}
             tag_options = tag_column_data.get('options', []) or []
             tag_ids = [tag.get('id') for tag in tag_options]
@@ -674,7 +674,7 @@ class TicketAPIView(APIView):
         substate_name = None
         if is_update_substate and substate_option_id is not None:
             try:
-                substate_column = get_column_from_metadata_by_name(metadata, 'substate')
+                substate_column = get_column_from_columns_by_name(metadata, 'substate')
                 substate_column_data = substate_column.get('data') or {}
                 substate_options = substate_column_data.get('options', []) or []
                 substate_option = next((option for option in substate_options if option['id'] == substate_option_id), None)

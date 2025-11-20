@@ -90,8 +90,8 @@ def get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_id, ticket_reply_numb
     return rows[0] if rows else None
 
 
-def get_column_from_metadata_by_name(table_meta, column_name):
-    for column in (table_meta or {}).get('columns', []):
+def get_column_from_columns_by_name(columns, column_name):
+    for column in columns:
         if column.get('name') == column_name:
             return column
     return None
@@ -146,7 +146,8 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
     column = next((column for column in metadata if column['name'] == column_name), None)
     if not column:
         return [], {}
-    options = column.get('data').get('options')
+    column_data = (column.get('data') or {})
+    options = column_data.get('options', []) or []
     # tags is array; others are scalar strings
     if column_type == 'multiple-select':
         option_name_to_option_count = {row.get(column_name)[0]: row.get('count') for row in rows if row.get(column_name)}
@@ -171,27 +172,27 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
 
 
 # format tickets
-def convert_ticket_select_column_name_to_option_id(table_meta, ticket):
+def convert_ticket_select_column_name_to_option_id(columns, ticket):
     """In-place convert ticket fields from names to ids for status/type/tags/substate."""
 
     if not ticket:
         return ticket
     if ticket.get('status'):
-        column = get_column_from_metadata_by_name(table_meta, 'status')
+        column = get_column_from_columns_by_name(columns, 'status')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
             if opt.get('name') == ticket.get('status'):
                 ticket['status'] = opt.get('id')
     if ticket.get('type'):
-        column = get_column_from_metadata_by_name(table_meta, 'type')
+        column = get_column_from_columns_by_name(columns, 'type')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
             if opt.get('name') == ticket.get('type'):
                 ticket['type'] = opt.get('id')
     if ticket.get('tags'):
-        column = get_column_from_metadata_by_name(table_meta, 'tags')
+        column = get_column_from_columns_by_name(columns, 'tags')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         tag_ids = []
@@ -200,7 +201,7 @@ def convert_ticket_select_column_name_to_option_id(table_meta, ticket):
                 tag_ids.append(tag_option.get('id'))
         ticket['tags'] = tag_ids
     if ticket.get('substate'):
-        column = get_column_from_metadata_by_name(table_meta, 'substate')
+        column = get_column_from_columns_by_name(columns, 'substate')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
