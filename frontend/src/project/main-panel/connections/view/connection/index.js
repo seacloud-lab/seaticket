@@ -34,22 +34,22 @@ const MULTIPLE_VIEWS_CONNECTION_TYPE = [
 
 const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
 
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || '');
-      setDescription(initialData.description || '');
+      setContent(initialData.content || '');
     } else {
       setTitle('');
-      setDescription('');
+      setContent('');
     }
   }, [initialData]);
 
   const handleSubmit = () => {
-    const { previewText, images, links, checklist } = getPreviewContent(description);
-    const content = {
-      text: description,
+    const { previewText, images, links, checklist } = getPreviewContent(content);
+    const ticket_content = {
+      text: content,
       preview: previewText,
       images,
       links,
@@ -57,7 +57,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
     };
     const ticketData = {
       title: title,
-      content: content,
+      content: ticket_content,
       type: '',
       assignees: [],
       tags: [],
@@ -90,15 +90,15 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
                   />
                 </FormGroup>
                 <FormGroup>
-                  <Label for="ticketDescription">{gettext('Description')}</Label>
+                  <Label for="ticketContent">{gettext('Content')}</Label>
                   <Input
-                    className="sea-qa-ticket-description"
+                    className="sea-qa-ticket-content"
                     type="textarea"
-                    name="description"
-                    id="ticketDescription"
-                    value={description}
+                    name="content"
+                    id="ticketContent"
+                    value={content}
                     readOnly={isLoading}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => setContent(e.target.value)}
                   />
                 </FormGroup>
               </Form>
@@ -420,9 +420,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
               const baseUrl = discourseBaseUrl.replace(/\/$/, '');
               relatedUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
             }
-            const prefix = data.description || '';
+            const prefix = data.content || '';
             const suffix = `${gettext('Related record')}: ${relatedUrl}`;
-            data.description = prefix ? `${prefix}\n\n${suffix}` : suffix;
+            data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
             setTicketData(data);
           }).finally(() => {
             setTicketLoading(false);
@@ -444,9 +444,9 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
           connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
             const data = res.data || {};
             const relatedUrl = row.url;
-            const prefix = data.description || '';
+            const prefix = data.content || '';
             const suffix = `${gettext('Related record')}: ${relatedUrl}`;
-            data.description = prefix ? `${prefix}\n\n${suffix}` : suffix;
+            data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
             setTicketData(data);
           }).finally(() => {
             setTicketLoading(false);

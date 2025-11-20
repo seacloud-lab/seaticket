@@ -395,7 +395,7 @@ class TicketsAPIView(APIView):
                     continue
                 updated_row[key] = value
 
-            updated_row[TicketsTable.updated_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            updated_row[TicketsTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows.append(
                 {
                     'pk': row.get('_pk'),
@@ -725,7 +725,7 @@ class TicketAPIView(APIView):
                 update_row['title'] = title
             if content:
                 update_row['content'] = content
-            if ticket_state or ticket_state == '':
+            if ticket_state_id or ticket_state_id == '':
                 update_row['state'] = state_option.get('name')
             if is_update_type:
                 update_row['type'] = type_option.get('name') if type_id and type_option else None

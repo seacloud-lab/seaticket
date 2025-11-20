@@ -263,8 +263,8 @@ def convert_record_to_ticket(params):
         raise Exception('convert record to ticket error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
     title = resp_json.get('title', '')
-    description = resp_json.get('description', '')
-    return title, description
+    content = resp_json.get('description', '')
+    return title, content
 
 
 def generate_ai_summary(content, username, connection_type, project_uuid, org_id, include_vector=True):
@@ -499,8 +499,8 @@ def ticket_to_json(project_uuid, ticket_id):
     ```json // <- not included
     {
         "title": ...,
-        "description": ...,
-        "created_at": ...,
+        "content": ...,
+        "created_time": ...,
         "replies": [
             {
                 "nickname": ...,
@@ -533,19 +533,19 @@ def ticket_to_json(project_uuid, ticket_id):
         for user_profile in all_replies_users_profile
     }
     title = ticket[0].get('title')
-    description = ticket[0].get('description')
-    created_at = ticket[0].get('created_at')
-    created_at = time_str_to_utc_time(created_at).isoformat()
+    content = ticket[0].get('content')
+    created_time = ticket[0].get('created_time')
+    created_time = time_str_to_utc_time(created_time).isoformat()
     whole_ticket_data = {
         'title': title,
-        'description': description,
-        'created_at': created_at,
+        'content': content,
+        'created_time': created_time,
         'replies': []
     }
     for ticket_reply in ticket_replies:
         nickname = nickname_map.get(ticket_reply.get('creator'))
         content = ticket_reply.get('content')
-        replied_at = ticket_reply.get('created_at')
+        replied_at = ticket_reply.get('created_time')
         replied_at = time_str_to_utc_time(replied_at).isoformat()
         whole_ticket_data['replies'].append({
             'nickname': nickname,
