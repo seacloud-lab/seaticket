@@ -2,7 +2,7 @@ import logging
 
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
-from seahub.project.view_utils import view_data_2_sql
+from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, KnowledgeBaseTable
@@ -585,6 +585,26 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
     return records, display_all_columns
+
+
+def list_connection_view_records_with_columns(seadb_api, project_uuid, connection, view, column_names, start, limit, username=''):
+    table_name = get_connection_table_name(connection)
+    columns = get_connection_columns(seadb_api, project_uuid, connection)
+    
+    if not columns:
+        return []
+    
+    view_copy = view.copy()
+    sql_generator = SQLGenerator(table_name, columns, view_copy, username, start, limit)
+    sql_generator.column_names = column_names
+    sql = sql_generator.to_sql()
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for connection {table_name}: {e}')
+        records = []
+    return records
 
 
 def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk):
