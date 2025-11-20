@@ -19,6 +19,7 @@ class Column {
     this.is_name_column = object.is_name_column || false;
     this.modify_data_able = object.modify_data_able || false;
     this.delete_able = object.delete_able || false;
+    this.is_hover_show_content = object.is_hover_show_content || null;
     this.click = object.click || null;
 
     this.sort_able = object.sort_able === false ? false : true;

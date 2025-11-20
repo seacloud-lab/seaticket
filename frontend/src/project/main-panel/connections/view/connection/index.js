@@ -172,11 +172,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
     return originalPageUrl;
   }, []);
 
-  const handleClickSummary = useCallback((row) => {
-    if (!row || !row.ai_summary) return;
-    // Show dialog To do
-  }, []);
-
   const t = useMemo(() => {
     const connectionType = connection?.type;
     if (connectionType === CONNECTION_TYPE.SITE) {
@@ -280,10 +275,6 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
         } else if (type === CONNECTION_TYPE.EMAIL) {
           rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
-        columnConfig['ai_summary'] = {
-          ...columnConfig['ai_summary'],
-          click: (row) => handleClickSummary(row)
-        };
         columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
           data: {
