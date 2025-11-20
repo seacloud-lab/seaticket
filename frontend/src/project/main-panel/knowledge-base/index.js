@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { Modal, ModalBody, ModalHeader, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import { LongTextInlineEditor } from '@seafile/seafile-editor';
-import { gettext, lang, server } from '@/constants';
+import { Button } from 'reactstrap';
+import { gettext, server } from '@/constants';
 import { Icon, toaster } from '@/components';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
@@ -9,47 +8,13 @@ import eventBus from '@/utils/event-bus';
 import TopBar from '../top-bar';
 import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
+import AddKnowledgeDialog from './add-knowledge-dialog';
+
+import './knowledge-base.css';
 
 const { projectUuid, permission } = window.app.pageOptions;
 
-const AddKnowledgeDialog = ({ isOpen, toggle, isSubmitting, question, answer, setQuestion, setAnswer, onSubmit, editorAPI }) => {
-  return (
-    <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
-      <ModalHeader toggle={toggle}>{gettext('Add knowledge record')}</ModalHeader>
-      <ModalBody>
-        <Form>
-          <FormGroup>
-            <Label for="kbQuestion">{gettext('Question')}</Label>
-            <Input type="text" id="kbQuestion" value={question} readOnly={isSubmitting} onChange={(e) => setQuestion(e.target.value)} />
-          </FormGroup>
-          <FormGroup>
-            <Label>{gettext('Answer')}</Label>
-            <LongTextInlineEditor
-              isAlwaysEnableEdit={true}
-              lang={lang}
-              headerName={gettext('Answer')}
-              value={answer || ''}
-              autoSave={true}
-              saveDelay={20 * 1000}
-              isCheckBrowser={true}
-              isImageUploadOnly={false}
-              isSupportMultipleFiles={true}
-              editorApi={editorAPI}
-              autoFocus={false}
-              onSaveEditorValue={setAnswer}
-            />
-          </FormGroup>
-        </Form>
-      </ModalBody>
-      <ModalFooter>
-        <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={onSubmit} disabled={isSubmitting || !question.trim() || !(typeof answer === 'string' ? answer.trim() : (answer && answer.text && answer.text.trim()))}>{gettext('Submit')}</Button>
-      </ModalFooter>
-    </Modal>
-  );
-};
-
-const Index = ({ title }) => {
+const KnowledgeBase = ({ title }) => {
   const [viewID, setViewID] = useState('0000');
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -214,4 +179,4 @@ const Index = ({ title }) => {
   );
 };
 
-export default Index;
+export default KnowledgeBase;
