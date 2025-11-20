@@ -324,6 +324,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.TEXT,
       is_predefined: true,
       editable: true,
+      is_hover_show_content: true,
     },
     'ai_processed_time': {
       display_name: gettext('AI processed time'),
@@ -395,6 +396,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
       editable: false,
+      is_hover_show_content: true,
     },
     'ai_processed_time': {
       display_name: gettext('AI processed time'),
@@ -427,7 +429,9 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
-      editable: false, expand_able: true
+      editable: false,
+      expand_able: true,
+      is_hover_show_content: true,
     },
     'ai_processed_time': {
       display_name: gettext('AI processed time'),
@@ -458,7 +462,9 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
-      editable: false, expand_able: true,
+      editable: false,
+      expand_able: true,
+      is_hover_show_content: true,
     },
     'ai_processed_time': {
       display_name: gettext('AI processed time'),
