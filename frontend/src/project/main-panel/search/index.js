@@ -2,11 +2,11 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { toaster, EmptyTip, CenteredLoading } from '@/components';
 import GlobalSearchInput from '@/components/search-input/global-search-input';
-import { searchAPI, connectionsAPI } from '../../api';
+import { searchAPI } from '../../api';
+import { useConnections } from '../connections/hooks/connections';
 import { gettext, mediaUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { SearchResult } from './models';
-import Connection from '../connections/models/connection';
 import TopBar from '../top-bar';
 import ListItem from './list-item';
 import HideConnectionSetter from './hide-connection-setter';
@@ -21,11 +21,11 @@ const { workspaceID, projectUuid } = window.app.pageOptions;
 const SEARCH_STORE_KEY = 'search-project';
 
 const Search = ({ title, settings }) => {
+  const { connections, isDataLoaded, isLoading, reload } = useConnections();
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState([]);
-  const [connections, setConnections] = useState([]);
   const [filterDate, setFilterDate] = useState(
     {
       type: SEARCH_FILTER_BY_DATE_TYPE_KEY.LAST_UPDATED_TIME,
@@ -108,12 +108,7 @@ const Search = ({ title, settings }) => {
   }, []);
 
   useEffect(() => {
-    connectionsAPI.listConnections(projectUuid, 1, 100).then(res => {
-      setConnections(res.data.records.map(r => new Connection(r)));
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
+    reload();
     return () => {
       timer.current && clearTimeout(timer.current);
     };
@@ -128,6 +123,8 @@ const Search = ({ title, settings }) => {
       setFilterDate(filterDate);
     }
   }, []);
+
+  if (!isDataLoaded || (isLoading && connections.length === 0)) return null;
 
   return (
     <>
