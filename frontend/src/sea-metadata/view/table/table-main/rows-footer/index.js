@@ -130,7 +130,7 @@ class RowsFooter extends React.Component {
         <div className="rows-row d-flex text-nowrap" style={{ width: rowWidth }}>
           <span>{this.getRow()}</span>
           {!isLoadingMore && hasMore &&
-            <span className="load-all ml-4" onClick={this.onClick}>{gettext('Load More')}</span>
+            <span className="load-all ml-4" onClick={this.onClick}>{gettext('Load more')}</span>
           }
           {isLoadingMore &&
             <span className="loading-message ml-4">
