@@ -242,10 +242,11 @@ def get_ai_reply(params):
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()
-    ai_reply = resp_json.get('ai_reply', '')
-    agent_memory = resp_json.get('agent_memory', {})
-    sources = resp_json.get('sources', [])
-    return ai_reply, agent_memory, sources
+    return {
+        'ai_reply': resp_json.get('answer', ''),
+        'sources': resp_json.get('sources', []),
+        'thought_process': resp_json.get('thought_process', {})
+    }
 
 
 def convert_record_to_ticket(params):
@@ -589,17 +590,25 @@ def check_ai_limit(username, org_id):
     is_exceed = cost >= credit
     return is_exceed
 
-def format_tool_calls(tool_calls):
-    results = []
-    for tool_call in tool_calls.values():
-        for substep in tool_call.get('substeps', []):
-            if not isinstance(substep['output'], str):
-                output = '```json\n' + json.dumps(substep['output'], indent=4, ensure_ascii=False) + '\n```'
-                substep['output'] = output
-            results.append(substep)
+def format_ask_thought_process(tool_calls):
+    results = {
+        'tool_calls': [],
+        'result': ''
+    }
+    for tool_call_id, tool_call in tool_calls.items():
+        if tool_call_id == 'result':
+            if not isinstance(tool_call, str):
+                tool_call = '```json\n' + json.dumps(tool_call, indent=4, ensure_ascii=False) + '\n```'
+            results['result'] = tool_call
+        else:
+            for substep in tool_call.get('substeps', []):
+                if not isinstance(substep['output'], str):
+                    output = '```json\n' + json.dumps(substep['output'], indent=4, ensure_ascii=False) + '\n```'
+                    substep['output'] = output
+                results['tool_calls'].append(substep)
     return results
 
-def format_thought_process(tool_calls):
+def format_agent_thought_process(tool_calls):
     results = {
         'actions': [],
         'final_answer': {},

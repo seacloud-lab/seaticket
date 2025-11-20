@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { ChatMessage } from '../models';
-import { AI_RESOLVE_TYPE, ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
+import { ASK_PAGE_TYPE, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
@@ -107,7 +107,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
 
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
-        const { is_agent_mode } = item;
         if (item.role === 'user') {
           return new ChatMessage({
             _id: item.id,
@@ -121,7 +120,6 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
           msgContent = {
             ai_reply: item.content,
             sources: Array.isArray(item.sources) ? item.sources : [],
-            tool_calls: Array.isArray(item.tool_calls) ? item.tool_calls : [],
             thought_process: item.thought_process
           };
         } catch (e) {
@@ -131,8 +129,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
         let newChatData = {
           [CHAT_MESSAGE_TYPE.AI_REPLY]: msgContent.ai_reply,
           [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
-          [CHAT_MESSAGE_TYPE.TOOL_CALLS]: is_agent_mode ? [] : msgContent.tool_calls,
-          [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: is_agent_mode ? msgContent.thought_process : null,
+          [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: msgContent.thought_process,
         };
         return new ChatMessage({
           _id: item.id,
@@ -187,16 +184,14 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
         updateChatHistories(newChatHistories, false);
         return;
       }
-      const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId, agent_memory: memory } = data;
+      const { ai_reply = '', sources = [], user_message_id: userMessageId, ai_reply_message_id: aiReplyMessageId } = data;
       const messageIndex = newChatHistories.findIndex(c => c._id === aiReplyMessageId);
       if (messageIndex > -1) return;
       let newChatData = {
         [CHAT_MESSAGE_TYPE.AI_REPLY]: ai_reply,
         [CHAT_MESSAGE_TYPE.SOURCES]: sources,
+        [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: data.thought_process,
       };
-      if (resolveType === AI_RESOLVE_TYPE.AGENT) {
-        newChatData[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS] = memory;
-      }
       newChatHistories[newChatHistories.length - 1]._id = userMessageId;
       newChatHistories.push(new ChatMessage({
         _id: aiReplyMessageId,
