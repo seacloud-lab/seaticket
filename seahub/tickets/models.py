@@ -64,7 +64,7 @@ class TicketView(object):
             "table_id": '0000',  # by default
             "name": self.name,
             'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
                 {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'has_any_of', 'filter_term': []}
             ],
@@ -95,7 +95,7 @@ class TicketViewsManager(models.Manager):
                 if column:
                     column_name = column['name']
                     basic_filter['column_key'] = column['key']
-                    if column_name in ['status', 'type', 'tags']:
+                    if column_name in ['state', 'type', 'tags']:
                         data = column.get('data', {})
                         if data:
                             options = data.get('options', [])

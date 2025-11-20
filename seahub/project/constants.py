@@ -87,7 +87,7 @@ TICKET_DEFAULT_DETAILS = {
             'name': _('Open'),
             'type': 'table',
             'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
                 {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
@@ -102,7 +102,7 @@ TICKET_DEFAULT_DETAILS = {
             'name': _('Closed'),
             'type': 'table',
             'basic_filters': [
-                {'column_key': 'status', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
+                {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
                 {'column_key': 'type', 'filter_predicate': 'is_any_of', 'filter_term': []},
                 {'column_key': 'tags', 'filter_predicate': 'is_any_of', 'filter_term': []},
             ],
