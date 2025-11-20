@@ -793,7 +793,6 @@ Rows.propTypes = {
   updateRow: PropTypes.func,
   rowGetterById: PropTypes.func,
   rowGetterByIndex: PropTypes.func,
-  loadAll: PropTypes.func,
   renameColumn: PropTypes.func,
   deleteColumn: PropTypes.func,
   insertColumn: PropTypes.func,

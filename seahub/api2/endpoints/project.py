@@ -261,7 +261,7 @@ class ProjectView(APIView):
 
         Permission:
         1. owner
-        2. group adminn
+        2. group admin
         """
         # argument check
         # name

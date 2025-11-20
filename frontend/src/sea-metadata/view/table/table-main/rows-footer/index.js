@@ -166,7 +166,6 @@ RowsFooter.propTypes = {
   rowGetterById: PropTypes.func,
   rowGetterByIndex: PropTypes.func,
   getRowsSummaries: PropTypes.func,
-  loadAll: PropTypes.func,
 };
 
 export default RowsFooter;

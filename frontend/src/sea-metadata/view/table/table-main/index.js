@@ -94,7 +94,6 @@ TableMain.propTypes = {
   modifyRow: PropTypes.func,
   modifyRows: PropTypes.func,
   loadMore: PropTypes.func,
-  loadAll: PropTypes.func,
   searchResult: PropTypes.object,
 };
 
