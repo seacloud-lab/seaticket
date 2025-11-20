@@ -6,30 +6,6 @@ export const TICKET_STATE = {
   CLOSED: '0002'
 };
 
-export const TICKET_SUBSTATE = {
-  NEW: '0010',
-  REOPEN: '0011',
-  WORKING_ON: '0012',
-  COMPLETED: '0013',
-  NOT_PLANNED: '0014',
-  DUPLICATE: '0015',
-};
-
-export const TICKET_OPENED_STATUS = [
-  '',
-  TICKET_STATE.OPEN,
-  TICKET_SUBSTATE.REOPEN,
-  TICKET_SUBSTATE.WORKING_ON,
-  TICKET_SUBSTATE.NEW,
-];
-
-export const TICKET_CLOSED_STATUS = [
-  TICKET_STATE.CLOSED,
-  TICKET_SUBSTATE.COMPLETED,
-  TICKET_SUBSTATE.NOT_PLANNED,
-  TICKET_SUBSTATE.DUPLICATE,
-];
-
 export const TICKET_STATE_CONFIG = {
   [TICKET_STATE.OPEN]: {
     value: TICKET_STATE.OPEN,
@@ -49,17 +25,17 @@ export const TICKET_STATE_CONFIG = {
 };
 
 export const TICKET_STATE_OPTIONS = [
-  { id: '0001', value: TICKET_STATE.OPEN, name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
-  { id: '0002', value: TICKET_STATE.CLOSED, name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+  { id: '0001', name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0002', name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
 ];
 
 export const TICKET_SUBSTATE_OPTIONS = [
-  { id: '0010', value: TICKET_SUBSTATE.NEW, name: gettext('New'), text_color: '#FFF', color: '#1a7f37', border_color: '#59CB74' },
-  { id: '0011', value: TICKET_SUBSTATE.REOPEN, name: gettext('Reopen'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
-  { id: '0012', value: TICKET_SUBSTATE.WORKING_ON, name: gettext('Working on'), text_color: '#FFF', color: '#1a7f37', border_color: '#46A1FD' },
-  { id: '0013', value: TICKET_SUBSTATE.COMPLETED, name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
-  { id: '0014', value: TICKET_SUBSTATE.NOT_PLANNED, name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
-  { id: '0015', value: TICKET_SUBSTATE.DUPLICATE, name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
+  { id: '0010', name: gettext('New'), text_color: '#FFF', color: '#1a7f37', border_color: '#59CB74' },
+  { id: '0011', name: gettext('Reopen'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0012', name: gettext('Working on'), text_color: '#FFF', color: '#1a7f37', border_color: '#46A1FD' },
+  { id: '0013', name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+  { id: '0014', name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
+  { id: '0015', name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
 ];
 
 export const PREDEFINED_TICKET_TAG_NAME = {
@@ -174,7 +150,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   },
   'state': {
     type: CellType.SINGLE_SELECT,
-    display_name: gettext('Status'),
+    display_name: gettext('State'),
     editable: true,
     is_required: true,
     data: {
