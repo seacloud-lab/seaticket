@@ -24,7 +24,7 @@ from seahub.project.utils import check_project_limit, check_project_admin_permis
     convert_project_trash_names, check_project_permission, search, \
     delete_session, format_ask_thought_process, format_agent_thought_process
 
-from seahub.seadb_models.utils import init_ticket_seadb_table
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
 
 from seahub.project.seadb_api import SeaDBAPI
 
@@ -241,6 +241,7 @@ class ProjectsView(APIView):
             seadb_api = SeaDBAPI(username)
             seadb_api.create_base(project.uuid)
             init_ticket_seadb_table(seadb_api, project.uuid)
+            init_knowledge_base_seadb_table(seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

@@ -10,8 +10,10 @@ import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
-from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, TicketViews, ChatMessages, ChatToolCalls, ChatSessions, \
+from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, ChatMessages, ChatToolCalls, ChatSessions, \
     StatsAIByTeam, StatsAIByOwner, StatsAIByProject
+from seahub.tickets.models import TicketViews
+from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone as django_timezone
@@ -417,6 +419,7 @@ def delete_project(project):
     try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
+        KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
         delete_session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
         for session_uuid in set(delete_session_uuids):
             delete_session(session_uuid)

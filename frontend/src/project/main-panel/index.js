@@ -6,6 +6,7 @@ import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
 import Settings from './settings';
+import KnowledgeBase from './knowledge-base';
 
 import './index.css';
 
@@ -14,11 +15,20 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
   if (!barKey) return (<TopBar />);
   const bar = BAR_TYPES.find(b => b.key === barKey);
   const title = bar.name;
-  if (barKey === BAR_TYPE.CHAT) return (<Ask title={title} settings={settings}/>); // Question answering page
-  if (barKey === BAR_TYPE.SEARCH) return (<Search title={title} settings={settings} />); // search page
-  if (barKey === BAR_TYPE.TICKET) return (<Tickets title={title} toggleBar={toggleBar} />); // tickets page
-  if (barKey === BAR_TYPE.SETTINGS) return (<Settings title={title} settings={settings} modifySettings={modifySettings} />); // settings page
-  return (<Connections title={title} toggleBar={toggleBar} />); // connections page
+  switch (barKey) {
+    case BAR_TYPE.CHAT:
+      return (<Ask title={title} settings={settings}/>);
+    case BAR_TYPE.SEARCH:
+      return (<Search title={title} settings={settings} />);
+    case BAR_TYPE.TICKET:
+      return (<Tickets title={title} toggleBar={toggleBar} />);
+    case BAR_TYPE.SETTINGS:
+      return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
+    case BAR_TYPE.KNOWLEDGE:
+      return (<KnowledgeBase title={title} />);
+    default:
+      return (<Connections title={title} toggleBar={toggleBar} />);
+  }
 };
 
 const MainPanel = ({ activeBar, settings, modifySettings, toggleBar }) => {

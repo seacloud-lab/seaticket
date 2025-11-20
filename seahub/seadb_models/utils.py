@@ -1,11 +1,11 @@
 import logging
 
 from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLUMNS, \
-    CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS
+    CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, KnowledgeBaseTable
 from seahub.tickets.ticket_utils import convert_ticket_select_column_name_to_option_id
 
 logger = logging.getLogger(__name__)
@@ -421,6 +421,50 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
     )
 
 
+def init_knowledge_base_seadb_table(seadb_api, project_uuid):
+    table_name = KnowledgeBaseTable.gen_table_name()
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in KnowledgeBaseTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            KnowledgeBaseTable.creator.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            KnowledgeBaseTable.created_time.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            KnowledgeBaseTable.last_modifier.name,
+        ]
+    )
+
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            KnowledgeBaseTable.modified_time.name,
+        ]
+    )
+
+
 def get_connection_table_name(connection):
     connection_id = connection.id
     connection_type = connection.type
@@ -583,3 +627,30 @@ def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk
         logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
         record = []
     return record
+
+
+def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+    table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
+    if not table_metadata:
+        init_knowledge_base_seadb_table(seadb_api, project_uuid)
+        metadata = seadb_api.get_base_metadata(project_uuid)
+        tables_metadata = metadata.get('tables') or []
+        table_metadata = get_current_table_metadata(tables_metadata, KnowledgeBaseTable.gen_table_name())
+    columns = table_metadata.get('columns') or []
+    view_copy = view.copy()
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit,
+                          include_deleted=False)
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for knowledge base : {e}')
+        records = []
+    return records, display_columns
