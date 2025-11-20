@@ -546,17 +546,18 @@ const Connection = ({ projectUuid, permission, connectionID }) => {
       {connection?.type === CONNECTION_TYPE.GITHUB_ISSUE && (
         <div style={{
           position: 'absolute',
-          top: '10px',
-          right: '10px',
+          top: '8px',
+          right: '140px',
           zIndex: 100
         }}>
           <Button
             color="primary"
             size="sm"
+            className="sea-qa-project-add-connection-btn"
+            style={{ height: '28px', display: 'inline-flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}
             onClick={() => setEmbeddingVisualizationOpen(true)}
           >
-            <i className="sf3-font-ai sf3-font"></i>
-            {' '}
+            <i className="sf3-font-ai sf3-font mr-2"></i>
             {gettext('Analyze')}
           </Button>
         </div>

@@ -595,7 +595,7 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
         return []
     
     view_copy = view.copy()
-    sql_generator = SQLGenerator(table_name, columns, view_copy, start, limit, username)
+    sql_generator = SQLGenerator(table_name, columns, view_copy, username, start, limit)
     sql_generator.column_names = column_names
     sql = sql_generator.to_sql()
     try:
