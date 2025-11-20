@@ -22,7 +22,7 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
     convert_project_trash_names, check_project_permission, search, \
-    delete_session, format_tool_calls, format_thought_process
+    delete_session, format_ask_thought_process, format_agent_thought_process
 
 from seahub.seadb_models.utils import init_ticket_seadb_table
 
@@ -658,10 +658,10 @@ class ChatMessagesView(APIView):
                 data = message.to_dict()
                 if message.role == 'assistant':
                     if message.is_agent_mode:
-                        if thought_process := format_thought_process(tool_calls_history.get(message.message_id, {})):
-                            data['thought_process'] = thought_process
-                    elif tool_calls := format_tool_calls(tool_calls_history.get(message.message_id, {})):
-                        data['tool_calls'] = tool_calls
+                        if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
+                            data['thought_process'] = agent_thought_process
+                    elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
+                        data['thought_process'] = ask_thought_process
                 messages_data.append(data)
 
             return Response({'messages': messages_data})

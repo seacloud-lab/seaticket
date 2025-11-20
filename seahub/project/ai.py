@@ -50,6 +50,25 @@ class ChatView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # Check AI quota
+        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+        is_exceed = check_ai_limit(username, org_id)
+        if is_exceed:
+            error_msg = 'AI credit not enough.'
+            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         ticket_id = request.data.get('ticket_id')
         if ticket_id:
@@ -75,32 +94,13 @@ class ChatView(APIView):
             if not session:
                 error_msg = f'Chat session {session_uuid} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+        
         try:
             message_id = gen_message_id(session.session_uuid)
         except Exception as e:
             logger.exception(f'Failure to generate message id: {e}')
             error_msg = 'Internal server error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        # Check AI quota
-        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
-        is_exceed = check_ai_limit(username, org_id)
-        if is_exceed:
-            error_msg = 'AI credit not enough.'
-            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
@@ -109,22 +109,22 @@ class ChatView(APIView):
             'query': query,
             'resolve_type': resolve_type,
             'username': username,
-            'session_id': session.id,
             'org_id': org_id
         }
 
         try:
-            ai_reply, agent_memory, sources = get_ai_reply(params)
+            ai_response = get_ai_reply(params)
         except Exception as e:
             logger.warning(f'AI service error: {e}')
-            ai_reply = 'Sorry, the AI service is temporarily unavailable, please try again later.'
-            sources = []
-            agent_memory = {}
+            ai_response = {
+                'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
+                'sources': []
+            }
 
         try:
             connection_ids = set([
                 source['connection_id']
-                for source in sources
+                for source in ai_response['sources']
             ])
 
             connections = ProjectConnections.objects.filter(id__in=connection_ids)
@@ -133,22 +133,21 @@ class ChatView(APIView):
                 connection_dict = connection.to_dict()
                 connection_id_name_map[connection_dict['id']] = connection_dict['name']
 
-            for source in sources:
+            for source in ai_response['sources']:
                 source['connection_name'] = connection_id_name_map[source['connection_id']]
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
         user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_reply, resolve_type == 'agent', json.dumps(sources))
+        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', json.dumps(ai_response['sources']))
 
-        return Response({
-            'ai_reply': ai_reply,
-            'sources': sources,
+        ai_response.update({
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id,
-            'agent_memory': agent_memory,
+            'ai_reply_message_id': ai_reply_message.id
         })
+
+        return Response(ai_response)
 
 
 class ConvertRecordToTicket(APIView):
@@ -160,6 +159,16 @@ class ConvertRecordToTicket(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        connection_id = request.data.get('connection_id')
+        if not connection_id:
+            error_msg = 'connection_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        record_id = request.data.get('record_id')
+        if not record_id:
+            error_msg = 'record_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project_uuid = request.data.get('project_uuid')
         if not project_uuid:
@@ -173,16 +182,6 @@ class ConvertRecordToTicket(APIView):
         if not workspace:
             error_msg = 'Workspace not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        connection_id = request.data.get('connection_id')
-        if not connection_id:
-            error_msg = 'connection_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        record_id = request.data.get('record_id')
-        if not record_id:
-            error_msg = 'record_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
