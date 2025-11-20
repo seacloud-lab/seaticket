@@ -853,7 +853,7 @@ class TicketsSearchAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        tickets = [{'number': ticket.get('_pk'), 'title': ticket.get('title')} for ticket in tickets]
+        tickets = [{'_pk': ticket.get('_pk'), 'title': ticket.get('title')} for ticket in tickets]
         return Response({'tickets': tickets})
 
 

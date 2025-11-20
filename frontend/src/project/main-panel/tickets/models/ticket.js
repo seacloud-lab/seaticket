@@ -32,7 +32,7 @@ class Reply {
 class Ticket {
   constructor(object) {
     this.id = object._pk || '';
-    this.number = object._pk || '';
+    this._pk = object._pk || '';
 
     this.title = object.title || '';
     this.content = object.description || '';
@@ -107,7 +107,7 @@ class Ticket {
 class TicketForTickets {
   constructor(object) {
     this._id = String(object._pk) || '';
-    this.number = object._pk || '';
+    this._pk = object._pk || '';
 
     this.title = object.title || '';
     this.description = object.description || '';
@@ -145,7 +145,7 @@ class TicketForTickets {
 
 class TicketForAI {
   constructor(object) {
-    this._id = String(object.number) || '';
+    this._id = String(object._pk) || '';
     this.title = object.title || '';
   }
 }
