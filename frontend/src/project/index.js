@@ -10,6 +10,7 @@ import { CONNECTION_PAGE_TYPE } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
+import { ProblemToBeResolvedProvider } from './main-panel/ask/hooks';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 
@@ -106,10 +107,12 @@ const Project = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <ConnectionsProvider projectUuid={projectUuid} >
-            <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-            <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} />
-          </ConnectionsProvider>
+          <ProblemToBeResolvedProvider >
+            <ConnectionsProvider projectUuid={projectUuid} >
+              <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+              <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
+            </ConnectionsProvider>
+          </ProblemToBeResolvedProvider>
         )}
       </div>
     </I18nextProvider>

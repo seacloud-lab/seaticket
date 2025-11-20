@@ -5,20 +5,23 @@ import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useTags, useTypes, useSubstates, useTicketsPage, useDataCache } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
-import { BAR_TYPE } from '@/project/constants/bar';
+import { BAR_TYPE } from '@/project/constants';
 import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
+import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 
-const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
+const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
   const { typesData, createType, isLoading: isTypesLoading } = useTypes();
   const { substatesData, createSubstate, isLoading: isSubstatesLoading } = useSubstates();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
+  const { updateTicket } = useProblemToBeResolved();
+
   const metadataRef = useRef(null);
   const currentTime = useRef(new Date());
 
@@ -161,6 +164,12 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return tools;
   }, [workspaceID, projectName]);
 
+  const handleResolveTicketByAI = useCallback((ticket) => {
+    if (!ticket) return;
+    updateTicket(ticket);
+    toggleBar([BAR_TYPE.CHAT]);
+  }, [toggleBar, updateTicket]);
+
   const createContextMenuOptions = useCallback(({
     isGroupView,
     selectedRange,
@@ -246,7 +255,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       label: gettext('Open ticket'),
       callback: () => togglePageType(row._id),
     });
-
     list.push('Divider');
 
     if (context.canDeleteRow()) {
@@ -264,8 +272,14 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
         toaster.success(gettext('The ticket link has been copied'));
       }
     });
+
+    list.push('Divider');
+    list.push({
+      label: gettext('Resolve ticket by AI'),
+      callback: () => handleResolveTicketByAI(row)
+    });
     return list;
-  }, [projectName, workspaceID]);
+  }, [projectName, workspaceID, handleResolveTicketByAI]);
 
   if (isLoading || isTypesLoading || isSubstatesLoading) return null;
 

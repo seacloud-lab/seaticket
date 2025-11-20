@@ -22,13 +22,13 @@ const {
   projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
 
-const Page = () => {
+const Page = ({ toggleBar }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
   const props = useMemo(() => ({
-    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin
-  }), []);
+    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin, toggleBar
+  }), [toggleBar]);
 
   const { isLoading, pageType, childrenPageType } = useTicketsPage();
   if (isLoading) return null;
@@ -53,7 +53,7 @@ const Page = () => {
   return (<Ticket { ...props } ticketID={pageType} editorAPI={longtextAPI} />);
 };
 
-const Index = ({ title }) => {
+const Index = ({ title, toggleBar }) => {
   return (
     <DataCacheProvider>
       <CollaboratorsProvider
@@ -65,7 +65,7 @@ const Index = ({ title }) => {
             <SubstatesProvider projectUuid={projectUuid}>
               <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
                 <TicketTopBar title={title} />
-                <Page />
+                <Page toggleBar={toggleBar} />
               </TicketsPageProvider>
             </SubstatesProvider>
           </TagsProvider>

@@ -14,7 +14,6 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
   const [value, setValue] = useState([]);
 
   useEffect(() => {
-    // task
     let value = [];
 
     // task
@@ -26,7 +25,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
           {
             name: gettext('System prompts'),
             children: [
-              { value: taskValue.system_prompts, formatter: StepMarkdownViewer }
+              { value: taskValue.system_prompt, formatter: StepMarkdownViewer }
             ]
           }, {
             name: gettext('User message'),
@@ -98,7 +97,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // action
+    // action - agent only
     if (Array.isArray(propsValue.actions) && propsValue.actions.length > 0) {
       value.push({
         name: gettext('Action steps'),
@@ -170,7 +169,42 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // final answer
+    // tool calls - ask only
+    if (Array.isArray(propsValue.tool_calls) && propsValue.tool_calls.length > 0) {
+      value.push({
+        name: gettext('Tool calls'),
+        children: propsValue.tool_calls.map((toolCall, toolCallNum) => {
+          let stepInfos = [
+            {
+              name: gettext('Arguments'),
+              children: Object.entries(toolCall.arguments || {}).map(([argumentKey, argumentValue]) => {
+                return `${argumentKey}: ${argumentValue}`;
+              })
+            }, {
+              name: gettext('Output'),
+              children: [
+                { value: toolCall.output, formatter: StepMarkdownViewer }
+              ]
+            }
+          ];
+          if (toolCall.error) {
+            stepInfos.push({
+              name: gettext('Error'),
+              children: [
+                { name: gettext('Error type'), value: toolCall.error.type },
+                { name: gettext('Error message'), value: toolCall.error.message },
+              ]
+            });
+          }
+          return {
+            name: `${gettext('Step')} ${toolCallNum + 1}: ${toolCall.name}`,
+            children: stepInfos
+          };
+        })
+      });
+    }
+
+    // final answer - agent only
     const final_answer = propsValue?.final_answer;
     if (final_answer && final_answer.result){
       let result = final_answer.result;
@@ -204,7 +238,21 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
       });
     }
 
-    // statistics
+    // result - ask only
+    if (propsValue.result) {
+      let result = propsValue.result;
+      if (result && isObject(result)) {
+        result = JSON.stringify(result);
+      }
+      value.push({
+        name: gettext('Result'),
+        children: [
+          { value: result, formatter: result ? StepMarkdownViewer : null }
+        ]
+      });
+    }
+
+    // statistics - agent only
     const statistics = propsValue?.static;
     if (statistics && (statistics.token_usage || statistics.time_usage)) {
       const { token_usage, time_usage } = statistics;

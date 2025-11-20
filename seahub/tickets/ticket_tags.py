@@ -17,7 +17,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import add_select_option, update_select_option, \
     get_ticket_counts_group_by_column_name, convert_ticket_select_column_name_to_option_id, \
-    TABLE_TICKETS, get_column_from_metadata_by_name, filter_tickets_by_select, batch_delete_select_option
+    TABLE_TICKETS, get_column_from_columns_by_name, filter_tickets_by_select, batch_delete_select_option
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class TicketTagsAPIView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
-            tag_column = get_column_from_metadata_by_name(table_meta, 'tags')
+            tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
             column_data = tag_column.get('data') or {}
             existing_options = column_data.get('options', []) or []
 
@@ -161,7 +161,7 @@ class TicketTagsAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(table_meta, 'tags')
+            column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
             batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), column.get('key'), tag_ids)
         except Exception as e:
             logger.error(e)
@@ -205,7 +205,8 @@ class TicketTagAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(table_meta, 'tags')
+            table_columns = table_meta.get('columns')
+            column = get_column_from_columns_by_name(table_columns, 'tags')
             column_data = column.get('data') or {}
             options = column_data.get('options', []) or []
             for opt in options:
@@ -223,7 +224,6 @@ class TicketTagAPIView(APIView):
         # main
         try:
             seadb_api = SeaDBAPI(username)
-            # tickets, columns = filter_tickets_by_tag(seadb_api, project_uuid, tag_id)
             tickets, columns = filter_tickets_by_select(seadb_api, project_uuid, 'tags', [tag_option.get('name')])
         except Exception as e:
             logger.error(e)
@@ -231,7 +231,7 @@ class TicketTagAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         for row in tickets:
-            convert_ticket_select_column_name_to_option_id(table_meta, row)
+            convert_ticket_select_column_name_to_option_id(table_columns, row)
 
         return Response({
             'tickets': tickets,
@@ -275,7 +275,7 @@ class TicketTagAPIView(APIView):
         seadb_api = SeaDBAPI(username)
         base_metadata = seadb_api.get_base_metadata(project_uuid)
         table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-        column = get_column_from_metadata_by_name(table_meta, 'tags')
+        column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
         column_data = column.get('data') or {}
         options = column_data.get('options', []) or []
         for opt in options:
@@ -333,7 +333,7 @@ class TicketTagAPIView(APIView):
             seadb_api = SeaDBAPI(username)
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             tickets_table_metadata = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            column = get_column_from_metadata_by_name(tickets_table_metadata, 'tags')
+            column = get_column_from_columns_by_name(tickets_table_metadata.get('columns'), 'tags')
             table_id = tickets_table_metadata.get('id')
             column_key = column.get('key')
             column_data = column.get('data') or {}
