@@ -690,7 +690,10 @@ class TicketAPIView(APIView):
                 status_option_id = ticket_status_id
             else:
                 current_status_name = ticket.get('status')
-                current_status_option = next((option for option in substate_options if option['name'] == current_status_name), None)
+                status_column = get_column_from_columns_by_name(metadata, 'status')
+                status_column_data = status_column.get('data') or {}
+                status_options = status_column_data.get('options', []) or []
+                current_status_option = next((option for option in status_options if option['name'] == current_status_name), None)
                 status_option_id = current_status_option.get('id') if current_status_option else ''
 
             cascade_settings = (substate_column_data or {}).get('cascade_settings') or {}
