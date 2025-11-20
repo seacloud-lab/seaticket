@@ -122,7 +122,7 @@ class TicketSubstatesAPIView(APIView):
             base_metadata = seadb_api.get_base_metadata(project_uuid)
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
-            substate_column = get_column_from_columns_by_name(table_meta.get('columns'), 'status')
+            substate_column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
             column_data = substate_column.get('data') or {}
             existing_options = column_data.get('options', []) or []
 
