@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext, canAddGroup, orgName } from '../../../../constants';
-import './org-title.css';
 import { Icon } from '../../../../components';
+
+import './org-title.css';
 
 function OrgTitle(props) {
   const { isDesktop, onCreateGroupToggle } = props;

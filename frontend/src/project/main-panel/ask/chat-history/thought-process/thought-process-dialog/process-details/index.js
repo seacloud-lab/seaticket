@@ -4,9 +4,9 @@ import classnames from 'classnames';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { getType } from '@/utils/type-detection';
 
 import './index.css';
-import { getType } from '@/utils/type-detection';
 
 
 const ProcessDetails = ({ value }) => {
