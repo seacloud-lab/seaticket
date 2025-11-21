@@ -16,13 +16,31 @@ const EmbeddingVisualization = ({ isOpen, onClose, connectionId, connectionName,
     if (isOpen && connectionId && projectUuid) {
       setIsLoading(true);
 
-      connectionsAPI.getEmbeddingAnalysis(projectUuid, connectionId, {
-        view_id: viewId
-      }).then(response => {
-        const { records } = response.data;
-        processBackendData(records);
+      connectionsAPI.getEmbeddingAnalysis(projectUuid, connectionId).then(response => {
+        const { task_id } = response.data;
+        const pollTaskStatus = () => {
+          connectionsAPI.getEmbeddingAnalysisTaskStatus(task_id)
+            .then(statusResponse => {
+              const { is_finished, records } = statusResponse.data;
+              if (is_finished) {
+                processBackendData(records);
+              } else {
+                setTimeout(pollTaskStatus, 2000);
+              }
+            })
+            .catch(error => {
+              console.error('Failed to fetch task status:', error);
+              setIsLoading(false);
+              setEmbeddingData(null);
+              setMetadata({
+                error: true,
+                errorMessage: error.response?.data?.error_msg || 'Failed to check task status'
+              });
+            });
+        };
+        pollTaskStatus();
       }).catch(error => {
-        console.error('Failed to fetch embedding analysis:', error);
+        console.error('Failed to submit embedding analysis task:', error);
         setIsLoading(false);
         setEmbeddingData(null);
         setMetadata({

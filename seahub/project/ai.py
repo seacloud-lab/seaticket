@@ -19,8 +19,8 @@ from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections, ConnectionsViews
 from seahub.project.utils import check_project_permission, get_ai_reply, \
     convert_record_to_ticket, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
-    get_file_from_s3_web_crawl, generate_embeddings_2d_with_tsne
-from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT, MAX_EMBEDDING_ANALYSIS_RECORDS
+    get_file_from_s3_web_crawl, submit_embedding_analysis_task, get_embedding_analysis_task_status
+from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
 from seahub.seadb_models.utils import list_connection_view_records_with_columns
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -537,62 +537,40 @@ class EmbeddingAnalysisView(APIView):
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        view_id = request.data.get('view_id')
-
+        params = {
+            'project_uuid': project_uuid,
+            'connection_id': connection_id,
+            'username': username
+        }
+        
         try:
-            view = ConnectionsViews.objects.get_view(project_uuid, project_connection, view_id)
+            task_id = submit_embedding_analysis_task(params)
         except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
+            print(e)
+            logger.error(f'Failed to submit embedding analysis task: {e}')
+            error_msg = 'Failed to submit analysis task.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         
-        if not view:
-            error_msg = f'Connection view {view_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
-        seadb_api = SeaDBAPI(username)
-        try:
-            column_names=['_pk', 'title', 'ai_summary', 'ai_summary_vector']
-            records = list_connection_view_records_with_columns(
-                seadb_api, project_uuid, project_connection, view, column_names, 
-                 start=0, limit=MAX_EMBEDDING_ANALYSIS_RECORDS, username=username
-            )
-        except Exception as e:
-            logger.error(f'Error fetching records for embedding analysis: {e}')
-            error_msg = 'Failed to fetch records.'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        if not records:
-            return Response({
-                'records': [],
-            })
-        valid_records = []
-        vectors = []
-        
-        for record in records:
-            ai_summary = record.get('ai_summary')
-            ai_summary_vector = record.get('ai_summary_vector')
-            if ai_summary and ai_summary_vector:
-                valid_records.append(record)
-                vectors.append(ai_summary_vector)
-
-        if not vectors:
-            return Response({
-                'records': [],
-            })
-
-        try:
-            embeddings_2d = generate_embeddings_2d_with_tsne(vectors)
-        except Exception as e:
-            logger.error(f'Error generating 2D embeddings: {e}')
-            error_msg = 'Failed to generate embeddings.'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        for i, record in enumerate(valid_records):
-            if i < len(embeddings_2d):
-                record['x'] = embeddings_2d[i][0]
-                record['y'] = embeddings_2d[i][1]
-
         return Response({
-            'records': valid_records,
+            'task_id': task_id,
         })
+
+
+class EmbeddingAnalysisTaskStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, task_id):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        try:
+            result = get_embedding_analysis_task_status(task_id)
+        except Exception as e:
+            logger.error(f'Failed to get task status: {e}')
+            error_msg = 'Failed to get task status.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        return Response(result)

@@ -357,7 +357,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             style={{ height: '28px', display: 'inline-flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}
             onClick={() => setEmbeddingVisualizationOpen(true)}
           >
-            <i className="sf3-font-ai sf3-font mr-2"></i>
             {gettext('Analyze')}
           </Button>
         </div>
