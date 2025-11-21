@@ -45,7 +45,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
     };
     const ticketData = {
       title,
-      description: ticket_content,
+      content: ticket_content,
       type,
       assignees,
       tags,
