@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { Button } from 'reactstrap';
-import copy from 'copy-to-clipboard';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
@@ -194,7 +193,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateIssue]);
 
-  const generatorCreateRelatedTicketOption = useCallback(({ row }) => {
+  const generateCreateRelatedTicketOption = useCallback(({ row }) => {
     const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
     if (!enableCreateRelatedTicket) return null;
     return {
@@ -204,7 +203,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generatorAIOptions = useCallback(({ row, updateLocalRow }) => {
+  const generateAIOptions = useCallback(({ row, updateLocalRow }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
     if (!enableUseAI) return null;
     return {
@@ -225,32 +224,29 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
 
+  const generateOpenOriginalPageOption = useCallback(({ row }) => {
+    const url = getOriginalPageUrl(connection, row);
+    if (!url) return null;
+    return {
+      label: gettext('Open original page'),
+      key: 'open_original_page',
+      callback: () => window.open(url, '_blank', 'noopener,noreferrer'),
+    };
+  }, [connection]);
+
   const createRowsTools = useCallback(({ rows, updateLocalRow }) => {
     if (rows.length > 1) return [];
     let tools = [];
     const row = rows[0];
-    const url = getOriginalPageUrl(connection, row);
-    if (url) {
-      tools.push({
-        key: 'copy',
-        icon: 'copy',
-        label: gettext('Copy original page link'),
-        callback: (event) => {
-          event && event.stopPropagation();
-          event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
-          copy(url);
-          toaster.success(gettext('The original page link has been copied'));
-        }
-      });
-    }
-
-    const createRelatedTicketOption = generatorCreateRelatedTicketOption({ row });
-    const AIOption = generatorAIOptions({ row, updateLocalRow });
-    if (createRelatedTicketOption || AIOption) {
+    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
+    const AIOption = generateAIOptions({ row, updateLocalRow });
+    if (createRelatedTicketOption || AIOption || openOriginalPageOption) {
       tools.push({
         key: 'more',
         icon: 'more',
         children: [
+          openOriginalPageOption,
           createRelatedTicketOption,
           createRelatedTicketOption && AIOption ? { key: 'divider' } : null,
           AIOption,
@@ -258,7 +254,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
       });
     }
     return tools;
-  }, [connection, generatorCreateRelatedTicketOption, generatorAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -287,26 +283,21 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (!row) return [];
 
     let list = [];
-    const url = getOriginalPageUrl(connection, row);
-    if (url) {
-      list.push({
-        label: gettext('Open original page'),
-        key: 'open_original_page',
-        callback: () => window.open(url, '_blank', 'noopener,noreferrer'),
-      });
-    }
+    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+    list.push(openOriginalPageOption);
 
-    const createRelatedTicketOption = generatorCreateRelatedTicketOption({ row });
+    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
     list.push(createRelatedTicketOption);
 
-    const AIOptions = generatorAIOptions({ row, updateLocalRow });
+    list = list.filter(Boolean);
+
+    const AIOptions = generateAIOptions({ row, updateLocalRow });
     if (list.length > 0 && AIOptions) {
       list.push('Divider');
     }
     list.push(AIOptions);
-
     return list.filter(Boolean);
-  }, [connection, handleCreateRelatedTicket, generatorAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
