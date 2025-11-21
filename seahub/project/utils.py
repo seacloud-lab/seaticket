@@ -27,8 +27,8 @@ from seahub.group.models import Group, GroupUser
 from seahub.profile.models import Profile
 from seahub.api2.utils import get_user_common_info
 
-from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
-    SEAQA_AI_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
+from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
+    SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
@@ -170,7 +170,7 @@ def add_connection_sync_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/add-connection-sync-task')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/add-connection-sync-task')
     resp = requests.get(url, params=params, headers=headers)
 
     return json.loads(resp.content)
@@ -180,7 +180,7 @@ def manual_sync_connection(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/manual-sync-connection')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/manual-sync-connection')
     resp = requests.post(url, json=params, headers=headers)
     status_code = resp.status_code
     return json.loads(resp.content), status_code
@@ -188,7 +188,7 @@ def manual_sync_connection(params):
 
 def update_github_issue_by_webhook(params):
     payload = {'exp': int(time.time()) + 300, }
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/github/')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/webhook/github/')
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
     resp = requests.post(
@@ -206,7 +206,7 @@ def update_discourse_topic_by_webhook(params):
     event_type = params.get('event_type')
 
     payload = {'exp': int(time.time()) + 300, }
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/webhook/discourse/')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/webhook/discourse/')
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {
         "Authorization": "Token %s" % token,
@@ -227,7 +227,7 @@ def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_INDEXER_SERVER_URL, '/search')
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/search')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'search error status: {resp.status_code} body: {resp.text}')
@@ -240,7 +240,7 @@ def get_ai_reply(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/get-ai-reply')
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/get-ai-reply')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
@@ -256,7 +256,7 @@ def convert_record_to_ticket(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/convert-record-to-ticket')
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/convert-record-to-ticket')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('convert record to ticket error status: %s body: %s', resp.status_code, resp.text)
@@ -278,7 +278,7 @@ def generate_ai_summary(content, username, connection_type, project_uuid, org_id
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_SERVER_URL, '/generate-summary')
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/generate-summary')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
