@@ -2,6 +2,7 @@ import React from 'react';
 import { BAR_TYPE, BAR_TYPES } from '../constants';
 import Search from './search';
 import Tickets from './tickets';
+import MyTickets from './my-tickets';
 import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
@@ -26,6 +27,8 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     case BAR_TYPE.KNOWLEDGE:
       return (<KnowledgeBase title={title} />);
+    case BAR_TYPE.MY_TICKET:
+      return (<MyTickets title={title} toggleBar={toggleBar} />);
     default:
       return (<Connections title={title} toggleBar={toggleBar} />);
   }

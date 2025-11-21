@@ -380,6 +380,14 @@ class TicketsAPI {
     return this.req.get(url);
   }
 
+  listMyTickets(projectUuid, { start = 0, limit = 1000 }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/my-tickets/';
+    const params = {
+      start,
+      limit
+    };
+    return this.req.get(url, { params: params });
+  }
 }
 
 const ticketsAPI = new TicketsAPI();

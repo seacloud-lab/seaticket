@@ -1,0 +1,15 @@
+.ticket-rate-formatter {
+  min-height: 38px;
+  width: 100%;
+  padding: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ticket-rate-formatter .sea-qa-icon-svg-priority-01 {
+  fill: #ff8000;
+}

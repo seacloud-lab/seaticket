@@ -37,6 +37,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
               <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
             )}
             <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPES[6]} activeBar={activeBar} level={1} onClick={toggleBar} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
