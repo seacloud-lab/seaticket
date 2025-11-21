@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Dropdown } from 'reactstrap';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Dropdown, DropdownItem } from 'reactstrap';
 import { Icon, IconButton, SubDropdown,
   CustomizeDropdownMoreToggle, CustomizeDropdownItem, CustomizeDropdownMenu
 } from '@/components';
@@ -7,7 +7,7 @@ import { gettext } from '@/constants';
 import context from '../../../context';
 import { isFunction } from '@/utils/type-detection';
 
-const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) => {
+const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools, updateLocalRow }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubOpen, setIsSubOpen] = useState(false);
   const [subMenuKey, setSubMenuKey] = useState('');
@@ -42,6 +42,14 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) 
     setSubMenuKey(subMenu?.key || '');
   }, [isSubOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('contextmenu', () => onMoreToggle());
+    return () => {
+      document.removeEventListener('contextmenu', () => onMoreToggle());
+    };
+  }, [isOpen, onMoreToggle]);
+
   return (
     <div className="sea-metadata-views sea-metadata-rows-tools">
       <div className="sea-qa-icon-btn sea-metadata-rows-tool-btn pl-2 pr-2 mr-2" onClick={selectNone}>
@@ -52,10 +60,10 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) 
         <IconButton icon="delete" title={gettext('Delete')} className="mr-2" onClick={handleDeleteRows} />
       )}
 
-      {isFunction(createTools) && createTools({ rows, modifyRows }).map(tool => {
-        const { key, name, icon, callback, children } = tool;
+      {isFunction(createTools) && createTools({ rows, modifyRows, updateLocalRow }).map(tool => {
+        const { key, label, icon, callback, children } = tool;
         if (key !== 'more') {
-          return (<IconButton icon={icon} key={key} title={name} className="mr-2" onClick={callback} />);
+          return (<IconButton icon={icon} key={key} title={label} className="mr-2" onClick={callback} />);
         }
         if (!Array.isArray(children) || children.length === 0) return null;
         return (
@@ -68,7 +76,10 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools }) 
             <CustomizeDropdownMoreToggle />
             <CustomizeDropdownMenu fixed={true}>
               {children.map(item => {
-                const { key: childKey, name: childName, callback: childCallback } = item;
+                const { key: childKey, label: childName, callback: childCallback } = item;
+                if (childKey === 'divider') {
+                  return (<DropdownItem key={childKey} divider />);
+                }
                 if (Array.isArray(item.children) && item.children.length > 0) {
                   return (
                     <SubDropdown

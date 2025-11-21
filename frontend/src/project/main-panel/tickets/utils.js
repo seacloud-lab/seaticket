@@ -14,7 +14,7 @@ export const generatorRowCopyLinkTool = ({ row, workspaceID, projectName }) => {
   return {
     key: 'copy',
     icon: 'copy',
-    name: gettext('Copy link'),
+    label: gettext('Copy link'),
     callback: (event) => {
       event && event.stopPropagation();
       event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
@@ -31,12 +31,12 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
     icon: 'more',
     children: [
       {
-        name: gettext('Set status'),
-        key: 'status',
+        label: gettext('Set state'),
+        key: 'state',
         children: TICKET_STATE_OPTIONS.map((o) => {
           return {
             key: o.id,
-            name: o.name,
+            label: o.name,
             callback: () => {
               let rowIds = [];
               let idRowUpdates = {};
@@ -44,25 +44,26 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
               let idOldRowData = {};
               let idOriginalOldRowData = {};
               rows.forEach(row => {
-                const { _id, status } = row;
+                const { _id, state } = row;
                 rowIds.push(_id);
-                idRowUpdates[_id] = { status: o.id };
-                idOriginalRowUpdates[_id] = { status: o.id };
-                idOldRowData[_id] = { status };
-                idOriginalOldRowData[_id] = { status };
+                idRowUpdates[_id] = { state: o.id };
+                idOriginalRowUpdates[_id] = { state: o.id };
+                idOldRowData[_id] = { state };
+                idOriginalOldRowData[_id] = { state };
               });
               modifyRows && modifyRows(rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData);
             },
           };
         })
       }, {
-        name: gettext('Set priority'),
+        label: gettext('Set priority'),
         key: 'priority',
         children: PRIORITIES.map(o => {
           return {
             ...o,
             key: o.value,
             icon: o.icon,
+            label: o.name,
             className: 'sea-qa-ticket-priority-dropdown-item',
             callback: () => {
               let rowIds = [];

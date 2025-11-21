@@ -43,6 +43,7 @@
 
 .sea-metadata-views.sea-metadata-rows-tools {
   padding-left: 10px;
+  overflow: unset;
 }
 
 .sea-qa-icon-btn.sea-metadata-rows-tool-btn {

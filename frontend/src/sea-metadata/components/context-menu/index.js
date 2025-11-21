@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { DropdownItem } from 'reactstrap';
 import PropTypes from 'prop-types';
-import ModalPortal from '@/components/modal-portal';
 import { getTarget } from '@/utils/dom';
 import context from '@/sea-metadata/context';
+import { SubDropdown, ModalPortal } from '@/components';
 
 import './index.css';
 
@@ -16,17 +16,38 @@ const ContextMenu = ({
   const menuRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [isSubOpen, setIsSubOpen] = useState(false);
+  const [subMenuKey, setSubMenuKey] = useState('');
 
   const options = useMemo(() => {
     if (!createContextMenuOptions) return [];
     return createContextMenuOptions({ ...props, hideMenu: setVisible, position, context });
   }, [props, createContextMenuOptions, position]);
 
+  const hideSubMenu = useCallback(() => {
+    setIsSubOpen(false);
+    setSubMenuKey('');
+  }, []);
+
   const handleHide = useCallback((event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setVisible(false);
-    }
-  }, [menuRef]);
+    if (menuRef.current && menuRef.current.contains(event.target)) return;
+    setVisible(false);
+    hideSubMenu();
+  }, [menuRef, hideSubMenu]);
+
+  const onSubMenuToggle = useCallback((event, subMenu) => {
+    event && event.stopPropagation();
+    event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    setIsSubOpen(!isSubOpen);
+    setSubMenuKey(subMenu?.key || '');
+  }, [isSubOpen]);
+
+  const openSubMenu = useCallback((event, subMenu) => {
+    event && event.stopPropagation();
+    event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
+    setSubMenuKey(subMenu.key);
+    setIsSubOpen(true);
+  }, []);
 
   const getMenuPosition = useCallback((x = 0, y = 0) => {
     let menuStyles = {
@@ -73,9 +94,20 @@ const ContextMenu = ({
 
   const handleOptionClick = useCallback((event, option) => {
     event.stopPropagation();
-    option.callback && option.callback();
-    setVisible(false);
-  }, []);
+    event.preventDefault();
+    option && option.callback && option.callback();
+    // Use setTimeout to ensure the click handler executes before hiding
+    setTimeout(() => {
+      setVisible(false);
+      hideSubMenu();
+    }, 0);
+  }, [hideSubMenu]);
+
+  const handleMainMenuMouseMove = useCallback((e) => {
+    if (isSubOpen && e.target && e.target.className.includes('dropdown-item')) {
+      hideSubMenu();
+    }
+  }, [isSubOpen, hideSubMenu]);
 
   useEffect(() => {
     const handleShow = (event) => {
@@ -120,11 +152,23 @@ const ContextMenu = ({
           if (option === 'Divider') {
             return <DropdownItem key={index} divider />;
           }
+          if (option.children) {
+            return (
+              <SubDropdown
+                key={index}
+                isOpen={isSubOpen && subMenuKey === option.key}
+                menu={option}
+                onShow={openSubMenu}
+                onToggle={onSubMenuToggle}
+              />
+            );
+          }
           return (
             <button
               key={index}
               className="dropdown-item"
               onClick={(event) => handleOptionClick(event, option)}
+              onMouseMove={handleMainMenuMouseMove}
             >
               {option.label}
             </button>
