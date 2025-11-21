@@ -546,7 +546,6 @@ class EmbeddingAnalysisView(APIView):
         try:
             task_id = submit_embedding_analysis_task(params)
         except Exception as e:
-            print(e)
             logger.error(f'Failed to submit embedding analysis task: {e}')
             error_msg = 'Failed to submit analysis task.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
