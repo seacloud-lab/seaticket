@@ -343,7 +343,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   return (
     <CollaboratorsProvider>
-      {connection?.type === CONNECTION_TYPE.GITHUB_ISSUE && (
+      {(connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) && (
         <div style={{
           position: 'absolute',
           top: '8px',

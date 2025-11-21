@@ -28,7 +28,7 @@ from seahub.profile.models import Profile
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
-    SEAQA_AI_SERVER_URL, SEAQA_EVENTS_SERVER_URL
+    SEAQA_AI_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
@@ -791,7 +791,7 @@ def submit_embedding_analysis_task(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
-    url = urljoin(SEAQA_EVENTS_SERVER_URL, '/add-embedding-analysis-task')
+    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/add-embedding-analysis-task')
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'submit embedding analysis task error status: {resp.status_code} body: {resp.text}')
@@ -810,7 +810,7 @@ def get_embedding_analysis_task_status(task_id):
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
     
-    url = urljoin(SEAQA_EVENTS_SERVER_URL, f'/embedding-analysis-task-status')
+    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, f'/embedding-analysis-task-status')
     params = {'task_id': task_id}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 500:

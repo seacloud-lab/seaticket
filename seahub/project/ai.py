@@ -540,7 +540,8 @@ class EmbeddingAnalysisView(APIView):
         params = {
             'project_uuid': project_uuid,
             'connection_id': connection_id,
-            'username': username
+            'username': username,
+            'connection_type': project_connection.type,
         }
         
         try:
