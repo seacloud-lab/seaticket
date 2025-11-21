@@ -537,6 +537,7 @@ class ProjectConnections(models.Model):
     last_sync_log = models.TextField(null=True)
     ai_status = models.TextField(null=True)
     last_ai_processing_time = models.DateTimeField(null=True)
+    ai_indexed_at = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
@@ -557,6 +558,7 @@ class ProjectConnections(models.Model):
             'is_active': self.is_active,
             'ai_status': self.ai_status,
             'last_ai_processing_time': self.last_ai_processing_time,
+            'ai_indexed_at': self.ai_indexed_at,
         }
 
 

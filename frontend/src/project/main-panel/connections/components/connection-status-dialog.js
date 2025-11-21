@@ -43,6 +43,9 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             <p>{gettext('Last AI processing count')}: {record.ai_status.last_ai_processing_count}</p>
             <p>{gettext('Last AI processing status')}: {record.ai_status.last_ai_processing_status}</p>
             <p>{gettext('Last AI processing time')}: {record.last_ai_processing_time}</p>
+            <p>{gettext('Last AI indexed count')}: {record.ai_status.last_ai_indexed_count}</p>
+            <p>{gettext('Last AI indexed status')}: {record.ai_status.last_ai_index_status}</p>
+            <p>{gettext('Last AI indexed time')}: {record.ai_indexed_at}</p>
           </>
         }
       </ModalBody>

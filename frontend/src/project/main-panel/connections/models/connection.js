@@ -15,6 +15,7 @@ class Connection {
     this.ai_status = object.ai_status || '{}';
     this.is_active = object.is_active || '';
     this.last_ai_processing_time = object.last_ai_processing_time || '';
+    this.ai_indexed_at = object.ai_indexed_at || '';
 
     // update
     if (this.ctime) {
@@ -23,6 +24,7 @@ class Connection {
     this.indexed_at = this.indexed_at ? dayjs(this.indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
     this.last_sync_time = this.last_sync_time ? dayjs(this.last_sync_time).format('YYYY-MM-DD HH:mm:ss') : '--';
     this.last_ai_processing_time = this.last_ai_processing_time ? dayjs(this.last_ai_processing_time).format('YYYY-MM-DD HH:mm:ss') : '--';
+    this.ai_indexed_at = this.ai_indexed_at ? dayjs(this.ai_indexed_at).format('YYYY-MM-DD HH:mm:ss') : '--';
 
     if (this.status) {
       try {
