@@ -12,6 +12,7 @@ import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
+import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
@@ -166,7 +167,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
 
   const handleResolveTicketByAI = useCallback((ticket) => {
     if (!ticket) return;
-    updateTicket(ticket);
+    updateTicket(ticket, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateTicket]);
 

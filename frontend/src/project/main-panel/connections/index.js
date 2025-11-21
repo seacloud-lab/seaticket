@@ -9,18 +9,18 @@ const {
   projectUuid, projectName, workspaceID, permission
 } = window.app.pageOptions;
 
-const Page = () => {
+const Page = ({ toggleBar }) => {
   const { isLoading, pageType } = useConnectionsPage();
   if (isLoading) return null;
   if (pageType === CONNECTION_PAGE_TYPE.ALL) return (<AllConnections projectUuid={projectUuid} projectName={projectName} />);
-  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} />);
+  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageType} toggleBar={toggleBar} />);
 };
 
-const Index = ({ title }) => {
+const Index = ({ title, toggleBar }) => {
   return (
     <ConnectionsPageProvider workspaceID={workspaceID} projectName={projectName}>
       <TopBar title={title} />
-      <Page />
+      <Page toggleBar={toggleBar} />
     </ConnectionsPageProvider>
   );
 };

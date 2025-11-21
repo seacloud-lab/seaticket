@@ -10,6 +10,7 @@ import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
 import Ticket from './ticket';
+import Issue from './issue';
 import { useProblemToBeResolved } from '../hooks';
 
 import './index.css';
@@ -30,7 +31,10 @@ const MessageInput = forwardRef(({
   const rangeRef = useRef(null);
   const previewContentRef = useRef(null);
 
-  const { ticket, resolveType, clearProblem, updateResolveType, updateTicket, resetResolveType } = useProblemToBeResolved();
+  const {
+    ticket, issue, resolveType,
+    clearProblem, updateResolveType, resetResolveType, updateTicket, updateIssue,
+  } = useProblemToBeResolved();
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
@@ -76,9 +80,9 @@ const MessageInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage({ resolveType, message: value, ticket: ticket?._id });
-    updateTicket(null, resolveType);
-  }, [resolveType, value, ticket, sendMessage]);
+    sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue });
+    clearProblem();
+  }, [resolveType, value, ticket, issue, sendMessage, clearProblem]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -174,6 +178,7 @@ const MessageInput = forwardRef(({
     <div className={classnames('sea-qa-ai-ask-chat-input-wrapper', { 'disabled': disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
+          <Issue value={issue} onChange={updateIssue} />
           <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -195,7 +200,7 @@ const MessageInput = forwardRef(({
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
               <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
-              <Ticket projectUuid={projectUuid} value={ticket} onChange={(newTicket) => updateTicket(newTicket, resolveType)} />
+              <Ticket projectUuid={projectUuid} value={ticket} onChange={updateTicket} />
             </div>
             <IconButton
               disabled={disabled}
@@ -214,8 +219,6 @@ MessageInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
-  initialResolveType: PropTypes.string,
-  initialTicket: PropTypes.object,
 };
 
 export default MessageInput;

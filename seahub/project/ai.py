@@ -18,9 +18,9 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ChatSessions, \
     ChatMessages, ProjectConnections, ConnectionsViews
 from seahub.project.utils import check_project_permission, get_ai_reply, \
-    convert_record_to_ticket, ticket_to_json, TicketNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
+    convert_record_to_ticket, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
     get_file_from_s3_web_crawl, generate_embeddings_2d_with_tsne
-from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, MAX_EMBEDDING_ANALYSIS_RECORDS
+from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT, MAX_EMBEDDING_ANALYSIS_RECORDS
 from seahub.seadb_models.utils import list_connection_view_records_with_columns
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -72,6 +72,11 @@ class ChatView(APIView):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         ticket_id = request.data.get('ticket_id')
+        issue_id = request.data.get('issue_id')
+        if ticket_id and issue_id:
+            error_msg = 'can only provide a ticket or an issue.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         if ticket_id:
             try:
                 ticket_id = int(ticket_id)
@@ -84,6 +89,25 @@ class ChatView(APIView):
                 error_msg = 'ticket not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
+        connection_id = request.data.get('connection_id')
+        # only support github issue for now
+        if issue_id:
+            try:
+                issue_id = int(issue_id)
+            except:
+                error_msg = 'issue_id invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            if not connection_id:
+                error_msg = 'connection_id is required when issue_id is provided.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            try:
+                issue_json_data = github_issue_to_json(project_uuid, issue_id, connection_id)
+            except IssueNotFound:
+                error_msg = 'issue not found'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            query = AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT + f'```json\n{issue_json_data}\n```\n\n' + query
 
         resolve_type = request.data.get('resolve_type', 'ask')
         session_uuid = request.data.get('session_uuid')

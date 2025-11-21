@@ -33,9 +33,10 @@ from seahub.settings import SEAQA_INDEXER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM
+from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import time_str_to_utc_time
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.project.constants import LLM_INPUT_CHARACTERS_LIMIT
 
 
@@ -487,6 +488,10 @@ def url_to_filename(url):
 class TicketNotFound(Exception):
     pass
 
+
+class IssueNotFound(Exception):
+    pass
+
 def ticket_to_json(project_uuid, ticket_id):
     """
     Build a json from a ticket and its replies.
@@ -553,6 +558,84 @@ def ticket_to_json(project_uuid, ticket_id):
             'replied_at': replied_at
         })
     return json.dumps(whole_ticket_data, indent=4)
+
+
+def github_issue_to_json(project_uuid, issue_id, connection_id):
+    """
+    Build a json from a github issue and its comments.
+
+    Args:
+    - project_uuid: the uuid of the project
+    - issue_id: the _pk of the issue
+    - connection_id: the id of the connection
+
+    Returns:
+    ```json // <- not included
+    {
+        "title": ...,
+        "body": ...,
+        "created_at": ...,
+        "comments": [
+            {
+                "author": ...,
+                "content": ...,
+                "created_time": ...,
+            },
+            ...
+        ]
+    }
+    ``` // <- not included
+    """
+
+    try:
+        github_db_api = GitHubSeaDBAPI(project_uuid)
+
+        issues = github_db_api.get_issue_by_pk(connection_id, issue_id)
+
+        if not issues or len(issues) == 0:
+            raise IssueNotFound()
+
+        issue_data = issues[0]
+
+        title = issue_data.get('title', '')
+        body = issue_data.get('content', '')
+        created_at = issue_data.get('created_time', '')
+        github_issue_id = issue_data.get('issue_id', '')
+
+        comments = []
+        if github_issue_id:
+            try:
+                comments = github_db_api.get_comments_by_issue_id(
+                    connection_id, github_issue_id, limit=AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+                )
+            except Exception as e:
+                logger.warning(e)
+
+        whole_issue_data = {
+            'title': title,
+            'body': body,
+            'created_at': created_at,
+            'comments': []
+        }
+
+        for comment in comments:
+            if not comment.get('content'):
+                continue
+
+            whole_issue_data['comments'].append({
+                'author': comment.get('author', ''),
+                'content': comment.get('content', ''),
+                'created_time': comment.get('created_time', '')
+            })
+
+        return json.dumps(whole_issue_data, indent=4, ensure_ascii=False)
+
+    except IssueNotFound:
+        raise
+    except Exception as e:
+        logger.error(f'Failed to get issue data: {e}')
+        raise IssueNotFound()
+
 
 
 def get_ai_credit_by_org_id(org_id):

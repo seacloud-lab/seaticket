@@ -43,8 +43,10 @@ body {
 .sea-qa-project-ticket-status-circle-dot-icon,
 .sea-qa-project-ticket-status-loop-dot-icon {
   color: var(--ticket-open-color);
+  flex-shrink: 0;
 }
 
 .sea-qa-project-ticket-status-circle-invalid-icon {
   color: var(--ticket-invalid-color);
+  flex-shrink: 0;
 }
