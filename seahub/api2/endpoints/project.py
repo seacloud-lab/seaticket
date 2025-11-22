@@ -401,6 +401,9 @@ class SearchView(APIView):
         if not query:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        search_type = request.data.get('search_type', 'normal_search')
+        
 
         try:
             count = int(request.GET.get('count', '20'))
@@ -437,6 +440,7 @@ class SearchView(APIView):
             'count': count,
             'time_from': time_from,
             'time_to': time_to,
+            'search_type': search_type
         }
         results = search(params)
 
