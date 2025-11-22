@@ -20,8 +20,7 @@ from seahub.api2.endpoints.profile import BindPhoneView, UnbindPhoneView
 from seahub.api2.endpoints.sessions import SessionsView, OnlineSessionView, SessionView
 from seahub.api2.endpoints.verify import SmsVerifyCodeView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
-from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView, \
-    ChatSessionsView, ChatSessionView, ChatMessagesView
+from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView
 
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
@@ -110,9 +109,7 @@ urlpatterns = [
     re_path(r'^api/v2.1/search/$', SearchView.as_view(), name='api-v2.1-search'),
 
     # chat
-    re_path(r'^api/v2.1/chat/sessions/$', ChatSessionsView.as_view(), name='chat-sessions'),
-    re_path(r'^api/v2.1/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/$', ChatSessionView.as_view(), name='chat-session'),
-    re_path(r'^api/v2.1/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/messages/$', ChatMessagesView.as_view(), name='chat-messages'),
+    re_path(r'^', include('seahub.chats.urls')),
 
     ## user::avatar
     re_path(r'^api/v2.1/user-avatar/$', UserAvatarView.as_view(), name='api-v2.1-user-avatar'),

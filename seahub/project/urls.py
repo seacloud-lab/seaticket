@@ -11,7 +11,7 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import ChatView, ConvertRecordToTicket, GenerateAISummaryView, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView
+from .ai import ConvertRecordToTicket, GenerateAISummaryView, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
@@ -60,8 +60,6 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v2.1-connection-views-move'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
 
-    # ai
-    re_path(r'^api/v2.1/ai/chat/$', ChatView.as_view(), name='api-v2.1-chat-view'),
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
     re_path(r'^api/v2.1/ai/generate-ai-summary/$', GenerateAISummaryView.as_view(), name='api-v2.1-ai-generate-summary'),
     re_path(r'^api/v2.1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v2.1-ai-embedding-analysis'),
