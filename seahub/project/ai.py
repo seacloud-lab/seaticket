@@ -15,12 +15,11 @@ from seahub.api2.utils import api_error
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.utils import get_connection_columns
 from seahub.utils import is_org_context, uuid_str_to_32_chars
-from seahub.project.models import Projects, ChatSessions, \
-    ChatMessages, ProjectConnections, ConnectionsViews
-from seahub.project.utils import check_project_permission, get_ai_reply, \
-    convert_record_to_ticket, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
+from seahub.project.models import Projects, ProjectConnections, ConnectionsViews
+from seahub.project.utils import check_project_permission, \
+    convert_record_to_ticket, generate_ai_summary, check_ai_limit, url_to_filename, \
     get_file_from_s3_web_crawl, submit_embedding_analysis_task, get_embedding_analysis_task_status
-from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
+from seahub.project.constants import ConnectionType
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, SeafileTable, \
@@ -28,150 +27,6 @@ from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, 
 
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
-
-
-class ChatView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
-
-    def post(self, request):
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # argument check
-        project_uuid = request.data.get('project_uuid')
-        if not project_uuid:
-            error_msg = 'project_uuid parameter is required.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        query = request.data.get('query')
-        if not query:
-            error_msg = 'query invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        # Check AI quota
-        org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
-        is_exceed = check_ai_limit(username, org_id)
-        if is_exceed:
-            error_msg = 'AI credit not enough.'
-            return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
-
-        ticket_id = request.data.get('ticket_id')
-        issue_id = request.data.get('issue_id')
-        if ticket_id and issue_id:
-            error_msg = 'can only provide a ticket or an issue.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if ticket_id:
-            try:
-                ticket_id = int(ticket_id)
-            except:
-                error_msg = 'ticket_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                ticket_json_data = ticket_to_json(project_uuid, ticket_id)
-            except TicketNotFound:
-                error_msg = 'ticket not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
-        connection_id = request.data.get('connection_id')
-        # only support github issue for now
-        if issue_id:
-            try:
-                issue_id = int(issue_id)
-            except:
-                error_msg = 'issue_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            if not connection_id:
-                error_msg = 'connection_id is required when issue_id is provided.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            try:
-                issue_json_data = github_issue_to_json(project_uuid, issue_id, connection_id)
-            except IssueNotFound:
-                error_msg = 'issue not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT + f'```json\n{issue_json_data}\n```\n\n' + query
-
-        resolve_type = request.data.get('resolve_type', 'ask')
-        session_uuid = request.data.get('session_uuid')
-        if not session_uuid:
-            session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
-            session_uuid = session.session_uuid
-        else:
-            session = ChatSessions.objects.get_session_by_uuid(session_uuid)
-            if not session:
-                error_msg = f'Chat session {session_uuid} not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        
-        try:
-            message_id = gen_message_id(session.session_uuid)
-        except Exception as e:
-            logger.exception(f'Failure to generate message id: {e}')
-            error_msg = 'Internal server error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        params = {
-            'project_uuid': uuid_str_to_32_chars(project_uuid),
-            'session_uuid': session.session_uuid,
-            'message_id': message_id,
-            'query': query,
-            'resolve_type': resolve_type,
-            'username': username,
-            'org_id': org_id
-        }
-
-        try:
-            ai_response = get_ai_reply(params)
-        except Exception as e:
-            logger.warning(f'AI service error: {e}')
-            ai_response = {
-                'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
-                'sources': []
-            }
-
-        try:
-            connection_ids = set([
-                source['connection_id']
-                for source in ai_response['sources']
-            ])
-
-            connections = ProjectConnections.objects.filter(id__in=connection_ids)
-            connection_id_name_map = {}
-            for connection in connections:
-                connection_dict = connection.to_dict()
-                connection_id_name_map[connection_dict['id']] = connection_dict['name']
-
-            for source in ai_response['sources']:
-                source['connection_name'] = connection_id_name_map[source['connection_id']]
-        except Exception as e:
-            logger.warning(f'Failure to query connection info: {e}')
-
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', json.dumps(ai_response['sources']))
-
-        ai_response.update({
-            'session_uuid': session_uuid,
-            'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id
-        })
-
-        return Response(ai_response)
 
 
 class ConvertRecordToTicket(APIView):

@@ -212,6 +212,7 @@ INSTALLED_APPS = [
     'seahub.role_permissions',
     'seahub.project',
     'seahub.tickets',
+    'seahub.chats',
     'seahub.knowledge_base',
     'seahub.organizations',
     'seahub.registration',
