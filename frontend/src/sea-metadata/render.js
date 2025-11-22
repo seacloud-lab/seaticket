@@ -33,6 +33,7 @@ const Main = forwardRef(({
   toggleView,
   createRowsTools,
   children,
+  isMyTicket,
   ...params
 }, ref) => {
   const { isLoading } = useViewsData();
@@ -61,10 +62,27 @@ const Main = forwardRef(({
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
         <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
           <SelectedRowsProvider>
-            <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params }>
+            <MetadataProvider ref={metadataRef} tagsData={tagsData} typesData={typesData} { ...params } isMyTicket={isMyTicket}>
               <div className={classnames('sea-metadata', className)}>
-                <ViewToolBar fixedColumnCount={fixedColumnCount} tools={viewTools} createRowsTools={createRowsTools} toggleView={toggleView} />
-                <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
+                {isMyTicket ?
+                  <div className="sea-metadata-view-ribbon">
+                    <div className="sea-metadata-views">
+                      <div className="sea-metadata-views-nav-container">
+                        <div className="sea-metadata-view-item active">
+                          {window.gettext('Open')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  :
+                  <ViewToolBar
+                    fixedColumnCount={fixedColumnCount}
+                    tools={viewTools}
+                    createRowsTools={createRowsTools}
+                    toggleView={toggleView}
+                  />
+                }
+                <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} isMyTicket={isMyTicket} />
               </div>
             </MetadataProvider>
           </SelectedRowsProvider>

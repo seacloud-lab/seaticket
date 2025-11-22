@@ -16,7 +16,9 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
   const [viewID, setViewID] = useState('');
 
   const resetURL = useCallback((pageType, childrenPageType, viewID) => {
-    const { origin } = location;
+    // do not reset URL in my tickets page
+    if (location.pathname.endsWith('/my-tickets/')) return;    
+    const { origin } = location;    
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageType === TICKET_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
     if (pageType === TICKET_PAGE_TYPE.ALL && viewID) {

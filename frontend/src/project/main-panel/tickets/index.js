@@ -22,7 +22,7 @@ const {
   projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
 
-const Page = ({ toggleBar }) => {
+const Page = ({ toggleBar, isMyTicket }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
@@ -45,7 +45,7 @@ const Page = ({ toggleBar }) => {
     return (<SubstateTickets { ...props } substateID={childrenPageType}/>);
   }
   if (pageType === TICKET_PAGE_TYPE.ALL) {
-    return (<AllTickets { ...props }/>);
+    return (<AllTickets { ...props } isMyTicket={isMyTicket} />);
   }
   if (pageType === TICKET_PAGE_TYPE.NEW) {
     return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
@@ -53,7 +53,7 @@ const Page = ({ toggleBar }) => {
   return (<Ticket { ...props } ticketID={pageType} editorAPI={longtextAPI} />);
 };
 
-const Tickets = ({ title, toggleBar }) => {
+const Tickets = ({ title, toggleBar, isMyTicket }) => {
   return (
     <DataCacheProvider>
       <CollaboratorsProvider
@@ -64,8 +64,8 @@ const Tickets = ({ title, toggleBar }) => {
           <TagsProvider projectUuid={projectUuid}>
             <SubstatesProvider projectUuid={projectUuid}>
               <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
-                <TicketTopBar title={title} />
-                <Page toggleBar={toggleBar} />
+                <TicketTopBar title={title} isMyTicket={isMyTicket} />
+                <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
               </TicketsPageProvider>
             </SubstatesProvider>
           </TagsProvider>
