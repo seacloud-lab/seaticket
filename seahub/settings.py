@@ -704,10 +704,9 @@ else:
 # config in yaml & env
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
-ai_configs = ConfigParser(yaml_file_path, 'seaqa-ai')
 
 # Available AI Models for user selection
-AVAILABLE_LLM_MODELS = ai_configs.get('AVAILABLE_LLM_MODELS', [{'value': 'gpt-4o-mini', 'label': 'GPT-4o Mini'},])
+AVAILABLE_LLM_MODELS = configs.get('AVAILABLE_LLM_MODELS', [{'value': 'gpt-4o-mini', 'label': 'GPT-4o Mini'},])
 
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')

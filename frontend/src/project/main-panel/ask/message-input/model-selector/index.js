@@ -46,7 +46,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         onClick={onMenuToggle}
       >
         <div className="selected-option">
-          <div className="selected-option-show">{currentModel?.label || AVAILABLE_MODELS[0]?.label || gettext('Default')}</div>
+          <div className="selected-option-show">{currentModel?.label || AVAILABLE_MODELS[0]?.label}</div>
           <Icon symbol="down" />
         </div>
       </div>
