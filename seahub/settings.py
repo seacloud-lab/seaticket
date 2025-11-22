@@ -5,6 +5,7 @@
 import sys
 import os
 import re
+from .config_parser import ConfigParser
 
 # The usage of following three settings should be removed
 SERVICE_URL = 'http://127.0.0.1'
@@ -324,9 +325,9 @@ GROUP_AVATAR_STORAGE_DIR = 'avatars/groups'
 GROUP_AVATAR_DEFAULT_URL = 'avatars/groups/default.png'
 AUTO_GENERATE_GROUP_AVATAR_SIZES = (20, 24, 32, 36, 48, 56)
 
-LOG_DIR = os.environ.get('SEAHUB_LOG_DIR', '/tmp')
+LOG_DIR = os.environ.get('LOG_PATH', '/tmp')
 CACHE_DIR = "/tmp"
-central_conf_dir = os.environ.get('SEAFILE_CENTRAL_CONF_DIR', '')
+CONF_DIR = os.environ.get('CONF_PATH', '')
 
 CACHES = {
     'default': {
@@ -608,7 +609,7 @@ S3_SECRET_KEY = ''
 
 
 # seadb config
-SEADB_SERVER_URL = ''
+SEADB_INNER_SERVER_URL = ''
 
 PROJECT_IMAGE_MAX_SIZE = 10  # 10MB
 PROJECT_FILE_MAX_SIZE = 25  # 25MB
@@ -647,9 +648,9 @@ d = os.path.dirname
 # custom navigation settings
 CUSTOM_NAV_ITEMS = []
 
-SEAQA_INDEXER_SERVER_URL = 'http://127.0.0.1:8888'
+SEAQA_INDEXER_INNER_SERVER_URL = 'http://127.0.0.1:8888'
+SEAQA_AI_INNER_SERVER_URL = 'http://127.0.0.1:8887'
 SEAQA_EVENTS_INNER_SERVER_URL = 'http://127.0.0.1:6001'
-SEAQA_AI_SERVER_URL = 'http://127.0.0.1:8887'
 AI_CHAT_TICKET_MAX_REPLIES_NUM = 20
 AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
@@ -676,7 +677,6 @@ def load_local_settings(module):
         elif re.search('^[A-Z]', attr):
             globals()[attr] = getattr(module, attr)
 
-
 # Load local_settings.py
 try:
     import seahub.local_settings
@@ -688,8 +688,8 @@ else:
 
 # Load seahub_settings.py in server release
 try:
-    if os.path.exists(central_conf_dir):
-        sys.path.insert(0, central_conf_dir)
+    if os.path.exists(CONF_DIR):
+        sys.path.insert(0, CONF_DIR)
     import seaqa_web_settings
 except ImportError:
     pass
@@ -699,10 +699,12 @@ else:
     load_local_settings(seaqa_web_settings)
     del seaqa_web_settings
 
+# config in yaml & env
+yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
+configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
-# config in env
 # jwt private key
-JWT_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY')
+JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 
 # For database conf., now only support mysql
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
@@ -716,7 +718,7 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
     }
 
     for db_key, env_key in _rewrite_db_env_key_map.items():
-        if env_value := os.environ.get(env_key):
+        if env_value := configs.get(env_key):
             DATABASES['default'][db_key] = env_value
 
     if DATABASES['default'].get('PORT'):
@@ -736,13 +738,13 @@ if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default
         except:
             redis_pwd = ''
             redis_host, redis_port = cache_cfg.split(':', 1)
-        redis_host = os.environ.get('REDIS_HOST') or redis_host
-        redis_port = os.environ.get('REDIS_PORT') or redis_port
+        redis_host = configs.get('REDIS_HOST', redis_host)
+        redis_port = configs.get('REDIS_PORT', redis_port)
         try:
             int(redis_port.split('/', 1)[0])
         except:
             raise ValueError(f"Invalid radis port: {redis_port}")
-        redis_pwd = os.environ.get('REDIS_PASSWORD') or redis_pwd
+        redis_pwd = configs.get('REDIS_PASSWORD', redis_pwd)
 
         CACHES['default']['LOCATION'] = f'redis://{(redis_pwd + "@") if redis_pwd else ""}{redis_host}:{redis_port}'
 
@@ -817,10 +819,13 @@ if LOG_LEVEL in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
         pass
 
 
-S3_HOST = os.environ.get('S3_HOST') or S3_HOST
-S3_FILE_BUCKET = os.environ.get('S3_FILE_BUCKET') or S3_FILE_BUCKET
-S3_WEB_CRAWL_BUCKET = os.environ.get('S3_WEB_CRAWL_BUCKET') or S3_WEB_CRAWL_BUCKET
-S3_KEY_ID = os.environ.get('S3_KEY_ID') or S3_KEY_ID
-S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY') or S3_SECRET_KEY
+S3_HOST = configs.get('S3_HOST', S3_HOST)
+S3_FILE_BUCKET = configs.get('S3_FILE_BUCKET', S3_FILE_BUCKET)
+S3_WEB_CRAWL_BUCKET = configs.get('S3_WEB_CRAWL_BUCKET', S3_WEB_CRAWL_BUCKET)
+S3_KEY_ID = configs.get('S3_KEY_ID', S3_KEY_ID)
+S3_SECRET_KEY = configs.get('S3_SECRET_KEY', S3_SECRET_KEY)
 
-SEADB_SERVER_URL = os.environ.get('SEADB_SERVER_URL') or SEADB_SERVER_URL
+SEADB_INNER_SERVER_URL = configs.get('SEADB_INNER_SERVER_URL', SEADB_INNER_SERVER_URL)
+SEAQA_INDEXER_INNER_SERVER_URL = configs.get('SEAQA_INDEXER_INNER_SERVER_URL', SEAQA_INDEXER_INNER_SERVER_URL)
+SEAQA_AI_INNER_SERVER_URL = configs.get('SEAQA_AI_INNER_SERVER_URL', SEAQA_AI_INNER_SERVER_URL)
+SEAQA_EVENTS_INNER_SERVER_URL = configs.get('SEAQA_EVENTS_INNER_SERVER_URL', SEAQA_EVENTS_INNER_SERVER_URL)

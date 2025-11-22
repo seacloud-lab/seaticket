@@ -166,7 +166,7 @@ class AccountInfo(APIView):
             'project_collaborate_email_interval'] = project_collaborate_email_interval if project_collaborate_email_interval is not None else 0
 
         # AI statistics
-        if getattr(settings, 'SEAQA_AI_SERVER_URL', ''):
+        if getattr(settings, 'SEAQA_AI_INNER_SERVER_URL', ''):
             if is_org_context(request):
                 org_id = request.user.org.org_id
                 info['ai_credit'] = get_ai_credit_by_org_id(org_id)
