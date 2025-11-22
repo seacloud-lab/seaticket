@@ -36,3 +36,9 @@
   transition: all 0.3s ease-in-out;
   height: 0;
 }
+
+.sea-qa-project-side-panel .sea-qa-project-side-panel-subtitle {
+  color: #666;
+  padding: 8px;
+  margin-top: 10px;
+}
