@@ -1,121 +1,25 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import copy from 'copy-to-clipboard';
-import { getPreviewContent } from '@seafile/seafile-editor';
+import { Button } from 'reactstrap';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
-import { connectionsAPI, ticketsAPI } from '@/project/api';
+import { connectionsAPI } from '@/project/api';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
-import { CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import {
+  CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
+  SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
+  SUPPORT_AI_CONNECTION_TYPES,
+} from '../../constants';
 import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster, ModalHeader, CenteredLoading } from '@/components';
+import { toaster } from '@/components';
+import { getOriginalPageUrl } from '../../utils';
+import CreateTicketDialog from './create-ticket-dialog';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
-
-import './index.css';
-
-const SERVER_COMPUTABLE_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.EMAIL,
-];
-
-const MULTIPLE_VIEWS_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.EMAIL,
-];
-
-const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setContent(initialData.content || '');
-    } else {
-      setTitle('');
-      setContent('');
-    }
-  }, [initialData]);
-
-  const handleSubmit = () => {
-    const { previewText, images, links, checklist } = getPreviewContent(content);
-    const ticket_content = {
-      text: content,
-      preview: previewText,
-      images,
-      links,
-      checklist,
-    };
-    const ticketData = {
-      title: title,
-      content: ticket_content,
-      type: '',
-      assignees: [],
-      tags: [],
-    };
-    ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
-      toaster.success(gettext('Ticket created'));
-      setTimeout(toggle, 500);
-    });
-  };
-
-  return (
-    <Modal className="sea-qa-create-ticket-dialog" isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>{gettext('Create related ticket')}</ModalHeader>
-      <ModalBody>
-        {isLoading && <CenteredLoading/>}
-        {!isLoading && (
-          <div className="d-flex">
-            <div className="pr-4 flex-1">
-              <Form>
-                <FormGroup>
-                  <Label for="ticketTitle">{gettext('Title')}</Label>
-                  <Input
-                    type="text"
-                    name="title"
-                    id="ticketTitle"
-                    value={title}
-                    readOnly={isLoading}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="mb-4"
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="ticketContent">{gettext('Content')}</Label>
-                  <Input
-                    className="sea-qa-ticket-content"
-                    type="textarea"
-                    name="content"
-                    id="ticketContent"
-                    value={content}
-                    readOnly={isLoading}
-                    onChange={(e) => setContent(e.target.value)}
-                  />
-                </FormGroup>
-              </Form>
-            </div>
-          </div>
-        )}
-      </ModalBody>
-      <ModalFooter>
-        <Button color="secondary" onClick={toggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" onClick={handleSubmit} disabled={isLoading || !title.trim()}>{gettext('Submit')}</Button>
-      </ModalFooter>
-    </Modal>
-  );
-};
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -132,50 +36,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
   const { updateIssue } = useProblemToBeResolved();
-
-  const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
-    toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
-
-    connectionsAPI.generateAISummary(projectUuid, connectionID, row._id)
-      .then(res => {
-        toaster.closeAll();
-        if (res.data && res.data.ai_summary) {
-          toaster.success(gettext('AI summary generated'));
-          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
-        } else {
-          toaster.warning(gettext('Failed to generate AI summary'));
-        }
-      })
-      .catch(error => {
-        toaster.closeAll();
-        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI summary');
-        toaster.danger(errorMessage);
-      });
-  }, [projectUuid, connectionID]);
-
-  const getDiscourseOriginalPageUrl = useCallback((connection, row) => {
-    const discourseBaseUrl = connection.config?.url;
-    if (!discourseBaseUrl || !row.slug || !row.topic_id) {
-      toaster.danger(gettext('Missing required information'));
-      return;
-    }
-    const baseUrl = discourseBaseUrl.replace(/\/$/, '');
-    const originalPageUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
-    return originalPageUrl;
-  }, []);
-
-  const getSeafileOriginalPageUrl = useCallback((connection, row) => {
-    const { server_url, repo_id } = connection.config;
-    const { path, title } = row;
-    if (!server_url || !repo_id || !title || !path) {
-      toaster.danger(gettext('Missing required information'));
-      return;
-    }
-    const baseUrl = server_url.replace(/\/$/, '');
-    const filePath = path.replace(/\/$/, '');
-    const originalPageUrl = `${baseUrl}/lib/${repo_id}/file${filePath}/${title}`;
-    return originalPageUrl;
-  }, []);
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -205,16 +65,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
     return {};
   }, [connection]);
-
-  const viewsData = useMemo(() => ({
-    navigation: [{ _id: '0000', type: 'view' }],
-    views: [
-      {
-        _id: '0000',
-        name: gettext('All'),
-      }
-    ]
-  }), []);
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
@@ -259,26 +109,25 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           notDisplayColumnNames.push('url');
         } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
           rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
-          columnConfig['title'] = {
-            ...columnConfig['title'],
-            click: (row) => {
-              const discourseOriginalPageUrl = getDiscourseOriginalPageUrl(connection, row);
-              window.open(discourseOriginalPageUrl, '_blank', 'noopener,noreferrer');
-            }
-          };
         } else if (type === CONNECTION_TYPE.SITE) {
           rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
         } else if (type === CONNECTION_TYPE.SEAFILE) {
           rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
+        } else if (type === CONNECTION_TYPE.EMAIL) {
+          rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
+        }
+        if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
           columnConfig['title'] = {
             ...columnConfig['title'],
             click: (row) => {
-              const seafileOriginalPageUrl = getSeafileOriginalPageUrl(connection, row);
-              window.open(seafileOriginalPageUrl, '_blank', 'noopener,noreferrer');
+              const url = getOriginalPageUrl(connection, row);
+              if (!url) {
+                toaster.danger(gettext('Missing required information'));
+                return;
+              }
+              window.open(url, '_blank', 'noopener,noreferrer');
             }
           };
-        } else if (type === CONNECTION_TYPE.EMAIL) {
-          rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
         columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
         return {
@@ -290,99 +139,122 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
       });
     };
 
-    if (SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type)) {
-      return {
-        getMetadata,
-        getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
-        getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
-        insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
-        deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
-        moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
-        duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
-        modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
-      };
-    }
-
     return {
       getMetadata,
-      getViews: () => {
-        return new Promise((resolve, reject) => {
-          resolve({ data: viewsData });
-        });
-      },
-
-      // view
-      getView: (viewID) => {
-        return new Promise((resolve, reject) => {
-          const view = viewsData.views[0];
-
-          resolve({ data: { view: {
-            ...view,
-            columns_keys: context.localStorage.getItem('columns_keys') || [],
-            filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'Or',
-            filters: context.localStorage.getItem('filters') || [],
-            sorts: context.localStorage.getItem('sorts') || [],
-            groupbys: context.localStorage.getItem('groupbys') || [],
-            hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-          } } });
-        });
-      },
-
-      modifyView: (viewID, viewData) => {
-        return new Promise((resolve, reject) => {
-          Object.keys(viewData).forEach(key => {
-            context.localStorage.setItem(key, viewData[key]);
-          });
-          resolve({ data: { success: true } });
-        });
-      },
+      getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
+      getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
+      insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
+      deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
+      moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
+      duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
+      modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
     };
   }, [projectUuid, connectionID, connection]);
 
-  const createRowsTools = useCallback(({ rows, modifyRows }) => {
-    if (rows.length > 1) return [];
-    const row = rows[0];
-    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      const discourseBaseUrl = connection.config?.url;
-      if (!discourseBaseUrl) return [];
-      return [{
-        key: 'copy',
-        icon: 'copy',
-        name: gettext('Copy original page link'),
-        callback: () => {
-          const baseUrl = discourseBaseUrl.replace(/\/$/, '');
-          const url = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
-          copy(url);
-          toaster.success(gettext('The original page link has been copied'));
+  const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
+    toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
+    connectionsAPI.generateAISummary(projectUuid, connectionID, row._id)
+      .then(res => {
+        toaster.closeAll();
+        if (res.data && res.data.ai_summary) {
+          toaster.success(gettext('AI summary generated'));
+          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
+        } else {
+          toaster.warning(gettext('Failed to generate AI summary'));
         }
-      }];
-    }
-    if (connection?.type === CONNECTION_TYPE.SITE) {
-      if (!row?.url) return [];
-      return [
-        {
-          key: 'copy',
-          icon: 'copy',
-          name: gettext('Copy original page link'),
-          callback: (event) => {
-            event && event.stopPropagation();
-            event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
-            const url = row.url;
-            copy(url);
-            toaster.success(gettext('The original page link has been copied'));
-          },
-        }
-      ];
-    }
+      })
+      .catch(error => {
+        toaster.closeAll();
+        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI summary');
+        toaster.danger(errorMessage);
+      });
+  }, [projectUuid, connectionID]);
 
-    return [];
-  }, [connection]);
+  const handleCreateRelatedTicket = useCallback((row) => {
+    if (!row) return;
+    setTicketData(null);
+    setTicketDialogOpen(true);
+    setTicketLoading(true);
+    connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
+      const data = res.data || {};
+      const relatedUrl = getOriginalPageUrl(connection, row);
+      const prefix = data.content || '';
+      const suffix = `${gettext('Related record')}: ${relatedUrl}`;
+      data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
+      setTicketData(data);
+    }).finally(() => {
+      setTicketLoading(false);
+    });
+  }, [projectUuid, connectionID, connection]);
 
   const handleResolveIssueByAI = useCallback((issue) => {
     if (!issue || !connectionID) return;
     updateIssue({ ...issue, connection_id: connectionID }, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateIssue]);
+
+  const generateCreateRelatedTicketOption = useCallback(({ row }) => {
+    const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
+    if (!enableCreateRelatedTicket) return null;
+    return {
+      key: 'create_related_ticket',
+      label: gettext('Create related ticket'),
+      callback: () => handleCreateRelatedTicket(row),
+    };
+  }, [connection, handleCreateRelatedTicket]);
+
+  const generateAIOptions = useCallback(({ row, updateLocalRow }) => {
+    const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
+    if (!enableUseAI) return null;
+    return {
+      key: 'AI',
+      label: gettext('AI'),
+      children: [
+        {
+          label: gettext('Generate summary'),
+          key: 'generate_summary',
+          callback: () => generateAISummaryForRow(row, updateLocalRow)
+        },
+        connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
+          label: gettext('Resolve issue'),
+          key: 'resolve_issue',
+          callback: () => handleResolveIssueByAI(row)
+        } : null,
+      ].filter(Boolean)
+    };
+  }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
+
+  const generateOpenOriginalPageOption = useCallback(({ row }) => {
+    const url = getOriginalPageUrl(connection, row);
+    if (!url) return null;
+    return {
+      label: gettext('Open original page'),
+      key: 'open_original_page',
+      callback: () => window.open(url, '_blank', 'noopener,noreferrer'),
+    };
+  }, [connection]);
+
+  const createRowsTools = useCallback(({ rows, updateLocalRow }) => {
+    if (rows.length > 1) return [];
+    let tools = [];
+    const row = rows[0];
+    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
+    const AIOption = generateAIOptions({ row, updateLocalRow });
+    if (createRelatedTicketOption || AIOption || openOriginalPageOption) {
+      tools.push({
+        key: 'more',
+        icon: 'more',
+        children: [
+          openOriginalPageOption,
+          createRelatedTicketOption,
+          createRelatedTicketOption && AIOption ? { key: 'divider' } : null,
+          AIOption,
+        ].filter(Boolean)
+      });
+    }
+    return tools;
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -410,88 +282,22 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return [];
 
-    if (connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      return [{
-        label: gettext('Open original page'),
-        callback: () => {
-          const discourseOriginalPageUrl = getDiscourseOriginalPageUrl(connection, row);
-          window.open(discourseOriginalPageUrl, '_blank', 'noopener,noreferrer');
-        }
-      }, {
-        label: gettext('Create related ticket'),
-        callback: () => {
-          setTicketData(null);
-          setTicketDialogOpen(true);
-          setTicketLoading(true);
-          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
-            const data = res.data || {};
-            const discourseBaseUrl = connection.config?.url;
-            let relatedUrl = '';
-            if (discourseBaseUrl && row.slug && row.topic_id) {
-              const baseUrl = discourseBaseUrl.replace(/\/$/, '');
-              relatedUrl = `${baseUrl}/t/${row.slug}/${row.topic_id}`;
-            }
-            const prefix = data.content || '';
-            const suffix = `${gettext('Related record')}: ${relatedUrl}`;
-            data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
-            setTicketData(data);
-          }).finally(() => {
-            setTicketLoading(false);
-          });
-        }
-      }, {
-        label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row, updateLocalRow)
-      }];
-    }
+    let list = [];
+    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+    list.push(openOriginalPageOption);
 
-    if (connection?.type === CONNECTION_TYPE.GITHUB_ISSUE){
-      return [{
-        label: gettext('Create related ticket'),
-        callback: () => {
-          setTicketData(null);
-          setTicketDialogOpen(true);
-          setTicketLoading(true);
-          connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
-            const data = res.data || {};
-            const relatedUrl = row.url;
-            const prefix = data.content || '';
-            const suffix = `${gettext('Related record')}: ${relatedUrl}`;
-            data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
-            setTicketData(data);
-          }).finally(() => {
-            setTicketLoading(false);
-          });
-        }
-      }, {
-        label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row, updateLocalRow)
-      }, {
-        label: gettext('Resolve issue by AI'),
-        callback: () => handleResolveIssueByAI(row)
-      }];
-    }
+    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
+    list.push(createRelatedTicketOption);
 
-    if (connection?.type === CONNECTION_TYPE.SITE) {
-      return [{
-        label: gettext('Open original page'),
-        callback: () => {
-          window.open(row.url, '_blank', 'noopener,noreferrer');
-        }
-      }, {
-        label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row, updateLocalRow)
-      }];
-    }
+    list = list.filter(Boolean);
 
-    if (connection?.type === CONNECTION_TYPE.SEAFILE) {
-      return [{
-        label: gettext('Generate AI summary'),
-        callback: () => generateAISummaryForRow(row, updateLocalRow)
-      }];
+    const AIOptions = generateAIOptions({ row, updateLocalRow });
+    if (list.length > 0 && AIOptions) {
+      list.push('Divider');
     }
-    return [];
-  }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
+    list.push(AIOptions);
+    return list.filter(Boolean);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
@@ -533,18 +339,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, []);
 
-  useEffect(() => {
-    if (isLoadingConnection) return;
-    const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection.type);
-    if (!isMultiView) {
-      updateViewID('');
-    }
-  }, [isLoadingConnection, connection, viewID, updateViewID]);
-
   if (isLoading || isLoadingConnection) return null;
-
-  const isServerComputableView = SERVER_COMPUTABLE_CONNECTION_TYPE.includes(connection?.type);
-  const isMultiView = MULTIPLE_VIEWS_CONNECTION_TYPE.includes(connection?.type);
 
   return (
     <CollaboratorsProvider>
@@ -568,7 +363,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         </div>
       )}
       <SeaMetadata
-        viewID={isMultiView ? viewID : '0000'}
+        viewID={viewID}
         api={api}
         ref={seaMetaDataRef}
         className="sea-qa-connection-details"
@@ -576,9 +371,8 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         permission={permission}
-        isViewComputedOnServer={isServerComputableView}
         typesData={typesData}
-        toggleView={isMultiView ? updateViewID : undefined}
+        toggleView={updateViewID}
         expandRow={handleExpandRow}
         t={t}
       />

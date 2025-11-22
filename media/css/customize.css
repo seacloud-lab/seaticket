@@ -189,15 +189,18 @@
   justify-content: center;
 }
 
-.rotate-icon-90 .sea-qa-icon-svg {
+.rotate-icon-90 .sea-qa-icon-svg,
+.rotate-90 {
   transform: rotate(90deg);
 }
 
-.rotate-icon-180 .sea-qa-icon-svg {
+.rotate-icon-180 .sea-qa-icon-svg,
+.rotate-180 {
   transform: rotate(180deg);
 }
 
-.rotate-icon-270 .sea-qa-icon-svg {
+.rotate-icon-270 .sea-qa-icon-svg,
+.rotate-270 {
   transform: rotate(270deg);
 }
 

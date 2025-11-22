@@ -5,6 +5,8 @@ import CustomizeDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
 import SubDropdownToggle from './sub-dropdown-toggle';
 
+import './index.css';
+
 const Icon = CustomizeDropdownItem.Icon;
 const Text = CustomizeDropdownItem.Text;
 
@@ -20,31 +22,31 @@ const SubDropdown = ({
       direction={direction}
       className="w-100 d-flex"
       isOpen={isOpen}
-      // toggle={onToggle}
+      toggle={onToggle}
       onMouseMove={(e) => e.stopPropagation()}
     >
       <SubDropdownToggle
-        text={menu.name}
+        text={menu.label}
         className={menu.className}
         icon="down"
         onMouseEnter={(event) => onShow && onShow(event, menu)}
         onClick={(event) => onToggle && onToggle(event, menu)}
       />
-      <CustomizeDropdownMenu fixed={true} style={{ marginLeft: -16 }}>
+      <CustomizeDropdownMenu fixed={true} style={{ marginLeft: -1 }}>
         {menu.children.map((item) => {
-          const { key, name, icon, className, callback } = item;
+          const { key, label, icon, className, callback } = item;
           if (key === 'divider') {
-            return <CustomizeDropdownItem key={key} divider />;
+            return (<CustomizeDropdownItem key={key} divider />);
           }
           return (
             <CustomizeDropdownItem className={className} key={key} onClick={callback ? callback : null}>
               {hasOwnProperty(item, 'icon') ? (
                 <>
                   {icon ? (<Icon symbol={icon} className="mr-2" />) : (<span className="mr-2" style={{ height: 16, width: 16, display: 'inline-block' }}></span>)}
-                  <Text>{name}</Text>
+                  <Text>{label}</Text>
                 </>
               ) : (
-                <>{name}</>
+                <>{label}</>
               )}
             </CustomizeDropdownItem>
           );
