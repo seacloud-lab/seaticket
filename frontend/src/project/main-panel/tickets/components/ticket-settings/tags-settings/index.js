@@ -77,7 +77,7 @@ const TagsSettings = ({
     onChange(newValue);
   }, [onChange, value]);
 
-  const selectedTags = value.map(v => tagsData.id_row_map[v]).filter(tag => tag);
+  const selectedTags = value;
 
   return (
     <div className={classnames('sea-qa-project-ticket-settings-item', className)}>

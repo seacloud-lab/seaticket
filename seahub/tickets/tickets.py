@@ -127,6 +127,7 @@ class TicketsAPIView(APIView):
         except:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         if not isinstance(content_dict, dict):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -142,17 +143,16 @@ class TicketsAPIView(APIView):
         if link_urls and isinstance(link_urls, list):
             file_urls = (file_urls or []) + link_urls
 
-        assignees = request.POST.get('assignees')
-        if assignees is not None:
-            try:
-                assignees = json.loads(assignees)
-            except:
-                error_msg = 'assignees invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(assignees, list):
-                error_msg = 'assignees invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            assignees = list(set(assignees))
+        assignees = request.POST.get('assignees', "[]")
+        try:
+            assignees = json.loads(assignees)
+        except:
+            error_msg = 'assignees invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(assignees, list):
+            error_msg = 'assignees invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        assignees = list(set(assignees))
 
         username = request.user.username
         # resource check
@@ -173,25 +173,7 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        seadb_api = SeaDBAPI(username)
-        base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-
-
-        type_id = request.POST.get('type')
-        if type_id:
-            try:
-                column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
-                column_data = column.get('data') or {}
-                options = column_data.get('options', []) or []
-                type_option = next((option for option in options if option['id'] == type_id), None)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not type_option:
-                error_msg = 'type invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        type_name = request.POST.get('type')
 
         priority = request.data.get('priority')
         if priority is not None:
@@ -207,34 +189,10 @@ class TicketsAPIView(APIView):
         else:
             priority = 0
 
-        tag_option_ids = request.POST.get('tags')
-        if tag_option_ids is not None:
-            try:
-                tag_option_ids = json.loads(tag_option_ids)
-            except:
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(tag_option_ids, list):
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
-                tag_column_data = tag_column.get('data') or {}
-                tag_options = tag_column_data.get('options', []) or []
-                tag_option_id_to_option_name = {opt.get('id'): opt.get('name') for opt in tag_options}
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            tag_option_ids = list(set(tag_option_ids))
-            tag_names = []
-            for tag_option_id in tag_option_ids:
-                tag_option_name = tag_option_id_to_option_name.get(tag_option_id)
-                if not tag_option_name:
-                    error_msg = 'tags invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                tag_names.append(tag_option_name)
+        tag_names = request.POST.get('tags', "[]")
+        tag_names = json.loads(tag_names)
 
+        seadb_api = SeaDBAPI(username)
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
@@ -257,12 +215,12 @@ class TicketsAPIView(APIView):
                 TicketsTable.title.name: title,
                 TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
-                TicketsTable.type.name: type_option.get('name') if type_id and type_option else None,
+                TicketsTable.type.name: type_name,
                 TicketsTable.substate.name: substate_name,
                 TicketsTable.priority.name: priority,
-                TicketsTable.assignees.name: assignees or [],
+                TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],
-                TicketsTable.tags.name: tag_names or [],
+                TicketsTable.tags.name: tag_names,
                 TicketsTable.creator.name: username,
                 TicketsTable.reply_count.name: 0,
                 TicketsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
@@ -307,8 +265,6 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(username)
-        base_metadata = seadb_api.get_base_metadata(project_uuid)
-        table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
 
         ticket_id_to_row = {}
         for ticket_data in tickets_data:
@@ -342,37 +298,13 @@ class TicketsAPIView(APIView):
             if not row_data:
                 continue
             if 'state' in row_data:
-                column = get_column_from_columns_by_name(table_meta.get('columns'), 'status')
-                column_data = column.get('data') or {}
-                options = column_data.get('options', []) or []
-                state_option = next((option for option in options if option['id'] == row_data.get('state')), None)
-                updated_row[TicketsTable.state.name] = state_option.get('name') if state_option else None
+                updated_row[TicketsTable.state.name] = row_data.get('state')
             if 'substate' in row_data:
-                column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
-                column_data = column.get('data') or {}
-                options = column_data.get('options', []) or []
-                substate_option = None
-                for opt in options:
-                    if opt.get('id') == row_data.get('substate'):
-                        substate_option = opt
-
-                updated_row[TicketsTable.substate.name] = substate_option.get('name') if substate_option else None
+                updated_row[TicketsTable.substate.name] = row_data.get('substate')
             if 'tags' in row_data:
-                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'tags')
-                column_data = tag_column.get('data') or {}
-                tag_options = column_data.get('options', []) or []
-                tag_id_to_name = {opt.get('id'): opt.get('name') for opt in tag_options}
-                tag_names = []
-                tags = row_data.get('tags') or []
-                for tag_id in tags:
-                    tag_names.append(tag_id_to_name.get(tag_id))
-                updated_row[TicketsTable.tags.name] = tag_names
+                updated_row[TicketsTable.tags.name] = row_data.get('tags')
             if 'type' in row_data:
-                tag_column = get_column_from_columns_by_name(table_meta.get('columns'), 'type')
-                column_data = tag_column.get('data') or {}
-                type_options = column_data.get('options', []) or []
-                type_option = next((option for option in type_options if option['id'] == row_data.get('type')), None)
-                updated_row[TicketsTable.type.name] = type_option.get('name') if type_option else None
+                updated_row[TicketsTable.type.name] = row_data.get('type')
             if 'content' in row_data:
                 content_dict = row_data.get('content')
                 if not isinstance(content_dict, dict):
@@ -587,33 +519,10 @@ class TicketAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        ticket_state_id = request.data.get('state')
-
-        if ticket_state_id is not None:
-            state_column = get_column_from_columns_by_name(metadata, 'state')
-            state_column_data = state_column.get('data') or {}
-            state_options = state_column_data.get('options', []) or []
-            state_option = next((option for option in state_options if option['id'] == ticket_state_id), None)
-            if not state_option:
-                error_msg = 'state invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        ticket_state_name = request.data.get('state')
 
         is_update_type = 'type' in request.data
-        type_id = request.data.get('type') or None
-
-        if is_update_type and type_id is not None:
-            try:
-                type_column = get_column_from_columns_by_name(metadata, 'type')
-                type_column_data = type_column.get('data') or {}
-                type_options = type_column_data.get('options', []) or []
-                type_option = next((option for option in type_options if option['id'] == type_id), None)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not type_option:
-                error_msg = 'type invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        type_name = request.data.get('type') or None
 
         is_update_priority = 'priority' in request.data
         priority = request.data.get('priority')
@@ -657,50 +566,8 @@ class TicketAPIView(APIView):
             if not isinstance(tags, list):
                 error_msg = 'tags invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            tag_column = get_column_from_columns_by_name(metadata, 'tags')
-            tag_column_data = tag_column.get('data') or {}
-            tag_options = tag_column_data.get('options', []) or []
-            tag_ids = [tag.get('id') for tag in tag_options]
-            for tag in tags:
-                if tag not in tag_ids:
-                    error_msg = 'tags invalid.'
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            tags = list(set(tags))
-
         is_update_substate = 'substate' in request.data
-        substate_option_id = request.data.get('substate') or None
-        substate_name = None
-        if is_update_substate and substate_option_id is not None:
-            try:
-                substate_column = get_column_from_columns_by_name(metadata, 'substate')
-                substate_column_data = substate_column.get('data') or {}
-                substate_options = substate_column_data.get('options', []) or []
-                substate_option = next((option for option in substate_options if option['id'] == substate_option_id), None)
-            except Exception as e:
-                logger.error(e)
-                error_msg = 'Internal Server Error'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            if not substate_option:
-                error_msg = 'substate invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            # determine state id to check cascade: prefer target state if provided
-            if ticket_state_id is not None:
-                state_option_id = ticket_state_id
-            else:
-                current_state_name = ticket.get('state')
-                state_column = get_column_from_columns_by_name(metadata, 'state')
-                state_column_data = state_column.get('data') or {}
-                state_options = state_column_data.get('options', []) or []
-                current_state_option = next((option for option in state_options if option['name'] == current_state_name), None)
-                state_option_id = current_state_option.get('id') if current_state_option else ''
-
-            cascade_settings = (substate_column_data or {}).get('cascade_settings') or {}
-            allowed_substate_ids = set(cascade_settings.get(state_option_id, []))
-            if substate_option.get('id') not in allowed_substate_ids:
-                error_msg = 'substate not allowed for current state.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            substate_name = substate_option.get('name')
+        substate_option_name = request.data.get('substate') or None
 
         if assignees:
             for assignee in assignees:
@@ -725,18 +592,15 @@ class TicketAPIView(APIView):
                 update_row['title'] = title
             if content:
                 update_row['content'] = content
-            if ticket_state_id or ticket_state_id == '':
-                update_row['state'] = state_option.get('name')
+
+            if ticket_state_name or ticket_state_name == '':
+                update_row['state'] = ticket_state_name.lower()
             if is_update_type:
-                update_row['type'] = type_option.get('name') if type_id and type_option else None
+                update_row['type'] = type_name
             if is_update_substate:
-                update_row['substate'] = substate_name
+                update_row['substate'] = substate_option_name
             if is_update_tags:
-                tag_names = []
-                for tag in tag_options:
-                    if tag.get('id') in tags:
-                        tag_names.append(tag.get('name'))
-                update_row['tags'] = tag_names
+                update_row['tags'] = tags
             if is_update_priority:
                 update_row['priority'] = priority
             if is_update_assignees:

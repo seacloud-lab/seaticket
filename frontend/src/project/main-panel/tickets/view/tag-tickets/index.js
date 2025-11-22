@@ -6,7 +6,6 @@ import context from '@/sea-metadata/context';
 import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
 import { BAR_TYPE } from '../../../../constants';
 import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
-import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -32,7 +31,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
   const api = useMemo(() => ({
     getMetadata: (...params) => {
       return ticketsAPI.listTicketsByTag(projectUuid, childrenPageType).then(res => {
-        const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
+        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
           'title': { click: (row) => togglePageType(row._id) },

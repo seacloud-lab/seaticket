@@ -13,7 +13,6 @@ import {
   SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
   SUPPORT_AI_CONNECTION_TYPES,
 } from '../../constants';
-import { GithubIssue, DiscourseForum, WebCrawl, Seafile, Email } from '../../models';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster } from '@/components';
@@ -74,8 +73,8 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         let columns = res?.data?.columns || [];
         let notDisplayColumnNames = ['_pk'];
         let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
+        rows = records
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-          rows = Array.isArray(records) ? records.map(r => new GithubIssue(r)) : [];
           const typeColum = columns.find(c => c.name === 'issue_type');
           if (typeColum) {
             const options = typeColum.data?.options || [];
@@ -107,14 +106,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
           }
           notDisplayColumnNames.push('url');
-        } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-          rows = Array.isArray(records) ? records.map(r => new DiscourseForum(r)) : [];
-        } else if (type === CONNECTION_TYPE.SITE) {
-          rows = Array.isArray(records) ? records.map(r => new WebCrawl(r)) : [];
-        } else if (type === CONNECTION_TYPE.SEAFILE) {
-          rows = Array.isArray(records) ? records.map(r => new Seafile(r)) : [];
-        } else if (type === CONNECTION_TYPE.EMAIL) {
-          rows = Array.isArray(records) ? records.map(r => new Email(r)) : [];
         }
         if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
           columnConfig['title'] = {
