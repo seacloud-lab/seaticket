@@ -71,14 +71,6 @@ class TicketSubstatesAPIView(APIView):
             allowed_ids = set(cascade_settings.get(state_id, []))
             substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]
 
-        # remove exist reopen
-        for opt in substate_options:
-            if opt.get('name') == 'Reopen':
-                base_metadata = seadb_api.get_base_metadata(project_uuid)
-                table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-                batch_delete_select_option(seadb_api, project_uuid, table_meta.get('id'), substate_column.get('key'), [opt.get('id')])
-                break
-
         return Response({
             'project_substates': substate_options,
             'cascade_column_key': cascade_column_key,
