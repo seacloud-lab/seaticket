@@ -74,7 +74,7 @@ class SearchAPI {
     if (timeTo) {
       params.time_to = timeTo;
     }
-    return this.req.post(url, params, { cancelToken: cancelToken });
+    return this.req.post(url, params, { cancelToken: cancelToken, params: { count: 100 } });
   }
 
 }
