@@ -21,7 +21,6 @@ from seahub.project.utils import check_project_permission, get_ai_reply, \
     convert_record_to_ticket, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, generate_ai_summary, check_ai_limit, gen_message_id, url_to_filename, \
     get_file_from_s3_web_crawl, submit_embedding_analysis_task, get_embedding_analysis_task_status
 from seahub.project.constants import ConnectionType, AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
-from seahub.seadb_models.utils import list_connection_view_records_with_columns
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, SeafileTable, \
