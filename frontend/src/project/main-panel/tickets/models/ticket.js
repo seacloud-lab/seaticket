@@ -99,44 +99,6 @@ class Ticket {
   };
 }
 
-class TicketForTickets {
-  constructor(object) {
-    this._id = String(object._pk) || '';
-    this._pk = object._pk || '';
-
-    this.title = object.title || '';
-    this.content = object.content || '';
-    this.state = object.state || TICKET_STATE.OPEN;
-    this.substate = object.substate || '';
-    this.type = object.type || '';
-    this.tags = object.tags || [];
-    this.priority = object.priority || 0;
-
-    this.assignees = object.assignees || [];
-    this.participants = object.participants || [];
-
-    this.creator = object.creator || '';
-    this.created_time = object.created_time || '';
-
-    this.replies = object.replies || [];
-    this.reply_count = object.reply_count || '';
-
-    this.modified_time = object.modified_time || '';
-
-    if (this.replies) {
-      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
-    }
-
-    if (this.reply_count || this.reply_count === '0') {
-      this.reply_count = Number(this.reply_count);
-    }
-
-    if (this.tags) {
-      this.tags = this.tags.map(id => String(id));
-    }
-  }
-}
-
 class TicketForAI {
   constructor(object) {
     this._id = String(object._pk) || '';
@@ -146,7 +108,6 @@ class TicketForAI {
 
 export default Ticket;
 export {
-  TicketForTickets,
   TicketForAI,
   Reply,
 };

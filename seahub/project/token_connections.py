@@ -209,7 +209,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
                 replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
                 row_details = list_discourse_forum_replies_records(
-                    seadb_api, project_uuid, topics_table_name, replies_table_name, _pk, username
+                    seadb_api, project_uuid, topics_table_name, replies_table_name, _pk
                 )
             elif connection.type == ConnectionType.SITE.value:
                 url = request.GET.get('url')

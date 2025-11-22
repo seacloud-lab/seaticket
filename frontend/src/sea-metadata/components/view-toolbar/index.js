@@ -33,6 +33,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
       return (
         <RowsToolbar
           rows={rows}
+          columns={metadata?.columns || []}
           selectNone={selectNone}
           deleteRows={deleteRows}
           modifyRows={modifyRows}

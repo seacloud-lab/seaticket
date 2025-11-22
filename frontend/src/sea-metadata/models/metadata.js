@@ -1,5 +1,6 @@
 import View from './view';
 import Column from './column';
+import Row from './row';
 
 class Metadata {
   constructor(object) {
@@ -11,6 +12,7 @@ class Metadata {
     });
 
     this.rows = object.rows || [];
+    this.rows = this.rows.map(r => new Row(r));
     this.id_row_map = {};
     this.row_ids = [];
     this.rows.forEach(row => {

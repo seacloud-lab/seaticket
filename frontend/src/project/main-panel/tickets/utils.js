@@ -1,9 +1,9 @@
 import { gettext } from '@/constants';
-import { TICKET_STATE_OPTIONS } from './constants';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
+import { getColumnByName, getColumnOptions } from '@/sea-metadata/utils/column';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -25,7 +25,10 @@ export const generatorRowCopyLinkTool = ({ row, workspaceID, projectName }) => {
   };
 };
 
-export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
+export const generatorRowsMoreTool = ({ rows, columns, modifyRows }) => {
+  const stateColumn = getColumnByName(columns, 'state');
+  const priorityColumn = getColumnByName(columns, 'priority');
+  const stateColumnOptions = getColumnOptions(stateColumn);
   return {
     key: 'more',
     icon: 'more',
@@ -33,25 +36,21 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
       {
         label: gettext('Set state'),
         key: 'state',
-        children: TICKET_STATE_OPTIONS.map((o) => {
+        children: stateColumnOptions.map((o) => {
           return {
             key: o.id,
-            label: o.name,
+            label: o.display_name || o.name,
             callback: () => {
               let rowIds = [];
               let idRowUpdates = {};
-              let idOriginalRowUpdates = {};
-              let idOldRowData = {};
-              let idOriginalOldRowData = {};
+              let idOldRowOldData = {};
               rows.forEach(row => {
-                const { _id, state } = row;
+                const { _id } = row;
                 rowIds.push(_id);
-                idRowUpdates[_id] = { state: o.id };
-                idOriginalRowUpdates[_id] = { state: o.id };
-                idOldRowData[_id] = { state };
-                idOriginalOldRowData[_id] = { state };
+                idRowUpdates[_id] = { [stateColumn.key]: o.id };
+                idOldRowOldData[_id] = { [stateColumn.key]: row[stateColumn.key] };
               });
-              modifyRows && modifyRows(rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData);
+              modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
             },
           };
         })
@@ -68,18 +67,14 @@ export const generatorRowsMoreTool = ({ rows, modifyRows }) => {
             callback: () => {
               let rowIds = [];
               let idRowUpdates = {};
-              let idOriginalRowUpdates = {};
-              let idOldRowData = {};
-              let idOriginalOldRowData = {};
+              let idOldRowOldData = {};
               rows.forEach(row => {
-                const { _id, priority } = row;
+                const { _id } = row;
                 rowIds.push(_id);
-                idRowUpdates[_id] = { priority: o.value };
-                idOriginalRowUpdates[_id] = { priority: o.value };
-                idOldRowData[_id] = { priority };
-                idOriginalOldRowData[_id] = { priority };
+                idRowUpdates[_id] = { [priorityColumn.key]: o.value };
+                idOldRowOldData[_id] = { [priorityColumn.key]: row[priorityColumn.key] };
               });
-              modifyRows && modifyRows(rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData);
+              modifyRows && modifyRows(rowIds, idRowUpdates, idOldRowOldData);
             },
           };
         })

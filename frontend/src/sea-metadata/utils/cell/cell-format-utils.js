@@ -2,7 +2,6 @@ import dayjs from 'dayjs';
 import { CellType } from '../../constants';
 import { getCellValueByColumn } from './core';
 import { getCellValueDisplayString } from './common';
-import { getColumnOriginName } from '../column';
 
 const getAutoTimeDisplayString = (autoTime) => {
   if (!autoTime) {
@@ -22,21 +21,18 @@ function convertedToRowData(originRowData, keyColumnMap, excludesColumnTypes = [
   let rowData = {};
   Object.keys(originRowData).forEach(key => {
     const column = keyColumnMap[key];
-    if (!column) {
-      return;
-    }
+    if (!column) return;
 
     const { type } = column;
-    const colName = getColumnOriginName(column);
     if (excludesColumnTypes && excludesColumnTypes.includes(type)) {
       return;
     }
 
     let cellValue = originRowData[key];
-    rowData[colName] = cellValue;
+    rowData[key] = cellValue;
     switch (type) {
       case CellType.TEXT: {
-        rowData[colName] = typeof cellValue === 'string' ? cellValue.trim() : '';
+        rowData[key] = typeof cellValue === 'string' ? cellValue.trim() : '';
         break;
       }
       default: {

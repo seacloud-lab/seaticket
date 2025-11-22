@@ -6,7 +6,6 @@ import Editor from './editor';
 import { isFunction } from '@/utils/type-detection';
 import { EDITOR_CONTAINER as Z_INDEX_EDITOR_CONTAINER } from '../../../../constants/z-index';
 import eventBus from '@/utils/event-bus';
-import { getColumnOriginName } from '../../../../utils/column';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
 
@@ -104,18 +103,16 @@ class PopupEditorContainer extends React.Component {
     return key || value;
   };
 
-  getOldRowData = (originalOldCellValue) => {
+  getOldRowData = (oldCellValue) => {
     const { column } = this.props;
-    const columnName = getColumnOriginName(column);
     const { key: columnKey } = column;
-    let oldValue = originalOldCellValue;
+    let oldValue = oldCellValue;
     if (this.getEditor() && this.getEditor().getOldValue) {
       const original = this.getEditor().getOldValue();
       oldValue = original[Object.keys(original)[0]];
     }
-    const oldRowData = { [columnName]: oldValue };
-    const originalOldRowData = { [columnKey]: originalOldCellValue }; // { [column.key]: cellValue }
-    return { oldRowData, originalOldRowData };
+    const oldRowData = { [columnKey]: oldValue }; // { [column.key]: cellValue }
+    return oldRowData;
   };
 
   // The input area in the interface loses focus. Use this.getEditor().getValue() to get data.
@@ -127,12 +124,11 @@ class PopupEditorContainer extends React.Component {
   };
 
   // This is the updated data obtained by manually clicking the button
-  commitData = (updated, closeEditor = false) => {
+  commitData = (rowUpdate, closeEditor = false) => {
     const { onCommit, column, row } = this.props;
-    const { key: columnKey, name: columnName } = column;
-    const originalOldCellValue = getCellValueByColumn(row, column);
-    let originalUpdates = { ...updated };
-    if (!isCellValueChanged(originalOldCellValue, originalUpdates[columnKey]) || !this.isNewValueValid(updated)) {
+    const { key: columnKey } = column;
+    const oldCellValue = getCellValueByColumn(row, column);
+    if (!isCellValueChanged(oldCellValue, rowUpdate[columnKey]) || !this.isNewValueValid(rowUpdate)) {
       if (closeEditor && typeof this.editor.onClose === 'function') {
         this.editor.onClose();
       }
@@ -140,22 +136,19 @@ class PopupEditorContainer extends React.Component {
     }
 
     const rowId = row._id;
-    const key = Object.keys(updated)[0];
-    const value = updated[key];
+    const key = Object.keys(rowUpdate)[0];
+    const value = rowUpdate[key];
     if (column.is_required && !isValidCellValue(value, column)) {
       this.commitCancel();
       return;
     }
 
     this.changeCommitted = true;
-    const updates = { [columnName]: value };
-    const { oldRowData, originalOldRowData } = this.getOldRowData(originalOldCellValue);
+    const oldRowData = this.getOldRowData(oldCellValue);
 
-    // updates used for update remote row data
-    // originalUpdates used for update local row data
+    // rowUpdate used for update remote row data
     // oldRowData ues for undo/undo modify row
-    // originalOldRowData ues for undo/undo modify row
-    onCommit({ rowId, cellKey: columnKey, updates, originalUpdates, oldRowData, originalOldRowData }, closeEditor);
+    onCommit({ rowId, cellKey: columnKey, rowUpdate, oldRowData }, closeEditor);
   };
 
   commitCancel = () => {

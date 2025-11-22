@@ -480,36 +480,32 @@ class InteractionMasks extends React.Component {
     if (editableColumns.length === 0) return;
 
     let updateRowIds = [];
-    let idRowUpdates = {}; // row's id to modified rows data: { [row_id]: { [column.name: null] } }
-    let idOriginalRowUpdates = {}; // row's id to modified original rows data: { [row_id]: { [column.key: null] } }
-    let idOldRowData = {}; // row's id to old rows data: { [row_id]: { [column.name: xxx] } }
-    let idOriginalOldRowData = {}; // row's id to old original rows data: { [row_id]: { [column.key: xxx] } }
+    let idRowUpdates = {}; // row's id to modified original rows data: { [row_id]: { [column.key: null] } }
+    let idOldRowData = {}; // row's id to old original rows data: { [row_id]: { [column.key: xxx] } }
     editableRows.forEach(row => {
       const { _id } = row;
-      let originalUpdate = {};
-      let originalOldRowData = {};
+      let rowUpdates = {};
+      let oldRowData = {};
       editableColumns.forEach(column => {
         const { key } = column;
         const cellVal = getCellValueByColumn(row, column);
         if (isValidCellValue(cellVal, column)) {
-          originalOldRowData[key] = cellVal;
-          originalUpdate[key] = null;
+          oldRowData[key] = cellVal;
+          rowUpdates[key] = null;
         }
       });
 
-      if (Object.keys(originalUpdate).length > 0) {
+      if (Object.keys(rowUpdates).length > 0) {
         updateRowIds.push(_id);
-        const update = getFormatRowData(editableColumns, originalUpdate);
-        const oldRecordData = getFormatRowData(editableColumns, originalOldRowData);
+        const update = getFormatRowData(editableColumns, rowUpdates);
+        const oldRecordData = getFormatRowData(editableColumns, oldRowData);
         idRowUpdates[_id] = update;
-        idOriginalRowUpdates[_id] = originalUpdate;
         idOldRowData[_id] = oldRecordData;
-        idOriginalOldRowData[_id] = originalOldRowData;
       }
     });
 
     if (updateRowIds.length > 0) {
-      this.props.modifyRows(updateRowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData);
+      this.props.modifyRows(updateRowIds, idRowUpdates, idOldRowData);
     }
   };
 

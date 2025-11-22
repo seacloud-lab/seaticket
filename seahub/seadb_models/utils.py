@@ -6,7 +6,6 @@ from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
     GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, KnowledgeBaseTable
-from seahub.tickets.ticket_utils import convert_ticket_select_column_name_to_option_id
 
 logger = logging.getLogger(__name__)
 
@@ -294,15 +293,6 @@ def init_seafile_seadb_table(seadb_api, project_uuid, connection_id):
         ]
     )
 
-def list_seadb_table_records(seadb_api, project_uuid, connection_id, start=0, limit=1000, username=None):
-    sql = f"SELECT * FROM `{connection_id}` ORDER BY last_modified DESC LIMIT {limit} OFFSET {start}"
-    try:
-        res = seadb_api.query_rows(project_uuid, sql)
-        records = res.get('results', [])
-    except Exception as e:
-        logger.error(f'SeaDB query error for connection tickets: {e}')
-        records = []
-    return records
 
 def init_ticket_seadb_table(seadb_api, project_uuid):
     """Initialize SeaDB tables for Ticket"""
@@ -320,7 +310,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         if column.name == 'substate' and status_column_key:
             mapped_column['column_data']['cascade_column_key'] = status_column_key
         added_column = seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
-        if column.name == 'status':
+        if column.name == TicketsTable.state.name:
             status_column_key = added_column['column_key']
     # Create tickets table index for seadb
     ticket_index_columns = [
@@ -516,13 +506,11 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
             display_columns.append(column)
     sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit, include_deleted=True)
     try:
-        res = seadb_api.query_rows(project_uuid, sql)
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection tickets: {e}')
         records = []
-    for record in records:
-        convert_ticket_select_column_name_to_option_id(columns, record)
     return records, display_columns
 
 
@@ -579,7 +567,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     view_copy = view.copy()
     sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
     try:
-        res = seadb_api.query_rows(project_uuid, sql)
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
@@ -590,10 +578,10 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
 def list_connection_view_records_with_columns(seadb_api, project_uuid, connection, view, column_names, start, limit, username=''):
     table_name = get_connection_table_name(connection)
     columns = get_connection_columns(seadb_api, project_uuid, connection)
-    
+
     if not columns:
         return []
-    
+
     view_copy = view.copy()
     sql_generator = SQLGenerator(table_name, columns, view_copy, username, start, limit)
     sql_generator.column_names = column_names

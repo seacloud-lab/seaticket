@@ -127,27 +127,22 @@ const Cell = React.memo(({
     };
   }, [onCellClick, onCellDoubleClick, onCellMouseDown, onCellMouseEnter, onCellMouseMove, onCellMouseLeave, onDragOver, onCellContextMenu]);
 
-  const getOldRowData = useCallback((originalOldCellValue) => {
-    const { key: columnKey, name: columnName } = column;
-    const oldRowData = { [columnName]: originalOldCellValue };
-    const originalOldRowData = { [columnKey]: originalOldCellValue }; // { [column.key]: cellValue }
-    return { oldRowData, originalOldRowData };
+  const getOldRowData = useCallback((oldValue) => {
+    const { key: columnKey } = column;
+    const oldRowData = { [columnKey]: oldValue };
+    return oldRowData;
   }, [column]);
 
-  const modifyRow = useCallback((updated) => {
+  const modifyRow = useCallback((rowUpdate) => {
     if (!isFunction(cellMetaData.modifyRow)) return;
-    const { key: columnKey, type: columnType, name: columnName } = column;
+    const { key: columnKey, type: columnType } = column;
     const originalOldCellValue = getCellValueByColumn(row, column);
-    if (!isCellValueChanged(originalOldCellValue, updated[columnKey], columnType)) return;
+    if (!isCellValueChanged(originalOldCellValue, rowUpdate[columnKey], columnType)) return;
     const rowId = row._id;
-    const key = Object.keys(updated)[0];
-    const updates = { [columnName]: updated[key] };
-    const { oldRowData, originalOldRowData } = getOldRowData(originalOldCellValue);
-    // updates used for update remote row data
-    // originalUpdates used for update local row data
+    const oldRowData = getOldRowData(originalOldCellValue);
+    // rowUpdate used for update remote row data
     // oldRowData ues for undo/undo modify row
-    // originalOldRowData ues for undo/undo modify row
-    cellMetaData.modifyRow({ rowId, cellKey: columnKey, updates, originalUpdates: updated, oldRowData, originalOldRowData });
+    cellMetaData.modifyRow({ rowId, cellKey: columnKey, rowUpdate, oldRowData });
   }, [cellMetaData, row, column, getOldRowData]);
 
   const cellValue = getCellValueByColumn(row, column);

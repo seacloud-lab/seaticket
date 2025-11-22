@@ -165,7 +165,7 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
         f"WHERE `{column_name}` IN ({names_str}) AND `deleted` = False"
     )
-    res = seadb_api.query_rows(project_uuid, sql)
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     tickets = res.get('results')
     columns = res.get('metadata') or []
     return tickets, columns

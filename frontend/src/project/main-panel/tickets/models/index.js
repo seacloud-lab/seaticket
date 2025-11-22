@@ -1,4 +1,4 @@
-import Ticket, { TicketForTickets, Reply, TicketForAI } from './ticket';
+import Ticket, { Reply, TicketForAI } from './ticket';
 import Tag from './tag';
 import TagsData from './tags';
 import Type from './type';
@@ -8,7 +8,6 @@ import SubstatesData from './substates';
 
 export {
   Ticket,
-  TicketForTickets,
   TicketForAI,
   Tag,
   TagsData,

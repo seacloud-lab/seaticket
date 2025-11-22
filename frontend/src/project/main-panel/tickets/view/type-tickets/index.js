@@ -5,7 +5,6 @@ import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useTypes, useTicketsPage, useTags } from '../../hooks';
 import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
-import { TicketForTickets } from '../../models';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -31,7 +30,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
   const api = useMemo(() => ({
     getMetadata: (...params) => {
       return ticketsAPI.listTicketsByType(projectUuid, childrenPageType).then(res => {
-        const rows = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForTickets(t)) : [];
+        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
           'title': { click: (row) => togglePageType(row._id) },
@@ -93,14 +92,14 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   }), [projectUuid, childrenPageType, viewsData, togglePageType]);
 
-  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+  const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];
     if (rows.length === 1) {
       const row = rows[0];
       const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
       tools.push(tool);
     }
-    const moreTool = generatorRowsMoreTool({ rows, modifyRows });
+    const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows });
     tools.push(moreTool);
     return tools;
   }, [workspaceID, projectName]);

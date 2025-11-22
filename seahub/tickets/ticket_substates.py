@@ -16,7 +16,7 @@ from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import update_select_option, get_ticket_counts_group_by_column_name, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_columns_by_name, \
+    TABLE_TICKETS, get_column_from_columns_by_name, \
     filter_tickets_by_select, add_select_option, batch_delete_select_option
 
 
@@ -240,9 +240,6 @@ class TicketSubstateAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        for ticket in tickets:
-            convert_ticket_select_column_name_to_option_id(table_columns, ticket)
 
         return Response({
             'tickets': tickets,

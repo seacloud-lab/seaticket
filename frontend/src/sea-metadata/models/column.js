@@ -12,7 +12,7 @@ class Column {
     this.is_width_fixed = object.is_width_fixed || false;
 
     this.is_required = object.is_required || false;
-    this.is_predefined = object.is_predefined || true;
+    this.is_predefined = object.is_predefined === false ? false : true;
     this.editable = object.editable || false;
     this.frozen = object.frozen || false;
     this.rename_able = object.rename_able || false;

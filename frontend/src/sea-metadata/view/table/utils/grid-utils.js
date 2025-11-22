@@ -65,7 +65,7 @@ class GridUtils {
     const { copiedColumns, copiedRows } = cutData;
     let updateRowIds = [];
     let idRowUpdates = {};
-    let idOldRowData = {};
+    let idOldRowOldData = {};
 
     copiedRows.forEach((row, index) => {
       const cutRowIdx = startRowIndex + index;
@@ -80,14 +80,14 @@ class GridUtils {
             const cellValue = getCellValueByColumn(cutRow, copiedColumn);
             const copiedColumnName = getColumnOriginName(copiedColumn);
             idRowUpdates[cutRowId] = Object.assign({}, idRowUpdates[cutRowId], { [copiedColumnName]: null });
-            idOldRowData[cutRowId] = Object.assign({}, idOldRowData[cutRowId], { [copiedColumnName]: cellValue });
+            idOldRowOldData[cutRowId] = Object.assign({}, idOldRowOldData[cutRowId], { [copiedColumnName]: cellValue });
           }
         });
       }
     });
 
     if (Object.keys(idRowUpdates).length > 0) {
-      this.api.modifyRows(updateRowIds, idRowUpdates, idRowUpdates, idOldRowData, idOldRowData, true);
+      this.api.modifyRows(updateRowIds, idRowUpdates, idOldRowOldData, true);
     }
   }
 
@@ -120,9 +120,7 @@ class GridUtils {
 
     let updateRowIds = [];
     let idRowUpdates = {};
-    let idOriginalRowUpdates = {};
-    let idOldRowData = {};
-    let idOriginalOldRowData = {};
+    let idOldRowOldData = {};
     let currentGroupRowIndex = groupRowIndex;
 
     for (let i = 0; i < pasteRowsLen; i++) {
@@ -136,10 +134,8 @@ class GridUtils {
       const updateRowId = pasteRow._id;
       const copiedRowIndex = i % copiedRowsLen;
       const copiedRow = copiedRows[copiedRowIndex];
-      let originalUpdate = {};
-      let originalKeyUpdate = {};
-      let originalOldRowData = {};
-      let originalKeyOldRowData = {};
+      let rowData = {};
+      let oldRowData = {};
 
       for (let j = 0; j < pasteColumnsLen; j++) {
         const pasteColumn = getColumnByIndex(j + startColumnIndex, columns);
@@ -148,10 +144,8 @@ class GridUtils {
         }
         const copiedColumnIndex = j % copiedColumnsLen;
         const copiedColumn = getColumnByIndex(copiedColumnIndex, copiedColumns);
-        const pasteColumnName = getColumnOriginName(pasteColumn);
-        const copiedColumnName = getColumnOriginName(copiedColumn);
-        const pasteCellValue = Object.prototype.hasOwnProperty.call(pasteRow, pasteColumnName) ? getCellValueByColumn(pasteRow, pasteColumn) : null;
-        const copiedCellValue = Object.prototype.hasOwnProperty.call(copiedRow, copiedColumnName) ? getCellValueByColumn(copiedRow, copiedColumn) : null;
+        const pasteCellValue = getCellValueByColumn(pasteRow, pasteColumn);
+        const copiedCellValue = getCellValueByColumn(copiedRow, copiedColumn);
         let update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData });
         if (!isCellValueChanged(pasteCellValue, update, pasteColumn.type)) continue;
         if (!isValidCellValue(update, pasteColumn) && pasteColumn.is_required) continue;
@@ -159,23 +153,19 @@ class GridUtils {
           const { previewText, images, links, checklist } = getPreviewContent(update);
           update = { text: update, preview: previewText, images: images, links: links, checklist };
         }
-        originalUpdate[pasteColumnName] = update;
-        originalKeyUpdate[pasteColumn.key] = update;
-        originalOldRowData[pasteColumnName] = pasteCellValue;
-        originalKeyOldRowData[pasteColumn.key] = pasteCellValue;
+        rowData[pasteColumn.key] = update;
+        oldRowData[pasteColumn.key] = pasteCellValue;
       }
 
-      if (Object.keys(originalUpdate).length > 0) {
+      if (Object.keys(rowData).length > 0) {
         updateRowIds.push(updateRowId);
-        idRowUpdates[updateRowId] = originalUpdate;
-        idOriginalRowUpdates[updateRowId] = originalKeyUpdate;
-        idOldRowData[updateRowId] = originalOldRowData;
-        idOriginalOldRowData[updateRowId] = originalKeyOldRowData;
+        idRowUpdates[updateRowId] = rowData;
+        idOldRowOldData[updateRowId] = oldRowData;
       }
     }
 
     if (updateRowIds.length === 0) return;
-    this.api.modifyRows(updateRowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste);
+    this.api.modifyRows(updateRowIds, idRowUpdates, idOldRowOldData, isCopyPaste);
   }
 
   getUpdateDraggedRows(draggedRange, shownColumns, rows, idRowMap, groupMetrics) {
@@ -239,7 +229,7 @@ class GridUtils {
       idOriginalRowUpdates: updatedOriginalRows,
       idRowUpdates: updatedRows,
       idOriginalOldRowData: oldOriginalRows,
-      idOldRowData: oldRows
+      idOldRowOldData: oldRows
     };
   }
 

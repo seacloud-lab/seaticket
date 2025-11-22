@@ -212,17 +212,16 @@ class NormalEditorContainer extends React.Component {
     });
   };
 
-  getOldRowData = (originalOldCellValue) => {
+  getOldRowData = (value) => {
     const { column } = this.props;
-    const { key: columnKey, name: columnName } = column;
-    let oldValue = originalOldCellValue;
+    const { key: columnKey } = column;
+    let oldValue = value;
     if (this.getEditor() && this.getEditor().getOldValue) {
       const original = this.getEditor().getOldValue();
       oldValue = original[Object.keys(original)[0]];
     }
-    const oldRowData = { [columnName]: oldValue };
-    const originalOldRowData = { [columnKey]: originalOldCellValue }; // { [column.key]: cellValue }
-    return { oldRowData, originalOldRowData };
+    const oldRowData = { [columnKey]: oldValue };
+    return oldRowData;
   };
 
   commit = (args) => {
@@ -237,29 +236,26 @@ class NormalEditorContainer extends React.Component {
     this.commitData(updated, true);
   };
 
-  commitData = (updated, closeEditor = false) => {
-    if (!this.isNewValueValid(updated)) return;
+  commitData = (rowUpdate, closeEditor = false) => {
+    if (!this.isNewValueValid(rowUpdate)) return;
     const { onCommit, row, column } = this.props;
-    const { key: columnKey, name: columnName } = column;
+    const { key: columnKey } = column;
 
     const rowId = row._id;
     const originalOldCellValue = getCellValueByColumn(row, column);
-    const key = Object.keys(updated)[0];
-    const value = updated[key];
+    const key = Object.keys(rowUpdate)[0];
+    const value = rowUpdate[key];
     if (column.is_required && !isValidCellValue(value, column)) {
       this.commitCancel();
       return;
     }
 
     this.changeCommitted = true;
-    const updates = { [columnName]: value };
-    const { oldRowData, originalOldRowData } = this.getOldRowData(originalOldCellValue);
+    const oldRowData = this.getOldRowData(originalOldCellValue);
 
-    // updates used for update remote row data
-    // originalUpdates used for update local row data
+    // rowUpdate used for update remote row data
     // oldRowData ues for undo/undo modify row
-    // originalOldRowData ues for undo/undo modify row
-    onCommit({ rowId, cellKey: columnKey, updates, originalUpdates: updated, oldRowData, originalOldRowData }, closeEditor);
+    onCommit({ rowId, cellKey: columnKey, rowUpdate, oldRowData }, closeEditor);
   };
 
   commitCancel = () => {

@@ -7,7 +7,7 @@ import { gettext } from '@/constants';
 import context from '../../../context';
 import { isFunction } from '@/utils/type-detection';
 
-const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools, updateLocalRow }) => {
+const RowsToolbar = ({ rows, columns, selectNone, deleteRows, modifyRows, createTools, updateLocalRow }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubOpen, setIsSubOpen] = useState(false);
   const [subMenuKey, setSubMenuKey] = useState('');
@@ -60,7 +60,7 @@ const RowsToolbar = ({ rows, selectNone, deleteRows, modifyRows, createTools, up
         <IconButton icon="delete" title={gettext('Delete')} className="mr-2" onClick={handleDeleteRows} />
       )}
 
-      {isFunction(createTools) && createTools({ rows, modifyRows, updateLocalRow }).map(tool => {
+      {isFunction(createTools) && createTools({ rows, columns, modifyRows, updateLocalRow }).map(tool => {
         const { key, label, icon, callback, children } = tool;
         if (key !== 'more') {
           return (<IconButton icon={icon} key={key} title={label} className="mr-2" onClick={callback} />);

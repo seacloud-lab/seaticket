@@ -44,8 +44,8 @@ const TableMain = ({
     return gridUtils.getCopiedContent({ type, copied, isGroupView, columns });
   }, [gridUtils, columns]);
 
-  const updateRow = useCallback(({ rowId, updates, originalUpdates, oldRowData, originalOldRowData }) => {
-    modifyRow && modifyRow(rowId, updates, oldRowData, originalUpdates, originalOldRowData);
+  const updateRow = useCallback(({ rowId, rowUpdate, oldRowData }) => {
+    modifyRow && modifyRow(rowId, rowUpdate, oldRowData);
   }, [modifyRow]);
 
   const handleInsertColumn = useCallback((name, type, { key, data }) => {

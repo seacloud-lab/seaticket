@@ -1,3 +1,4 @@
+import { getTableColumnByName } from '@/sea-metadata/utils/table';
 import React, { useCallback, useContext, useState } from 'react';
 
 const DataCacheContext = React.createContext(null);
@@ -12,7 +13,7 @@ export const DataCacheProvider = ({ children }) => {
     });
   }, []);
 
-  const updateCacheData = useCallback((type, key, update) => {
+  const updateCacheData = useCallback((type, key, update, convertToKeyValue = false) => {
     if (!data) return;
     let newData = { ...data };
     if (type === 'rows') {
@@ -21,7 +22,12 @@ export const DataCacheProvider = ({ children }) => {
       if (rowIndex === -1) return;
       let row = newRows[rowIndex];
       Object.keys(update).forEach(rowKey => {
-        row[rowKey] = update[rowKey];
+        if (convertToKeyValue) {
+          const column = getTableColumnByName(newData, rowKey);
+          row[column.key] = update[rowKey];
+        } else {
+          row[rowKey] = update[rowKey];
+        }
       });
       newRows[rowIndex] = row;
       newData.rows = newRows;
