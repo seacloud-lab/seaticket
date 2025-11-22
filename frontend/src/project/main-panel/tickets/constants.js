@@ -161,7 +161,6 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.TYPE,
     display_name: gettext('Type'),
     editable: true,
-    is_predefined: false,
     modify_data_able: true,
   },
   'substate': {
@@ -186,7 +185,6 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.TAGS,
     display_name: gettext('Tags'),
     editable: true,
-    is_predefined: false,
     modify_data_able: true,
   },
   'participants': {
