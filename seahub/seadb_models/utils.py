@@ -310,7 +310,7 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
         if column.name == 'substate' and status_column_key:
             mapped_column['column_data']['cascade_column_key'] = status_column_key
         added_column = seadb_api.add_column(project_uuid, tickets_table_id, mapped_column)
-        if column.name == 'status':
+        if column.name == TicketsTable.state.name:
             status_column_key = added_column['column_key']
     # Create tickets table index for seadb
     ticket_index_columns = [
