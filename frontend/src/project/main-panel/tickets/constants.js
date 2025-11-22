@@ -25,8 +25,8 @@ export const TICKET_STATE_CONFIG = {
 };
 
 export const TICKET_STATE_OPTIONS = [
-  { id: '0001', name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
-  { id: '0002', name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
+  { id: '0001', name: 'open', display_name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: '0002', name: 'closed', display_name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
 ];
 
 export const TICKET_SUBSTATE_OPTIONS = [
@@ -161,12 +161,14 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.TYPE,
     display_name: gettext('Type'),
     editable: true,
+    is_predefined: false,
     modify_data_able: true,
   },
   'substate': {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('Substate'),
     editable: true,
+    is_predefined: false,
     modify_data_able: true,
   },
   'content': {
@@ -184,6 +186,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.TAGS,
     display_name: gettext('Tags'),
     editable: true,
+    is_predefined: false,
     modify_data_able: true,
   },
   'participants': {

@@ -93,8 +93,8 @@ export const MetadataProvider = forwardRef(({
     storeRef.current.modifyLocalColumnData(columnKey, newData, oldData);
   }, []);
 
-  const modifyRows = useCallback((rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste = false, { success_callback, fail_callback } = {}) => {
-    storeRef.current.modifyRows(rowIds, idRowUpdates, idOriginalRowUpdates, idOldRowData, idOriginalOldRowData, isCopyPaste, {
+  const modifyRows = useCallback((rowIds, idRowData, idOldRowOldData, isCopyPaste = false, { success_callback, fail_callback } = {}) => {
+    storeRef.current.modifyRows(rowIds, idRowData, idOldRowOldData, isCopyPaste, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -140,14 +140,13 @@ export const MetadataProvider = forwardRef(({
 
   const modifyRowByRowExpand = (rowId, update, { success_callback, fail_callback } = {}) => {
     const updates = update;
-    const originalUpdates = update;
     const row = getRowById(metadata, rowId);
     if (!row) return;
     let oldRowData = {};
     Object.keys(update).forEach(key => {
       oldRowData[key] = row[key];
     });
-    storeRef.current.modifyRow(rowId, updates, oldRowData, originalUpdates, oldRowData, false, {
+    storeRef.current.modifyRow(rowId, updates, oldRowData, false, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -158,8 +157,8 @@ export const MetadataProvider = forwardRef(({
     });
   };
 
-  const modifyRow = (rowId, updates, oldRowData, originalUpdates, originalOldRowData, isCopyPaste, { success_callback, fail_callback } = {}) => {
-    storeRef.current.modifyRow(rowId, updates, oldRowData, originalUpdates, originalOldRowData, isCopyPaste, {
+  const modifyRow = (rowId, updates, oldRowData, isCopyPaste, { success_callback, fail_callback } = {}) => {
+    storeRef.current.modifyRow(rowId, updates, oldRowData, isCopyPaste, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);

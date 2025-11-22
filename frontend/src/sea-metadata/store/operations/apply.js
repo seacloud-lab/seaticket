@@ -13,7 +13,7 @@ dayjs.extend(utc);
 export default function apply(data, operation) {
   const { op_type } = operation;
 
-  const updateDataByModifyRows = ({ id_original_row_updates = {}, id_row_updates = {} } = {}) => {
+  const updateDataByModifyRows = ({ id_row_updates = {} } = {}) => {
     const { rows } = data;
     const modifyTime = dayjs().utc().format(UTC_FORMAT_DEFAULT);
     const modifier = context.getUsername();
@@ -21,10 +21,9 @@ export default function apply(data, operation) {
 
     rows.forEach((row, index) => {
       const { _id: rowId } = row;
-      const originalRowUpdates = id_original_row_updates[rowId];
       const rowUpdates = id_row_updates[rowId];
-      if (rowUpdates || originalRowUpdates) {
-        const updatedRow = Object.assign({}, row, rowUpdates, originalRowUpdates, {
+      if (rowUpdates) {
+        const updatedRow = Object.assign({}, row, rowUpdates, {
           '_mtime': modifyTime,
           '_last_modifier': modifier,
         });
@@ -64,16 +63,16 @@ export default function apply(data, operation) {
       return data;
     }
     case OPERATION_TYPE.MODIFY_ROW: {
-      const { row_id, original_row_update, row_update } = operation;
+      const { row_id, row_update } = operation;
       updateDataByModifyRows({
         id_row_updates: { [row_id]: row_update },
-        id_original_row_updates: { [row_id]: original_row_update } });
+      });
       return data;
     }
 
     case OPERATION_TYPE.MODIFY_ROWS: {
-      const { id_original_row_updates, id_row_updates } = operation;
-      updateDataByModifyRows({ id_original_row_updates, id_row_updates });
+      const { id_row_updates } = operation;
+      updateDataByModifyRows({ id_row_updates });
       return data;
     }
     case OPERATION_TYPE.DELETE_ROW: {

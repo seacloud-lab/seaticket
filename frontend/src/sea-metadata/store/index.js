@@ -168,7 +168,7 @@ class Store {
       return;
     }
     const operation = this.pendingOperations.shift();
-    this.serverOperator.applyOperation(operation, this.data, this.sendOperationCallback.bind(this, undoRedoHandler));
+    this.serverOperator.applyOperation(operation, { data: this.data, typesData: this.typesData, tagsData: this.tagsData }, this.sendOperationCallback.bind(this, undoRedoHandler));
   }
 
   sendOperationCallback = (undoRedoHandler, { operation, error }) => {
@@ -262,15 +262,13 @@ class Store {
     this.applyOperation(operation);
   }
 
-  modifyRow(row_id, row_update, old_row_data, original_update, original_old_row_data, is_copy_paste, { success_callback, fail_callback } = {}) {
+  modifyRow(row_id, row_update, old_row_data, is_copy_paste, { success_callback, fail_callback } = {}) {
     const type = OPERATION_TYPE.MODIFY_ROW;
     const operation = this.createOperation({
       type,
       row_id: row_id,
       row_update: row_update,
-      original_update: original_update,
       old_row_data: old_row_data,
-      original_old_row_data: original_old_row_data,
       is_copy_paste,
       fail_callback,
       success_callback,
@@ -278,21 +276,17 @@ class Store {
     this.applyOperation(operation);
   }
 
-  modifyRows(row_ids, id_row_updates, id_original_row_updates, id_old_row_data, id_original_old_row_data, is_copy_paste, { fail_callback, success_callback } = {}) {
+  modifyRows(row_ids, id_row_updates, id_old_row_data, is_copy_paste, { fail_callback, success_callback } = {}) {
     const originalRows = getRowsByIds(this.data, row_ids);
     let valid_row_ids = [];
     let valid_id_row_updates = {};
-    let valid_id_original_row_updates = {};
     let valid_id_old_row_data = {};
-    let valid_id_original_old_row_data = {};
     originalRows.forEach(row => {
       if (row && context.canModifyRow(row)) {
         const rowId = row._id;
         valid_row_ids.push(rowId);
         valid_id_row_updates[rowId] = id_row_updates[rowId];
-        valid_id_original_row_updates[rowId] = id_original_row_updates[rowId];
         valid_id_old_row_data[rowId] = id_old_row_data[rowId];
-        valid_id_original_old_row_data[rowId] = id_original_old_row_data[rowId];
       }
     });
 
@@ -301,9 +295,7 @@ class Store {
       type,
       row_ids: valid_row_ids,
       id_row_updates: valid_id_row_updates,
-      id_original_row_updates: valid_id_original_row_updates,
       id_old_row_data: valid_id_old_row_data,
-      id_original_old_row_data: valid_id_original_old_row_data,
       is_copy_paste,
       fail_callback,
       success_callback,

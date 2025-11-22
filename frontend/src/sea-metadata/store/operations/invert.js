@@ -28,8 +28,6 @@ export default function invert(operation) {
         row_id,
         row_update,
         old_row_data,
-        original_update,
-        original_old_row_data,
         is_copy_paste,
         fail_callback,
         success_callback,
@@ -39,9 +37,7 @@ export default function invert(operation) {
         is_copy_paste,
         row_id: deepCopy(row_id),
         row_update: deepCopy(old_row_data),
-        original_old_row_data: deepCopy(original_update),
         old_row_data: deepCopy(row_update),
-        original_update: deepCopy(original_old_row_data),
         fail_callback,
         success_callback,
       });
@@ -50,9 +46,7 @@ export default function invert(operation) {
       const {
         row_ids,
         id_row_updates,
-        id_original_row_updates,
         id_old_row_data,
-        id_original_old_row_data,
         is_copy_paste,
         fail_callback,
         success_callback,
@@ -62,9 +56,7 @@ export default function invert(operation) {
         is_copy_paste,
         row_ids: deepCopy(row_ids),
         id_row_updates: deepCopy(id_old_row_data),
-        id_original_row_updates: deepCopy(id_original_old_row_data),
         id_old_row_data: deepCopy(id_row_updates),
-        id_original_old_row_data: deepCopy(id_original_row_updates),
         fail_callback,
         success_callback,
       });

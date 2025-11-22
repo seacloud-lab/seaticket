@@ -21,5 +21,6 @@ export const isValidCellValue = (value, column) => {
 export const getCellValueByColumn = (row, column) => {
   if (!row || !column) return null;
   const { key } = column;
-  return row[key];
+  if (Object.prototype.hasOwnProperty.call(row, key)) return row[key];
+  return null;
 };

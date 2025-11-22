@@ -19,8 +19,9 @@ import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { useDataCache, useTypes } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Header from './header';
+import { useTags } from '../../hooks';
 
 import './index.css';
 
@@ -33,6 +34,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   const { typesData } = useTypes();
   const { updateCacheData } = useDataCache();
+  const { tagsData } = useTags();
 
   const user = useMemo(() => {
     return {
@@ -53,29 +55,49 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     setIsShowStickyHeader(event.target.scrollTop > height);
   }, 30), [headerRef]);
 
+  const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
+    updateCacheData('rows', String(ticketID), update, true);
+  }, [updateCacheData]);
+
   // api
   const modifyTicket = useCallback((ticketID, data) => {
-    return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, data).then(res => {
+    let serverData = {};
+
+    Object.keys(data).forEach(columnName => {
+      let value = data[columnName];
+      if (columnName === 'tags' && Array.isArray(value) && value.length > 0) {
+        const tags = getRowsByIds(tagsData, value);
+        value = tags.map(tag => tag.name);
+      } else if (columnName === 'type' && value) {
+        const typeOption = getRowById(typesData, value);
+        value = typeOption.name;
+      } else if (columnName === 'state' && value) {
+        value = value === '0001' ? 'open' : 'closed';
+      }
+      serverData[columnName] = value;
+    });
+
+    return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
       let update = { ...data };
       const { participants = [] } = ticket;
       if (!participants.includes(user.email)) {
         update['participants'] = [...participants, user.email];
       }
       const newTicket = ticket._update(update);
-      updateCacheData('rows', String(ticketID), update);
+      handleUpdateRowsCacheData(String(ticketID), update);
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [projectUuid, ticket, user, updateCacheData]);
+  }, [projectUuid, ticket, user, tagsData, typesData, handleUpdateRowsCacheData]);
 
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;
     if (!participants.includes(user.email)) {
       const update = { 'participants': [...participants, user.email] };
       ticket = ticket._update(update);
-      updateCacheData('rows', String(ticket._id), update);
+      handleUpdateRowsCacheData(String(ticket._id), update);
     }
-  }, [user, updateCacheData]);
+  }, [user, handleUpdateRowsCacheData]);
 
   const createReply = useCallback((ticketID, reply) => {
     return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {

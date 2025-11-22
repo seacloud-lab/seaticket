@@ -94,14 +94,14 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   }), [projectUuid, childrenPageType, viewsData, togglePageType]);
 
-  const createRowsTools = useCallback(({ rows, modifyRows }) => {
+  const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];
     if (rows.length === 1) {
       const row = rows[0];
       const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
       tools.push(tool);
     }
-    const moreTool = generatorRowsMoreTool({ rows, modifyRows });
+    const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows });
     tools.push(moreTool);
     return tools;
   }, [workspaceID, projectName]);

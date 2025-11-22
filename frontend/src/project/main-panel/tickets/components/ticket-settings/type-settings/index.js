@@ -38,7 +38,7 @@ const TypeSettings = ({
   const onTypeChange = useCallback((type) => {
     onChange(type);
   }, [onChange]);
-  const typeOption = options.find(o => o.name === value);
+  const typeOption = options.find(o => o.value === value);
 
   return (
     <>

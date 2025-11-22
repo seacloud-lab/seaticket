@@ -69,11 +69,10 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const getMetadata = (...params) => {
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { type, records } = res.data;
-        let rows = [];
+        let rows = Array.isArray(records) ? records : [];
         let columns = res?.data?.columns || [];
         let notDisplayColumnNames = ['_pk'];
         let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
-        rows = records
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           const typeColum = columns.find(c => c.name === 'issue_type');
           if (typeColum) {

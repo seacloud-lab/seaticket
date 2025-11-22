@@ -211,12 +211,12 @@ const Main = forwardRef(({
         ) : (
           <>
             {displayOptions.map((option, i) => {
-              const isSelected = value.includes(option.name);
+              const isSelected = value && value.includes(option.value);
               return (
                 <div
                   className="option-editor-option"
                   key={option.value}
-                  onClick={() => toggleOption(option.name)}
+                  onClick={() => toggleOption(option.value)}
                   onMouseEnter={() => onMenuMouseEnter(i)}
                   onMouseLeave={() => onMenuMouseLeave(i)}
                 >

@@ -251,9 +251,9 @@ class DataProcessor {
       }
       case OPERATION_TYPE.MODIFY_ROW: {
         const { available_columns } = table.view;
-        const { original_update, row_id } = operation;
+        const { row_update, row_id } = operation;
         let relatedColumnKeyMap = {};
-        let relatedColumnKeys = [...Object.keys(original_update)];
+        let relatedColumnKeys = [...Object.keys(row_update)];
         relatedColumnKeys.forEach(columnKey => {
           if (!relatedColumnKeyMap[columnKey]) {
             const column = getColumnByKey(available_columns, columnKey);
@@ -268,13 +268,13 @@ class DataProcessor {
       }
       case OPERATION_TYPE.MODIFY_ROWS: {
         const { available_columns } = table.view;
-        const { id_original_row_updates, row_ids } = operation;
+        const { id_row_updates, row_ids } = operation;
         let relatedColumnKeyMap = {};
         let relatedColumnKeys = [];
         row_ids.forEach(rowId => {
-          const id_original_row_update = id_original_row_updates[rowId];
-          if (id_original_row_update) {
-            relatedColumnKeys.push(...Object.keys(id_original_row_update));
+          const id_row_update = id_row_updates[rowId];
+          if (id_row_update) {
+            relatedColumnKeys.push(...Object.keys(id_row_update));
           }
         });
         relatedColumnKeys.forEach(columnKey => {

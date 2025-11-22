@@ -45,8 +45,8 @@ export const COLUMN_DATA_OPERATION_TYPE = {
 
 export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.INSERT_ROW]: ['row', 'row_data'],
-  [OPERATION_TYPE.MODIFY_ROW]: ['row_id', 'row_update', 'original_update', 'old_row_data', 'original_old_row_data', 'is_copy_paste'],
-  [OPERATION_TYPE.MODIFY_ROWS]: ['row_ids', 'id_row_updates', 'id_original_row_updates', 'id_old_row_data', 'id_original_old_row_data', 'is_copy_paste'],
+  [OPERATION_TYPE.MODIFY_ROW]: ['row_id', 'row_update', 'old_row_data', 'is_copy_paste'],
+  [OPERATION_TYPE.MODIFY_ROWS]: ['row_ids', 'id_row_updates', 'id_old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.DELETE_ROW]: ['row_id', 'row_data'],
   [OPERATION_TYPE.DELETE_ROWS]: ['rows_ids'],
   [OPERATION_TYPE.RELOAD_ROWS]: ['row_ids'],
