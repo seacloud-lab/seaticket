@@ -17,11 +17,10 @@ import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useDataCache, useTypes } from '../../hooks';
+import { useDataCache, useTypes, useTags } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Header from './header';
-import { useTags } from '../../hooks';
 
 import './index.css';
 

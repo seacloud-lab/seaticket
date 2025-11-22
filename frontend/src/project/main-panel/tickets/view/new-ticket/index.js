@@ -10,6 +10,8 @@ import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { useTypes, useTags } from '../../hooks';
 
 import './index.css';
 
@@ -24,6 +26,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contentEditorRef = useRef(null);
+
+  const { typesData } = useTypes();
+  const { tagsData } = useTags();
 
   const user = useMemo(() => {
     return {
@@ -66,7 +71,23 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    ticketsAPI.createProjectTicket(projectUuid, { title: validTitle, content, type, assignees, tags, priority }).then(res => {
+    const data = { title: validTitle, content, type, assignees, tags, priority };
+    let serverData = {};
+    Object.keys(data).forEach(columnName => {
+      let value = data[columnName];
+      if (columnName === 'tags' && Array.isArray(value) && value.length > 0) {
+        const tags = getRowsByIds(tagsData, value);
+        value = tags.map(tag => tag.name);
+      } else if (columnName === 'type' && value) {
+        const typeOption = getRowById(typesData, value);
+        value = typeOption.name;
+      } else if (columnName === 'state' && value) {
+        value = value === '0001' ? 'open' : 'closed';
+      }
+      serverData[columnName] = value;
+    });
+
+    ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
       togglePageType(res.data.ticket._pk);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
