@@ -212,14 +212,18 @@ class ConnectionsAPI {
     return this.req.post(url, data);
   }
 
-  getEmbeddingAnalysis(projectUuid, connectionID, { view_id = 'open' } = {}) {
+  getEmbeddingAnalysis(projectUuid, connectionID) {
     const url = this.server + '/api/v2.1/ai/embedding-analysis/';
     const data = {
       project_uuid: projectUuid,
-      connection_id: connectionID,
-      view_id
+      connection_id: connectionID
     };
     return this.req.post(url, data);
+  }
+
+  getEmbeddingAnalysisTaskStatus(taskId) {
+    const url = this.server + `/api/v2.1/ai/embedding-analysis-task-status/${taskId}`;
+    return this.req.get(url);
   }
 
 }
