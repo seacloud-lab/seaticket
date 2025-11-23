@@ -36,7 +36,9 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             {isProjectAdmin && (
               <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
             )}
+            <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
             <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPES[6]} activeBar={activeBar} level={1} onClick={toggleBar} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />

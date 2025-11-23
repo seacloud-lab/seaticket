@@ -13,6 +13,7 @@ import { useSelectedRows } from './selected-rows';
 const MetadataContext = React.createContext(null);
 
 export const MetadataProvider = forwardRef(({
+  isMyTicket,
   viewID,
   api,
   tagsData,
@@ -260,7 +261,7 @@ export const MetadataProvider = forwardRef(({
       isCancelled = true;
       storeRef.current.destroy();
     };
-  }, [localStorageNamePrefix, viewID]);
+  }, [localStorageNamePrefix, viewID, isMyTicket]);
 
   useEffect(() => {
     const eventBus = context.eventBus;

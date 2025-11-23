@@ -77,6 +77,20 @@ def get_tickets(seadb_api, project_uuid):
     tickets_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return tickets_data
 
+def get_my_tickets(seadb_api, project_uuid, username, start, limit):
+    from seahub.seadb_models.utils import get_tickets_columns
+    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `deleted` = FALSE AND `state` = 'open' AND `participants` in ('{username}') LIMIT {limit} OFFSET {start}"
+    res = seadb_api.query_rows(project_uuid, sql)
+    records = res.get('results')
+    columns = get_tickets_columns(seadb_api, project_uuid)
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in TICKET_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    for record in records:
+        convert_ticket_select_column_name_to_option_id(columns, record)
+    return records, display_columns
 
 def get_ticket_replies(seadb_api, project_uuid, ticket_id, start, end):
     ticket_replies_sql = f"SELECT * FROM `{TABLE_TICKET_REPLIES}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"

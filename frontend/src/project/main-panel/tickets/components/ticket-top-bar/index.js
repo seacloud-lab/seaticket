@@ -11,7 +11,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const TicketTopBar = ({ title }) => {
+const TicketTopBar = ({ title, isMyTicket }) => {
   const { pageType, togglePageType, onRefresh, childrenPageType } = useTicketsPage();
   const { tagsData } = useTags();
   const { typesData } = useTypes();
@@ -162,7 +162,7 @@ const TicketTopBar = ({ title }) => {
   return (
     <TopBar>
       {renderLeftChildren()}
-      {renderRightChildren()}
+      {!isMyTicket && renderRightChildren()}
     </TopBar>
   );
 };
