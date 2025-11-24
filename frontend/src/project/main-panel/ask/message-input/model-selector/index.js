@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Icon, IconButton, CustomizePopover } from '@/components';
-import { gettext } from '@/constants';
 
 import './index.css';
 
