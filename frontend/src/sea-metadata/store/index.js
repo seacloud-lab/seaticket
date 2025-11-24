@@ -9,7 +9,7 @@ import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import DataProcessor from './data-processor';
 import ServerOperator from './server-operator';
 import LocalOperator from './local-operator';
-import { Metadata } from '../models';
+import { Metadata, Row } from '../models';
 import context from '../context';
 
 class Store {
@@ -84,11 +84,12 @@ class Store {
   async loadMore(limit) {
     if (!this.data) return;
     const res = await context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit });
-    const rows = res?.data?.rows || [];
+    let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
       this.hasMore = false;
       return;
     }
+    rows = rows.map(r => new Row(r));
 
     this.data.rows.push(...rows);
     rows.forEach(row => {
