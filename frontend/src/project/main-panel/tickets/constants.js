@@ -31,7 +31,6 @@ export const TICKET_STATE_OPTIONS = [
 
 export const TICKET_SUBSTATE_OPTIONS = [
   { id: '0010', name: gettext('New'), text_color: '#FFF', color: '#1a7f37', border_color: '#59CB74' },
-  { id: '0011', name: gettext('Reopen'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
   { id: '0012', name: gettext('Working on'), text_color: '#FFF', color: '#1a7f37', border_color: '#46A1FD' },
   { id: '0013', name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
   { id: '0014', name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },

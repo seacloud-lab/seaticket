@@ -74,8 +74,7 @@ class SelectTypes:
       "cascade_settings": {
         "0001": [
           "0010",
-          "0011",
-          "0012"
+          "0012",
         ],
         "0002": [
           "0013",
@@ -88,12 +87,6 @@ class SelectTypes:
           "id": "0010",
           "name": "New",
           "color": "#59CB74",
-          "text_color": "#FFFFFF",
-        },
-        {
-          "id": "0011",
-          "name": "Reopen",
-          "color": "#1A7F37",
           "text_color": "#FFFFFF",
         },
         {
