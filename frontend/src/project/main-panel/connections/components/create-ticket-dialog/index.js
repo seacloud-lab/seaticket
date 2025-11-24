@@ -1,23 +1,36 @@
 import { useState, useEffect } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
+import { ticketsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
-import { ticketsAPI } from '@/project/api';
+import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 
 import './index.css';
 
 const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [assignees, setAssignees] = useState([]);
+  const [type, setType] = useState('');
+  const [tags, setTags] = useState([]);
+  const [priority, setPriority] = useState(0);
 
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || '');
-      setContent(initialData.content || '');
+      setContent(initialData.description || '');
+      setAssignees(initialData.assignees || []);
+      setType(initialData.type || '');
+      setTags(initialData.tags || []);
+      setPriority(initialData.priority || 0);
     } else {
       setTitle('');
       setContent('');
+      setAssignees([]);
+      setType('');
+      setTags([]);
+      setPriority(0);
     }
   }, [initialData]);
 
@@ -31,11 +44,12 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       checklist,
     };
     const ticketData = {
-      title: title,
+      title,
       content: ticket_content,
-      type: '',
-      assignees: [],
-      tags: [],
+      type,
+      assignees,
+      tags,
+      priority,
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
       toaster.success(gettext('Ticket created'));
@@ -50,10 +64,13 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
         {isLoading && <CenteredLoading/>}
         {!isLoading && (
           <div className="d-flex">
-            <div className="pr-4 flex-1">
+            <div className="sea-qa-create-ticket-dialog-left-settings">
               <Form>
                 <FormGroup>
-                  <Label for="ticketTitle">{gettext('Title')}</Label>
+                  <Label for="ticketTitle">
+                    {gettext('Title')}
+                    <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+                  </Label>
                   <Input
                     type="text"
                     name="title"
@@ -77,6 +94,12 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
                   />
                 </FormGroup>
               </Form>
+            </div>
+            <div className="sea-qa-create-ticket-dialog-other-settings">
+              <RateSettings isReadonly={isLoading} value={priority} onChange={setPriority} />
+              <CollaboratorsSettings isReadonly={isLoading} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
+              <TagsSettings isReadonly={isLoading} value={tags} onChange={setTags} />
+              <TypeSettings isReadonly={isLoading} value={type} onChange={setType} />
             </div>
           </div>
         )}

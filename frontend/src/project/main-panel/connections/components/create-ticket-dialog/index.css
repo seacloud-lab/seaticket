@@ -1,0 +1,23 @@
+.sea-qa-create-ticket-dialog {
+  max-width: 850px;
+  height: 550px;
+}
+
+.sea-qa-create-ticket-dialog .modal-content {
+  height: 100%;
+}
+
+.sea-qa-create-ticket-dialog .sea-qa-create-ticket-dialog-left-settings {
+  flex: 1;
+}
+
+.sea-qa-create-ticket-dialog .sea-qa-create-ticket-dialog-other-settings {
+  width: 316px;
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+}
+
+.sea-qa-create-ticket-dialog .sea-qa-ticket-content {
+  height: 250px;
+}
