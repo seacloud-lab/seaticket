@@ -69,7 +69,7 @@ const Comment = ({
     }
   }, [editorAPI]);
 
-  const onReplyChange = useCallback((value) => {
+  const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
       toaster.closeAll();
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
@@ -79,7 +79,7 @@ const Comment = ({
     setContent(value);
   }, []);
 
-  const handleUpdateReply = useCallback(() => {
+  const handleUpdateComment = useCallback(() => {
     setIsShowCommentLoading(true);
     onModify && onModify(content, (error) => {
       if (!error) {
@@ -172,7 +172,7 @@ const Comment = ({
                     isAlwaysEnableEdit={true}
                     ref={commentEditorRef}
                     lang={lang}
-                    headerName={gettext('Reply')}
+                    headerName={gettext('Comment')}
                     value={content || ''}
                     autoSave={false}
                     saveDelay={20 * 1000}
@@ -180,7 +180,7 @@ const Comment = ({
                     isImageUploadOnly={false}
                     isSupportMultipleFiles={true}
                     editorApi={editorAPI}
-                    onSaveEditorValue={onReplyChange}
+                    onSaveEditorValue={onCommentChange}
                   />
                   <div className="sea-qa-project-ticket-footer mt-2 pl-0">
                     <UploadFilesButton onChange={handleFiles} />
@@ -190,7 +190,7 @@ const Comment = ({
                         className="sea-qa-project-ticket-footer-confirm-btn"
                         disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
                         color="primary"
-                        onClick={handleUpdateReply}
+                        onClick={handleUpdateComment}
                       >
                         {isShowCommentLoading ? <CenteredLoading /> : gettext('Update comment')}
                       </Button>

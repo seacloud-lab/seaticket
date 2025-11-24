@@ -350,7 +350,7 @@ class TicketsTable(BaseModel):
     closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
-class TicketRepliesTable(BaseModel):
+class TicketCommentsTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
     content = MappedColumn('content', PropertyTypes.TEXT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)

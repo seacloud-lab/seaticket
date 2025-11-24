@@ -23,9 +23,9 @@ from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, get_tickets_columns
-from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
+from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import get_ticket, get_ticket_replies, \
+from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_reply_creation_interval, get_ticket_reply_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_columns_by_name, get_tickets_by_ids, \
     get_my_tickets
@@ -451,9 +451,9 @@ class TicketAPIView(APIView):
             convert_ticket_select_column_name_to_option_id(metadata, ticket)
             start = 0
             end = 25
-            ticket_replies = get_ticket_replies(seadb_api, project_uuid, ticket_id, start, end)
+            ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
 
-            for ticket_reply in ticket_replies:
+            for ticket_reply in ticket_comments:
                 result = {
                     'number': ticket_reply.get('_pk'),
                     'content': ticket_reply.get('content'),
@@ -461,9 +461,9 @@ class TicketAPIView(APIView):
                     'modified_time': ticket_reply.get('modified_time'),
                     'creator': ticket_reply.get('creator'),
                 }
-                if not ticket.get('replies'):
-                    ticket['replies'] = []
-                ticket['replies'].append(result)
+                if not ticket.get('comments'):
+                    ticket['comments'] = []
+                ticket['comments'].append(result)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -736,7 +736,7 @@ class TicketsSearchAPIView(APIView):
         return Response({'tickets': tickets})
 
 
-class TicketRepliesAPIView(APIView):
+class TicketCommentsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -781,14 +781,14 @@ class TicketRepliesAPIView(APIView):
             if not ticket:
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            replies_data = get_ticket_replies(seadb_api, project_uuid, ticket.get('_pk'), start, end)
+            comments_data = get_ticket_comments(seadb_api, project_uuid, ticket.get('_pk'), start, end)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'ticket_replies': replies_data,
+            'ticket_comments': comments_data,
         })
 
     def post(self, request, project_uuid, ticket_id):
@@ -867,25 +867,25 @@ class TicketRepliesAPIView(APIView):
         # main
         try:
             row = {
-                TicketRepliesTable.ticket_id.name: ticket.get('_pk'),
-                TicketRepliesTable.creator.name: username,
-                TicketRepliesTable.content.name: content,
-                TicketRepliesTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.deleted.name: False,
+                TicketCommentsTable.ticket_id.name: ticket.get('_pk'),
+                TicketCommentsTable.creator.name: username,
+                TicketCommentsTable.content.name: content,
+                TicketCommentsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketCommentsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketCommentsTable.deleted.name: False,
             }
-            res = seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
+            res = seadb_api.insert_rows(project_uuid, 'ticket_comments', [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
             row.update({'number': pk})
-            ticket_replies_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_replies` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
+            ticket_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_comments` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
                 'pk': ticket.get('_pk'),
                 'row': {
-                    'reply_count': ticket_replies_count,
+                    'reply_count': ticket_comments_count,
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
@@ -902,7 +902,7 @@ class TicketRepliesAPIView(APIView):
         return Response({'ticket_reply': row}, status=status.HTTP_201_CREATED)
 
 
-class TicketReplyAPIView(APIView):
+class TicketCommentAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -961,7 +961,7 @@ class TicketReplyAPIView(APIView):
 
             ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket.get('_pk'), reply_id)
             if not ticket_reply_data:
-                error_msg = 'Reply not found.'
+                error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             # permission check
             if not check_comment_permission(username, workspace.owner, ticket_reply_data):
@@ -998,7 +998,7 @@ class TicketReplyAPIView(APIView):
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
-            seadb_api.update_rows(project_uuid, 'ticket_replies', [ticket_reply_update])
+            seadb_api.update_rows(project_uuid, 'ticket_comments', [ticket_reply_update])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1049,7 +1049,7 @@ class TicketReplyAPIView(APIView):
 
             ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_id, reply_id)
             if not ticket_reply_data:
-                error_msg = 'Reply not found.'
+                error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         except Exception as e:
             logger.error(e)
@@ -1079,7 +1079,7 @@ class TicketReplyAPIView(APIView):
                     'delete_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
-            seadb_api.update_rows(project_uuid, 'ticket_replies', [update_ticket_reply])
+            seadb_api.update_rows(project_uuid, 'ticket_comments', [update_ticket_reply])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

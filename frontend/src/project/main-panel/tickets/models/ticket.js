@@ -1,7 +1,7 @@
 import dayjs from '@/utils/dayjs';
 import { TICKET_STATE } from '../constants';
 
-class Reply {
+class Comment {
   constructor(object) {
     this.id = object.number || '';
     this.number = object.number || '';
@@ -50,7 +50,7 @@ class Ticket {
     this.closed_time = object.closed_time || '';
 
 
-    this.replies = object.replies || [];
+    this.comments = object.comments || [];
     this.reply_count = object.reply_count || '';
 
     this.modified_time = object.modified_time || '';
@@ -62,8 +62,8 @@ class Ticket {
 
     this.modified_time = this.modified_time ? dayjs(this.modified_time).fromNow() : '--';
 
-    if (this.replies) {
-      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
+    if (this.comments) {
+      this.comments = this.comments.map(reply => reply instanceof Comment ? reply : new Comment(reply));
     }
 
     if (this.tags) {
@@ -74,7 +74,7 @@ class Ticket {
   _update = (keyValue = {}) => {
     Object.entries(keyValue).forEach(item => {
       const [key, value] = item;
-      if (key !== 'replies') {
+      if (key !== 'comments') {
         this[key] = value;
       }
     });
@@ -83,20 +83,20 @@ class Ticket {
   };
 
   _create_reply = (reply) => {
-    this.replies.push(new Reply(reply));
+    this.comments.push(new Comment(reply));
     return this;
   };
 
   _delete_reply = (replyID) => {
-    this.replies = this.replies.filter(reply => reply.id !== replyID);
+    this.comments = this.comments.filter(reply => reply.id !== replyID);
     return this;
   };
 
   _modify_reply = (replyID, content) => {
-    const replyIndex = this.replies.findIndex(reply => reply.id === replyID);
-    let reply = this.replies[replyIndex];
+    const replyIndex = this.comments.findIndex(reply => reply.id === replyID);
+    let reply = this.comments[replyIndex];
     reply = reply._update(content);
-    this.replies[replyIndex] = reply;
+    this.comments[replyIndex] = reply;
     return this;
   };
 }
@@ -111,5 +111,5 @@ class TicketForAI {
 export default Ticket;
 export {
   TicketForAI,
-  Reply,
+  Comment,
 };

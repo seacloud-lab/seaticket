@@ -2685,7 +2685,7 @@ msgstr "打开于"
 
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:159
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
-msgid "Reply"
+msgid "Comment"
 msgstr "回复"
 
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:179

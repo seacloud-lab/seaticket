@@ -26,7 +26,7 @@ import './index.css';
 
 const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isLoading, setLoading] = useState(true);
-  const [reply, setReply] = useState('');
+  const [reply, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,8 +101,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     }
   }, [user, handleUpdateRowsCacheData]);
 
-  const createReply = useCallback((ticketID, reply) => {
-    return ticketsAPI.createProjectTicketReply(projectUuid, ticketID, reply).then(res => {
+  const createComment = useCallback((ticketID, reply) => {
+    return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, reply).then(res => {
       let newTicket = ticket._create_reply(res.data.ticket_reply);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
@@ -110,8 +110,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const modifyReply = useCallback((ticketID, replyID, reply) => {
-    return ticketsAPI.modifyProjectTicketReply(projectUuid, ticketID, replyID, reply).then(res => {
+  const modifyComment = useCallback((ticketID, replyID, reply) => {
+    return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, replyID, reply).then(res => {
       let newTicket = ticket._modify_reply(replyID, reply);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
@@ -119,8 +119,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const deleteReply = useCallback((ticketID, replyID) => {
-    return ticketsAPI.deleteProjectTicketReply(projectUuid, ticketID, replyID).then(res => {
+  const deleteComment = useCallback((ticketID, replyID) => {
+    return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, replyID).then(res => {
       let newTicket = ticket._delete_reply(replyID);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
@@ -133,13 +133,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     toaster.success(gettext('The ticket link has been copied'));
   }, []);
 
-  const onReplyChange = useCallback((value) => {
+  const onCommentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
       toaster.closeAll();
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setReply(value);
+    setComment(value);
   }, []);
 
   const onPriorityChange = useCallback((priority = 0) => {
@@ -212,9 +212,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     }
   }, [editorAPI]);
 
-  const onSubmitReply = useCallback((callback) => {
+  const onSubmitComment = useCallback((callback) => {
     setIsSubmitting(true);
-    createReply(ticket.id, reply).then(() => {
+    createComment(ticket.id, reply).then(() => {
       const editor = replyEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
@@ -228,7 +228,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [reply, ticket, replyEditorRef, createReply]);
+  }, [reply, ticket, replyEditorRef, createComment]);
 
   const toggleState = useCallback((state = '', substate = '') => {
     const modifyState = () => {
@@ -240,22 +240,22 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       });
     };
     if (reply && reply?.text) {
-      onSubmitReply(modifyState);
+      onSubmitComment(modifyState);
       return;
     }
 
     modifyState();
-  }, [ticket, reply, modifyTicket, onSubmitReply]);
+  }, [ticket, reply, modifyTicket, onSubmitComment]);
 
-  const handleModifyReply = useCallback((replyID, content, callback) => {
-    modifyReply(ticket.id, replyID, content).then(res => {
+  const handleModifyComment = useCallback((replyID, content, callback) => {
+    modifyComment(ticket.id, replyID, content).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(error);
     });
-  }, [ticket, modifyReply]);
+  }, [ticket, modifyComment]);
 
   useEffect(() => {
     setLoading(true);
@@ -289,7 +289,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
-  const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
+  const { id, state, title, creator, comments = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -321,7 +321,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         typeOption={typeOption}
       />
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="sea-qa-project-ticket-comment-container-wrapper">
+        <div className="sea-qa-project-ticket-reply-container-wrapper">
           <Comment
             isSmallScreen={isSmallScreen}
             comment={ticket}
@@ -331,7 +331,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             editorAPI={editorAPI}
             onModify={onContentChange}
           />
-          {replies.map(reply => {
+          {comments.map(reply => {
             return (
               <Comment
                 key={reply.id}
@@ -340,8 +340,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
                 comment={reply}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
-                onDelete={(reply) => deleteReply(id, reply.id)}
-                onModify={(content, callback) => handleModifyReply(reply.id, content, callback)}
+                onDelete={(reply) => deleteComment(id, reply.id)}
+                onModify={(content, callback) => handleModifyComment(reply.id, content, callback)}
               />
             );
           })}
@@ -351,7 +351,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               isAlwaysEnableEdit={true}
               ref={replyEditorRef}
               lang={lang}
-              headerName={gettext('Reply')}
+              headerName={gettext('Comment')}
               value={reply || ''}
               autoSave={false}
               saveDelay={20 * 1000}
@@ -359,7 +359,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               isImageUploadOnly={false}
               isSupportMultipleFiles={true}
               editorApi={editorAPI}
-              onSaveEditorValue={onReplyChange}
+              onSaveEditorValue={onCommentChange}
             />
           </Comment>
           <div className="sea-qa-project-ticket-footer">
@@ -370,7 +370,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
                 className="sea-qa-project-ticket-footer-confirm-btn"
                 disabled={!reply.text || isSubmitting}
                 color="primary"
-                onClick={() => onSubmitReply()}
+                onClick={() => onSubmitComment()}
               >
                 {isSubmitting ? (<CenteredLoading />) : gettext('Comment')}
               </Button>
