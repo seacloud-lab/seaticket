@@ -8,11 +8,11 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
 
   const ref = useRef(null);
 
-  const AVAILABLE_MODELS = window.app?.pageOptions?.availableLLMModels || [];
+  const CUSTOM_LLM_MODELS = window.app?.pageOptions?.customLLMModels || [];
 
   useEffect(() => {
-    if (!selectedModel && AVAILABLE_MODELS.length > 0) {
-      updateModel(AVAILABLE_MODELS[0].value);
+    if (!selectedModel && CUSTOM_LLM_MODELS.length > 0) {
+      updateModel(CUSTOM_LLM_MODELS[0].value);
     }
   }, []);
 
@@ -31,11 +31,11 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
     setIsShowMenu(false);
   }, []);
 
-  if (AVAILABLE_MODELS.length === 0) {
+  if (CUSTOM_LLM_MODELS.length === 0) {
     return null;
   }
 
-  const currentModel = AVAILABLE_MODELS.find(m => m.value === selectedModel);
+  const currentModel = CUSTOM_LLM_MODELS.find(m => m.value === selectedModel);
 
   return (
     <>
@@ -45,7 +45,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         onClick={onMenuToggle}
       >
         <div className="selected-option">
-          <div className="selected-option-show">{currentModel?.label || AVAILABLE_MODELS[0]?.label}</div>
+          <div className="selected-option-show">{currentModel?.label || CUSTOM_LLM_MODELS[0]?.label}</div>
           <Icon symbol="down" />
         </div>
       </div>
@@ -57,7 +57,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
           hidePopoverWithEsc={handleClose}
         >
           <div className="sea-qa-ai-model-selector-options">
-            {AVAILABLE_MODELS.map((model) => {
+            {CUSTOM_LLM_MODELS.map((model) => {
               const isSelected = selectedModel === model.value;
               return (
                 <div

@@ -656,7 +656,7 @@ AI_CHAT_TICKET_MAX_REPLIES_NUM = 20
 AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
 AI_PRICES = {}
-
+CUSTOM_LLM_MODELS = []
 
 #####################
 # External settings #
@@ -706,7 +706,7 @@ yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'sea
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
 # Available AI Models for user selection
-AVAILABLE_LLM_MODELS = configs.get('AVAILABLE_LLM_MODELS', [{'value': 'gpt-4o-mini', 'label': 'GPT-4o Mini'},])
+CUSTOM_LLM_MODELS = configs.get('CUSTOM_LLM_MODELS', CUSTOM_LLM_MODELS)
 
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')

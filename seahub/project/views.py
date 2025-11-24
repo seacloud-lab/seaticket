@@ -10,7 +10,7 @@ from seahub.project.models import Workspaces, Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL, AVAILABLE_LLM_MODELS
+from seahub.settings import MEDIA_URL, CUSTOM_LLM_MODELS
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 
@@ -65,7 +65,7 @@ def project_view(request, workspace_id, project_name, children_id = ''):
         'settings': project_settings,
         'is_project_admin': is_project_admin,
         'permission': permission if permission else PERMISSION_READ,
-        'available_llm_models': json.dumps(AVAILABLE_LLM_MODELS),
+        'custom_llm_models': json.dumps(CUSTOM_LLM_MODELS),
     }
     return render(request, 'project_view_react.html', return_dict)
 
