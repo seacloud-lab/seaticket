@@ -31,8 +31,8 @@ const SidePanel = ({ activeBar, toggleBar }) => {
           <div className="sea-qa-project-navigation sea-qa-nav-list">
             <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <ConnectionsNav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <ConnectionsNav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
             {isProjectAdmin && (
               <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
             )}
