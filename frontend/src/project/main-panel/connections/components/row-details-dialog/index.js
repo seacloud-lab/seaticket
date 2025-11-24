@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, Fragment } from 'react';
+import { useCallback, useState, useEffect, Fragment, useMemo } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading } from '@/components';
@@ -8,6 +8,8 @@ import { MarkdownViewer } from '@seafile/seafile-editor';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPE, SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 import './index.css';
 
@@ -17,17 +19,30 @@ const SUPPORT_DETAILS_LIST = [
 ];
 
 const RowDetailsDialog = ({
-  projectUuid, connection, row,
+  projectUuid, connection, row, columns,
   switchRow, onToggle,
 }) => {
   const [rowDetails, setRowDetails] = useState(null);
   const [errMessage, setErrMessage] = useState('');
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
 
+  const rowTitle = useMemo(() => {
+    const titleColumn = getColumnByName(columns, 'title');
+    let title = getCellValueByColumn(row, titleColumn);
+    if (!title) {
+      const filenameColumn = getColumnByName(columns, 'filename');
+      title = getCellValueByColumn(row, filenameColumn);
+    }
+    return title;
+  }, [connection, row, columns]);
+
   const getFormatParamsByType = useCallback((row) => {
-    if (connection.type === CONNECTION_TYPE.SITE) return { url: row.url };
+    if (connection.type === CONNECTION_TYPE.SITE) {
+      const urlColumn = getColumnByName(columns, 'url');
+      return { url: getCellValueByColumn(row, urlColumn) };
+    }
     return { _pk: row._id };
-  }, [connection]);
+  }, [connection, columns]);
 
   const getFormatDetailDataByType = useCallback((res) => {
     if (connection.type === CONNECTION_TYPE.SITE) return { body: res.data.row_details.content };
@@ -76,8 +91,6 @@ const RowDetailsDialog = ({
     }
     return <MarkdownViewer value={content} showTOC={false} />;
   }, []);
-
-  const rowTitle = row.title || row.filename;
 
   return (
     <Modal className="sea-qa-row-details-container" isOpen={true} toggle={onClose} style={{ minWidth: 800 }}>

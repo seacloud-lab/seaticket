@@ -377,6 +377,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
               projectUuid={projectUuid}
               connection={connection}
               row={currentRow}
+              columns={allColumns.current}
               switchRow={switchRow}
               onToggle={() => setIsShowRowDetailsDialog(false)}
             />

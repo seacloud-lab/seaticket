@@ -23,6 +23,14 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
   const [currentConnection, setCurrentConnection] = useState(null);
   const [isShowLinkVerifiedDialog, setIsShowLinkVerifiedDialog] = useState(false);
 
+  const columns = useMemo(() => {
+    return [
+      { key: 'filename', name: 'filename' },
+      { key: 'title', name: 'title' },
+      { key: 'url', name: 'url' },
+    ];
+  }, []);
+
   const { aiReply, sources } = useMemo(() => {
     if (Object.keys(message).length === 0) return '';
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
@@ -188,6 +196,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
           projectUuid={projectUuid}
           connection={currentConnection}
           row={currentConnectionRecord}
+          columns={columns}
           switchRow={switchRow}
           onToggle={closeConnectionRecord}
         />
