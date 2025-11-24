@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useTags, useTypes, useSubstates, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_PAGE_TYPE, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
@@ -15,7 +15,7 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar, isMyTicket }) => {
 
-  const { togglePageType, viewID, updateViewID, isLoading } = useTicketsPage();
+  const { togglePageSlugId, viewID, updateViewID, isLoading } = useTicketsPage();
   const { tagsData, createTag } = useTags();
   const { typesData, createType, isLoading: isTypesLoading } = useTypes();
   const { substatesData, createSubstate, isLoading: isSubstatesLoading } = useSubstates();
@@ -28,8 +28,8 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
   const expandRow = useCallback((row) => {
     const data = metadataRef.current.getData();
     cacheData(data);
-    togglePageType(row._id);
-  }, [togglePageType, cacheData]);
+    togglePageSlugId(row._id);
+  }, [togglePageSlugId, cacheData]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
@@ -67,7 +67,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
           let columns = res?.data?.columns || [];
           const othersConfig = {
-            'title': { click: (row) => togglePageType(row._id) },
+            'title': { click: (row) => togglePageSlugId(row._id) },
           };
           columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
@@ -104,7 +104,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
           let columns = res?.data?.columns || [];
           const othersConfig = {
-            'title': { click: (row) => togglePageType(row._id) },
+            'title': { click: (row) => togglePageSlugId(row._id) },
           };
           columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
             const { name } = c;
@@ -170,7 +170,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
 
     // row
-    insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),
+    insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
     modifyRow: (...params) => ticketsAPI.modifyProjectTicket(projectUuid, ...params),
     modifyRows: (...params) => ticketsAPI.modifyProjectTickets(projectUuid, ...params),
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),
@@ -293,7 +293,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     if (!row) return list;
     list.push({
       label: gettext('Open ticket'),
-      callback: () => togglePageType(row._id),
+      callback: () => togglePageSlugId(row._id),
     });
     list.push('Divider');
 
@@ -338,13 +338,13 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       toggleView={updateViewID}
       tagsData={tagsData}
       createTag={createTag}
-      toggleAllTags={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}
+      toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
       typesData={typesData}
       createType={createType}
-      toggleAllTypes={() => togglePageType(TICKET_PAGE_TYPE.TYPES)}
+      toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}
       substatesData={substatesData}
       createSubstate={createSubstate}
-      toggleAllSubstates={() => togglePageType(TICKET_PAGE_TYPE.SUBSTATES)}
+      toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
       isMyTicket={isMyTicket}
     />
   );

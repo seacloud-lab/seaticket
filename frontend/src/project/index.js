@@ -5,8 +5,8 @@ import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
 import { BAR_TYPE, EVENT_BUS_TYPE } from './constants';
-import { TICKET_PAGE_TYPE } from './main-panel/tickets/constants';
-import { CONNECTION_PAGE_TYPE } from './main-panel/connections/constants';
+import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
+import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
@@ -41,16 +41,16 @@ const Project = () => {
     if (activeBar[0] === activeBarKey) {
       if ([BAR_TYPE.SEARCH, BAR_TYPE.SETTINGS].includes(activeBarKey)) return;
       if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_TYPE.NEW);
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_SLUG_ID.NEW);
         return;
       }
       if (activeBarKey === BAR_TYPE.TICKET && !location.pathname.endsWith('tickets/')) {
-        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_TYPE.ALL);
+        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
         return;
       }
       if (activeBarKey === BAR_TYPE.CONNECTION) {
         if (!location.pathname.endsWith('connections/') && !newActiveBar[1]) {
-          eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, CONNECTION_PAGE_TYPE.ALL);
+          eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, CONNECTION_PAGE_SLUG_ID.ALL);
           setActiveBar(newActiveBar);
           return;
         }

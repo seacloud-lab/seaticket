@@ -5,7 +5,7 @@ import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
 import { BAR_TYPE } from '../../../../constants';
-import { TICKET_PAGE_TYPE, TICKET_CHILDREN_PAGE_TYPE, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -13,7 +13,7 @@ import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
-  const { isLoading, pageType, childrenPageType, togglePageType } = useTicketsPage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
   const { typesData, createType } = useTypes();
   const { substatesData, createSubstate } = useSubstates();
@@ -30,11 +30,11 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return ticketsAPI.listTicketsByTag(projectUuid, childrenPageType).then(res => {
+      return ticketsAPI.listTicketsByTag(projectUuid, childrenPageSlugId).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
-          'title': { click: (row) => togglePageType(row._id) },
+          'title': { click: (row) => togglePageSlugId(row._id) },
         };
         columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
           const { name } = c;
@@ -83,7 +83,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     },
 
     // row
-    insertRow: () => togglePageType(TICKET_PAGE_TYPE.NEW),
+    insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
     modifyRow: (...params) => ticketsAPI.modifyProjectTicket(projectUuid, ...params),
     modifyRows: (...params) => ticketsAPI.modifyProjectTickets(projectUuid, ...params),
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),
@@ -92,7 +92,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, childrenPageType, viewsData, togglePageType]);
+  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];
@@ -189,7 +189,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     if (!row) return list;
     list.push({
       label: gettext('Open ticket'),
-      callback: () => togglePageType(row._id),
+      callback: () => togglePageSlugId(row._id),
     });
 
     list.push('Divider');
@@ -224,9 +224,9 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
   }, []);
 
   if (isLoading || isTagsLoading) return null;
-  const tag = getRowById(tagsData, childrenPageType);
+  const tag = getRowById(tagsData, childrenPageSlugId);
   if (!tag) {
-    togglePageType(pageType, TICKET_CHILDREN_PAGE_TYPE.ALL);
+    togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
     return null;
   }
 
@@ -238,22 +238,22 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
       permission={permission}
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
-      expandRow={(row) => togglePageType(row._id)}
+      expandRow={(row) => togglePageSlugId(row._id)}
       viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
       createRowsTools={createRowsTools}
 
       // tags
       tagsData={tagsData}
       createTag={createTag}
-      toggleAllTags={() => togglePageType(TICKET_PAGE_TYPE.TAGS)}
+      toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
 
       typesData={typesData}
       createType={createType}
-      toggleAllTypes={() => togglePageType(TICKET_PAGE_TYPE.TYPES)}
+      toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}
 
       substatesData={substatesData}
       createSubstate={createSubstate}
-      toggleAllSubstates={() => togglePageType(TICKET_PAGE_TYPE.SUBSTATES)}
+      toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
 
       t={t}
     />

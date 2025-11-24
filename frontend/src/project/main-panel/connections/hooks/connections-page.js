@@ -3,36 +3,36 @@ import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
-import { CONNECTION_PAGE_TYPE } from '../constants';
+import { CONNECTION_PAGE_SLUG_ID } from '../constants';
 
 const ConnectionsPageContext = React.createContext(null);
 
 export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
-  const [pageType, setPageType] = useState(CONNECTION_PAGE_TYPE.ALL);
+  const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
   const [pageName, setPageName] = useState('');
   const [viewID, setViewID] = useState('');
 
-  const resetURL = useCallback((pageType, viewID) => {
+  const resetURL = useCallback((pageSlugId, viewID) => {
     const { origin } = location;
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
-    let urlPart = pageType === CONNECTION_PAGE_TYPE.ALL || (!pageType && pageType !== 0) ? '/' : `/${pageType}/`;
+    let urlPart = pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
 
-    if (isNumber(pageType) && viewID) {
+    if (isNumber(pageSlugId) && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
 
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
-  const togglePageType = useCallback((pageType, viewID = '') => {
+  const togglePageSlugId = useCallback((pageSlugId, viewID = '') => {
     setLoading(true);
     setViewID(viewID);
-    setPageType(pageType);
+    setPageSlugId(pageSlugId);
     setTimeout(() => setLoading(false), 1);
   }, []);
 
-  // init page type
+  // init page
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -41,42 +41,42 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [, connectionType = ''] = params;
-    let pageType = CONNECTION_PAGE_TYPE.ALL;
-    if (connectionType === CONNECTION_PAGE_TYPE.NEW) {
-      pageType = CONNECTION_PAGE_TYPE.NEW;
+    let pageSlugId = CONNECTION_PAGE_SLUG_ID.ALL;
+    if (connectionType === CONNECTION_PAGE_SLUG_ID.NEW) {
+      pageSlugId = CONNECTION_PAGE_SLUG_ID.NEW;
     } else {
       const connectionID = Number(connectionType);
-      pageType = connectionType && isNumber(connectionID) ? connectionID : CONNECTION_PAGE_TYPE.ALL;
+      pageSlugId = connectionType && isNumber(connectionID) ? connectionID : CONNECTION_PAGE_SLUG_ID.ALL;
     }
 
     let viewID = '';
-    if (isNumber(pageType)) {
+    if (isNumber(pageSlugId)) {
       const searchParams = Utils.getUrlSearches();
       viewID = searchParams?.view || '';
     }
 
-    togglePageType(pageType, viewID);
+    togglePageSlugId(pageSlugId, viewID);
     setLoading(false);
   }, [projectName]);
 
   useEffect(() => {
-    const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.CONNECTION_PAGE, togglePageType);
+    const allSubscribe = eventBus.subscribe(EVENT_BUS_TYPE.CONNECTION_PAGE, togglePageSlugId);
     return () => {
       allSubscribe();
     };
   }, []);
 
   useEffect(() => {
-    resetURL(pageType, viewID);
-  }, [pageType, viewID]);
+    resetURL(pageSlugId, viewID);
+  }, [pageSlugId, viewID]);
 
   return (
     <ConnectionsPageContext.Provider value={{
       viewID,
-      pageType,
+      pageSlugId,
       isLoading,
       pageName,
-      togglePageType,
+      togglePageSlugId,
       updatePageName: setPageName,
       updateViewID: setViewID,
     }}>

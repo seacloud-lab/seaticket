@@ -262,7 +262,7 @@ export const CONNECTION_TYPES = [
   }
 ];
 
-export const CONNECTION_PAGE_TYPE = {
+export const CONNECTION_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
 };
