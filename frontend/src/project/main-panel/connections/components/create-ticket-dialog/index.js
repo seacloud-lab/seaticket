@@ -19,7 +19,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || '');
-      setContent(initialData.description || '');
+      setContent(initialData.content || '');
       setAssignees(initialData.assignees || []);
       setType(initialData.type || '');
       setTags(initialData.tags || []);
