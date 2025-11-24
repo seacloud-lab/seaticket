@@ -656,7 +656,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
     sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit,
                           include_deleted=False)
     try:
-        res = seadb_api.query_rows(project_uuid, sql)
+        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for knowledge base : {e}')
