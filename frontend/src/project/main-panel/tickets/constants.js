@@ -119,7 +119,7 @@ export const PREDEFINED_TICKET_TAG = {
   },
 };
 
-export const TICKET_PAGE_TYPE = {
+export const TICKET_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
   TAGS: 'tags',
@@ -127,7 +127,7 @@ export const TICKET_PAGE_TYPE = {
   SUBSTATES: 'substates',
 };
 
-export const TICKET_CHILDREN_PAGE_TYPE = {
+export const TICKET_CHILDREN_PAGE_SLUG_ID = {
   ALL: 'all',
 };
 

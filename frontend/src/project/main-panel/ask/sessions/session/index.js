@@ -15,7 +15,7 @@ const Session = ({ session, permission, isSelected }) => {
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
 
   const { modifySession, deleteSession } = useSessions();
-  const { togglePageType } = useAskPage();
+  const { togglePageSlugId } = useAskPage();
 
   const openRename = useCallback(() => {
     setIsShowRenameDialog(true);
@@ -45,7 +45,7 @@ const Session = ({ session, permission, isSelected }) => {
     <>
       <div
         className={classnames('sea-qa-ai-ask-session-item', { 'active': isSelected || isOpen })}
-        onClick={() => togglePageType(sessionId)}
+        onClick={() => togglePageSlugId(sessionId)}
       >
         <div className="sea-qa-ai-ask-session-name text-truncate">
           {session.name}

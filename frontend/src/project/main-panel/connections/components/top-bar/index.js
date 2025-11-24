@@ -5,7 +5,7 @@ import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
-import { CONNECTION_PAGE_TYPE } from '../../constants';
+import { CONNECTION_PAGE_SLUG_ID } from '../../constants';
 import { IconButton, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
@@ -16,7 +16,7 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title }) => {
-  const { pageType, pageName, togglePageType } = useConnectionsPage();
+  const { pageSlugId, pageName, togglePageSlugId } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
 
   const handleNewConnection = useCallback(() => {
@@ -24,7 +24,7 @@ const TopBar = ({ title }) => {
   }, []);
 
   const renderLeftChildren = useCallback(() => {
-    if (pageType === CONNECTION_PAGE_TYPE.ALL) {
+    if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       return (
         <div className="w-100 text-truncate">{title}</div>
       );
@@ -35,12 +35,12 @@ const TopBar = ({ title }) => {
         <IconButton
           icon="down"
           className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
-          onClick={() => togglePageType(CONNECTION_PAGE_TYPE.ALL)}
+          onClick={() => togglePageSlugId(CONNECTION_PAGE_SLUG_ID.ALL)}
         />
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
       </>
     );
-  }, [pageType, title, pageName, togglePageType]);
+  }, [pageSlugId, title, pageName, togglePageSlugId]);
 
   const onManualSync = useCallback((connectionID) => {
     connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {
@@ -60,7 +60,7 @@ const TopBar = ({ title }) => {
   }, [modifyLocalConnectionRecord]);
 
   const renderRightChildren = useCallback(() => {
-    if (pageType === CONNECTION_PAGE_TYPE.ALL) {
+    if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       return (
         <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={handleNewConnection}>
           <Icon symbol="add" className="mr-2" />
@@ -69,13 +69,13 @@ const TopBar = ({ title }) => {
       );
     } else {
       return (
-        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => { onManualSync(pageType);}}>
+        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => { onManualSync(pageSlugId);}}>
           <Icon symbol="sync" className="mr-2" />
           {gettext('Sync now')}
         </Button>
       );
     }
-  }, [pageType, handleNewConnection]);
+  }, [pageSlugId, handleNewConnection]);
 
   return (
     <BasicTopBar>

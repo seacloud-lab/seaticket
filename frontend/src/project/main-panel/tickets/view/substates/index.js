@@ -10,7 +10,7 @@ import SubstateDialog from './components/substate-dialog';
 
 const AllSubstates = ({ projectUuid, permission }) => {
   const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, reload } = useSubstates();
-  const { pageType, togglePageType } = useTicketsPage();
+  const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
     {
@@ -21,7 +21,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => togglePageType(pageType, row._id)
+      click: (row) => togglePageSlugId(pageSlugId, row._id)
     },
     {
       type: CellType.NUMBER,
@@ -30,7 +30,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
       display_name: gettext('Tickets count'),
       editable: false,
     },
-  ], [pageType, togglePageType]);
+  ], [pageSlugId, togglePageSlugId]);
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
