@@ -23,6 +23,7 @@ import { TagsProvider, TypesProvider } from '../../../tickets/hooks';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
+  const allColumns = useRef([]);
   const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [connection, setConnection] = useState({});
@@ -68,11 +69,13 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
+      allColumns.current = [];
       return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
         const { type, records } = res.data;
         let rows = Array.isArray(records) ? records : [];
         let columns = res?.data?.columns || [];
-        let notDisplayColumnNames = ['_pk'];
+        allColumns.current = columns;
+        let notDisplayColumnNames = ['_pk', 'slug', 'topic_id', 'url'];
         let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
           const typeColum = columns.find(c => c.name === 'issue_type');
@@ -111,7 +114,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           columnConfig['title'] = {
             ...columnConfig['title'],
             click: (row) => {
-              const url = getOriginalPageUrl(connection, row);
+              const url = getOriginalPageUrl(connection, row, allColumns.current);
               if (!url) {
                 toaster.danger(gettext('Missing required information'));
                 return;
@@ -168,7 +171,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setTicketLoading(true);
     connectionsAPI.convertRecordToTicket(projectUuid, connectionID, row._id).then(res => {
       const data = res.data || {};
-      const relatedUrl = getOriginalPageUrl(connection, row);
+      const relatedUrl = getOriginalPageUrl(connection, row, allColumns.current);
       const prefix = data.content || '';
       const suffix = `${gettext('Related record')}: ${relatedUrl}`;
       data.content = prefix ? `${prefix}\n\n${suffix}` : suffix;
@@ -216,7 +219,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
 
   const generateOpenOriginalPageOption = useCallback(({ row }) => {
-    const url = getOriginalPageUrl(connection, row);
+    const url = getOriginalPageUrl(connection, row, allColumns.current);
     if (!url) return null;
     return {
       label: gettext('Open original page'),

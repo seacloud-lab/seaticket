@@ -572,7 +572,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
     except Exception as e:
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
-    return records, display_all_columns
+    return records, display_all_columns + extra_query_columns
 
 
 def list_connection_view_records_with_columns(seadb_api, project_uuid, connection, view, column_names, start, limit, username=''):
