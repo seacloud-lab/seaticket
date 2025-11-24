@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { Button } from 'reactstrap';
-import copy from 'copy-to-clipboard';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
@@ -19,26 +18,8 @@ import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
 import { toaster } from '@/components';
 import { getOriginalPageUrl } from '../../utils';
-import CreateTicketDialog from './create-ticket-dialog';
-import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { TagsProvider, TypesProvider } from '../../../tickets/hooks';
-
-const SERVER_COMPUTABLE_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.EMAIL,
-];
-
-const MULTIPLE_VIEWS_CONNECTION_TYPE = [
-  CONNECTION_TYPE.GITHUB_ISSUE,
-  CONNECTION_TYPE.SITE,
-  CONNECTION_TYPE.DISCOURSE_FORUM,
-  CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.EMAIL,
-];
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -375,7 +356,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             </div>
           )}
           <SeaMetadata
-            viewID={isMultiView ? viewID : '0000'}
+            viewID={viewID}
             api={api}
             ref={seaMetaDataRef}
             className="sea-qa-connection-details"
@@ -383,9 +364,8 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             createRowsTools={createRowsTools}
             createContextMenuOptions={createContextMenuOptions}
             permission={permission}
-            isViewComputedOnServer={isServerComputableView}
             typesData={typesData}
-            toggleView={isMultiView ? updateViewID : undefined}
+            toggleView={updateViewID}
             expandRow={handleExpandRow}
             t={t}
           />
