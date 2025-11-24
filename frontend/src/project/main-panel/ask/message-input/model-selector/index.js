@@ -12,7 +12,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
 
   useEffect(() => {
     if (!selectedModel && CUSTOM_LLM_MODELS.length > 0) {
-      updateModel(CUSTOM_LLM_MODELS[0].value);
+      updateModel(CUSTOM_LLM_MODELS[0].model);
     }
   }, []);
 
@@ -35,7 +35,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
     return null;
   }
 
-  const currentModel = CUSTOM_LLM_MODELS.find(m => m.value === selectedModel);
+  const currentModel = CUSTOM_LLM_MODELS.find(m => m.model === selectedModel);
 
   return (
     <>
@@ -58,12 +58,12 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         >
           <div className="sea-qa-ai-model-selector-options">
             {CUSTOM_LLM_MODELS.map((model) => {
-              const isSelected = selectedModel === model.value;
+              const isSelected = selectedModel === model.model;
               return (
                 <div
-                  key={model.value}
+                  key={model.model}
                   className="sea-qa-ai-model-selector-option"
-                  onClick={() => updateModelChange(model.value)}
+                  onClick={() => updateModelChange(model.model)}
                 >
                   <span>{model.label}</span>
                   <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
