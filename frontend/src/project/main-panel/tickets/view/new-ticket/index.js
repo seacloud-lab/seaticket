@@ -116,14 +116,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </div>
             <div className="sea-qa-project-ticket-content mb-4">
               <Label>
-                {gettext('Description')}
+                {gettext('Content')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
                 ref={contentEditorRef}
                 lang={lang}
-                headerName={gettext('Description')}
+                headerName={gettext('Content')}
                 value={content || ''}
                 autoSave={true}
                 saveDelay={20 * 1000}

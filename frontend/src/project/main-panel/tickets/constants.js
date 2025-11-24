@@ -171,7 +171,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   },
   'content': {
     type: CellType.LONG_TEXT,
-    display_name: gettext('Description'),
+    display_name: gettext('Content'),
     editable: true,
     is_required: true,
   },
@@ -193,12 +193,12 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   },
   'created_time': {
     type: CellType.CTIME,
-    display_name: gettext('Create time'),
+    display_name: gettext('Created time'),
     editable: false,
   },
   'modified_time': {
     type: CellType.MTIME,
-    display_name: gettext('Last updated time'),
+    display_name: gettext('Last modified time'),
     editable: false,
   },
   'creator': {
