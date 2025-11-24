@@ -139,25 +139,6 @@ export const MetadataProvider = forwardRef(({
     });
   }, [updateSelectedRowIdsByDelete]);
 
-  const modifyRowByRowExpand = (rowId, update, { success_callback, fail_callback } = {}) => {
-    const updates = update;
-    const row = getRowById(metadata, rowId);
-    if (!row) return;
-    let oldRowData = {};
-    Object.keys(update).forEach(key => {
-      oldRowData[key] = row[key];
-    });
-    storeRef.current.modifyRow(rowId, updates, oldRowData, false, {
-      fail_callback: (error) => {
-        fail_callback && fail_callback(error);
-        error && toaster.danger(error);
-      },
-      success_callback: () => {
-        success_callback && success_callback();
-      },
-    });
-  };
-
   const modifyRow = (rowId, updates, oldRowData, isCopyPaste, { success_callback, fail_callback } = {}) => {
     storeRef.current.modifyRow(rowId, updates, oldRowData, isCopyPaste, {
       fail_callback: (error) => {
@@ -169,6 +150,16 @@ export const MetadataProvider = forwardRef(({
       },
     });
   };
+
+  const modifyRowByRowExpand = useCallback((rowId, rowUpdate, { success_callback, fail_callback } = {}) => {
+    const row = getRowById(metadata, rowId);
+    if (!row) return;
+    let oldRowData = {};
+    Object.keys(rowUpdate).forEach(key => {
+      oldRowData[key] = row[key];
+    });
+    modifyRow(rowId, rowUpdate, oldRowData, false, { success_callback, fail_callback });
+  }, [modifyRow]);
 
   const moveRow = () => {
     // todo
