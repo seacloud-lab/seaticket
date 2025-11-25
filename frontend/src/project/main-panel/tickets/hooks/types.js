@@ -62,7 +62,7 @@ export const TypesProvider = ({ projectUuid, children }) => {
 
   const createType = useCallback((type) => {
     return ticketsAPI.createTicketType(projectUuid, type).then(res => {
-      const type = new Type(res.data.project_type);
+      const type = new Type(res.data.type);
       applyCreateTypes([type]);
       return type;
     });
@@ -99,7 +99,7 @@ export const TypesProvider = ({ projectUuid, children }) => {
     loadTime.current = currentTime;
     setReLoading(true);
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
-      const types = Array.isArray(res.data.project_types) ? res.data.project_types : [];
+      const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
       setReLoading(false);
     }).catch(error => {
@@ -112,7 +112,7 @@ export const TypesProvider = ({ projectUuid, children }) => {
   const load = useCallback(() => {
     setLoading(true);
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
-      const types = Array.isArray(res.data.project_types) ? res.data.project_types : [];
+      const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types);
       setLoading(false);
     }).catch(error => {

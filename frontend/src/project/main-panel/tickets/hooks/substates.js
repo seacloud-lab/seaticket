@@ -57,7 +57,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
 
   const createSubstate = useCallback((substate) => {
     return ticketsAPI.createTicketSubstate(projectUuid, substate).then(res => {
-      const substate = new Substate(res.data.project_substate);
+      const substate = new Substate(res.data.substate);
       applyCreateSubstates([substate]);
       return substate;
     });
@@ -94,7 +94,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
     loadTime.current = currentTime;
     setReLoading(true);
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
-      const substates = Array.isArray(res.data.project_substates) ? res.data.project_substates : [];
+      const substates = Array.isArray(res.data.substates) ? res.data.substates : [];
       applyCreateSubstates(substates, true);
       setReLoading(false);
     }).catch(error => {
@@ -107,7 +107,7 @@ export const SubstatesProvider = ({ projectUuid, children }) => {
   const load = useCallback(() => {
     setLoading(true);
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
-      const substates = Array.isArray(res.data.project_substates) ? res.data.project_substates : [];
+      const substates = Array.isArray(res.data.substates) ? res.data.substates : [];
       applyCreateSubstates(substates);
       setLoading(false);
     }).catch(error => {

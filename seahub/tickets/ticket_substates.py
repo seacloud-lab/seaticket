@@ -72,7 +72,7 @@ class TicketSubstatesAPIView(APIView):
             substate_options = [opt for opt in substate_options if opt.get('id') in allowed_ids]
 
         return Response({
-            'project_substates': substate_options,
+            'substates': substate_options,
             'cascade_column_key': cascade_column_key,
             'cascade_settings': cascade_settings,
         })
@@ -137,7 +137,7 @@ class TicketSubstatesAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_substate': substate_option}, status=status.HTTP_201_CREATED)
+        return Response({'substate': substate_option}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, project_uuid):
         """

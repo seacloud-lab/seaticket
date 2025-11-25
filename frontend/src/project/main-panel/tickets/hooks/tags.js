@@ -57,7 +57,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
 
   const createTag = useCallback((tag) => {
     return ticketsAPI.createTicketTag(projectUuid, tag).then(res => {
-      const tag = new Tag(res.data.project_tag);
+      const tag = new Tag(res.data.tag);
       applyCreateTags([tag]);
       return tag;
     });
@@ -94,7 +94,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
     loadTime.current = currentTime;
     setReLoading(true);
     ticketsAPI.listTicketTags(projectUuid).then(res => {
-      const tags = Array.isArray(res.data.project_tags) ? res.data.project_tags : [];
+      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags, true);
       setReLoading(false);
     }).catch(error => {
@@ -107,7 +107,7 @@ export const TagsProvider = ({ projectUuid, children }) => {
   const load = useCallback(() => {
     setLoading(true);
     ticketsAPI.listTicketTags(projectUuid).then(res => {
-      const tags = Array.isArray(res.data.project_tags) ? res.data.project_tags : [];
+      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags);
       setLoading(false);
     }).catch(error => {

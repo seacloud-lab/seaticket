@@ -1133,3 +1133,49 @@ class MyTicketAPIView(APIView):
             'tickets': tickets,
             'columns': columns,
         })
+
+
+class TicketMetadataAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            ticket_column_name_to_return_name = {
+                TicketsTable.substate.name: 'substates',
+                TicketsTable.tags.name: 'tags',
+                TicketsTable.type.name: 'types',
+                TicketsTable.state.name: 'states'
+            }
+            select_option_metadata = {}
+            for column in ticket_meta.get('columns'):
+                column_name = column.get('name')
+                return_name = ticket_column_name_to_return_name.get(column_name)
+                if return_name:
+                    select_option_metadata[return_name] = column.get('data') or {}.get('options')
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response(select_option_metadata)
