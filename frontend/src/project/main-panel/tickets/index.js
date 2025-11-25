@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TagsProvider, TypesProvider, SubstatesProvider, TicketsPageProvider, useTicketsPage, DataCacheProvider } from './hooks';
+import { TicketsPageProvider, useTicketsPage, DataCacheProvider, MetadataProvider } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
 import TagTickets from './view/tag-tickets';
@@ -60,16 +60,12 @@ const Tickets = ({ title, toggleBar, isMyTicket }) => {
         listUserInfo={(...params) => ticketsAPI.listUserInfo(...params)}
         getCollaborators={() => ticketsAPI.listProjectRelatedUsers(projectUuid)}
       >
-        <TypesProvider projectUuid={projectUuid}>
-          <TagsProvider projectUuid={projectUuid}>
-            <SubstatesProvider projectUuid={projectUuid}>
-              <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
-                <TicketTopBar title={title} isMyTicket={isMyTicket} />
-                <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
-              </TicketsPageProvider>
-            </SubstatesProvider>
-          </TagsProvider>
-        </TypesProvider>
+        <MetadataProvider projectUuid={projectUuid}>
+          <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
+            <TicketTopBar title={title} isMyTicket={isMyTicket} />
+            <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
+          </TicketsPageProvider>
+        </MetadataProvider>
       </CollaboratorsProvider>
     </DataCacheProvider>
   );

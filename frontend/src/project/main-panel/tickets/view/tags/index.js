@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useTags, useTicketsPage } from '../../hooks';
+import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import TagDialog from './components/tag-dialog';
+import OptionDialog from '../../components/option-dialog';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
-  const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, reload } = useTags();
+  const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -204,7 +204,7 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    reload();
+    loadTags();
   }, []);
 
   useEffect(() => {
@@ -232,7 +232,7 @@ const AllTags = ({ projectUuid, permission }) => {
         isViewComputedOnServer={false}
         t={t}
       >
-        <TagDialog />
+        <OptionDialog type={gettext('tag')} />
       </SeaMetadata>
     </>
   );

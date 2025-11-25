@@ -3,7 +3,7 @@ import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { BAR_TYPE } from '../../../../constants';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
@@ -14,9 +14,7 @@ import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
-  const { typesData, createType } = useTypes();
-  const { substatesData, createSubstate } = useSubstates();
+  const { isLoading: isTagsLoading, tagsData, createTag, typesData, createType, substatesData, createSubstate } = useMetadata();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],

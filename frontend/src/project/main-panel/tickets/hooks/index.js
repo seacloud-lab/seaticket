@@ -1,13 +1,9 @@
 import { TicketsPageProvider, useTicketsPage } from './tickets-page';
-import { TagsProvider, useTags } from './tags';
-import { TypesProvider, useTypes } from './types';
-import { SubstatesProvider, useSubstates } from './substates';
 import { DataCacheProvider, useDataCache } from './data-cache';
+import { MetadataProvider, useMetadata } from './metadata';
 
 export {
   TicketsPageProvider, useTicketsPage,
-  TagsProvider, useTags,
-  TypesProvider, useTypes,
-  SubstatesProvider, useSubstates,
   DataCacheProvider, useDataCache,
+  MetadataProvider, useMetadata,
 };

@@ -3,7 +3,7 @@ import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
-import { useTypes } from '../../../hooks';
+import { useMetadata } from '../../../hooks';
 
 import './index.css';
 
@@ -15,7 +15,7 @@ const TypeSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { typesData } = useTypes();
+  const { typesData } = useMetadata();
 
   const editorRef = useRef(null);
 

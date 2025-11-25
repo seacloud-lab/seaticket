@@ -3,9 +3,9 @@ import classnames from 'classnames';
 
 import './index.css';
 
-const Tag = ({ tag, className }) => {
-  if (!tag) return null;
-  const { name, color, text_color } = tag;
+const Tag = ({ option, className }) => {
+  if (!option) return null;
+  const { name, color, text_color } = option;
   return (
     <div
       className={classnames('sea-qa-tag', className)}

@@ -3,7 +3,7 @@ import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafil
 import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { toaster } from '@/components';
+import { CenteredLoading, toaster } from '@/components';
 import { TICKET_PAGE_SLUG_ID } from '../../constants';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
@@ -11,7 +11,7 @@ import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
-import { useTypes, useTags } from '../../hooks';
+import { useMetadata } from '../../hooks';
 
 import './index.css';
 
@@ -27,8 +27,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const contentEditorRef = useRef(null);
 
-  const { typesData } = useTypes();
-  const { tagsData } = useTags();
+  const { tagsData, typesData, isLoading: isMetadataLoading } = useMetadata();
 
   const user = useMemo(() => {
     return {
@@ -95,6 +94,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       setIsSubmitting(false);
     });
   }, [title, content, type, assignees, tags, priority]);
+
+  if (isMetadataLoading) return (<CenteredLoading />);
 
   const disabled = (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
 

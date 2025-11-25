@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Tag from '../../../view/tags/components/tag';
-import { useTags } from '../../../hooks';
+import Option from '../../option';
+import { useMetadata } from '../../../hooks';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 
@@ -17,7 +17,7 @@ const TagsSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { isLoading, tagsData, createTag } = useTags();
+  const { isLoading, tagsData, createTag } = useMetadata();
 
   const editorRef = useRef(null);
 
@@ -85,7 +85,7 @@ const TagsSettings = ({
       <div className="tags-formatter" onClick={openEditor} ref={editorRef}>
         {selectedTags.length > 0 ? (
           <>
-            {selectedTags.map(tag => (<Tag key={tag._id} tag={tag} />))}
+            {selectedTags.map(tag => (<Option key={tag._id} tag={tag} />))}
           </>
         ) : (
           <div className="tip-default">{gettext('No tags')}</div>

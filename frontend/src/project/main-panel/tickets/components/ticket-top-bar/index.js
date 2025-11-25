@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button } from 'reactstrap';
 import TopBar from '../../../top-bar';
-import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from '../../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { IconButton, Icon, IconTooltip } from '@/components';
@@ -13,9 +13,7 @@ import './index.css';
 
 const TicketTopBar = ({ title, isMyTicket }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
-  const { tagsData } = useTags();
-  const { typesData } = useTypes();
-  const { substatesData } = useSubstates();
+  const { tagsData, typesData, substatesData } = useMetadata();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {

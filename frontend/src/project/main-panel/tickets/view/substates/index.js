@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useSubstates, useTicketsPage } from '../../hooks';
+import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import SubstateDialog from './components/substate-dialog';
+import OptionDialog from '../../components/option-dialog';
 
 const AllSubstates = ({ projectUuid, permission }) => {
-  const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, reload } = useSubstates();
+  const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -86,7 +86,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     Rows: gettext('Substates'),
   }), []);
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { loadSubStates(); }, []);
 
   useEffect(() => {
     const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {
@@ -207,7 +207,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
         createContextMenuOptions={createContextMenuOptions}
         t={t}
       >
-        <SubstateDialog />
+        <OptionDialog type={gettext('substate')} canModifyDescription={false} />
       </SeaMetadata>
     </>
   );
