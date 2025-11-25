@@ -358,7 +358,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       is_predefined: true,
     },
     'modified_time': {
-      display_name: gettext('Last updated'),
+      display_name: gettext('Last modified time'),
       type: CellType.MTIME,
       is_predefined: true,
     },
@@ -369,7 +369,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       is_predefined: true,
     },
     'created_time': {
-      display_name: gettext('Create time'),
+      display_name: gettext('Created time'),
       type: CellType.CTIME,
       is_predefined: true,
     },
@@ -384,12 +384,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.NUMBER,
     },
     'modified_time': {
-      display_name: gettext('Last activity'),
+      display_name: gettext('Last modified time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
     'created_time': {
-      display_name: gettext('Created at'),
+      display_name: gettext('Created time'),
       type: CellType.CTIME,
     },
     'ai_summary': {
@@ -422,7 +422,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.URL,
     },
     'modified_time': {
-      display_name: gettext('Last modify time'),
+      display_name: gettext('Last modified time'),
       type: CellType.MTIME,
       sort_able: true, filter_able: true
     },

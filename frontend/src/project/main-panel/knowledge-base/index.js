@@ -39,7 +39,7 @@ const KnowledgeBase = ({ title }) => {
           question: gettext('Question'),
           answer: gettext('Answer'),
           creator: gettext('Creator'),
-          created_time: gettext('Create time'),
+          created_time: gettext('Created time'),
           last_modifier: gettext('Last modifier'),
           modified_time: gettext('Last modified time'),
         };
