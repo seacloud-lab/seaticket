@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -23,7 +24,7 @@ const TypeSettings = ({
     if (isLoading) return [];
     return typesData ? typesData.rows.map(o => ({
       ...o,
-      value: o.id,
+      value: o._id,
     })) : [];
   }, [isLoading, typesData.rows]);
 
@@ -39,7 +40,8 @@ const TypeSettings = ({
   const onTypeChange = useCallback((type) => {
     onChange(type);
   }, [onChange]);
-  const typeOption = options.find(o => o.value === value);
+
+  const typeOption = getRowById(typesData, value);
 
   return (
     <>
