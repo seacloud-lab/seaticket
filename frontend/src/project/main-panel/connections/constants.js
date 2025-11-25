@@ -384,7 +384,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.NUMBER,
     },
     'modified_time': {
-      display_name: gettext('Last mofified time'),
+      display_name: gettext('Last modified time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
