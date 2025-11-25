@@ -580,7 +580,7 @@ class ProjectConnectionRowDetailView(APIView):
             try:
                 file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
                 if file:
-                    row_details = json.loads(file.read())
+                    row_details = [json.loads(file.read())]
             except Exception as e:
                 logger.error(e)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
@@ -601,6 +601,9 @@ class ProjectConnectionRowDetailView(APIView):
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row_details = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+        if not row_details:
+            error_msg = 'No record found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         return Response({
             'row_details': row_details,
         })

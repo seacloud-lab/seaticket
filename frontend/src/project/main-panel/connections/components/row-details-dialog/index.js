@@ -46,8 +46,10 @@ const RowDetailsDialog = ({
   }, [connection, columns]);
 
   const getFormatDetailDataByType = useCallback((res) => {
-    if (connection.type === CONNECTION_TYPE.SITE) return { body: res.data.row_details.content };
-    if (connection.type === CONNECTION_TYPE.SEAFILE) return { body: res.data.row_details[0].content };
+    // Format data according to different connection types,site and seafile only have one detail content
+    if (connection.type === CONNECTION_TYPE.SITE || connection.type === CONNECTION_TYPE.SEAFILE) {
+      return { body: res.data.row_details[0].content };
+    }
     return res.data.row_details.map(detail => ({
       ...detail,
       time: detail.created_time || detail.modified_time,
