@@ -49,7 +49,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const tag = getRowById(tagsData, childrenPageSlugId);
-      const customTitle = gettext('Tags') + ' / ' + tag?.name;
+      const customTitle = gettext('Tags') + ' / ' + (tag?.name || '');
       return (
         <>
           <IconButton
@@ -71,7 +71,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const type = getRowById(typesData, childrenPageSlugId);
-      const customTitle = gettext('Types') + ' / ' + type?.name;
+      const customTitle = gettext('Types') + ' / ' + (type?.name || '');
       return (
         <>
           <IconButton
@@ -101,7 +101,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const substate = getRowById(substatesData, childrenPageSlugId);
-      const customTitle = gettext('Substates') + ' / ' + substate?.name;
+      const customTitle = gettext('Substates') + ' / ' + (substate?.name || '');
       return (
         <>
           <IconButton
@@ -120,7 +120,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, tagsData, togglePageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, title, tagsData, typesData, substatesData, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {

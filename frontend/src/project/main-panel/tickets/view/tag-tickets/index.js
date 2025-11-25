@@ -7,7 +7,7 @@ import { useTicketsPage, useMetadata } from '../../hooks';
 import { BAR_TYPE } from '../../../../constants';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { CenteredLoading, toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 
@@ -221,7 +221,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     };
   }, []);
 
-  if (isLoading || isTagsLoading) return null;
+  if (isLoading || isTagsLoading) return (<CenteredLoading />);
   const tag = getRowById(tagsData, childrenPageSlugId);
   if (!tag) {
     togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);

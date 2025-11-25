@@ -20,7 +20,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   // tags
   const applyCreateTags = useCallback((newTags, isReload = false) => {
     if (!Array.isArray(newTags) || newTags.length === 0) return;
-    let newData = isReload ? new OptionsData() : deepCopy(tagsData);
+    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(tagsData);
     newTags.forEach(tag => {
       const newTag = tag instanceof Option ? tag : new Option(tag);
       newData.rows.push(newTag);
@@ -93,7 +93,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const loadTags = useCallback(() => {
     const currentTime = new Date();
-    if (dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
+    if (tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
     const newTagsData = tagsData._updateLoading(true);
     setTagsData(newTagsData);
     ticketsAPI.listTicketTags(projectUuid).then(res => {
@@ -110,7 +110,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
     if (!Array.isArray(newTypes) || newTypes.length === 0) return;
-    let newData = isReload ? new OptionsData() : deepCopy(typesData);
+    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(typesData);
     newTypes.forEach(type => {
       const newType = type instanceof Option ? type : new Option(type);
       newData.rows.push(newType);
@@ -188,7 +188,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const loadTypes = useCallback(() => {
     const currentTime = new Date();
-    if (dayjs(currentTime).diff(typesData.loadTime, 'hours') < 1) return;
+    if (typesData.loadTime && dayjs(currentTime).diff(typesData.loadTime, 'hours') < 1) return;
     const newTypesData = typesData._updateLoading(true);
     setTypesData(newTypesData);
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
@@ -205,7 +205,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
     if (!Array.isArray(newSubstates) || newSubstates.length === 0) return;
-    let newData = isReload ? new OptionsData() : deepCopy(substatesData);
+    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(substatesData);
     newSubstates.forEach(substate => {
       const newSubstate = substate instanceof Option ? substate : new Option(substate);
       newData.rows.push(newSubstate);
@@ -278,7 +278,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const loadSubStates = useCallback(() => {
     const currentTime = new Date();
-    if (dayjs(currentTime).diff(substatesData.loadTime, 'hours') < 1) return;
+    if (substatesData.loadTime && dayjs(currentTime).diff(substatesData.loadTime, 'hours') < 1) return;
     const newSubstatesData = substatesData._updateLoading(true);
     setSubstatesData(newSubstatesData);
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
@@ -295,7 +295,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
     if (!Array.isArray(newStates) || newStates.length === 0) return;
-    let newData = isReload ? new OptionsData() : deepCopy(statesData);
+    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(statesData);
     newStates.forEach(tag => {
       const option = tag instanceof Option ? tag : new Option(tag);
       newData.rows.push(option);

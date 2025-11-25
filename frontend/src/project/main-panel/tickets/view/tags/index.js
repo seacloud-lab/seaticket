@@ -216,7 +216,7 @@ const AllTags = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || tagsData.isLoading) return (<CenteredLoading />);
 
   return (
     <>

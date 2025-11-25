@@ -27,7 +27,7 @@ class Option {
 }
 
 class OptionsData {
-  constructor(object) {
+  constructor(object = {}, loadTime) {
     this.columns = object?.columns || [];
     this.key_column_map = {};
     this.columns.forEach(column => {
@@ -43,7 +43,7 @@ class OptionsData {
     });
 
     this.hasMore = true;
-    this.loadTime = new Date();
+    this.loadTime = loadTime || '';
     this.isLoading = false;
   }
 

@@ -15,16 +15,17 @@ const TypeSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { typesData } = useMetadata();
+  const { isLoading, typesData } = useMetadata();
 
   const editorRef = useRef(null);
 
   const options = useMemo(() => {
-    return typesData.rows.map(o => ({
+    if (isLoading) return [];
+    return typesData ? typesData.rows.map(o => ({
       ...o,
       value: o.id,
-    }));
-  }, [typesData.rows]);
+    })) : [];
+  }, [isLoading, typesData.rows]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;

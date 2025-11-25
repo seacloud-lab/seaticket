@@ -6,7 +6,7 @@ import context from '@/sea-metadata/context';
 import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { toaster, CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
@@ -217,7 +217,8 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
     Rows: gettext('Tickets'),
   }), []);
 
-  if (isLoading || isMetadataLoading) return null;
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+
   const substate = getRowById(substatesData, childrenPageSlugId);
   if (!substate) {
     togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);

@@ -31,7 +31,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { typesData, tagsData } = useMetadata();
+  const { isLoading: isMetadataLoading, typesData, tagsData } = useMetadata();
   const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
@@ -267,7 +267,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticketID]);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
   const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
   const typeOption = getRowById(typesData, type);

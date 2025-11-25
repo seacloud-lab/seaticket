@@ -192,7 +192,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     return list;
   }, []);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || substatesData.isLoading) return (<CenteredLoading />);
 
   return (
     <>

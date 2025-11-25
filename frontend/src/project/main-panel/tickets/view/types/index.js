@@ -196,8 +196,6 @@ const AllTypes = ({ projectUuid, permission }) => {
     loadTypes();
   }, []);
 
-  console.log(typesData);
-
   useEffect(() => {
     const unsubscribeNewType = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TYPE, () => {
       context.eventBus.dispatch('expand_row');
@@ -207,7 +205,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || typesData.isLoading) return (<CenteredLoading />);
 
   return (
     <>

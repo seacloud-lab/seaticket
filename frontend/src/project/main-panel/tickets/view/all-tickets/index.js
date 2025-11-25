@@ -7,7 +7,7 @@ import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { toaster, CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
@@ -320,7 +320,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     return list;
   }, [projectName, workspaceID, handleResolveTicketByAI]);
 
-  if (isLoading || isMetadataLoading) return null;
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata
