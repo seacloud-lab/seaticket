@@ -17,7 +17,7 @@ import Reply from '../../components/reply';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useDataCache, useTypes, useTags } from '../../hooks';
+import { useDataCache, useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Header from './header';
@@ -31,9 +31,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { typesData } = useTypes();
+  const { isLoading: isMetadataLoading, typesData, tagsData } = useMetadata();
   const { updateCacheData } = useDataCache();
-  const { tagsData } = useTags();
 
   const user = useMemo(() => {
     return {
@@ -268,7 +267,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticketID]);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
   const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
   const typeOption = getRowById(typesData, type);

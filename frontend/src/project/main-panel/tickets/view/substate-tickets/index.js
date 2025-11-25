@@ -3,10 +3,10 @@ import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useSubstates, useTicketsPage, useTypes, useTags } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { toaster, CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
@@ -14,9 +14,7 @@ import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isSubstatesLoading, substatesData } = useSubstates();
-  const { typesData } = useTypes();
-  const { tagsData } = useTags();
+  const { isLoading: isMetadataLoading, substatesData, typesData, tagsData } = useMetadata();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -219,7 +217,8 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName }) => {
     Rows: gettext('Tickets'),
   }), []);
 
-  if (isLoading || isSubstatesLoading) return null;
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
+
   const substate = getRowById(substatesData, childrenPageSlugId);
   if (!substate) {
     togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);

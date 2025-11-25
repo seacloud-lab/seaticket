@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button } from 'reactstrap';
 import TopBar from '../../../top-bar';
-import { useTags, useTypes, useTicketsPage, useSubstates } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from '../../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { IconButton, Icon, IconTooltip } from '@/components';
@@ -13,9 +13,7 @@ import './index.css';
 
 const TicketTopBar = ({ title, isMyTicket }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
-  const { tagsData } = useTags();
-  const { typesData } = useTypes();
-  const { substatesData } = useSubstates();
+  const { tagsData, typesData, substatesData } = useMetadata();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
@@ -51,7 +49,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const tag = getRowById(tagsData, childrenPageSlugId);
-      const customTitle = gettext('Tags') + ' / ' + tag?.name;
+      const customTitle = gettext('Tags') + ' / ' + (tag?.name || '');
       return (
         <>
           <IconButton
@@ -73,7 +71,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const type = getRowById(typesData, childrenPageSlugId);
-      const customTitle = gettext('Types') + ' / ' + type?.name;
+      const customTitle = gettext('Types') + ' / ' + (type?.name || '');
       return (
         <>
           <IconButton
@@ -103,7 +101,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         );
       }
       const substate = getRowById(substatesData, childrenPageSlugId);
-      const customTitle = gettext('Substates') + ' / ' + substate?.name;
+      const customTitle = gettext('Substates') + ' / ' + (substate?.name || '');
       return (
         <>
           <IconButton
@@ -122,7 +120,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
         <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, tagsData, togglePageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, title, tagsData, typesData, substatesData, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {

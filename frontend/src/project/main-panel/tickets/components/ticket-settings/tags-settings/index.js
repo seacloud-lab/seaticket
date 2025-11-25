@@ -2,10 +2,11 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Tag from '../../../view/tags/components/tag';
-import { useTags } from '../../../hooks';
+import Option from '../../option';
+import { useMetadata } from '../../../hooks';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -17,7 +18,7 @@ const TagsSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { isLoading, tagsData, createTag } = useTags();
+  const { isLoading, tagsData, createTag } = useMetadata();
 
   const editorRef = useRef(null);
 
@@ -77,7 +78,7 @@ const TagsSettings = ({
     onChange(newValue);
   }, [onChange, value]);
 
-  const selectedTags = value.map(v => tagsData.id_row_map[v]).filter(tag => tag);
+  const selectedTags = getRowsByIds(tagsData, value).filter(tag => tag);
 
   return (
     <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
@@ -85,7 +86,7 @@ const TagsSettings = ({
       <div className="tags-formatter" onClick={openEditor} ref={editorRef}>
         {selectedTags.length > 0 ? (
           <>
-            {selectedTags.map(tag => (<Tag key={tag._id} tag={tag} />))}
+            {selectedTags.map(tag => (<Option key={tag._id} option={tag} />))}
           </>
         ) : (
           <div className="tip-default">{gettext('No tags')}</div>

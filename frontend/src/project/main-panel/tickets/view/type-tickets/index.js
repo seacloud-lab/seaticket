@@ -3,10 +3,10 @@ import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTypes, useTicketsPage, useTags } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { CenteredLoading, toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
@@ -14,8 +14,7 @@ import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
-  const { isLoading: isTypesLoading, typesData, createType } = useTypes();
-  const { tagsData } = useTags();
+  const { isLoading: isMetadataLoading, typesData, createType, tagsData } = useMetadata();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -220,7 +219,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
     };
   }, []);
 
-  if (isLoading || isTypesLoading) return null;
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   const type = getRowById(typesData, childrenPageSlugId);
   if (!type) {
     togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL);

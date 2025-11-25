@@ -3,7 +3,8 @@ import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
-import { useTypes } from '../../../hooks';
+import { useMetadata } from '../../../hooks';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -15,16 +16,17 @@ const TypeSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
 
-  const { typesData } = useTypes();
+  const { isLoading, typesData } = useMetadata();
 
   const editorRef = useRef(null);
 
   const options = useMemo(() => {
-    return typesData.rows.map(o => ({
+    if (isLoading) return [];
+    return typesData ? typesData.rows.map(o => ({
       ...o,
-      value: o.id,
-    }));
-  }, [typesData.rows]);
+      value: o._id,
+    })) : [];
+  }, [isLoading, typesData.rows]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -38,7 +40,8 @@ const TypeSettings = ({
   const onTypeChange = useCallback((type) => {
     onChange(type);
   }, [onChange]);
-  const typeOption = options.find(o => o.value === value);
+
+  const typeOption = getRowById(typesData, value);
 
   return (
     <>

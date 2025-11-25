@@ -388,6 +388,11 @@ class TicketsAPI {
     };
     return this.req.get(url, { params: params });
   }
+
+  getTicketMetadata(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/metadata/';
+    return this.req.get(url);
+  }
 }
 
 const ticketsAPI = new TicketsAPI();

@@ -3,11 +3,11 @@ import copy from 'copy-to-clipboard';
 import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
-import { useTags, useTypes, useSubstates, useTicketsPage, useDataCache } from '../../hooks';
+import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
+import { toaster, CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import { generatorRowCopyLinkTool, generatorRowsMoreTool } from '../../utils';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
@@ -16,9 +16,8 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar, isMyTicket }) => {
 
   const { togglePageSlugId, viewID, updateViewID, isLoading } = useTicketsPage();
-  const { tagsData, createTag } = useTags();
-  const { typesData, createType, isLoading: isTypesLoading } = useTypes();
-  const { substatesData, createSubstate, isLoading: isSubstatesLoading } = useSubstates();
+  const { tagsData, createTag, typesData, createType, substatesData, createSubstate,
+    isLoading: isMetadataLoading } = useMetadata();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
   const { updateTicket } = useProblemToBeResolved();
 
@@ -321,7 +320,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     return list;
   }, [projectName, workspaceID, handleResolveTicketByAI]);
 
-  if (isLoading || isTypesLoading || isSubstatesLoading) return null;
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata

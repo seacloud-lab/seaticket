@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useTypes, useTicketsPage } from '../../hooks';
+import { useTicketsPage, useMetadata } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import TypeDialog from './components/type-dialog';
+import OptionDialog from '../../components/option-dialog';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTypes = ({ projectUuid, permission }) => {
-  const { isLoading, typesData, createType, modifyType, deleteType, deleteTypes, reload } = useTypes();
+  const { isLoading, typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -193,7 +193,7 @@ const AllTypes = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    reload();
+    loadTypes();
   }, []);
 
   useEffect(() => {
@@ -205,7 +205,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || typesData.isLoading) return (<CenteredLoading />);
 
   return (
     <>
@@ -220,7 +220,7 @@ const AllTypes = ({ projectUuid, permission }) => {
         isViewComputedOnServer={false}
         t={t}
       >
-        <TypeDialog />
+        <OptionDialog type={gettext('type')} canModifyDescription={false} />
       </SeaMetadata>
     </>
   );

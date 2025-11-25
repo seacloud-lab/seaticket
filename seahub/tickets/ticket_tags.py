@@ -58,7 +58,7 @@ class TicketTagsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_tags': tag_options})
+        return Response({'tags': tag_options})
 
     def post(self, request, project_uuid):
         """
@@ -124,7 +124,7 @@ class TicketTagsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_tag': tag_option}, status=status.HTTP_201_CREATED)
+        return Response({'tag': tag_option}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, project_uuid):
         """

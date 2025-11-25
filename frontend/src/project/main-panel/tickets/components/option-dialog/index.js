@@ -3,28 +3,35 @@ import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert }
 import classnames from 'classnames';
 import { ColorSelectorPopover, IconButton, ModalHeader } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Type from '../type';
+import Option from '../option';
 import { validateName } from '@/utils/validate';
 import { isHexColor, isDarkColor } from '@/utils/color-utils';
 
 import './index.css';
 
-const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
-  const [name, setName] = useState(oldType?.name || '');
-  const [color, setColor] = useState(oldType?.color || SELECT_OPTION_COLORS[0].COLOR);
-  const [textColor, setTextColor] = useState(oldType?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR);
-  const [isChanged, setChanged] = useState(oldType ? true : false);
+const OptionDialog = ({
+  row: oldOption,
+  canModifyDescription = true,
+  type,
+  onSubmit,
+  onToggle,
+}) => {
+  const [name, setName] = useState(oldOption?.name || '');
+  const [description, setDescription] = useState(oldOption?.description || '');
+  const [color, setColor] = useState(oldOption?.color || SELECT_OPTION_COLORS[0].COLOR);
+  const [textColor, setTextColor] = useState(oldOption?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR);
+  const [isChanged, setChanged] = useState(oldOption ? true : false);
   const [isShowColorPopover, setIsShowColorPopover] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState({ type: '', msg: '' });
   const [lastColorOption, setLastColorOption] = useState({
-    color: oldType?.color || SELECT_OPTION_COLORS[0].COLOR,
-    textColor: oldType?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR,
+    color: oldOption?.color || SELECT_OPTION_COLORS[0].COLOR,
+    textColor: oldOption?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR,
   });
 
   const colorInputRef = useRef(null);
 
-  const isValid = useMemo(() => name.trim() && color, [name, color]);
+  const isValid = useMemo(() => name.trim() && color, [name, description, color]);
   const isValidColor = useMemo(() => isHexColor(color), [color]);
 
   const onNameChange = useCallback((event) => {
@@ -33,6 +40,13 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
     setName(newName);
     setChanged(true);
   }, [name]);
+
+  const onDescriptionChange = useCallback((event) => {
+    const newDescription = event.target.value;
+    if (newDescription === description) return;
+    setDescription(newDescription);
+    setChanged(true);
+  }, [description]);
 
   const syncGenerateColor = useCallback(() => {
     const random = Math.floor(Math.random() * (SELECT_OPTION_COLORS.length - 1));
@@ -80,7 +94,11 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
       setSubmitting(false);
       return;
     }
-    onSubmit({ name: validName, color, text_color: textColor }, {
+    let params = { name: validName, color, text_color: textColor };
+    if (canModifyDescription) {
+      params['description'] = description;
+    }
+    onSubmit(params, {
       success_callback: () => {
         onToggle();
       },
@@ -89,7 +107,7 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
         setSubmitting(false);
       }
     });
-  }, [name, color, textColor, isValidColor, onToggle, onSubmit]);
+  }, [name, description, color, textColor, isValidColor, canModifyDescription, onToggle, onSubmit]);
 
   useEffect(() => {
     if (isHexColor(color)) {
@@ -97,14 +115,17 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
     }
   }, [color, textColor]);
 
+  let title = oldOption ? gettext('Edit %s') : gettext('New %s');
+  title = title.replace('%s', type);
+
   return (
-    <Modal isOpen={true} autoFocus={false} className="sea-qa-type-dialog" toggle={onToggle}>
-      <ModalHeader toggle={onToggle}>{oldType ? gettext('Edit type') : gettext('New type')}</ModalHeader>
+    <Modal isOpen={true} autoFocus={false} className="sea-qa-tag-dialog" toggle={onToggle}>
+      <ModalHeader toggle={onToggle}>{title}</ModalHeader>
       <ModalBody >
-        <FormGroup className="type-preview">
-          <Type
+        <FormGroup className="tag-preview">
+          <Option
             className="mw-100 text-truncate"
-            type={{ name: name || gettext('Preview type'), color: lastColorOption.color, text_color: lastColorOption.textColor }}
+            option={{ name: name || gettext('Preview %s').replace('%s', type), color: lastColorOption.color, text_color: lastColorOption.textColor }}
           />
         </FormGroup>
         <FormGroup>
@@ -115,18 +136,30 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
           <Input autoFocus={true} value={name} onChange={onNameChange} />
         </FormGroup>
         {error && error.type === 'name' && (<Alert color="danger">{error.msg}</Alert>)}
+        {canModifyDescription && (
+          <FormGroup>
+            <Label>{gettext('Description')}</Label>
+            <Input
+              type="textarea"
+              rows={3}
+              className="sea-qa-tag-description-editor"
+              value={description}
+              onChange={onDescriptionChange}
+            />
+          </FormGroup>
+        )}
         <FormGroup>
           <Label>{gettext('Color')}</Label>
-          <div className="d-flex algin-items-center sea-qa-type-color-editor-container ">
+          <div className="d-flex algin-items-center sea-qa-tag-color-editor-container ">
             <IconButton
               icon="sync"
               style={{ backgroundColor: lastColorOption.color, color: lastColorOption.textColor }}
-              className="sea-qa-type-color-editor-btn"
+              className="sea-qa-tag-color-editor-btn"
               onClick={syncGenerateColor}
             />
             <Input
               innerRef={colorInputRef}
-              className={classnames('sea-qa-type-color-editor', { 'invalid': !isValidColor })}
+              className={classnames('sea-qa-tag-color-editor', { 'invalid': !isValidColor })}
               value={color}
               onChange={onColorChange}
               onClick={openColorPopover}
@@ -152,4 +185,4 @@ const TypeDialog = ({ row: oldType, onSubmit, onToggle }) => {
   );
 };
 
-export default TypeDialog;
+export default OptionDialog;

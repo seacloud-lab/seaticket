@@ -53,7 +53,7 @@ class TicketTypesAPIView(APIView):
         seadb_api = SeaDBAPI(username)
         type_options, _ = get_ticket_counts_group_by_column_name(seadb_api, project_uuid, 'type')
         return Response({
-            'project_types': type_options,
+            'types': type_options,
         })
 
     def post(self, request, project_uuid):
@@ -111,13 +111,13 @@ class TicketTypesAPIView(APIView):
         # main
         try:
             option_data = {'color': color, 'text_color': text_color}
-            project_type = add_select_option(seadb_api, project_uuid, table_id, type_column.get('key'), name, option_data)
+            type_option = add_select_option(seadb_api, project_uuid, table_id, type_column.get('key'), name, option_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'project_type': project_type}, status=status.HTTP_201_CREATED)
+        return Response({'type': type_option}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, project_uuid):
         """

@@ -19,7 +19,7 @@ import { useConnections } from '../../hooks';
 import { toaster } from '@/components';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
-import { TagsProvider, TypesProvider } from '../../../tickets/hooks';
+import { MetadataProvider } from '../../../tickets/hooks';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -337,71 +337,69 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   return (
     <CollaboratorsProvider>
-      <TypesProvider projectUuid={projectUuid}>
-        <TagsProvider projectUuid={projectUuid}>
-          {(connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) && (
-            <div style={{
-              position: 'absolute',
-              top: '8px',
-              right: '140px',
-              zIndex: 100
-            }}>
-              <Button
-                color="primary"
-                size="sm"
-                className="sea-qa-project-add-connection-btn"
-                style={{ height: '28px', display: 'inline-flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}
-                onClick={() => setEmbeddingVisualizationOpen(true)}
-              >
-                {gettext('Analyze')}
-              </Button>
-            </div>
-          )}
-          <SeaMetadata
-            viewID={viewID}
-            api={api}
-            ref={seaMetaDataRef}
-            className="sea-qa-connection-details"
-            localStorageNamePrefix={localStorageName}
-            createRowsTools={createRowsTools}
-            createContextMenuOptions={createContextMenuOptions}
-            permission={permission}
-            typesData={typesData}
-            toggleView={updateViewID}
-            expandRow={handleExpandRow}
-            t={t}
+      <MetadataProvider projectUuid={projectUuid}>
+        {(connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) && (
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            right: '140px',
+            zIndex: 100
+          }}>
+            <Button
+              color="primary"
+              size="sm"
+              className="sea-qa-project-add-connection-btn"
+              style={{ height: '28px', display: 'inline-flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}
+              onClick={() => setEmbeddingVisualizationOpen(true)}
+            >
+              {gettext('Analyze')}
+            </Button>
+          </div>
+        )}
+        <SeaMetadata
+          viewID={viewID}
+          api={api}
+          ref={seaMetaDataRef}
+          className="sea-qa-connection-details"
+          localStorageNamePrefix={localStorageName}
+          createRowsTools={createRowsTools}
+          createContextMenuOptions={createContextMenuOptions}
+          permission={permission}
+          typesData={typesData}
+          toggleView={updateViewID}
+          expandRow={handleExpandRow}
+          t={t}
+        />
+        {isShowRowDetailsDialog && (
+          <RowDetailsDialog
+            projectUuid={projectUuid}
+            connection={connection}
+            row={currentRow}
+            columns={allColumns.current}
+            switchRow={switchRow}
+            onToggle={() => setIsShowRowDetailsDialog(false)}
           />
-          {isShowRowDetailsDialog && (
-            <RowDetailsDialog
-              projectUuid={projectUuid}
-              connection={connection}
-              row={currentRow}
-              columns={allColumns.current}
-              switchRow={switchRow}
-              onToggle={() => setIsShowRowDetailsDialog(false)}
-            />
-          )}
-          {isTicketDialogOpen && (
-            <CreateTicketDialog
-              projectUuid={projectUuid}
-              initialData={ticketData}
-              isLoading={isTicketLoading}
-              isOpen={isTicketDialogOpen}
-              toggle={() => setTicketDialogOpen(false)}
-            />
-          )}
-          {isEmbeddingVisualizationOpen && (
-            <EmbeddingVisualization
-              isOpen={isEmbeddingVisualizationOpen}
-              onClose={() => setEmbeddingVisualizationOpen(false)}
-              connectionId={connectionID}
-              connectionName={connection?.name || ''}
-              projectUuid={projectUuid}
-              viewId={viewID}
-            />
-          )}
-        </TagsProvider>
-      </TypesProvider>
+        )}
+        {isTicketDialogOpen && (
+          <CreateTicketDialog
+            projectUuid={projectUuid}
+            initialData={ticketData}
+            isLoading={isTicketLoading}
+            isOpen={isTicketDialogOpen}
+            toggle={() => setTicketDialogOpen(false)}
+          />
+        )}
+        {isEmbeddingVisualizationOpen && (
+          <EmbeddingVisualization
+            isOpen={isEmbeddingVisualizationOpen}
+            onClose={() => setEmbeddingVisualizationOpen(false)}
+            connectionId={connectionID}
+            connectionName={connection?.name || ''}
+            projectUuid={projectUuid}
+            viewId={viewID}
+          />
+        )}
+      </MetadataProvider>
     </CollaboratorsProvider>
   );
 
