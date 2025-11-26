@@ -9,7 +9,11 @@ import { gettext } from '@/constants';
 import { CenteredLoading, toaster } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
-import { generatorRowCopyLinkTool, generatorRowsMoreTool, convertRowToServerData, convertRowsToServerData } from '../../utils';
+import {
+  generatorRowCopyLinkTool, generatorRowsMoreTool,
+  convertRowToServerData, convertRowsToServerData,
+  cascadeUpdateSubState
+} from '../../utils';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
@@ -251,6 +255,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
       tagsData={tagsData}
 
       t={t}
+      cascadeUpdateCells={cascadeUpdateSubState}
     />
   );
 };

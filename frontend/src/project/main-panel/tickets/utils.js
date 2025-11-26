@@ -4,11 +4,11 @@ import { PRIORITIES } from '@/sea-metadata/constants';
 import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
-import { getColumnByName, getColumnOptions } from '@/sea-metadata/utils/column';
+import { getColumnByName, getColumnOptions, getOptionNameById, getColumnOptionNamesByIds, getOption } from '@/sea-metadata/utils/column';
 import { getTableColumnByKey } from '@/sea-metadata/utils/table';
-import { getOptionNameById, getColumnOptionNamesByIds } from '@/sea-metadata/utils/column';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import ObjectUtils from '@/utils/object-utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -126,4 +126,30 @@ export const convertRowsToServerData = (rowsUpdate, { data, typesData, tagsData 
     const { row_id, row } = rowUpdate;
     return { row_id, row: convertRowToServerData(row, { data, typesData, tagsData }) };
   }).filter(rowUpdate => rowUpdate.row && !ObjectUtils.isEmpty(rowUpdate.row));
+};
+
+// When the value of state is modified, the values of substate are updated in a cascading fashion.
+export const cascadeUpdateSubState = (table, rowId, rowUpdate, oldRowData) => {
+  const row = getRowById(table, rowId);
+  if (!row) return;
+  const updatedColumnKeys = Object.keys(rowUpdate);
+  const stateColumn = getColumnByName(table.columns, 'state');
+  if (!stateColumn || !updatedColumnKeys.includes(stateColumn?.key)) return;
+
+  const subStateColumn = getColumnByName(table.columns, 'substate');
+  if (!subStateColumn) return;
+
+  const { cascade_settings = {} } = subStateColumn.data || {};
+  const options = getColumnOptions(subStateColumn);
+  if (!cascade_settings) return;
+
+  const cellValue = rowUpdate[stateColumn.key];
+  const cascadeOptionIds = cellValue ? (cascade_settings[cellValue] || []) : [];
+  const oldCascadeCellValue = getCellValueByColumn(rowUpdate, subStateColumn) || getCellValueByColumn(row, subStateColumn);
+  if (cascadeOptionIds.includes(oldCascadeCellValue)) return;
+
+  const validCascadeOptionIds = cascadeOptionIds.filter(id => getOption(options, id));
+  const cascadeCellValue = validCascadeOptionIds[0] || null;
+  rowUpdate[subStateColumn.key] = cascadeCellValue;
+  oldRowData[subStateColumn.key] = oldCascadeCellValue;
 };
