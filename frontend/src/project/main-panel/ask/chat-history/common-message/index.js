@@ -113,7 +113,12 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
 
   const openConnectionRecord = useCallback((event, connectionInfo) => {
     setCurrentConnection({ type: connectionInfo.type, id: connectionInfo.connection_id });
-    setCurrentConnectionRecord({ _id: connectionInfo.connection_record_id, title: connectionInfo.title, connection_id: connectionInfo.connection_id });
+    setCurrentConnectionRecord({
+      _id: connectionInfo.connection_record_id,
+      title: connectionInfo.title,
+      connection_id: connectionInfo.connection_id,
+      url: connectionInfo.url,
+    });
     setIsShowConnectionRecord(true);
   }, []);
 
