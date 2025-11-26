@@ -174,7 +174,7 @@ export const MetadataProvider = forwardRef(({
       oldRowData[key] = row[key];
     });
     modifyRow(rowId, rowUpdate, oldRowData, false, { success_callback, fail_callback });
-  }, [modifyRow]);
+  }, [metadata, modifyRow]);
 
   const moveRow = () => {
     // todo
