@@ -366,7 +366,7 @@ class ChatView(APIView):
             'org_id': org_id,
         }
 
-        if custom_model:
+        if model:
             params.update({
                 'llm_model': custom_model['model'],
                 'llm_type': custom_model['type'],
