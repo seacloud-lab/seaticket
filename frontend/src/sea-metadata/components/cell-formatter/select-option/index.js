@@ -37,7 +37,7 @@ const SelectOption = ({ option, fontSize }) => {
 
 SelectOption.propTypes = {
   option: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.string,
     name: PropTypes.string.isRequired,
     color: PropTypes.string.isRequired,
   }),

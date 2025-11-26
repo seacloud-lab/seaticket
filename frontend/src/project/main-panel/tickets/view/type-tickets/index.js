@@ -82,11 +82,11 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName }) => {
 
     // row
     insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
-    modifyRow: (row_id, row_update, isCopyPaste, { data, typesData, tagsData }) => {
+    modifyRow: (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
       const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTicket(projectUuid, row_id, rowData, isCopyPaste);
     },
-    modifyRows: (rowsUpdate, isCopyPaste, { data, typesData, tagsData }) => {
+    modifyRows: (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
       const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTickets(projectUuid, rowsData, isCopyPaste);
     },

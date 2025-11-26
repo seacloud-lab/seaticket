@@ -26,7 +26,7 @@ class ServerOperator {
         break;
       }
       case OPERATION_TYPE.MODIFY_ROW: {
-        const { row_id, row_update, is_copy_paste } = operation;
+        const { row_id, row_update, is_copy_paste = false } = operation;
         context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
           callback({ operation });
         }).catch(error => {
@@ -35,7 +35,7 @@ class ServerOperator {
         break;
       }
       case OPERATION_TYPE.MODIFY_ROWS: {
-        const { row_ids, id_row_updates, is_copy_paste } = operation;
+        const { row_ids, id_row_updates, is_copy_paste = false } = operation;
         const rowsData = row_ids.map(rowId => {
           return { row_id: rowId, row: id_row_updates[rowId] };
         }).filter(rowData => rowData.row && !ObjectUtils.isEmpty(rowData.row));
