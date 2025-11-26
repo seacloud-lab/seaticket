@@ -21,9 +21,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
     case BAR_TYPE.SEARCH:
       return (<Search title={title} settings={settings} />);
     case BAR_TYPE.TICKET:
-      return (<Tickets title={title} toggleBar={toggleBar} isMyTicket={false} />);
+      return (<Tickets key={barKey} title={title} toggleBar={toggleBar} isMyTicket={false} />);
     case BAR_TYPE.MY_TICKET:
-      return (<Tickets title={title} toggleBar={toggleBar} isMyTicket={true} />);
+      return (<Tickets key={barKey} title={title} toggleBar={toggleBar} isMyTicket={true} />);
     case BAR_TYPE.SETTINGS:
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     case BAR_TYPE.KNOWLEDGE:
