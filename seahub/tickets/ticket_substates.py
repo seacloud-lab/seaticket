@@ -104,6 +104,9 @@ class TicketSubstatesAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
         parent_id = request.POST.get('parent_id')
+        if not parent_id:
+            error_msg = 'parent_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -138,22 +141,21 @@ class TicketSubstatesAPIView(APIView):
             substate_option_id = substate_option.get('id', '')
 
             # update cascade_settings
-            if parent_id:
-                cascade_settings = column_data.get('cascade_settings')
-                if cascade_settings:
-                    for state_id, substate_options in cascade_settings.items():
-                        if not substate_options:
-                            substate_options = []
-                        if state_id == parent_id:
-                            substate_options.append(substate_option_id)
-                    column_data = {
-                        'table_id': table_meta.get('id'),
-                        'column_key': substate_column_key,
-                        'update_column_data': {
-                            'cascade_settings': cascade_settings,
-                        },
-                    }
-                    seadb_api.update_column(project_uuid, column_data)
+            cascade_settings = column_data.get('cascade_settings')
+            if cascade_settings:
+                for state_id, substate_options in cascade_settings.items():
+                    if not substate_options:
+                        substate_options = []
+                    if state_id == parent_id:
+                        substate_options.append(substate_option_id)
+                column_data = {
+                    'table_id': table_meta.get('id'),
+                    'column_key': substate_column_key,
+                    'update_column_data': {
+                        'cascade_settings': cascade_settings,
+                    },
+                }
+                seadb_api.update_column(project_uuid, column_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -287,9 +289,6 @@ class TicketSubstateAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
         parent_id = request.POST.get('parent_id')
-        if not parent_id:
-            error_msg = 'parent_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -332,25 +331,25 @@ class TicketSubstateAPIView(APIView):
             column_key = column.get('key')
             update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
 
-
             # update cascade_settings
-            cascade_settings = column_data.get('cascade_settings')
-            if cascade_settings:
-                for state_id, substate_options in cascade_settings.items():
-                    if not substate_options:
-                        substate_options = []
-                    if substate_id in substate_options:
-                        substate_options.remove(substate_id)
-                    if state_id == parent_id:
-                        substate_options.append(substate_id)
-                column_data = {
-                    'table_id': table_meta.get('id'),
-                    'column_key': column_key,
-                    'update_column_data': {
-                        'cascade_settings': cascade_settings,
-                    },
-                }
-                seadb_api.update_column(project_uuid, column_data)
+            if parent_id:
+                cascade_settings = column_data.get('cascade_settings')
+                if cascade_settings:
+                    for state_id, substate_options in cascade_settings.items():
+                        if not substate_options:
+                            substate_options = []
+                        if substate_id in substate_options:
+                            substate_options.remove(substate_id)
+                        if state_id == parent_id:
+                            substate_options.append(substate_id)
+                    column_data = {
+                        'table_id': table_meta.get('id'),
+                        'column_key': column_key,
+                        'update_column_data': {
+                            'cascade_settings': cascade_settings,
+                        },
+                    }
+                    seadb_api.update_column(project_uuid, column_data)
 
         except Exception as e:
             logger.error(e)

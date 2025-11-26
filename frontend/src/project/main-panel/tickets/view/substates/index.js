@@ -84,6 +84,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     row: gettext('substate'),
     rows: gettext('substates'),
     Rows: gettext('Substates'),
+    Row: gettext('Substate'),
   }), []);
 
   useEffect(() => { loadSubStates(); }, []);
