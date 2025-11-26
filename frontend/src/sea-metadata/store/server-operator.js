@@ -1,12 +1,10 @@
 import { gettext } from '@/constants';
 import ObjectUtils from '@/utils/object-utils';
 import { OPERATION_TYPE } from './operations';
-import { getColumnByKey, getColumnOptionNamesByIds, getOptionNameById, getServerOptions } from '../utils/column';
+import { getColumnByKey, getServerOptions } from '../utils/column';
 import { CellType } from '../constants';
 import context from '../context';
 import { Utils } from '@/utils/utils';
-import { getTableColumnByKey } from '../utils/table';
-import { getRowById, getRowsByIds } from '../utils/row';
 
 const MAX_LOAD_ROWS = 100;
 
@@ -29,8 +27,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_ROW: {
         const { row_id, row_update, is_copy_paste } = operation;
-        const rowData = this.convertToServerRowData(row_update, { data, typesData, tagsData });
-        context.modifyRow(row_id, rowData, is_copy_paste).then(res => {
+        context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: context.translate('Failed to modify {row}') });
@@ -40,12 +37,12 @@ class ServerOperator {
       case OPERATION_TYPE.MODIFY_ROWS: {
         const { row_ids, id_row_updates, is_copy_paste } = operation;
         const rowsData = row_ids.map(rowId => {
-          return { row_id: rowId, row: this.convertToServerRowData(id_row_updates[rowId], { data, typesData, tagsData }) };
+          return { row_id: rowId, row: id_row_updates[rowId] };
         }).filter(rowData => rowData.row && !ObjectUtils.isEmpty(rowData.row));
         if (rowsData.length === 0) {
           callback({ operation });
         } else {
-          context.modifyRows(rowsData, is_copy_paste).then(res => {
+          context.modifyRows(rowsData, is_copy_paste, { data, typesData, tagsData }).then(res => {
             callback({ operation });
           }).catch(error => {
             if (error.response && error.response.status === 413) {
@@ -216,39 +213,6 @@ class ServerOperator {
       }
     }
   }
-
-  // server user name-optionName to update single-select/multiple-select
-  // server use name-value to update row
-  convertToServerRowData = (row, { data, typesData, tagsData }) => {
-    let serverRowData = {};
-    Object.keys(row).forEach(key => {
-      const column = getTableColumnByKey(data, key);
-      if (!column) return;
-      const { name, type } = column;
-      let cellValue = row[key];
-      if (type === CellType.SINGLE_SELECT ) {
-        if (cellValue) {
-          cellValue = getOptionNameById(column, cellValue);
-        }
-      } else if (type === CellType.TYPE) {
-        if (cellValue) {
-          const option = getRowById(typesData, cellValue);
-          cellValue = option.name;
-        }
-      } else if (type === CellType.TAGS) {
-        if (Array.isArray(cellValue) && cellValue.length > 0) {
-          const tags = getRowsByIds(tagsData, cellValue);
-          cellValue = tags.map(tag => tag.name);
-        }
-      } else if (type === CellType.MULTIPLE_SELECT) {
-        if (Array.isArray(cellValue) && cellValue.length > 0) {
-          cellValue = getColumnOptionNamesByIds(column, cellValue);
-        }
-      }
-      serverRowData[name] = cellValue;
-    });
-    return serverRowData;
-  };
 
   checkReloadRowsOperation = (operation) => {
     const { op_type } = operation;
