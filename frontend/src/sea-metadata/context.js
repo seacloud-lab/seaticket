@@ -266,12 +266,12 @@ class Context {
     return this.api.insertRow(data);
   };
 
-  modifyRow = (rowId, update) => {
-    return this.api.modifyRow(rowId, update);
+  modifyRow = (...params) => {
+    return this.api.modifyRow(...params);
   };
 
-  modifyRows = (rowsData, isCopyPaste) => {
-    if (this.api.modifyRows) return this.api.modifyRows(rowsData, isCopyPaste);
+  modifyRows = (rowsData, ...params) => {
+    if (this.api.modifyRows) return this.api.modifyRows(rowsData, ...params);
     let modifyRows = [];
     rowsData.forEach(rowData => {
       const { row_id, row } = rowData;
