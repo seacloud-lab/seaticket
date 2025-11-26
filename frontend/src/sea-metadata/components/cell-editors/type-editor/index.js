@@ -59,7 +59,7 @@ const TypeEditor = forwardRef(({
       <Main
         ref={mainRef}
         isMultiple={false}
-        isSearchEnabled={false}
+        isSearchEnabled={true}
         value={value}
         emptyTip={gettext('No types available')}
         options={options}

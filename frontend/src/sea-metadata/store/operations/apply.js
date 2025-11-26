@@ -7,6 +7,7 @@ import View from '../../models/view';
 import { getColumnOriginName } from '../../utils/column';
 import { getRowIdFromRow } from '../../utils/row';
 import context from '@/sea-metadata/context';
+import { Row } from '@/sea-metadata/models';
 
 dayjs.extend(utc);
 
@@ -49,13 +50,15 @@ export default function apply(data, operation) {
 
   switch (op_type) {
     case OPERATION_TYPE.INSERT_ROW: {
-      const { row } = operation;
+      const { row: rowData } = operation;
+      const row = new Row(rowData);
       const { rows } = data;
       const updatedRows = [...rows];
       const rowIndex = updatedRows.findIndex(r => r._id === row._id);
       data.id_row_map[row._id] = row;
       if (rowIndex === -1) {
         data.row_ids.push(row._id);
+        updatedRows.push(row);
       } else {
         updatedRows[rowIndex] = row;
       }

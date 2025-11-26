@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { isWhiteColor } from '@/utils/color-utils';
 import { getOptionDisplayNameByOption } from '../../../utils/column';
 
 import './index.css';
 
-const SelectOption = ({ option, fontSize }) => {
+const SelectOption = ({ option, className, fontSize }) => {
   const style = useMemo(() => {
     let _style = {
       display: 'inline-block',
@@ -29,7 +30,12 @@ const SelectOption = ({ option, fontSize }) => {
   const optionName = getOptionDisplayNameByOption(option);
 
   return (
-    <div className="sea-metadata-ui-select-option text-truncate" style={style} title={optionName}>
+    <div
+      className={classnames('sea-metadata-ui-select-option text-truncate', className)}
+      style={style}
+      title={optionName}
+      aria-label={optionName}
+    >
       {optionName}
     </div>
   );

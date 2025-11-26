@@ -4,7 +4,9 @@ import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG, FILTER_PREDICATE_SHOW, FILTER_TERM_MODIFIER_SHOW } from '../../../../constants';
 import { isWhiteColor } from '@/utils/color-utils';
+import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
+import { IconButton } from '@/components';
 
 class FilterItemUtils {
 
@@ -40,15 +42,13 @@ class FilterItemUtils {
   }
 
   static generatorSingleSelectOption(option, selectedOption) {
-    const name = getOptionDisplayNameByOption(option);
     return {
       value: { columnOption: option },
+      name: getOptionDisplayNameByOption(option),
       label: (
         <div className="select-option-name single-option-name">
-          <div className="single-select-option" style={{ background: option.color, color: option.text_color || null }} title={name} aria-label={name}>{name}</div>
-          <div className="single-check-icon">
-            {selectedOption?.id === option.id && (<Icon symbol="check-mark" />)}
-          </div>
+          <SelectOption option={option} className="single-select-option ml-0" />
+          <IconButton className="single-check-icon no-hover-bg" icon={selectedOption?.id === option.id ? 'check' : ''} />
         </div>
       )
     };
@@ -59,17 +59,8 @@ class FilterItemUtils {
       value: { columnOption: option },
       label: (
         <div className="select-option-name multiple-option-name">
-          <div
-            className={classnames('multiple-select-option', { 'multiple-select-option-white': isWhiteColor(option.color) })}
-            style={{ background: option.color, color: option.text_color }}
-            title={option.name}
-            aria-label={option.name}
-          >
-            {option.name}
-          </div>
-          <div className="multiple-check-icon">
-            {filterTerm.indexOf(option.id) > -1 && (<Icon symbol="check-mark" />)}
-          </div>
+          <SelectOption option={option} className={classnames('multiple-select-option ml-0', { 'multiple-select-option-white': isWhiteColor(option.color) })} />
+          <IconButton className="single-check-icon no-hover-bg" icon={filterTerm.indexOf(option.id) > -1 ? 'check' : ''} />
         </div>
       )
     };

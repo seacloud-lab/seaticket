@@ -11,7 +11,7 @@ import FilterCalendar from '../filter-calendar';
 import PriorityItem from '../../../../cell-editors/priority-editor/priority-item';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { gettext } from '@/constants';
-import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions, getOptionDisplayNameByOption } from '../../../../../utils/column';
+import { isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions, getTypesOptions } from '../../../../../utils/column';
 import {
   getFilterByColumn, getUpdatedFilterBySelectSingle, getUpdatedFilterBySelectMultiple, getUpdatedFilterByCreator, getUpdatedFilterByCollaborator,
   getColumnOptions, getUpdatedFilterByPredicate,
@@ -23,6 +23,7 @@ import {
 import FilterItemUtils from '../filter-item-utils';
 import context from '@/sea-metadata/context';
 import CustomizePopover from '@/components/customize-popover';
+import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 
 import './index.css';
 
@@ -309,25 +310,15 @@ class FilterItem extends React.Component {
     if (supportMultipleSelectOptions.includes(filter_predicate)) {
       isSupportMultipleSelect = true;
     }
-    const className = 'select-option-name multiple-select-option';
+
     let labelArray = [];
     if (Array.isArray(options) && Array.isArray(filterTerm)) {
       filterTerm.forEach((item) => {
         let inOption = options.find(option => option.id === item);
-        let optionStyle = { margin: '0 10px 0 0' };
-        let optionName = null;
-        if (inOption) {
-          optionName = inOption.name;
-          optionStyle.background = inOption.color;
-          optionStyle.color = inOption.text_color || null;
-        } else {
-          optionStyle.background = DELETED_OPTION_BACKGROUND_COLOR;
-          optionName = DELETED_OPTION_TIPS;
-        }
+
+        let option = inOption || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_OPTION_TIPS };
         labelArray.push(
-          <span className={className} style={optionStyle} key={'option_' + item} title={optionName} aria-label={optionName}>
-            {optionName}
-          </span>
+          <SelectOption option={option} key={'option_' + item} className="select-option-name multiple-select-option" />
         );
       });
     }
@@ -435,13 +426,9 @@ class FilterItem extends React.Component {
         let selectedOptionDom = { label: null };
         if (filter_term) {
           let selectedOption = options.find(option => option.id === filter_term);
-          const className = 'select-option-name single-select-option';
-          const style = selectedOption ?
-            { background: selectedOption.color, color: selectedOption.text_color || null } :
-            { background: DELETED_OPTION_BACKGROUND_COLOR };
-          const selectedOptionName = selectedOption ? getOptionDisplayNameByOption(selectedOption) : DELETED_OPTION_TIPS;
+          const option = selectedOption || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_OPTION_TIPS };
           selectedOptionDom = { label: (
-            <span className={className} style={style} title={selectedOptionName} aria-label={selectedOptionName}>{selectedOptionName}</span>
+            <SelectOption option={option} className="select-option-name single-select-option" />
           ) };
         }
 
