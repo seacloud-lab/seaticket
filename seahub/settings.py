@@ -674,7 +674,7 @@ def validate_custom_llm_models(models):
         if model.get('type') == 'proxy':
             required_fields = ('model', 'url')
         else:
-            required_fields = ('model', 'url', 'key')
+            required_fields = ('model', 'key')
         if not all(field in model for field in required_fields):
             continue
         model['label'] = model.get('label', model['model'])
