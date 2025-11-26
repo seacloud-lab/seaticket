@@ -245,9 +245,9 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const createSubstate = useCallback((substate) => {
     return ticketsAPI.createTicketSubstate(projectUuid, substate).then(res => {
-      const substate = new Option(res.data.substate);
-      applyCreateSubstates([substate]);
-      return substate;
+      const newSubstate = new Option({ ...res.data.substate, parent_id: substate.parent_id });
+      applyCreateSubstates([newSubstate]);
+      return newSubstate;
     });
   }, [projectUuid, applyCreateSubstates]);
 
@@ -276,21 +276,36 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifySubstates]);
 
+  const initSubStates = useCallback((options, cascade_settings = {}, isReload = false) => {
+    let substatesOptions = options || [];
+    let cascadeConfig = {};
+    Object.keys(cascade_settings).forEach(parentOptionId => {
+      const childrenOptionIds = cascade_settings[parentOptionId] || [];
+      childrenOptionIds.forEach(childrenOptionId => {
+        cascadeConfig[childrenOptionId] = parentOptionId;
+      });
+    });
+    substatesOptions = substatesOptions.map(option => {
+      return { ...option, parent_id: cascadeConfig[option.id] };
+    });
+    applyCreateSubstates(substatesOptions, isReload);
+  }, [applyCreateSubstates]);
+
   const loadSubStates = useCallback(() => {
     const currentTime = new Date();
     if (substatesData.loadTime && dayjs(currentTime).diff(substatesData.loadTime, 'hours') < 1) return;
     const newSubstatesData = substatesData._updateLoading(true);
     setSubstatesData(newSubstatesData);
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
-      const { substates } = res.data;
-      applyCreateSubstates(substates, true);
+      const { substates, cascade_settings } = res.data;
+      initSubStates(substates, cascade_settings, true);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       const newSubstatesData = substatesData._updateLoading(false);
       setSubstatesData(newSubstatesData);
     });
-  }, [substatesData]);
+  }, [substatesData, initSubStates]);
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
@@ -308,10 +323,10 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   useEffect(() => {
     ticketsAPI.getTicketMetadata(projectUuid).then(res => {
       const { states, substates, tags, types } = res?.data || {};
-      applyCreateSubstates(substates);
-      applyCreateTags(tags);
-      applyCreateTypes(types);
-      applyCreateStates(states);
+      initSubStates(substates?.options, substates?.cascade_settings);
+      applyCreateTags(tags?.options);
+      applyCreateTypes(types?.options);
+      applyCreateStates(states?.options);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

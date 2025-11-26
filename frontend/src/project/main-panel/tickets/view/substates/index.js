@@ -9,7 +9,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import OptionDialog from '../../components/option-dialog';
 
 const AllSubstates = ({ projectUuid, permission }) => {
-  const { isLoading, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
+  const { isLoading, statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -206,7 +206,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
         createContextMenuOptions={createContextMenuOptions}
         t={t}
       >
-        <OptionDialog type={gettext('substate')} canModifyDescription={false} />
+        <OptionDialog type={gettext('substate')} parentOptions={statesData.rows} canModifyDescription={false} />
       </SeaMetadata>
     </>
   );

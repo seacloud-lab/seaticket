@@ -102,6 +102,8 @@ class TicketSubstatesAPIView(APIView):
         if not text_color:
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        parent_id = request.POST.get('parent_id')
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -123,6 +125,7 @@ class TicketSubstatesAPIView(APIView):
             table_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
             table_id = table_meta.get('id')
             substate_column = get_column_from_columns_by_name(table_meta.get('columns'), 'substate')
+            substate_column_key = substate_column.get('key')
             column_data = substate_column.get('data') or {}
             existing_options = column_data.get('options', []) or []
 
@@ -131,7 +134,26 @@ class TicketSubstatesAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             option_data = {'color': color, 'text_color': text_color}
-            substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column.get('key'), name, option_data)
+            substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column_key, name, option_data)
+            substate_option_id = substate_option.get('id', '')
+
+            # update cascade_settings
+            if parent_id:
+                cascade_settings = column_data.get('cascade_settings')
+                if cascade_settings:
+                    for state_id, substate_options in cascade_settings.items():
+                        if not substate_options:
+                            substate_options = []
+                        if state_id == parent_id:
+                            substate_options.append(substate_option_id)
+                    column_data = {
+                        'table_id': table_meta.get('id'),
+                        'column_key': substate_column_key,
+                        'update_column_data': {
+                            'cascade_settings': cascade_settings,
+                        },
+                    }
+                    seadb_api.update_column(project_uuid, column_data)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -263,6 +285,11 @@ class TicketSubstateAPIView(APIView):
         if 'name' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        parent_id = request.POST.get('parent_id')
+        if not parent_id:
+            error_msg = 'parent_id invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -304,6 +331,27 @@ class TicketSubstateAPIView(APIView):
             table_id = table_meta.get('id')
             column_key = column.get('key')
             update_select_option(seadb_api, project_uuid, table_id, column_key, substate_option, substate_id, update_data)
+
+
+            # update cascade_settings
+            cascade_settings = column_data.get('cascade_settings')
+            if cascade_settings:
+                for state_id, substate_options in cascade_settings.items():
+                    if not substate_options:
+                        substate_options = []
+                    if substate_id in substate_options:
+                        substate_options.remove(substate_id)
+                    if state_id == parent_id:
+                        substate_options.append(substate_id)
+                column_data = {
+                    'table_id': table_meta.get('id'),
+                    'column_key': column_key,
+                    'update_column_data': {
+                        'cascade_settings': cascade_settings,
+                    },
+                }
+                seadb_api.update_column(project_uuid, column_data)
+
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
