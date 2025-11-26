@@ -14,7 +14,6 @@ import { isFunction } from '@/utils/type-detection';
 const MetadataContext = React.createContext(null);
 
 export const MetadataProvider = forwardRef(({
-  isMyTicket,
   viewID,
   api,
   tagsData,
@@ -175,7 +174,7 @@ export const MetadataProvider = forwardRef(({
       oldRowData[key] = row[key];
     });
     modifyRow(rowId, rowUpdate, oldRowData, false, { success_callback, fail_callback });
-  }, [modifyRow]);
+  }, [metadata, modifyRow]);
 
   const moveRow = () => {
     // todo
@@ -268,7 +267,7 @@ export const MetadataProvider = forwardRef(({
       isCancelled = true;
       storeRef.current.destroy();
     };
-  }, [localStorageNamePrefix, viewID, isMyTicket]);
+  }, [localStorageNamePrefix, viewID]);
 
   useEffect(() => {
     const eventBus = context.eventBus;

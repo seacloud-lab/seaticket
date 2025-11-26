@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import copy from 'copy-to-clipboard';
 import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
 import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
@@ -34,6 +34,16 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     togglePageSlugId(row._id);
   }, [togglePageSlugId, cacheData]);
 
+  const myTicketViewsData = useMemo(() => ({
+    navigation: [{ _id: 'open', type: 'view' }],
+    views: [
+      {
+        _id: 'open',
+        name: gettext('Open'),
+      }
+    ]
+  }), []);
+
   const api = useMemo(() => ({
     getMetadata: (...params) => {
       const { view_id } = params[0];
@@ -64,82 +74,43 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           return res;
         });
       }
-      if (isMyTicket) {
-        const { start = 0, limit = 1000 } = params[0] || {};
-        return ticketsAPI.listMyTickets(projectUuid, { start, limit }).then(res => {
-          const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-          let columns = res?.data?.columns || [];
-          const othersConfig = {
-            'title': { click: (row) => togglePageSlugId(row._id) },
-          };
-          columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
-            const { name } = c;
-            const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-            const otherConfig = othersConfig[name];
-            return {
-              ...c,
-              ...predefinedConfig,
-              ...otherConfig,
-            };
-          });
-          const typeColum = columns.find(c => c.name === 'type');
-          if (typeColum) {
-            context.setSetting('typeColumnKey', typeColum.key);
-          }
-          const stateColumn = columns.find(c => c.name === 'state');
-          if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
-          }
-          const tagsColumn = columns.find(c => c.name === 'tags');
-          if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
-          }
-          clearCacheData();
+      const apiName = isMyTicket ? 'listMyTickets' : 'listProjectTickets';
+      return ticketsAPI[apiName](projectUuid, ...params).then(res => {
+        const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
+        let columns = res?.data?.columns || [];
+        const othersConfig = {
+          'title': { click: (row) => togglePageSlugId(row._id) },
+        };
+        columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+          const { name } = c;
+          const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
+          const otherConfig = othersConfig[name];
           return {
-            data: {
-              rows,
-              columns,
-            }
+            ...c,
+            ...predefinedConfig,
+            ...otherConfig,
           };
         });
-      } else {
-        return ticketsAPI.listProjectTickets(projectUuid, ...params).then(res => {
-          const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
-          let columns = res?.data?.columns || [];
-          const othersConfig = {
-            'title': { click: (row) => togglePageSlugId(row._id) },
-          };
-          columns = columns.filter(c => !TICKET_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
-            const { name } = c;
-            const predefinedConfig = TICKET_PREDEFINED_COLUMN_CONFIG[name];
-            const otherConfig = othersConfig[name];
-            return {
-              ...c,
-              ...predefinedConfig,
-              ...otherConfig,
-            };
-          });
-          const typeColum = columns.find(c => c.name === 'type');
-          if (typeColum) {
-            context.setSetting('typeColumnKey', typeColum.key);
+        const typeColum = columns.find(c => c.name === 'type');
+        if (typeColum) {
+          context.setSetting('typeColumnKey', typeColum.key);
+        }
+        const stateColumn = columns.find(c => c.name === 'state');
+        if (stateColumn) {
+          context.setSetting('stateColumnKey', stateColumn.key);
+        }
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
+        clearCacheData();
+        return {
+          data: {
+            rows,
+            columns,
           }
-          const stateColumn = columns.find(c => c.name === 'state');
-          if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
-          }
-          const tagsColumn = columns.find(c => c.name === 'tags');
-          if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
-          }
-          clearCacheData();
-          return {
-            data: {
-              rows,
-              columns,
-            }
-          };
-        });
-      }
+        };
+      });
     },
 
     getViews: () => {
@@ -148,6 +119,11 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           resolve({
             data: cachedData.views
           });
+        });
+      }
+      if (isMyTicket) {
+        return new Promise((resolve, reject) => {
+          resolve({ data: myTicketViewsData });
         });
       }
       return ticketsAPI.listViews(projectUuid);
@@ -164,13 +140,32 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
           });
         });
       }
+      if (isMyTicket) {
+        return new Promise((resolve, reject) => {
+          const view = myTicketViewsData.views[0];
+          resolve({ data: { view: {
+            ...view,
+            sorts: context.localStorage.getItem('sorts') || [],
+          } } });
+        });
+      }
       return ticketsAPI.getView(projectUuid, viewID);
     },
-    insertView: (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
-    modifyView: (viewID, viewData) => ticketsAPI.modifyView(projectUuid, viewID, viewData),
-    deleteView: (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
-    moveView: (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, sourceViewID, targetViewID),
-    duplicateView: (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
+    insertView: isMyTicket ? null : (name, viewData) => ticketsAPI.insertView(projectUuid, name, viewData),
+    modifyView: (viewID, viewData) => {
+      if (isMyTicket) {
+        return new Promise((resolve, reject) => {
+          Object.keys(viewData).forEach(key => {
+            context.localStorage.setItem(key, viewData[key]);
+          });
+          resolve({ data: { success: true } });
+        });
+      }
+      return ticketsAPI.modifyView(projectUuid, viewID, viewData);
+    },
+    deleteView: isMyTicket ? null : (viewID) => ticketsAPI.deleteView(projectUuid, viewID),
+    moveView: isMyTicket ? null : (sourceViewID, targetViewID) => ticketsAPI.moveView(projectUuid, sourceViewID, targetViewID),
+    duplicateView: isMyTicket ? null : (viewID) => ticketsAPI.duplicateView(projectUuid, viewID),
 
     // row
     insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
@@ -188,9 +183,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, cachedData, updateViewID, clearCacheData, isMyTicket]);
+  }), [projectUuid, cachedData, isMyTicket, myTicketViewsData, updateViewID, clearCacheData]);
 
-  const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tickets`, [projectUuid]);
+  const localStorageName = useMemo(() => isMyTicket ? `sea-qa-${projectUuid}-my-tickets` : `sea-qa-${projectUuid}-tickets`, [projectUuid, isMyTicket]);
 
   const t = useMemo(() => {
     return {
@@ -335,7 +330,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
   return (
     <SeaMetadata
       ref={metadataRef}
-      viewID={viewID}
+      viewID={isMyTicket ? '' : viewID}
       api={api}
       t={t}
       fixedColumnCount={2}
@@ -345,6 +340,8 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       createRowsTools={createRowsTools}
       expandRow={expandRow}
       toggleView={updateViewID}
+      isViewComputedOnServer={!isMyTicket}
+      viewTools={isMyTicket ? [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS] : undefined}
       tagsData={tagsData}
       createTag={createTag}
       toggleAllTags={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TAGS)}
@@ -354,7 +351,6 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       substatesData={substatesData}
       createSubstate={createSubstate}
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
-      isMyTicket={isMyTicket}
       cascadeUpdateCells={cascadeUpdateSubState}
     />
   );
