@@ -106,9 +106,9 @@ const getColumnOptionNamesByIds = (column, optionIds) => {
  * @returns options id, array
  */
 const getColumnOptionIdsByNames = (column, names) => {
+  if (!Array.isArray(names) || names.length === 0) return [];
   const isPredefined = checkIsPredefinedColumn(column);
   if (isPredefined) return names;
-  if (!Array.isArray(names) || names.length === 0) return [];
   const options = getColumnOptions(column);
   if (!Array.isArray(options) || options.length === 0) return [];
   return names.map(name => {
