@@ -3,6 +3,7 @@ import LongTextFormatter from './long-text-formatter';
 import ConnectionNameFormatter from '../connection-name-formatter';
 import OpFormatter from './op-formatter';
 import TextFormatter from './text-formatter';
+import DateFormatter from './date-formatter';
 import SyncStatusFormatter from './sync-status-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
 
@@ -14,6 +15,7 @@ const createFormatter = (column) => {
   if (type === CONNECTION_FIELD_TYPE.OP) return (<OpFormatter />);
   if (type === CONNECTION_FIELD_TYPE.EMPTY) return null;
   if (type === CONNECTION_FIELD_TYPE.SYNC_STATUS) return (<SyncStatusFormatter />);
+  if (type === CONNECTION_FIELD_TYPE.DATE) return (<DateFormatter />);
   return (<TextFormatter />);
 };
 

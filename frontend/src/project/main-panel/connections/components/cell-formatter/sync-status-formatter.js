@@ -6,7 +6,8 @@ const SyncStatusFormatter = ({ row }) => {
 
   if (!syncStatus) return '--';
   const validSyncStatus = syncStatus.toLowerCase();
-  return CONNECTION_SYNC_STATUS_NAME[validSyncStatus] || syncStatus.charAt(0).toUpperCase() + syncStatus.slice(1);
+  const syncStatusName = CONNECTION_SYNC_STATUS_NAME[validSyncStatus] || syncStatus.charAt(0).toUpperCase() + syncStatus.slice(1);
+  return (<span title={syncStatusName}>{syncStatusName}</span>);
 };
 
 SyncStatusFormatter.propTypes = {

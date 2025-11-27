@@ -15,6 +15,7 @@ const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
     <div
       className={classnames('sea-qa-connection-name-formatter', { 'click-able': enableClick })}
       onClick={enableClick ? () => expandRow(row) : () => {}}
+      title={value}
     >
       <img src={getConnectionIcon(connectionType)} alt={connectionOption.name} className="connection-icon" />
       <div className="connection-name-wrapper">

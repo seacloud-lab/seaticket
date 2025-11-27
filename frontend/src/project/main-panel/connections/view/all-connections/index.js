@@ -47,7 +47,15 @@ const AllConnections = ({ projectUuid }) => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '30%' },
       { key: 'sync_status', name: gettext('Sync status'), type: CONNECTION_FIELD_TYPE.SYNC_STATUS, width: '20%' },
-      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
+      {
+        key: 'last_sync_time',
+        name: gettext('Last synced at'),
+        type: CONNECTION_FIELD_TYPE.DATE,
+        data: {
+          format: 'YYYY-MM-DD HH:mm:ss',
+        },
+        width: '20%',
+      },
       { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
     ].map(column => (
