@@ -87,7 +87,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
           <ModalPortal>
             <RestoreProjectDialog
               project={item}
-              onRestore={this.onRestoreGroupProject()}
+              onRestore={this.onRestoreGroupProject}
               onToggle={this.toggleRestoreDialog}
             />
           </ModalPortal>

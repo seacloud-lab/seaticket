@@ -54,6 +54,7 @@ const Searcher = ({ onChange }) => {
       {isSearchActive && (
         <SearchInput
           ref={searchInputRef}
+          className="sea-metadata-search-input-wrapper"
           autoFocus={true}
           isShowClearIcon={true}
           size={30}
