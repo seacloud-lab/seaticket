@@ -1,0 +1,12 @@
+.sea-qa-project-main-panel .sea-qa-project-add-btn {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sea-qa-project-main-panel .sea-qa-project-add-btn .sea-qa-icon-svg {
+  height: 14px;
+  width: 14px;
+}

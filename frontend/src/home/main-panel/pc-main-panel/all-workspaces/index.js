@@ -8,7 +8,7 @@ import { Utils } from '@/utils/utils';
 import SessionStorage from '@/utils/session-utils';
 import OrgTitle from './org-title';
 
-class AllWorkspace extends React.Component {
+class AllWorkspaces extends React.Component {
 
   constructor(props) {
     super(props);
@@ -125,7 +125,7 @@ class AllWorkspace extends React.Component {
   }
 }
 
-AllWorkspace.propTypes = {
+AllWorkspaces.propTypes = {
   isWorkspaceListLoading: PropTypes.bool.isRequired,
   errorMsg: PropTypes.string,
   workspaceList: PropTypes.array.isRequired,
@@ -137,4 +137,4 @@ AllWorkspace.propTypes = {
   updateSidePanelGroups: PropTypes.func.isRequired,
 };
 
-export default AllWorkspace;
+export default AllWorkspaces;

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { Button } from 'reactstrap';
 import { gettext, server } from '@/constants';
-import { Icon, toaster } from '@/components';
+import { toaster } from '@/components';
+import { AddButton } from '@/project/components';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
@@ -9,8 +9,6 @@ import TopBar from '../top-bar';
 import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import AddKnowledgeDialog from './add-knowledge-dialog';
-
-import './knowledge-base.css';
 
 const { projectUuid, permission } = window.app.pageOptions;
 
@@ -129,10 +127,7 @@ const KnowledgeBase = ({ title }) => {
     <>
       <TopBar>
         {title}
-        <Button color="primary" onClick={openDialog} className="sea-qa-project-add-kb-record-btn">
-          <Icon symbol="add" className="mr-2" />
-          {gettext('Add record')}
-        </Button>
+        <AddButton onClick={openDialog} text={gettext('Add record')} icon="add" />
       </TopBar>
       <CollaboratorsProvider
         listUserInfo={listUserInfo}

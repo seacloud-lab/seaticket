@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import { Button } from 'reactstrap';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
@@ -20,6 +19,7 @@ import { toaster } from '@/components';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { MetadataProvider } from '../../../tickets/hooks';
+import AddButton from '@/project/components/add-button';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -345,15 +345,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             right: '140px',
             zIndex: 100
           }}>
-            <Button
-              color="primary"
-              size="sm"
-              className="sea-qa-project-add-connection-btn"
-              style={{ height: '28px', display: 'inline-flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}
-              onClick={() => setEmbeddingVisualizationOpen(true)}
-            >
-              {gettext('Analyze')}
-            </Button>
+            <AddButton onClick={() => setEmbeddingVisualizationOpen(true)} text={gettext('Analyze')} />
           </div>
         )}
         <SeaMetadata

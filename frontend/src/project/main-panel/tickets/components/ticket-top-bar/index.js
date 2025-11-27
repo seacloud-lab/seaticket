@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
-import { Button } from 'reactstrap';
 import TopBar from '../../../top-bar';
 import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from '../../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import { IconButton, Icon, IconTooltip } from '@/components';
+import { IconButton, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
+import AddButton from '@/project/components/add-button';
 
 import './index.css';
 
@@ -125,35 +125,23 @@ const TicketTopBar = ({ title, isMyTicket }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       return (
-        <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
-          <Icon symbol="add" className="mr-2" />
-          {gettext('New tag')}
-        </Button>
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="add" />
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       return (
-        <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
-          <Icon symbol="add" className="mr-2" />
-          {gettext('New type')}
-        </Button>
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)} text={gettext('New type')} icon="add" />
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       return (
-        <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)}>
-          <Icon symbol="add" className="mr-2" />
-          {gettext('New substate')}
-        </Button>
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} icon="add" />
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES || pageSlugId === TICKET_PAGE_SLUG_ID.TAGS || pageSlugId === TICKET_PAGE_SLUG_ID.NEW) return null;
 
     return (
-      <Button color="primary" className="sea-qa-project-add-ticket-btn" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)}>
-        <Icon symbol="add" className="mr-2" />
-        {gettext('New ticket')}
-      </Button>
+      <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="add" />
     );
   }, [pageSlugId, childrenPageSlugId, togglePageSlugId]);
 
