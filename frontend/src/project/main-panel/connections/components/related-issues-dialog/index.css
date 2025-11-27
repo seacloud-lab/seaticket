@@ -1,0 +1,74 @@
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.list-item:hover {
+  background-color: #f5f5f5;
+}
+
+.list-item-icon {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.list-item-icon .sea-qa-project-connection-type-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.list-item-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.list-item-content .list-item-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.list-item-content .list-item-title .list-item-title-content {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  color: #333;
+  margin-right: 8px;
+}
+
+.list-item-content .list-item-score {
+  color: #666;
+  font-size: 0.85em;
+}
+
+.list-item-content .list-item-path {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.list-item-content .list-item-time {
+  font-size: 0.8em;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.list-item-content .list-item-detail {
+  font-size: 0.9em;
+  color: #555;
+  line-height: 1.5;
+  margin-top: 4px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}

@@ -311,3 +311,33 @@ LLM_INPUT_CHARACTERS_LIMIT = 4000
 
 
 KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS = ['_pk', 'question', 'answer', 'creator', 'created_time', 'last_modifier', 'modified_time']
+
+
+# Connection categories
+class ConnectionCategory:
+    ISSUE = 'issue'
+    DOCUMENT = 'document'
+    OTHER = 'other'
+
+    # Category to connection types mapping
+    _TYPE_MAPPING = {
+        ISSUE: [
+            ConnectionType.EMAIL.value,
+            ConnectionType.DISCOURSE_FORUM.value,
+            ConnectionType.GITHUB_ISSUE.value,
+        ],
+        DOCUMENT: [
+            ConnectionType.SEAFILE.value,
+            ConnectionType.SITE.value,
+        ]
+    }
+
+    @classmethod
+    def from_type(cls, connection_type):
+        for category, types in cls._TYPE_MAPPING.items():
+            if connection_type in types:
+                return category
+        return cls.OTHER
+
+ISSUE_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.ISSUE]
+DOCUMENT_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.DOCUMENT]

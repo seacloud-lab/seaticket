@@ -5,6 +5,7 @@ import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../components/create-ticket-dialog';
+import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
@@ -12,11 +13,11 @@ import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
-  SUPPORT_AI_CONNECTION_TYPES,
+  SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
 } from '../../constants';
+import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { toaster } from '@/components';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { MetadataProvider } from '../../../tickets/hooks';
@@ -35,6 +36,9 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
+  const [isRelatedIssuesDialogOpen, setIsRelatedIssuesDialogOpen] = useState(false);
+  const [relatedIssues, setRelatedIssues] = useState([]);
+  const [isLoadingRelatedIssues, setIsLoadingRelatedIssues] = useState(false);
 
   const { updateIssue } = useProblemToBeResolved();
 
@@ -187,6 +191,35 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateIssue]);
 
+  const handleFindRelatedIssues = useCallback((row) => {
+    if (!row) return;
+    setIsLoadingRelatedIssues(true);
+    setRelatedIssues([]);
+    setIsRelatedIssuesDialogOpen(true);
+
+    connectionsAPI.findRelatedRecords(projectUuid, connectionID, row._id)
+      .then(res => {
+        const relatedRecords = res.data.related_records || [];
+        setRelatedIssues(relatedRecords);
+      })
+      .catch(error => {
+        toaster.danger(gettext('Failed to find related issues'));
+      })
+      .finally(() => {
+        setIsLoadingRelatedIssues(false);
+      });
+  }, [projectUuid, connectionID]);
+
+  const generateFindRelatedIssuesOption = useCallback(({ row }) => {
+    const enableFindRelatedIssues = SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES.includes(connection?.type);
+    if (!enableFindRelatedIssues) return null;
+    return {
+      key: 'find_related_issues',
+      label: gettext('Find related issues'),
+      callback: () => handleFindRelatedIssues(row),
+    };
+  }, [connection, handleFindRelatedIssues]);
+
   const generateCreateRelatedTicketOption = useCallback(({ row }) => {
     const enableCreateRelatedTicket = SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES.includes(connection?.type);
     if (!enableCreateRelatedTicket) return null;
@@ -234,21 +267,23 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rows[0];
     const openOriginalPageOption = generateOpenOriginalPageOption({ row });
     const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
+    const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
     const AIOption = generateAIOptions({ row, updateLocalRow });
-    if (createRelatedTicketOption || AIOption || openOriginalPageOption) {
+    if (createRelatedTicketOption || findRelatedIssuesOption || AIOption || openOriginalPageOption) {
       tools.push({
         key: 'more',
         icon: 'more',
         children: [
           openOriginalPageOption,
           createRelatedTicketOption,
-          createRelatedTicketOption && AIOption ? { key: 'divider' } : null,
+          findRelatedIssuesOption,
+          (createRelatedTicketOption || findRelatedIssuesOption) && AIOption ? { key: 'divider' } : null,
           AIOption,
         ].filter(Boolean)
       });
     }
     return tools;
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -283,6 +318,9 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
     list.push(createRelatedTicketOption);
 
+    const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
+    list.push(findRelatedIssuesOption);
+
     list = list.filter(Boolean);
 
     const AIOptions = generateAIOptions({ row, updateLocalRow });
@@ -291,7 +329,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
     list.push(AIOptions);
     return list.filter(Boolean);
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
@@ -400,6 +438,17 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           />
         )}
       </MetadataProvider>
+      {isRelatedIssuesDialogOpen && (
+        <RelatedIssuesDialog
+          isOpen={isRelatedIssuesDialogOpen}
+          isLoading={isLoadingRelatedIssues}
+          relatedIssues={relatedIssues}
+          connection={connection}
+          connections={connections}
+          onClose={() => setIsRelatedIssuesDialogOpen(false)}
+          onRowClick={handleCreateRelatedTicket}
+        />
+      )}
     </CollaboratorsProvider>
   );
 
