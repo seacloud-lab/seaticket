@@ -1,14 +1,15 @@
 import classnames from 'classnames';
 import Icon from '@components/icon';
 import { getConnectionIcon } from '../../utils';
-import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../constants';
+import { CONNECTION_TYPES } from '../../constants';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
 const ConnectionNameFormatter = ({ value, row = {}, expandRow }) => {
   const connectionType = row['type'];
   const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
-  const enableClick = expandRow && SUPPORT_DETAILS_CONNECTION_TYPES.includes(connectionType);
+  const enableClick = isFunction(expandRow);
 
   return (
     <div

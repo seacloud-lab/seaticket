@@ -30,6 +30,7 @@
 
 .sea-qa-nav-list .side-panel-slide {
   transition: all 0.3s ease-in-out;
+  flex-shrink: 0;
 }
 
 .sea-qa-nav-list .side-panel-slide-up {

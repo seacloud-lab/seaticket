@@ -256,8 +256,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
         if (rows.length > 0) {
           list.push({
             label: gettext('Delete selected'),
-            rows: rows,
-            callback: (event, { rows }) => {
+            callback: (event) => {
               const rowIds = rows.map(row => row._id);
               deleteRows && deleteRows(rowIds);
             }

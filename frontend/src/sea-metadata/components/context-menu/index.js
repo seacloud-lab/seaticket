@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { getTarget } from '@/utils/dom';
 import context from '@/sea-metadata/context';
 import { SubDropdown, ModalPortal } from '@/components';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -20,7 +21,7 @@ const ContextMenu = ({
   const [subMenuKey, setSubMenuKey] = useState('');
 
   const options = useMemo(() => {
-    if (!createContextMenuOptions) return [];
+    if (!isFunction(createContextMenuOptions)) return [];
     return createContextMenuOptions({ ...props, hideMenu: setVisible, position, context });
   }, [props, createContextMenuOptions, position]);
 
