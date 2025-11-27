@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import { CONNECTION_TYPES, SUPPORT_DETAILS_CONNECTION_TYPES } from '../../main-panel/connections/constants';
+import { CONNECTION_TYPES } from '../../main-panel/connections/constants';
 import { getConnectionIcon } from '../../main-panel/connections/utils';
 
 const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
@@ -18,7 +18,6 @@ const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
   const handleClick = useCallback((type) => {
     if (isActive) return;
     const { id } = nav;
-    if (!SUPPORT_DETAILS_CONNECTION_TYPES.includes(type)) return;
     onClick && onClick(id);
   }, [isActive, nav, onClick]);
 

@@ -643,6 +643,11 @@ class Rows extends Component {
     return this.resultContainerRef?.getBoundingClientRect() || { top: 0, left: 0 };
   };
 
+  handleDeleteRows = (rowIds) => {
+    this.props.deleteRows(rowIds);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+  };
+
   renderRowsBody = ({ containerWidth }) => {
     const { isGroupView } = this.props;
     const { rowMetrics, columnMetrics, colOverScanStartIdx, colOverScanEndIdx } = this.state;
@@ -655,7 +660,7 @@ class Rows extends Component {
         <ContextMenu
           isGroupView={isGroupView}
           rowGetterByIndex={this.props.rowGetterByIndex}
-          deleteRows={this.props.deleteRows}
+          deleteRows={this.handleDeleteRows}
           selectNone={this.selectNone}
           target={this.resultContainerRef}
           createContextMenuOptions={this.props.createContextMenuOptions}
