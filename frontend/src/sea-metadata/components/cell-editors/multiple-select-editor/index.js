@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import { CommonAddTool, SearchInput, Icon } from '@/components';
 import DeleteOption from './delete-options';
 import { isFunction } from '@/utils/type-detection';
-import { getColumnOptionIdsByNames } from '../../../utils/cell';
 import { getColumnOptions, generateNewOption } from '../../../utils/column';
 import { KeyCodes, gettext } from '@/constants';
 import context from '@/sea-metadata/context';
@@ -19,7 +18,7 @@ const MultipleSelectEditor = forwardRef(({
   onPressTab,
   modifyColumnData,
 }, ref) => {
-  const [value, setValue] = useState(getColumnOptionIdsByNames(column, oldValue));
+  const [value, setValue] = useState(oldValue);
   const [searchValue, setSearchValue] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [maxItemNum, setMaxItemNum] = useState(0);
