@@ -49,7 +49,7 @@ const RowDetailsDialog = ({
   const getFormatParamsByType = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.SITE) {
       const urlColumn = getColumnByName(columns, 'url');
-      return { url: getCellValueByColumn(row, urlColumn) };
+      return { url: getCellValueByColumn(row, urlColumn), _pk: row._id };
     }
     return { _pk: row._id };
   }, [connection, columns]);
@@ -60,15 +60,21 @@ const RowDetailsDialog = ({
     if (connection.type === CONNECTION_TYPE.SITE || connection.type === CONNECTION_TYPE.SEAFILE) {
       return {
         title: mainTitle,
-        body: res.data.content_data[0].content };
+        body: res.data.content };
     } else if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      const mainPost = {
+        author: res.data.author,
+        time: res.data.created_time,
+        body: res.data.content || '',
+      };
+      const comments = res.data.comments?.map(detail => ({
+        ...detail,
+        time: detail.created_time,
+        body: detail.content || '',
+      }));
       return {
         title: mainTitle,
-        displayedData: res.data.issue_records?.map(detail => ({
-          ...detail,
-          time: detail.created_time,
-          body: detail.content || '',
-        })) || [],
+        displayedData: [mainPost, ...comments]
       };
     } else if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
       return {
@@ -77,7 +83,7 @@ const RowDetailsDialog = ({
           ...detail,
           time: detail.modified_time,
           body: detail.content || '',
-        })) || [],
+        })),
       };
     }
   }, [connection]);
