@@ -10,16 +10,3 @@
   height: 16px !important;
   width: 16px !important;
 }
-
-.sea-qa-project-main-panel-header .sea-qa-project-add-connection-btn {
-  padding-top: 0;
-  padding-bottom: 0;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.sea-qa-project-main-panel-header .sea-qa-project-add-connection-btn .sea-qa-icon-svg-add {
-  height: 14px;
-  width: 14px;
-}

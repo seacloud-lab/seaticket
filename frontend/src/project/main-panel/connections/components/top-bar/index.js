@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react';
-import { Button } from 'reactstrap';
 import dayjs from '@/utils/dayjs';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
 import { CONNECTION_PAGE_SLUG_ID } from '../../constants';
-import { IconButton, Icon, toaster } from '@/components';
+import { IconButton, toaster } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import AddButton from '@/project/components/add-button';
 
 import './index.css';
 
@@ -61,21 +61,11 @@ const TopBar = ({ title }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      return (
-        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={handleNewConnection}>
-          <Icon symbol="add" className="mr-2" />
-          {gettext('New connection')}
-        </Button>
-      );
+      return <AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="add" />;
     } else {
-      return (
-        <Button color="primary" className="sea-qa-project-add-connection-btn" onClick={() => { onManualSync(pageSlugId);}}>
-          <Icon symbol="sync" className="mr-2" />
-          {gettext('Sync now')}
-        </Button>
-      );
+      return <AddButton onClick={() => { onManualSync(pageSlugId);}} text={gettext('Sync now')} icon="sync" />;
     }
-  }, [pageSlugId, handleNewConnection]);
+  }, [pageSlugId, handleNewConnection, onManualSync]);
 
   return (
     <BasicTopBar>
