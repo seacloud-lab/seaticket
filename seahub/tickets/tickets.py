@@ -1174,8 +1174,7 @@ class TicketMetadataAPIView(APIView):
                 return_name = ticket_column_name_to_return_name.get(column_name)
                 if return_name:
                     column_data = column.get('data', {}) or {}
-                    column_options = column_data.get('options', []) or []
-                    select_option_metadata[return_name] = column_options
+                    select_option_metadata[return_name] = column_data
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

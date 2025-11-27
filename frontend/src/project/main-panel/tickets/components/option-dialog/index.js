@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert } from 'reactstrap';
 import classnames from 'classnames';
-import { ColorSelectorPopover, IconButton, ModalHeader } from '@/components';
+import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Option from '../option';
 import { validateName } from '@/utils/validate';
 import { isHexColor, isDarkColor } from '@/utils/color-utils';
+import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
+import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
 
 const OptionDialog = ({
   row: oldOption,
+  parentOptions,
   canModifyDescription = true,
   type,
   onSubmit,
@@ -20,7 +23,7 @@ const OptionDialog = ({
   const [description, setDescription] = useState(oldOption?.description || '');
   const [color, setColor] = useState(oldOption?.color || SELECT_OPTION_COLORS[0].COLOR);
   const [textColor, setTextColor] = useState(oldOption?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR);
-  const [isChanged, setChanged] = useState(oldOption ? true : false);
+  const [parentId, setParentId] = useState(oldOption?.parent_id || '');
   const [isShowColorPopover, setIsShowColorPopover] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState({ type: '', msg: '' });
@@ -31,21 +34,66 @@ const OptionDialog = ({
 
   const colorInputRef = useRef(null);
 
-  const isValid = useMemo(() => name.trim() && color, [name, description, color]);
+  const canModifyParentOption = useMemo(() => parentOptions && Array.isArray(parentOptions) && parentOptions.length > 0, [parentOptions]);
+  const formattedParentOptions = useMemo(() => {
+    if (!Array.isArray(parentOptions) || parentOptions.length === 0) return [];
+    return parentOptions.map(option => {
+      return {
+        value: option._id,
+        name: option.display_name || option.name,
+        label: (
+          <div className="select-option-name single-option-name">
+            <SelectOption option={option} className="single-select-option ml-0" />
+            <IconButton className="single-check-icon no-hover-bg" icon={parentId === option.id ? 'check' : ''} />
+          </div>
+        ),
+      };
+    });
+  }, [parentOptions, parentId]);
+  const selectedParentOption = useMemo(() => {
+    if (!Array.isArray(parentOptions) || parentOptions.length === 0) return null;
+    const option = parentOptions.find(o => o._id === parentId);
+    if (!option) return null;
+    return {
+      label: (<SelectOption option={option} className="single-select-option ml-0" />)
+    };
+  }, [parentOptions, parentId]);
+  const isValid = useMemo(() => {
+    if (!name.trim()) return false;
+    if (!color) return false;
+    if (canModifyParentOption && !parentId) return false;
+    return true;
+  }, [name, color, canModifyParentOption, parentId]);
   const isValidColor = useMemo(() => isHexColor(color), [color]);
+  const isChanged = useMemo(() => {
+    if (!oldOption) return isValid;
+    const oldValue = {
+      name: oldOption?.name || '',
+      description: oldOption?.description || '',
+      color: oldOption?.color || SELECT_OPTION_COLORS[0].COLOR,
+      text_color: oldOption?.text_color || SELECT_OPTION_COLORS[0].TEXT_COLOR,
+      parent_id: oldOption?.parent_id || ''
+    };
+    const newValue = {
+      name: name.trim(),
+      description,
+      color,
+      text_color: textColor,
+      parent_id: parentId,
+    };
+    return ObjectUtils.isObjectChanged(oldValue, newValue);
+  }, [oldOption, isValid, name, description, color, textColor, parentId]);
 
   const onNameChange = useCallback((event) => {
     const newName = event.target.value;
     if (newName === name) return;
     setName(newName);
-    setChanged(true);
   }, [name]);
 
   const onDescriptionChange = useCallback((event) => {
     const newDescription = event.target.value;
     if (newDescription === description) return;
     setDescription(newDescription);
-    setChanged(true);
   }, [description]);
 
   const syncGenerateColor = useCallback(() => {
@@ -54,7 +102,6 @@ const OptionDialog = ({
     const { COLOR, TEXT_COLOR } = option;
     setColor(COLOR);
     setTextColor(TEXT_COLOR);
-    setChanged(true);
   }, []);
 
   const onColorChange = useCallback((event) => {
@@ -81,6 +128,11 @@ const OptionDialog = ({
     setIsShowColorPopover(false);
   }, []);
 
+  const onSelectParentOption = useCallback((newValue) => {
+    if (newValue === parentId) return;
+    setParentId(newValue);
+  }, [parentId]);
+
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
     const { isValid: isValidName, message: validName } = validateName(name);
@@ -98,6 +150,9 @@ const OptionDialog = ({
     if (canModifyDescription) {
       params['description'] = description;
     }
+    if (canModifyParentOption && oldOption?.parent_id !== parentId) {
+      params['parent_id'] = parentId;
+    }
     onSubmit(params, {
       success_callback: () => {
         onToggle();
@@ -107,7 +162,7 @@ const OptionDialog = ({
         setSubmitting(false);
       }
     });
-  }, [name, description, color, textColor, isValidColor, canModifyDescription, onToggle, onSubmit]);
+  }, [oldOption, name, description, color, textColor, parentId, canModifyParentOption, isValidColor, canModifyDescription, onToggle, onSubmit]);
 
   useEffect(() => {
     if (isHexColor(color)) {
@@ -175,6 +230,25 @@ const OptionDialog = ({
           )}
         </FormGroup>
         {error && error.type === 'color' && (<Alert color="danger">{error.msg}</Alert>)}
+        {canModifyParentOption && (
+          <FormGroup>
+            <Label>
+              {gettext('Parent option')}
+              <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+            </Label>
+            <CustomizeSelect
+              className=" sea-metadata-selector-single-select"
+              value={selectedParentOption}
+              options={formattedParentOptions}
+              onChange={onSelectParentOption}
+              placeholder={gettext('Select an option')}
+              searchable={true}
+              searchPlaceholder={gettext('Search options')}
+              noOptionsPlaceholder={gettext('No options available')}
+              isInModal={true}
+            />
+          </FormGroup>
+        )}
         {error && error.type === 'network' && (<Alert color="danger">{error.msg}</Alert>)}
       </ModalBody>
       <ModalFooter>
