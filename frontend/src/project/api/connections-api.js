@@ -226,6 +226,16 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  findRelatedRecords(projectUuid, connectionID, recordID) {
+    const url = this.server + '/api/v2.1/ai/related-records/';
+    const data = {
+      project_uuid: projectUuid,
+      connection_id: connectionID,
+      record_id: recordID
+    };
+    return this.req.post(url, data);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

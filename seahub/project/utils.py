@@ -225,6 +225,19 @@ def update_discourse_topic_by_webhook(params):
     return resp
 
 
+def find_related_records(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": f'Token {token}'}
+    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/summary_vector_search')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception(f'find related records error status: {resp.status_code} body: {resp.text}')
+    resp_json = resp.json()
+    results = resp_json.get('results')
+    return results
+
+
 def search(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
