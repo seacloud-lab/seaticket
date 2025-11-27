@@ -37,7 +37,7 @@ export const removeTextMdMark = (text) => {
 
 export const removeTextBreakMark = (text) => {
   if (!text) return '';
-  return text.replace(/\r?\n|\r/g, '');
+  return text.replace(/\r?\n|\r/g, ' ');
 };
 
 export const removeTextMark = (text) => {
