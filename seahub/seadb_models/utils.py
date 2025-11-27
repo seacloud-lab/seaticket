@@ -596,33 +596,43 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
     topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
+        title = topics_res.get('results')[0].get('title')
         topic_id = topics_res.get('results')[0].get('topic_id')
         replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         records = replies_res.get('results', [])
     except Exception as e:
         logger.error(f'SeaDB query error for discourse topics {topics_table_name}: {e}')
+        title = ''
         records = []
-    return records
+    return title, records
 
 
 def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""
     issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
     comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-    issue_sql = f"SELECT author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT title, author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results', [])
+        title = issue_record[0].get('title')
         issue_id = issue_record[0].get('issue_id')
+        issue_records = [{
+            'author': issue_record[0].get('author'),
+            'content': issue_record[0].get('content'),
+            'created_time': issue_record[0].get('created_time'),
+            'issue_id': issue_id,
+        }]
         comments_sql = f"SELECT author, content, created_time, issue_id FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_record = comments_res.get('results', [])
-        issue_record.extend(comments_record)
+        issue_records.extend(comments_record)
     except Exception as e:
         logger.error(f'SeaDB query error for issue details {issue_table_name} or {comments_table_name}: {e}')
-        issue_record = []
-    return issue_record
+        title = ''
+        issue_records = []
+    return title, issue_records
 
 
 def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
@@ -630,11 +640,17 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     sql = f"SELECT `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
-        record = res.get('results', [])
+        title = res.get('results')[0].get('title')
+        record = [{
+            'path': res.get('results')[0].get('path'),
+            'modified_time': res.get('results')[0].get('modified_time'),
+            'content': res.get('results')[0].get('content'),
+        }]
     except Exception as e:
         logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
+        title = ''
         record = []
-    return record
+    return title, record
 
 
 def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):

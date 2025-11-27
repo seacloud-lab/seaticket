@@ -37,6 +37,15 @@ const RowDetailsDialog = ({
     return title;
   }, [connection, row, columns]);
 
+  const displayedTitle = useMemo(() => {
+    console.log('status', status);
+    if (status === 'loaded' && rowDetails) {
+      console.log('rowDetails', rowDetails, rowDetails.title);
+      return rowDetails.title || rowTitle;
+    }
+    return rowTitle;
+  }, [status, rowDetails, connection.type, rowTitle]);
+
   const getFormatParamsByType = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.SITE) {
       const urlColumn = getColumnByName(columns, 'url');
@@ -47,14 +56,30 @@ const RowDetailsDialog = ({
 
   const getFormatDetailDataByType = useCallback((res) => {
     // Format data according to different connection types,site and seafile only have one detail content
+    const mainTitle = res.data.title;
     if (connection.type === CONNECTION_TYPE.SITE || connection.type === CONNECTION_TYPE.SEAFILE) {
-      return { body: res.data.row_details[0].content };
+      return {
+        title: mainTitle,
+        body: res.data.content_data[0].content };
+    } else if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
+      return {
+        title: mainTitle,
+        displayedData: res.data.issue_records?.map(detail => ({
+          ...detail,
+          time: detail.created_time,
+          body: detail.content || '',
+        })) || [],
+      };
+    } else if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return {
+        title: mainTitle,
+        displayedData: res.data.replies?.map(detail => ({
+          ...detail,
+          time: detail.modified_time,
+          body: detail.content || '',
+        })) || [],
+      };
     }
-    return res.data.row_details.map(detail => ({
-      ...detail,
-      time: detail.created_time || detail.modified_time,
-      body: detail.content,
-    }));
   }, [connection]);
 
   const getRowDetails = useCallback(() => {
@@ -120,7 +145,7 @@ const RowDetailsDialog = ({
               onClick={() => handleSwitchRows(1)}
             />
           </div>
-          <div className="text-truncate flex-1" title={rowTitle}>{rowTitle}</div>
+          <div className="text-truncate flex-1" title={displayedTitle}>{displayedTitle}</div>
         </div>
       </ModalHeader>
       <ModalBody>
@@ -143,10 +168,10 @@ const RowDetailsDialog = ({
             )}
             {SUPPORT_DETAILS_LIST.includes(connection.type) && rowDetails && (
               <div className="sea-qa-row-details-type-list">
-                {rowDetails.length === 0 && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
-                {rowDetails.length > 0 && (
+                {rowDetails.displayedData.length === 0 && <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />}
+                {rowDetails.displayedData.length > 0 && (
                   <Fragment>
-                    {rowDetails.map(detail => (
+                    {rowDetails.displayedData.map(detail => (
                       <div key={detail.id} className="sea-qa-row-details-reply-item">
                         <div className="author-info-wrapper">
                           <div className="author-info-left">
