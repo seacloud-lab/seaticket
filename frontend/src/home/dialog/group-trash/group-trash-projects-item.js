@@ -37,7 +37,7 @@ class GroupTrashProjectsItem extends React.PureComponent {
     this.setState({ isRestoreDialogOpen: !this.state.isRestoreDialogOpen });
   };
 
-  onRestoreGroupDTable = () => {
+  onRestoreGroupProject = () => {
     const { item, groupID } = this.props;
     const { name, uuid } = item;
     this.setState({ isRestoring: true });
@@ -86,10 +86,9 @@ class GroupTrashProjectsItem extends React.PureComponent {
         {this.state.isRestoreDialogOpen &&
           <ModalPortal>
             <RestoreProjectDialog
-              currentProject={item}
-              handleSubmit={this.onRestoreGroupDTable}
-              restoreCancel={this.toggleRestoreDialog}
-              owner_deleted={item.owner_deleted}
+              project={item}
+              onRestore={this.onRestoreGroupProject()}
+              onToggle={this.toggleRestoreDialog}
             />
           </ModalPortal>
         }
