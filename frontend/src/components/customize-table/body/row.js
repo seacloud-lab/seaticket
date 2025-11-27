@@ -28,7 +28,7 @@ const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
           cancelActive: onMouseLeave,
         });
         return (
-          <div className={`sea-custom-table-cell sea-custom-table-${type}-cell`} key={key} style={{ width }} title={value}>
+          <div className={`sea-custom-table-cell sea-custom-table-${type}-cell`} key={key} style={{ width }}>
             {valueFormatter}
           </div>
         );
