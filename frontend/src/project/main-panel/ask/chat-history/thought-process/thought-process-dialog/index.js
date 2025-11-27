@@ -70,7 +70,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
                   }, {
                     name: gettext('Sources'),
                     children: [
-                      { value: record.assistant_response?.[0]?.content?.sources, formatter: StepMarkdownViewer }
+                      { value: record.assistant_response?.[0]?.content?.references, formatter: StepMarkdownViewer }
                     ]
                   }
                 ] : Object.entries(record.assistant_response).map(([responseDate, responseContent], responseIndex) => {
