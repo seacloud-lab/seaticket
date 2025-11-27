@@ -1,10 +1,11 @@
 import React from 'react';
-import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ModalHeader } from '@/components';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import { CONNECTION_TYPES } from '../../constants';
 import { getConnectionIcon } from '../../utils';
+import { getNumberDisplayString } from '@/sea-metadata/utils/column';
 import dayjs from 'dayjs';
 
 import './index.css';
@@ -38,7 +39,7 @@ const RelatedIssuesDialog = ({
 
   return (
     <Modal className="sea-qa-related-issues-dialog" isOpen={isOpen} toggle={onClose} size="xl">
-      <ModalHeader toggle={onClose}>{gettext('Related Issues')}</ModalHeader>
+      <ModalHeader toggle={onClose}>{gettext('Related issues')}</ModalHeader>
       <ModalBody>
         {isLoading ? (
           <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
@@ -59,6 +60,11 @@ const RelatedIssuesDialog = ({
                   <div className="list-item-content">
                     <div className="list-item-title">
                       <span className="text-truncate list-item-title-content">{issue.title || gettext('No title')}</span>
+                      {issue.score && (
+                        <span className="list-item-score ml-2">
+                          {getNumberDisplayString(issue.score, { format: 'number', enable_precision: true, precision: 2 })}
+                        </span>
+                      )}
                     </div>
                     {issue.url && (
                       <div className="list-item-path">{issue.url}</div>
@@ -82,11 +88,6 @@ const RelatedIssuesDialog = ({
           </div>
         )}
       </ModalBody>
-      <ModalFooter>
-        <Button color="secondary" onClick={onClose}>
-          {gettext('Close')}
-        </Button>
-      </ModalFooter>
     </Modal>
   );
 };
