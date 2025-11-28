@@ -155,6 +155,8 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         assignees = list(set(assignees))
 
+        substate = request.POST.get('substate', '')
+
         username = request.user.username
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -211,13 +213,13 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_state = 'open'
-            substate_name = 'New'
+
             row = {
                 TicketsTable.title.name: title,
                 TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_name,
-                TicketsTable.substate.name: substate_name,
+                TicketsTable.substate.name: substate,
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],

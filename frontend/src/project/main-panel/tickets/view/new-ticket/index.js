@@ -4,7 +4,7 @@ import { Button, Input, Label } from 'reactstrap';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
-import { TICKET_PAGE_SLUG_ID } from '../../constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE } from '../../constants';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
@@ -27,7 +27,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   const contentEditorRef = useRef(null);
 
-  const { tagsData, typesData, isLoading: isMetadataLoading } = useMetadata();
+  const { tagsData, typesData, substatesData, isLoading: isMetadataLoading } = useMetadata();
 
   const user = useMemo(() => {
     return {
@@ -85,6 +85,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       }
       serverData[columnName] = value;
     });
+
+    const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
+    const substateOption = substateOptions[0];
+    serverData[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE] = substateOption?.name;
 
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
       togglePageSlugId(res.data.ticket._pk);
