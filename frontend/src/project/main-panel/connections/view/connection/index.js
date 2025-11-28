@@ -149,24 +149,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [projectUuid, connectionID, connection]);
 
-  const generateAISummaryForRow = useCallback((row, updateLocalRow) => {
-    toaster.notify(gettext('Generating AI summary...'), { duration: 0 });
-    connectionsAPI.generateAISummary(projectUuid, connectionID, row._id)
-      .then(res => {
-        toaster.closeAll();
-        if (res.data && res.data.ai_summary) {
-          toaster.success(gettext('AI summary generated'));
-          updateLocalRow && updateLocalRow({ rowId: row._id }, { ai_summary: res.data.ai_summary, ai_processed_time: res.data.ai_processed_time });
-        } else {
-          toaster.warning(gettext('Failed to generate AI summary'));
-        }
-      })
-      .catch(error => {
-        toaster.closeAll();
-        const errorMessage = error.response?.data?.error_msg || gettext('Failed to generate AI summary');
-        toaster.danger(errorMessage);
-      });
-  }, [projectUuid, connectionID]);
 
   const handleCreateRelatedTicket = useCallback((row) => {
     if (!row) return;
@@ -230,26 +212,26 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generateAIOptions = useCallback(({ row, updateLocalRow }) => {
+  const generateAIOptions = useCallback(({ row }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
     if (!enableUseAI) return null;
+
+    const children = [
+      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
+        label: gettext('Resolve issue'),
+        key: 'resolve_issue',
+        callback: () => handleResolveIssueByAI(row)
+      } : null,
+    ].filter(Boolean);
+
+    if (children.length === 0) return null;
+
     return {
       key: 'AI',
       label: gettext('AI'),
-      children: [
-        {
-          label: gettext('Generate summary'),
-          key: 'generate_summary',
-          callback: () => generateAISummaryForRow(row, updateLocalRow)
-        },
-        connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
-          label: gettext('Resolve issue'),
-          key: 'resolve_issue',
-          callback: () => handleResolveIssueByAI(row)
-        } : null,
-      ].filter(Boolean)
+      children
     };
-  }, [connection, generateAISummaryForRow, handleResolveIssueByAI]);
+  }, [connection, handleResolveIssueByAI]);
 
   const generateOpenOriginalPageOption = useCallback(({ row }) => {
     const url = getOriginalPageUrl(connection, row, allColumns.current);

@@ -11,7 +11,7 @@ from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
     ConnectionViewsMoveView, ConnectionViewsDuplicateView
-from .ai import ConvertRecordToTicket, GenerateAISummaryView, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, RelatedRecordsView
+from .ai import ConvertRecordToTicket, EmbeddingAnalysisView, EmbeddingAnalysisTaskStatusView, RelatedRecordsView
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
@@ -61,7 +61,6 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v2.1-connection-view-duplicate'),
 
     re_path(r'^api/v2.1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v2.1-ai-create-ticket'),
-    re_path(r'^api/v2.1/ai/generate-ai-summary/$', GenerateAISummaryView.as_view(), name='api-v2.1-ai-generate-summary'),
     re_path(r'^api/v2.1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v2.1-ai-embedding-analysis'),
     re_path(r'^api/v2.1/ai/embedding-analysis-task-status/(?P<task_id>[-0-9a-zA-Z]+)/$', EmbeddingAnalysisTaskStatusView.as_view(), name='api-v2.1-ai-embedding-analysis-task-status'),
     re_path(r'^api/v2.1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v2.1-ai-related-records'),
