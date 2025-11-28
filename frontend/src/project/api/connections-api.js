@@ -202,15 +202,6 @@ class ConnectionsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  generateAISummary(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v2.1/ai/generate-ai-summary/';
-    let data = {
-      project_uuid: projectUuid,
-      connection_id: connectionID,
-      record_id: recordID
-    };
-    return this.req.post(url, data);
-  }
 
   getEmbeddingAnalysis(projectUuid, connectionID) {
     const url = this.server + '/api/v2.1/ai/embedding-analysis/';

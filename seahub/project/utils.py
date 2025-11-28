@@ -37,7 +37,6 @@ from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import time_str_to_utc_time
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
-from seahub.project.constants import LLM_INPUT_CHARACTERS_LIMIT
 
 
 logger = logging.getLogger(__name__)
@@ -265,28 +264,6 @@ def convert_record_to_ticket(params):
     title = resp_json.get('title', '')
     content = resp_json.get('description', '')
     return title, content
-
-
-def generate_ai_summary(content, username, connection_type, project_uuid, org_id, include_vector=True):
-    params = {
-        'content': content[:LLM_INPUT_CHARACTERS_LIMIT],
-        'username': username,
-        'connection_type': connection_type,
-        'project_uuid': project_uuid,
-        'org_id': org_id,
-        'include_vector': include_vector,
-    }
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/generate-summary')
-    resp = requests.post(url, json=params, headers=headers)
-    if resp.status_code == 500:
-        raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
-    resp_json = resp.json()
-    ai_summary = resp_json.get('summary', '')
-    vector = resp_json.get('embedding', [])
-    return ai_summary, vector
 
 
 def gen_s3_file_path(project_uuid, file_path):
