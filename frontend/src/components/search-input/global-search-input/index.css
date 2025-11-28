@@ -9,6 +9,8 @@
   border: 1px solid #e5e5e5;
   border-top: 0;
   z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .sea-qa-search-input-wrapper .sea-qa-search-input-old-search-item {
