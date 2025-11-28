@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 import { useMetadata } from '../../../tickets/hooks';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -18,7 +18,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { typesData } = useMetadata();
+  const { typesData, tagsData } = useMetadata();
 
   useEffect(() => {
     if (initialData) {
@@ -47,13 +47,24 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       links,
       checklist,
     };
-    const typeName = type ? getRowById(typesData, type)?.name || '' : '';
+    let validType = type;
+    if (type) {
+      const typeRow = getRowById(typesData, type);
+      if (typeRow) {
+        validType = typeRow.name;
+      }
+    }
+    let validTags = tags;
+    if (Array.isArray(validTags) && validTags.length > 0) {
+      validTags = getRowsByIds(tagsData, validTags);
+      validTags = validTags.map(tag => tag.name);
+    }
     const ticketData = {
       title,
       content: ticket_content,
-      type: typeName,
+      type: validType,
       assignees,
-      tags,
+      tags: validTags,
       priority,
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
