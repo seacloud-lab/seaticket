@@ -21,13 +21,12 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
       const isMarkdown = true;
       const previewTextNeedSlice = false;
       const result = getPreviewContent(content, isMarkdown, previewTextNeedSlice);
-      if (!result || !result.previewText) return '';
+      if (!result || !result.previewText) return content;
       const { previewText } = result;
       if (!searchValue) return previewText;
       return previewText.replace(new RegExp(searchValue, 'ig'), (match) => `<span class="font-weight-bold">${match}</span>`);
     } catch (error) {
-      console.error('Error rendering detail:', error);
-      return '';
+      return content || '';
     }
   };
 

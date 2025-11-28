@@ -6,8 +6,7 @@ import './index.css';
 
 const Collaborator = ({ enableDelete = false, collaborator, onDelete }) => {
   if (!collaborator) return null;
-  const emial = collaborator.email;
-  if (emial.includes('@seafile_group')) {
+  if (collaborator.email.includes('@seafile_group')) {
     return (
       <div className="sea-metadata-ui collaborator-item" title={collaborator.name}>
         <span className="sf3-font-department sf3-font nav-icon">
