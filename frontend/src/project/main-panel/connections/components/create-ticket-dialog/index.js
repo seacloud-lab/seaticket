@@ -5,6 +5,8 @@ import { ticketsAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
+import { useMetadata } from '../../../tickets/hooks';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -15,6 +17,8 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
+
+  const { typesData } = useMetadata();
 
   useEffect(() => {
     if (initialData) {
@@ -43,10 +47,11 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       links,
       checklist,
     };
+    const typeName = type ? getRowById(typesData, type)?.name || '' : '';
     const ticketData = {
       title,
       content: ticket_content,
-      type,
+      type: typeName,
       assignees,
       tags,
       priority,
