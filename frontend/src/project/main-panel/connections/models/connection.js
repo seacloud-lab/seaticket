@@ -14,6 +14,8 @@ class Connection {
     this.is_active = object.is_active || '';
     this.last_ai_processing_time = object.last_ai_processing_time || '';
     this.ai_indexed_at = object.ai_indexed_at || '';
+    this.content_vector_status = object.content_vector_status || '{}';
+    this.content_vector_indexed_at = object.content_vector_indexed_at || '';
 
     if (this.status) {
       try {
@@ -28,6 +30,14 @@ class Connection {
         this.ai_status = JSON.parse(this.ai_status);
       } catch {
         this.ai_status = {};
+      }
+    }
+
+    if (this.content_vector_status) {
+      try {
+        this.content_vector_status = JSON.parse(this.content_vector_status);
+      } catch {
+        this.content_vector_status = {};
       }
     }
   }

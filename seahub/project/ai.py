@@ -27,6 +27,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, SeafileTable, \
     DiscourseRepliesTable, WebCrawlTable, EmailTable
 
+
 logger = logging.getLogger(__name__)
 MAX_LENGTH = 10000
 
