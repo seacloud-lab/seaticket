@@ -12,7 +12,9 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
 
   useEffect(() => {
     if (!selectedModel && CUSTOM_LLM_MODELS.length > 0) {
-      updateModel(CUSTOM_LLM_MODELS[0].model);
+      const defaultModel = CUSTOM_LLM_MODELS.find(m => m.default === true);
+      const modelToUse = defaultModel ? defaultModel.model : CUSTOM_LLM_MODELS[0].model;
+      updateModel(modelToUse);
     }
   }, []);
 
@@ -36,6 +38,8 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
   }
 
   const currentModel = CUSTOM_LLM_MODELS.find(m => m.model === selectedModel);
+  const defaultModel = CUSTOM_LLM_MODELS.find(m => m.default === true);
+  const fallbackModel = defaultModel || CUSTOM_LLM_MODELS[0];
 
   return (
     <>
@@ -45,7 +49,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         onClick={onMenuToggle}
       >
         <div className="selected-option">
-          <div className="selected-option-show">{currentModel?.label || CUSTOM_LLM_MODELS[0]?.label}</div>
+          <div className="selected-option-show">{currentModel?.label || fallbackModel?.label}</div>
           <Icon symbol="down" />
         </div>
       </div>

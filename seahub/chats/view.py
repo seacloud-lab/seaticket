@@ -16,7 +16,6 @@ from seahub.project.utils import check_project_permission, ticket_to_json, Ticke
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
 from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id
 from seahub.project.constants import AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
-from seahub.settings import CUSTOM_LLM_MODELS
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -333,11 +332,6 @@ class ChatView(APIView):
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
-        if model:
-            custom_model = next(m for m in CUSTOM_LLM_MODELS if m['model'] == model)
-            if not custom_model:
-                error_msg = f'model {model} not found.'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
@@ -364,15 +358,9 @@ class ChatView(APIView):
             'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
+            'llm_model': model,
         }
 
-        if model:
-            params.update({
-                'llm_model': custom_model['model'],
-                'llm_type': custom_model['type'],
-                'llm_url': custom_model['url'],
-                'llm_key': custom_model['key'],
-            })
         try:
             ai_response = get_ai_reply(params)
         except Exception as e:
