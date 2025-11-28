@@ -8,12 +8,12 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
 
   const ref = useRef(null);
 
-  const CUSTOM_LLM_MODELS = window.app?.pageOptions?.customLLMModels || [];
+  const LLM_MODELS = window.app?.pageOptions?.llmModels || [];
 
   useEffect(() => {
-    if (!selectedModel && CUSTOM_LLM_MODELS.length > 0) {
-      const defaultModel = CUSTOM_LLM_MODELS.find(m => m.default === true);
-      const modelToUse = defaultModel ? defaultModel.model : CUSTOM_LLM_MODELS[0].model;
+    if (!selectedModel && LLM_MODELS.length > 0) {
+      const defaultModel = LLM_MODELS.find(m => m.default === true);
+      const modelToUse = defaultModel ? defaultModel.model : LLM_MODELS[0].model;
       updateModel(modelToUse);
     }
   }, []);
@@ -33,13 +33,13 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
     setIsShowMenu(false);
   }, []);
 
-  if (CUSTOM_LLM_MODELS.length === 0) {
+  if (LLM_MODELS.length === 0) {
     return null;
   }
 
-  const currentModel = CUSTOM_LLM_MODELS.find(m => m.model === selectedModel);
-  const defaultModel = CUSTOM_LLM_MODELS.find(m => m.default === true);
-  const fallbackModel = defaultModel || CUSTOM_LLM_MODELS[0];
+  const currentModel = LLM_MODELS.find(m => m.model === selectedModel);
+  const defaultModel = LLM_MODELS.find(m => m.default === true);
+  const fallbackModel = defaultModel || LLM_MODELS[0];
 
   return (
     <>
@@ -61,7 +61,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
           hidePopoverWithEsc={handleClose}
         >
           <div className="sea-qa-ai-model-selector-options">
-            {CUSTOM_LLM_MODELS.map((model) => {
+            {LLM_MODELS.map((model) => {
               const isSelected = selectedModel === model.model;
               return (
                 <div
