@@ -7,6 +7,7 @@ import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import OptionDialog from '../../components/option-dialog';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllSubstates = ({ projectUuid, permission }) => {
   const { isLoading, statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
@@ -22,8 +23,14 @@ const AllSubstates = ({ projectUuid, permission }) => {
       is_name_column: true,
       frozen: true,
       click: (row) => togglePageSlugId(pageSlugId, row._id)
-    },
-    {
+    }, {
+      type: CellType.TEXT,
+      key: 'description',
+      name: 'description',
+      display_name: gettext('Description'),
+      editable: true,
+      is_required: false,
+    }, {
       type: CellType.NUMBER,
       key: 'tickets_count',
       name: 'tickets_count',
@@ -86,17 +93,6 @@ const AllSubstates = ({ projectUuid, permission }) => {
     Rows: gettext('Substates'),
     Row: gettext('Substate'),
   }), []);
-
-  useEffect(() => { loadSubStates(); }, []);
-
-  useEffect(() => {
-    const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {
-      context.eventBus.dispatch('expand_row');
-    });
-    return () => {
-      unsubscribeNew && unsubscribeNew();
-    };
-  }, []);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -192,6 +188,30 @@ const AllSubstates = ({ projectUuid, permission }) => {
     return list;
   }, []);
 
+  const cascadeUpdateCells = useCallback((table, rowId, rowUpdate, oldRowData) => {
+    const row = getRowById(table, rowId);
+    if (!row) return;
+    const updatedColumnKeys = Object.keys(rowUpdate);
+    updatedColumnKeys.forEach(key => {
+      if (key === 'description') {
+        rowUpdate[key] = rowUpdate[key] || '';
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    loadSubStates();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {
+      context.eventBus.dispatch('expand_row');
+    });
+    return () => {
+      unsubscribeNew && unsubscribeNew();
+    };
+  }, []);
+
   if (isLoading || substatesData.isLoading) return (<CenteredLoading />);
 
   return (
@@ -205,9 +225,10 @@ const AllSubstates = ({ projectUuid, permission }) => {
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
         isViewComputedOnServer={false}
         createContextMenuOptions={createContextMenuOptions}
+        cascadeUpdateCells={cascadeUpdateCells}
         t={t}
       >
-        <OptionDialog type={gettext('substate')} parentOptions={statesData.rows} canModifyDescription={false} />
+        <OptionDialog type={gettext('substate')} parentOptions={statesData.rows} />
       </SeaMetadata>
     </>
   );

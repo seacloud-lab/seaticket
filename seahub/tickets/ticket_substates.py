@@ -282,9 +282,10 @@ class TicketSubstateAPIView(APIView):
 
         # argument check
         name = request.data.get('name')
+        description = request.POST.get('description')
         color = request.POST.get('color')
         text_color = request.POST.get('text_color')
-        if 'name' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
+        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
             error_msg = 'argument invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
@@ -323,6 +324,8 @@ class TicketSubstateAPIView(APIView):
             update_data = {}
             if name:
                 update_data['name'] = name
+            if 'description' in request.data:
+                update_data['description'] = description
             if color:
                 update_data['color'] = color
             if text_color:

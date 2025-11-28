@@ -7,6 +7,7 @@ import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllTags = ({ projectUuid, permission }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
@@ -202,6 +203,17 @@ const AllTags = ({ projectUuid, permission }) => {
     };
   }, []);
 
+  const cascadeUpdateCells = useCallback((table, rowId, rowUpdate, oldRowData) => {
+    const row = getRowById(table, rowId);
+    if (!row) return;
+    const updatedColumnKeys = Object.keys(rowUpdate);
+    updatedColumnKeys.forEach(key => {
+      if (key === 'description') {
+        rowUpdate[key] = rowUpdate[key] || '';
+      }
+    });
+  }, []);
+
   useEffect(() => {
     loadTags();
   }, []);
@@ -230,6 +242,7 @@ const AllTags = ({ projectUuid, permission }) => {
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
         isViewComputedOnServer={false}
         t={t}
+        cascadeUpdateCells={cascadeUpdateCells}
       >
         <OptionDialog type={gettext('tag')} />
       </SeaMetadata>

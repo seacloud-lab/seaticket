@@ -286,7 +286,7 @@ class TicketTagAPIView(APIView):
             update_data = {}
             if name:
                 update_data['name'] = name
-            if description:
+            if 'description' in request.data:
                 update_data['description'] = description
             if color:
                 update_data['color'] = color

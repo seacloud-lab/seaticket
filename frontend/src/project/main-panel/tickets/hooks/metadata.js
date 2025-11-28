@@ -5,7 +5,7 @@ import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { ticketsAPI } from '../../../api';
 import { OptionsData, Option } from '../models';
-import { PREDEFINED_TICKET_TAG } from '../constants';
+import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
 
 const MetadataContext = React.createContext(null);
 
@@ -60,7 +60,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const createTag = useCallback((tag) => {
     return ticketsAPI.createTicketTag(projectUuid, tag).then(res => {
-      const tag = new Option(res.data.tag, PREDEFINED_TICKET_TAG);
+      const tag = new Option(res.data.tag);
       applyCreateTags([tag]);
       return tag;
     });
@@ -207,7 +207,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     if (!Array.isArray(newSubstates) || newSubstates.length === 0) return;
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(substatesData);
     newSubstates.forEach(substate => {
-      const newSubstate = substate instanceof Option ? substate : new Option(substate);
+      const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
       newData.rows.push(newSubstate);
       newData.row_ids.push(newSubstate._id);
       newData.id_row_map[newSubstate._id] = newSubstate;
@@ -311,8 +311,8 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   const applyCreateStates = useCallback((newStates, isReload = false) => {
     if (!Array.isArray(newStates) || newStates.length === 0) return;
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(statesData);
-    newStates.forEach(tag => {
-      const option = tag instanceof Option ? tag : new Option(tag);
+    newStates.forEach(state => {
+      const option = state instanceof Option ? state : new Option(state);
       newData.rows.push(option);
       newData.row_ids.push(option._id);
       newData.id_row_map[option._id] = option;

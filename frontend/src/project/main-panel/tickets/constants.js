@@ -6,21 +6,36 @@ export const TICKET_STATE = {
   CLOSED: '0002'
 };
 
+export const PREDEFINED_TICKET_COLUMN_NAME = {
+  PK: '_pk',
+  PRIORITY: 'priority',
+  TITLE: 'title',
+  STATE: 'state',
+  SUB_STATE: 'substate',
+  TYPE: 'type',
+  CONTENT: 'content',
+  ASSIGNEES: 'assignees',
+  TAGS: 'tags',
+  PARTICIPANTS: 'participants',
+  CREATED_TIME: 'created_time',
+  MODIFIED_TIME: 'modified_time',
+  CREATOR: 'creator',
+  DELETED: 'deleted',
+  REPLY_COUNT: 'reply_count',
+};
+
 export const TICKET_STATE_CONFIG = {
   [TICKET_STATE.OPEN]: {
     value: TICKET_STATE.OPEN,
     icon: 'circle-dot',
     statusName: gettext('Open'), // Applied to ticket status display
     shortName: gettext('Open'), // Applied to status toggle btn
-    name: gettext('Open'), // Applied to status editor
   },
   [TICKET_STATE.CLOSED]: {
     value: TICKET_STATE.CLOSED,
     icon: 'circle-check',
     statusName: gettext('Close'),
     shortName: gettext('Close ticket'),
-    name: gettext('Close'),
-    description: gettext('Done, closed, fixed, resolved'),
   }
 };
 
@@ -29,92 +44,41 @@ export const TICKET_STATE_OPTIONS = [
   { id: '0002', name: 'closed', display_name: gettext('Closed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
 ];
 
-export const TICKET_SUBSTATE_OPTIONS = [
-  { id: '0010', name: gettext('New'), text_color: '#FFF', color: '#1a7f37', border_color: '#59CB74' },
-  { id: '0012', name: gettext('Working on'), text_color: '#FFF', color: '#1a7f37', border_color: '#46A1FD' },
-  { id: '0013', name: gettext('Completed'), text_color: '#FFF', color: '#8250df', border_color: '#8250df' },
-  { id: '0014', name: gettext('Not planned'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
-  { id: '0015', name: gettext('Duplicate'), text_color: '#FFF', color: '#59636e', border_color: '#59636e' },
-];
-
-export const PREDEFINED_TICKET_TAG_NAME = {
-  BUG: '_bug',
-  DOCUMENTATION: '_documentation',
-  DUPLICATE: '_duplicate',
-  ENHANCEMENT: '_enhancement',
-  GOOD_FIRST_TICKET: '_good_first_ticket',
-  HELP_WANTED: '_help_wanted',
-  INVALID: '_invalid',
-  QUESTION: '_question',
-  WONTFIX: '_wontfix',
-};
-
-export const PREDEFINED_TICKET_TAG_NAMES = [
-  PREDEFINED_TICKET_TAG_NAME.BUG,
-  PREDEFINED_TICKET_TAG_NAME.DOCUMENTATION,
-  PREDEFINED_TICKET_TAG_NAME.DUPLICATE,
-  PREDEFINED_TICKET_TAG_NAME.ENHANCEMENT,
-  PREDEFINED_TICKET_TAG_NAME.GOOD_FIRST_TICKET,
-  PREDEFINED_TICKET_TAG_NAME.HELP_WANTED,
-  PREDEFINED_TICKET_TAG_NAME.INVALID,
-  PREDEFINED_TICKET_TAG_NAME.QUESTION,
-  PREDEFINED_TICKET_TAG_NAME.WONTFIX,
-];
-
-export const PREDEFINED_TICKET_TAG = {
-  [PREDEFINED_TICKET_TAG_NAME.BUG]: {
-    name: gettext('Bug'),
-    description: gettext('Something isn\'t working'),
-    color: '#F4667C',
+export const PREDEFINED_TICKET_SUBSTATE_OPTION = {
+  '0010': {
+    name: gettext('New'),
+    description: gettext('New'),
     text_color: '#FFF',
+    color: '#1a7f37',
+    border_color: '#59CB74',
   },
-  [PREDEFINED_TICKET_TAG_NAME.DOCUMENTATION]: {
-    name: gettext('Documentation'),
-    description: gettext('Improvements or additions to documentation'),
-    color: '#46A1FD',
+  '0012': {
+    name: gettext('Working on'),
+    description: gettext('In progress'),
     text_color: '#FFF',
+    color: '#1a7f37',
+    border_color: '#46A1FD',
   },
-  [PREDEFINED_TICKET_TAG_NAME.DUPLICATE]: {
+  '0013': {
+    name: gettext('Completed'),
+    description: gettext('Done, closed, fixed, resolved'),
+    text_color: '#FFF',
+    color: '#8250df',
+    border_color: '#8250df',
+  },
+  '0014': {
+    name: gettext('Not planned'),
+    description: gettext('Won\'t fix, can\'t repro, stale'),
+    text_color: '#FFF',
+    color: '#59636e',
+    border_color: '#59636e',
+  },
+  '0015': {
     name: gettext('Duplicate'),
-    description: gettext('This ticket or pull request already exists'),
-    color: '#C2C2C2',
+    description: gettext('Duplicate of another ticket'),
     text_color: '#FFF',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.ENHANCEMENT]: {
-    name: gettext('Enhancement'),
-    description: gettext('New feature or request'),
-    color: '#4ECCCB',
-    text_color: '#FFF',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.GOOD_FIRST_TICKET]: {
-    name: gettext('Good first ticket'),
-    description: gettext('Good for newcomers'),
-    color: '#9860E5',
-    text_color: '#FFF',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.HELP_WANTED]: {
-    name: gettext('Help wanted'),
-    description: gettext('Extra attention is needed'),
-    color: '#59CB74',
-    text_color: '#FFF',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.INVALID]: {
-    name: gettext('Invalid'),
-    description: gettext('This doesn\'t seem right'),
-    color: '#FFFCB5',
-    TEXT_COLOR: '#212529',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.QUESTION]: {
-    name: gettext('Question'),
-    description: gettext('Further information is requested'),
-    color: '#DC82D2',
-    TEXT_COLOR: '#FFF',
-  },
-  [PREDEFINED_TICKET_TAG_NAME.WONTFIX]: {
-    name: gettext('Wontfix'),
-    description: gettext('This will not be worked on'),
-    color: '#E9E9E9',
-    TEXT_COLOR: '#212529',
+    color: '#59636e',
+    border_color: '#59636e',
   },
 };
 
@@ -131,7 +95,7 @@ export const TICKET_CHILDREN_PAGE_SLUG_ID = {
 };
 
 export const TICKET_PREDEFINED_COLUMN_CONFIG = {
-  'priority': {
+  [PREDEFINED_TICKET_COLUMN_NAME.PRIORITY]: {
     type: CellType.PRIORITY,
     display_name: gettext('Priority'),
     editable: true,
@@ -139,7 +103,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     frozen: true,
     width: 33,
   },
-  'title': {
+  [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: {
     type: CellType.TEXT,
     display_name: gettext('Title'),
     editable: false,
@@ -147,7 +111,7 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     frozen: true,
     is_required: true,
   },
-  'state': {
+  [PREDEFINED_TICKET_COLUMN_NAME.STATE]: {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('State'),
     editable: true,
@@ -156,57 +120,57 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
       options: TICKET_STATE_OPTIONS
     }
   },
-  'type': {
-    type: CellType.TYPE,
-    display_name: gettext('Type'),
-    editable: true,
-    modify_data_able: true,
-  },
-  'substate': {
+  [PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE]: {
     type: CellType.SINGLE_SELECT,
     display_name: gettext('Substate'),
     editable: true,
     is_predefined: false,
     modify_data_able: true,
   },
-  'content': {
+  [PREDEFINED_TICKET_COLUMN_NAME.TYPE]: {
+    type: CellType.TYPE,
+    display_name: gettext('Type'),
+    editable: true,
+    modify_data_able: true,
+  },
+  [PREDEFINED_TICKET_COLUMN_NAME.CONTENT]: {
     type: CellType.LONG_TEXT,
     display_name: gettext('Content'),
     editable: true,
     is_required: true,
   },
-  'assignees': {
+  [PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Assignees'),
     editable: true,
   },
-  'tags': {
+  [PREDEFINED_TICKET_COLUMN_NAME.TAGS]: {
     type: CellType.TAGS,
     display_name: gettext('Tags'),
     editable: true,
     modify_data_able: true,
   },
-  'participants': {
+  [PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Participants'),
     editable: false,
   },
-  'created_time': {
+  [PREDEFINED_TICKET_COLUMN_NAME.CREATED_TIME]: {
     type: CellType.CTIME,
     display_name: gettext('Created time'),
     editable: false,
   },
-  'modified_time': {
+  [PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME]: {
     type: CellType.MTIME,
     display_name: gettext('Last modified time'),
     editable: false,
   },
-  'creator': {
+  [PREDEFINED_TICKET_COLUMN_NAME.CREATOR]: {
     type: CellType.CREATOR,
     display_name: gettext('Creator'),
     editable: false,
   },
-  'deleted': {
+  [PREDEFINED_TICKET_COLUMN_NAME.DELETED]: {
     type: CellType.CHECKBOX,
     display_name: gettext('Deleted'),
     editable: false,
@@ -214,10 +178,6 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
 };
 
 export const TICKET_NOT_DISPLAY_COLUMNS = [
-  '_pk',
-  'reply_count',
-  'client_token',
-];
-
-export const TICKET_COLUMNS = [
+  PREDEFINED_TICKET_COLUMN_NAME.PK,
+  PREDEFINED_TICKET_COLUMN_NAME.REPLY_COUNT,
 ];

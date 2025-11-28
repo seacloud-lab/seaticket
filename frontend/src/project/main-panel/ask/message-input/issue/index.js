@@ -16,7 +16,7 @@ const Issue = ({ value, onChange }) => {
   return (
     <div className="sea-qa-ai-issue-reference-container">
       <div className="sea-qa-ai-issue-reference">
-        <Icon symbol={icon} className={`sea-qa-project-ticket-status-${icon}-icon mr-2`} />
+        <Icon symbol={icon} className={`sea-qa-project-ticket-state-${icon}-icon mr-2`} />
         <span className="text-truncate flex-1" title={title} aria-label={title}>{title}</span>
         <IconButton
           icon="x"

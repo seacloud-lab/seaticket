@@ -6,7 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
-import { TICKET_STATE_CONFIG } from '../../constants';
+import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -31,7 +31,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isLoading: isMetadataLoading, typesData, tagsData } = useMetadata();
+  const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData } = useMetadata();
   const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
@@ -46,12 +46,12 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const containerRef = useRef(null);
   const headerRef = useRef(null);
 
-  const handleScroll = useCallback(Utils.throttle((event) => {
+  const handleScroll = useCallback((event) => {
     if (!event) return;
     const dom = headerRef.current.getDom();
     const { height } = dom.getBoundingClientRect();
     setIsShowStickyHeader(event.target.scrollTop > height);
-  }, 30), [headerRef]);
+  }, [headerRef]);
 
   const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
     updateCacheData('rows', String(ticketID), update, true);
@@ -63,14 +63,16 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === 'tags' && Array.isArray(value) && value.length > 0) {
+      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
         const tags = getRowsByIds(tagsData, value);
         value = tags.map(tag => tag.name);
-      } else if (columnName === 'type' && value) {
+      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
         const typeOption = getRowById(typesData, value);
         value = typeOption.name;
-      } else if (columnName === 'state' && value) {
-        value = value === '0001' ? 'open' : 'closed';
+      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {
+        value = getRowById(statesData, value)?.origin_name;
+      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE && value) {
+        value = getRowById(substatesData, value)?.origin_name;
       }
       serverData[columnName] = value;
     });
@@ -86,7 +88,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       setTicket(deepCopy(newTicket));
       return data;
     });
-  }, [projectUuid, ticket, user, tagsData, typesData, handleUpdateRowsCacheData]);
+  }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;
@@ -226,9 +228,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [reply, ticket, replyEditorRef, createReply]);
 
-  const toggleState = useCallback((state = '') => {
+  const toggleState = useCallback((state = '', substate = '') => {
     const modifyState = () => {
-      modifyTicket(ticket.id, { state }).then(res => {
+      modifyTicket(ticket.id, { state, substate }).then(res => {
         // todo
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -269,7 +271,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
-  const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [] } = ticket;
+  const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -336,7 +338,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton onChange={handleFiles} />
             <div className="ml-2">
-              <StatusToggleButton state={state} disabled={isSubmitting} onChange={toggleState} />
+              <StatusToggleButton state={state} substate={substate} comment={reply?.text} disabled={isSubmitting} onChange={toggleState} />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
                 disabled={!reply.text || isSubmitting}
