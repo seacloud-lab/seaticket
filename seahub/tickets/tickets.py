@@ -155,6 +155,8 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         assignees = list(set(assignees))
 
+        substate = request.POST.get('substate', '')
+
         username = request.user.username
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -211,33 +213,13 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_state = 'open'
-            substate_name = ''
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            columns = ticket_meta.get('columns')
-            state_column = next((column for column in columns if column.get('name') == TicketsTable.state.name), None)
-            state_column_data = state_column.get('data', {})
-            options = state_column_data.get('options', [])
-            option = next((option for option in options if option.get('name') == ticket_state), None)
-            state_option_id = option.get('id')
-
-            substate_column = next((column for column in columns if column.get('name') == TicketsTable.substate.name), None)
-            substate_column_data = substate_column.get('data', {})
-            cascade_settings = substate_column_data.get('cascade_settings', {})
-            open_options_ids = cascade_settings.get(state_option_id, [])
-            if open_options_ids:
-                substate_options = substate_column_data.get('options', [])
-                substate_options = [option for option in substate_options if option.get('id', '') in open_options_ids]
-                if substate_options:
-                    substate_option = substate_options[0]
-                    substate_name = substate_option.get('name')
 
             row = {
                 TicketsTable.title.name: title,
                 TicketsTable.content.name: content,
                 TicketsTable.state.name: ticket_state,
                 TicketsTable.type.name: type_name,
-                TicketsTable.substate.name: substate_name,
+                TicketsTable.substate.name: substate,
                 TicketsTable.priority.name: priority,
                 TicketsTable.assignees.name: assignees,
                 TicketsTable.participants.name: [username],

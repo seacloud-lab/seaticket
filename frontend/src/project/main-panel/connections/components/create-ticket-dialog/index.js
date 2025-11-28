@@ -9,6 +9,7 @@ import { useMetadata } from '../../../tickets/hooks';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
+import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
 
 const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
   const [title, setTitle] = useState('');
@@ -18,7 +19,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { typesData, tagsData } = useMetadata();
+  const { typesData, tagsData, substatesData } = useMetadata();
 
   useEffect(() => {
     if (initialData) {
@@ -59,6 +60,10 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       validTags = getRowsByIds(tagsData, validTags);
       validTags = validTags.map(tag => tag.name);
     }
+
+    const substateOptions = substatesData.rows.filter(r => r.parent_id === TICKET_STATE.OPEN);
+    const substateOption = substateOptions[0];
+
     const ticketData = {
       title,
       content: ticket_content,
@@ -66,6 +71,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
       assignees,
       tags: validTags,
       priority,
+      substate: substateOption?.name,
     };
     ticketsAPI.createProjectTicket(projectUuid, ticketData).then(() => {
       toaster.success(gettext('Ticket created'));
