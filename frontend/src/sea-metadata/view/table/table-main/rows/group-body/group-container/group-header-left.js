@@ -28,7 +28,7 @@ class GroupHeaderLeft extends Component {
         data-column_key={firstColumnKey}
       >
         <IconBtn
-          className={classnames('group-toggle-btn no-hover-bg', { 'hide': !isExpanded, 'rotate-icon-270': !isExpanded })}
+          className={classnames('group-toggle-btn no-hover-bg', { 'rotate-icon-270': !isExpanded })}
           icon="down"
           onClick={this.props.onExpandGroupToggle}
         />
