@@ -179,10 +179,6 @@
   transition: all .3s;
 }
 
-.canvas-groups-rows .group-toggle-btn.hide .sea-qa-icon-svg-drop-down {
-  transform: rotate(-90deg);
-}
-
 /* group title */
 .canvas-groups-rows .group-title {
   display: flex;
