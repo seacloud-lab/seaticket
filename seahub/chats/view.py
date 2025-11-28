@@ -12,10 +12,9 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_project_permission, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, check_ai_limit
+from seahub.project.utils import check_project_permission, get_whole_ticket_data, TicketNotFound, get_whole_issue_data, IssueNotFound, check_ai_limit
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
 from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id
-from seahub.project.constants import AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -297,6 +296,13 @@ class ChatView(APIView):
         if ticket_id and issue_id:
             error_msg = 'can only provide a ticket or an issue.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if issue_id:
+            connection_id = request.data.get('connection_id')
+            if not connection_id:
+                error_msg = 'connection_id is required when issue_id is provided.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        extra_content = {}
 
         if ticket_id:
             try:
@@ -305,12 +311,17 @@ class ChatView(APIView):
                 error_msg = 'ticket_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                ticket_json_data = ticket_to_json(project_uuid, ticket_id)
+                ticket_data = get_whole_ticket_data(project_uuid, ticket_id)
             except TicketNotFound:
                 error_msg = 'ticket not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
-        connection_id = request.data.get('connection_id')
+
+            extra_content = {
+                'type': 'ticket',
+                'id': ticket_id,
+                'data': ticket_data
+            }
+
         # only support github issue for now
         if issue_id:
             try:
@@ -319,16 +330,17 @@ class ChatView(APIView):
                 error_msg = 'issue_id invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-            if not connection_id:
-                error_msg = 'connection_id is required when issue_id is provided.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
             try:
-                issue_json_data = github_issue_to_json(project_uuid, issue_id, connection_id)
+                issue_data = get_whole_issue_data(project_uuid, issue_id, connection_id)
             except IssueNotFound:
                 error_msg = 'issue not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT + f'```json\n{issue_json_data}\n```\n\n' + query
+
+            extra_content = {
+                'type': 'issue',
+                'id': issue_id,
+                'data': issue_data
+            }
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
@@ -355,6 +367,7 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'message_id': message_id,
             'query': query,
+            'extra_content': extra_content,
             'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
@@ -387,13 +400,14 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', json.dumps(ai_response['sources']))
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', extra_content=extra_content)
+        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
 
         ai_response.update({
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id
+            'ai_reply_message_id': ai_reply_message.id,
+            'extra_content': extra_content
         })
 
         return Response(ai_response)

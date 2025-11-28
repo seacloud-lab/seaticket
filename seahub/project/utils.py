@@ -437,7 +437,7 @@ class TicketNotFound(Exception):
 class IssueNotFound(Exception):
     pass
 
-def ticket_to_json(project_uuid, ticket_id):
+def get_whole_ticket_data(project_uuid, ticket_id):
     """
     Build a json from a ticket and its comments.
 
@@ -446,7 +446,6 @@ def ticket_to_json(project_uuid, ticket_id):
     - ticket_comments: some relative comments with the ticket
 
     Returns:
-    ```json // <- not included
     {
         "title": ...,
         "content": ...,
@@ -460,7 +459,6 @@ def ticket_to_json(project_uuid, ticket_id):
             ...
         ]
     }
-    ``` // <- not included
     """
     try:
         seadb_api = SeaDBAPI()
@@ -502,12 +500,12 @@ def ticket_to_json(project_uuid, ticket_id):
             'content': content,
             'commented_at': commented_at
         })
-    return json.dumps(whole_ticket_data, indent=4)
+    return whole_ticket_data
 
 
-def github_issue_to_json(project_uuid, issue_id, connection_id):
+def get_whole_issue_data(project_uuid, issue_id, connection_id):
     """
-    Build a json from a github issue and its comments.
+    Build a dict object from a github issue and its comments.
 
     Args:
     - project_uuid: the uuid of the project
@@ -515,7 +513,6 @@ def github_issue_to_json(project_uuid, issue_id, connection_id):
     - connection_id: the id of the connection
 
     Returns:
-    ```json // <- not included
     {
         "title": ...,
         "body": ...,
@@ -529,7 +526,6 @@ def github_issue_to_json(project_uuid, issue_id, connection_id):
             ...
         ]
     }
-    ``` // <- not included
     """
 
     try:
@@ -573,7 +569,7 @@ def github_issue_to_json(project_uuid, issue_id, connection_id):
                 'created_time': comment.get('created_time', '')
             })
 
-        return json.dumps(whole_issue_data, indent=4, ensure_ascii=False)
+        return whole_issue_data
 
     except IssueNotFound:
         raise
