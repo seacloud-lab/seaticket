@@ -462,32 +462,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Subject'),
       editable: false, is_name_column: true, frozen: true,
     },
-    'email_from': {
-      display_name: gettext('From'),
-      type: CellType.TEXT,
-    },
-    'email_to': {
-      display_name: gettext('To'),
-      type: CellType.TEXT,
-    },
-    'content': {
-      display_name: gettext('Content'),
-      type: CellType.TEXT,
-    },
-    'cc': {
-      display_name: gettext('Cc'),
-      type: CellType.TEXT,
-    },
-    'is_sender': {
-      display_name: gettext('Is sender'),
-      type: CellType.TEXT,
+    'unread': {
+      display_name: gettext('unread'),
+      type: CellType.DEFAULT,
     },
     'modified_time': {
-      display_name: gettext('Date'),
-      type: CellType.MTIME,
-    },
-    'sync_time': {
-      display_name: gettext('Last sync time'),
+      display_name: gettext('Last modified time'),
       type: CellType.DATE,
       data: {
         format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
@@ -500,7 +480,8 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.SEAFILE,
-  CONNECTION_TYPE.SITE
+  CONNECTION_TYPE.SITE,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
@@ -513,6 +494,7 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [

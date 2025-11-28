@@ -13,6 +13,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, \
@@ -38,7 +39,7 @@ class ConvertRecordToTicket(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         connection_id = request.data.get('connection_id')
         if not connection_id:
             error_msg = 'connection_id invalid.'
@@ -139,6 +140,31 @@ class ConvertRecordToTicket(APIView):
                     Title: {title}
                     Body: {body_content}
                 """
+            case ConnectionType.EMAIL.value:
+                email_db_api = EmailSeaDBAPI(project_uuid)
+                body_content = ''
+                emails = email_db_api.get_emails_by_thread_id(
+                    connection_id, record_id
+                )
+                title = ''
+                for email in emails:
+                    if not title:
+                        title = email.get('title')
+                    if not email.get('content'):
+                        continue
+
+                    content_to_add = email.get('content')
+                    if body_content:
+                        content_to_add = '\n\n' + content_to_add
+                    if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                        break
+                    body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Subject: {title}
+                    Body: {body_content}
+                """
         if not record_detail:
             error_msg = 'Record detail not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -205,14 +231,14 @@ class EmbeddingAnalysisView(APIView):
             'username': username,
             'connection_type': project_connection.type,
         }
-        
+
         try:
             task_id = submit_embedding_analysis_task(params)
         except Exception as e:
             logger.error(f'Failed to submit embedding analysis task: {e}')
             error_msg = 'Failed to submit analysis task.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         return Response({
             'task_id': task_id,
         })
@@ -227,14 +253,14 @@ class EmbeddingAnalysisTaskStatusView(APIView):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        
+
         try:
             result = get_embedding_analysis_task_status(task_id)
         except Exception as e:
             logger.error(f'Failed to get task status: {e}')
             error_msg = 'Failed to get task status.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         return Response(result)
 
 
@@ -302,24 +328,24 @@ class RelatedRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         target_vector = result['results'][0]['ai_summary_vector']
-        
+
         project_connections = ProjectConnections.objects.filter(
-            project=project, 
+            project=project,
             deleted=False
         ).select_related('project')
-        
+
         connection_ids = []
         for proj_conn in project_connections:
             if ConnectionCategory.from_type(proj_conn.type) == current_category:
                 connection_ids.append(proj_conn.id)
-        
+
         search_data = {
             'query_vector': target_vector,
             'project_uuid': project_uuid,
             'count': 100,
             'connection_ids': connection_ids
         }
-        
+
         try:
             search_results = find_related_records(search_data)
             if not search_results:
@@ -345,19 +371,19 @@ class RelatedRecordsView(APIView):
 
                 connection_pks_map[result_connection_id]['pks'].append(pk)
                 connection_pks_map[result_connection_id]['results'].append(result)
-            
+
             unique_connection_ids = list(connection_pks_map.keys())
             additional_connections = ProjectConnections.objects.filter(id__in=unique_connection_ids, deleted=False)
             for conn in additional_connections:
                 connection_objects[conn.id] = conn
-            
+
             records_map = {}
-            
+
             for result_connection_id, data in connection_pks_map.items():
                 if result_connection_id not in connection_objects:
                     logger.warning(f'Connection {result_connection_id} not found or deleted')
                     continue
-                
+
                 connection = connection_objects[result_connection_id]
                 connection_type = connection.type
 
@@ -374,17 +400,17 @@ class RelatedRecordsView(APIView):
                 else:
                     logger.warning(f'Unsupported issue connection type: {connection_type}')
                     continue
-                
+
                 pks = data['pks']
                 if not pks:
                     continue
-                
+
                 try:
                     pks_str = ','.join(map(str, pks))
                     sql = f"SELECT * FROM `{table_name}` WHERE _pk IN ({pks_str})"
                     res = seadb_api.query_rows(project_uuid_32, sql)
                     records = res.get('results', [])
-                    
+
                     records_map[result_connection_id] = {}
                     for record in records:
                         record_pk = record.get('_pk')
@@ -392,7 +418,7 @@ class RelatedRecordsView(APIView):
                 except Exception as e:
                     logger.error(f'Error batch querying records for connection {result_connection_id}: {e}')
                     records_map[result_connection_id] = {}
-            
+
             for result in search_results:
                 result_connection_id = int(result.get('connection_id', connection_id))
                 pk = result.get('pk')
@@ -401,15 +427,15 @@ class RelatedRecordsView(APIView):
 
                 if result_connection_id not in connection_objects:
                     continue
-                
+
                 connection = connection_objects[result_connection_id]
                 connection_type = connection.type
-                
+
                 record = records_map.get(result_connection_id, {}).get(pk)
                 if not record:
                     logger.warning(f'Record not found for connection {result_connection_id}, pk {pk}')
                     continue
-                
+
                 processed_result = {
                     '_id': pk,
                     'connection_id': result_connection_id,
@@ -461,9 +487,9 @@ class RelatedRecordsView(APIView):
                 else:
                     logger.warning(f'Unsupported connection type: {connection_type}')
                     continue
-                
+
                 processed_results.append(processed_result)
-            
+
         except Exception as e:
             logger.error(f"Error calling vector search indexer: {e}")
             error_msg = 'Error calling vector search indexer.'

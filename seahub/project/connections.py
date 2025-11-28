@@ -27,7 +27,7 @@ from seahub.project.utils import check_project_admin_permission, add_connection_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details
+    list_seafile_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
 from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
     DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
@@ -566,15 +566,13 @@ class ProjectConnectionRowDetailView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         row_details = []
+        seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             _pk = request.GET.get('_pk')
             if not _pk:
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            seadb_api = SeaDBAPI(username)
-            topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk)
+            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
@@ -590,18 +588,19 @@ class ProjectConnectionRowDetailView(APIView):
             if not _pk:
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            seadb_api = SeaDBAPI(username)
-            issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
-            comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-            row_details = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk)
+            row_details = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SEAFILE.value:
             _pk = request.GET.get('_pk')
             if not _pk:
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            seadb_api = SeaDBAPI(username)
-            seafile_table_name = SeafileTable.gen_table_name(connection_id)
-            row_details = list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk)
+            row_details = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            _pk = request.GET.get('_pk')
+            if not _pk:
+                error_msg = 'Missing _pk.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row_details = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
         return Response({
             'row_details': row_details,
         })
