@@ -52,7 +52,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
               <>
                 <p>{gettext('Last vector indexed count')}: {record.content_vector_status.last_content_vector_indexed_count}</p>
                 <p>{gettext('Last vector indexed status')}: {record.content_vector_status.last_content_vector_index_status}</p>
-                <p>{gettext('Last vector indexed time')}: <DateFormatter value={record.vector_indexed_at} /></p>
+                <p>{gettext('Last vector indexed time')}: <DateFormatter value={record.content_vector_indexed_at} /></p>
               </>
             }
           </>

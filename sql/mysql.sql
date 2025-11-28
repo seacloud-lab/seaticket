@@ -445,7 +445,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `created_at` datetime(6) NOT NULL,
   `last_sync_time` datetime(6) NULL,
   `indexed_at` datetime(6) NULL,
-  `vector_indexed_at` datetime(6) NULL,
+  `content_vector_indexed_at` datetime(6) NULL,
   `project_uuid` varchar(32) NOT NULL,
   `status` longtext NOT NULL,
   `deleted` tinyint(1) NULL DEFAULT 0,

@@ -15,7 +15,7 @@ class Connection {
     this.last_ai_processing_time = object.last_ai_processing_time || '';
     this.ai_indexed_at = object.ai_indexed_at || '';
     this.content_vector_status = object.content_vector_status || '{}';
-    this.vector_indexed_at = object.vector_indexed_at || '';
+    this.content_vector_indexed_at = object.content_vector_indexed_at || '';
 
     if (this.status) {
       try {

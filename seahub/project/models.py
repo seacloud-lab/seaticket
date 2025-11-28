@@ -538,7 +538,7 @@ class ProjectConnections(models.Model):
     ai_status = models.TextField(null=True)
     last_ai_processing_time = models.DateTimeField(null=True)
     ai_indexed_at = models.DateTimeField(null=True)
-    vector_indexed_at = models.DateTimeField(null=True)
+    content_vector_indexed_at = models.DateTimeField(null=True)
     content_vector_status = models.TextField(null=True)
 
     objects = ProjectConnectionsManager()
@@ -561,7 +561,7 @@ class ProjectConnections(models.Model):
             'ai_status': self.ai_status,
             'last_ai_processing_time': self.last_ai_processing_time,
             'ai_indexed_at': self.ai_indexed_at,
-            'vector_indexed_at': self.vector_indexed_at,
+            'content_vector_indexed_at': self.content_vector_indexed_at,
             'content_vector_status': self.content_vector_status
         }
 
