@@ -301,7 +301,12 @@ class TicketsAPIView(APIView):
             if not row_data:
                 continue
             if 'state' in row_data:
-                updated_row[TicketsTable.state.name] = row_data.get('state')
+                ticket_state_name = row_data.get('state').lower()
+                updated_row[TicketsTable.state.name] = ticket_state_name
+                if ticket_state_name == 'closed':
+                    updated_row[TicketsTable.closed_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+                elif ticket_state_name == 'open':
+                    updated_row[TicketsTable.closed_time.name] = ''
             if 'substate' in row_data:
                 updated_row[TicketsTable.substate.name] = row_data.get('substate')
             if 'tags' in row_data:
@@ -326,7 +331,7 @@ class TicketsAPIView(APIView):
                     file_urls = (file_urls or []) + link_urls
                 updated_row[TicketsTable.content.name] = content
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'updated_at', 'content', 'state'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
                     continue
                 updated_row[key] = value
 
@@ -592,27 +597,32 @@ class TicketAPIView(APIView):
         try:
             update_row = {}
             if title:
-                update_row['title'] = title
+                update_row[TicketsTable.title.name] = title
             if content:
-                update_row['content'] = content
+                update_row[TicketsTable.content.name] = content
 
             if ticket_state_name or ticket_state_name == '':
-                update_row['state'] = ticket_state_name.lower()
+                ticket_state_name = ticket_state_name.lower()
+                update_row[TicketsTable.state.name] = ticket_state_name
+                if ticket_state_name == 'closed':
+                    update_row[TicketsTable.closed_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+                elif ticket_state_name == 'open':
+                    update_row[TicketsTable.closed_time.name] = ''
             if is_update_type:
-                update_row['type'] = type_name
+                update_row[TicketsTable.type.name] = type_name
             if is_update_substate:
-                update_row['substate'] = substate_option_name
+                update_row[TicketsTable.substate.name] = substate_option_name
             if is_update_tags:
-                update_row['tags'] = tags
+                update_row[TicketsTable.tags.name] = tags
             if is_update_priority:
-                update_row['priority'] = priority
+                update_row[TicketsTable.priority.name] = priority
             if is_update_assignees:
-                update_row['assignees'] = assignees
+                update_row[TicketsTable.assignees.name] = assignees
             participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
-            update_row['participants'] = participants
-            update_row['modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_row[TicketsTable.participants.name] = participants
+            update_row[TicketsTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),

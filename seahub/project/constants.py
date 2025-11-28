@@ -95,7 +95,7 @@ TICKET_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }, {
@@ -110,7 +110,7 @@ TICKET_DEFAULT_DETAILS = {
             'columns_keys': [],
             'filter_conjunction': 'Or',
             'filters': [],
-            'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+            'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
             'groupbys': [],
             'hidden_columns': [],
         }
@@ -135,7 +135,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }, {
@@ -149,7 +149,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'columns_keys': [],
                 'filter_conjunction': 'Or',
                 'filters': [],
-                'sorts': [{ 'column_key': 'created_at', 'sort_type': 'down' }],
+                'sorts': [{ 'column_key': 'created_time', 'sort_type': 'down' }],
                 'groupbys': [],
                 'hidden_columns': [],
             }
@@ -290,9 +290,9 @@ class FilterTermModifier(object):
     THIS_YEAR = 'this_year'
 
 
-TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'state', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_time', 'modified_time']
+TICKET_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'state', 'substate', 'type', 'tags', 'assignees', 'participants', 'priority', 'creator', 'created_time', 'modified_time', 'closed_time']
 CONNECTION_DISPLAY_ALL_COLUMNS = {
-    ConnectionType.GITHUB_ISSUE.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_at', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time'],
+    ConnectionType.GITHUB_ISSUE.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comments_count', 'closed_time', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time'],
     ConnectionType.SEAFILE.value: ['_pk', 'path', 'title', 'modified_time', 'ai_summary', 'ai_processed_time'],

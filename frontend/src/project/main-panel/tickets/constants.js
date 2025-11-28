@@ -165,6 +165,11 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Last modified time'),
     editable: false,
   },
+  [PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME]: {
+    type: CellType.MTIME,
+    display_name: gettext('Closed time'),
+    editable: false,
+  },
   [PREDEFINED_TICKET_COLUMN_NAME.CREATOR]: {
     type: CellType.CREATOR,
     display_name: gettext('Creator'),

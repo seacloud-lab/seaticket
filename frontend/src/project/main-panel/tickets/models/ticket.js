@@ -47,6 +47,8 @@ class Ticket {
 
     this.creator = object.creator || '';
     this.created_time = object.created_time || '';
+    this.closed_time = object.closed_time || '';
+
 
     this.replies = object.replies || [];
     this.reply_count = object.reply_count || '';
