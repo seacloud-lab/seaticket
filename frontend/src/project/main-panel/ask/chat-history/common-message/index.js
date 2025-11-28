@@ -11,6 +11,7 @@ import RowDetailsDialog from '@/project/main-panel/connections/components/row-de
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -53,7 +54,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
         icon: getConnectionIcon(type),
         connection_name: connection_name,
         url: urlObject.href,
-        title: title,
+        title: title.replaceAll('"', '\''),
         content: content_preview,
         mtime: bumped_at || mtime || updated_at || '',
         score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
@@ -92,10 +93,22 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
           if (!linkReference) return `[Reference ${order}]`;
           const linkReferenceIncludesParentheses = linkReference.endsWith(')');
           const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
-          const sourceIndex = sources.findIndex(source => source.url === validLinkReference);
+          const urlObject = new URL(validLinkReference);
+          const url = urlObject.href;
+          const sourceIndex = sources.findIndex(source => source.url === url);
           if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-          sources.push({ title: validLinkReference, url: validLinkReference });
-          return `[Reference ${sources.length}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+          const referenceIndex = sources.length;
+          sources.push({
+            title: url,
+            url: url,
+            connection_id: `unknown_${referenceIndex}`,
+            _id: referenceIndex,
+            type: 'unknown',
+            content: validLinkReference + '',
+            icon: getConnectionIcon('unknown'),
+            connection_name: gettext('Unknown')
+          });
+          return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
         })
         .replaceAll(removeParentheses, (match, p1) => p1)
         .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
@@ -103,7 +116,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
           const order = Number(orderString);
           const source = sources[order - 1];
           if (!source) return '';
-          return `[${source.title || source.url}][${order}]`;
+          return `[${source.title}][${order}]`;
         });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;

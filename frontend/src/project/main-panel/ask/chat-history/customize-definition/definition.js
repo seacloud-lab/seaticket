@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import { getPreviewContent } from '@seafile/seafile-editor';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import dayjs from 'dayjs';
 import { gettext } from '@/constants';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
+import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';
 
@@ -18,13 +18,6 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
     const sourceIndex = identifier - 1;
     return { ...sources[sourceIndex], identifier: identifier };
   }, [element, sources]);
-
-  const renderContent = useCallback((content) => {
-    const isMarkdown = true;
-    const previewTextNeedSlice = false;
-    const { previewText } = getPreviewContent(content, isMarkdown, previewTextNeedSlice);
-    return previewText;
-  }, []);
 
   const handleClick = useCallback((event) => {
     const { type } = source;
@@ -66,7 +59,9 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
         </div>
       )}
       {content && (
-        <div className="sea-ai-chat-customize-definition-content" dangerouslySetInnerHTML={{ __html: renderContent(content) }}></div>
+        <div className="sea-ai-chat-customize-definition-content">
+          {removeTextMark(content)}
+        </div>
       )}
     </div>
   );
