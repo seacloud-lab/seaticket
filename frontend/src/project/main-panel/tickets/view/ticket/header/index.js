@@ -108,7 +108,7 @@ const Header = forwardRef(({
           )}
         </div>
       </div>
-      <div className="sea-qa-project-ticket-status-wrapper">
+      <div className="sea-qa-project-ticket-state-wrapper">
         <div className={classnames('sea-qa-project-ticket-status', statusClassNameMap[stateOption?.value])}>
           <Icon symbol={stateOption?.icon} />
           <span>{stateOption?.statusName}</span>
