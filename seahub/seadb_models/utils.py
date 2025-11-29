@@ -5,7 +5,7 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, KnowledgeBaseTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, ThreadTable, KnowledgeBaseTable
 
 logger = logging.getLogger(__name__)
 
@@ -370,45 +370,40 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            EmailTable.title.name,
-        ]
-    )
+    index_column_names = [EmailTable.title.name, EmailTable.email_from.name, EmailTable.sync_time.name, EmailTable.is_sender.name]
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            EmailTable.email_from.name,
-        ]
-    )
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            EmailTable.deleted.name,
-        ]
-    )
+    # thread table
+    table_name = ThreadTable.gen_table_name(connection_id)
+    res = seadb_api.create_table(project_uuid, table_name)
+    table_id = res['table_id']
+    for column in ThreadTable.get_fields():
+        mapped_column = {
+            'column_name': column.name,
+            'column_type': column.type,
+        }
+        if column.data:
+            mapped_column['column_data'] = column.data
+        seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            EmailTable.sync_time.name,
-        ]
-    )
+    index_column_names = [ThreadTable.title.name, ThreadTable.modified_time.name]
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            EmailTable.is_sender.name,
-        ]
-    )
+    for column_name in index_column_names:
+        seadb_api.create_column_index(
+            project_uuid,
+            table_id,
+            [
+                column_name,
+            ]
+        )
 
 
 def init_knowledge_base_seadb_table(seadb_api, project_uuid):
@@ -468,7 +463,7 @@ def get_connection_table_name(connection):
     elif connection_type == ConnectionType.SEAFILE.value:
         table_name = SeafileTable.gen_table_name(connection_id)
     elif connection_type == ConnectionType.EMAIL.value:
-        table_name = EmailTable.gen_table_name(connection_id)
+        table_name = ThreadTable.gen_table_name(connection_id)
 
     return table_name
 
@@ -595,7 +590,9 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
     return records
 
 
-def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk):
+def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
+    topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
     topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
@@ -609,8 +606,10 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_n
     return records
 
 
-def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk):
+def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query GitHub issue comments from SeaDB"""
+    issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
+    comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
     issue_sql = f"SELECT author, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
@@ -626,7 +625,8 @@ def list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, 
     return issue_record
 
 
-def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk):
+def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
+    seafile_table_name = SeafileTable.gen_table_name(connection_id)
     sql = f"SELECT `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
@@ -635,6 +635,19 @@ def list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk
         logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
         record = []
     return record
+
+
+def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
+    email_table_name = EmailTable.gen_table_name(connection_id)
+    thread_table_name = ThreadTable.gen_table_name(connection_id)
+    try:
+        sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
+        email_res = seadb_api.query_rows(project_uuid, sql)
+        email_records = email_res.get('results', [])
+    except Exception as e:
+        logger.error(f'SeaDB query error for email details {thread_table_name} or {email_table_name}: {e}')
+        email_records = []
+    return email_records
 
 
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):

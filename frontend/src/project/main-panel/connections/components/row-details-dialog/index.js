@@ -16,6 +16,7 @@ import './index.css';
 const SUPPORT_DETAILS_LIST = [
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.DISCOURSE_FORUM,
+  CONNECTION_TYPE.EMAIL,
 ];
 
 const RowDetailsDialog = ({
@@ -85,6 +86,11 @@ const RowDetailsDialog = ({
 
   const renderContentByType = useCallback((type, content) => {
     if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      return (
+        <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: content }} />
+      );
+    }
+    if (type === CONNECTION_TYPE.EMAIL) {
       return (
         <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: content }} />
       );
