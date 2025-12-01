@@ -638,7 +638,8 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
         record = {}
     return record
 
-def list_site_record_details(seadb_api, project_uuid, site_table_name, _pk):
+def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
+    site_table_name = WebCrawlTable.gen_table_name(connection_id)
     sql = f"SELECT `title`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
@@ -653,13 +654,17 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     email_table_name = EmailTable.gen_table_name(connection_id)
     thread_table_name = ThreadTable.gen_table_name(connection_id)
     try:
-        sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
-        email_res = seadb_api.query_rows(project_uuid, sql)
-        email_record = email_res.get('results')[0]
+        thread_sql = f"SELECT title, modified_time FROM `{thread_table_name}` WHERE _pk = {_pk}"
+        thread_res = seadb_api.query_rows(project_uuid, thread_sql)
+        thread_record = thread_res.get('results')[0]
+        email_sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
+        email_res = seadb_api.query_rows(project_uuid, email_sql)
+        email_record = email_res.get('results', [])
+        thread_record['emails'] = email_record
     except Exception as e:
         logger.error(f'SeaDB query error for email details {thread_table_name} or {email_table_name}: {e}')
-        email_record = {}
-    return email_record
+        thread_record = {}
+    return thread_record
 
 
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):

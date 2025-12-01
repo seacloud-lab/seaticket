@@ -579,8 +579,7 @@ class ProjectConnectionRowDetailView(APIView):
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
-            site_table_name = WebCrawlTable.gen_table_name(connection_id)
-            record = list_site_record_details(seadb_api, project_uuid, site_table_name, _pk)
+            record = list_site_record_details(seadb_api, project_uuid, connection_id, _pk)
             uuid_32_chars = uuid_str_to_32_chars(project_uuid)
             try:
                 file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
@@ -601,6 +600,7 @@ class ProjectConnectionRowDetailView(APIView):
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+            record['connection_type'] = project_connection.type
 
         if record is None:
             error_msg = 'No record found.'

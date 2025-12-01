@@ -85,17 +85,13 @@ const RowDetailsDialog = ({
         })),
       };
     } else if (connection.type === CONNECTION_TYPE.EMAIL) {
-      const emailData = {
-        title: mainTitle,
-        time: res.data.modified_time,
-        body: res.data.content || '',
-        is_sender: res.data.is_sender,
-        email_from: res.data.email_from,
-        email_to: res.data.email_to,
-      }
       return {
         title: mainTitle,
-        displayedData: [emailData]
+        displayedData: res.data.emails?.map(detail => ({
+          ...detail,
+          time: detail.modified_time,
+          body: detail.content || '',
+        })),
       };
     }
   }, [connection]);
