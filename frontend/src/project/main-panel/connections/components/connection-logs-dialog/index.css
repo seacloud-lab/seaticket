@@ -1,0 +1,14 @@
+.connection-logs-dialog {
+  height: calc(100% - 56px); /* The top and bottom margins of the dialog box are 56px */
+  width: 900px;
+  max-width: 900px;
+}
+
+.connection-logs-dialog .modal-content {
+  height: 100%;
+}
+
+.connection-logs-dialog .modal-content .modal-body {
+  padding: 0px;
+  overflow: hidden;
+}

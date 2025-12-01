@@ -109,8 +109,8 @@ class Workspace extends React.Component {
     // 352: two project Item min-width sum[336] + padding[32] + margin right[16]
     // 536: three project Item min-width sum[504] + padding[32] + two margin right[32]
     if (!this.curViewContent) return;
-    const { clientWidth, offsetWidth } = this.curViewContent;
     if (!this.isDesktop) {
+      const { clientWidth } = this.curViewContent;
       const contentWidth = clientWidth - 16 * 2;
       let numberOfItemsPerRow = 1;
       let projectItemWidth = contentWidth;
@@ -125,7 +125,8 @@ class Workspace extends React.Component {
       }
       this.setState({ projectItemWidth, numberOfItemsPerRow });
     } else {
-      const scrollBarWidth = offsetWidth - clientWidth;
+      const { clientWidth: pageClientWidth, offsetWidth: pageOffsetWidth } = this.curViewContent.parentNode;
+      const scrollBarWidth = pageOffsetWidth - pageClientWidth;
       const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 16 * 2 + 16 - scrollBarWidth);
       const numberOfItemsPerRow = Math.floor(projectListWidth / 184);
       const remainingWidth = projectListWidth % 184;

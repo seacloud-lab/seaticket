@@ -13,7 +13,7 @@ import {
 } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
-import Reply from '../../components/reply';
+import Comment from '../../components/comment';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
@@ -30,6 +30,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData } = useMetadata();
   const { updateCacheData } = useDataCache();
@@ -42,6 +43,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     };
   }, []);
 
+  const ticketRef = useRef(null);
   const replyEditorRef = useRef(null);
   const containerRef = useRef(null);
   const headerRef = useRef(null);
@@ -269,15 +271,36 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     });
   }, [projectUuid, ticketID]);
 
+  useEffect(() => {
+    if (isLoading || isMetadataLoading || !ticket) return;
+    const ticketDom = ticketRef.current;
+    const handleResize = () => {
+      if (!ticketDom) return;
+      setContainerWidth(ticketDom.offsetWidth);
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    ticketDom && resizeObserver.observe(ticketDom);
+
+    return () => {
+      ticketDom && resizeObserver.unobserve(ticketDom);
+    };
+  }, [isLoading, isMetadataLoading, ticket]);
+
   if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
+
   const { id, state, title, creator, replies = [], assignees = [], type, tags, priority, participants = [], substate } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
 
   return (
-    <div className="sea-qa-project-ticket" onScroll={handleScroll}>
+    // 848: comment min-width(540) + others min-width(260) + gap: 16 * 3
+    <div
+      className={classnames('sea-qa-project-ticket', { 'small': containerWidth < 848 })}
+      onScroll={handleScroll}
+      ref={ticketRef}
+    >
       <Header
         ref={headerRef}
         readonly={!editable}
@@ -296,9 +319,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         typeOption={typeOption}
       />
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="sea-qa-project-ticket-reply-container-wrapper">
-          <Reply
-            reply={ticket}
+        <div className="sea-qa-project-ticket-comment-container-wrapper">
+          <Comment
+            comment={ticket}
             isShowStatus={true}
             readonly={!editable}
             lang={lang}
@@ -307,10 +330,10 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           />
           {replies.map(reply => {
             return (
-              <Reply
+              <Comment
                 key={reply.id}
                 readonly={!(reply.creator === user.email || isAdmin)}
-                reply={reply}
+                comment={reply}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
                 onDelete={(reply) => deleteReply(id, reply.id)}
@@ -318,7 +341,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Reply className="sea-qa-project-ticket-add-comment" reply={{ creator: username }} >
+          <Comment className="sea-qa-project-ticket-add-comment" comment={{ creator: username }} >
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}
@@ -334,10 +357,10 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               editorApi={editorAPI}
               onSaveEditorValue={onReplyChange}
             />
-          </Reply>
+          </Comment>
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton onChange={handleFiles} />
-            <div className="ml-2">
+            <div className="sea-qa-project-ticket-submit-btns ml-2">
               <StatusToggleButton state={state} substate={substate} comment={reply?.text} disabled={isSubmitting} onChange={toggleState} />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"

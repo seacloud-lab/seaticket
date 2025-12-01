@@ -78,6 +78,7 @@
   margin-top: -2px;
 }
 
-.sea-metadata-view-dropdown-menu .dropdown-item:hover .sea-qa-icon-svg {
+.sea-metadata-view-dropdown-menu .dropdown-item:hover .sea-qa-icon-svg,
+.sea-metadata-view-dropdown-menu .dropdown-item:focus .sea-qa-icon-svg {
   color: #FFF;
 }

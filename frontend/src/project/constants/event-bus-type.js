@@ -6,6 +6,7 @@ export const EVENT_BUS_TYPE = {
   ASK_PAGE: 'ask_page',
   ASK_QUESTION: 'ask_question',
   AI_REPLY: 'ai_reply',
-  NEW_TYPE: 'new-type',
-  NEW_SUBSTATE: 'new-substate',
+  NEW_TYPE: 'new_type',
+  NEW_SUBSTATE: 'new_substate',
+  OPEN_CONNECTION_EMBEDDING_VISUALIZATION: 'open_connection_embedding_visualization',
 };

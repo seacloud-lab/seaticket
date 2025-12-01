@@ -391,10 +391,7 @@ class FilterItem extends React.Component {
     switch (type) {
       case CellType.NUMBER:
       case CellType.TEXT:
-      case CellType.URL: { // The data in the formula column is a date type that has been excluded
-        if (filter_predicate === FILTER_PREDICATE_TYPE.IS_CURRENT_USER_ID) {
-          return null;
-        }
+      case CellType.URL: {
         return this.getInputComponent('text');
       }
       case CellType.CREATOR:

@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
+import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
@@ -22,10 +23,11 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const contentEditorRef = useRef(null);
+  const ticketRef = useRef(null);
 
   const { tagsData, typesData, substatesData, isLoading: isMetadataLoading } = useMetadata();
 
@@ -36,6 +38,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       avatar_url: avatarURL
     };
   }, []);
+  const disabled = useMemo(() => {
+    return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
+  }, [title, content, isSubmitting]);
 
   const { togglePageSlugId } = useTicketsPage();
 
@@ -99,15 +104,42 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     });
   }, [title, content, type, assignees, tags, priority]);
 
+  useEffect(() => {
+    if (isMetadataLoading) return;
+    const ticketDom = ticketRef.current;
+    const handleResize = () => {
+      if (!ticketDom) return;
+      setContainerWidth(ticketDom.offsetWidth);
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    ticketDom && resizeObserver.observe(ticketDom);
+
+    return () => {
+      ticketDom && resizeObserver.unobserve(ticketDom);
+    };
+  }, [isMetadataLoading]);
+
+  const renderSubmitBtns = useCallback((className = 'ml-2') => {
+    return (
+      <div className={className}>
+        <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+        <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
+      </div>
+    );
+  }, [disabled, togglePageSlugId, onSubmit]);
+
   if (isMetadataLoading) return (<CenteredLoading />);
 
-  const disabled = (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
+  const isSmallScreen = containerWidth < 848;
 
   return (
-    <div className="sea-qa-project-new-ticket">
-      <div className="sea-qa-project-ticket-user">
-        <img src={user.avatar_url} alt={user.name} />
-      </div>
+    // 848: comment min-width(540) + others min-width(260) + gap: 16 * 3
+    <div className={classnames('sea-qa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
+      {!isSmallScreen && (
+        <div className="sea-qa-project-ticket-user">
+          <img src={user.avatar_url} alt={user.name} />
+        </div>
+      )}
       <div className="sea-qa-project-ticket-settings">
         <div className="sea-qa-project-ticket-name mb-3">{gettext('New ticket')}</div>
         <div className="sea-qa-project-ticket-settings-container">
@@ -142,10 +174,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             </div>
             <div className="sea-qa-project-ticket-footer">
               <UploadFilesButton onChange={handleFiles} />
-              <div className="ml-2">
-                <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
-                <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
-              </div>
+              {!isSmallScreen && renderSubmitBtns()}
             </div>
           </div>
           <div className="sea-qa-project-ticket-other-settings">
@@ -154,6 +183,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
             <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>
+          {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>
       </div>
     </div>

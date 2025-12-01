@@ -263,7 +263,6 @@ class FilterPredicateTypes(object):
     IS_ANY_OF = 'is_any_of'
     IS_NONE_OF = 'is_none_of'
     INCLUDE_ME = 'include_me'
-    IS_CURRENT_USER_ID = 'is_current_user_ID'
 
 
 class FilterTermModifier(object):

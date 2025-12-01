@@ -12,7 +12,7 @@ export const getDisplaySorts = (sorts, columns) => {
   if (!Array.isArray(sorts) || !Array.isArray(columns)) {
     return [];
   }
-  return sorts.filter((sort) => !sort.column_key || isValidSort(sort, columns));
+  return sorts.filter((sort) => sort.column_key && isValidSort(sort, columns));
 };
 
 export const isSortsEmpty = (sorts) => {

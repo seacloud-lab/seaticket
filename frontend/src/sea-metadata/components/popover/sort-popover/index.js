@@ -13,6 +13,7 @@ import {
 } from '../../../constants';
 import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
 import context from '@/sea-metadata/context';
+import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
 
@@ -45,9 +46,9 @@ class SortPopover extends Component {
     this.checkColumnEnableFirstSortRule = VIEW_FIRST_SORT_COLUMN_RULES[type || VIEW_TYPE.TABLE];
     this.checkColumnEnableSortRule = VIEW_SORT_COLUMN_RULES[type || VIEW_TYPE.TABLE];
     this.columnsOptions = this.createColumnsOptions(columns);
+    this.initSorts = getDisplaySorts(sorts, columns);
     this.state = {
-      sorts: getDisplaySorts(sorts, columns),
-      isChanged: false,
+      sorts: [...this.initSorts],
     };
     this.isSelectOpen = false;
   }
@@ -125,12 +126,14 @@ class SortPopover extends Component {
   };
 
   updateSorts = (sorts) => {
-    this.setState({ sorts, isChanged: true });
+    this.setState({ sorts });
   };
 
   onClosePopover = () => {
-    const { sorts, isChanged } = this.state;
-    if (isChanged) {
+    const { readOnly, columns } = this.props;
+    const { sorts } = this.state;
+    const isChanged = !ObjectUtils.isSameObject(this.initSorts, getDisplaySorts(sorts, columns));
+    if (!readOnly && isChanged) {
       this.props.update({ sorts });
     }
     this.props.hidePopover();

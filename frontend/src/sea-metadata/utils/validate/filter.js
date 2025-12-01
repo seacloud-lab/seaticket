@@ -16,8 +16,6 @@ const PREDICATES_REQUIRE_ARRAY_TERM = [
   FILTER_PREDICATE_TYPE.IS_NONE_OF,
 ];
 
-const TEXT_COLUMN_TYPES = [CellType.TEXT, CellType.FILE_NAME, CellType.URL];
-
 const CHECK_EMPTY_PREDICATES = [FILTER_PREDICATE_TYPE.EMPTY, FILTER_PREDICATE_TYPE.NOT_EMPTY];
 
 const DATE_MODIFIERS_REQUIRE_TERM = [
@@ -160,10 +158,7 @@ class ValidateFilter {
     }
 
     const { type: columnType } = filterColumn;
-    const { IS_CURRENT_USER_ID, INCLUDE_ME } = FILTER_PREDICATE_TYPE;
-    if (predicate === IS_CURRENT_USER_ID && TEXT_COLUMN_TYPES.includes(columnType)) {
-      return true;
-    }
+    const { INCLUDE_ME } = FILTER_PREDICATE_TYPE;
     if (predicate === INCLUDE_ME && COLLABORATOR_COLUMN_TYPES.includes(columnType)) {
       return true;
     }

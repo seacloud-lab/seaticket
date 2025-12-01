@@ -20,12 +20,13 @@ import { useConnections } from '../../hooks';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { MetadataProvider } from '../../../tickets/hooks';
-import AddButton from '@/project/components/add-button';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
-  const { viewID, isLoading, updatePageName, updateViewID } = useConnectionsPage();
+  const { viewID, isLoading, updateConnectionInfo, updateViewID } = useConnectionsPage();
   const { connections } = useConnections();
   const [connection, setConnection] = useState({});
   const [currentRow, setCurrentRow] = useState({});
@@ -339,13 +340,13 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const connection = connections.find(c => c.id === connectionID);
     if (connection) {
       setConnection(connection);
-      updatePageName && updatePageName(connection.name);
+      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type });
       setLoadingConnection(false);
       return;
     }
     connectionsAPI.getConnection(projectUuid, connectionID).then(res => {
       const connection = res.data.record;
-      updatePageName && updatePageName(connection.name);
+      updateConnectionInfo && updateConnectionInfo({ name: connection.name, type: connection.type });
       setConnection(connection);
       setLoadingConnection(false);
     }).catch(error => {
@@ -353,21 +354,20 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, []);
 
+  useEffect(() => {
+    const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.OPEN_CONNECTION_EMBEDDING_VISUALIZATION, () => {
+      setEmbeddingVisualizationOpen(true);
+    });
+    return () => {
+      unsubscribeNewConnection();
+    };
+  }, []);
+
   if (isLoading || isLoadingConnection) return null;
 
   return (
     <CollaboratorsProvider>
       <MetadataProvider projectUuid={projectUuid}>
-        {(connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM) && (
-          <div style={{
-            position: 'absolute',
-            top: '8px',
-            right: '140px',
-            zIndex: 100
-          }}>
-            <AddButton onClick={() => setEmbeddingVisualizationOpen(true)} text={gettext('Analyze')} />
-          </div>
-        )}
         <SeaMetadata
           viewID={viewID}
           api={api}
@@ -403,12 +403,10 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         )}
         {isEmbeddingVisualizationOpen && (
           <EmbeddingVisualization
-            isOpen={isEmbeddingVisualizationOpen}
             onClose={() => setEmbeddingVisualizationOpen(false)}
             connectionId={connectionID}
             connectionName={connection?.name || ''}
             projectUuid={projectUuid}
-            viewId={viewID}
           />
         )}
       </MetadataProvider>

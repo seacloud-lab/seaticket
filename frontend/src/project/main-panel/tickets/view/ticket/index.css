@@ -46,7 +46,7 @@
   padding: 16px 0 50px 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-reply-container-wrapper {
+.sea-qa-project-ticket .sea-qa-project-ticket-comment-container-wrapper {
   width: 70%;
   display: flex;
   flex-direction: column;
@@ -80,12 +80,12 @@
   min-height: 100%;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-reply.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-reply-container {
+.sea-qa-project-ticket .sea-qa-project-ticket-comment.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-comment-container {
   border: none;
   border-radius: 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-reply.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-reply-op {
+.sea-qa-project-ticket .sea-qa-project-ticket-comment.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-comment-op {
   border-bottom: none;
   color: inherit;
   font-weight: 600;
@@ -93,4 +93,32 @@
   height: 40px;
   line-height: 32px;
   padding-left: 0;
+}
+
+/* small */
+.sea-qa-project-ticket.small .sea-qa-project-ticket-content-wrapper {
+  flex-direction: column;
+}
+
+.sea-qa-project-ticket.small .sea-qa-project-ticket-content-wrapper .sea-qa-project-ticket-comment-container-wrapper {
+  width: 100%;
+  padding-bottom: 50px;
+}
+
+.sea-qa-project-ticket.small .sea-qa-project-ticket-content-wrapper .sea-qa-project-ticket-other-settings {
+  width: 100%;
+}
+
+.sea-qa-project-ticket.small .sea-qa-project-ticket-footer {
+  padding-left: 0;
+  flex-wrap: wrap;
+}
+
+.sea-qa-project-ticket.small .sea-qa-project-ticket-footer .sea-qa-project-ticket-submit-btns {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 0 !important;
 }

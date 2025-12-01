@@ -37,10 +37,6 @@ const textFilter = (text, { filter_predicate, filter_term }, userId) => {
     case FILTER_PREDICATE_TYPE.NOT_EMPTY: {
       return !!text;
     }
-    case FILTER_PREDICATE_TYPE.IS_CURRENT_USER_ID: {
-      if (!userId) return false;
-      return text === userId;
-    }
     default: {
       return false;
     }
