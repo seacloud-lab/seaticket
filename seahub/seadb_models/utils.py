@@ -128,7 +128,7 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         project_uuid,
         table_id,
         [
-            github_issues_table.closed_at.name
+            github_issues_table.closed_time.name
         ],
     )
 

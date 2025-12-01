@@ -19,6 +19,7 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   PARTICIPANTS: 'participants',
   CREATED_TIME: 'created_time',
   MODIFIED_TIME: 'modified_time',
+  CLOSED_TIME: 'closed_time',
   CREATOR: 'creator',
   DELETED: 'deleted',
   REPLY_COUNT: 'reply_count',
@@ -163,6 +164,11 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
   [PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME]: {
     type: CellType.MTIME,
     display_name: gettext('Last modified time'),
+    editable: false,
+  },
+  [PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME]: {
+    type: CellType.MTIME,
+    display_name: gettext('Closed time'),
     editable: false,
   },
   [PREDEFINED_TICKET_COLUMN_NAME.CREATOR]: {

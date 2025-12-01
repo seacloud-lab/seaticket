@@ -293,7 +293,7 @@ class GithubIssuesTable(BaseModel):
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     sync_time = MappedColumn('sync_time', PropertyTypes.DATETIME)
-    closed_at = MappedColumn('closed_at', PropertyTypes.DATETIME)
+    closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     comments_count = MappedColumn('comments_count', PropertyTypes.INT)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
     ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
@@ -347,6 +347,7 @@ class TicketsTable(BaseModel):
     reply_count = MappedColumn('reply_count', PropertyTypes.INT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
+    closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
 class TicketRepliesTable(BaseModel):

@@ -354,8 +354,8 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.MTIME,
       is_predefined: true,
     },
-    'closed_at': {
-      display_name: gettext('Closed at'),
+    'closed_time': {
+      display_name: gettext('Closed time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
       is_predefined: true,
