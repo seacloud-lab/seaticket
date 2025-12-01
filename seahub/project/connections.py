@@ -29,7 +29,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import WebCrawlTable, SeafileTable
+from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -589,27 +589,23 @@ class ProjectConnectionRowDetailView(APIView):
                     record['connection_type'] = project_connection.type
             except Exception as e:
                 logger.error(e)
-            return Response(record)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             record = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
             record['connection_type'] = project_connection.type
-            return Response(record)
         elif project_connection.type == ConnectionType.SEAFILE.value:
             record = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
             record['connection_type'] = project_connection.type
-            return Response(record)
         elif project_connection.type == ConnectionType.EMAIL.value:
             _pk = request.GET.get('_pk')
             if not _pk:
                 error_msg = 'Missing _pk.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+            record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+
         if record is None:
             error_msg = 'No record found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        return Response({
-            'row_details': row_details,
-        })
+        return Response(record)
 
 
 class ProjectConnectionLogView(APIView):

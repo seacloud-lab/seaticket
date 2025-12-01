@@ -35,14 +35,14 @@ const RowDetailsDialog = ({
       title = getCellValueByColumn(row, filenameColumn);
     }
     return title;
-  }, [connection, row, columns]);
+  }, [row, columns]);
 
   const displayedTitle = useMemo(() => {
     if (status === 'loaded' && rowDetails) {
       return rowDetails.title || rowTitle;
     }
     return rowTitle;
-  }, [status, rowDetails, connection.type, rowTitle]);
+  }, [status, rowDetails, rowTitle]);
 
   const getFormatParamsByType = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.SITE) {
@@ -58,6 +58,7 @@ const RowDetailsDialog = ({
     if (connection.type === CONNECTION_TYPE.SITE || connection.type === CONNECTION_TYPE.SEAFILE) {
       return {
         title: mainTitle,
+        time: res.data.modified_time,
         body: res.data.content };
     } else if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
       const mainPost = {
@@ -82,6 +83,19 @@ const RowDetailsDialog = ({
           time: detail.modified_time,
           body: detail.content || '',
         })),
+      };
+    } else if (connection.type === CONNECTION_TYPE.EMAIL) {
+      const emailData = {
+        title: mainTitle,
+        time: res.data.modified_time,
+        body: res.data.content || '',
+        is_sender: res.data.is_sender,
+        email_from: res.data.email_from,
+        email_to: res.data.email_to,
+      }
+      return {
+        title: mainTitle,
+        displayedData: [emailData]
       };
     }
   }, [connection]);

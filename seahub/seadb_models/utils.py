@@ -558,7 +558,6 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         elif name in extra_query_names:
             extra_query_columns.append(column)
 
-
     view_copy = view.copy()
     sql = view_data_2_sql(table_name, display_all_columns + extra_query_columns, view_copy, username, start, limit)
     try:
@@ -656,11 +655,11 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     try:
         sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
         email_res = seadb_api.query_rows(project_uuid, sql)
-        email_records = email_res.get('results', [])
+        email_record = email_res.get('results')[0]
     except Exception as e:
         logger.error(f'SeaDB query error for email details {thread_table_name} or {email_table_name}: {e}')
-        email_records = []
-    return email_records
+        email_record = {}
+    return email_record
 
 
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
