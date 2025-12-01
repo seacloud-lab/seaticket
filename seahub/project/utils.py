@@ -479,10 +479,10 @@ def ticket_to_json(project_uuid, ticket_id):
         'created_time': created_time,
         'comments': []
     }
-    for ticket_reply in ticket_comments:
-        nickname = nickname_map.get(ticket_reply.get('creator'))
-        content = ticket_reply.get('content')
-        replied_at = ticket_reply.get('created_time')
+    for ticket_comment in ticket_comments:
+        nickname = nickname_map.get(ticket_comment.get('creator'))
+        content = ticket_comment.get('content')
+        replied_at = ticket_comment.get('created_time')
         replied_at = time_str_to_utc_time(replied_at).isoformat()
         whole_ticket_data['comments'].append({
             'nickname': nickname,
