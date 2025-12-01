@@ -961,7 +961,7 @@ class StatsAIByProject(models.Model):
     project_uuid = models.CharField(max_length=36, db_index=True)
     date = models.DateField()
     model = models.CharField(max_length=64)
-    owner = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
     org_id = models.IntegerField()
     input_tokens = models.IntegerField(default=0)
     output_tokens = models.IntegerField(default=0)
@@ -971,8 +971,8 @@ class StatsAIByProject(models.Model):
 
     class Meta:
         db_table = 'stats_ai_by_project'
-        unique_together = [['project_uuid', 'date', 'model']]
+        unique_together = [['project_uuid', 'date', 'model', 'username']]
         indexes = [
-            models.Index(fields=['date', 'owner']),
+            models.Index(fields=['date', 'username']),
             models.Index(fields=['date', 'org_id']),
         ]

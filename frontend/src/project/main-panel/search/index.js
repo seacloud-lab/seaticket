@@ -17,7 +17,7 @@ import Switch from '@/components/switch';
 import './index.css';
 import './search-filters.css';
 
-const { workspaceID, projectUuid } = window.app.pageOptions;
+const { workspaceID, projectUuid, username } = window.app.pageOptions;
 
 const SEARCH_STORE_KEY = 'search-project';
 
@@ -84,7 +84,7 @@ const Search = ({ title, settings }) => {
         timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
       }
       const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, source.token, semanticEnabled).then(res => {
+      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, username, source.token, semanticEnabled).then(res => {
         const rawResults = res.data?.results || [];
         setResults(rawResults.map(result => new SearchResult(result)));
         setSearching(false);

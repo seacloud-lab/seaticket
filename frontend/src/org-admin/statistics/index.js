@@ -94,6 +94,23 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
+        {groupBy === 'workspace' && (
+          <>
+            <td>
+              <span className="dtable-icon-table"></span>
+            </td>
+            <td>{item.workspace_name}</td>
+            <td>
+              {(item.nickname || item.group_name) && (
+                <Link to={this.getOwnerURL(item.owner)}>
+                  {item.group_name ? item.group_name : item.nickname}
+                </Link>
+              )}
+              {!(item.nickname || item.group_name) && item.owner}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
       </tr>
     );
   }
@@ -139,14 +156,14 @@ class Content extends Component {
         </div>
       );
     }
-
+    console.log(this.getNextPage, 'this.getNextPage')
     return (
       <Fragment>
         <table className="table table-hover table-vcenter">
           <thead>
             {groupBy === 'owner' && (
               <tr>
-                <th>{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th>{`${gettext('User')}`}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
@@ -154,6 +171,14 @@ class Content extends Component {
               <tr>
                 <th width="5%"></th>
                 <th width="35%">{gettext('Project')}</th>
+                <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th width="25%">{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'workspace' && (
+              <tr>
+                <th width="5%"></th>
+                <th width="35%">{gettext('Workspace')}</th>
                 <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
                 <th width="25%">{gettext('Cost')}</th>
               </tr>
@@ -318,13 +343,19 @@ class StatisticsAI extends Component {
           className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
           onClick={() => this.changeTabActive('owner')}
         >
-          {`${gettext('Users')} / ${gettext('Group')}`}
+          {gettext('Users')}
         </div>
         <div
           className={`statistic-tab-item ${groupBy === 'project_uuid' ? 'active' : ''}`}
           onClick={() => this.changeTabActive('project_uuid')}
         >
           {gettext('Project')}
+        </div>
+        <div
+          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('workspace')}
+        >
+          {gettext('Workspace')}
         </div>
       </div>
     );
