@@ -27,10 +27,9 @@ from seahub.project.utils import check_project_admin_permission, add_connection_
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
-    list_seafile_record_details, list_email_record_details
+    list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
-    DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
+from seahub.seadb_models.models import WebCrawlTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -565,45 +564,35 @@ class ProjectConnectionRowDetailView(APIView):
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        row_details = []
+
+        _pk = request.GET.get('_pk')
+        if not _pk:
+            error_msg = 'Missing _pk.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            _pk = request.GET.get('_pk')
-            if not _pk:
-                error_msg = 'Missing _pk.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
+            record = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SITE.value:
             url = request.GET.get('url')
             filename = url_to_filename(url)
+            record = list_site_record_details(seadb_api, project_uuid, connection_id, _pk)
             uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-            try:
-                file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
-                if file:
-                    row_details = json.loads(file.read())
-            except Exception as e:
-                logger.error(e)
+            file = get_file_from_s3_web_crawl(uuid_32_chars, connection_id, filename)
+            if file:
+                record['content'] = json.loads(file.read()).get('content')
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            _pk = request.GET.get('_pk')
-            if not _pk:
-                error_msg = 'Missing _pk.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
+            record = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            _pk = request.GET.get('_pk')
-            if not _pk:
-                error_msg = 'Missing _pk.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
+            record = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
         elif project_connection.type == ConnectionType.EMAIL.value:
-            _pk = request.GET.get('_pk')
-            if not _pk:
-                error_msg = 'Missing _pk.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row_details = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
-        return Response({
-            'row_details': row_details,
-        })
+            record = list_email_record_details(seadb_api, project_uuid, connection_id, _pk)
+        else:
+            error_msg = 'type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        record['connection_type'] = project_connection.type
+
+        return Response(record)
 
 
 class ProjectConnectionLogView(APIView):
