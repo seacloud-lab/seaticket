@@ -4,11 +4,11 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
-import { TICKET_STATE_OPTIONS } from '../../../constants';
+import { getRowById } from '@/sea-metadata/utils/row';
 
-import './index.css';
+import '../state-settings/index.css';
 
-const StateSettings = ({
+const SubStateSettings = ({
   isReadonly,
   state,
   substate,
@@ -23,37 +23,14 @@ const StateSettings = ({
 
   const options = useMemo(() => {
     if (isLoading) return [];
-    const openOption = TICKET_STATE_OPTIONS.find(o => o.id === '0001');
-    const closedOption = TICKET_STATE_OPTIONS.find(o => o.id === '0002');
-    const openSubstates = substatesData.rows.filter(r => r.parent_id === '0001');
-    const cloedSubstates = substatesData.rows.filter(r => r.parent_id === '0002');
-
-    const openSubstateOptions = openSubstates.map(substate => {
+    const rows = substatesData.rows.filter(r => r.parent_id === state);
+    return rows.map(row => {
       return {
-        value: openOption.id + '__' + substate._id,
-        label: (
-          <div>
-            <Option option={openOption} />
-            <span className="mx-2">{'-'}</span>
-            <Option option={substate} />
-          </div>
-        )
+        ...row,
+        value: row._id,
       };
     });
-    const closedSubstateOptions = cloedSubstates.map(substate => {
-      return {
-        value: closedOption.id + '__' + substate._id,
-        label: (
-          <div className="sea-qa-ticket-state-substate-option">
-            <Option option={closedOption} />
-            <span className="mx-2">{'-'}</span>
-            <Option option={substate} />
-          </div>
-        )
-      };
-    });
-    return [...openSubstateOptions, ...closedSubstateOptions];
-  }, [isLoading, substatesData.rows]);
+  }, [state]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -70,14 +47,14 @@ const StateSettings = ({
     onChange(state, substate);
   }, [onChange]);
 
-  const stateOption = TICKET_STATE_OPTIONS.find(o => o.id === state);
+  const substateOption = !isLoading && getRowById(substatesData, substate);
 
   return (
     <>
       <div className={classnames('sea-qa-project-ticket-settings-item', className)}>
-        <Label>{gettext('State')}</Label>
+        <Label>{gettext('Substate')}</Label>
         <div className="ticket-state-formatter" onClick={openEditor} ref={editorRef}>
-          {stateOption && (<Option option={stateOption} />)}
+          {substateOption && (<Option option={substateOption} />)}
         </div>
       </div>
       {!isReadonly && isShowEditor && (
@@ -85,7 +62,7 @@ const StateSettings = ({
           target={editorRef}
           isMultiple={false}
           isSearchEnabled={false}
-          value={`${state}__${substate}`}
+          value={substate}
           options={options}
           onChange={onStateChange}
           onToggle={closeEditor}
@@ -95,4 +72,4 @@ const StateSettings = ({
   );
 };
 
-export default StateSettings;
+export default SubStateSettings;

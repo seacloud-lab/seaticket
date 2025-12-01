@@ -9,7 +9,18 @@
   cursor: pointer;
 }
 
-.ticket-state-formatter .option {
+.ticket-state-formatter .sea-qa-ui-option {
   margin-bottom: 4px;
   margin-top: 4px;
+  margin-right: 10px;
+}
+
+.sea-qa-ticket-state-substate-option {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.sea-qa-ticket-state-substate-option .sea-qa-ui-option {
+  max-width: 120px;
 }
