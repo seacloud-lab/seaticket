@@ -459,8 +459,8 @@ def ticket_to_json(project_uuid, ticket_id):
         logger.error(e)
         raise TicketNotFound()
     all_comments_users = set([
-        ticket_reply.get('creator')
-        for ticket_reply in ticket_comments
+        ticket_comment.get('creator')
+        for ticket_comment in ticket_comments
     ])
 
     all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)

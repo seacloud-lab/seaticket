@@ -47,7 +47,7 @@ def check_ticket_creation_interval(seadb_api, project_uuid, username, deleted=Fa
 
     return True
 
-def check_ticket_reply_creation_interval(seadb_api, project_uuid, username, ticket_id, deleted=False):
+def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket_id, deleted=False):
     """Limit ticket reply creation to once every 30 seconds per creator per ticket."""
     previous_ticket_reply_sql = (
         f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `creator` = '{username}' "
@@ -96,7 +96,7 @@ def get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end):
     return ticket_comments_data
 
 
-def get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_id, ticket_reply_number):
+def get_ticket_comment_by_pk(seadb_api, project_uuid, ticket_id, ticket_reply_number):
     sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `_pk` = {ticket_reply_number}"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None

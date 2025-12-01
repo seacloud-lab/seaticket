@@ -26,7 +26,7 @@ import './index.css';
 
 const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isLoading, setLoading] = useState(true);
-  const [reply, setComment] = useState('');
+  const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +44,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, []);
 
   const ticketRef = useRef(null);
-  const replyEditorRef = useRef(null);
+  const commentEditorRef = useRef(null);
   const containerRef = useRef(null);
   const headerRef = useRef(null);
 
@@ -101,27 +101,27 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     }
   }, [user, handleUpdateRowsCacheData]);
 
-  const createComment = useCallback((ticketID, reply) => {
-    return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, reply).then(res => {
-      let newTicket = ticket._create_reply(res.data.ticket_reply);
+  const createComment = useCallback((ticketID, comment) => {
+    return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, comment).then(res => {
+      let newTicket = ticket._create_comment(res.data.ticket_comment);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
-      return res.data.ticket_reply;
+      return res.data.ticket_comment;
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const modifyComment = useCallback((ticketID, replyID, reply) => {
-    return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, replyID, reply).then(res => {
-      let newTicket = ticket._modify_reply(replyID, reply);
+  const modifyComment = useCallback((ticketID, commentID, comment) => {
+    return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, commentID, comment).then(res => {
+      let newTicket = ticket._modify_comment(commentID, comment);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
       return newTicket;
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const deleteComment = useCallback((ticketID, replyID) => {
-    return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, replyID).then(res => {
-      let newTicket = ticket._delete_reply(replyID);
+  const deleteComment = useCallback((ticketID, commentID) => {
+    return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, commentID).then(res => {
+      let newTicket = ticket._delete_comment(commentID);
       handleUpdateParticipants(newTicket);
       setTicket(deepCopy(newTicket));
       return newTicket;
@@ -200,7 +200,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
-    const editor = replyEditorRef.current.getEditor();
+    const editor = commentEditorRef.current.getEditor();
     const eventBus = EventBus.getInstance();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -214,8 +214,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   const onSubmitComment = useCallback((callback) => {
     setIsSubmitting(true);
-    createComment(ticket.id, reply).then(() => {
-      const editor = replyEditorRef.current.getEditor();
+    createComment(ticket.id, comment).then(() => {
+      const editor = commentEditorRef.current.getEditor();
       const eventBus = EventBus.getInstance();
       eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
       callback && callback();
@@ -228,7 +228,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [reply, ticket, replyEditorRef, createComment]);
+  }, [comment, ticket, commentEditorRef, createComment]);
 
   const toggleState = useCallback((state = '', substate = '') => {
     const modifyState = () => {
@@ -239,16 +239,16 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         toaster.danger(errorMessage);
       });
     };
-    if (reply && reply?.text) {
+    if (comment && comment?.text) {
       onSubmitComment(modifyState);
       return;
     }
 
     modifyState();
-  }, [ticket, reply, modifyTicket, onSubmitComment]);
+  }, [ticket, comment, modifyTicket, onSubmitComment]);
 
-  const handleModifyComment = useCallback((replyID, content, callback) => {
-    modifyComment(ticket.id, replyID, content).then(res => {
+  const handleModifyComment = useCallback((commentID, content, callback) => {
+    modifyComment(ticket.id, commentID, content).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -321,7 +321,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         typeOption={typeOption}
       />
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="sea-qa-project-ticket-reply-container-wrapper">
+        <div className="sea-qa-project-ticket-comment-container-wrapper">
           <Comment
             isSmallScreen={isSmallScreen}
             comment={ticket}
@@ -331,17 +331,17 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             editorAPI={editorAPI}
             onModify={onContentChange}
           />
-          {comments.map(reply => {
+          {comments.map(comment => {
             return (
               <Comment
-                key={reply.id}
+                key={comment.id}
                 isSmallScreen={isSmallScreen}
-                readonly={!(reply.creator === user.email || isAdmin)}
-                comment={reply}
+                readonly={!(comment.creator === user.email || isAdmin)}
+                comment={comment}
                 projectUuid={projectUuid}
                 editorAPI={editorAPI}
-                onDelete={(reply) => deleteComment(id, reply.id)}
-                onModify={(content, callback) => handleModifyComment(reply.id, content, callback)}
+                onDelete={(comment) => deleteComment(id, comment.id)}
+                onModify={(content, callback) => handleModifyComment(comment.id, content, callback)}
               />
             );
           })}
@@ -349,10 +349,10 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}
-              ref={replyEditorRef}
+              ref={commentEditorRef}
               lang={lang}
               headerName={gettext('Comment')}
-              value={reply || ''}
+              value={comment || ''}
               autoSave={false}
               saveDelay={20 * 1000}
               isCheckBrowser={true}
@@ -365,10 +365,10 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <div className="sea-qa-project-ticket-footer">
             <UploadFilesButton className="mt-4" onChange={handleFiles} />
             <div className="sea-qa-project-ticket-submit-btns ml-2">
-              <StatusToggleButton state={state} substate={substate} comment={reply?.text} disabled={isSubmitting} onChange={toggleState} />
+              <StatusToggleButton state={state} substate={substate} comment={comment?.text} disabled={isSubmitting} onChange={toggleState} />
               <Button
                 className="sea-qa-project-ticket-footer-confirm-btn"
-                disabled={!reply.text || isSubmitting}
+                disabled={!comment.text || isSubmitting}
                 color="primary"
                 onClick={() => onSubmitComment()}
               >

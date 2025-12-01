@@ -51,7 +51,7 @@ class Ticket {
 
 
     this.comments = object.comments || [];
-    this.reply_count = object.reply_count || '';
+    this.comment_count = object.comment_count || '';
 
     this.modified_time = object.modified_time || '';
 
@@ -63,7 +63,7 @@ class Ticket {
     this.modified_time = this.modified_time ? dayjs(this.modified_time).fromNow() : '--';
 
     if (this.comments) {
-      this.comments = this.comments.map(reply => reply instanceof Comment ? reply : new Comment(reply));
+      this.comments = this.comments.map(comment => comment instanceof Comment ? comment : new Comment(comment));
     }
 
     if (this.tags) {
@@ -82,21 +82,21 @@ class Ticket {
     return this;
   };
 
-  _create_reply = (reply) => {
-    this.comments.push(new Comment(reply));
+  _create_comment = (comment) => {
+    this.comments.push(new Comment(comment));
     return this;
   };
 
-  _delete_reply = (replyID) => {
-    this.comments = this.comments.filter(reply => reply.id !== replyID);
+  _delete_comment = (commentID) => {
+    this.comments = this.comments.filter(comment => comment.id !== commentID);
     return this;
   };
 
-  _modify_reply = (replyID, content) => {
-    const replyIndex = this.comments.findIndex(reply => reply.id === replyID);
-    let reply = this.comments[replyIndex];
-    reply = reply._update(content);
-    this.comments[replyIndex] = reply;
+  _modify_comment = (commentID, content) => {
+    const commentIndex = this.comments.findIndex(comment => comment.id === commentID);
+    let comment = this.comments[commentIndex];
+    comment = comment._update(content);
+    this.comments[commentIndex] = comment;
     return this;
   };
 }
