@@ -26,7 +26,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
-  const { viewID, isLoading, updateConnectionInfo, updateViewID } = useConnectionsPage();
+  const { viewID, isLoading, updateConnectionInfo, toggleView } = useConnectionsPage();
   const { connections } = useConnections();
   const [connection, setConnection] = useState({});
   const [currentRow, setCurrentRow] = useState({});
@@ -378,7 +378,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           createContextMenuOptions={createContextMenuOptions}
           permission={permission}
           typesData={typesData}
-          toggleView={updateViewID}
+          toggleView={toggleView}
           expandRow={handleExpandRow}
           t={t}
         />

@@ -11,7 +11,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
   const [connectionInfo, updateConnectionInfo] = useState({ name: '', type: '' });
-  const [viewID, updateViewID] = useState('');
+  const [viewID, toggleView] = useState('');
 
   const resetURL = useCallback((pageSlugId, viewID) => {
     const { origin } = location;
@@ -27,7 +27,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
 
   const togglePageSlugId = useCallback((pageSlugId, viewID = '') => {
     setLoading(true);
-    updateViewID(viewID);
+    toggleView(viewID);
     setPageSlugId(pageSlugId);
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       updateConnectionInfo({ name: '', type: '' });
@@ -80,7 +80,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
       isLoading,
       connectionInfo,
       togglePageSlugId,
-      updateViewID,
+      toggleView,
       updateConnectionInfo,
     }}>
       {children}
