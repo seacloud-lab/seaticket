@@ -130,10 +130,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
 
   if (isMetadataLoading) return (<CenteredLoading />);
 
-  const isSmallScreen = containerWidth < 848;
+  // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
+  const isSmallScreen = containerWidth < 892;
 
   return (
-    // 848: comment min-width(540) + others min-width(260) + gap: 16 * 3
     <div className={classnames('sea-qa-project-new-ticket', { 'small': isSmallScreen })} ref={ticketRef}>
       {!isSmallScreen && (
         <div className="sea-qa-project-ticket-user">
