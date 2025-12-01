@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
@@ -25,6 +25,7 @@ const ViewItem = ({
 
   const containerRef = useRef(null);
   const viewRef = useRef(null);
+  const downBtnRef = useRef(null);
   const menuStyle = useRef({});
 
   const enteredCounter = useRef(0);
@@ -100,6 +101,19 @@ const ViewItem = ({
     onDuplicate && onDuplicate(view._id);
   }, [view, onDuplicate]);
 
+  useEffect(() => {
+    if (!isShowDropdownMenu) return;
+    const hideMenu = (event) => {
+      if (downBtnRef.current && event && !downBtnRef.current.contains(event.target)) {
+        setIsShowDropdownMenu(false);
+      }
+    };
+    document.addEventListener('click', hideMenu);
+    return () => {
+      document.removeEventListener('click', hideMenu);
+    };
+  }, [isShowDropdownMenu]);
+
   const props = moveAble ? { onDragStart, onDragEnter, onDragOver, onDragLeave, onDrop, draggable: 'true' } : {};
 
   return (
@@ -118,7 +132,14 @@ const ViewItem = ({
           ref={viewRef}
         >
           {view.name}
-          {isSelect && (<div className="sea-metadata-view-item-operation-down" onClick={openDropdownMenu}>{<Icon symbol="down" />}</div>)}
+          {isSelect && (
+            <div
+              className="sea-metadata-view-item-operation-down"
+              onClick={openDropdownMenu}
+              ref={downBtnRef}
+            >
+              <Icon symbol="down" />
+            </div>)}
         </div>
       </div>
       {isShowDeleteConfirmationDialog && (

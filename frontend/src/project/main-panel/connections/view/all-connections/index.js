@@ -22,7 +22,7 @@ const AllConnections = ({ projectUuid }) => {
   const { isLoading, isConnectionsLoaded, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionStatus, modifyLocalConnectionRecord, modifyLocalConnectionSyncStatus
   } = useConnections();
-  const { togglePageSlugId, updatePageName } = useConnectionsPage();
+  const { togglePageSlugId, updateConnectionInfo } = useConnectionsPage();
 
   const activeRecordRef = useRef(null);
   const selfQuery = useMemo(() => new SelfQuery({
@@ -79,7 +79,7 @@ const AllConnections = ({ projectUuid }) => {
   }, []);
 
   const handleExpandRow = useCallback((row) => {
-    updatePageName && updatePageName(row.name);
+    updateConnectionInfo && updateConnectionInfo({ name: row.name, type: row.type });
     togglePageSlugId && togglePageSlugId(row.id);
   }, [togglePageSlugId]);
 

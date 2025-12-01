@@ -9,21 +9,22 @@ import { generateDefaultGroupby, getGroupbyColumns } from '../../../utils/group'
 import { getEventClassName } from '@/utils/dom';
 import { EVENT_BUS_TYPE, MAX_GROUP_LEVEL } from '../../../constants';
 import context from '@/sea-metadata/context';
+import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
 
 const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onChange, target, placement, columns }) => {
   const [groupbys, setGroupbys] = useState(propsGroupBys);
-  const [isChanged, setChanged] = useState(false);
   const isSelectOpenRef = useState(false);
   const popoverRef = useRef(null);
 
   const onClosePopover = useCallback(() => {
+    const isChanged = !ObjectUtils.isSameObject(propsGroupBys, groupbys);
     if (isChanged) {
       onChange(groupbys);
     }
     hidePopover();
-  }, [isChanged, groupbys, onChange, hidePopover]);
+  }, [propsGroupBys, groupbys, onChange, hidePopover]);
 
   const hide = useCallback((event) => {
     if (popoverRef.current && !getEventClassName(event).includes('popover') && !popoverRef.current.contains(event.target)) {
@@ -57,7 +58,6 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
   }, [hide, onHotKey, setSelectStatus]);
 
   const updateGroups = useCallback((newGroupBys) => {
-    setChanged(true);
     setGroupbys(newGroupBys);
   }, []);
 

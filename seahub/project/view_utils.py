@@ -148,18 +148,6 @@ class Operator(object):
             'column_name': self.column_name
         })
 
-    def op_is_current_user_id(self):
-        if not self.filter_term:
-            return "(`%s`IS NULL AND `%s` IS NOT NULL)" % (
-                self.column_name,
-                self.column_name
-            )
-        return "`%s` %s '%s'" % (
-            self.column_name,
-            '=',
-            self.filter_term
-        )
-
 
 class TextOperator(Operator):
     SUPPORT_FILTER_PREDICATE = [
@@ -169,7 +157,6 @@ class TextOperator(Operator):
         FilterPredicateTypes.IS_NOT,
         FilterPredicateTypes.EMPTY,
         FilterPredicateTypes.NOT_EMPTY,
-        FilterPredicateTypes.IS_CURRENT_USER_ID,
     ]
 
     def __init__(self, column, filter_item):
@@ -971,8 +958,6 @@ def _filter2sql(operator):
         return operator.op_has_none_of()
     if filter_predicate == FilterPredicateTypes.INCLUDE_ME:
         return operator.op_include_me()
-    if filter_predicate == FilterPredicateTypes.IS_CURRENT_USER_ID:
-        return operator.op_is_current_user_id()
     if filter_predicate == FilterPredicateTypes.IS_ANY_OF:
         return operator.op_is_any_of()
     if filter_predicate == FilterPredicateTypes.HAS_ANY_OF:

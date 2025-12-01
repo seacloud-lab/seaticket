@@ -39,7 +39,7 @@ class OptionGroup extends Component {
 
   resetMenuStyle = () => {
     if (!this.optionGroupRef) return;
-    const { isInModal, position } = this.props;
+    const { isInModal, position, searchable } = this.props;
     const { top, height } = this.optionGroupRef.getBoundingClientRect();
     if (isInModal) {
       if (position.y + position.height + height > window.innerHeight) {
@@ -47,12 +47,22 @@ class OptionGroup extends Component {
       }
       this.optionGroupRef.style.opacity = 1;
       this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
+      return;
     }
-    else {
-      if (height + top > window.innerHeight) {
-        const borderWidth = 2;
-        this.optionGroupRef.style.top = -1 * (height + borderWidth) + 'px';
-      }
+    if (height + top > window.innerHeight) {
+      const borderWidth = 2;
+      this.optionGroupRef.style.top = -1 * (height + borderWidth) + 'px';
+      setTimeout(() => {
+        const { top } = this.optionGroupRef.getBoundingClientRect();
+        if (top < 0) {
+          const { height: parentNodeHeight, top: parentNodeTop } = this.optionGroupRef.parentNode.getBoundingClientRect();
+          this.optionGroupRef.style.top = 'unset';
+          this.optionGroupRef.style.bottom = parentNodeHeight + 'px';
+          this.optionGroupRef.style.maxHeight = parentNodeTop - 5 + 'px';
+          // 23: gap(5) + paddingTop/paddingBottom(16) + borderTop/borderBottom(2)
+          this.optionGroupContentRef.style.maxHeight = parentNodeTop - (searchable ? 34 : 0) - 23 + 'px';
+        }
+      }, 1);
     }
   };
 

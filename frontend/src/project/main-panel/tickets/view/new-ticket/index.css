@@ -56,3 +56,33 @@
 .sea-qa-project-new-ticket .sf-long-text-inline-editor-container:has(*:focus) {
   border-color: #1991eb;
 }
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-settings-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-content-settings {
+  width: 100%;
+}
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-other-settings {
+  padding-left: 0;
+  width: 100%;
+}
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-other-settings .sea-qa-project-ticket-settings-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-footer {
+  padding-bottom: 16px;
+}
+
+.sea-qa-project-new-ticket.small .sea-qa-project-ticket-submit-btns {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 50px;
+}

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import { EmbeddingView } from 'embedding-atlas/react';
 import { gettext } from '@/constants';
-import { Loading } from '@/components';
+import { Loading, ModalHeader } from '@/components';
 import { connectionsAPI } from '@/project/api';
 import './index.css';
 
-const EmbeddingVisualization = ({ isOpen, onClose, connectionId, connectionName, projectUuid, viewId }) => {
+const EmbeddingVisualization = ({ onClose, connectionId, connectionName, projectUuid }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [embeddingData, setEmbeddingData] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [tooltip, setTooltip] = useState(null);
 
   useEffect(() => {
-    if (isOpen && connectionId && projectUuid) {
+    if (connectionId && projectUuid) {
       setIsLoading(true);
 
       connectionsAPI.getEmbeddingAnalysis(projectUuid, connectionId).then(response => {
@@ -49,7 +49,7 @@ const EmbeddingVisualization = ({ isOpen, onClose, connectionId, connectionName,
         });
       });
     }
-  }, [isOpen, connectionId, projectUuid, viewId]);
+  }, [connectionId, projectUuid]);
 
   const processBackendData = (records) => {
     if (!records || records.length === 0) {
@@ -134,7 +134,7 @@ const EmbeddingVisualization = ({ isOpen, onClose, connectionId, connectionName,
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={onClose} size="xl" style={{ maxWidth: '90%' }}>
+    <Modal isOpen={true} toggle={onClose} size="xl" style={{ maxWidth: '90%' }}>
       <ModalHeader toggle={onClose}>
         {gettext('Visual Analytics')} - {connectionName}
       </ModalHeader>

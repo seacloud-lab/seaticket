@@ -11,6 +11,7 @@ import { EVENT_BUS_TYPE, FILTER_COLUMN_OPTIONS } from '../../../constants';
 import { getValidFilters, getFilterByColumn } from '../../../utils/filter';
 import { getEventClassName } from '@/utils/dom';
 import context from '@/sea-metadata/context';
+import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
 
@@ -26,11 +27,15 @@ class FilterPopover extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
+    this.initData = {
       basicFilters: props.basicFilters,
       filters: getValidFilters(props.filters, props.columns),
       filterConjunction: props.filterConjunction || 'And',
-      isChanged: false,
+    };
+    this.state = {
+      basicFilters: this.initData.basicFilters,
+      filters: this.initData.filters,
+      filterConjunction: this.initData.filterConjunction,
     };
     this.isSelectOpen = false;
   }
@@ -49,8 +54,12 @@ class FilterPopover extends Component {
   }
 
   onClosePopover = () => {
-    const { readOnly } = this.props;
-    const { isChanged, filters, filterConjunction, basicFilters } = this.state;
+    const { readOnly, columns } = this.props;
+    const { filters, filterConjunction, basicFilters } = this.state;
+    const isChanged = !ObjectUtils.isSameObject(this.initData, {
+      ...this.state,
+      filters: getValidFilters(filters, columns)
+    });
     if (!readOnly && isChanged) {
       const update = { filters, filter_conjunction: filterConjunction, basic_filters: basicFilters };
       this.props.update(update);
@@ -80,7 +89,7 @@ class FilterPopover extends Component {
   };
 
   update = (filters) => {
-    this.setState({ filters, isChanged: true });
+    this.setState({ filters });
   };
 
   deleteFilter = (filterIndex, scheduleUpdate) => {
@@ -99,7 +108,7 @@ class FilterPopover extends Component {
   };
 
   modifyFilterConjunction = (conjunction) => {
-    this.setState({ filterConjunction: conjunction, isChanged: true });
+    this.setState({ filterConjunction: conjunction });
   };
 
   addFilter = (scheduleUpdate) => {
@@ -123,7 +132,7 @@ class FilterPopover extends Component {
   };
 
   onBasicFilterChange = (value) => {
-    this.setState({ basicFilters: value, isChanged: true });
+    this.setState({ basicFilters: value });
   };
 
   render() {

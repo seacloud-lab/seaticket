@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
@@ -11,10 +11,10 @@ import UploadFilesButton from '../upload-files-btn';
 
 import './index.css';
 
-const Reply = ({
+const Comment = ({
   isShowStatus = false,
   readonly = true,
-  reply,
+  comment,
   projectUuid,
   className,
   lang,
@@ -29,10 +29,14 @@ const Reply = ({
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
   const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
   const { getCollaborator, queryUser } = useCollaborators();
-  const [content, setContent] = useState(reply.content);
+  const [content, setContent] = useState(comment.content);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  const replyEditorRef = useRef(null);
+  const commentRef = useRef(null);
+  const commentEditorRef = useRef(null);
   const isChangeRef = useRef(false);
+
+  const isSmallScreen = useMemo(() => containerWidth < 816, [containerWidth]);
 
   const onLinkClick = useCallback((link) => {
     if (link.includes(`/project/${projectUuid}/`)) {
@@ -50,12 +54,12 @@ const Reply = ({
   const closeEditor = useCallback(() => {
     isChangeRef.current = false;
     setIsShowEditor(false);
-    setContent(reply.content);
-  }, [reply]);
+    setContent(comment.content);
+  }, [comment]);
 
   const handleFiles = useCallback((files) => {
     if (files.length === 0) return;
-    const editor = replyEditorRef.current.getEditor();
+    const editor = commentEditorRef.current.getEditor();
     const eventBus = EventBus.getInstance();
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -92,41 +96,70 @@ const Reply = ({
   }, [content, onModify]);
 
   useEffect(() => {
-    const creator = getCollaborator(reply.creator);
+    const creator = getCollaborator(comment.creator);
     if (creator) {
       setCreator(creator);
       return;
     }
-    queryUser(reply.creator, (userMap) => {
-      const creator = userMap[reply.creator];
+    queryUser(comment.creator, (userMap) => {
+      const creator = userMap[comment.creator];
       setCreator(creator);
     });
-  }, [reply.creator]);
+  }, [comment.creator]);
 
-  if (!reply) return null;
-  const { created_time } = reply;
+  useEffect(() => {
+    if (!comment) return;
+    const commentDom = commentRef.current;
+    const handleResize = () => {
+      if (!commentDom) return;
+      setContainerWidth(commentDom.offsetWidth);
+    };
+    const resizeObserver = new ResizeObserver(handleResize);
+    commentDom && resizeObserver.observe(commentDom);
 
-  if (!readonly && (onDelete || onModify)) {
+    return () => {
+      commentDom && resizeObserver.unobserve(commentDom);
+    };
+  }, [comment]);
 
+  const renderAvatar = useCallback(() => {
+    return (
+      <div className="sea-qa-project-ticket-comment-user-avatar">
+        <img src={creator.avatar_url} alt={creator.name} />
+      </div>
+    );
+  }, [creator, isSmallScreen]);
+
+  const renderOperationLog = useCallback(() => {
+    const { created_time } = comment;
     return (
       <>
-        <div className={classnames('sea-qa-project-ticket-reply editing', className)}>
-          <div className="sea-qa-project-ticket-reply-user-avatar">
-            <img src={creator.avatar_url} alt={creator.name} />
-          </div>
-          <div className="sea-qa-project-ticket-reply-container">
-            <div className="sea-qa-project-ticket-reply-op">
+        {isSmallScreen && renderAvatar()}
+        <span className="sea-qa-project-ticket-comment-user-name mr-1">{creator.name}</span>
+        {isShowStatus && (
+          <span className="sea-qa-project-ticket-comment-status mr-1">{gettext('opened')}</span>
+        )}
+        <span className="sea-qa-project-ticket-comment-time">{created_time}</span>
+      </>
+    );
+  }, [isShowStatus, isSmallScreen, creator, comment, renderAvatar]);
+
+  if (!comment) return null;
+
+  if (!readonly && (onDelete || onModify)) {
+    return (
+      <>
+        <div className={classnames('sea-qa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
+          {!isSmallScreen && renderAvatar()}
+          <div className="sea-qa-project-ticket-comment-container">
+            <div className="sea-qa-project-ticket-comment-op">
               <div className="sea-qa-project-ticket-reply-op-log">
-                <span className="sea-qa-project-ticket-reply-user-name mr-1">{creator.name}</span>
-                {isShowStatus && (
-                  <span className="sea-qa-project-ticket-reply-status mr-1">{gettext('opened')}</span>
-                )}
-                <span className="sea-qa-project-ticket-reply-time">{created_time}</span>
+                {renderOperationLog()}
               </div>
               {!isShowEditor && (
                 <Dropdown
                   isOpen={isOpen}
-                  className="sea-qa-project-ticket-reply-op-more-dropdown"
+                  className="sea-qa-project-ticket-comment-op-more-dropdown"
                   toggle={() => setIsOpen(!isOpen)}
                 >
                   <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn" tag="div">
@@ -149,12 +182,12 @@ const Reply = ({
                 </Dropdown>
               )}
             </div>
-            <div className={classnames('sea-qa-project-ticket-reply-content', { 'p-2 editing': isShowEditor })}>
+            <div className={classnames('sea-qa-project-ticket-comment-content', { 'p-2 editing': isShowEditor })}>
               {isShowEditor ? (
                 <>
                   <LongTextInlineEditor
                     isAlwaysEnableEdit={true}
-                    ref={replyEditorRef}
+                    ref={commentEditorRef}
                     lang={lang}
                     headerName={gettext('Reply')}
                     value={content || ''}
@@ -191,7 +224,7 @@ const Reply = ({
           <CommonOperationConfirmationDialog
             title={gettext('Delete comment')}
             message={gettext('Are you sure you want to delete the comment ?')}
-            executeOperation={() => onDelete(reply)}
+            executeOperation={() => onDelete(comment)}
             confirmBtnText={gettext('Delete')}
             toggleDialog={() => setIsShowDeleteDialog(false)}
           />
@@ -201,23 +234,24 @@ const Reply = ({
   }
 
   return (
-    <div className={classnames('sea-qa-project-ticket-reply', className)}>
-      <div className="sea-qa-project-ticket-reply-user-avatar">
-        <img src={creator.avatar_url} alt={creator.name} />
-      </div>
-      <div className="sea-qa-project-ticket-reply-container">
-        <div className="sea-qa-project-ticket-reply-op">
-          {children && children[0] ? children[0] : (
-            <>
-              <span className="sea-qa-project-ticket-reply-user-name mr-1">{creator.name}</span>
-              {isShowStatus && (
-                <span className="sea-qa-project-ticket-reply-status mr-1">{gettext('opened')}</span>
-              )}
-              <span className="sea-qa-project-ticket-reply-time">{created_time}</span>
-            </>
-          )}
+    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
+      {!isSmallScreen && renderAvatar()}
+      <div className="sea-qa-project-ticket-comment-container">
+        <div className="sea-qa-project-ticket-comment-op">
+          <div className="sea-qa-project-ticket-reply-op-log">
+            {children && children[0] ? (
+              <>
+                {isSmallScreen && renderAvatar()}
+                {children[0]}
+              </>
+            ) : (
+              <>
+                {renderOperationLog()}
+              </>
+            )}
+          </div>
         </div>
-        <div className="sea-qa-project-ticket-reply-content">
+        <div className="sea-qa-project-ticket-comment-content">
           {children && children[1] ? children[1] : (
             <CustomizeMarkdownViewer value={content} showTOC={false} onLinkClick={onLinkClick} />
           )}
@@ -227,4 +261,4 @@ const Reply = ({
   );
 };
 
-export default Reply;
+export default Comment;

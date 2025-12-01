@@ -4,7 +4,7 @@ import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
-import { CONNECTION_PAGE_SLUG_ID } from '../../constants';
+import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE } from '../../constants';
 import { IconButton, toaster } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
@@ -16,11 +16,16 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title }) => {
-  const { pageSlugId, pageName, togglePageSlugId } = useConnectionsPage();
+  const { pageSlugId, connectionInfo, togglePageSlugId } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
+  const { name: connectionName, type: connectionType } = connectionInfo || {};
 
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);
+  }, []);
+
+  const handleOpenConnectionEmbeddingVisualizationOpen = useCallback(() => {
+    eventBus.dispatch(EVENT_BUS_TYPE.OPEN_CONNECTION_EMBEDDING_VISUALIZATION);
   }, []);
 
   const renderLeftChildren = useCallback(() => {
@@ -29,7 +34,7 @@ const TopBar = ({ title }) => {
         <div className="w-100 text-truncate">{title}</div>
       );
     }
-    const connectionTitle = gettext('Connections') + ' / ' + pageName;
+    const connectionTitle = gettext('Connections') + ' / ' + connectionName;
     return (
       <>
         <IconButton
@@ -40,7 +45,7 @@ const TopBar = ({ title }) => {
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
       </>
     );
-  }, [pageSlugId, title, pageName, togglePageSlugId]);
+  }, [pageSlugId, title, connectionName, togglePageSlugId]);
 
   const onManualSync = useCallback((connectionID) => {
     connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {
@@ -61,11 +66,17 @@ const TopBar = ({ title }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      return <AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="add" />;
-    } else {
-      return <AddButton onClick={() => { onManualSync(pageSlugId);}} text={gettext('Sync now')} icon="sync" />;
+      return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="add" />);
     }
-  }, [pageSlugId, handleNewConnection, onManualSync]);
+    return (
+      <>
+        {(connectionType === CONNECTION_TYPE.GITHUB_ISSUE || connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) && (
+          <AddButton onClick={handleOpenConnectionEmbeddingVisualizationOpen} text={gettext('Analyze')} className="mr-4" />
+        )}
+        <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />
+      </>
+    );
+  }, [pageSlugId, connectionType, handleNewConnection, onManualSync, handleOpenConnectionEmbeddingVisualizationOpen]);
 
   return (
     <BasicTopBar>

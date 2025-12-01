@@ -26,6 +26,11 @@
   min-height: 300px;
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
+}
+
+.sf-long-text-inline-editor-container .sf-simple-slate-editor-container {
+  min-width: 540px;
 }
 
 .sf-long-text-inline-editor-container .sf-slate-editor-content,
@@ -56,4 +61,8 @@
 .sea-qa-project-ticket-footer .sea-qa-loading-icon {
   height: 16px;
   width: 16px;
+}
+
+.sea-qa-project-ticket-content-wrapper.small .sea-qa-project-ticket-footer {
+  padding-left: 0;
 }
