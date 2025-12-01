@@ -12,7 +12,7 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings, StateSettings } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
@@ -159,6 +159,18 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       toaster.danger(errorMessage);
     });
   }, [ticket, modifyTicket]);
+
+  const onStateChange = useCallback((state = '') => {
+    const subtateRows = substatesData.rows.filter(r => r.parent_id && r.parent_id === state);
+    const subtateRow = subtateRows[0] || {};
+    const { _id } = subtateRow;
+    modifyTicket(ticket.id, { state, substate: _id || '' }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [substatesData, ticket, modifyTicket]);
 
   const onTypeChange = useCallback((type = '') => {
     modifyTicket(ticket.id, { type }).then(res => {
@@ -381,6 +393,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
+          <StateSettings isReadonly={!editable} value={state} onChange={onStateChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
