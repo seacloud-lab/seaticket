@@ -412,9 +412,14 @@ class SearchView(APIView):
         except ValueError:
             count = 20
 
+        extra_sources = request.data.get('extra_sources', [])
+        if extra_sources and not isinstance(extra_sources, list):
+            error_msg = 'extra_sources invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         connection_ids = request.data.get('connection_ids')
-        if not connection_ids:
-            error_msg = 'connection_ids invalid.'
+        if not connection_ids and not extra_sources:
+            error_msg = 'sources invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
         time_from = request.data.get('time_from')
@@ -440,6 +445,7 @@ class SearchView(APIView):
             'query': query,
             'connection_ids': connection_ids,
             'username': username,
+            'extra_sources': extra_sources,
             'count': count,
             'time_from': time_from,
             'time_to': time_to,

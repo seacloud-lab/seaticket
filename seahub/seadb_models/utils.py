@@ -688,8 +688,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit,
-                          include_deleted=False)
+    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit, include_deleted=True)
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])

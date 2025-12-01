@@ -13,6 +13,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
 
   const documentConnections = useMemo(() => {
     return connections.filter((connection) => {
+      if (connection.id === '__kb__') return true;
       if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return true;
       if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return false;
       return false;

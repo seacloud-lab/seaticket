@@ -4,6 +4,7 @@ import { getPreviewContent } from '@seafile/seafile-editor';
 import { CONNECTION_TYPES } from '../../connections/constants';
 import { getConnectionIcon } from '../../connections/utils';
 import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
+import { mediaUrl } from '@/constants';
 
 import './index.css';
 
@@ -30,10 +31,13 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
     }
   };
 
+  const iconSrc = type === 'knowledge_base' ? `${mediaUrl}img/knowledge-base.png` : getConnectionIcon(type);
+  const altText = connectionOption ? connectionOption.name : (type === 'knowledge_base' ? 'Knowledge Base' : (type || ''));
+
   return (
     <div className="list-item" key={id} onClick={openOriginalURL}>
       <div className="list-item-icon">
-        <img src={getConnectionIcon(type)} alt={connectionOption.name} className="sea-qa-project-connection-type-icon" />
+        <img src={iconSrc} alt={altText} className="sea-qa-project-connection-type-icon" />
       </div>
       <div className="list-item-content">
         <div className="list-item-title">

@@ -66,15 +66,16 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         seadb_api = SeaDBAPI(request.user.username)
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
                 KnowledgeBaseTable.question.name: question,
                 KnowledgeBaseTable.answer.name: answer_text,
                 KnowledgeBaseTable.creator.name: username,
-                KnowledgeBaseTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
-                KnowledgeBaseTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-
+                KnowledgeBaseTable.modified_time.name: now_datetime,
+                KnowledgeBaseTable.deleted.name: False,
              }
             res = seadb_api.insert_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [row])
             pks = res.get('pks', [])
@@ -172,8 +173,19 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(request.user.username)
+        update_rows = []
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        for r_id in record_ids:
+            update_rows.append({
+                'pk': r_id,
+                'row': {
+                    KnowledgeBaseTable.deleted.name: True,
+                    KnowledgeBaseTable.last_modifier.name: username,
+                    KnowledgeBaseTable.modified_time.name: now_datetime,
+                }
+            })
         try:
-            seadb_api.delete_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), record_ids)
+            seadb_api.update_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
