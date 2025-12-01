@@ -24,21 +24,15 @@ class OrgAdminAIStatisticsView(APIView):
     permission_classes = (IsOrgAdminUser,)
 
     def get(self, request, org_id):
-        try:
-            org_id = int(org_id)
-        except:
-            error_msg = 'org_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
+        org_id = int(org_id)
         if not request.user.org or request.user.org.org_id != org_id:
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         date = request.GET.get('date')
         month = request.GET.get('month')
+
         if not date and not month:
             return api_error(status.HTTP_400_BAD_REQUEST, 'date or month required')
-
         if date:
             try:
                 date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
@@ -55,8 +49,9 @@ class OrgAdminAIStatisticsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'month invalid')
 
         group_by = request.GET.get('group_by', 'owner')
-        if group_by not in ('owner', 'project_uuid', 'workspace'):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be "owner" or "project_uuid" or "workspace"')
+        if group_by not in ('owner', 'project', 'workspace'):
+            return api_error(status.HTTP_400_BAD_REQUEST,
+                             'group_by invalid. Must be "owner" or "project" or "workspace"')
 
         try:
             page = int(request.GET.get('page', 1))
@@ -64,136 +59,170 @@ class OrgAdminAIStatisticsView(APIView):
         except:
             page, per_page = 1, 25
         start, end = (page - 1) * per_page, page * per_page
+
         org_name = request.user.org.org_name
-        org_id = request.user.org.org_id
-        group_values, query_values = [], []
-        if group_by == 'project_uuid':
-            queryset = StatsAIByProject.objects.filter(date_query).filter(org_id=org_id).values('project_uuid').annotate(
-                total_cost=Sum('cost')
-            ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
-            stats = list(queryset[start:end])
-            project_uuids = [item['project_uuid'] for item in stats]
-            projects = Projects.objects.filter(uuid__in=project_uuids)
-            projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
-            workspace_ids = [item.workspace_id for item in projects]
-            workspaces = Workspaces.objects.filter(id__in=workspace_ids)
-            group_name_dict = {}
-            username_dict = {}
-            usernames = []
-            for workspace in workspaces:
-                owner = workspace.owner
-                if '@seafile_group' in owner:
-                    group_id = int(owner.split('@')[0])
-                    group_name = group_id_to_name(group_id)
-                    group_name_dict[workspace.id] = group_name
-                else:
-                    username_dict[workspace.id] = owner
-                usernames.append(owner)
-            project_group_name = {}
-            project_username = {}
-            for project in projects:
-                workspace_id = project.workspace_id
-                if workspace_id in group_name_dict:
-                    project_group_name[str(project.uuid).replace('-', '')] = group_name_dict[workspace_id]
-                else:
-                    project_username[str(project.uuid).replace('-', '')] = username_dict[workspace_id]
-            profiles = Profile.objects.filter(user__in=usernames)
-            profiles_dict = {p.user: p.nickname for p in profiles}
-
-            for item in stats:
-                item['org_id'] = org_id
-                item['org_name'] = org_name
-                project_uuid = item['project_uuid']
-                owner = project_username.get(project_uuid)
-                if project_uuid in project_group_name:
-                    item['group_name'] = project_group_name[project_uuid]
-                else:
-                    item['nickname'] = profiles_dict.get(owner, '')
-                item['total_cost'] = round(item['total_cost'], 2)
-                item['owner'] = owner
-                project = projects_dict.get(item['project_uuid'], None)
-                if project:
-                    item['project_name'] = project.name
-
+        base_queryset = StatsAIByProject.objects.filter(date_query).filter(org_id=org_id)
+        if group_by == 'project':
+            return self._stats_by_project(base_queryset, org_id, org_name, start, end)
         elif group_by == 'owner':
-            queryset = StatsAIByProject.objects.filter(date_query).filter(org_id=org_id).values('project_uuid').annotate(
-                total_cost=Sum('cost')
-            ).order_by('-total_cost').values('project_uuid', 'org_id', 'username', 'total_cost')
-            stats = list(queryset[start:end])
-            usernames = [item['username'] for item in stats if item['username'] != 'seaqa-indexer']
-            project_uuids = [item['project_uuid'] for item in stats]
-            results = []
-            for item in stats:
-                if item['username'] == 'seaqa-indexer':
-                    continue
-                item['org_id'] = org_id
-                item['org_name'] = org_name
-                project_uuid = item['project_uuid']
-                owner = item['username']
-                item['total_cost'] = round(item['total_cost'], 2)
-                item['owner'] = owner
-                profiles = Profile.objects.filter(user__in=usernames)
-                profiles_dict = {p.user: p.nickname for p in profiles}
-                item['nickname'] = profiles_dict.get(owner, '')
-                projects = Projects.objects.filter(uuid__in=project_uuids)
-                projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
-                project = projects_dict.get(item['project_uuid'], None)
-                if project:
-                    item['project_name'] = project.name
-                results.append(item)
-                return Response({
-                        'results': results,
-                        'count': queryset.count(),
-                    })
+            return self._stats_by_owner(base_queryset, org_id, org_name, start, end)
         elif group_by == 'workspace':
-            queryset = StatsAIByProject.objects.filter(date_query).filter(org_id=org_id).values('project_uuid').annotate(
-                total_cost=Sum('cost')
-            ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
-            stats = list(queryset[start:end])
-            workspace_id_project_uuids_map = {}
-            workspaces = Workspaces.objects.filter(org_id=org_id)
-            workspace_ids = [w.id for w in workspaces]
-            workspace_id_owner_map = {}
-            for workspace in workspaces:
-                workspace_id_owner_map[workspace.id] = workspace.owner
-            workspace_id_name_map = {}
-            usernames = [workspace.owner for workspace in workspaces]
-            profiles = Profile.objects.filter(user__in=usernames)
-            profiles_dict = {p.user: p.nickname for p in profiles}
-            for workspace in workspaces:
-                if '@seafile_group' in workspace.owner:
-                    group_id = workspace.owner.split('@')[0]
-                    workspace_id_name_map[workspace.id] = group_id_to_name(group_id)
-                else:
-                    workspace_id_name_map[workspace.id] = profiles_dict.get(workspace.owner, '')
-            projects = Projects.objects.filter(workspace_id__in=workspace_ids)
-            for project in projects:
-                project_uuid = str(project.uuid).replace('-', '')
-                if project.workspace_id not in workspace_id_project_uuids_map:
-                    workspace_id_project_uuids_map[project.workspace_id] = []
-                workspace_id_project_uuids_map[project.workspace_id].append(project_uuid)
-            
-            results = []
-            for workspace_id, project_uuids in workspace_id_project_uuids_map.items():
-                for item in stats:
-                    if item['project_uuid'] in project_uuids:
-                        item['org_id'] = org_id
-                        item['org_name'] = org_name
-                        item['total_cost'] = round(item['total_cost'], 2)
-                        item['owner'] = workspace_id_owner_map[workspace_id]
-                        if '@seafile_group' in workspace_id_owner_map[workspace_id]:
-                            item['group_name'] = workspace_id_name_map[workspace_id]
-                            item['workspace_name'] = workspace_id_name_map[workspace_id]
-                        else:
-                            item['nickname'] = workspace_id_name_map[workspace_id]
-                            item['workspace_name'] = 'personal'
-                        results.append(item)
-            return Response({
-                        'results': results,
-                        'count': queryset.count(),
-                    })
+            return self._stats_by_workspace(base_queryset, org_id, org_name, start, end)
 
-        return Response({
-            'results': stats,
-            'count': queryset.count(),
-        })
+
+    def _get_profiles_dict(self, usernames):
+        if not usernames:
+            return {}
+        profiles = Profile.objects.filter(user__in=usernames)
+        return {p.user: p.nickname for p in profiles}
+
+    def _stats_by_project(self, base_queryset, org_id, org_name, start, end):
+        queryset = base_queryset.values('project_uuid').annotate(
+            total_cost=Sum('cost')
+        ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
+
+        total_count = queryset.count()
+        stats = list(queryset[start:end])
+        if not stats:
+            return Response({'results': [], 'count': 0})
+
+        project_uuids = [item['project_uuid'] for item in stats]
+        projects = Projects.objects.filter(uuid__in=project_uuids)
+        projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
+
+        workspace_ids = [p.workspace_id for p in projects]
+        workspaces = Workspaces.objects.filter(id__in=workspace_ids)
+
+        usernames = [w.owner for w in workspaces if '@seafile_group' not in w.owner]
+        profiles_dict = self._get_profiles_dict(usernames)
+
+        # {workspace_id:{'owner': owner, 'group_name': group_name, 'nickname': nickname}}
+        workspace_info = {}
+        for w in workspaces:
+            if '@seafile_group' in w.owner:
+                group_id = int(w.owner.split('@')[0])
+                workspace_info[w.id] = {'owner': w.owner, 'group_name': group_id_to_name(group_id)}
+            else:
+                workspace_info[w.id] = {'owner': w.owner, 'nickname': profiles_dict.get(w.owner, '')}
+
+        results = []
+        for item in stats:
+            project_uuid = item['project_uuid']
+            project = projects_dict.get(project_uuid)
+            result = {
+                'project_uuid': project_uuid,
+                'org_id': org_id,
+                'org_name': org_name,
+                'total_cost': round(item['total_cost'], 2),
+                'project_name': project.name if project else None,
+            }
+            if project:
+                ws_info = workspace_info.get(project.workspace_id, {})
+                result['owner'] = ws_info.get('owner')
+                if 'group_name' in ws_info:
+                    result['group_name'] = ws_info['group_name']
+                else:
+                    result['nickname'] = ws_info.get('nickname', '')
+            results.append(result)
+
+        return Response({'results': results, 'count': total_count})
+
+    def _stats_by_owner(self, base_queryset, org_id, org_name, start, end):
+        queryset = base_queryset.values('project_uuid').annotate(
+            total_cost=Sum('cost')
+        ).order_by('-total_cost').values('project_uuid', 'org_id', 'username', 'total_cost')
+
+        total_count = queryset.count()
+        stats = list(queryset[start:end])
+        if not stats:
+            return Response({'results': [], 'count': 0})
+
+        usernames = set()
+        project_uuids = []
+        for item in stats:
+            if item['username'] != 'seaqa-indexer':
+                usernames.add(item['username'])
+            project_uuids.append(item['project_uuid'])
+
+        profiles_dict = self._get_profiles_dict(list(usernames))
+        projects = Projects.objects.filter(uuid__in=project_uuids)
+        projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
+
+        results = []
+        for item in stats:
+            if item['username'] == 'seaqa-indexer':
+                continue
+            owner = item['username']
+            project = projects_dict.get(item['project_uuid'])
+            results.append({
+                'project_uuid': item['project_uuid'],
+                'org_id': org_id,
+                'org_name': org_name,
+                'total_cost': round(item['total_cost'], 2),
+                'owner': owner,
+                'nickname': profiles_dict.get(owner, ''),
+                'project_name': project.name if project else None,
+            })
+
+        return Response({'results': results, 'count': total_count})
+
+    def _stats_by_workspace(self, base_queryset, org_id, org_name, start, end):
+        queryset = base_queryset.values('project_uuid').annotate(
+            total_cost=Sum('cost')
+        ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
+
+        total_count = queryset.count()
+        stats = list(queryset[start:end])
+        if not stats:
+            return Response({'results': [], 'count': 0})
+
+        stats_dict = {item['project_uuid']: item for item in stats}
+        project_uuids = list(stats_dict.keys())
+
+        projects = Projects.objects.filter(uuid__in=project_uuids)
+        project_workspace_map = {str(p.uuid).replace('-', ''): p.workspace_id for p in projects}
+
+        workspace_ids = set(project_workspace_map.values())
+        workspaces = Workspaces.objects.filter(id__in=workspace_ids)
+
+        usernames = [w.owner for w in workspaces if '@seafile_group' not in w.owner]
+        profiles_dict = self._get_profiles_dict(usernames)
+
+        workspace_info = {}
+        for w in workspaces:
+            if '@seafile_group' in w.owner:
+                group_id = int(w.owner.split('@')[0])
+                group_name = group_id_to_name(group_id)
+                workspace_info[w.id] = {
+                    'owner': w.owner,
+                    'group_name': group_name,
+                    'workspace_name': group_name,
+                }
+            else:
+                workspace_info[w.id] = {
+                    'owner': w.owner,
+                    'nickname': profiles_dict.get(w.owner, ''),
+                    'workspace_name': 'personal',
+                }
+
+        results = []
+        for project_uuid, stat in stats_dict.items():
+            workspace_id = project_workspace_map.get(project_uuid)
+            if not workspace_id:
+                continue
+            ws_info = workspace_info.get(workspace_id, {})
+            result = {
+                'project_uuid': project_uuid,
+                'org_id': org_id,
+                'org_name': org_name,
+                'total_cost': round(stat['total_cost'], 2),
+                'owner': ws_info.get('owner'),
+                'workspace_name': ws_info.get('workspace_name'),
+            }
+            if 'group_name' in ws_info:
+                result['group_name'] = ws_info['group_name']
+            else:
+                result['nickname'] = ws_info.get('nickname', '')
+            results.append(result)
+
+        return Response({'results': results, 'count': total_count})

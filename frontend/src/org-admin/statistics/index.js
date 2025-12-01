@@ -77,7 +77,7 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
-        {groupBy === 'project_uuid' && (
+        {groupBy === 'project' && (
           <>
             <td>
               <span className="dtable-icon-table"></span>
@@ -167,7 +167,7 @@ class Content extends Component {
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
-            {groupBy === 'project_uuid' && (
+            {groupBy === 'project' && (
               <tr>
                 <th width="5%"></th>
                 <th width="35%">{gettext('Project')}</th>
@@ -238,7 +238,7 @@ class StatisticsAI extends Component {
     let dateParam = null;
     let monthParam = null;
 
-    if (queryDate === 'month' && groupBy === 'project_uuid') {
+    if (queryDate === 'month' && (groupBy === 'project' || groupBy === 'workspace')) {
       monthParam = month;
     } else {
       dateParam = date.format('YYYY-MM-DD');
@@ -346,8 +346,8 @@ class StatisticsAI extends Component {
           {gettext('Users')}
         </div>
         <div
-          className={`statistic-tab-item ${groupBy === 'project_uuid' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('project_uuid')}
+          className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('project')}
         >
           {gettext('Project')}
         </div>
