@@ -136,7 +136,7 @@ const Comment = ({
           {!isSmallScreen && renderAvatar()}
           <div className="sea-qa-project-ticket-comment-container">
             <div className="sea-qa-project-ticket-comment-op">
-              <div className="sea-qa-project-ticket-reply-op-log">
+              <div className="sea-qa-project-ticket-comment-op-log">
                 {renderOperationLog()}
               </div>
               {!isShowEditor && (
@@ -221,7 +221,7 @@ const Comment = ({
       {!isSmallScreen && renderAvatar()}
       <div className="sea-qa-project-ticket-comment-container">
         <div className="sea-qa-project-ticket-comment-op">
-          <div className="sea-qa-project-ticket-reply-op-log">
+          <div className="sea-qa-project-ticket-comment-op-log">
             {children && children[0] ? (
               <>
                 {isSmallScreen && renderAvatar()}
