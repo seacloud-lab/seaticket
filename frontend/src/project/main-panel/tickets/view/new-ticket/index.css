@@ -8,7 +8,7 @@
 }
 
 .sea-qa-project-new-ticket .sea-qa-project-ticket-user {
-  width: 52px;
+  width: 44px;
   overflow: hidden;
 }
 
@@ -17,12 +17,11 @@
   width: 32px;
   border-radius: 50%;
   overflow: hidden;
-  margin-left: 16px;
+  margin-right: 12px;
 }
 
 .sea-qa-project-new-ticket .sea-qa-project-ticket-settings {
   flex: 1;
-  padding-left: 8px;
   padding-top: 4px;
 }
 

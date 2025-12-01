@@ -294,10 +294,12 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
 
+  // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
+  const isSmallScreen = containerWidth < 904;
+
   return (
-    // 848: comment min-width(540) + others min-width(260) + gap: 16 * 3
     <div
-      className={classnames('sea-qa-project-ticket', { 'small': containerWidth < 848 })}
+      className={classnames('sea-qa-project-ticket', { 'small': isSmallScreen })}
       onScroll={handleScroll}
       ref={ticketRef}
     >
@@ -321,6 +323,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
       <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="sea-qa-project-ticket-comment-container-wrapper">
           <Comment
+            isSmallScreen={isSmallScreen}
             comment={ticket}
             isShowStatus={true}
             readonly={!editable}
@@ -332,6 +335,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             return (
               <Comment
                 key={reply.id}
+                isSmallScreen={isSmallScreen}
                 readonly={!(reply.creator === user.email || isAdmin)}
                 comment={reply}
                 projectUuid={projectUuid}
@@ -341,7 +345,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Comment className="sea-qa-project-ticket-add-comment" comment={{ creator: username }} >
+          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }}>
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}
@@ -359,7 +363,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
             />
           </Comment>
           <div className="sea-qa-project-ticket-footer">
-            <UploadFilesButton onChange={handleFiles} />
+            <UploadFilesButton className="mt-4" onChange={handleFiles} />
             <div className="sea-qa-project-ticket-submit-btns ml-2">
               <StatusToggleButton state={state} substate={substate} comment={reply?.text} disabled={isSubmitting} onChange={toggleState} />
               <Button

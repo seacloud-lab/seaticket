@@ -109,13 +109,25 @@
   width: 100%;
 }
 
+.sea-qa-project-ticket .sea-qa-project-ticket-footer {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.sea-qa-project-ticket .sea-qa-project-ticket-footer .sea-qa-project-ticket-submit-btns {
+  flex: 1;
+  margin-top: 16px;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .sea-qa-project-ticket.small .sea-qa-project-ticket-footer {
   padding-left: 0;
-  flex-wrap: wrap;
 }
 
 .sea-qa-project-ticket.small .sea-qa-project-ticket-footer .sea-qa-project-ticket-submit-btns {
-  margin-top: 16px;
   width: 100%;
   display: flex;
   align-items: center;

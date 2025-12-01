@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
@@ -12,6 +12,7 @@ import UploadFilesButton from '../upload-files-btn';
 import './index.css';
 
 const Comment = ({
+  isSmallScreen = false,
   isShowStatus = false,
   readonly = true,
   comment,
@@ -30,13 +31,10 @@ const Comment = ({
   const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
   const { getCollaborator, queryUser } = useCollaborators();
   const [content, setContent] = useState(comment.content);
-  const [containerWidth, setContainerWidth] = useState(0);
 
   const commentRef = useRef(null);
   const commentEditorRef = useRef(null);
   const isChangeRef = useRef(false);
-
-  const isSmallScreen = useMemo(() => containerWidth < 816, [containerWidth]);
 
   const onLinkClick = useCallback((link) => {
     if (link.includes(`/project/${projectUuid}/`)) {
@@ -106,21 +104,6 @@ const Comment = ({
       setCreator(creator);
     });
   }, [comment.creator]);
-
-  useEffect(() => {
-    if (!comment) return;
-    const commentDom = commentRef.current;
-    const handleResize = () => {
-      if (!commentDom) return;
-      setContainerWidth(commentDom.offsetWidth);
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    commentDom && resizeObserver.observe(commentDom);
-
-    return () => {
-      commentDom && resizeObserver.unobserve(commentDom);
-    };
-  }, [comment]);
 
   const renderAvatar = useCallback(() => {
     return (
