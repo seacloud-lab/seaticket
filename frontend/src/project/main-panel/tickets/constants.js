@@ -19,6 +19,7 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   PARTICIPANTS: 'participants',
   CREATED_TIME: 'created_time',
   MODIFIED_TIME: 'modified_time',
+  CLOSED_TIME: 'closed_time',
   CREATOR: 'creator',
   DELETED: 'deleted',
   REPLY_COUNT: 'reply_count',
