@@ -139,7 +139,8 @@ const ViewItem = ({
               ref={downBtnRef}
             >
               <Icon symbol="down" />
-            </div>)}
+            </div>
+          )}
         </div>
       </div>
       {isShowDeleteConfirmationDialog && (
