@@ -593,12 +593,11 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
     topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-    topics_sql = f"SELECT * FROM `{topics_table_name}` WHERE _pk = {_pk}"
+    topics_sql = f"SELECT title, topic_id, created_time FROM `{topics_table_name}` WHERE _pk = {_pk}"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
         topic_record = topics_res.get('results')[0]
-        topic_id = topic_record.get('topic_id')
-        topic_record.pop('topic_id')
+        topic_id = topic_record.pop('topic_id')
         replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')

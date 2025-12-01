@@ -38,9 +38,7 @@ const RowDetailsDialog = ({
   }, [connection, row, columns]);
 
   const displayedTitle = useMemo(() => {
-    console.log('status', status);
     if (status === 'loaded' && rowDetails) {
-      console.log('rowDetails', rowDetails, rowDetails.title);
       return rowDetails.title || rowTitle;
     }
     return rowTitle;

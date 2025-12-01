@@ -29,8 +29,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, WebCrawlTable, \
-    DiscourseRepliesTable, GithubIssueCommentsTable, SeafileTable
+from seahub.seadb_models.models import WebCrawlTable, SeafileTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -574,9 +573,7 @@ class ProjectConnectionRowDetailView(APIView):
         record = {}
         seadb_api = SeaDBAPI(username)
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
-            topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-            record = list_discourse_forum_replies_records(seadb_api, project_uuid, topics_table_name, replies_table_name, _pk)
+            record = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
             record['connection_type'] = project_connection.type
             return Response(record)
         elif project_connection.type == ConnectionType.SITE.value:
@@ -594,14 +591,11 @@ class ProjectConnectionRowDetailView(APIView):
                 logger.error(e)
             return Response(record)
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
-            issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
-            comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-            record = list_github_issue_record_details(seadb_api, project_uuid, issue_table_name, comments_table_name, _pk)
+            record = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
             record['connection_type'] = project_connection.type
             return Response(record)
         elif project_connection.type == ConnectionType.SEAFILE.value:
-            seafile_table_name = SeafileTable.gen_table_name(connection_id)
-            record = list_seafile_record_details(seadb_api, project_uuid, seafile_table_name, _pk)
+            record = list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk)
             record['connection_type'] = project_connection.type
             return Response(record)
         elif project_connection.type == ConnectionType.EMAIL.value:

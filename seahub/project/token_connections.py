@@ -16,10 +16,6 @@ from seahub.project.models import (
 )
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import get_file_from_s3_web_crawl, url_to_filename
-from seahub.seadb_models.models import (
-    GithubIssuesTable, GithubIssueCommentsTable,
-    DiscourseTopicsTable, DiscourseRepliesTable
-)
 from seahub.seadb_models.utils import (
     list_connection_view_records, list_discourse_forum_replies_records,
     list_github_issue_record_details
@@ -206,11 +202,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 _pk = request.GET.get('_pk')
                 if not _pk:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
-                topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-                replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-                row_details = list_discourse_forum_replies_records(
-                    seadb_api, project_uuid, topics_table_name, replies_table_name, _pk
-                )
+                row_details = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk)
             elif connection.type == ConnectionType.SITE.value:
                 url = request.GET.get('url')
                 if not url:
@@ -227,11 +219,7 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 _pk = request.GET.get('_pk')
                 if not _pk:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing _pk.')
-                issue_table_name = GithubIssuesTable.gen_table_name(connection_id)
-                comments_table_name = GithubIssueCommentsTable.gen_table_name(connection_id)
-                row_details = list_github_issue_record_details(
-                    seadb_api, project_uuid, issue_table_name, comments_table_name, _pk, username
-                )
+                row_details = list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk)
         except Exception as e:
             logger.error('Error getting connection row details: %s', e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
