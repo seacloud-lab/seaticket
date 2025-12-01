@@ -36,10 +36,14 @@ const SingleSelectEditor = forwardRef(({
         if (!cascadeSetting || !Array.isArray(cascadeSetting) || cascadeSetting.length === 0) return [];
         return options
           .filter(option => cascadeSetting.includes(option.id))
-          .map(o => ({ ...o, value: o.id }));
+          .map(o => ({
+            ...o,
+            name: o.display_name || o.name,
+            value: o.id
+          }));
       }
     }
-    return options.map(o => ({ ...o, value: o.id }));
+    return options.map(o => ({ ...o, name: o.display_name || o.name, value: o.id }));
   }, [row, column, columns]);
 
   const style = useMemo(() => {
