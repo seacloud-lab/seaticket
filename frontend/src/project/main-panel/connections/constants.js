@@ -10,6 +10,17 @@ export const CONNECTION_TYPE = {
   SEAFILE: 'seafile',
 };
 
+export const DOCUMENT_CONNECTION_TYPE_MAP = {
+  [CONNECTION_TYPE.SITE]: true,
+  [CONNECTION_TYPE.SEAFILE]: true,
+};
+
+export const ISSUE_CONNECTION_TYPE_MAP = {
+  [CONNECTION_TYPE.EMAIL]: true,
+  [CONNECTION_TYPE.GITHUB_ISSUE]: true,
+  [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
+};
+
 export const CONNECTION_FIELD_TYPE = {
   TEXT: 'text',
   URL: 'url',

@@ -40,6 +40,11 @@
   padding: .5rem 0;
 }
 
+.seaqa-hide-popover .hide-list .hide-list-title {
+  color: #666666;
+  padding: 8px 20px 4px;
+}
+
 .seaqa-hide-popover .hide-list .hide-column-item {
   display: flex;
   align-items: center;
