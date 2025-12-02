@@ -93,7 +93,7 @@ class SelectTypes:
         {
           "id": "0011",
           "name": "Backlog",
-          "color": "#6FCE16FF",
+          "color": "#9C9C9E",
           "text_color": "#FFFFFF",
         },
         {

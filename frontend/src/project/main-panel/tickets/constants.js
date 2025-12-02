@@ -57,7 +57,7 @@ export const PREDEFINED_TICKET_SUBSTATE_OPTION = {
     name: gettext('Backlog'),
     description: gettext('To be worked on'),
     text_color: '#FFF',
-    color: '#6fce16ff',
+    color: '#9c9c9e',
     border_color: '#69b27aff',
   },
   '0012': {
