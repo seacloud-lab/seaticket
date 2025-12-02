@@ -331,6 +331,8 @@ class ChatView(APIView):
             query = AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT + f'```json\n{issue_json_data}\n```\n\n' + query
 
         resolve_type = request.data.get('resolve_type', 'ask')
+        model = request.data.get('model')
+
         session_uuid = request.data.get('session_uuid')
         if not session_uuid:
             session = ChatSessions.objects.create_session(project_uuid, _('New chat'), request.user.username)
@@ -355,7 +357,8 @@ class ChatView(APIView):
             'query': query,
             'resolve_type': resolve_type,
             'username': username,
-            'org_id': org_id
+            'org_id': org_id,
+            'llm_model': model,
         }
 
         try:

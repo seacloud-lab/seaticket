@@ -62,7 +62,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
     setIsShowSessions(!isShowSessions);
   }, [isShowSessions]);
 
-  const solveProblem = useCallback(({ sessionId, message: problem, resolveType, ticket, issue }) => {
+  const solveProblem = useCallback(({ sessionId, message: problem, resolveType, ticket, issue, model }) => {
     let newSessions = sessions.slice(0);
     const sessionIdx = newSessions.findIndex(session => session._id === sessionId);
     let session = newSessions[sessionIdx];
@@ -78,6 +78,7 @@ export const SessionsProvider = ({ projectUuid, workspaceID, children }) => {
       ticket_id: ticket,
       issue_id: issue?._id,
       connection_id: issue?.connection_id,
+      model: model,
     }).then(res => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data, resolveType });
     }).catch(error => {

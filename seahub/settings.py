@@ -656,7 +656,31 @@ AI_CHAT_TICKET_MAX_REPLIES_NUM = 20
 AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM = 20
 
 AI_PRICES = {}
+LLM_MODELS = []
 
+
+def validate_llm_models(models):
+    if not models:
+        return []
+
+    if not isinstance(models, list):
+        return []
+
+    validated_models = []
+
+    for model in models:
+        if not isinstance(model, dict):
+            continue
+        if model.get('type') == 'proxy':
+            required_fields = ('model', 'url')
+        else:
+            required_fields = ('model', 'key')
+        if not all(field in model for field in required_fields):
+            continue
+        model['label'] = model.get('label', model['model'])
+        validated_models.append(model)
+
+    return validated_models
 #####################
 # External settings #
 #####################
@@ -704,6 +728,8 @@ else:
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
+# Available AI Models for user selection
+LLM_MODELS = validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS))
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 
