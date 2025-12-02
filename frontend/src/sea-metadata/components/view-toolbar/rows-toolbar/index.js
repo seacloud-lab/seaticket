@@ -26,6 +26,10 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRows, modifyRows, create
     event && event.stopPropagation();
     event?.nativeEvent && event.nativeEvent.stopImmediatePropagation();
     setIsOpen(!isOpen);
+    if (isOpen) {
+      setIsSubOpen(false);
+      setSubMenuKey('');
+    }
   }, [isOpen]);
 
   const openSubMenu = useCallback((event, subMenu) => {
