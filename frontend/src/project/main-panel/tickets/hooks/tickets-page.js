@@ -13,7 +13,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
-  const [viewID, setViewID] = useState('');
+  const [viewID, toggleView] = useState('');
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId, viewID) => {
     // do not reset URL in my tickets page
@@ -85,7 +85,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
       const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || '';
-      setViewID(viewID);
+      toggleView(viewID);
     }
     setChildrenPageSlugId(childrenPageSlugId);
     setPageSlugId(pageSlugId);
@@ -111,7 +111,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, children }) => {
       isLoading,
       togglePageSlugId,
       onRefresh,
-      updateViewID: setViewID,
+      toggleView,
     }}>
       {children}
     </TicketsPageContext.Provider>

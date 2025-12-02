@@ -13,7 +13,7 @@ import AddKnowledgeDialog from './add-knowledge-dialog';
 const { projectUuid, permission } = window.app.pageOptions;
 
 const KnowledgeBase = ({ title }) => {
-  const [viewID, setViewID] = useState('0000');
+  const [viewID, toggleView] = useState('0000');
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
@@ -23,10 +23,6 @@ const KnowledgeBase = ({ title }) => {
   const editorAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
   } }), []);
-
-  const toggleView = useCallback((newViewID) => {
-    setViewID(newViewID);
-  }, []);
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {

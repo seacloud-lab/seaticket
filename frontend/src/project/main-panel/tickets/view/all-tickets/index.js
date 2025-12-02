@@ -19,7 +19,7 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar, isMyTicket }) => {
 
-  const { togglePageSlugId, viewID, updateViewID, isLoading } = useTicketsPage();
+  const { togglePageSlugId, viewID, toggleView, isLoading } = useTicketsPage();
   const { tagsData, createTag, typesData, createType, substatesData, createSubstate,
     isLoading: isMetadataLoading } = useMetadata();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
@@ -183,7 +183,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
 
-  }), [projectUuid, cachedData, isMyTicket, myTicketViewsData, updateViewID, clearCacheData]);
+  }), [projectUuid, cachedData, isMyTicket, myTicketViewsData, clearCacheData]);
 
   const localStorageName = useMemo(() => isMyTicket ? `sea-qa-${projectUuid}-my-tickets` : `sea-qa-${projectUuid}-tickets`, [projectUuid, isMyTicket]);
 
@@ -338,7 +338,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       createContextMenuOptions={createContextMenuOptions}
       createRowsTools={createRowsTools}
       expandRow={expandRow}
-      toggleView={updateViewID}
+      toggleView={toggleView}
       isViewComputedOnServer={!isMyTicket}
       viewTools={isMyTicket ? [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS] : undefined}
       tagsData={tagsData}
