@@ -1,7 +1,7 @@
-import Ticket, { Reply, TicketForAI } from './ticket';
+import Ticket, { Comment, TicketForAI } from './ticket';
 import OptionsData, { Option } from './options-data';
 
 export {
-  Ticket, TicketForAI, Reply,
+  Ticket, TicketForAI, Comment,
   OptionsData, Option,
 };

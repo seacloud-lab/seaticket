@@ -5,7 +5,7 @@ from seahub.project.constants import ConnectionType, CONNECTION_DISPLAY_ALL_COLU
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, DiscourseRepliesTable, GithubIssuesTable, \
-    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketRepliesTable, EmailTable, ThreadTable, KnowledgeBaseTable
+    GithubIssueCommentsTable, SeafileTable, TicketsTable, TicketCommentsTable, EmailTable, ThreadTable, KnowledgeBaseTable
 
 logger = logging.getLogger(__name__)
 
@@ -331,28 +331,28 @@ def init_ticket_seadb_table(seadb_api, project_uuid):
             [column],
         )
 
-    # Create replies table
-    res = seadb_api.create_table(project_uuid, 'ticket_replies')
-    replies_table_id = res['table_id']
-    for column in TicketRepliesTable.get_fields():
+    # Create comments table
+    res = seadb_api.create_table(project_uuid, 'ticket_comments')
+    comments_table_id = res['table_id']
+    for column in TicketCommentsTable.get_fields():
         mapped_column = {
             'column_name': column.name,
             'column_type': column.type,
         }
         if column.data:
             mapped_column["column_data"] = column.data
-        seadb_api.add_column(project_uuid, replies_table_id, mapped_column)
+        seadb_api.add_column(project_uuid, comments_table_id, mapped_column)
 
-    # Create replies table index for seadb
-    ticket_replies_index_columns = [
-        TicketRepliesTable.ticket_id.name,
-        TicketRepliesTable.creator.name,
-        TicketRepliesTable.deleted.name,
+    # Create comments table index for seadb
+    ticket_comments_index_columns = [
+        TicketCommentsTable.ticket_id.name,
+        TicketCommentsTable.creator.name,
+        TicketCommentsTable.deleted.name,
     ]
-    for column in ticket_replies_index_columns:
+    for column in ticket_comments_index_columns:
         seadb_api.create_column_index(
             project_uuid,
-            replies_table_id,
+            comments_table_id,
             [column],
         )
 

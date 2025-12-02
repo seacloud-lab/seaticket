@@ -126,8 +126,8 @@ class TicketsAPI {
     return this.req.delete(url, { data: { ticket_ids: ticketIds } });
   }
 
-  listProjectTicketReplies(projectUuid, ticketNumber, page, perPage) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
+  listProjectTicketComments(projectUuid, ticketNumber, page, perPage) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/comments/';
     let params = {};
     if (page) {
       params.page = page;
@@ -138,8 +138,8 @@ class TicketsAPI {
     return this.req.get(url, { params });
   }
 
-  createProjectTicketReply(projectUuid, ticketNumber, content) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/';
+  createProjectTicketComment(projectUuid, ticketNumber, content) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/comments/';
     let form = new FormData();
     if (content) {
       form.append('content', JSON.stringify(content));
@@ -147,8 +147,8 @@ class TicketsAPI {
     return this._sendPostRequest(url, form);
   }
 
-  modifyProjectTicketReply(projectUuid, ticketNumber, replyNumber, content) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/' + replyNumber + '/';
+  modifyProjectTicketComment(projectUuid, ticketNumber, commentNumber, content) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/comments/' + commentNumber + '/';
     let form = new FormData();
     if (content) {
       form.append('content', JSON.stringify(content));
@@ -156,8 +156,8 @@ class TicketsAPI {
     return this.req.put(url, form);
   }
 
-  deleteProjectTicketReply(projectUuid, ticketNumber, replyNumber) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/replies/' + replyNumber + '/';
+  deleteProjectTicketComment(projectUuid, ticketNumber, commentNumber) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/' + ticketNumber + '/comments/' + commentNumber + '/';
     return this.req.delete(url);
   }
 

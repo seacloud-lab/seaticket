@@ -22,13 +22,12 @@ from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
-from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, get_tickets_columns
-from seahub.seadb_models.models import TicketRepliesTable, TicketsTable
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search
+from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import get_ticket, get_ticket_replies, \
-    check_ticket_reply_creation_interval, get_ticket_reply_by_pk, check_ticket_creation_interval, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_column_from_columns_by_name, get_tickets_by_ids, \
-    get_my_tickets
+from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
+    check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
+    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -225,7 +224,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.participants.name: [username],
                 TicketsTable.tags.name: tag_names,
                 TicketsTable.creator.name: username,
-                TicketsTable.reply_count.name: 0,
+                TicketsTable.comment_count.name: 0,
                 TicketsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
                 TicketsTable.deleted.name: False,
@@ -451,19 +450,19 @@ class TicketAPIView(APIView):
             convert_ticket_select_column_name_to_option_id(metadata, ticket)
             start = 0
             end = 25
-            ticket_replies = get_ticket_replies(seadb_api, project_uuid, ticket_id, start, end)
+            ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
 
-            for ticket_reply in ticket_replies:
+            for ticket_comment in ticket_comments:
                 result = {
-                    'number': ticket_reply.get('_pk'),
-                    'content': ticket_reply.get('content'),
-                    'created_time': ticket_reply.get('created_time'),
-                    'modified_time': ticket_reply.get('modified_time'),
-                    'creator': ticket_reply.get('creator'),
+                    'number': ticket_comment.get('_pk'),
+                    'content': ticket_comment.get('content'),
+                    'created_time': ticket_comment.get('created_time'),
+                    'modified_time': ticket_comment.get('modified_time'),
+                    'creator': ticket_comment.get('creator'),
                 }
-                if not ticket.get('replies'):
-                    ticket['replies'] = []
-                ticket['replies'].append(result)
+                if not ticket.get('comments'):
+                    ticket['comments'] = []
+                ticket['comments'].append(result)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -736,7 +735,7 @@ class TicketsSearchAPIView(APIView):
         return Response({'tickets': tickets})
 
 
-class TicketRepliesAPIView(APIView):
+class TicketCommentsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -781,14 +780,14 @@ class TicketRepliesAPIView(APIView):
             if not ticket:
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            replies_data = get_ticket_replies(seadb_api, project_uuid, ticket.get('_pk'), start, end)
+            comments_data = get_ticket_comments(seadb_api, project_uuid, ticket.get('_pk'), start, end)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'ticket_replies': replies_data,
+            'ticket_comments': comments_data,
         })
 
     def post(self, request, project_uuid, ticket_id):
@@ -850,7 +849,7 @@ class TicketRepliesAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if not check_ticket_reply_creation_interval(seadb_api, project_uuid, username, ticket.get('_pk')):
+        if not check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ticket.get('_pk')):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
 
@@ -867,25 +866,25 @@ class TicketRepliesAPIView(APIView):
         # main
         try:
             row = {
-                TicketRepliesTable.ticket_id.name: ticket.get('_pk'),
-                TicketRepliesTable.creator.name: username,
-                TicketRepliesTable.content.name: content,
-                TicketRepliesTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketRepliesTable.deleted.name: False,
+                TicketCommentsTable.ticket_id.name: ticket.get('_pk'),
+                TicketCommentsTable.creator.name: username,
+                TicketCommentsTable.content.name: content,
+                TicketCommentsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketCommentsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketCommentsTable.deleted.name: False,
             }
-            res = seadb_api.insert_rows(project_uuid, 'ticket_replies', [row])
+            res = seadb_api.insert_rows(project_uuid, 'ticket_comments', [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
             row.update({'number': pk})
-            ticket_replies_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_replies` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
+            ticket_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `ticket_comments` WHERE `ticket_id` = {ticket.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_ticket = {
                 'pk': ticket.get('_pk'),
                 'row': {
-                    'reply_count': ticket_replies_count,
+                    'comment_count': ticket_comments_count,
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                     },
                 }
@@ -899,16 +898,16 @@ class TicketRepliesAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'ticket_reply': row}, status=status.HTTP_201_CREATED)
+        return Response({'ticket_comment': row}, status=status.HTTP_201_CREATED)
 
 
-class TicketReplyAPIView(APIView):
+class TicketCommentAPIView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
 
-    def put(self, request, project_uuid, ticket_id, reply_id):
+    def put(self, request, project_uuid, ticket_id, comment_id):
         """
         Permission:
         1. creator
@@ -959,12 +958,12 @@ class TicketReplyAPIView(APIView):
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket.get('_pk'), reply_id)
-            if not ticket_reply_data:
-                error_msg = 'Reply not found.'
+            ticket_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket.get('_pk'), comment_id)
+            if not ticket_comment_data:
+                error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             # permission check
-            if not check_comment_permission(username, workspace.owner, ticket_reply_data):
+            if not check_comment_permission(username, workspace.owner, ticket_comment_data):
                 error_msg = 'Permission denied.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         except Exception as e:
@@ -972,7 +971,7 @@ class TicketReplyAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        modified_time = ticket_reply_data.get('modified_time')
+        modified_time = ticket_comment_data.get('modified_time')
         if modified_time:
             modified_time = datetime.datetime.fromisoformat(modified_time)
         if modified_time and modified_time > timezone.now() - relativedelta(seconds=10):
@@ -991,14 +990,14 @@ class TicketReplyAPIView(APIView):
 
         # main
         try:
-            ticket_reply_update = {
-                'pk': ticket_reply_data.get('_pk'),
+            ticket_comment_update = {
+                'pk': ticket_comment_data.get('_pk'),
                 'row': {
                     'content': content,
                     'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
-            seadb_api.update_rows(project_uuid, 'ticket_replies', [ticket_reply_update])
+            seadb_api.update_rows(project_uuid, 'ticket_comments', [ticket_comment_update])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1006,7 +1005,7 @@ class TicketReplyAPIView(APIView):
 
         try:
             update_row = {
-                'modified_time': ticket_reply_data.get('modified_time'),
+                'modified_time': ticket_comment_data.get('modified_time'),
             }
             participants = ticket.get('participants') or []
             if username not in participants:
@@ -1020,9 +1019,9 @@ class TicketReplyAPIView(APIView):
         except Exception as e:
             logger.error(e)
 
-        return Response({'ticket_reply': ticket_reply_data})
+        return Response({'ticket_comment': ticket_comment_data})
 
-    def delete(self, request, project_uuid, ticket_id, reply_id):
+    def delete(self, request, project_uuid, ticket_id, comment_id):
         """
         Permission:
         1. creator
@@ -1047,9 +1046,9 @@ class TicketReplyAPIView(APIView):
                 error_msg = 'Ticket not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            ticket_reply_data = get_ticket_reply_by_pk(seadb_api, project_uuid, ticket_id, reply_id)
-            if not ticket_reply_data:
-                error_msg = 'Reply not found.'
+            ticket_comment_data = get_ticket_comment_by_pk(seadb_api, project_uuid, ticket_id, comment_id)
+            if not ticket_comment_data:
+                error_msg = 'Comment not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         except Exception as e:
             logger.error(e)
@@ -1057,7 +1056,7 @@ class TicketReplyAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         # permission check
-        if not check_comment_permission(username, workspace.owner, ticket_reply_data):
+        if not check_comment_permission(username, workspace.owner, ticket_comment_data):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -1072,14 +1071,14 @@ class TicketReplyAPIView(APIView):
                     },
                 }
                 seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
-            update_ticket_reply = {
-                'pk': ticket_reply_data.get('_pk'),
+            update_ticket_comment = {
+                'pk': ticket_comment_data.get('_pk'),
                 'row': {
                     'deleted': True,
                     'delete_time': datetime.datetime.now(datetime.UTC).isoformat(),
                 },
             }
-            seadb_api.update_rows(project_uuid, 'ticket_replies', [update_ticket_reply])
+            seadb_api.update_rows(project_uuid, 'ticket_comments', [update_ticket_comment])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

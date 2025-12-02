@@ -344,13 +344,13 @@ class TicketsTable(BaseModel):
     participants = MappedColumn('participants', PropertyTypes.LIST)
     priority = MappedColumn('priority', PropertyTypes.INT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
-    reply_count = MappedColumn('reply_count', PropertyTypes.INT)
+    comment_count = MappedColumn('comment_count', PropertyTypes.INT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
     closed_time = MappedColumn('closed_time', PropertyTypes.DATETIME)
     deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
-class TicketRepliesTable(BaseModel):
+class TicketCommentsTable(BaseModel):
     ticket_id = MappedColumn('ticket_id', PropertyTypes.INT)
     content = MappedColumn('content', PropertyTypes.TEXT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)

@@ -426,11 +426,11 @@ class IssueNotFound(Exception):
 
 def ticket_to_json(project_uuid, ticket_id):
     """
-    Build a json from a ticket and its replies.
+    Build a json from a ticket and its comments.
 
     Args:
     - ticket: a record in table `tickets`
-    - ticket_replies: some relative replies with the ticket
+    - ticket_comments: some relative comments with the ticket
 
     Returns:
     ```json // <- not included
@@ -438,7 +438,7 @@ def ticket_to_json(project_uuid, ticket_id):
         "title": ...,
         "content": ...,
         "created_time": ...,
-        "replies": [
+        "comments": [
             {
                 "nickname": ...,
                 "content": ...,
@@ -452,22 +452,22 @@ def ticket_to_json(project_uuid, ticket_id):
     try:
         seadb_api = SeaDBAPI()
         query_ticket_sql = f"select * from tickets where _pk = {ticket_id}"
-        query_ticket_replies_sql = f"select * from ticket_replies where ticket_id = {ticket_id} order by _pk limit {AI_CHAT_TICKET_MAX_REPLIES_NUM}"
+        query_ticket_comments_sql = f"select * from ticket_comments where ticket_id = {ticket_id} order by _pk limit {AI_CHAT_TICKET_MAX_REPLIES_NUM}"
         ticket = seadb_api.query_rows(project_uuid, query_ticket_sql).get('results', [])
-        ticket_replies = seadb_api.query_rows(project_uuid, query_ticket_replies_sql).get('results', [])
+        ticket_comments = seadb_api.query_rows(project_uuid, query_ticket_comments_sql).get('results', [])
     except Exception as e:
         logger.error(e)
         raise TicketNotFound()
-    all_replies_users = set([
-        ticket_reply.get('creator')
-        for ticket_reply in ticket_replies
+    all_comments_users = set([
+        ticket_comment.get('creator')
+        for ticket_comment in ticket_comments
     ])
 
-    all_replies_users_profile = Profile.objects.filter(user__in=all_replies_users)
+    all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)
 
     nickname_map = {
         user_profile.user: user_profile.nickname
-        for user_profile in all_replies_users_profile
+        for user_profile in all_comments_users_profile
     }
     title = ticket[0].get('title')
     content = ticket[0].get('content')
@@ -477,17 +477,17 @@ def ticket_to_json(project_uuid, ticket_id):
         'title': title,
         'content': content,
         'created_time': created_time,
-        'replies': []
+        'comments': []
     }
-    for ticket_reply in ticket_replies:
-        nickname = nickname_map.get(ticket_reply.get('creator'))
-        content = ticket_reply.get('content')
-        replied_at = ticket_reply.get('created_time')
-        replied_at = time_str_to_utc_time(replied_at).isoformat()
-        whole_ticket_data['replies'].append({
+    for ticket_comment in ticket_comments:
+        nickname = nickname_map.get(ticket_comment.get('creator'))
+        content = ticket_comment.get('content')
+        commented_at = ticket_comment.get('created_time')
+        commented_at = time_str_to_utc_time(commented_at).isoformat()
+        whole_ticket_data['comments'].append({
             'nickname': nickname,
             'content': content,
-            'replied_at': replied_at
+            'commented_at': commented_at
         })
     return json.dumps(whole_ticket_data, indent=4)
 

@@ -55,7 +55,7 @@
 }
 
 /* small */
-.sea-qa-project-ticket-comment.small .sea-qa-project-ticket-reply-op-log {
+.sea-qa-project-ticket-comment.small .sea-qa-project-ticket-comment-op-log {
   display: inline-flex;
   align-items: center;
 }

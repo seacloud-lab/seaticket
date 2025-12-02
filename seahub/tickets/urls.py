@@ -5,7 +5,7 @@ from seahub.project.views import project_view
 from .ticket_tags import TicketTagsAPIView, TicketTagAPIView
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
-from .tickets import TicketsAPIView, TicketAPIView, TicketRepliesAPIView, TicketReplyAPIView, \
+from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
     TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
@@ -26,8 +26,8 @@ urlpatterns = [
     # ticket
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/$', TicketsAPIView.as_view(), name='api-v2.1-project-tickets'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/$', TicketAPIView.as_view(), name='api-v2.1-project-ticket'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/replies/$', TicketRepliesAPIView.as_view(), name='api-v2.1-project-ticket-replies'),
-    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/replies/(?P<reply_id>\d+)/$', TicketReplyAPIView.as_view(), name='api-v2.1-project-ticket-reply'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/comments/$', TicketCommentsAPIView.as_view(), name='api-v2.1-project-ticket-comments'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/(?P<ticket_id>\d+)/comments/(?P<comment_id>\d+)/$', TicketCommentAPIView.as_view(), name='api-v2.1-project-ticket-comment'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/tickets/search/$', TicketsSearchAPIView.as_view(), name='api-v2.1-project-tickets-search'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/my-tickets/$', MyTicketAPIView.as_view(), name='api-v2.1-project-my-tickets'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/ticket/metadata/$', TicketMetadataAPIView.as_view(), name='api-v2.1-project-ticket-metadata'),

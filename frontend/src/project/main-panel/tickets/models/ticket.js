@@ -1,7 +1,7 @@
 import dayjs from '@/utils/dayjs';
 import { TICKET_STATE } from '../constants';
 
-class Reply {
+class Comment {
   constructor(object) {
     this.id = object.number || '';
     this.number = object.number || '';
@@ -50,8 +50,8 @@ class Ticket {
     this.closed_time = object.closed_time || '';
 
 
-    this.replies = object.replies || [];
-    this.reply_count = object.reply_count || '';
+    this.comments = object.comments || [];
+    this.comment_count = object.comment_count || '';
 
     this.modified_time = object.modified_time || '';
 
@@ -62,8 +62,8 @@ class Ticket {
 
     this.modified_time = this.modified_time ? dayjs(this.modified_time).fromNow() : '--';
 
-    if (this.replies) {
-      this.replies = this.replies.map(reply => reply instanceof Reply ? reply : new Reply(reply));
+    if (this.comments) {
+      this.comments = this.comments.map(comment => comment instanceof Comment ? comment : new Comment(comment));
     }
 
     if (this.tags) {
@@ -74,7 +74,7 @@ class Ticket {
   _update = (keyValue = {}) => {
     Object.entries(keyValue).forEach(item => {
       const [key, value] = item;
-      if (key !== 'replies') {
+      if (key !== 'comments') {
         this[key] = value;
       }
     });
@@ -82,21 +82,21 @@ class Ticket {
     return this;
   };
 
-  _create_reply = (reply) => {
-    this.replies.push(new Reply(reply));
+  _create_comment = (comment) => {
+    this.comments.push(new Comment(comment));
     return this;
   };
 
-  _delete_reply = (replyID) => {
-    this.replies = this.replies.filter(reply => reply.id !== replyID);
+  _delete_comment = (commentID) => {
+    this.comments = this.comments.filter(comment => comment.id !== commentID);
     return this;
   };
 
-  _modify_reply = (replyID, content) => {
-    const replyIndex = this.replies.findIndex(reply => reply.id === replyID);
-    let reply = this.replies[replyIndex];
-    reply = reply._update(content);
-    this.replies[replyIndex] = reply;
+  _modify_comment = (commentID, content) => {
+    const commentIndex = this.comments.findIndex(comment => comment.id === commentID);
+    let comment = this.comments[commentIndex];
+    comment = comment._update(content);
+    this.comments[commentIndex] = comment;
     return this;
   };
 }
@@ -111,5 +111,5 @@ class TicketForAI {
 export default Ticket;
 export {
   TicketForAI,
-  Reply,
+  Comment,
 };

@@ -38,7 +38,7 @@ class ProjectUploadFileAPIView(APIView):
     def post(self, request, project_uuid):
         """
         Upload a file to /tmp.
-        TicketsAPIView and TicketRepliesAPIView upload files to S3.
+        TicketsAPIView and TicketCommentsAPIView upload files to S3.
 
         Permission:
         1. group member
