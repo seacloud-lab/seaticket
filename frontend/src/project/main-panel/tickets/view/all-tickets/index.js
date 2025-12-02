@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { toaster, CenteredLoading } from '@/components';
@@ -16,6 +16,8 @@ import {
 } from '../../utils';
 import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar, isMyTicket }) => {
 
@@ -319,7 +321,16 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     list.push('Divider');
     list.push({
       label: gettext('Resolve ticket by AI'),
-      callback: () => handleResolveTicketByAI(row)
+      callback: () => {
+        const titleColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+        if (titleColumn) {
+          let ticket = {
+            [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+            _id: row._id,
+          };
+          handleResolveTicketByAI(ticket);
+        }
+      },
     });
     return list;
   }, [projectName, workspaceID, handleResolveTicketByAI]);
