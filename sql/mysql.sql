@@ -529,7 +529,7 @@ CREATE TABLE `chat_messages` (
   `username` varchar(255) NOT NULL,
   `role` enum('user','assistant') NOT NULL,
   `content` longtext DEFAULT NULL,
-  `extra_content` longtext DEFAULT NULL,
+  `extra_contents` longtext DEFAULT NULL,
   `sources` longtext DEFAULT NULL,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) DEFAULT NULL,

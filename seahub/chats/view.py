@@ -14,7 +14,7 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, get_whole_ticket_data, TicketNotFound, get_whole_issue_data, IssueNotFound, check_ai_limit
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id
+from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, gen_extra_contents_preview
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -241,6 +241,7 @@ class ChatMessagesView(APIView):
                             data['thought_process'] = agent_thought_process
                     elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
                         data['thought_process'] = ask_thought_process
+                    data['extra_contents'] = gen_extra_contents_preview(data['extra_contents'])
                 messages_data.append(data)
 
             return Response({'messages': messages_data})
@@ -291,39 +292,21 @@ class ChatView(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
-        ticket_id = request.data.get('ticket_id')
-        issue_id = request.data.get('issue_id')
-        if ticket_id and issue_id:
-            error_msg = 'can only provide a ticket or an issue.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if issue_id:
-            connection_id = request.data.get('connection_id')
+        ticket_ids = request.data.get('ticket_ids', [])
+        issues = request.data.get('issues', [])
+
+        extra_contents = []
+        for issue in issues:
+            connection_id = issue.get('connection_id')
             if not connection_id:
-                error_msg = 'connection_id is required when issue_id is provided.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                logger.warning(f'connection_id is required when issue is provided: {issue}')
+                continue
 
-        extra_content = {}
+            issue_id = issue.get('issue_id')
+            if not issue_id:
+                logger.warning(f'issue_id is required when issue is provided: {issue}')
+                continue
 
-        if ticket_id:
-            try:
-                ticket_id = int(ticket_id)
-            except:
-                error_msg = 'ticket_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                ticket_data = get_whole_ticket_data(project_uuid, ticket_id)
-            except TicketNotFound:
-                error_msg = 'ticket not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-            extra_content = {
-                'type': 'ticket',
-                'id': ticket_id,
-                'data': ticket_data
-            }
-
-        # only support github issue for now
-        if issue_id:
             try:
                 issue_id = int(issue_id)
             except:
@@ -336,11 +319,30 @@ class ChatView(APIView):
                 error_msg = 'issue not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-            extra_content = {
+            extra_contents.append({
                 'type': 'issue',
                 'id': issue_id,
                 'data': issue_data
-            }
+            })
+
+        for ticket_id in ticket_ids:
+            try:
+                ticket_id = int(ticket_id)
+            except:
+                logger.warning(f'Invalid ticket_id: {ticket_id}')
+                continue
+
+            try:
+                ticket_data = get_whole_ticket_data(project_uuid, ticket_id)
+            except TicketNotFound:
+                error_msg = 'ticket not found'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            extra_contents.append({
+                'type': 'ticket',
+                'id': ticket_id,
+                'data': ticket_data
+            })
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
@@ -367,7 +369,7 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'message_id': message_id,
             'query': query,
-            'extra_content': extra_content,
+            'extra_contents': extra_contents,
             'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
@@ -400,14 +402,14 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', extra_content=extra_content)
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', extra_contents=extra_contents)
         ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
 
         ai_response.update({
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'extra_content': extra_content
+            'extra_contents': gen_extra_contents_preview(extra_contents)
         })
 
         return Response(ai_response)

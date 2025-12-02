@@ -515,7 +515,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
     Returns:
     {
         "title": ...,
-        "body": ...,
+        "content": ...,
         "created_at": ...,
         "comments": [
             {
@@ -539,7 +539,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
         issue_data = issues[0]
 
         title = issue_data.get('title', '')
-        body = issue_data.get('content', '')
+        content = issue_data.get('content', '')
         created_at = issue_data.get('created_time', '')
         github_issue_id = issue_data.get('issue_id', '')
 
@@ -554,7 +554,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
 
         whole_issue_data = {
             'title': title,
-            'body': body,
+            'content': content,
             'created_at': created_at,
             'comments': []
         }
