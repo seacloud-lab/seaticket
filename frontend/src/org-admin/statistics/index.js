@@ -79,9 +79,6 @@ class Item extends Component {
         )}
         {groupBy === 'project' && (
           <>
-            <td>
-              <span className="dtable-icon-table"></span>
-            </td>
             <td>{item.project_name || item.project_uuid}</td>
             <td>
               {(item.nickname || item.group_name) && (
@@ -97,10 +94,6 @@ class Item extends Component {
         {groupBy === 'workspace' && (
           <>
             <td>
-              <span className="dtable-icon-table"></span>
-            </td>
-            <td>{item.workspace_name}</td>
-            <td>
               {(item.nickname || item.group_name) && (
                 <Link to={this.getOwnerURL(item.owner)}>
                   {item.group_name ? item.group_name : item.nickname}
@@ -108,6 +101,7 @@ class Item extends Component {
               )}
               {!(item.nickname || item.group_name) && item.owner}
             </td>
+            <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
             <td>{item.total_cost}</td>
           </>
         )}
@@ -156,7 +150,6 @@ class Content extends Component {
         </div>
       );
     }
-    console.log(this.getNextPage, 'this.getNextPage')
     return (
       <Fragment>
         <table className="table table-hover table-vcenter">
@@ -169,18 +162,16 @@ class Content extends Component {
             )}
             {groupBy === 'project' && (
               <tr>
-                <th width="5%"></th>
-                <th width="35%">{gettext('Project')}</th>
+                <th width="40%">{gettext('Project')}</th>
                 <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
                 <th width="25%">{gettext('Cost')}</th>
               </tr>
             )}
             {groupBy === 'workspace' && (
               <tr>
-                <th width="5%"></th>
-                <th width="35%">{gettext('Workspace')}</th>
-                <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
-                <th width="25%">{gettext('Cost')}</th>
+                <th>{gettext('Workspace')}</th>
+                <th>{gettext('Creator')}</th>
+                <th>{gettext('Cost')}</th>
               </tr>
             )}
           </thead>

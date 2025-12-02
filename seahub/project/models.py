@@ -973,6 +973,5 @@ class StatsAIByProject(models.Model):
         db_table = 'stats_ai_by_project'
         unique_together = [['project_uuid', 'date', 'model', 'username']]
         indexes = [
-            models.Index(fields=['date', 'username']),
             models.Index(fields=['date', 'org_id']),
         ]

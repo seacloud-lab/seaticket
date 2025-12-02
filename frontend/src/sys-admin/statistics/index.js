@@ -88,6 +88,26 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
+        {groupBy === 'workspace' && (
+          <>
+            <td>
+              {item.org_name && item.org_id > 0 && (
+                <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
+              )}
+              {item.org_id === -1 && '-'}
+              {item.org_id !== -1 && !item.org_name && item.org_id}
+            </td>
+            <td>
+              {(item.workspace_name) && (
+                <Link to={this.getOwnerURL(item.owner)}>
+                  {item.workspace_name}
+                </Link>
+              )}
+              {!(item.workspace_name) && item.owner}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
         {groupBy === 'org_id' && (
           <>
             <td>
@@ -153,7 +173,14 @@ class Content extends Component {
             {groupBy === 'owner' && (
               <tr>
                 <th>{gettext('Organization')}</th>
-                <th>{`${gettext('Users')} / ${gettext('Group')}`}</th>
+                <th>{gettext('Users')}</th>
+                <th>{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'workspace' && (
+              <tr>
+                <th>{gettext('Organization')}</th>
+                <th>{gettext('Workspace')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
@@ -275,7 +302,13 @@ class Statistics extends Component {
           className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
           onClick={() => this.changeTabActive('owner')}
         >
-          {`${gettext('Users')} / ${gettext('Group')}`}
+          {gettext('Users')}
+        </div>
+        <div
+          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('workspace')}
+        >
+          {gettext('Workspaces')}
         </div>
         <div
           className={`statistic-tab-item ${groupBy === 'org_id' ? 'active' : ''}`}

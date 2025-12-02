@@ -16,6 +16,7 @@ from seahub.profile.models import Profile
 from seahub.group.models import Group
 from seahub.project.models import StatsAIByProject, Projects, Workspaces
 from seahub.group.utils import group_id_to_name
+from seahub.base.templatetags.seahub_tags import email2nickname
 
 
 class OrgAdminAIStatisticsView(APIView):
@@ -60,14 +61,13 @@ class OrgAdminAIStatisticsView(APIView):
             page, per_page = 1, 25
         start, end = (page - 1) * per_page, page * per_page
 
-        org_name = request.user.org.org_name
         base_queryset = StatsAIByProject.objects.filter(date_query).filter(org_id=org_id)
         if group_by == 'project':
-            return self._stats_by_project(base_queryset, org_id, org_name, start, end)
+            return self._stats_by_project(base_queryset, start, end)
         elif group_by == 'owner':
-            return self._stats_by_owner(base_queryset, org_id, org_name, start, end)
+            return self._stats_by_owner(base_queryset, start, end)
         elif group_by == 'workspace':
-            return self._stats_by_workspace(base_queryset, org_id, org_name, start, end)
+            return self._stats_by_workspace(base_queryset, start, end)
 
 
     def _get_profiles_dict(self, usernames):
@@ -76,7 +76,7 @@ class OrgAdminAIStatisticsView(APIView):
         profiles = Profile.objects.filter(user__in=usernames)
         return {p.user: p.nickname for p in profiles}
 
-    def _stats_by_project(self, base_queryset, org_id, org_name, start, end):
+    def _stats_by_project(self, base_queryset, start, end):
         queryset = base_queryset.values('project_uuid').annotate(
             total_cost=Sum('cost')
         ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
@@ -84,7 +84,7 @@ class OrgAdminAIStatisticsView(APIView):
         total_count = queryset.count()
         stats = list(queryset[start:end])
         if not stats:
-            return Response({'results': [], 'count': 0})
+            return Response({'results': [], 'count': total_count})
 
         project_uuids = [item['project_uuid'] for item in stats]
         projects = Projects.objects.filter(uuid__in=project_uuids)
@@ -111,8 +111,6 @@ class OrgAdminAIStatisticsView(APIView):
             project = projects_dict.get(project_uuid)
             result = {
                 'project_uuid': project_uuid,
-                'org_id': org_id,
-                'org_name': org_name,
                 'total_cost': round(item['total_cost'], 2),
                 'project_name': project.name if project else None,
             }
@@ -127,10 +125,10 @@ class OrgAdminAIStatisticsView(APIView):
 
         return Response({'results': results, 'count': total_count})
 
-    def _stats_by_owner(self, base_queryset, org_id, org_name, start, end):
-        queryset = base_queryset.values('project_uuid').annotate(
+    def _stats_by_owner(self, base_queryset, start, end):
+        queryset = base_queryset.values('username').annotate(
             total_cost=Sum('cost')
-        ).order_by('-total_cost').values('project_uuid', 'org_id', 'username', 'total_cost')
+        ).order_by('-total_cost').values('username', 'org_id', 'total_cost')
 
         total_count = queryset.count()
         stats = list(queryset[start:end])
@@ -138,41 +136,31 @@ class OrgAdminAIStatisticsView(APIView):
             return Response({'results': [], 'count': 0})
 
         usernames = set()
-        project_uuids = []
         for item in stats:
             if item['username'] != 'seaqa-indexer':
                 usernames.add(item['username'])
-            project_uuids.append(item['project_uuid'])
 
         profiles_dict = self._get_profiles_dict(list(usernames))
-        projects = Projects.objects.filter(uuid__in=project_uuids)
-        projects_dict = {str(p.uuid).replace('-', ''): p for p in projects}
 
         results = []
         for item in stats:
             if item['username'] == 'seaqa-indexer':
                 continue
             owner = item['username']
-            project = projects_dict.get(item['project_uuid'])
             results.append({
-                'project_uuid': item['project_uuid'],
-                'org_id': org_id,
-                'org_name': org_name,
                 'total_cost': round(item['total_cost'], 2),
                 'owner': owner,
                 'nickname': profiles_dict.get(owner, ''),
-                'project_name': project.name if project else None,
             })
 
         return Response({'results': results, 'count': total_count})
 
-    def _stats_by_workspace(self, base_queryset, org_id, org_name, start, end):
+    def _stats_by_workspace(self, base_queryset, start, end):
         queryset = base_queryset.values('project_uuid').annotate(
             total_cost=Sum('cost')
         ).order_by('-total_cost').values('project_uuid', 'org_id', 'total_cost')
 
-        total_count = queryset.count()
-        stats = list(queryset[start:end])
+        stats = list(queryset)
         if not stats:
             return Response({'results': [], 'count': 0})
 
@@ -187,6 +175,9 @@ class OrgAdminAIStatisticsView(APIView):
 
         usernames = [w.owner for w in workspaces if '@seafile_group' not in w.owner]
         profiles_dict = self._get_profiles_dict(usernames)
+        group_ids = [int(w.owner.split('@')[0]) for w in workspaces if '@seafile_group' in w.owner]
+        groups = Group.objects.filter(group_id__in=group_ids)
+        group_id_to_creator_map = {g.group_id: g.creator_name for g in groups}
 
         workspace_info = {}
         for w in workspaces:
@@ -204,19 +195,33 @@ class OrgAdminAIStatisticsView(APIView):
                     'nickname': profiles_dict.get(w.owner, ''),
                     'workspace_name': 'personal',
                 }
-
-        results = []
+        workspace_totals = {}
         for project_uuid, stat in stats_dict.items():
             workspace_id = project_workspace_map.get(project_uuid)
             if not workspace_id:
                 continue
+            workspace_totals.setdefault(workspace_id, 0)
+            workspace_totals[workspace_id] += float(stat['total_cost'] or 0)
+
+        sorted_totals = sorted(workspace_totals.items(), key=lambda x: x[1], reverse=True)
+        total_count = len(sorted_totals)
+        paged_totals = sorted_totals[start:end]
+
+        results = []
+        for workspace_id, total in paged_totals:
             ws_info = workspace_info.get(workspace_id, {})
+            group_id = ws_info.get('owner').split('@')[0] if '@seafile_group' in ws_info.get('owner') else None
+            if group_id:
+                creator = group_id_to_creator_map.get(int(group_id)) 
+                creator_name = email2nickname(creator)
+            else:
+                creator = ws_info.get('owner')
+                creator_name = ws_info.get('nickname', '')
             result = {
-                'project_uuid': project_uuid,
-                'org_id': org_id,
-                'org_name': org_name,
-                'total_cost': round(stat['total_cost'], 2),
+                'total_cost': round(total, 2),
                 'owner': ws_info.get('owner'),
+                'creator': creator,
+                'creator_name': creator_name,
                 'workspace_name': ws_info.get('workspace_name'),
             }
             if 'group_name' in ws_info:

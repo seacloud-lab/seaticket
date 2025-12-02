@@ -435,14 +435,17 @@ class SearchView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        org_id = request.user.org.org_id
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
             'connection_ids': connection_ids,
+            'username': username,
             'count': count,
             'time_from': time_from,
             'time_to': time_to,
-            'search_type': search_type
+            'search_type': search_type,
+            'org_id': org_id
         }
         results = search(params)
         
