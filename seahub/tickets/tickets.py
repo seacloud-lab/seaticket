@@ -212,6 +212,7 @@ class TicketsAPIView(APIView):
         # main
         try:
             ticket_state = 'open'
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
 
             row = {
                 TicketsTable.title.name: title,
@@ -225,8 +226,8 @@ class TicketsAPIView(APIView):
                 TicketsTable.tags.name: tag_names,
                 TicketsTable.creator.name: username,
                 TicketsTable.comment_count.name: 0,
-                TicketsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketsTable.created_time.name: now_datetime,
+                TicketsTable.modified_time.name: now_datetime,
                 TicketsTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'tickets', [row])
@@ -294,6 +295,7 @@ class TicketsAPIView(APIView):
             return Response({'success': True})
 
         update_rows = []
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         for row in results:
             updated_row = {}
             row_data = ticket_id_to_row.get(str(row.get('_pk')))
@@ -303,7 +305,7 @@ class TicketsAPIView(APIView):
                 ticket_state_name = row_data.get('state').lower()
                 updated_row[TicketsTable.state.name] = ticket_state_name
                 if ticket_state_name == 'closed':
-                    updated_row[TicketsTable.closed_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+                    updated_row[TicketsTable.closed_time.name] = now_datetime
                 elif ticket_state_name == 'open':
                     updated_row[TicketsTable.closed_time.name] = ''
             if 'substate' in row_data:
@@ -334,7 +336,7 @@ class TicketsAPIView(APIView):
                     continue
                 updated_row[key] = value
 
-            updated_row[TicketsTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            updated_row[TicketsTable.modified_time.name] = now_datetime
             update_rows.append(
                 {
                     'pk': row.get('_pk'),
@@ -599,14 +601,6 @@ class TicketAPIView(APIView):
                 update_row[TicketsTable.title.name] = title
             if content:
                 update_row[TicketsTable.content.name] = content
-
-            if ticket_state_name or ticket_state_name == '':
-                ticket_state_name = ticket_state_name.lower()
-                update_row[TicketsTable.state.name] = ticket_state_name
-                if ticket_state_name == 'closed':
-                    update_row[TicketsTable.closed_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
-                elif ticket_state_name == 'open':
-                    update_row[TicketsTable.closed_time.name] = ''
             if is_update_type:
                 update_row[TicketsTable.type.name] = type_name
             if is_update_substate:
@@ -620,8 +614,18 @@ class TicketAPIView(APIView):
             participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
+
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+            if ticket_state_name or ticket_state_name == '':
+                ticket_state_name = ticket_state_name.lower()
+                update_row[TicketsTable.state.name] = ticket_state_name
+                if ticket_state_name == 'closed':
+                    update_row[TicketsTable.closed_time.name] = now_datetime
+                elif ticket_state_name == 'open':
+                    update_row[TicketsTable.closed_time.name] = ''
+
             update_row[TicketsTable.participants.name] = participants
-            update_row[TicketsTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_row[TicketsTable.modified_time.name] = now_datetime
             update_rows = [
                 {
                     'pk': ticket.get('_pk'),
@@ -865,12 +869,13 @@ class TicketCommentsAPIView(APIView):
 
         # main
         try:
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
                 TicketCommentsTable.ticket_id.name: ticket.get('_pk'),
                 TicketCommentsTable.creator.name: username,
                 TicketCommentsTable.content.name: content,
-                TicketCommentsTable.created_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
-                TicketCommentsTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                TicketCommentsTable.created_time.name: now_datetime,
+                TicketCommentsTable.modified_time.name: now_datetime,
                 TicketCommentsTable.deleted.name: False,
             }
             res = seadb_api.insert_rows(project_uuid, 'ticket_comments', [row])
@@ -885,7 +890,7 @@ class TicketCommentsAPIView(APIView):
                 'pk': ticket.get('_pk'),
                 'row': {
                     'comment_count': ticket_comments_count,
-                    'modified_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'modified_time': now_datetime,
                     },
                 }
             participants = ticket.get('participants') or []
@@ -1071,14 +1076,24 @@ class TicketCommentAPIView(APIView):
                     },
                 }
                 seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
+
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_ticket_comment = {
                 'pk': ticket_comment_data.get('_pk'),
                 'row': {
                     'deleted': True,
-                    'delete_time': datetime.datetime.now(datetime.UTC).isoformat(),
+                    'delete_time': now_datetime,
                 },
             }
             seadb_api.update_rows(project_uuid, 'ticket_comments', [update_ticket_comment])
+
+            update_ticket = {
+                'pk': ticket.get('_pk'),
+                'row': {
+                    'modified_time': now_datetime,
+                }
+            }
+            seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
