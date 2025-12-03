@@ -78,7 +78,7 @@ const Search = ({ title, settings }) => {
       sourceRef.current = source;
       let timeFrom = null;
       let timeTo = null;
-      if (filterDate.value) {
+      if (filterDate && filterDate.value) {
         const isCustom = filterDate.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
         timeFrom = isCustom ? filterDate.from?.unix() : filterDate.from;
         timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
@@ -117,16 +117,10 @@ const Search = ({ title, settings }) => {
     timer.current = null;
   }, []);
 
-  const toggleSemantic = useCallback(() => {
-    setSemanticEnabled(prev => {
-      const next = !prev;
-      window.localStorage.setItem('search-semantic-enabled', JSON.stringify(next));
-      if (value) {
-        onChange(value, hiddenConnectionIDs, connections);
-      }
-      return next;
-    });
-  }, [value, hiddenConnectionIDs, connections, onChange]);
+  const toggleSemantic = useCallback((e) => {
+    setSemanticEnabled(e.target.checked);
+    window.localStorage.setItem('search-semantic-enabled', JSON.stringify(e.target.checked));
+  }, []);
 
   useEffect(() => {
     reloadConnections();
@@ -134,6 +128,12 @@ const Search = ({ title, settings }) => {
       timer.current && clearTimeout(timer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (value) {
+      onChange(value, hiddenConnectionIDs, connections, filterDate);
+    }
+  }, [semanticEnabled]);
 
   const handleConnectionIDsChange = useCallback((hiddenConnectionIDs) => {
     setHiddenConnectionIDs(hiddenConnectionIDs);
