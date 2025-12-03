@@ -284,13 +284,19 @@ class Context {
     return this.api.deleteRow(rowId);
   };
 
-  deleteRows = (rowIds = []) => {
+  deleteRows = async (rowIds = []) => {
     if (this.api.deleteRows) return this.api.deleteRows(rowIds);
-    let deletedRows = [];
-    rowIds.forEach(rowId => {
-      deletedRows.push(this.deleteRow(rowId));
+    const results = await Promise.allSettled(rowIds.map(rowId => this.deleteRow(rowId)));
+    const success = [];
+    const failed = [];
+    results.forEach((r, idx) => {
+      if (r.status === 'fulfilled') {
+        success.push(rowIds[idx]);
+      } else {
+        failed.push(rowIds[idx]);
+      }
     });
-    return Promise.all(deletedRows);
+    return { data: { success: success.length === rowIds.length ? true : success, failed } };
   };
 
   // view
