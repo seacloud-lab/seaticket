@@ -130,7 +130,6 @@ class OrgAdminAIStatisticsView(APIView):
             total_cost=Sum('cost')
         ).order_by('-total_cost').values('username', 'org_id', 'total_cost')
 
-        total_count = queryset.count()
         stats = list(queryset[start:end])
         if not stats:
             return Response({'results': [], 'count': 0})
@@ -140,6 +139,7 @@ class OrgAdminAIStatisticsView(APIView):
             if item['username'] != 'seaqa-indexer':
                 usernames.add(item['username'])
 
+        total_count = len(usernames)
         profiles_dict = self._get_profiles_dict(list(usernames))
 
         results = []
@@ -186,14 +186,12 @@ class OrgAdminAIStatisticsView(APIView):
                 group_name = group_id_to_name(group_id)
                 workspace_info[w.id] = {
                     'owner': w.owner,
-                    'group_name': group_name,
                     'workspace_name': group_name,
                 }
             else:
                 workspace_info[w.id] = {
                     'owner': w.owner,
-                    'nickname': profiles_dict.get(w.owner, ''),
-                    'workspace_name': 'personal',
+                    'workspace_name': profiles_dict.get(w.owner, ''),
                 }
         workspace_totals = {}
         for project_uuid, stat in stats_dict.items():
@@ -216,7 +214,7 @@ class OrgAdminAIStatisticsView(APIView):
                 creator_name = email2nickname(creator)
             else:
                 creator = ws_info.get('owner')
-                creator_name = ws_info.get('nickname', '')
+                creator_name = ws_info.get('workspace_name', '')
             result = {
                 'total_cost': round(total, 2),
                 'owner': ws_info.get('owner'),
@@ -224,10 +222,6 @@ class OrgAdminAIStatisticsView(APIView):
                 'creator_name': creator_name,
                 'workspace_name': ws_info.get('workspace_name'),
             }
-            if 'group_name' in ws_info:
-                result['group_name'] = ws_info['group_name']
-            else:
-                result['nickname'] = ws_info.get('nickname', '')
             results.append(result)
 
         return Response({'results': results, 'count': total_count})

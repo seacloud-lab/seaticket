@@ -94,12 +94,9 @@ class Item extends Component {
         {groupBy === 'workspace' && (
           <>
             <td>
-              {(item.nickname || item.group_name) && (
-                <Link to={this.getOwnerURL(item.owner)}>
-                  {item.group_name ? item.group_name : item.nickname}
-                </Link>
-              )}
-              {!(item.nickname || item.group_name) && item.owner}
+              <Link to={this.getOwnerURL(item.owner)}>
+                {item.workspace_name}
+              </Link>
             </td>
             <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
             <td>{item.total_cost}</td>
