@@ -162,7 +162,7 @@ class ConvertRecordToTicket(APIView):
 
                 record_detail = f"""
                     **Ticket Information:**
-                    Subject: {title}
+                    Title: {title}
                     Body: {body_content}
                 """
         if not record_detail:

@@ -1,4 +1,4 @@
-import { mediaUrl } from '@/constants';
+import { mediaUrl, projectName, server, workspaceID } from '@/constants';
 import { CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -51,6 +51,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.SEAFILE: {
       return getSeafileOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.EMAIL: {
+      return `${server}/workspace/${workspaceID}/project/${projectName}/connections/${connection.id}/records/${row._id}/`;
     }
     default: {
       return '';
