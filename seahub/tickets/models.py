@@ -4,6 +4,7 @@ import copy
 import random
 import string
 from django.db import models
+from copy import deepcopy
 
 from seahub.project.constants import TICKET_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
@@ -125,7 +126,7 @@ class TicketViewsManager(models.Manager):
         project_uuid = uuid_str_to_32_chars(project_uuid)
         record = self.filter(project_uuid=project_uuid).first()
         if not record:
-            details = self.update_init_view_details(project_uuid, TICKET_DEFAULT_DETAILS)
+            details = self.update_init_view_details(project_uuid, deepcopy(TICKET_DEFAULT_DETAILS))
             record = self.create(
                 project_uuid=project_uuid,
                 details=json.dumps(details)

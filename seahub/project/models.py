@@ -662,7 +662,7 @@ class ConnectionsViewsManager(models.Manager):
         record = self.filter(connection_id=connection_id).first()
 
         if not record:
-            details = CONNECTION_DEFAULT_DETAILS[connection_type]
+            details = deepcopy(CONNECTION_DEFAULT_DETAILS[connection_type])
             details = self.update_init_view_details(project_uuid, connection, details)
             record = self.create(
                 project_uuid=project_uuid,
