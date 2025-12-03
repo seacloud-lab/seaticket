@@ -13,15 +13,15 @@ import {
   convertRowToServerData, convertRowsToServerData,
   cascadeUpdateSubState, generatorTicketsContextMenuOptions
 } from '../../utils';
-import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 
 const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
   const { isLoading: isMetadataLoading, typesData, createType, tagsData } = useMetadata();
 
-  const { updateTicket } = useProblemToBeResolved();
+  const { updateTickets } = useAIChatTools();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -104,6 +104,11 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
+  const chatTicketsByAI = useCallback((tickets) => {
+    updateTickets(tickets, AI_RESOLVE_TYPE.AGENT);
+    toggleBar([BAR_TYPE.CHAT]);
+  }, [toggleBar, updateTickets]);
+
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];
     if (rows.length === 1) {
@@ -111,20 +116,14 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
       const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
       tools.push(tool);
     }
-    const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows });
+    const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI });
     tools.push(moreTool);
     return tools;
-  }, [workspaceID, projectName]);
-
-  const handleResolveTicketByAI = useCallback((ticket) => {
-    if (!ticket) return;
-    updateTicket(ticket, AI_RESOLVE_TYPE.AGENT);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateTicket]);
+  }, [workspaceID, projectName, chatTicketsByAI]);
 
   const createContextMenuOptions = useCallback((props) => {
-    return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, handleResolveTicketByAI });
-  }, [projectName, workspaceID, handleResolveTicketByAI]);
+    return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, chatTicketsByAI });
+  }, [projectName, workspaceID, chatTicketsByAI]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-type-tickets`, [projectUuid]);
 

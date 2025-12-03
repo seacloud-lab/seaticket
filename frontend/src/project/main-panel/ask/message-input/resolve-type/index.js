@@ -40,7 +40,7 @@ const ResolveType = ({ resolveType, updateResolveType }) => {
       </div>
       {isShowMenu && (
         <OptionEditor
-          className="sea-qa-ai-chat-tool-select-editor sea-qa-ai-chat-resolve-type-select-editor"
+          className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-chat-resolve-type-select-editor"
           options={AI_RESOLVE_TYPES}
           target={ref}
           isSearchEnabled={false}

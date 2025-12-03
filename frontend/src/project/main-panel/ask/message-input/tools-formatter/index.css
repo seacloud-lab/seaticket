@@ -1,0 +1,53 @@
+.sea-qa-ai-chat-tools-formatter {
+  padding: 0 0 16px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool {
+  height: 32px;
+  max-width: 240px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0 0 8px;
+  border: 1px solid #d1d9e0b3;
+  border-radius: 6px;
+  margin-right: 8px;
+  background-color: #FFF;
+  flex-shrink: 0;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool:hover {
+  background-color: #F5F5F5;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool:last-child {
+  margin-right: 0;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool .sea-qa-icon-svg-all-tickets {
+  color: #666;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool .sea-qa-ai-chat-tool-remove {
+  width: 20px;
+  height: 20px;
+  margin: 0 8px;
+  flex-shrink: 0;
+  line-height: 20px;
+  display: inline-flex;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool .sea-qa-ai-chat-tool-remove:hover {
+  background-color: #E5E5E5 !important;
+}
+
+.sea-qa-ai-chat-tools-formatter .sea-qa-ai-chat-tool .sea-qa-ai-chat-tool-remove .sea-qa-icon-svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 0;
+  color: #666;
+}

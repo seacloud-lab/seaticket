@@ -56,7 +56,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
       {isShowMenu && (
         <CustomizePopover
           target={ref}
-          className="sea-qa-ai-chat-tool-select-editor sea-qa-ai-model-selector-editor"
+          className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-model-selector-editor"
           hidePopover={handleClose}
           hidePopoverWithEsc={handleClose}
         >

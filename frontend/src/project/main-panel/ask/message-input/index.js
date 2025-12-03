@@ -9,10 +9,10 @@ import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
-import Ticket from './ticket';
-import Issue from './issue';
-import { useProblemToBeResolved } from '../hooks';
+import AddTickets from './add-tickets';
+import { useAIChatTools } from '../hooks';
 import ModelSelector from './model-selector';
+import ToolsFormatter from './tools-formatter';
 
 import './index.css';
 
@@ -34,9 +34,10 @@ const MessageInput = forwardRef(({
   const previewContentRef = useRef(null);
 
   const {
-    ticket, issue, resolveType,
-    clearProblem, updateResolveType, resetResolveType, updateTicket, updateIssue,
-  } = useProblemToBeResolved();
+    tickets, issues, resolveType,
+    clearProblems, updateResolveType, resetResolveType, updateTickets,
+    removeIssue, removeTicket,
+  } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
     const callBack = (pasteFiles) => {
@@ -82,9 +83,14 @@ const MessageInput = forwardRef(({
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    sendMessage({ resolveType, message: value, ticket: ticket?._id, issue: issue, model: selectedModel });
-    clearProblem();
-  }, [resolveType, value, ticket, issue, selectedModel, sendMessage, clearProblem]);
+    sendMessage({
+      resolveType,
+      message: value,
+      tickets: tickets.map(t => t._id),
+      issues: issues.map(i => ({ issue_id: i._id, connection_id: i.connection_id })),
+      model: selectedModel });
+    clearProblems();
+  }, [resolveType, value, tickets, issues, selectedModel, sendMessage, clearProblems]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -169,7 +175,7 @@ const MessageInput = forwardRef(({
 
   useEffect(() => {
     return () => {
-      clearProblem();
+      clearProblems();
       resetResolveType();
     };
   }, []);
@@ -180,7 +186,8 @@ const MessageInput = forwardRef(({
     <div className={classnames('sea-qa-ai-ask-chat-input-wrapper', { 'disabled': disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
-          <Issue value={issue} onChange={updateIssue} />
+          <ToolsFormatter value={issues} onRemove={removeIssue} />
+          <ToolsFormatter value={tickets} onRemove={removeTicket} />
           <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -201,8 +208,8 @@ const MessageInput = forwardRef(({
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
+              <AddTickets projectUuid={projectUuid} value={tickets} onChange={updateTickets} />
               <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
-              <Ticket projectUuid={projectUuid} value={ticket} onChange={updateTicket} />
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
               <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />

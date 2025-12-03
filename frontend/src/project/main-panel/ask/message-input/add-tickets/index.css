@@ -1,0 +1,11 @@
+.sea-qa-ai-chat-tool-select-ticket-item {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.sea-qa-ai-chat-tool-select-ticket-item .sea-qa-icon-svg-all-tickets {
+  color: #666;
+  flex-shrink: 0;
+}
