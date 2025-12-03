@@ -235,13 +235,14 @@ class ChatMessagesView(APIView):
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if message.role == 'assistant':
+                if message.role == 'user':
+                    data['extra_contents'] = format_extra_contents(data['extra_contents'])
+                elif message.role == 'assistant':
                     if message.is_agent_mode:
                         if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
                             data['thought_process'] = agent_thought_process
                     elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
                         data['thought_process'] = ask_thought_process
-                    data['extra_contents'] = format_extra_contents(data['extra_contents'])
                 messages_data.append(data)
 
             return Response({'messages': messages_data})
