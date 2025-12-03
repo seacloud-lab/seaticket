@@ -173,8 +173,8 @@ def format_extra_contents(extra_contents):
             new_extra_contents.append({
                 'type': extra_content['type'],
                 'ticket_id': extra_content['ticket_id'],
-                'state': extra_content['data']['state'],
-                'title': extra_content['data']['title']
+                'state': extra_content['state'],
+                'title': extra_content['title']
             })
         elif extra_content['type'] == 'issue':
             new_extra_contents.append({
@@ -182,6 +182,6 @@ def format_extra_contents(extra_contents):
                 'issue_id': extra_content['issue_id'],
                 'connection_id': extra_content['connection_id'],
                 'state': extra_content['state'],
-                'title': extra_content['data']['title']
+                'title': extra_content['title']
             })
     return new_extra_contents

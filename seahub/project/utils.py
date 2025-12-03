@@ -5,13 +5,12 @@ import jwt
 import time
 import requests
 import hashlib
-import uuid
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    StatsAIByTeam, StatsAIByOwner, StatsAIByProject
+    StatsAIByTeam, StatsAIByOwner
 from seahub.chats.models import ChatSessions
 from seahub.chats.utils import delete_session
 from seahub.tickets.models import TicketViews
@@ -26,17 +25,14 @@ from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
-from seahub.profile.models import Profile
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
 from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET, AI_CHAT_TICKET_MAX_REPLIES_NUM, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import time_str_to_utc_time
-from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 
 
 logger = logging.getLogger(__name__)
@@ -429,161 +425,6 @@ def url_to_filename(url):
 
     # Add .json extension
     return filename + '.json'
-
-class TicketNotFound(Exception):
-    pass
-
-
-class IssueNotFound(Exception):
-    pass
-
-def get_whole_ticket_data(project_uuid, ticket_id):
-    """
-    Build a json from a ticket and its comments.
-
-    Args:
-    - ticket: a record in table `tickets`
-    - ticket_comments: some relative comments with the ticket
-
-    Returns:
-    {
-        "state": ...,
-        "title": ...,
-        "content": ...,
-        "created_time": ...,
-        "comments": [
-            {
-                "nickname": ...,
-                "content": ...,
-                "replied_at": ...,
-            },
-            ...
-        ]
-    }
-    """
-    try:
-        seadb_api = SeaDBAPI()
-        query_ticket_sql = f"select * from tickets where _pk = {ticket_id}"
-        query_ticket_comments_sql = f"select * from ticket_comments where ticket_id = {ticket_id} order by _pk limit {AI_CHAT_TICKET_MAX_REPLIES_NUM}"
-        ticket = seadb_api.query_rows(project_uuid, query_ticket_sql).get('results', [])
-        ticket_comments = seadb_api.query_rows(project_uuid, query_ticket_comments_sql).get('results', [])
-    except Exception as e:
-        logger.error(e)
-        raise TicketNotFound()
-    all_comments_users = set([
-        ticket_comment.get('creator')
-        for ticket_comment in ticket_comments
-    ])
-
-    all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)
-
-    nickname_map = {
-        user_profile.user: user_profile.nickname
-        for user_profile in all_comments_users_profile
-    }
-    title = ticket[0].get('title')
-    state = ticket[0].get('state')
-    content = ticket[0].get('content')
-    created_time = ticket[0].get('created_time')
-    created_time = time_str_to_utc_time(created_time).isoformat()
-    whole_ticket_data = {
-        'state': state,
-        'title': title,
-        'content': content,
-        'created_time': created_time,
-        'comments': []
-    }
-    for ticket_comment in ticket_comments:
-        nickname = nickname_map.get(ticket_comment.get('creator'))
-        content = ticket_comment.get('content')
-        commented_at = ticket_comment.get('created_time')
-        commented_at = time_str_to_utc_time(commented_at).isoformat()
-        whole_ticket_data['comments'].append({
-            'nickname': nickname,
-            'content': content,
-            'commented_at': commented_at
-        })
-    return whole_ticket_data
-
-
-def get_whole_issue_data(project_uuid, issue_id, connection_id):
-    """
-    Build a dict object from a github issue and its comments.
-
-    Args:
-    - project_uuid: the uuid of the project
-    - issue_id: the _pk of the issue
-    - connection_id: the id of the connection
-
-    Returns:
-    {
-        "state": ...,
-        "title": ...,
-        "content": ...,
-        "created_at": ...,
-        "comments": [
-            {
-                "author": ...,
-                "content": ...,
-                "created_time": ...,
-            },
-            ...
-        ]
-    }
-    """
-
-    try:
-        github_db_api = GitHubSeaDBAPI(project_uuid)
-
-        issues = github_db_api.get_issue_by_pk(connection_id, issue_id)
-
-        if not issues or len(issues) == 0:
-            raise IssueNotFound()
-
-        issue_data = issues[0]
-
-        title = issue_data.get('title', '')
-        state = issue_data.get('state', '')
-        content = issue_data.get('content', '')
-        created_at = issue_data.get('created_time', '')
-        github_issue_id = issue_data.get('issue_id', '')
-
-        comments = []
-        if github_issue_id:
-            try:
-                comments = github_db_api.get_comments_by_issue_id(
-                    connection_id, github_issue_id, limit=AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
-                )
-            except Exception as e:
-                logger.warning(e)
-
-        whole_issue_data = {
-            'state': state,
-            'title': title,
-            'content': content,
-            'created_at': created_at,
-            'comments': []
-        }
-
-        for comment in comments:
-            if not comment.get('content'):
-                continue
-
-            whole_issue_data['comments'].append({
-                'author': comment.get('author', ''),
-                'content': comment.get('content', ''),
-                'created_time': comment.get('created_time', '')
-            })
-
-        return whole_issue_data
-
-    except IssueNotFound:
-        raise
-    except Exception as e:
-        logger.error(f'Failed to get issue data: {e}')
-        raise IssueNotFound()
-
-
 
 def get_ai_credit_by_org_id(org_id):
     role = ORG_DEFAULT
