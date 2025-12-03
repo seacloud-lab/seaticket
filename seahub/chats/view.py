@@ -14,7 +14,7 @@ from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, get_whole_ticket_data, TicketNotFound, get_whole_issue_data, IssueNotFound, check_ai_limit
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, gen_extra_contents_preview
+from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -241,7 +241,7 @@ class ChatMessagesView(APIView):
                             data['thought_process'] = agent_thought_process
                     elif ask_thought_process := format_ask_thought_process(tool_calls_history.get(message.message_id, {})):
                         data['thought_process'] = ask_thought_process
-                    data['extra_contents'] = gen_extra_contents_preview(data['extra_contents'])
+                    data['extra_contents'] = format_extra_contents(data['extra_contents'])
                 messages_data.append(data)
 
             return Response({'messages': messages_data})
@@ -321,7 +321,8 @@ class ChatView(APIView):
 
             extra_contents.append({
                 'type': 'issue',
-                'id': issue_id,
+                'connection_id': connection_id,
+                'issue_id': issue_id,
                 'data': issue_data
             })
 
@@ -340,7 +341,7 @@ class ChatView(APIView):
 
             extra_contents.append({
                 'type': 'ticket',
-                'id': ticket_id,
+                'ticket_id': ticket_id,
                 'data': ticket_data
             })
 
@@ -409,7 +410,7 @@ class ChatView(APIView):
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'extra_contents': gen_extra_contents_preview(extra_contents)
+            'extra_contents': format_extra_contents(extra_contents)
         })
 
         return Response(ai_response)

@@ -166,19 +166,22 @@ def gen_message_id(session_uuid, max_try=5):
 
     return new_message_id
 
-def gen_extra_contents_preview(extra_contents):
+def format_extra_contents(extra_contents):
     new_extra_contents = []
     for extra_content in extra_contents:
         if extra_content['type'] == 'ticket':
             new_extra_contents.append({
                 'type': extra_content['type'],
-                'title': extra_content['data']['title'],
-                'preview': extra_content['data']['content'][:100]
+                'ticket_id': extra_content['ticket_id'],
+                'state': extra_content['data']['state'],
+                'title': extra_content['data']['title']
             })
         elif extra_content['type'] == 'issue':
-            new_extra_contents = [{
+            new_extra_contents.append({
                 'type': extra_content['type'],
-                'title': extra_content['data']['title'],
-                'preview': extra_content['data']['content'][:100]
-            }] + new_extra_contents # add to the first term
+                'issue_id': extra_content['issue_id'],
+                'connection_id': extra_content['connection_id'],
+                'state': extra_content['state'],
+                'title': extra_content['data']['title']
+            })
     return new_extra_contents

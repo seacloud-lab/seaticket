@@ -447,6 +447,7 @@ def get_whole_ticket_data(project_uuid, ticket_id):
 
     Returns:
     {
+        "state": ...,
         "title": ...,
         "content": ...,
         "created_time": ...,
@@ -481,10 +482,12 @@ def get_whole_ticket_data(project_uuid, ticket_id):
         for user_profile in all_comments_users_profile
     }
     title = ticket[0].get('title')
+    state = ticket[0].get('state')
     content = ticket[0].get('content')
     created_time = ticket[0].get('created_time')
     created_time = time_str_to_utc_time(created_time).isoformat()
     whole_ticket_data = {
+        'state': state,
         'title': title,
         'content': content,
         'created_time': created_time,
@@ -514,6 +517,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
 
     Returns:
     {
+        "state": ...,
         "title": ...,
         "content": ...,
         "created_at": ...,
@@ -539,6 +543,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
         issue_data = issues[0]
 
         title = issue_data.get('title', '')
+        state = issue_data.get('state', '')
         content = issue_data.get('content', '')
         created_at = issue_data.get('created_time', '')
         github_issue_id = issue_data.get('issue_id', '')
@@ -553,6 +558,7 @@ def get_whole_issue_data(project_uuid, issue_id, connection_id):
                 logger.warning(e)
 
         whole_issue_data = {
+            'state': state,
             'title': title,
             'content': content,
             'created_at': created_at,
