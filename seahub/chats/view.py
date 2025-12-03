@@ -308,16 +308,22 @@ class ChatView(APIView):
                 continue
 
             try:
+                connection_id = int(connection_id)
+            except:
+                logger.warning(f'Invalid connection_id: {connection_id}')
+                continue
+
+            try:
                 issue_id = int(issue_id)
             except:
-                error_msg = 'issue_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                logger.warning(f'Invalid issue_id: {issue_id}')
+                continue
 
             try:
                 issue_data = get_whole_issue_data(project_uuid, issue_id, connection_id)
             except IssueNotFound:
-                error_msg = 'issue not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                logger.warning(f'Issue not found, issue_id: {issue_id}')
+                continue
 
             extra_contents.append({
                 'type': 'issue',
@@ -336,8 +342,8 @@ class ChatView(APIView):
             try:
                 ticket_data = get_whole_ticket_data(project_uuid, ticket_id)
             except TicketNotFound:
-                error_msg = 'ticket not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                logger.warning(f'Ticket not found, ticket_id: {ticket_id}')
+                continue
 
             extra_contents.append({
                 'type': 'ticket',
