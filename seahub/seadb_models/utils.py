@@ -394,7 +394,12 @@ def init_email_seadb_table(seadb_api, project_uuid, connection_id):
             mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
-    index_column_names = [ThreadTable.title.name, ThreadTable.modified_time.name]
+    index_column_names = [
+        ThreadTable.title.name,
+        ThreadTable.modified_time.name,
+        ThreadTable.deleted.name,
+        ThreadTable.sync_time.name
+    ]
 
     for column_name in index_column_names:
         seadb_api.create_column_index(
