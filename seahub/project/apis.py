@@ -17,7 +17,7 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, get_project_related_users, \
     query_items
-from seahub.project.constants import ITEM_SERACH_QUERY_TYPES_SUPPORT
+from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -78,7 +78,7 @@ class ProjectItemsSearchView(APIView):
         if not query_str:
             error_msg = 'query invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if query_type not in ITEM_SERACH_QUERY_TYPES_SUPPORT:
+        if query_type not in ITEMS_SEARCH_QUERY_TYPES_SUPPORT:
             error_msg = 'query type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         try:
