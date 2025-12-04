@@ -7,11 +7,11 @@ import { TicketForAI } from '@/project/main-panel/tickets/models';
 
 import './index.css';
 
-const AddTickets = ({ projectUuid, value: tickets = [], onChange: propsOnChange }) => {
+const AddTickets = ({ projectUuid, value: attachments = [], onChange: propsOnChange }) => {
   const [isShowSelector, setIsShowSelector] = useState(false);
 
   const ref = useRef();
-  const ticketsRef = useRef([]);
+  const attachmentsRef = useRef([]);
 
   const openSelector = useCallback(() => {
     setIsShowSelector(true);
@@ -20,9 +20,9 @@ const AddTickets = ({ projectUuid, value: tickets = [], onChange: propsOnChange 
   const onSearch = useCallback((value, signal) => {
     return ticketsAPI.listProjectTicketsBySearch(projectUuid, value, signal).then(res => {
       const newTickets = Array.isArray(res.data.tickets) ? res.data.tickets.map(t => new TicketForAI(t)) : [];
-      ticketsRef.current = [...tickets, ...newTickets];
+      attachmentsRef.current = [...attachments, ...newTickets];
       return newTickets.map(t => ({
-        value: t._id,
+        value: t.key,
         label: (
           <div className="sea-qa-ai-chat-tool-select-ticket-item">
             <Icon symbol="all-tickets" className="mr-2" />
@@ -34,11 +34,11 @@ const AddTickets = ({ projectUuid, value: tickets = [], onChange: propsOnChange 
         ),
       }));
     });
-  }, [projectUuid, tickets]);
+  }, [projectUuid, attachments]);
 
-  const onChange = useCallback((newTicketIds) => {
-    const newTickets = newTicketIds.map(tid => ticketsRef.current.find(t => t._id === tid));
-    propsOnChange && propsOnChange(newTickets);
+  const onChange = useCallback((newAttachmentKeys) => {
+    const newAttachments = newAttachmentKeys.map(key => attachmentsRef.current.find(t => t.key === key));
+    propsOnChange && propsOnChange(newAttachments);
   }, [propsOnChange]);
 
   const onToggle = useCallback(() => {
@@ -65,7 +65,7 @@ const AddTickets = ({ projectUuid, value: tickets = [], onChange: propsOnChange 
           checkPlacement="left"
           placeholder={gettext('Search ticket')}
           emptyTip={gettext('No tickets')}
-          value={Array.isArray(tickets) ? tickets.map(t => t._id) : []}
+          value={Array.isArray(attachments) ? attachments.map(t => t.key) : []}
           onChange={onChange}
           onToggle={onToggle}
           onSearch={onSearch}

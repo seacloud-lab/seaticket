@@ -6,6 +6,7 @@ class IssueForAI {
     this.connection_id = object.connection_id || '';
     this.url = object.url;
     this.type = 'issue';
+    this.key = `${this.type}__${this._id}`;
   }
 }
 
