@@ -12,7 +12,10 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import {
+  CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings,
+  StateSettings, SubStateSettings,
+} from '../../components/ticket-settings';
 import Comment from '../../components/comment';
 import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
@@ -153,6 +156,24 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
 
   const onAssigneesChange = useCallback((assignees = []) => {
     modifyTicket(ticket.id, { assignees }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
+  const onStateChange = useCallback((state = '', substate = '') => {
+    modifyTicket(ticket.id, { state, substate }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
+  const onSubstateChange = useCallback((substate) => {
+    modifyTicket(ticket.id, { substate }).then(res => {
       // todo
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -381,6 +402,8 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
+          <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
+          <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
