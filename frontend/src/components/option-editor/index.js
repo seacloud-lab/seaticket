@@ -9,6 +9,9 @@ const OptionsEditor = ({
   target,
   isMultiple = false,
   isSearchEnabled = true,
+  checkPlacement = 'right',
+  optionClassName = '',
+  contentClassName = '',
   placeholder,
   emptyTip,
   value,
@@ -40,6 +43,9 @@ const OptionsEditor = ({
         isMultiple={isMultiple}
         placeholder={placeholder}
         isSearchEnabled={isSearchEnabled}
+        checkPlacement={checkPlacement}
+        optionClassName={optionClassName}
+        className={contentClassName}
         emptyTip={emptyTip}
         value={value}
         options={options}
