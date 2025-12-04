@@ -12,10 +12,10 @@ import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-
-import './index.css';
 import { IssueForAI } from '../../connections/models';
 import { TicketForAI } from '../../tickets/models';
+
+import './index.css';
 
 const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, workspaceID }) => {
   const [isReply, setReply] = useState(false);
