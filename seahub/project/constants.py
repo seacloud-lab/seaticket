@@ -336,3 +336,8 @@ class ConnectionCategory:
 
 ISSUE_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.ISSUE]
 DOCUMENT_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.DOCUMENT]
+
+
+ITEM_SERACH_QUERY_TYPES_SUPPORT = [
+    'project'
+]

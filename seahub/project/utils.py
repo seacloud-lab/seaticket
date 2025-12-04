@@ -10,7 +10,7 @@ from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    StatsAIByTeam, StatsAIByOwner
+    StatsAIByTeam, StatsAIByOwner, Workspaces
 from seahub.chats.models import ChatSessions
 from seahub.chats.utils import delete_session
 from seahub.tickets.models import TicketViews
@@ -25,6 +25,7 @@ from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
+from seahub.group.utils import get_user_groups, group_id_to_name
 from seahub.api2.utils import get_user_common_info
 
 from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
@@ -525,3 +526,41 @@ def get_embedding_analysis_task_status(task_id):
         'is_finished': is_finished,
         'records': records
     }
+
+
+def get_all_available_projects(request):
+    username = request.user.username
+    groups = get_user_groups(username, return_ancestors=True)
+    owner_list = [username] + ['%s@seafile_group' % group.group_id for group in groups]
+    workspaces = Workspaces.objects.filter(owner__in=owner_list)
+    projects = []
+    projects_qs = Projects.objects.filter(workspace__in=workspaces, deleted=False)
+    for project in projects_qs:
+        info = project.to_dict()
+        owner = project.workspace.owner
+        if '@seafile_group' in owner:
+            group_id = int(owner.split('@')[0])
+            info['group_name'] = group_id_to_name(group_id)
+            info['type'] = 'group'
+        else:
+            info['group_name'] = 'personal'
+            info['type'] = 'personal'
+        projects.append(info)
+    return projects
+
+
+def query_projects(request, query_str):
+    all_projects = get_all_available_projects(request)
+    query_result = []
+    query_str = query_str.lower()
+    for p in all_projects:
+        name = (p.get('name') or '').lower()
+        if query_str in name:
+            query_result.append(p)
+    return query_result
+
+
+def query_items(request, query_str, query_type):
+    if query_type == 'project':
+        return query_projects(request, query_str)
+    return []

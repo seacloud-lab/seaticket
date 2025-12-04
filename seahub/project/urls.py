@@ -3,7 +3,7 @@ from django.urls import re_path
 
 from .views import project_view
 
-from .apis import ProjectRelatedUsersView
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView
@@ -32,6 +32,9 @@ urlpatterns = [
 
     # user: related users
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/related-users/$', ProjectRelatedUsersView.as_view(), name='api-v2.1-project-related-users'),
+
+    # project: items search
+    re_path(r'^api/v2.1/project/items-search/$', ProjectItemsSearchView.as_view(), name='api-v2.1-project-items-search'),
 
     # API tokens
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/api-tokens/$', ProjectAPITokensView.as_view(), name='api-v2.1-project-api-tokens'),
