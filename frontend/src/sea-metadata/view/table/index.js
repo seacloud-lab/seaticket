@@ -127,8 +127,8 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
   }, [metadata, rowGetterById]);
 
   const groupRowGetter = useCallback((groupRowIndex) => {
-    if (!window.seaTableBody || !window.seaTableBody.getGroupRowByIndex) return null;
-    const groupRow = window.seaTableBody.getGroupRowByIndex(groupRowIndex);
+    if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupRowByIndex) return null;
+    const groupRow = window.seaMetadataBody.getGroupRowByIndex(groupRowIndex);
     const rowId = groupRow.rowId;
     return rowId && rowGetterById(rowId);
   }, [rowGetterById]);

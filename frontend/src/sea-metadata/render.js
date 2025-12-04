@@ -129,7 +129,7 @@ const SeaMetadata = forwardRef(({
       const metadata = mainRef.current.getData();
       const validGroupbys = getValidGroupbys(metadata.view.groupbys, metadata.columns);
       if (validGroupbys.length > 0) {
-        const groupMetrics = window.seaTableBody.getGroupMetrics();
+        const groupMetrics = window.seaMetadataBody.getGroupMetrics();
         const { groupRows } = groupMetrics;
         const ids = groupRows.filter(r => r.type === 'row').map(r => r.rowId);
         return getRowsByIds(metadata, ids);

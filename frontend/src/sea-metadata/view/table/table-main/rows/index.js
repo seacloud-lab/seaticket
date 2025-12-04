@@ -430,10 +430,10 @@ class Rows extends Component {
     const { lastRowIdxUiSelected, rowMetrics } = this.state;
     let selectedRowIds = [];
     if (isGroupView) {
-      if (!window.seaTableBody || !window.seaTableBody.getGroupMetrics) {
+      if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupMetrics) {
         return;
       }
-      const groupMetrics = window.seaTableBody.getGroupMetrics();
+      const groupMetrics = window.seaMetadataBody.getGroupMetrics();
       const { groupRows } = groupMetrics;
       const groupRowIndexes = [groupRowIndex, lastRowIdxUiSelected.groupRowIndex].sort((a, b) => a - b);
       for (let i = groupRowIndexes[0]; i <= groupRowIndexes[1]; i++) {
@@ -536,10 +536,10 @@ class Rows extends Component {
     let updatedRowMetrics = { ...rowMetrics };
     let selectedRowIds = [];
     if (isGroupView) {
-      if (!window.seaTableBody || !window.seaTableBody.getGroupMetrics) {
+      if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupMetrics) {
         return;
       }
-      const groupMetrics = window.seaTableBody.getGroupMetrics();
+      const groupMetrics = window.seaMetadataBody.getGroupMetrics();
       const { groupRows } = groupMetrics;
       groupRows.forEach(groupRow => {
         const { type } = groupRow;

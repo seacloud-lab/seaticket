@@ -108,7 +108,7 @@ const Cell = ({
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     updateDragOverKey(column.key);
-    if (!window.seaTableBody) return;
+    if (!window.seaMetadataBody) return;
     let defaultColumnWidth = 200;
     const offsetX = event.clientX;
     const width = document.querySelector('#sea-metadata-wrapper')?.clientWidth;
@@ -117,11 +117,11 @@ const Cell = ({
       defaultColumnWidth = 20;
     }
     if (offsetX > window.innerWidth - defaultColumnWidth) {
-      window.seaTableBody.scrollToRight();
+      window.seaMetadataBody.scrollToRight();
     } else if (offsetX < frozenColumnsWidth + defaultColumnWidth + left) {
-      window.seaTableBody.scrollToLeft();
+      window.seaMetadataBody.scrollToLeft();
     } else {
-      window.seaTableBody.clearHorizontalScroll();
+      window.seaMetadataBody.clearHorizontalScroll();
     }
   }, [column, frozenColumnsWidth, updateDragOverKey, draggingColumnKey]);
 
@@ -141,7 +141,7 @@ const Cell = ({
   const onDragEnd = useCallback(() => {
     updateDraggingKey(null);
     updateDragOverKey(null);
-    window.seaTableBody.clearHorizontalScroll();
+    window.seaMetadataBody.clearHorizontalScroll();
   }, [updateDraggingKey, updateDragOverKey]);
 
   const onDropDownToggle = useCallback(() => {
