@@ -23,37 +23,36 @@ const StateSettings = ({
 
   const options = useMemo(() => {
     if (isLoading) return [];
-    const openOption = TICKET_STATE_OPTIONS.find(o => o.id === '0001');
-    const closedOption = TICKET_STATE_OPTIONS.find(o => o.id === '0002');
-    const openSubstates = substatesData.rows.filter(r => r.parent_id === '0001');
-    const cloedSubstates = substatesData.rows.filter(r => r.parent_id === '0002');
-
-    const openSubstateOptions = openSubstates.map(substate => {
+    const currentStateOption = TICKET_STATE_OPTIONS.find(o => o.id === state);
+    const otherStateOption = TICKET_STATE_OPTIONS.find(o => o.id !== state);
+    const currentSubstates = substatesData.rows.filter(r => r.parent_id === state);
+    const otherSubstates = substatesData.rows.filter(r => r.parent_id !== state);
+    const currentSubstateOptions = currentSubstates.map((substate) => {
       return {
-        value: openOption.id + '__' + substate._id,
+        value: currentStateOption.id + '__' + substate._id,
         label: (
           <div>
-            <Option option={openOption} />
+            <Option option={currentStateOption} />
             <span className="mx-2">{'-'}</span>
             <Option option={substate} />
           </div>
         )
       };
     });
-    const closedSubstateOptions = cloedSubstates.map(substate => {
+    const otherSubstateOptions = otherSubstates.map((substate) => {
       return {
-        value: closedOption.id + '__' + substate._id,
+        value: otherStateOption.id + '__' + substate._id,
         label: (
-          <div className="sea-qa-ticket-state-substate-option">
-            <Option option={closedOption} />
+          <div>
+            <Option option={otherStateOption} />
             <span className="mx-2">{'-'}</span>
             <Option option={substate} />
           </div>
         )
       };
     });
-    return [...openSubstateOptions, ...closedSubstateOptions];
-  }, [isLoading, substatesData.rows]);
+    return [...otherSubstateOptions, ...currentSubstateOptions];
+  }, [isLoading, state, substatesData.rows]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
