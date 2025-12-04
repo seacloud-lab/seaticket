@@ -1,1 +1,5 @@
 @import url('../option-editor/index.css');
+
+.sync-option-editor-popover.option-editor-popover .option-editor-content .option-editor-option.check-placement-left {
+  padding-left: 6px !important;
+}

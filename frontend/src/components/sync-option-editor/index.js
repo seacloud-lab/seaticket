@@ -8,6 +8,9 @@ import './index.css';
 const SyncOptionsEditor = ({
   target,
   isMultiple = false,
+  checkPlacement = 'right',
+  optionClassName = '',
+  contentClassName = '',
   placeholder,
   emptyTip,
   value,
@@ -29,7 +32,7 @@ const SyncOptionsEditor = ({
   return (
     <CustomizePopover
       target={target}
-      className={classnames('option-editor-popover', className)}
+      className={classnames('option-editor-popover sync-option-editor-popover', className)}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
     >
@@ -39,6 +42,9 @@ const SyncOptionsEditor = ({
         placeholder={placeholder}
         emptyTip={emptyTip}
         value={value}
+        checkPlacement={checkPlacement}
+        optionClassName={optionClassName}
+        className={contentClassName}
         onChange={onChange}
         onToggle={onToggle}
         onSearch={onSearch}

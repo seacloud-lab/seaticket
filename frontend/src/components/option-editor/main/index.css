@@ -33,7 +33,6 @@
 }
 
 .option-editor-popover .option-editor-content .option-editor-option {
-  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -71,4 +70,19 @@
   width: 12px;
   margin-right: 10px;
   flex-shrink: 0;
+}
+
+/* check placement left */
+.option-editor-popover .option-editor-content .option-editor-option.check-placement-left {
+  padding-left: 0px !important;
+  justify-content: flex-start;
+}
+
+.option-editor-popover .option-editor-content .option-editor-option.check-placement-left .sea-qa-icon-btn {
+  margin: 0 2px;
+}
+
+.option-editor-popover .option-editor-content .option-editor-option.check-placement-left .sea-qa-icon-btn .sea-qa-icon-svg {
+  height: 14px;
+  width: 14px;
 }

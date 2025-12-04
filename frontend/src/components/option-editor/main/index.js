@@ -15,6 +15,9 @@ import './index.css';
 const Main = forwardRef(({
   isMultiple = false,
   isSearchEnabled = true,
+  checkPlacement = 'right',
+  className,
+  optionClassName,
   placeholder,
   emptyTip = gettext('No options available'),
   value: propsValue = '',
@@ -36,6 +39,7 @@ const Main = forwardRef(({
   const displayOptionsRef = useRef(null);
 
   const maxItemNum = useMemo(() => Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1, [maxHeight, optionHeight]);
+  const validCheckPlacement = useMemo(() => checkPlacement === 'left' ? 'left' : 'right', [checkPlacement]);
 
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
@@ -182,7 +186,7 @@ const Main = forwardRef(({
   }), [value]);
 
   return (
-    <div className="option-editor-container">
+    <div className={classnames('option-editor-container', className)}>
       {children && (
         <div className="option-editor-selected-value-wrapper">
           {children}
@@ -214,14 +218,26 @@ const Main = forwardRef(({
               const isSelected = value && value.includes(option.value);
               return (
                 <div
-                  className="option-editor-option"
+                  className={classnames('option-editor-option', optionClassName, {
+                    'active': highlightIndex === i,
+                    [`check-placement-${validCheckPlacement}`]: validCheckPlacement
+                  })}
                   key={option.value}
                   onClick={() => toggleOption(option.value)}
                   onMouseEnter={() => onMenuMouseEnter(i)}
                   onMouseLeave={() => onMenuMouseLeave(i)}
                 >
-                  {option.label ? option.label : (<Option option={option} />)}
-                  <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                  {validCheckPlacement === 'right' ? (
+                    <>
+                      {option.label ? option.label : (<Option option={option} />)}
+                      <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                    </>
+                  ) : (
+                    <>
+                      <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                      {option.label ? option.label : (<Option option={option} />)}
+                    </>
+                  )}
                 </div>
               );
             })}
