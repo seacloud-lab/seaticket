@@ -1,0 +1,42 @@
+.sea-qa-ai-chat-attachment {
+  height: 32px;
+  max-width: 240px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid #d1d9e0b3;
+  border-radius: 6px;
+  background-color: #FFF;
+  flex-shrink: 0;
+}
+
+.sea-qa-ai-chat-attachment:hover {
+  cursor: pointer;
+  background-color: #F5F5F5;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-icon-svg-all-tickets {
+  color: #666;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove {
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  margin-right: 0;
+  flex-shrink: 0;
+  line-height: 20px;
+  display: inline-flex;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove:hover {
+  background-color: #E5E5E5 !important;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove .sea-qa-icon-svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 0;
+  color: #666;
+}

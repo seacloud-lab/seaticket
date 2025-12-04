@@ -11,6 +11,7 @@ export const CHAT_MESSAGE_TYPE = {
   IMAGE: 'image',
   SOURCES: 'sources',
   THOUGHT_PROCESS: 'thought_process',
+  ATTACHMENTS: 'attachments',
 };
 
 export const CHAT_MESSAGE_FILE_TYPES = [

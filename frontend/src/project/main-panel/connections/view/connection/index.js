@@ -24,6 +24,7 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { IssueForAI } from '../../models';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -44,7 +45,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [rerankedIssues, setRerankedIssues] = useState([]);
   const [isLoadingRelatedIssues, setIsLoadingRelatedIssues] = useState(false);
 
-  const { updateIssues } = useAIChatTools();
+  const { updateAttachments } = useAIChatTools();
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -173,10 +174,9 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleResolveIssueByAI = useCallback((issues = []) => {
     if (!Array.isArray(issues) || issues.length === 0 || !connectionID) return;
-    const newIssues = issues.map(issue => ({ ...issue, connection_id: connectionID }));
-    updateIssues(newIssues, AI_RESOLVE_TYPE.AGENT);
+    updateAttachments(issues, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connectionID, toggleBar, updateIssues]);
+  }, [connectionID, toggleBar, updateAttachments]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
@@ -220,7 +220,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generateAIOptions = useCallback(({ rows, columns }) => {
+  const generateAIOptions = useCallback(({ rows }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
     if (!enableUseAI) return null;
 
@@ -230,14 +230,20 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         key: 'chat_issues',
         callback: () => {
           let newRows = [];
-          let titleColumn = getColumnByName(columns, 'title');
+          const titleColumn = getColumnByName(allColumns.current, 'title');
+          const stateColumn = getColumnByName(allColumns.current, 'state');
+          const urlColumn = getColumnByName(allColumns.current, 'url');
+
           if (!titleColumn) return;
           rows.forEach(row => {
             const newRow = {
               _pk: row._id,
               title: getCellValueByColumn(row, titleColumn),
+              state: getCellValueByColumn(row, stateColumn),
+              url: getCellValueByColumn(row, urlColumn),
+              connection_id: connectionID,
             };
-            newRows.push(newRow);
+            newRows.push(new IssueForAI(newRow));
           });
           handleResolveIssueByAI(newRows);
         }
@@ -251,7 +257,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
       label: gettext('AI'),
       children
     };
-  }, [connection, handleResolveIssueByAI]);
+  }, [connection, connectionID, handleResolveIssueByAI]);
 
   const generateOpenOriginalPageOption = useCallback(({ row }) => {
     const url = getOriginalPageUrl(connection, row, allColumns.current);

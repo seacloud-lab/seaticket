@@ -1,11 +1,15 @@
-.sea-qa-ai-chat-tool-select-ticket-item {
+.sea-qa-ai-chat-tool-ai-model-select-editor .sea-qa-ai-chat-tool-select-ticket-item {
   flex: 1;
   overflow: hidden;
   display: flex;
   align-items: center;
 }
 
-.sea-qa-ai-chat-tool-select-ticket-item .sea-qa-icon-svg-all-tickets {
+.sea-qa-ai-chat-tool-ai-model-select-editor .sea-qa-ai-chat-tool-select-ticket-item .sea-qa-icon-svg-all-tickets {
   color: #666;
   flex-shrink: 0;
+}
+
+.sea-qa-ai-chat-tool-ai-model-select-editor .option-editor-option:hover .sea-qa-icon-svg-all-tickets {
+  color: #FFF;
 }

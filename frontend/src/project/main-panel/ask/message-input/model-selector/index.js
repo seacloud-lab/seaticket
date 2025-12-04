@@ -1,14 +1,20 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { Icon, IconButton, CustomizePopover } from '@/components';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import { Icon, OptionEditor } from '@/components';
 
-import './index.css';
+const LLM_MODELS = window.app?.pageOptions?.llmModels || [];
 
 const ModelSelector = ({ selectedModel, updateModel }) => {
   const [isShowMenu, setIsShowMenu] = useState(false);
 
   const ref = useRef(null);
 
-  const LLM_MODELS = window.app?.pageOptions?.llmModels || [];
+  const options = useMemo(() => {
+    return LLM_MODELS.map(model => ({
+      label: model.label,
+      value: model.model,
+      default: model.default,
+    }));
+  }, []);
 
   useEffect(() => {
     if (!selectedModel && LLM_MODELS.length > 0) {
@@ -29,17 +35,8 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
     setIsShowMenu(true);
   }, []);
 
-  const handleClose = useCallback(() => {
-    setIsShowMenu(false);
-  }, []);
-
-  if (LLM_MODELS.length === 0) {
-    return null;
-  }
-
-  const currentModel = LLM_MODELS.find(m => m.model === selectedModel);
-  const defaultModel = LLM_MODELS.find(m => m.default === true);
-  const fallbackModel = defaultModel || LLM_MODELS[0];
+  if (LLM_MODELS.length === 0) return null;
+  const value = options.find(m => m.model === selectedModel) || options.find(m => m.default === true) || options[0];
 
   return (
     <>
@@ -49,33 +46,21 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
         onClick={onMenuToggle}
       >
         <div className="selected-option">
-          <div className="selected-option-show">{currentModel?.label || fallbackModel?.label}</div>
+          <div className="selected-option-show">{value?.label}</div>
           <Icon symbol="down" />
         </div>
       </div>
       {isShowMenu && (
-        <CustomizePopover
+        <OptionEditor
+          className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-chat-ai-model-type-select-editor "
+          options={options}
           target={ref}
-          className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-model-selector-editor"
-          hidePopover={handleClose}
-          hidePopoverWithEsc={handleClose}
-        >
-          <div className="sea-qa-ai-model-selector-options">
-            {LLM_MODELS.map((model) => {
-              const isSelected = selectedModel === model.model;
-              return (
-                <div
-                  key={model.model}
-                  className="sea-qa-ai-model-selector-option"
-                  onClick={() => updateModelChange(model.model)}
-                >
-                  <span>{model.label}</span>
-                  <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
-                </div>
-              );
-            })}
-          </div>
-        </CustomizePopover>
+          checkPlacement="left"
+          isSearchEnabled={false}
+          value={selectedModel}
+          onChange={updateModelChange}
+          onToggle={() => setIsShowMenu(false)}
+        />
       )}
     </>
   );

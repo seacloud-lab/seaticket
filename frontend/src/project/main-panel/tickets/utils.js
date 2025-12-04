@@ -10,6 +10,7 @@ import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import ObjectUtils from '@/utils/object-utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
+import { TicketForAI } from './models';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -100,7 +101,7 @@ export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsBy
                   [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
                   _pk: row._id,
                 };
-                newRows.push(newRow);
+                newRows.push(new TicketForAI(newRow));
               });
               chatTicketsByAI(newRows);
             },
@@ -208,7 +209,7 @@ export const generatorTicketsContextMenuOptions = ({
         [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
         _pk: row._id,
       };
-      newRows.push(newRow);
+      newRows.push(new TicketForAI(newRow));
     });
     chatTicketsByAI(newRows);
   };

@@ -21,7 +21,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
   const { isLoading: isMetadataLoading, substatesData, typesData, tagsData } = useMetadata();
 
-  const { updateTickets } = useAIChatTools();
+  const { updateAttachments } = useAIChatTools();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -105,9 +105,9 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
   const chatTicketsByAI = useCallback((tickets) => {
-    updateTickets(tickets, AI_RESOLVE_TYPE.AGENT);
+    updateAttachments(tickets, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateTickets]);
+  }, [toggleBar, updateAttachments]);
 
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];

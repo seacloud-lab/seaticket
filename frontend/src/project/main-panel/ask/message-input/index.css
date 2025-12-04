@@ -158,3 +158,22 @@
 .sea-qa-ai-chat-tool-type-select-editor .popover.bs-popover-auto[data-popper-placement^=bottom-start] {
   top: -8px !important;
 }
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-content:not(.empty) {
+  min-height: fit-content;
+  padding: 8px 0 !important;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover {
+  background-color: #20a0ff !important;
+  color: #fff !important;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option .sea-qa-icon-btn .sea-qa-icon-svg-check {
+  height: 14px;
+  width: 14px;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover .sea-qa-icon-btn .sea-qa-icon-svg-check {
+  color: #fff !important;
+}

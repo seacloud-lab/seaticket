@@ -59,9 +59,10 @@ const AddTickets = ({ projectUuid, value: tickets = [], onChange: propsOnChange 
       </div>
       {isShowSelector && (
         <SyncOptionsEditor
-          className="sea-qa-ai-chat-tool-type-select-editor"
+          className="sea-qa-ai-chat-tool-type-select-editor sea-qa-ai-chat-tool-ai-model-select-editor"
           target={ref}
           isMultiple={true}
+          checkPlacement="left"
           placeholder={gettext('Search ticket')}
           emptyTip={gettext('No tickets')}
           value={Array.isArray(tickets) ? tickets.map(t => t._id) : []}

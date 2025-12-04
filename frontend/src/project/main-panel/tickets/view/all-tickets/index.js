@@ -22,7 +22,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
   const { tagsData, createTag, typesData, createType, substatesData, createSubstate,
     isLoading: isMetadataLoading } = useMetadata();
   const { cachedData, cacheData, clearCacheData } = useDataCache();
-  const { updateTickets } = useAIChatTools();
+  const { updateAttachments } = useAIChatTools();
 
   const metadataRef = useRef(null);
   const currentTime = useRef(new Date());
@@ -196,9 +196,9 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
   }, []);
 
   const chatTicketsByAI = useCallback((tickets) => {
-    updateTickets(tickets, AI_RESOLVE_TYPE.AGENT);
+    updateAttachments(tickets, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateTickets]);
+  }, [toggleBar, updateAttachments]);
 
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let tools = [];

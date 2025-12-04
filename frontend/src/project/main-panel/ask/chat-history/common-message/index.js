@@ -12,6 +12,7 @@ import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../../connections/constants';
 import { gettext } from '@/constants';
+import Attachments from '../attachments';
 
 import './index.css';
 
@@ -194,6 +195,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
 
   return (
     <>
+      <Attachments value={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} />
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}

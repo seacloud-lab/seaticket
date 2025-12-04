@@ -12,7 +12,7 @@ import ResolveType from './resolve-type';
 import AddTickets from './add-tickets';
 import { useAIChatTools } from '../hooks';
 import ModelSelector from './model-selector';
-import ToolsFormatter from './tools-formatter';
+import AttachmentsFormatter from './attachments';
 
 import './index.css';
 
@@ -34,9 +34,8 @@ const MessageInput = forwardRef(({
   const previewContentRef = useRef(null);
 
   const {
-    tickets, issues, resolveType,
-    clearProblems, updateResolveType, resetResolveType, updateTickets,
-    removeIssue, removeTicket,
+    attachments, updateAttachments, removeAttachment, clearAttachments,
+    resolveType, updateResolveType, resetResolveType,
   } = useAIChatTools();
 
   const onPaste = useCallback((event) => {
@@ -86,11 +85,11 @@ const MessageInput = forwardRef(({
     sendMessage({
       resolveType,
       message: value,
-      tickets: tickets.map(t => t._id),
-      issues: issues.map(i => ({ issue_id: i._id, connection_id: i.connection_id })),
-      model: selectedModel });
-    clearProblems();
-  }, [resolveType, value, tickets, issues, selectedModel, sendMessage, clearProblems]);
+      attachments,
+      model: selectedModel
+    });
+    clearAttachments();
+  }, [resolveType, value, attachments, selectedModel, sendMessage, clearAttachments]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -175,7 +174,7 @@ const MessageInput = forwardRef(({
 
   useEffect(() => {
     return () => {
-      clearProblems();
+      clearAttachments();
       resetResolveType();
     };
   }, []);
@@ -186,8 +185,7 @@ const MessageInput = forwardRef(({
     <div className={classnames('sea-qa-ai-ask-chat-input-wrapper', { 'disabled': disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classnames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
-          <ToolsFormatter value={issues} onRemove={removeIssue} />
-          <ToolsFormatter value={tickets} onRemove={removeTicket} />
+          <AttachmentsFormatter value={attachments} onRemove={removeAttachment} />
           <div className="sea-qa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
@@ -208,7 +206,7 @@ const MessageInput = forwardRef(({
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
-              <AddTickets projectUuid={projectUuid} value={tickets} onChange={updateTickets} />
+              <AddTickets projectUuid={projectUuid} value={attachments} onChange={updateAttachments} />
               <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
