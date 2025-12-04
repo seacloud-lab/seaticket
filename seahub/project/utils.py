@@ -266,6 +266,19 @@ def convert_record_to_ticket(params):
     return title, content
 
 
+def rank_related_issues(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/rank-related-issues')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception(f'rank related records error status: {resp.status_code} body: {resp.text}')
+    resp_json = resp.json()
+    ranked_ids = resp_json.get('ranked_ids', [])
+    return ranked_ids
+
+
 def gen_s3_file_path(project_uuid, file_path):
     return f'/projects/{project_uuid}/{file_path}'
 

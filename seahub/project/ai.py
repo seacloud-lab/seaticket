@@ -19,7 +19,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, \
     convert_record_to_ticket, check_ai_limit, \
     submit_embedding_analysis_task, get_embedding_analysis_task_status, \
-    find_related_records
+    find_related_records, rank_related_issues
 from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -321,13 +321,15 @@ class RelatedRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         seadb_api = SeaDBAPI(username)
         project_uuid_32 = uuid_str_to_32_chars(project_uuid)
-        sql = f"SELECT ai_summary_vector FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
+
+        sql = f"SELECT ai_summary_vector, title, ai_summary FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
         result = seadb_api.query_rows(project_uuid_32, sql)
         if not result['results'] or not result['results'][0].get('ai_summary_vector'):
             error_msg = 'NO AI summary vector.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        target_vector = result['results'][0]['ai_summary_vector']
+        query_record = result['results'][0]
+        target_vector = query_record['ai_summary_vector']
 
         project_connections = ProjectConnections.objects.filter(
             project=project,
@@ -490,10 +492,49 @@ class RelatedRecordsView(APIView):
 
                 processed_results.append(processed_result)
 
+            reranked_results = []
+            if processed_results:
+                top_candidates = processed_results[:25]
+
+                query_record_info = {
+                    'title': query_record.get('title', ''),
+                    'ai_summary': query_record.get('ai_summary', '')
+                }
+
+                candidate_records = []
+                for candidate in top_candidates:
+                    candidate_records.append({
+                        '_id': candidate['_id'],
+                        'connection_id': candidate['connection_id'],
+                        'title': candidate.get('title', ''),
+                        'ai_summary': candidate.get('ai_summary', '')
+                    })
+
+                org_id = request.user.org.org_id if hasattr(request.user, 'org') else -1
+
+                rerank_params = {
+                    'query_record': query_record_info,
+                    'candidate_records': candidate_records,
+                    'username': username,
+                    'org_id': org_id
+                }
+
+                reranked_keys = rank_related_issues(rerank_params)
+
+                if reranked_keys:
+                    key_to_result = {f'{r['_id']}:{r['connection_id']}': r for r in top_candidates}
+                    for reranked_key in reranked_keys:
+                        if reranked_key in key_to_result:
+                            reranked_results.append(key_to_result[reranked_key])
+                else:
+                    reranked_results = top_candidates
+
         except Exception as e:
             logger.error(f"Error calling vector search indexer: {e}")
             error_msg = 'Error calling vector search indexer.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         return Response({
             'related_records': processed_results,
+            'reranked_records': reranked_results,
         })
