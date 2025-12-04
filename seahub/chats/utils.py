@@ -181,6 +181,7 @@ def format_extra_contents(extra_contents):
                 'issue_id': extra_content['issue_id'],
                 'connection_id': extra_content['connection_id'],
                 'state': extra_content['state'],
-                'title': extra_content['title']
+                'title': extra_content['title'],
+                'url': extra_content['title']
             })
     return new_extra_contents

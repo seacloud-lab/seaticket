@@ -107,6 +107,7 @@ class GitHubSeaDBAPI:
                     'state': issue_data.get('state'),
                     'title': issue_data.get('title'),
                     'content': issue_data.get('content'),
+                    'url': issue_data.get('url'),
                     'created_at': issue_data.get('created_time'),
                     'comments': []
                 }
