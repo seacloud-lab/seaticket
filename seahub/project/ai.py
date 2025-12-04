@@ -516,7 +516,8 @@ class RelatedRecordsView(APIView):
                     'query_record': query_record_info,
                     'candidate_records': candidate_records,
                     'username': username,
-                    'org_id': org_id
+                    'org_id': org_id,
+                    'project_uuid': project_uuid,
                 }
 
                 reranked_keys = rank_related_issues(rerank_params)
