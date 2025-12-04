@@ -49,7 +49,7 @@ class GroupBody extends Component {
   }
 
   componentDidMount() {
-    window.seaTableBody = this;
+    window.seaMetadataBody = this;
     window.addEventListener('resize', this.onResize);
     this.props.onRef(this);
     this.unSubscribeCollapseAllGroups = context.eventBus.subscribe(EVENT_BUS_TYPE.COLLAPSE_ALL_GROUPS, this.collapseAllGroups);

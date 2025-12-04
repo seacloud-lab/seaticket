@@ -8,6 +8,7 @@ import { GROUP_VIEW_OFFSET } from '../../../constants';
 import './index.css';
 
 const TableMain = ({
+  isGroupView,
   metadata, tagsData, collaborators,
   modifyRow, modifyRows, loadMore, searchResult, rowGetterByIndex, rowGetterById, insertColumn,
   modifyColumnData, updateFileTags,
@@ -26,9 +27,10 @@ const TableMain = ({
   }, [metadata, modifyRow, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData, updateFileTags]);
 
   const groupbysCount = useMemo(() => {
+    if (!isGroupView) return 0;
     const groupbys = metadata?.view?.groupbys || [];
     return groupbys.length;
-  }, [metadata]);
+  }, [metadata, isGroupView]);
 
   const groupOffset = useMemo(() => {
     return groupbysCount * GROUP_VIEW_OFFSET;
@@ -59,6 +61,7 @@ const TableMain = ({
   return (
     <div className={classnames('sea-metadata-table-main-container container-fluid p-0', { [`group-level-${groupbysCount + 1}`]: groupbysCount > 0 })}>
       <Rows
+        isGroupView={isGroupView}
         columns={columns}
         rowIds={metadata.view.rows || []}
         groups={metadata.view.groups}

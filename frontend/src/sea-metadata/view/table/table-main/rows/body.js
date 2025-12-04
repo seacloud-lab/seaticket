@@ -38,7 +38,7 @@ class RowsBody extends Component {
 
   componentDidMount() {
     this.props.onRef(this);
-    window.seaTableBody = this;
+    window.seaMetadataBody = this;
     this.unsubscribeFocus = context.eventBus.subscribe(EVENT_BUS_TYPE.FOCUS_CANVAS, this.onFocus);
   }
 
