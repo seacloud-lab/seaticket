@@ -40,9 +40,6 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
       pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.NEW;
     }
-    if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
-    }
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       const searchParams = Utils.getUrlSearches();
