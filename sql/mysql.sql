@@ -595,9 +595,10 @@ CREATE TABLE `stats_ai_by_project` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `project_date_model_username_uniq_key` (`project_uuid`,`date`,`model`,`username`),
-  KEY `date_org_id_key` (`date`,`org_id`)
+  KEY `project_uuid_date_key` (`project_uuid`,`date`),
+  KEY `date_org_id_username_key` (`date`,`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 CREATE TABLE `chat_tool_calls` (
   `id` bigint(11) NOT NULL AUTO_INCREMENT,
