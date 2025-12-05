@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, ModalBody, Nav, NavItem, NavLink } from 'reactstrap';
+import React from 'react';
+import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ModalHeader } from '@/components';
 import { getPreviewContent } from '@seafile/seafile-editor';
@@ -14,10 +14,8 @@ const RelatedIssuesDialog = ({
   isOpen,
   isLoading,
   relatedIssues = [],
-  rerankedIssues = [],
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState('original');
 
   const renderDetail = (content) => {
     try {
@@ -38,8 +36,6 @@ const RelatedIssuesDialog = ({
       window.open(issue.url);
     }
   };
-
-  const currentIssues = activeTab === 'original' ? relatedIssues : rerankedIssues;
 
   const renderIssuesList = (issues) => {
     if (issues.length === 0) {
@@ -98,27 +94,7 @@ const RelatedIssuesDialog = ({
             <span className="loading-icon"></span>
           </div>
         ) : (
-          <>
-            <Nav tabs className="mb-3">
-              <NavItem>
-                <NavLink
-                  className={activeTab === 'original' ? 'active tab-nav-link' : 'tab-nav-link'}
-                  onClick={() => setActiveTab('original')}
-                >
-                  {gettext('Original sorting')}
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  className={activeTab === 'reranked' ? 'active tab-nav-link' : 'tab-nav-link'}
-                  onClick={() => setActiveTab('reranked')}
-                >
-                  {gettext('Reranked sorting')}
-                </NavLink>
-              </NavItem>
-            </Nav>
-            {renderIssuesList(currentIssues)}
-          </>
+          renderIssuesList(relatedIssues)
         )}
       </ModalBody>
     </Modal>

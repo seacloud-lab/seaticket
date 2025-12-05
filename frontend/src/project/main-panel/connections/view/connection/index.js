@@ -39,7 +39,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isRelatedIssuesDialogOpen, setIsRelatedIssuesDialogOpen] = useState(false);
   const [relatedIssues, setRelatedIssues] = useState([]);
-  const [rerankedIssues, setRerankedIssues] = useState([]);
   const [isLoadingRelatedIssues, setIsLoadingRelatedIssues] = useState(false);
 
   const { updateIssue } = useProblemToBeResolved();
@@ -179,15 +178,12 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (!row) return;
     setIsLoadingRelatedIssues(true);
     setRelatedIssues([]);
-    setRerankedIssues([]);
     setIsRelatedIssuesDialogOpen(true);
 
     connectionsAPI.findRelatedRecords(projectUuid, connectionID, row._id)
       .then(res => {
         const relatedRecords = res.data.related_records || [];
-        const rerankedRecords = res.data.reranked_records || [];
         setRelatedIssues(relatedRecords);
-        setRerankedIssues(rerankedRecords);
       })
       .catch(error => {
         toaster.danger(gettext('Failed to find related issues'));
@@ -419,7 +415,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           isOpen={isRelatedIssuesDialogOpen}
           isLoading={isLoadingRelatedIssues}
           relatedIssues={relatedIssues}
-          rerankedIssues={rerankedIssues}
           connection={connection}
           connections={connections}
           onClose={() => setIsRelatedIssuesDialogOpen(false)}
