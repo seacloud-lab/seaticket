@@ -47,7 +47,6 @@ const Search = ({ title, settings }) => {
     }
   });
 
-
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
     if (!connections || connections.length === 0) {
       toaster.danger(gettext('Select at least one connection to search'));

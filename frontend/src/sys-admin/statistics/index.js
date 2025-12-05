@@ -11,6 +11,7 @@ import { TopBar } from '../main-panel';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import '@/css/statistics.css';
+import Picker from '../../project/main-panel/search/date-and-time-picker';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -263,12 +264,12 @@ class Statistics extends Component {
       });
   };
 
-  onDateChange = (e) => {
-    const date = dayjs(e.target.value);
-    if (date.isValid()) {
+  onDateChange = (value) => {
+    if (value && value.isValid()) {
       this.setState({
-        date: date,
-        currentPage: this.initPage
+        date: value,
+        currentPage: this.initPage,
+        results: []
       }, () => {
         this.getStatisticsByPage(this.initPage);
       });
@@ -333,12 +334,12 @@ class Statistics extends Component {
               {this.renderTabs()}
               <div className="d-flex align-items-center mt-4 mb-4">
                 <span className="mr-2">{`${gettext('Date')}:`}</span>
-                <input
-                  type="date"
-                  className="form-control"
-                  style={{ width: '200px' }}
-                  value={date.format('YYYY-MM-DD')}
+                <Picker
+                  showHourAndMinute={false}
+                  disabledDate={() => false}
+                  value={date}
                   onChange={this.onDateChange}
+                  inputWidth={118}
                 />
               </div>
               <Content
