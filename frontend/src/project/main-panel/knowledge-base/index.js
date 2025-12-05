@@ -24,7 +24,7 @@ const Page = ({ title }) => {
 
   if (isLoading) return null;
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-    return (<KnowledgeBase { ...props } />);
+    return (<KnowledgeBase { ...props } editorAPI={longtextAPI} />);
   }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
     return (<NewKnowledge { ...props } editorAPI={longtextAPI} />);
