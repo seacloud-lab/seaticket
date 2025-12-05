@@ -35,12 +35,15 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     const paramsString = decodePathname.slice(projectNameIndex + part.length);
     const params = paramsString.split('/');
     const [, pageIdFromURL = ''] = params;
+
     let pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
     if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
       pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.NEW;
-    } else {
-      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
     }
+    if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
+      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.NEW;
+    }
+
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || '';

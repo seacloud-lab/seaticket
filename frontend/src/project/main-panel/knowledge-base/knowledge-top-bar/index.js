@@ -14,9 +14,7 @@ const KnowledgeTopBar = ({ title }) => {
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <>
-          <div className="text-truncate">{title}</div>
-        </>
+        <div className="text-truncate">{title}</div>
       );
     }
 

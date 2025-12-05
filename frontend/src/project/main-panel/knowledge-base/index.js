@@ -10,8 +10,8 @@ import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
 
-const Page = ({ toggleBar, title }) => {
-  const { isLoading, pageSlugId, togglePageSlugId } = useKnowledgePage();
+const Page = ({ title }) => {
+  const { isLoading, pageSlugId } = useKnowledgePage();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
@@ -19,7 +19,7 @@ const Page = ({ toggleBar, title }) => {
 
   const props = useMemo(() => ({
     projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin,
-    toggleBar, title, togglePageSlugId
+    title
   }), []);
 
   if (isLoading) return null;
@@ -31,11 +31,11 @@ const Page = ({ toggleBar, title }) => {
   }
 };
 
-const Knowledge = ({ title, toggleBar }) => {
+const Knowledge = ({ title }) => {
   return (
     <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
       <KnowledgeTopBar title={title} />
-      <Page toggleBar={toggleBar} title={title} />
+      <Page title={title} />
     </KnowledgePageProvider>
   );
 };
