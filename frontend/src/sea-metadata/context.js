@@ -132,7 +132,13 @@ class Context {
 
   canDeleteRow = () => {
     if (!this.canModify()) return false;
-    if (!this.api?.deleteRows && !this.api?.deleteRow) return false;
+    if (!this.api?.deleteRow) return false;
+    return true;
+  };
+
+  canDeleteRows = () => {
+    if (!this.canModify()) return false;
+    if (!this.api?.deleteRows) return false;
     return true;
   };
 

@@ -9,6 +9,7 @@ import { getTableColumnByKey } from '@/sea-metadata/utils/table';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import ObjectUtils from '@/utils/object-utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -152,4 +153,136 @@ export const cascadeUpdateSubState = (table, rowId, rowUpdate, oldRowData) => {
   const cascadeCellValue = validCascadeOptionIds[0] || null;
   rowUpdate[subStateColumn.key] = cascadeCellValue;
   oldRowData[subStateColumn.key] = oldCascadeCellValue;
+};
+
+export const generatorTicketsContextMenuOptions = ({
+  isGroupView,
+  selectedRange,
+  selectedPosition,
+  position,
+  table,
+  rowMetrics,
+  deleteRow,
+  deleteRows,
+  hideMenu,
+  onClearSelected,
+  onCopySelected,
+  rowGetterByIndex,
+  selectNone,
+  context,
+  handleResolveTicketByAI,
+  togglePageSlugId,
+  workspaceID,
+  projectName,
+}) => {
+  let list = [];
+
+  // handle selected multiple cells
+  if (selectedRange) {
+    if (context.canModify()) {
+      list.push({
+        label: gettext('Clear selected'),
+        key: 'clear_selected',
+        callback: onClearSelected,
+      });
+    }
+    list.push({
+      label: gettext('Copy selected'),
+      key: 'copy_selected',
+      callback: onCopySelected,
+    });
+
+    const { topLeft, bottomRight } = selectedRange;
+    let rows = [];
+    let currentGroupRowIndex = topLeft.groupRowIndex;
+    for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
+      const row = rowGetterByIndex({ isGroupView, groupRowIndex: currentGroupRowIndex, rowIndex: i });
+      currentGroupRowIndex++;
+      if (row) {
+        rows.push(row);
+      }
+    }
+
+    if (context.canDeleteRows() && rows.length > 0) {
+      list.push({
+        label: gettext('Delete selected'),
+        key: 'delete_selected',
+        callback: (event) => {
+          const rowIds = rows.map(row => row._id);
+          deleteRows && deleteRows(rowIds);
+        }
+      });
+    }
+    return list;
+  }
+
+  // handle selected rows
+  const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+  if (selectedRowIds.length > 1) {
+    let rows = [];
+    selectedRowIds.forEach(id => {
+      const row = table.id_row_map[id];
+      if (row) {
+        rows.push(row);
+      }
+    });
+
+    if (context.canDeleteRows() && rows.length > 0) {
+      list.push({
+        label: gettext('Delete tickets'),
+        key: 'delete_rows',
+        callback: (event) => {
+          const rowIds = rows.map(row => row._id);
+          deleteRows && deleteRows(rowIds);
+        }
+      });
+    }
+    return list;
+  }
+
+  // handle selected cell
+  if (!selectedPosition) return list;
+  const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+  const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+  if (!row) return list;
+  list.push({
+    label: gettext('Open ticket'),
+    callback: () => togglePageSlugId(row._id),
+  });
+  list.push('Divider');
+
+  if (context.canDeleteRow()) {
+    list.push({
+      label: gettext('Delete ticket'),
+      key: 'delete_row',
+      callback: () => deleteRow && deleteRow(row._id)
+    });
+  }
+  list.push({
+    label: gettext('Copy link'),
+    key: 'copy_link',
+    callback: () => {
+      const { origin } = location;
+      let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${row._id}/`;
+      copy(url);
+      toaster.success(gettext('The ticket link has been copied'));
+    }
+  });
+
+  list.push('Divider');
+  list.push({
+    label: gettext('Resolve ticket by AI'),
+    key: 'resolve_ticket',
+    callback: () => {
+      const titleColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+      if (titleColumn) {
+        let ticket = {
+          [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+          _id: row._id,
+        };
+        handleResolveTicketByAI(ticket);
+      }
+    },
+  });
+  return list;
 };

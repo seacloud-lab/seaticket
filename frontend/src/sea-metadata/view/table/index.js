@@ -24,9 +24,10 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
     metadata,
     store,
     insertRow,
-    modifyRows,
+    deleteRow,
     deleteRows,
     modifyRow,
+    modifyRows,
     modifyRowByRowExpand,
     modifyRowTags,
     renameColumn,
@@ -181,6 +182,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           modifyRow={modifyRow}
           modifyRowTags={modifyRowTags}
           modifyRows={modifyRows}
+          deleteRow={deleteRow}
           deleteRows={deleteRows}
           rowGetterById={rowGetterById}
           rowGetterByIndex={rowGetterByIndex}

@@ -103,6 +103,7 @@ const AllTags = ({ projectUuid, permission }) => {
     position,
     table,
     rowMetrics,
+    deleteRow,
     deleteRows,
     hideMenu,
     onClearSelected,
@@ -126,7 +127,7 @@ const AllTags = ({ projectUuid, permission }) => {
         callback: onCopySelected,
       });
 
-      if (context.canDeleteRow()) {
+      if (context.canDeleteRows()) {
         const { topLeft, bottomRight } = selectedRange;
         let rows = [];
         for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
@@ -159,7 +160,7 @@ const AllTags = ({ projectUuid, permission }) => {
         }
       });
 
-      if (context.canDeleteRow() && rows.length > 0) {
+      if (context.canDeleteRows() && rows.length > 0) {
         list.push({
           label: gettext('Delete tags'),
           callback: (event) => {
@@ -186,7 +187,7 @@ const AllTags = ({ projectUuid, permission }) => {
     if (context.canDeleteRow()) {
       list.push({
         label: gettext('Delete tag'),
-        callback: () => deleteRows && deleteRows([row._id])
+        callback: () => deleteRow && deleteRow(row._id)
       });
     }
     return list;

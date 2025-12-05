@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, ModalBody, ModalHeader, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import { ModalHeader } from '@/components';
 import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { gettext, lang } from '@/constants';
 

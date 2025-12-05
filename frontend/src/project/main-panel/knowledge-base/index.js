@@ -9,6 +9,9 @@ import TopBar from '../top-bar';
 import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import AddKnowledgeDialog from './add-knowledge-dialog';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from './constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const { projectUuid, permission } = window.app.pageOptions;
 
@@ -27,27 +30,16 @@ const KnowledgeBase = ({ title }) => {
   const api = useMemo(() => {
     const getMetadata = (...params) => {
       return knowledgeBaseAPI.getKnowledgeBase(projectUuid, ...params).then(res => {
-        const records = res?.data?.records || [];
-        const rows = Array.isArray(records) ? records.map(r => ({ ...r, _id: r._pk })) : [];
-        const DISPLAY_NAME_MAP = {
-          question: gettext('Question'),
-          answer: gettext('Answer'),
-          creator: gettext('Creator'),
-          created_time: gettext('Created time'),
-          last_modifier: gettext('Last modifier'),
-          modified_time: gettext('Last modified time'),
-        };
-        let columns = (res?.data?.columns || [])
-          .filter(c => c.name !== '_pk')
-          .map(c => {
-            let col = c;
-            if (c.name === 'creator') col = { ...col, type: 'creator' };
-            if (c.name === 'last_modifier') col = { ...col, type: 'last-modifier' };
-            if (c.name === 'created_time') col = { ...col, type: 'ctime' };
-            if (c.name === 'modified_time') col = { ...col, type: 'mtime' };
-            if (c.name === 'answer') col = { ...col, type: 'long-text' };
-            return { ...col, display_name: DISPLAY_NAME_MAP[c.name] || col.display_name || col.name };
-          });
+        const rows = res?.data?.records || [];
+        let columns = res?.data?.columns || [];
+        columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
+          const { name } = c;
+          const predefinedConfig = KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[name];
+          return {
+            ...c,
+            ...predefinedConfig,
+          };
+        });
         return { data: { rows, columns } };
       });
     };
@@ -84,6 +76,7 @@ const KnowledgeBase = ({ title }) => {
     setAnswer('');
     setDialogOpen(true);
   }, []);
+
   const openEditDialog = useCallback((row) => {
     setEditMode(true);
     setEditRowId(row._id);
@@ -91,12 +84,39 @@ const KnowledgeBase = ({ title }) => {
     setAnswer(row.answer || '');
     setDialogOpen(true);
   }, []);
+
   const closeDialog = useCallback(() => {
     setDialogOpen(false);
     setEditMode(false);
     setEditRowId('');
     setQuestion('');
     setAnswer('');
+  }, []);
+
+  const createContextMenuOptions = useCallback(({ isGroupView, selectedRange, selectedPosition, table, rowMetrics, deleteRow, deleteRows, rowGetterByIndex, context }) => {
+    let list = [];
+    if (selectedRange) return list;
+    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
+    if (selectedRowIds.length > 1) {
+      if (context.canDeleteRows()) list.push({ label: gettext('Delete records'), callback: () => deleteRows(selectedRowIds) });
+      return list;
+    }
+    if (!selectedPosition) return list;
+    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
+    if (!row) return list;
+    list.push({ label: gettext('Edit record'), callback: () => {
+      const questionColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.QUESTION);
+      const answerColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.ANSWER);
+      const newRow = {
+        _id: row._id,
+        question: getCellValueByColumn(row, questionColumn),
+        answer: getCellValueByColumn(row, answerColumn),
+      };
+      openEditDialog(newRow);
+    } });
+    if (context.canDeleteRow()) list.push({ label: gettext('Delete record'), callback: () => deleteRow(row._id) });
+    return list;
   }, []);
 
   const onSubmit = useCallback(() => {
@@ -137,22 +157,7 @@ const KnowledgeBase = ({ title }) => {
           localStorageNamePrefix={localStorageName}
           toggleView={toggleView}
           t={t}
-          createContextMenuOptions={({ isGroupView, selectedRange, selectedPosition, table, rowMetrics, deleteRows, rowGetterByIndex }) => {
-            let list = [];
-            if (selectedRange) return list;
-            const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
-            if (selectedRowIds.length > 1) {
-              if (deleteRows) list.push({ label: gettext('Delete records'), callback: () => deleteRows(selectedRowIds) });
-              return list;
-            }
-            if (!selectedPosition) return list;
-            const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
-            const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
-            if (!row) return list;
-            list.push({ label: gettext('Edit record'), callback: () => openEditDialog(row) });
-            if (deleteRows) list.push({ label: gettext('Delete record'), callback: () => deleteRows([row._id]) });
-            return list;
-          }}
+          createContextMenuOptions={createContextMenuOptions}
         />
       </CollaboratorsProvider>
       <AddKnowledgeDialog

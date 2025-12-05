@@ -77,7 +77,6 @@ const TableMain = ({
         paste={paste}
         groupOffsetLeft={groupOffset}
         modifyRow={updateRow}
-        deleteRows={props.deleteRows}
         getCopiedRowsAndColumnsFromRange={getCopiedRowsAndColumnsFromRange}
         rowGetterById={rowGetterById}
         rowGetterByIndex={rowGetterByIndex}

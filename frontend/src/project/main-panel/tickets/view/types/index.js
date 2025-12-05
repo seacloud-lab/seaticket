@@ -94,6 +94,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     position,
     table,
     rowMetrics,
+    deleteRow,
     deleteRows,
     hideMenu,
     onClearSelected,
@@ -117,7 +118,7 @@ const AllTypes = ({ projectUuid, permission }) => {
         callback: onCopySelected,
       });
 
-      if (context.canDeleteRow()) {
+      if (context.canDeleteRows()) {
         const { topLeft, bottomRight } = selectedRange;
         let rows = [];
         for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
@@ -150,7 +151,7 @@ const AllTypes = ({ projectUuid, permission }) => {
         }
       });
 
-      if (context.canDeleteRow() && rows.length > 0) {
+      if (context.canDeleteRows() && rows.length > 0) {
         list.push({
           label: gettext('Delete types'),
           callback: (event) => {
@@ -175,7 +176,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     }, {
       label: gettext('Delete type'),
       callback: () => {
-        deleteRows && deleteRows([row._id]);
+        deleteRow && deleteRow(row._id);
       }
     });
     return list;
