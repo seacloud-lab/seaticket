@@ -146,7 +146,6 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
               {!isSmallScreen && renderSubmitBtns()}
             </div>
           </div>
-          <div className="sea-qa-project-knowledge-other-settings"></div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-knowledge-submit-btns')}
         </div>
       </div>
