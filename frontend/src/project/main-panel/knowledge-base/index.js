@@ -31,7 +31,7 @@ const Page = ({ title }) => {
   }
 };
 
-const Knowledge = ({ title }) => {
+const KnowledgeBase = ({ title }) => {
   return (
     <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
       <KnowledgeTopBar title={title} />
@@ -40,4 +40,4 @@ const Knowledge = ({ title }) => {
   );
 };
 
-export default Knowledge;
+export default KnowledgeBase;
