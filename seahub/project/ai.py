@@ -344,7 +344,7 @@ class RelatedRecordsView(APIView):
         search_data = {
             'query_vector': target_vector,
             'project_uuid': project_uuid,
-            'count': 100,
+            'count': 51,
             'connection_ids': connection_ids
         }
 
@@ -356,7 +356,7 @@ class RelatedRecordsView(APIView):
                     'success': True
                 })
 
-            processed_results = []
+            top_candidates = []
             connection_objects = {int(connection_id): connection}
 
             connection_pks_map = {}
@@ -490,11 +490,10 @@ class RelatedRecordsView(APIView):
                     logger.warning(f'Unsupported connection type: {connection_type}')
                     continue
 
-                processed_results.append(processed_result)
+                top_candidates.append(processed_result)
 
             reranked_results = []
-            if processed_results:
-                top_candidates = processed_results[:25]
+            if top_candidates:
 
                 query_record_info = {
                     'title': query_record.get('title', ''),
@@ -536,6 +535,5 @@ class RelatedRecordsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'related_records': processed_results,
-            'reranked_records': reranked_results,
+            'related_records': reranked_results,
         })
