@@ -101,6 +101,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     position,
     table,
     rowMetrics,
+    deleteRow,
     deleteRows,
     hideMenu,
     onClearSelected,
@@ -124,7 +125,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
         callback: onCopySelected,
       });
 
-      if (context.canDeleteRow()) {
+      if (context.canDeleteRows()) {
         const { topLeft, bottomRight } = selectedRange;
         let rows = [];
         for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
@@ -157,7 +158,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
         }
       });
 
-      if (context.canDeleteRow() && rows.length > 0) {
+      if (context.canDeleteRows() && rows.length > 0) {
         list.push({
           label: gettext('Delete substates'),
           callback: (event) => {
@@ -182,7 +183,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     }, {
       label: gettext('Delete substate'),
       callback: () => {
-        deleteRows && deleteRows([row._id]);
+        deleteRow && deleteRow(row._id);
       }
     });
     return list;

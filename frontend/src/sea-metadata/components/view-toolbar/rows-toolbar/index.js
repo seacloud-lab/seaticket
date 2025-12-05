@@ -7,7 +7,7 @@ import { gettext } from '@/constants';
 import context from '../../../context';
 import { isFunction } from '@/utils/type-detection';
 
-const RowsToolbar = ({ rows, columns, selectNone, deleteRows, modifyRows, createTools, updateLocalRow }) => {
+const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyRows, createTools, updateLocalRow }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubOpen, setIsSubOpen] = useState(false);
   const [subMenuKey, setSubMenuKey] = useState('');
@@ -20,6 +20,13 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRows, modifyRows, create
     deleteRows && deleteRows(rowIds);
     selectNone();
   }, [deleteRows, rowIds, selectNone]);
+
+  const handleDeleteRow = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    deleteRow && deleteRow(rowIds[0]);
+    selectNone();
+  }, [deleteRow, rowIds, selectNone]);
 
   const onMoreToggle = useCallback((event) => {
     event && event.preventDefault();
@@ -60,8 +67,11 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRows, modifyRows, create
         <Icon symbol="x" className="mr-2" />
         <span className="color-default">{gettext('{count} selected').replace('{count}', rowIds.length)}</span>
       </div>
-      {context.canDeleteRow() && (
+      {(rowIds.length > 1 && context.canDeleteRows()) && (
         <IconButton icon="delete" title={gettext('Delete')} className="mr-2" onClick={handleDeleteRows} />
+      )}
+      {(rowIds.length === 1 && context.canDeleteRow()) && (
+        <IconButton icon="delete" title={gettext('Delete')} className="mr-2" onClick={handleDeleteRow} />
       )}
 
       {isFunction(createTools) && createTools({ rows, columns, modifyRows, updateLocalRow }).map(tool => {

@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react';
-import copy from 'copy-to-clipboard';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
@@ -7,18 +6,22 @@ import { useTicketsPage, useMetadata } from '../../hooks';
 import { BAR_TYPE } from '../../../../constants';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG } from '../../constants';
 import { gettext } from '@/constants';
-import { CenteredLoading, toaster } from '@/components';
+import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import {
   generatorRowCopyLinkTool, generatorRowsMoreTool,
   convertRowToServerData, convertRowsToServerData,
-  cascadeUpdateSubState
+  cascadeUpdateSubState, generatorTicketsContextMenuOptions
 } from '../../utils';
+import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
+import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
-const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
+const TagTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData, createTag, typesData, createType, substatesData, createSubstate } = useMetadata();
+
+  const { updateTicket } = useProblemToBeResolved();
 
   const viewsData = useMemo(() => ({
     navigation: [{ _id: '0000', type: 'view' }],
@@ -114,110 +117,15 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission }) => {
     return tools;
   }, [workspaceID, projectName]);
 
-  const createContextMenuOptions = useCallback(({
-    isGroupView,
-    selectedRange,
-    selectedPosition,
-    position,
-    table,
-    rowMetrics,
-    deleteRows,
-    hideMenu,
-    onClearSelected,
-    onCopySelected,
-    rowGetterByIndex,
-    selectNone,
-    context,
-  }) => {
-    let list = [];
+  const handleResolveTicketByAI = useCallback((ticket) => {
+    if (!ticket) return;
+    updateTicket(ticket, AI_RESOLVE_TYPE.AGENT);
+    toggleBar([BAR_TYPE.CHAT]);
+  }, [toggleBar, updateTicket]);
 
-    // handle selected multiple cells
-    if (selectedRange) {
-      if (context.canModify()) {
-        list.push({
-          label: gettext('Clear selected'),
-          callback: onClearSelected,
-        });
-      }
-      list.push({
-        label: gettext('Copy selected'),
-        callback: onCopySelected,
-      });
-
-      if (context.canDeleteRow()) {
-        const { topLeft, bottomRight } = selectedRange;
-        let rows = [];
-        for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
-          const row = rowGetterByIndex({ isGroupView, groupRowIndex: topLeft.groupRowIndex, rowIndex: i });
-          if (row) {
-            rows.push(row);
-          }
-        }
-        if (rows.length > 0) {
-          list.push({
-            label: gettext('Delete selected'),
-            callback: (event) => {
-              const rowIds = rows.map(row => row._id);
-              deleteRows && deleteRows(rowIds);
-            }
-          });
-        }
-      }
-      return list;
-    }
-
-    // handle selected rows
-    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
-    if (selectedRowIds.length > 1) {
-      let rows = [];
-      selectedRowIds.forEach(id => {
-        const row = table.id_row_map[id];
-        if (row) {
-          rows.push(row);
-        }
-      });
-
-      if (context.canDeleteRow() && rows.length > 0) {
-        list.push({
-          label: gettext('Delete tickets'),
-          callback: (event) => {
-            const rowIds = rows.map(row => row._id);
-            deleteRows && deleteRows(rowIds);
-          }
-        });
-      }
-      return list;
-    }
-
-    // handle selected cell
-    if (!selectedPosition) return list;
-    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
-    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
-    if (!row) return list;
-    list.push({
-      label: gettext('Open ticket'),
-      callback: () => togglePageSlugId(row._id),
-    });
-
-    list.push('Divider');
-
-    if (context.canDeleteRow()) {
-      list.push({
-        label: gettext('Delete ticket'),
-        callback: () => deleteRows && deleteRows([row._id])
-      });
-    }
-    list.push({
-      label: gettext('Copy link'),
-      callback: () => {
-        const { origin } = location;
-        let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${row._id}/`;
-        copy(url);
-        toaster.success(gettext('The ticket link has been copied'));
-      }
-    });
-    return list;
-  }, [projectName, workspaceID]);
+  const createContextMenuOptions = useCallback((props) => {
+    return generatorTicketsContextMenuOptions({ ...props, projectName, workspaceID, handleResolveTicketByAI });
+  }, [projectName, workspaceID, handleResolveTicketByAI]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-tag-tickets`, [projectUuid]);
 
