@@ -14,8 +14,8 @@ import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 import './index.css';
 
 const NewKnowledge = ({ editorAPI, projectUuid }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -30,24 +30,24 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     };
   }, []);
   const disabled = useMemo(() => {
-    return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
-  }, [title, content, isSubmitting]);
+    return (!question || !question.trim()) || (!answer || !answer.text.trim()) || isSubmitting;
+  }, [question, answer, isSubmitting]);
 
   const { togglePageSlugId } = useKnowledgePage();
 
-  const onTitleChange = useCallback((event) => {
-    const newTitle = event.target.value;
-    if (newTitle === title) return;
-    setTitle(newTitle);
-  }, [title]);
+  const onQuestionChange = useCallback((event) => {
+    const newQuestion = event.target.value;
+    if (newQuestion === question) return;
+    setQuestion(newQuestion);
+  }, [question]);
 
-  const onContentChange = useCallback((value) => {
+  const onAnswerChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
       toaster.closeAll();
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setContent(value);
+    setAnswer(value);
   }, []);
 
   const handleFiles = useCallback((files) => {
@@ -65,8 +65,8 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
   }, [editorAPI]);
 
   const onSubmit = useCallback(() => {
-    const validTitle = title.trim();
-    const data = { question: validTitle, answer: content.text };
+    const validQuestion = question.trim();
+    const data = { question: validQuestion, answer: answer.text };
     knowledgeBaseAPI.createRecord(projectUuid, data).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
@@ -74,7 +74,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content]);
+  }, [question, answer]);
 
   useEffect(() => {
     const knowledgeDom = knowledgeRef.current;
@@ -99,8 +99,8 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     );
   }, [disabled, togglePageSlugId, onSubmit]);
 
-  // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = containerWidth < 892;
+  // 616: comment min-width(584) + gap: 16 * 2
+  const isSmallScreen = containerWidth < 616;
 
   return (
     <div className={classnames('sea-qa-project-new-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
@@ -110,7 +110,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
         </div>
       )}
       <div className="sea-qa-project-knowledge-settings">
-        <div className="sea-qa-project-knowledge-name mb-3">{gettext('Add a knowledge')}</div>
+        <div className="sea-qa-project-knowledge-name mb-3">{gettext('New knowledge')}</div>
         <div className="sea-qa-project-knowledge-settings-container">
           <div className="sea-qa-project-knowledge-content-settings">
             <div className="sea-qa-project-knowledge-title mb-4">
@@ -118,7 +118,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
                 {gettext('Question')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
-              <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
+              <Input autoFocus disabled={isSubmitting} value={question} onChange={onQuestionChange} />
             </div>
             <div className="sea-qa-project-knowledge-content mb-4">
               <Label>
@@ -129,8 +129,8 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
                 isAlwaysEnableEdit={true}
                 ref={contentEditorRef}
                 lang={lang}
-                headerName={gettext('Content')}
-                value={content || ''}
+                headerName={gettext('Answer')}
+                value={answer || ''}
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
@@ -138,7 +138,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
                 isSupportMultipleFiles={true}
                 editorApi={editorAPI}
                 autoFocus={false}
-                onSaveEditorValue={onContentChange}
+                onSaveEditorValue={onAnswerChange}
               />
             </div>
             <div className="sea-qa-project-knowledge-footer">

@@ -26,7 +26,7 @@ const KnowledgeTopBar = ({ title }) => {
             className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
-          <span className="text-truncate" title={gettext('Add knowledge record')}>{gettext('Add knowledge record')}</span>
+          <span className="text-truncate" title={gettext('New knowledge record')}>{gettext('New knowledge record')}</span>
         </>
       );
     }
@@ -36,7 +36,7 @@ const KnowledgeTopBar = ({ title }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('Add record')} icon="add" />
+        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" />
       );
     }
     return null;

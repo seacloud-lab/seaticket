@@ -4,7 +4,7 @@ import KnowledgeTopBar from './knowledge-top-bar';
 import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import NewKnowledge from './view/new-knowledge';
-import AllKnowledges from './view/all-knowledges';
+import AllKnowledge from './view/all-knowledge';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
@@ -24,7 +24,7 @@ const Page = ({ title }) => {
 
   if (isLoading) return null;
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-    return (<AllKnowledges { ...props } editorAPI={longtextAPI} />);
+    return (<AllKnowledge { ...props } editorAPI={longtextAPI} />);
   }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
     return (<NewKnowledge { ...props } editorAPI={longtextAPI} />);

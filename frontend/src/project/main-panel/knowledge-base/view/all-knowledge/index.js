@@ -11,11 +11,10 @@ import { getColumnByName } from '@/sea-metadata/utils/column';
 import AddKnowledgeDialog from '../../add-knowledge-dialog';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
-const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
+const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView } = useKnowledgePage();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
-  const [isEditMode, setEditMode] = useState(false);
   const [editRowId, setEditRowId] = useState('');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -51,7 +50,6 @@ const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
   }, []);
 
   const openEditDialog = useCallback((row) => {
-    setEditMode(true);
     setEditRowId(row._id);
     setQuestion(row.question || '');
     setAnswer(row.answer || '');
@@ -60,7 +58,6 @@ const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
 
   const closeDialog = useCallback(() => {
     setDialogOpen(false);
-    setEditMode(false);
     setEditRowId('');
     setQuestion('');
     setAnswer('');
@@ -97,20 +94,18 @@ const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
     const a = answer;
     if (!q || !a || !((typeof a === 'object' ? a.text : a).trim())) return;
     setSubmitting(true);
-    const action = isEditMode
-      ? knowledgeBaseAPI.updateRecord(projectUuid, editRowId, { question: q, answer: a })
-      : knowledgeBaseAPI.createRecord(projectUuid, { question: q, answer: a });
+    const action = knowledgeBaseAPI.updateRecord(projectUuid, editRowId, { question: q, answer: a });
     action.then(() => {
-      toaster.success(isEditMode ? gettext('Record updated') : gettext('Record created'));
+      toaster.success(gettext('Record updated'));
       setDialogOpen(false);
       setQuestion('');
       setAnswer('');
       eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
     }).catch(error => {
-      const errorMessage = (error?.response?.data?.error_msg) || gettext(isEditMode ? 'Failed to update record' : 'Failed to create record');
+      const errorMessage = (error?.response?.data?.error_msg) || gettext('Failed to update record');
       toaster.danger(errorMessage);
     }).finally(() => setSubmitting(false));
-  }, [question, answer, isEditMode, editRowId]);
+  }, [question, answer, editRowId]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-knowledge-base`, []);
 
@@ -156,4 +151,4 @@ const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
   );
 };
 
-export default AllKnowledges;
+export default AllKnowledge;
