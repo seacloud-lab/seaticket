@@ -6,8 +6,8 @@ import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAG
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { Utils } from '../../../../../utils/utils';
-import { knowledgeBaseAPI } from '../../../../api';
+import { Utils } from '@/utils/utils';
+import { knowledgeBaseAPI } from '@/project/api';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 

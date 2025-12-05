@@ -6,7 +6,7 @@ import Connections from './connections';
 import TopBar from './top-bar';
 import Ask from './ask';
 import Settings from './settings';
-import Knowledge from './knowledge-base';
+import KnowledgeBase from './knowledge-base';
 
 import './index.css';
 
@@ -27,7 +27,7 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
     case BAR_TYPE.SETTINGS:
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     case BAR_TYPE.KNOWLEDGE:
-      return (<Knowledge title={title} />);
+      return (<KnowledgeBase title={title} />);
     default:
       return (<Connections title={title} toggleBar={toggleBar} />);
   }

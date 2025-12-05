@@ -5,13 +5,13 @@ import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
-import { knowledgeBaseAPI } from '../../../../api';
+import { knowledgeBaseAPI } from '@/project/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import AddKnowledgeDialog from '../../add-knowledge-dialog';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
-const KnowledgeBase = ({ projectUuid, permission, editorAPI }) => {
+const AllKnowledges = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView } = useKnowledgePage();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -156,4 +156,4 @@ const KnowledgeBase = ({ projectUuid, permission, editorAPI }) => {
   );
 };
 
-export default KnowledgeBase;
+export default AllKnowledges;
