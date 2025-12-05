@@ -72,3 +72,16 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
 }
+
+.issues-list-container {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.loading-container {
+  height: 400px;
+}
+
+.tab-nav-link {
+  cursor: pointer;
+}
