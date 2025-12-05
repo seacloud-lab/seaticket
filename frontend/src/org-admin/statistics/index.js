@@ -12,6 +12,8 @@ import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import '@/css/statistics.css';
 
+import Picker from '../../project/main-panel/search/date-and-time-picker';
+
 const propTypes = {
   onCloseSidePanel: PropTypes.func
 };
@@ -255,11 +257,10 @@ class StatisticsAI extends Component {
       });
   };
 
-  onDateChange = (e) => {
-    const date = dayjs(e.target.value);
-    if (date.isValid()) {
+  onDateChange = (value) => {
+    if (value && value.isValid()) {
       this.setState({
-        date: date,
+        date: value,
         currentPage: this.initPage,
         results: []
       }, () => {
@@ -388,12 +389,12 @@ class StatisticsAI extends Component {
                 {queryDate === 'date' && (
                   <>
                     <span className="mr-2">{`${gettext('Date')}:`}</span>
-                    <input
-                      type="date"
-                      className="form-control"
-                      style={{ width: '200px' }}
-                      value={date.format('YYYY-MM-DD')}
+                    <Picker
+                      showHourAndMinute={false}
+                      disabledDate={() => false}
+                      value={date}
                       onChange={this.onDateChange}
+                      inputWidth={118}
                     />
                   </>
                 )}
