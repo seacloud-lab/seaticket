@@ -1066,17 +1066,6 @@ class TicketCommentAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            participants = ticket.get('participants') or []
-            if username not in participants:
-                participants.append(username)
-                update_ticket = {
-                    'pk': ticket.get('_pk'),
-                    'row': {
-                        'participants': participants,
-                    },
-                }
-                seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
-
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             update_ticket_comment = {
                 'pk': ticket_comment_data.get('_pk'),
@@ -1093,6 +1082,11 @@ class TicketCommentAPIView(APIView):
                     'modified_time': now_datetime,
                 }
             }
+
+            participants = ticket.get('participants') or []
+            if username not in participants:
+                participants.append(username)
+                update_ticket['row']['participants'] = participants
             seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
         except Exception as e:
             logger.error(e)
