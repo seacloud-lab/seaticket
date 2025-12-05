@@ -1,13 +1,14 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { gettext } from '@/constants';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
+import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { knowledgeBaseAPI } from '../../../../api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const KnowledgeBase = ({ projectUuid, permission }) => {
-  const [viewID, toggleView] = useState('0000');
+  const { viewID, toggleView } = useKnowledgePage();
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
