@@ -8,7 +8,6 @@ import ConnectionsNav from './nav/connections-nav';
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
-const { isProjectAdmin } = window.app.pageOptions;
 
 const SidePanel = ({ activeBar, toggleBar }) => {
   const ref = useRef(null);
