@@ -8,7 +8,6 @@ import ConnectionsNav from './nav/connections-nav';
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
-const { isProjectAdmin } = window.app.pageOptions;
 
 const SidePanel = ({ activeBar, toggleBar }) => {
   const ref = useRef(null);
@@ -36,12 +35,8 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
             <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <Nav nav={BAR_TYPES[6]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            {isProjectAdmin &&
-              <>
-                <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
-                <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
-              </>
-            }
+            <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
+            <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
