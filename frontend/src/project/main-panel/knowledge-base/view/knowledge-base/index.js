@@ -3,9 +3,7 @@ import { gettext } from '@/constants';
 import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { knowledgeBaseAPI } from '../../../../api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from './constants';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
 
 const KnowledgeBase = ({ projectUuid, permission }) => {
   const { viewID, toggleView } = useKnowledgePage();
@@ -52,16 +50,6 @@ const KnowledgeBase = ({ projectUuid, permission }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
-    list.push({ label: gettext('Edit record'), callback: () => {
-      const questionColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.QUESTION);
-      const answerColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.ANSWER);
-      const newRow = {
-        _id: row._id,
-        question: getCellValueByColumn(row, questionColumn),
-        answer: getCellValueByColumn(row, answerColumn),
-      };
-      // to do open edit page
-    } });
     if (context.canDeleteRow()) list.push({ label: gettext('Delete record'), callback: () => deleteRow(row._id) });
     return list;
   }, []);
