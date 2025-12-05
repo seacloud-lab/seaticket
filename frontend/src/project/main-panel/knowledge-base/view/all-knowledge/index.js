@@ -12,12 +12,17 @@ import AddKnowledgeDialog from '../../add-knowledge-dialog';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
-  const { viewID, toggleView } = useKnowledgePage();
+  const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [editRowId, setEditRowId] = useState('');
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
+
+  const expandRow = useCallback((row) => {
+    console.log('row', row._id);
+    togglePageSlugId(row._id);
+  }, [togglePageSlugId]);
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
@@ -125,6 +130,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
         isViewComputedOnServer={true}
         localStorageNamePrefix={localStorageName}
         toggleView={toggleView}
+        expandRow={expandRow}
         t={t}
         createContextMenuOptions={createContextMenuOptions}
       />

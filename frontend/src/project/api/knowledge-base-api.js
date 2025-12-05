@@ -66,99 +66,11 @@ class KnowledgeBaseAPI {
       start,
       limit
     };
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve({ data: {
-          'records': [
-            {
-              '_pk': 1,
-              'kCed': '11',
-              'G0Fv': '11\n',
-              '9NkH': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
-              '6XGR': '2025-11-29T10:12:57.042709+08:00',
-              'Geb8': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
-              'Xyhg': '2025-11-29T10:12:57.042727+08:00'
-            }
-          ],
-          'columns': [
-            {
-              'key': '_pk',
-              'name': '_pk',
-              'type': 'float64',
-              'data': null
-            },
-            {
-              'key': 'kCed',
-              'name': 'question',
-              'type': 'text',
-              'data': null
-            },
-            {
-              'key': 'G0Fv',
-              'name': 'answer',
-              'type': 'text',
-              'data': null
-            },
-            {
-              'key': '9NkH',
-              'name': 'creator',
-              'type': 'text',
-              'data': null
-            },
-            {
-              'key': '6XGR',
-              'name': 'created_time',
-              'type': 'datetime',
-              'data': null
-            },
-            {
-              'key': 'Geb8',
-              'name': 'last_modifier',
-              'type': 'text',
-              'data': null
-            },
-            {
-              'key': 'Xyhg',
-              'name': 'modified_time',
-              'type': 'datetime',
-              'data': null
-            }
-          ]
-        } });
-      }, 1000);
-    });
     return this.req.get(url, { params: params });
   }
 
   listViews(projectUuid) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/';
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve({ data: {
-          'views': [
-            {
-              '_id': '0000',
-              'name': 'All',
-              'type': 'table',
-              'basic_filters': [],
-              'columns_keys': [],
-              'filter_conjunction': 'Or',
-              'filters': [],
-              'sorts': [],
-              'groupbys': [],
-              'hidden_columns': []
-            }
-          ],
-          'navigation': [
-            {
-              '_id': '0000',
-              'type': 'view'
-            }
-          ]
-        } });
-      }, 500);
-    });
-
     return this.req.get(url);
   }
 
@@ -176,24 +88,6 @@ class KnowledgeBaseAPI {
 
   getView(projectUuid, viewID) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve({ data: {
-          'view': {
-            '_id': '0000',
-            'name': 'All',
-            'type': 'table',
-            'basic_filters': [],
-            'columns_keys': [],
-            'filter_conjunction': 'Or',
-            'filters': [],
-            'sorts': [],
-            'groupbys': [],
-            'hidden_columns': []
-          }
-        } });
-      }, 1000);
-    });
     return this.req.get(url);
   }
 
@@ -247,6 +141,26 @@ class KnowledgeBaseAPI {
   deleteRecord(projectUuid, recordNumber) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
     return this.req.delete(url, { params: { record_number: recordNumber } });
+  }
+
+  getRecord(projectUuid, knowledgeID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/' + knowledgeID + '/';
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({ data: {
+          record: {
+            '_pk': 3,
+            'kCed': 'bbb',
+            'G0Fv': 'bbb\n',
+            '9NkH': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
+            '6XGR': '2025-12-05T09:50:54.439471+08:00',
+            'Geb8': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
+            'Xyhg': '2025-12-05T09:50:54.439491+08:00'
+          }
+        } });
+      }, 500);
+    });
+    return this.req.get(url);
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
