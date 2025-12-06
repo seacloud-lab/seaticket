@@ -66,6 +66,10 @@ const Project = () => {
     setActiveBar(newActiveBar);
   }, [activeBar]);
 
+  const modifyLocalBar = useCallback((newActiveBar) => {
+    setActiveBar(newActiveBar);
+  }, []);
+
   const modifySettings = useCallback((update, callback) => {
     projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
       setSettings({ ...settings, ...update });
@@ -121,7 +125,7 @@ const Project = () => {
             <AIChatToolsProvider >
               <ConnectionsProvider projectUuid={projectUuid} >
                 <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
+                <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
               </ConnectionsProvider>
             </AIChatToolsProvider>
           </CollaboratorsProvider>

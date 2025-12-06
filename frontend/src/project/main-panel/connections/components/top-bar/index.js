@@ -10,12 +10,13 @@ import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import AddButton from '@/project/components/add-button';
+import { BAR_TYPE } from '../../../../constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const TopBar = ({ title }) => {
+const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, connectionInfo, togglePageSlugId } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
   const { name: connectionName, type: connectionType } = connectionInfo || {};
@@ -27,6 +28,11 @@ const TopBar = ({ title }) => {
   const handleOpenConnectionEmbeddingVisualizationOpen = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.OPEN_CONNECTION_EMBEDDING_VISUALIZATION);
   }, []);
+
+  const handleReturnConnectionsHome = useCallback(() => {
+    togglePageSlugId(CONNECTION_PAGE_SLUG_ID.ALL);
+    modifyLocalBar([BAR_TYPE.CONNECTION]);
+  }, [togglePageSlugId, modifyLocalBar]);
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
@@ -40,12 +46,12 @@ const TopBar = ({ title }) => {
         <IconButton
           icon="down"
           className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
-          onClick={() => togglePageSlugId(CONNECTION_PAGE_SLUG_ID.ALL)}
+          onClick={handleReturnConnectionsHome}
         />
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
       </>
     );
-  }, [pageSlugId, title, connectionName, togglePageSlugId]);
+  }, [pageSlugId, title, connectionName, handleReturnConnectionsHome]);
 
   const onManualSync = useCallback((connectionID) => {
     connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {

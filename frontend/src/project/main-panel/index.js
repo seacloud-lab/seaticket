@@ -10,7 +10,7 @@ import KnowledgeBase from './knowledge-base';
 
 import './index.css';
 
-const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
+const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocalBar }) => {
   const barKey = activeBar[0];
   if (!barKey) return (<TopBar />);
   const bar = BAR_TYPES.find(b => b.key === barKey);
@@ -29,14 +29,14 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar }) => {
     case BAR_TYPE.KNOWLEDGE:
       return (<KnowledgeBase title={title} />);
     default:
-      return (<Connections title={title} toggleBar={toggleBar} />);
+      return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);
   }
 };
 
-const MainPanel = ({ activeBar, settings, modifySettings, toggleBar }) => {
+const MainPanel = (props) => {
   return (
     <div className="sea-qa-project-main-panel">
-      <Container activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
+      <Container { ...props } />
     </div>
   );
 };

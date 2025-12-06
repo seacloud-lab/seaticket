@@ -12,10 +12,11 @@ import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_COMPLETED_STATUS } from '../../c
 import { useConnections, useConnectionsPage } from '../../hooks';
 import { Connection } from '../../models';
 import SelfQuery from '@/utils/self-query';
+import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const AllConnections = ({ projectUuid }) => {
+const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
 
@@ -45,11 +46,11 @@ const AllConnections = ({ projectUuid }) => {
 
   const columns = useMemo(() => {
     return [
-      { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: '30%' },
-      { key: 'sync_status', name: gettext('Sync status'), type: CONNECTION_FIELD_TYPE.SYNC_STATUS, width: '20%' },
-      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: '20%' },
-      { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: '20%' },
-      { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: '10%' }
+      { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: 0.4 },
+      { key: 'sync_status', name: gettext('Sync status'), type: CONNECTION_FIELD_TYPE.SYNC_STATUS, width: 0.2 },
+      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: 0.2 },
+      { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: 0.2 },
+      { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: 0.1 }
     ].map(column => (
       {
         ...column,
@@ -81,7 +82,8 @@ const AllConnections = ({ projectUuid }) => {
   const handleExpandRow = useCallback((row) => {
     updateConnectionInfo && updateConnectionInfo({ name: row.name, type: row.type });
     togglePageSlugId && togglePageSlugId(row.id);
-  }, [togglePageSlugId]);
+    modifyLocalBar && modifyLocalBar([BAR_TYPE.CONNECTION, String(row?.id)]);
+  }, [togglePageSlugId, modifyLocalBar]);
 
   const onManualSync = useCallback((record) => {
     const id = record?.id || activeRecordRef.current?.id;
