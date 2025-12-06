@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
 import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI } from '@/project/api';
@@ -423,7 +423,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   if (isLoading || isLoadingConnection) return null;
 
   return (
-    <CollaboratorsProvider>
+    <>
       <MetadataProvider projectUuid={projectUuid}>
         <SeaMetadata
           viewID={viewID}
@@ -478,7 +478,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           onRowClick={handleCreateRelatedTicket}
         />
       )}
-    </CollaboratorsProvider>
+    </>
   );
 
 };

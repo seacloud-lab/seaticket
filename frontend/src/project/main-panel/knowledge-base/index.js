@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { gettext, server } from '@/constants';
 import { toaster } from '@/components';
 import { AddButton } from '@/project/components';
-import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
 import TopBar from '../top-bar';
@@ -65,9 +65,6 @@ const KnowledgeBase = ({ title }) => {
     Row: gettext('Record'),
     Rows: gettext('Records'),
   }), []);
-
-  const listUserInfo = useCallback((...params) => knowledgeBaseAPI.listUserInfo(...params), []);
-  const getCollaborators = useCallback(() => knowledgeBaseAPI.listProjectRelatedUsers(projectUuid), [projectUuid]);
 
   const openDialog = useCallback(() => {
     setEditMode(false);
@@ -145,21 +142,16 @@ const KnowledgeBase = ({ title }) => {
         {title}
         <AddButton onClick={openDialog} text={gettext('Add record')} icon="add" />
       </TopBar>
-      <CollaboratorsProvider
-        listUserInfo={listUserInfo}
-        getCollaborators={getCollaborators}
-      >
-        <SeaMetadata
-          viewID={viewID}
-          api={api}
-          permission={permission}
-          isViewComputedOnServer={true}
-          localStorageNamePrefix={localStorageName}
-          toggleView={toggleView}
-          t={t}
-          createContextMenuOptions={createContextMenuOptions}
-        />
-      </CollaboratorsProvider>
+      <SeaMetadata
+        viewID={viewID}
+        api={api}
+        permission={permission}
+        isViewComputedOnServer={true}
+        localStorageNamePrefix={localStorageName}
+        toggleView={toggleView}
+        t={t}
+        createContextMenuOptions={createContextMenuOptions}
+      />
       <AddKnowledgeDialog
         isOpen={isDialogOpen}
         toggle={closeDialog}

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import { CollaboratorsProvider } from '@/sea-metadata';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -13,6 +14,7 @@ import { ConnectionsProvider } from './main-panel/connections/hooks';
 import { AIChatToolsProvider } from './main-panel/ask/hooks';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
+import userAPI from '@/api/user-api';
 
 import './index.css';
 
@@ -75,6 +77,14 @@ const Project = () => {
     });
   }, [settings]);
 
+  const listUserInfo = useCallback((...params) => {
+    return userAPI.listUserInfo(...params);
+  }, []);
+
+  const getCollaborators = useCallback(() => {
+    return projectAPI.listProjectRelatedUsers(projectUuid);
+  }, []);
+
   useEffect(() => {
     const { pathname } = location;
     const decodePathname = decodeURIComponent(pathname);
@@ -107,12 +117,14 @@ const Project = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <AIChatToolsProvider>
-            <ConnectionsProvider projectUuid={projectUuid} >
-              <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-              <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
-            </ConnectionsProvider>
-          </AIChatToolsProvider>
+          <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
+            <AIChatToolsProvider >
+              <ConnectionsProvider projectUuid={projectUuid} >
+                <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+                <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} />
+              </ConnectionsProvider>
+            </AIChatToolsProvider>
+          </CollaboratorsProvider>
         )}
       </div>
     </I18nextProvider>

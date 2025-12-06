@@ -157,12 +157,6 @@ class HomeAPI {
     });
   }
 
-  // other not-admin APIs
-  getUserCommonInfo(email) {
-    const url = this.server + '/api/v2.1/user-common-info/' + email + '/';
-    return this.req.get(url);
-  }
-
   // group
   listGroups(includingAllDeps = false) {
     const url = this.server + '/api/v2.1/groups/';
