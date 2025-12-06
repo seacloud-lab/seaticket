@@ -29,10 +29,10 @@ const Project = () => {
     const { origin, search } = location;
     let url = `${origin}/workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION) && isKeepSearch) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);

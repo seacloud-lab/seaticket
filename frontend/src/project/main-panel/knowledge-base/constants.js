@@ -41,3 +41,8 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
 export const KNOWLEDGE_NOT_DISPLAY_COLUMNS = [
   KNOWLEDGE_PREDEFINED_COLUMN_NAME.PK,
 ];
+
+export const KNOWLEDGE_PAGE_SLUG_ID = {
+  ALL: 'all',
+  NEW: 'new',
+};
