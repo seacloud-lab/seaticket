@@ -150,7 +150,7 @@ class KnowledgeBaseAPI {
         resolve({ data: {
           record: {
             '_pk': 3,
-            'kCed': 'bbb',
+            'question': 'bbb',
             'G0Fv': 'bbb\n',
             '9NkH': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
             '6XGR': '2025-12-05T09:50:54.439471+08:00',

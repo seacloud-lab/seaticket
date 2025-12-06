@@ -1,4 +1,4 @@
-.sea-qa-project-ticket .sea-qa-project-ticket-header {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header {
   width: 100%;
   display: flex;
   height: 96px;
@@ -9,7 +9,7 @@
   gap: 12px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-wrapper {
   width: 100%;
   display: flex;
   height: 30px;
@@ -17,26 +17,26 @@
   flex-shrink: 0;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-left {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-wrapper-left {
   flex: 1;
   margin-right: 16px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-wrapper-right {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-wrapper-right {
   display: flex;
   align-items: center;
   height: 100%;
   width: fit-content;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-title-number {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-title-number {
   display: flex;
   max-width: 100%;
   width: fit-content;
   align-items: center;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-title {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-title {
   flex: 1;
   width: fit-content;
   display: inline-block;
@@ -49,60 +49,32 @@
   margin-right: 2px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-number {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-number {
   display: inline-block;
   color: #666;
   font-size: 22px;
   line-height: 1.2;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-copy {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-copy {
   height: 24px;
   width: 24px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-rename-btn {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-rename-btn {
   display: inline-flex;
   margin-left: 8px;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-input,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-submit-btn {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-input,
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-cancel-btn,
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-submit-btn {
   height: 28px;
   padding-top: 0;
   padding-bottom: 0;
   line-height: 1;
 }
 
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-title-cancel-btn {
+.sea-qa-project-knowledge .sea-qa-project-knowledge-header .sea-qa-project-knowledge-title-cancel-btn {
   margin-right: 10px;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-state-wrapper {
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status {
-  height: 20px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px 0 2px;
-  font-size: 13px;
-  color: #fff;
-  background-color: var(--ticket-close-color);
-  border-radius: 10px;
-  gap: 5px;
-  line-height: 1;
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.open {
-  background-color: var(--ticket-open-color);
-}
-
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.not_planned,
-.sea-qa-project-ticket .sea-qa-project-ticket-header .sea-qa-project-ticket-status.duplicate {
-  background-color: var(--ticket-invalid-color);
 }

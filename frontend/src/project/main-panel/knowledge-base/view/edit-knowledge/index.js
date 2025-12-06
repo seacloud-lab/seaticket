@@ -12,15 +12,15 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { Utils } from '@/utils/utils';
-// import Comment from '../../../tickets/components/comment';
+import Comment from '../../../tickets/components/comment';
 // import StatusToggleButton from './status-toggle-btn';
 import { ticketsAPI } from '../../../../api';
-import { knowledgeBaseAPI } from '../../../../api';
+import { knowledgeBaseAPI } from '@/project/api';
 // import { Ticket as TicketModel } from '../../models';
 // import { useDataCache, useMetadata } from '../../hooks';
 // import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
-// import Header from './header';
+import Header from './header';
 
 import './index.css';
 
@@ -116,7 +116,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
   //   });
   // }, [ticket, modifyTicket]);
 
-  const onTitleChange = useCallback((title, callback) => {
+  const modifyQuestion = useCallback((title, callback) => {
     modifyTicket(knowledge.id, { title }).then(res => {
       callback && callback();
     }).catch(error => {
@@ -217,7 +217,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
   if (isLoading) return (<CenteredLoading />);
   if (!knowledge) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
-  const { id, state, title, creator, comments = [], assignees = [], type, tags, priority, participants = [], substate } = knowledge;
+  const { _pk, state, question, creator, comments = [], assignees = [], type, tags, priority, participants = [], substate } = knowledge;
   // const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   // const stateOption = TICKET_STATE_CONFIG[state];
@@ -227,28 +227,24 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
 
   return (
     <div
-      className={classnames('sea-qa-project-ticket', { 'small': isSmallScreen })}
+      className={classnames('sea-qa-project-knowledge', { 'small': isSmallScreen })}
       onScroll={handleScroll}
       ref={knowledgeRef}
     >
-      {/* <Header
+      <Header
         ref={headerRef}
         readonly={!editable}
-        title={title}
-        id={id}
-        // stateOption={stateOption}
-        // typeOption={typeOption}
+        question={question}
+        id={_pk}
         copyLink={copyLink}
-        modifyTitle={onTitleChange}
-      /> */}
-      {/* <Header
-        className={classnames('sea-qa-project-ticket-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
-        title={title}
-        id={id}
-        // stateOption={stateOption}
-        // typeOption={typeOption}
-      /> */}
-      <div className="sea-qa-project-ticket-content-wrapper" ref={containerRef}>
+        modifyQuestion={modifyQuestion}
+      />
+      <Header
+        className={classnames('sea-qa-project-knowledge-simple-info-wrapper-sticky', { 'd-none': !isShowStickyHeader })}
+        question={question}
+        id={_pk}
+      />
+      <div className="sea-qa-project-knowledge-content-wrapper" ref={containerRef}>
         <div className="sea-qa-project-ticket-comment-container-wrapper">
           {/* <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }}> */}
           <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>

@@ -37,8 +37,12 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     const [, pageIdFromURL = ''] = params;
 
     let pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
-    if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
+    if (pageIdFromURL === '') { // All
+      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
+    } else if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.NEW) { // New
       pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.NEW;
+    } else { // Edit
+      pageSlugId = pageIdFromURL;
     }
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
