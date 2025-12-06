@@ -1,13 +1,15 @@
+import logging
 import random
 from datetime import datetime
-from django.contrib.admin import display
 from django.utils import timezone
-
 from dateutil.relativedelta import relativedelta
+from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
+from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS
 
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
+logger = logging.getLogger(__name__)
 
 def time_str_to_utc_time(time_str):
     if time_str.endswith('Z'):
@@ -223,10 +225,21 @@ def convert_ticket_select_column_name_to_option_id(columns, ticket):
 
 
 def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
-    ticket_ids_str = ",".join(ticket_ids)
+    ticket_ids_str = ", ".join(ticket_ids)
     sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
+
+def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records_for_each_id):
+    ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({', '.join(ticket_ids)}) AND `deleted` = False ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
+    ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
+    result = {}
+    for ticket_comment in ticket_comments_data:
+        if ticket_comment['ticket_id'] not in result:
+            result[ticket_comment['ticket_id']] = [ticket_comment]
+        elif len(result[ticket_comment['ticket_id']]) < max_records_for_each_id:
+            result[ticket_comment['ticket_id']].append(ticket_comment)
+    return result
 
 
 def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, option_ids):
@@ -237,3 +250,73 @@ def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, op
     }
     res = seadb_api.delete_column_option(project_uuid, option_data)
     return res.get('success')
+
+
+def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
+    """
+    Build a json from a ticket and its comments.
+
+    Args:
+    - project_uuid
+    - ticket_ids
+
+    Returns:
+    [
+        {
+            "type": "ticket",
+            "ticket_id": ...,
+            "state": ...,
+            "title": ...,
+            "content": ...,
+            "created_time": ...,
+            "comments": [
+                {
+                    "nickname": ...,
+                    "content": ...,
+                    "replied_at": ...,
+                },
+                ...
+            ]
+        }, 
+        # {...}
+    ]
+    """
+
+    tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, AI_CHAT_TICKET_MAX_COMMENTS_NUM)
+    all_comments_users = []
+    for ticket_comments in ticket_ids_comments_map.values():
+        for ticket_comment in ticket_comments:
+            all_comments_users.append(ticket_comment.get('creator'))
+    all_comments_users = set(all_comments_users)
+
+    all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)
+
+    nickname_map = {
+        user_profile.user: user_profile.nickname
+        for user_profile in all_comments_users_profile
+    }
+    result = []
+    for ticket in tickets:
+        created_time = ticket.get('created_time')
+        created_time = time_str_to_utc_time(created_time).isoformat()
+        whole_ticket_data = {
+            'type': 'ticket',
+            'ticket_id': int(ticket['_pk']),
+            'state': ticket.get('state'),
+            'title': ticket.get('title'),
+            'content': ticket.get('content'),
+            'created_time': created_time,
+            'comments': []
+        }
+        for ticket_comment in ticket_ids_comments_map.get(ticket['_pk'], []):
+            nickname = nickname_map.get(ticket_comment.get('creator'))
+            commented_at = ticket_comment.get('created_time')
+            commented_at = time_str_to_utc_time(commented_at).isoformat()
+            whole_ticket_data['comments'].append({
+                'nickname': nickname,
+                'content': ticket_comment.get('content'),
+                'commented_at': commented_at
+            })
+        result.append(whole_ticket_data)
+    return result

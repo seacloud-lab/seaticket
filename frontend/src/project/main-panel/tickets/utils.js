@@ -10,6 +10,7 @@ import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import ObjectUtils from '@/utils/object-utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { PREDEFINED_TICKET_COLUMN_NAME } from './constants';
+import { TicketForAI } from './models';
 
 export const generatorTicketURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -31,7 +32,7 @@ export const generatorRowCopyLinkTool = ({ row, workspaceID, projectName }) => {
   };
 };
 
-export const generatorRowsMoreTool = ({ rows, columns, modifyRows }) => {
+export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsByAI }) => {
   const stateColumn = getColumnByName(columns, 'state');
   const priorityColumn = getColumnByName(columns, 'priority');
   const stateColumnOptions = getColumnOptions(stateColumn);
@@ -84,6 +85,28 @@ export const generatorRowsMoreTool = ({ rows, columns, modifyRows }) => {
             },
           };
         })
+      }, {
+        label: gettext('AI'),
+        key: 'AI',
+        children: [
+          {
+            label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
+            key: 'chat_tickets',
+            callback: () => {
+              const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+              if (!titleColumn) return;
+              let newRows = [];
+              rows.forEach(row => {
+                const newRow = {
+                  [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+                  _pk: row._id,
+                };
+                newRows.push(new TicketForAI(newRow));
+              });
+              chatTicketsByAI(newRows);
+            },
+          }
+        ]
       }
     ]
   };
@@ -170,12 +193,26 @@ export const generatorTicketsContextMenuOptions = ({
   rowGetterByIndex,
   selectNone,
   context,
-  handleResolveTicketByAI,
+  chatTicketsByAI,
   togglePageSlugId,
   workspaceID,
   projectName,
 }) => {
   let list = [];
+
+  const handleChatTicketsByAI = (rows) => {
+    const titleColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+    if (!titleColumn) return;
+    let newRows = [];
+    rows.forEach(row => {
+      const newRow = {
+        [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
+        _pk: row._id,
+      };
+      newRows.push(new TicketForAI(newRow));
+    });
+    chatTicketsByAI(newRows);
+  };
 
   // handle selected multiple cells
   if (selectedRange) {
@@ -213,6 +250,23 @@ export const generatorTicketsContextMenuOptions = ({
         }
       });
     }
+
+    if (rows.length > 0) {
+      if (list.length > 0) {
+        list.push('Divider');
+      }
+      list.push({
+        key: 'AI',
+        label: gettext('AI'),
+        children: [
+          {
+            label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
+            key: 'chat_tickets',
+            callback: () => handleChatTicketsByAI(rows),
+          }
+        ],
+      });
+    }
     return list;
   }
 
@@ -237,6 +291,24 @@ export const generatorTicketsContextMenuOptions = ({
         }
       });
     }
+
+    if (rows.length > 0) {
+      if (list.length > 0) {
+        list.push('Divider');
+      }
+      list.push({
+        key: 'AI',
+        label: gettext('AI'),
+        children: [
+          {
+            label: rows.length > 1 ? gettext('Chat tickets') : gettext('Chat ticket'),
+            key: 'chat_tickets',
+            callback: () => handleChatTicketsByAI(rows),
+          }
+        ],
+      });
+    }
+
     return list;
   }
 
@@ -271,18 +343,8 @@ export const generatorTicketsContextMenuOptions = ({
 
   list.push('Divider');
   list.push({
-    label: gettext('Resolve ticket by AI'),
-    key: 'resolve_ticket',
-    callback: () => {
-      const titleColumn = getColumnByName(table.columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-      if (titleColumn) {
-        let ticket = {
-          [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: getCellValueByColumn(row, titleColumn),
-          _id: row._id,
-        };
-        handleResolveTicketByAI(ticket);
-      }
-    },
+    label: gettext('Chat ticket by AI'),
+    callback: () => handleChatTicketsByAI([row]),
   });
   return list;
 };

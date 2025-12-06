@@ -8,7 +8,7 @@ import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import { useConnectionsPage } from '../../hooks';
 import { gettext } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
-import { useProblemToBeResolved } from '@/project/main-panel/ask/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
@@ -22,6 +22,9 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { MetadataProvider } from '../../../tickets/hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { IssueForAI } from '../../models';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -41,7 +44,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [relatedIssues, setRelatedIssues] = useState([]);
   const [isLoadingRelatedIssues, setIsLoadingRelatedIssues] = useState(false);
 
-  const { updateIssue } = useProblemToBeResolved();
+  const { updateAttachments } = useAIChatTools();
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -168,11 +171,11 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, [projectUuid, connectionID, connection]);
 
-  const handleResolveIssueByAI = useCallback((issue) => {
-    if (!issue || !connectionID) return;
-    updateIssue({ ...issue, connection_id: connectionID }, AI_RESOLVE_TYPE.AGENT);
+  const handleResolveIssueByAI = useCallback((issues = []) => {
+    if (!Array.isArray(issues) || issues.length === 0 || !connectionID) return;
+    updateAttachments(issues, AI_RESOLVE_TYPE.AGENT);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connectionID, toggleBar, updateIssue]);
+  }, [connectionID, toggleBar, updateAttachments]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
@@ -213,15 +216,33 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection, handleCreateRelatedTicket]);
 
-  const generateAIOptions = useCallback(({ row }) => {
+  const generateAIOptions = useCallback(({ rows }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
     if (!enableUseAI) return null;
 
     const children = [
       connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
-        label: gettext('Resolve issue'),
-        key: 'resolve_issue',
-        callback: () => handleResolveIssueByAI(row)
+        label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
+        key: 'chat_issues',
+        callback: () => {
+          let newRows = [];
+          const titleColumn = getColumnByName(allColumns.current, 'title');
+          const stateColumn = getColumnByName(allColumns.current, 'state');
+          const urlColumn = getColumnByName(allColumns.current, 'url');
+
+          if (!titleColumn) return;
+          rows.forEach(row => {
+            const newRow = {
+              _pk: row._id,
+              title: getCellValueByColumn(row, titleColumn),
+              state: getCellValueByColumn(row, stateColumn),
+              url: getCellValueByColumn(row, urlColumn),
+              connection_id: connectionID,
+            };
+            newRows.push(new IssueForAI(newRow));
+          });
+          handleResolveIssueByAI(newRows);
+        }
       } : null,
     ].filter(Boolean);
 
@@ -232,7 +253,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
       label: gettext('AI'),
       children
     };
-  }, [connection, handleResolveIssueByAI]);
+  }, [connection, connectionID, handleResolveIssueByAI]);
 
   const generateOpenOriginalPageOption = useCallback(({ row }) => {
     const url = getOriginalPageUrl(connection, row, allColumns.current);
@@ -244,27 +265,34 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection]);
 
-  const createRowsTools = useCallback(({ rows, updateLocalRow }) => {
-    if (rows.length > 1) return [];
-    let tools = [];
-    const row = rows[0];
-    const openOriginalPageOption = generateOpenOriginalPageOption({ row });
-    const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
-    const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
-    const AIOption = generateAIOptions({ row, updateLocalRow });
-    if (createRelatedTicketOption || findRelatedIssuesOption || AIOption || openOriginalPageOption) {
-      tools.push({
+  const createRowsTools = useCallback(({ rows, columns }) => {
+    let children = [];
+    if (rows.length === 1) {
+      const row = rows[0];
+      const openOriginalPageOption = generateOpenOriginalPageOption({ row });
+      const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
+      const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
+      children = [
+        openOriginalPageOption,
+        createRelatedTicketOption,
+        findRelatedIssuesOption,
+      ].filter(Boolean);
+    }
+
+    const AIOption = generateAIOptions({ rows, columns });
+    if (children.length > 0 && AIOption) {
+      children.push({ key: 'divider' });
+    }
+    if (AIOption) {
+      children.push(AIOption);
+    }
+    const tools = [
+      {
         key: 'more',
         icon: 'more',
-        children: [
-          openOriginalPageOption,
-          createRelatedTicketOption,
-          findRelatedIssuesOption,
-          (createRelatedTicketOption || findRelatedIssuesOption) && AIOption ? { key: 'divider' } : null,
-          AIOption,
-        ].filter(Boolean)
-      });
-    }
+        children,
+      }
+    ];
     return tools;
   }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions]);
 
@@ -275,17 +303,47 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     table,
     rowMetrics,
     rowGetterByIndex,
-    updateLocalRow,
   }) => {
+    let list = [];
+
     // handle selected multiple cells
     if (selectedRange) {
-      return [];
+      const { topLeft, bottomRight } = selectedRange;
+      let rows = [];
+      let currentGroupRowIndex = topLeft.groupRowIndex;
+      for (let i = topLeft.rowIdx; i <= bottomRight.rowIdx; i++) {
+        const row = rowGetterByIndex({ isGroupView, groupRowIndex: currentGroupRowIndex, rowIndex: i });
+        currentGroupRowIndex++;
+        if (row) {
+          rows.push(row);
+        }
+      }
+      if (rows.length > 0) {
+        const AIOptions = generateAIOptions({ rows, columns: table.columns });
+        if (AIOptions) {
+          list.push(AIOptions);
+        }
+      }
+      return list;
     }
 
     // handle selected rows
     const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
     if (selectedRowIds.length > 1) {
-      return [];
+      let rows = [];
+      selectedRowIds.forEach(id => {
+        const row = table.id_row_map[id];
+        if (row) {
+          rows.push(row);
+        }
+      });
+      if (rows.length > 0) {
+        const AIOptions = generateAIOptions({ rows, columns: table.columns });
+        if (AIOptions) {
+          list.push(AIOptions);
+        }
+      }
+      return list;
     }
 
     // handle selected cell
@@ -294,7 +352,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return [];
 
-    let list = [];
     const openOriginalPageOption = generateOpenOriginalPageOption({ row });
     list.push(openOriginalPageOption);
 
@@ -306,7 +363,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
     list = list.filter(Boolean);
 
-    const AIOptions = generateAIOptions({ row, updateLocalRow });
+    const AIOptions = generateAIOptions({ rows: [row], columns: table.columns });
     if (list.length > 0 && AIOptions) {
       list.push('Divider');
     }

@@ -105,6 +105,9 @@ class TicketForAI {
   constructor(object) {
     this._id = String(object._pk) || '';
     this.title = object.title || '';
+    this.type = 'ticket';
+    this.icon = 'all-tickets';
+    this.key = `${this.type}__${this._id}`;
   }
 }
 

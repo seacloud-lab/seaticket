@@ -14,6 +14,7 @@
 .sea-qa-ai-ask-chat-input-container {
   position: relative;
   width: 100%;
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,10 +41,10 @@
 .sea-qa-ai-ask-chat-input-content .message-input {
   width: 100%;
   height: 100%;
-  min-height: 36px;
+  min-height: 58px;
   max-height: 336px;
   overflow-y: auto;
-  padding: 10px 10px 3px 10px;
+  padding: 0px 16px 16px 16px;
   line-height: 1.5;
   border: none;
   border-radius: 6px;
@@ -77,7 +78,7 @@
 }
 
 .sea-qa-ai-ask-chat-operations-container {
-  height: 38px;
+  height: 24px;
   width: 100%;
   display: flex;
   align-items: end;
@@ -108,14 +109,14 @@
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-chat-operations-container-left {
   display: flex;
   align-items: center;
-  padding: 0 8px 6px 6px;
+  padding: 0 8px 0 12px;
   gap: 8px;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-ask-chat-operations-container-right {
   display: flex;
   align-items: center;
-  padding: 0 6px 6px 8px;
+  padding: 0 12px 0 8px;
   gap: 8px;
 }
 
@@ -140,6 +141,7 @@
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select .selected-option-show {
   width: 100%;
+  color: #212529;
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .selected-option-show,
@@ -147,12 +149,31 @@
   color: #ed7109;
 }
 
-.sea-qa-ai-chat-tool-select-editor .popover.bs-popover-auto[data-popper-placement^=top],
-.sea-qa-ai-chat-tool-select-editor .popover.bs-popover-top {
+.sea-qa-ai-chat-tool-type-select-editor .popover.bs-popover-auto[data-popper-placement^=top],
+.sea-qa-ai-chat-tool-type-select-editor .popover.bs-popover-top {
   margin-bottom: 0;
   bottom: -8px !important;
 }
 
-.sea-qa-ai-chat-tool-select-editor .popover.bs-popover-auto[data-popper-placement^=bottom-start] {
+.sea-qa-ai-chat-tool-type-select-editor .popover.bs-popover-auto[data-popper-placement^=bottom-start] {
   top: -8px !important;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-content:not(.empty) {
+  min-height: fit-content;
+  padding: 8px 0 !important;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover {
+  background-color: #20a0ff !important;
+  color: #fff !important;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option .sea-qa-icon-btn .sea-qa-icon-svg-check {
+  height: 14px;
+  width: 14px;
+}
+
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover .sea-qa-icon-btn .sea-qa-icon-svg-check {
+  color: #fff !important;
 }

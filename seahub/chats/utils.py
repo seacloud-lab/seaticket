@@ -166,3 +166,22 @@ def gen_message_id(session_uuid, max_try=5):
 
     return new_message_id
 
+def format_extra_contents(extra_contents):
+    new_extra_contents = []
+    for extra_content in extra_contents:
+        if extra_content['type'] == 'ticket':
+            new_extra_contents.append({
+                'type': extra_content['type'],
+                'ticket_id': extra_content['ticket_id'],
+                'title': extra_content['title']
+            })
+        elif extra_content['type'] == 'issue':
+            new_extra_contents.append({
+                'type': extra_content['type'],
+                'issue_id': extra_content['issue_id'],
+                'connection_id': extra_content['connection_id'],
+                'state': extra_content['state'],
+                'title': extra_content['title'],
+                'url': extra_content['url']
+            })
+    return new_extra_contents

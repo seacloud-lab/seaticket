@@ -7,11 +7,13 @@ import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import MessageInput from '../message-input';
 import { chatAPI } from '../../../api';
 import ChatHistory from '../chat-history';
-import Thinking from '../thinking';
+import { Thinking } from '../components';
 import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { IssueForAI } from '../../connections/models';
+import { TicketForAI } from '../../tickets/models';
 
 import './index.css';
 
@@ -56,7 +58,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     jumpToBottom(isReply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const sendMessage = useCallback(({ resolveType, message, ticket, issue, model }) => {
+  const sendMessage = useCallback(({ resolveType, message, attachments, model }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -64,15 +66,21 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     }
     const newChatHistories = chatHistories.slice(0);
     newChatHistories.push(new ChatMessage({
-      message: { [CHAT_MESSAGE_TYPE.TEXT]: validMessage },
+      message: {
+        [CHAT_MESSAGE_TYPE.TEXT]: validMessage,
+        [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
+      },
       isUserSpeak: true,
     }));
     updateChatHistories(newChatHistories, false, () => {
       messageInputRef.current?.clearInput();
     });
 
+    const ticketIds = attachments.filter(a => a.type === 'ticket').map(t => t._id);
+    const issuesIds = attachments.filter(a => a.type === 'issue').map(i => ({ issue_id: i._id, connection_id: i.connection_id }));
+
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, ticket, issue, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -81,7 +89,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, ticket, issue, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
@@ -108,9 +116,18 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
         if (item.role === 'user') {
+          let attachments = item?.extra_contents || [];
+          attachments = Array.isArray(attachments) ? attachments.map(attachment => {
+            if (attachment.type === 'issue') return new IssueForAI({ ...attachment, _pk: attachment.issue_id });
+            if (attachment.type === 'ticket') return new TicketForAI({ ...attachment, _pk: attachment.ticket_id });
+            return null;
+          }).filter(Boolean) : [];
           return new ChatMessage({
             _id: item.id,
-            message: { [CHAT_MESSAGE_TYPE.TEXT]: item.content },
+            message: {
+              [CHAT_MESSAGE_TYPE.TEXT]: item.content,
+              [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
+            },
             isUserSpeak: true,
           });
         }

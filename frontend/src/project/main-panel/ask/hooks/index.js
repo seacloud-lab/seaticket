@@ -1,9 +1,9 @@
 import { SessionsProvider, useSessions } from './sessions';
 import { AskPageProvider, useAskPage } from './page-type';
-import { ProblemToBeResolvedProvider, useProblemToBeResolved } from './problem-to-be-resolved';
+import { AIChatToolsProvider, useAIChatTools } from './ai-chat-tools';
 
 export {
   SessionsProvider, useSessions,
   AskPageProvider, useAskPage,
-  ProblemToBeResolvedProvider, useProblemToBeResolved
+  AIChatToolsProvider, useAIChatTools
 };

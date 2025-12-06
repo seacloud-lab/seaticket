@@ -12,11 +12,13 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_project_permission, ticket_to_json, TicketNotFound, github_issue_to_json, IssueNotFound, check_ai_limit
+from seahub.project.utils import check_project_permission, check_ai_limit
+from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id
-from seahub.project.constants import AI_CHAT_TICKET_PREFIX_PROMPT, AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT
+from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
+from seahub.tickets.ticket_utils import get_whole_tickets_data
 from django.utils.translation import gettext as _
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +238,9 @@ class ChatMessagesView(APIView):
             messages_data = []
             for message in messages:
                 data = message.to_dict()
-                if message.role == 'assistant':
+                if message.role == 'user':
+                    data['extra_contents'] = format_extra_contents(data['extra_contents'])
+                elif message.role == 'assistant':
                     if message.is_agent_mode:
                         if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
                             data['thought_process'] = agent_thought_process
@@ -292,43 +296,17 @@ class ChatView(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
-        ticket_id = request.data.get('ticket_id')
-        issue_id = request.data.get('issue_id')
-        if ticket_id and issue_id:
-            error_msg = 'can only provide a ticket or an issue.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        extra_contents = []
 
-        if ticket_id:
-            try:
-                ticket_id = int(ticket_id)
-            except:
-                error_msg = 'ticket_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            try:
-                ticket_json_data = ticket_to_json(project_uuid, ticket_id)
-            except TicketNotFound:
-                error_msg = 'ticket not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_TICKET_PREFIX_PROMPT + f'```json\n{ticket_json_data}\n```\n\n' + query
-        connection_id = request.data.get('connection_id')
-        # only support github issue for now
-        if issue_id:
-            try:
-                issue_id = int(issue_id)
-            except:
-                error_msg = 'issue_id invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        ticket_ids = request.data.get('ticket_ids', [])
+        if ticket_ids:
+            seadb_api = SeaDBAPI()
+            extra_contents += get_whole_tickets_data(seadb_api, project_uuid, ticket_ids)
 
-            if not connection_id:
-                error_msg = 'connection_id is required when issue_id is provided.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-            try:
-                issue_json_data = github_issue_to_json(project_uuid, issue_id, connection_id)
-            except IssueNotFound:
-                error_msg = 'issue not found'
-                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-            query = AI_CHAT_GITHUB_ISSUE_PREFIX_PROMPT + f'```json\n{issue_json_data}\n```\n\n' + query
+        issues = request.data.get('issues', [])
+        if issues:
+            github_seadb_api = GitHubSeaDBAPI(project_uuid)
+            extra_contents += github_seadb_api.get_whole_issues_data(issues)
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
@@ -355,6 +333,7 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'message_id': message_id,
             'query': query,
+            'extra_contents': extra_contents,
             'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
@@ -387,13 +366,14 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent')
-        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', json.dumps(ai_response['sources']))
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', extra_contents=extra_contents)
+        ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
 
         ai_response.update({
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
-            'ai_reply_message_id': ai_reply_message.id
+            'ai_reply_message_id': ai_reply_message.id,
+            'extra_contents': format_extra_contents(extra_contents)
         })
 
         return Response(ai_response)

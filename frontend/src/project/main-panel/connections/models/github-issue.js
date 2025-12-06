@@ -4,6 +4,9 @@ class IssueForAI {
     this.icon = object.state === 'closed' || object.state === '0002' ? 'circle-check' : 'circle-dot';
     this.title = object.title || '';
     this.connection_id = object.connection_id || '';
+    this.url = object.url;
+    this.type = 'issue';
+    this.key = `${this.type}__${this._id}`;
   }
 }
 
