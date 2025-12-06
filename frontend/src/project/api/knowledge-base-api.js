@@ -144,23 +144,8 @@ class KnowledgeBaseAPI {
   }
 
   getRecord(projectUuid, knowledgeID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/' + knowledgeID + '/';
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve({ data: {
-          record: {
-            '_pk': 3,
-            'question': 'bbb',
-            'answer': 'bbb\n',
-            '9NkH': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
-            '6XGR': '2025-12-05T09:50:54.439471+08:00',
-            'Geb8': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
-            'Xyhg': '2025-12-05T09:50:54.439491+08:00'
-          }
-        } });
-      }, 500);
-    });
-    return this.req.get(url);
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
+    return this.req.get(url, { params: { record_number: knowledgeID } });
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
