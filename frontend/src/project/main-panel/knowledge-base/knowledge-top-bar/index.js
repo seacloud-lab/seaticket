@@ -26,7 +26,7 @@ const KnowledgeTopBar = ({ title }) => {
             className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
-          <span className="text-truncate" title={gettext('New knowledge record')}>{gettext('New knowledge record')}</span>
+          <span className="text-truncate" title={gettext('New record')}>{gettext('New record')}</span>
         </>
       );
     }

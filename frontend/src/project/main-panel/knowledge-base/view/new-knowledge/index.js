@@ -110,7 +110,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
         </div>
       )}
       <div className="sea-qa-project-knowledge-settings">
-        <div className="sea-qa-project-knowledge-name mb-3">{gettext('New knowledge')}</div>
+        <div className="sea-qa-project-knowledge-name mb-3">{gettext('New record ')}</div>
         <div className="sea-qa-project-knowledge-settings-container">
           <div className="sea-qa-project-knowledge-content-settings">
             <div className="sea-qa-project-knowledge-title mb-4">
