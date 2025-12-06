@@ -87,7 +87,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
       return (
         <>
           {toggleBtn}
-          <span className="text-truncate 123123" title={gettext('New ticket')}>{gettext('New ticket')}</span>
+          <span className="text-truncate" title={gettext('New ticket')}>{gettext('New ticket')}</span>
         </>
       );
     }
