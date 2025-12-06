@@ -526,8 +526,6 @@ class RelatedRecordsView(APIView):
                     for reranked_key in reranked_keys:
                         if reranked_key in key_to_result:
                             reranked_results.append(key_to_result[reranked_key])
-                else:
-                    reranked_results = top_candidates
 
         except Exception as e:
             logger.error(f"Error calling vector search indexer: {e}")
