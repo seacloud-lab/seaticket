@@ -478,6 +478,7 @@ class RelatedRecordsView(APIView):
                     processed_result['issue_number'] = issue_number
                     processed_result['state'] = record.get('state', '')
                     processed_result['labels'] = record.get('labels')
+                    processed_result['modified_time'] = record.get('modified_time', '')
 
                 elif connection_type == ConnectionType.EMAIL.value:
                     processed_result['content'] = record.get('content', '')
