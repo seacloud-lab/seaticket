@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { gettext } from '@/constants';
 import { toaster } from '@/components';
-import SeaMetadata, { CollaboratorsProvider } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
@@ -116,26 +116,18 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     Rows: gettext('Records'),
   }), []);
 
-  const listUserInfo = useCallback((...params) => knowledgeBaseAPI.listUserInfo(...params), []);
-  const getCollaborators = useCallback(() => knowledgeBaseAPI.listProjectRelatedUsers(projectUuid), [projectUuid]);
-
   return (
     <>
-      <CollaboratorsProvider
-        listUserInfo={listUserInfo}
-        getCollaborators={getCollaborators}
-      >
-        <SeaMetadata
-          viewID={viewID}
-          api={api}
-          permission={permission}
-          isViewComputedOnServer={true}
-          localStorageNamePrefix={localStorageName}
-          toggleView={toggleView}
-          t={t}
-          createContextMenuOptions={createContextMenuOptions}
-        />
-      </CollaboratorsProvider>
+      <SeaMetadata
+        viewID={viewID}
+        api={api}
+        permission={permission}
+        isViewComputedOnServer={true}
+        localStorageNamePrefix={localStorageName}
+        toggleView={toggleView}
+        t={t}
+        createContextMenuOptions={createContextMenuOptions}
+      />
       <AddKnowledgeDialog
         isOpen={isDialogOpen}
         toggle={closeDialog}
