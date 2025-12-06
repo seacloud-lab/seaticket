@@ -81,7 +81,7 @@ class SidePanel extends React.Component {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     if (isHotkey('enter', e)) {
-      this.onBasesListExtended(e);
+      this.onListExtended(e);
     }
   };
 
@@ -101,7 +101,7 @@ class SidePanel extends React.Component {
     return this.props.currentTab === tab ? 'active' : '';
   };
 
-  onBasesListExtended = (event) => {
+  onListExtended = (event) => {
     event.stopPropagation();
     event.preventDefault();
     this.props.toggleGroupExpanded();
@@ -226,7 +226,7 @@ class SidePanel extends React.Component {
                     tabIndex={0}
                     role="button"
                     onKeyDown={this.onKeyDown}
-                    onClick={this.onBasesListExtended}
+                    onClick={this.onListExtended}
                     icon={this.state.isDataLoading ? '' : 'down'}
                     iconClassName="nav-toggle-icon"
                   />

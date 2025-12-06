@@ -122,7 +122,7 @@ class RenameProjectView extends React.Component {
         </List>
         <div className="selected-table-container project-icon-settings-popover">
           <span>{gettext('Choose icon and color')}</span>
-          <div className="create-base-settings">
+          <div className="create-project-settings">
             {this.renderColorSettings()}
             {this.renderIconSettings()}
           </div>

@@ -4105,10 +4105,6 @@ msgstr "开发人员版"
 msgid "Version info"
 msgstr "版本信息"
 
-#: frontend/src/sys-admin/info/index.js:155
-msgid "Bases"
-msgstr "表格"
-
 #: frontend/src/sys-admin/info/index.js:161
 #: frontend/src/sys-admin/info/index.js:165
 msgid "Activated users"

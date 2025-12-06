@@ -7,18 +7,18 @@ import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 
-function DeletedGroupBaseItem(props) {
+function DeletedGroupProjectItem(props) {
 
   const [loading, setLoading] = useState(false);
-  const { baseItem, groupID } = props;
+  const { projectItem, groupID } = props;
 
   async function restoreGroupTrashProject() {
-    const { name, uuid } = baseItem;
+    const { name, uuid } = projectItem;
     setLoading(true);
     try {
       await homeAPI.restoreGroupTrashProject(uuid, groupID);
       setLoading(false);
-      props.restoreProject(baseItem);
+      props.restoreProject(projectItem);
       const msg = gettext('%s restored').replace('%s', name);
       toaster.success(msg);
     } catch (error) {
@@ -31,15 +31,15 @@ function DeletedGroupBaseItem(props) {
   }
 
   return (
-    <div className="deleted-group-base-item-container">
-      <div className="base-item-icon">
-        <ProjectIcon bgColor={baseItem.color} icon={baseItem.icon} />
+    <div className="deleted-group-project-item-container">
+      <div className="project-item-icon">
+        <ProjectIcon bgColor={projectItem.color} icon={projectItem.icon} />
       </div>
-      <div className="base-item-title text-truncate">{baseItem.name}</div>
-      <div className="base-item-delete-time" title={formatWithTimezone(baseItem.delete_time)}>
-        {dayjs(baseItem.delete_time).format('YYYY-MM-DD HH:mm:ss')}
+      <div className="project-item-title text-truncate">{projectItem.name}</div>
+      <div className="project-item-delete-time" title={formatWithTimezone(projectItem.delete_time)}>
+        {dayjs(projectItem.delete_time).format('YYYY-MM-DD HH:mm:ss')}
       </div>
-      <div className="restore-base-button text-truncate">
+      <div className="restore-project-button text-truncate">
         {loading ?
           <span className="loading-icon loading-tip" />
           :
@@ -50,10 +50,10 @@ function DeletedGroupBaseItem(props) {
   );
 }
 
-DeletedGroupBaseItem.propTypes = {
-  baseItem: PropTypes.object.isRequired,
+DeletedGroupProjectItem.propTypes = {
+  projectItem: PropTypes.object.isRequired,
   groupID: PropTypes.number.isRequired,
   restoreProject: PropTypes.func.isRequired,
 };
 
-export default DeletedGroupBaseItem;
+export default DeletedGroupProjectItem;

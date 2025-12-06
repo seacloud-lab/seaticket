@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon, toaster } from '@/components';
 import homeAPI from '../../api';
-import Base from '../../models/base';
+import Project from '../../models/project';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import { ProjectSettingPopover } from '../../popover';
@@ -28,27 +28,27 @@ class VirtualProject extends React.Component {
       isChange: true,
       isCreatingProject: false,
       isDataLoaded: false,
-      baseCreated: [],
+      projectCreated: [],
     };
   }
 
   componentDidMount() {
-    let baseCreated = [];
+    let projectCreated = [];
     userAPI.getAccountInfo().then((res) => {
       let obj = {};
       obj.value = 'personal';
       obj.email = res.data.email;
       obj.label = 'Personal';
-      baseCreated.push(obj);
+      projectCreated.push(obj);
       homeAPI.listGroups().then((res) => {
         for (let i = 0 ; i < res.data.length; i++) {
           let obj = {};
           obj.value = res.data[i].id;
           obj.email = res.data[i].id + '@seafile_group';
           obj.label = res.data[i].name;
-          baseCreated.push(obj);
+          projectCreated.push(obj);
         }
-        this.setState({ baseCreated, isDataLoaded: true });
+        this.setState({ projectCreated, isDataLoaded: true });
       }).catch((err) => {
         this.handleError(err);
         this.props.hideVirtualProject();
@@ -60,7 +60,7 @@ class VirtualProject extends React.Component {
   }
 
   onCreateProject = () => {
-    const { name, icon, bgColor, baseCreated, isChange, isCreatingProject } = this.state;
+    const { name, icon, bgColor, projectCreated, isChange, isCreatingProject } = this.state;
     if (!isChange || isCreatingProject) return;
     const { currentWorkspace } = this.props;
     let response = validateName(name);
@@ -70,17 +70,17 @@ class VirtualProject extends React.Component {
     }
     let email;
     if (currentWorkspace) {
-      for (let i = 0; i < baseCreated.length; i++) {
-        if ((currentWorkspace.type === 'personal' && baseCreated[i].value === 'personal') ||
-          (currentWorkspace.type === 'group' && baseCreated[i].value === currentWorkspace.group_id)) {
-          email = baseCreated[i].email;
+      for (let i = 0; i < projectCreated.length; i++) {
+        if ((currentWorkspace.type === 'personal' && projectCreated[i].value === 'personal') ||
+          (currentWorkspace.type === 'group' && projectCreated[i].value === currentWorkspace.group_id)) {
+          email = projectCreated[i].email;
           break;
         }
       }
     }
     this.setState({ isCreatingProject: true });
     homeAPI.createProject(response.message, email, icon, bgColor, null).then((res) => {
-      let newProject = new Base(res.data.project);
+      let newProject = new Project(res.data.project);
       this.props.createBlankProject(newProject);
       this.setState({ isCreatingProject: false });
     }).catch((error) => {

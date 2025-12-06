@@ -4086,10 +4086,6 @@ msgstr ""
 msgid "Version info"
 msgstr ""
 
-#: frontend/src/sys-admin/info/index.js:155
-msgid "Bases"
-msgstr ""
-
 #: frontend/src/sys-admin/info/index.js:161
 #: frontend/src/sys-admin/info/index.js:165
 msgid "Activated users"

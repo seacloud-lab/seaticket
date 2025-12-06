@@ -247,11 +247,11 @@
   background-color: #f5f5f5;
 }
 
-.add-base-dropdown-menu {
+.add-project-dropdown-menu {
   flex: 1;
 }
 
-.add-base-dropdown-menu .dropdown-menu-toggle {
+.add-project-dropdown-menu .dropdown-menu-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
