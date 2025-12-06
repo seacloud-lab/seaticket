@@ -215,7 +215,7 @@ const Main = forwardRef(({
         ) : (
           <>
             {displayOptions.map((option, i) => {
-              const isSelected = value && value.includes(option.value);
+              const isSelected = value && Array.isArray(value) ? value.includes(option.value) : value === option.value;
               return (
                 <div
                   className={classnames('option-editor-option', optionClassName, {
