@@ -140,19 +140,15 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         columns={columns}
         rows={connections}
         emptyTip={
-          (
-            <>
-              <EmptyTip
-                title={gettext('No connections')}
-                text={gettext('Connections enable you to sync contents from third party applications and search them')}
-              >
-                <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => handleModify()}>
-                  <Icon symbol="add" className="mr-1" />
-                  {gettext('New connection')}
-                </Button>
-              </EmptyTip>
-            </>
-          )
+          <EmptyTip
+            title={gettext('No connections')}
+            text={gettext('Connections enable you to sync contents from third party applications and search them')}
+          >
+            <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => handleModify()}>
+              <Icon symbol="add" className="mr-1" />
+              {gettext('New connection')}
+            </Button>
+          </EmptyTip>
         }
         isLoading={isLoading}
         loadMore={loadMore}

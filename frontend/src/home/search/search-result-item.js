@@ -7,7 +7,7 @@ const gettext = window.gettext;
 const propTypes = {
   item: PropTypes.object.isRequired,
   onItemClickHandler: PropTypes.func.isRequired,
-  getClassName: PropTypes.string.isRequired,
+  className: PropTypes.string.isRequired,
   path: PropTypes.string,
 };
 
@@ -18,11 +18,11 @@ class SearchResultItem extends React.Component {
   };
 
   render() {
-    const { item, getClassName } = this.props;
+    const { item, className } = this.props;
     const { color, icon, name, group_name } = item;
     const pathName = group_name === 'personal' ? gettext('My projects') : group_name;
     return (
-      <div className={getClassName} onClick={this.onClickHandler}>
+      <div className={className} onClick={this.onClickHandler}>
         <ProjectIcon bgColor={color} icon={icon} />
         <div className="project-name">
           <span>{name}</span>

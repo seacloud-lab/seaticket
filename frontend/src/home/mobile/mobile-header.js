@@ -20,7 +20,7 @@ export default class MobileHeader extends Component {
     onSearchedClick: PropTypes.func.isRequired,
   };
 
-  renderBasesHeader = () => {
+  renderHeader = () => {
     return (
       <header className="main-panel-north sea-qa-home-header">
         <ProjectMenuToolbar
@@ -40,7 +40,7 @@ export default class MobileHeader extends Component {
   render(){
     const { selectedTab } = this.props;
     if (selectedTab === 'projects') {
-      return this.renderBasesHeader();
+      return this.renderHeader();
     }
     const title = MOBILE_HEADER_TITLE[selectedTab];
     return (

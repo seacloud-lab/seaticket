@@ -45,11 +45,9 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row,
               </>
             )}
             {onMore &&
-              (
-                <DropdownItem onClick={() => onMore(row)}>
-                  {gettext('Status')}
-                </DropdownItem>
-              )
+              <DropdownItem onClick={() => onMore(row)}>
+                {gettext('Status')}
+              </DropdownItem>
             }
             {onViewLog && (
               <DropdownItem onClick={() => onViewLog(row)}>
@@ -57,11 +55,9 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, row,
               </DropdownItem>
             )}
             {onManualSync &&
-              (
-                <DropdownItem onClick={() => onManualSync(row)}>
-                  {gettext('Sync now')}
-                </DropdownItem>
-              )
+              <DropdownItem onClick={() => onManualSync(row)}>
+                {gettext('Sync now')}
+              </DropdownItem>
             }
             {handleStatusActive && (
               <DropdownItem onClick={() => (handleStatusActive(!row.is_active, row))}>

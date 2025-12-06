@@ -203,14 +203,13 @@ class SearchProject extends Component {
       <ul className="search-result-list" ref={ref => this.ulRef = ref}>
         {resultItems.map((item, index) => {
           const path = getWorkspaceName(item, workspaceList);
-          const getClassName = `project-item ${highLightIndex === index ? 'project-item-selected' : ''}`;
           return (
             <SearchResultItem
               key={path + item.id + index}
               item={item}
               onItemClickHandler={this.onItemClickHandler}
               path={path}
-              getClassName={getClassName}
+              className={`project-item ${highLightIndex === index ? 'project-item-selected' : ''}`}
             />
           );
         })}
