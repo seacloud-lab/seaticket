@@ -20,7 +20,7 @@ CREATE TABLE `admin_log_adminlog` (
   PRIMARY KEY (`id`),
   KEY `admin_log_adminlog_email_7213c993` (`email`),
   KEY `admin_log_adminlog_operation_4bad7bd1` (`operation`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `django_content_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -199,7 +199,7 @@ CREATE TABLE `group_invite_link` (
   PRIMARY KEY (`id`),
   KEY `group_invite_link_token_7f96850f` (`token`),
   KEY `group_invite_link_group_id_4b619114` (`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `id_in_org_tuple` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
