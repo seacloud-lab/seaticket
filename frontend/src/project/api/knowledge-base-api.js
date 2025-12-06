@@ -139,8 +139,17 @@ class KnowledgeBaseAPI {
   }
 
   deleteRecord(projectUuid, recordNumber) {
+    return this.deleteRecords(projectUuid, [recordNumber]);
+  }
+
+  deleteRecords(projectUuid, recordNumbers) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
-    return this.req.delete(url, { params: { record_number: recordNumber } });
+    if (!Array.isArray(recordNumbers)) {
+      return Promise.reject(new Error('recordNumbers must be an array'));
+    }
+    return this.req.delete(url, {
+      data: { record_numbers: recordNumbers }
+    });
   }
 
   getRecord(projectUuid, knowledgeID) {

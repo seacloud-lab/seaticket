@@ -247,28 +247,20 @@ class KnowledgeBaseAPIView(APIView):
         username = request.user.username
         
         record_numbers = request.data.get('record_numbers')
-        if record_numbers:
-            # Batch delete mode
-            if not isinstance(record_numbers, list):
-                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list')
-            if len(record_numbers) == 0:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers cannot be empty')
-            
-            # validate all record_numbers are valid integers
-            try:
-                record_numbers = [int(rn) for rn in record_numbers]
-            except (ValueError, TypeError):
-                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list of integers')
-        else:
-            # single delete mode (backward compatibility)
-            record_number = request.GET.get('record_number')
-            if not record_number:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'record_number or record_numbers is required')
-            try:
-                record_number = int(record_number)
-                record_numbers = [record_number]
-            except Exception:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'record_number invalid')
+        if not record_numbers:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers is required')
+        
+        if not isinstance(record_numbers, list):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list')
+        
+        if len(record_numbers) == 0:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers cannot be empty')
+        
+        # 验证所有 record_number 都是有效的整数
+        try:
+            record_numbers = [int(rn) for rn in record_numbers]
+        except (ValueError, TypeError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list of integers')
         
         # resources check
         project = Projects.objects.get_project_by_uuid(project_uuid)

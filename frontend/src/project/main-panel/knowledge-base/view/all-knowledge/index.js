@@ -38,6 +38,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
       deleteRow: (recordNumber) => knowledgeBaseAPI.deleteRecord(projectUuid, recordNumber),
+      deleteRows: (recordNumber) => knowledgeBaseAPI.deleteRecords(projectUuid, recordNumber),
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     };
   }, []);
