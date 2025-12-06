@@ -3,3 +3,7 @@
   min-width: 12rem;
   width: 12rem;
 }
+
+.sea-qa-ai-chat-resolve-type-select-editor .option-editor-content:not(.empty) {
+  min-height: fit-content;
+}

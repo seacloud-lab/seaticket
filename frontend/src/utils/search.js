@@ -28,6 +28,7 @@ export const searchOptions = (options, searchValue) => {
   if (!validSearchValue) return validOptions;
   return options.filter(option => {
     const { name } = option;
+    if (!name) return false;
     if (name.toString().toLowerCase().indexOf(validSearchValue) > -1) return true;
     return false;
   });

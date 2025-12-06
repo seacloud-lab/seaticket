@@ -11,6 +11,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
   const options = useMemo(() => {
     return LLM_MODELS.map(model => ({
       label: model.label,
+      name: model.label,
       value: model.model,
       default: model.default,
     }));

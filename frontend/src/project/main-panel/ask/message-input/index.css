@@ -160,7 +160,6 @@
 }
 
 .sea-qa-ai-chat-tool-type-select-editor .option-editor-content:not(.empty) {
-  min-height: fit-content;
   padding: 8px 0 !important;
 }
 
