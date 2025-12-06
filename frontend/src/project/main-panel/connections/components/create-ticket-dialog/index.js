@@ -7,9 +7,9 @@ import { toaster, ModalHeader, CenteredLoading } from '@/components';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../../tickets/components/ticket-settings';
 import { useMetadata } from '../../../tickets/hooks';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
-import { TICKET_STATE } from '@/project/main-panel/tickets/constants';
 
 const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUuid }) => {
   const [title, setTitle] = useState('');

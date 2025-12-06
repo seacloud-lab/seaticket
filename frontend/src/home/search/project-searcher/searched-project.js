@@ -6,13 +6,12 @@ import getWorkspaceName from '../../utils/get-workspace-name';
 const SearchedProject = (props) => {
   const { project, selected } = props;
   const path = getWorkspaceName(project, []);
-  const getClassName = `project-item ${selected ? 'project-item-selected' : ''}`;
 
   return (
     <SearchResultItem
       item={project}
       path={path}
-      getClassName={getClassName}
+      className={`project-item ${selected ? 'project-item-selected' : ''}`}
       onItemClickHandler={props.clickSearched.bind(this, project)}
     />
   );
