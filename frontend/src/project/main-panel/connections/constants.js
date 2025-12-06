@@ -326,7 +326,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
       is_predefined: true,
-      editable: true,
       is_hover_show_content: true,
     },
     'ai_processed_time': {
@@ -380,7 +379,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.DISCOURSE_FORUM]: {
     'title': {
       display_name: gettext('Title'),
-      editable: false, is_name_column: true, frozen: true,
+      is_name_column: true, frozen: true,
     },
     'views': {
       display_name: gettext('Views count'),
@@ -388,7 +387,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     'modified_time': {
       display_name: gettext('Last modified time'),
-      type: CellType.DATE,
+      type: CellType.MTIME,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
     'created_time': {
@@ -398,7 +397,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
-      editable: false,
       is_hover_show_content: true,
     },
     'ai_processed_time': {
@@ -410,10 +408,8 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.SITE]: {
     'title': {
       display_name: gettext('Title'),
-      editable: false,
       is_name_column: true,
       frozen: true,
-      expand_able: true,
       click: (row) => {
         if (row && row.url) {
           window.open(row.url);
@@ -432,8 +428,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
-      editable: false,
-      expand_able: true,
       is_hover_show_content: true,
     },
     'ai_processed_time': {
@@ -445,7 +439,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.SEAFILE]: {
     'title': {
       display_name: gettext('File name'),
-      editable: false, is_name_column: true, frozen: true,
+      is_name_column: true, frozen: true,
     },
     'path': {
       display_name: gettext('Parent folder'),
@@ -458,8 +452,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     'ai_summary': {
       display_name: gettext('AI Summary'),
       type: CellType.TEXT,
-      editable: false,
-      expand_able: true,
       is_hover_show_content: true,
     },
     'ai_processed_time': {
@@ -471,18 +463,28 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.EMAIL]: {
     'title': {
       display_name: gettext('Subject'),
-      editable: false, is_name_column: true, frozen: true,
+      is_name_column: true, frozen: true,
     },
     'unread': {
       display_name: gettext('unread'),
-      type: CellType.DEFAULT,
+      type: CellType.CHECKBOX,
     },
     'modified_time': {
       display_name: gettext('Last modified time'),
-      type: CellType.DATE,
+      type: CellType.MTIME,
       data: {
         format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
       }
+    },
+    'ai_summary': {
+      display_name: gettext('AI Summary'),
+      type: CellType.TEXT,
+      is_hover_show_content: true,
+    },
+    'ai_processed_time': {
+      display_name: gettext('AI processed time'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
   }
 };
