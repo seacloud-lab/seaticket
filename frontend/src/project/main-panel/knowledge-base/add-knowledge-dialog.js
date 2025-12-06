@@ -7,7 +7,7 @@ import { gettext, lang } from '@/constants';
 const AddKnowledgeDialog = ({ isOpen, toggle, isSubmitting, question, answer, setQuestion, setAnswer, onSubmit, editorAPI }) => {
   return (
     <Modal isOpen={isOpen} toggle={toggle} style={{ minWidth: 600 }}>
-      <ModalHeader toggle={toggle}>{gettext('New knowledge record')}</ModalHeader>
+      <ModalHeader toggle={toggle}>{gettext('Edit knowledge record')}</ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
