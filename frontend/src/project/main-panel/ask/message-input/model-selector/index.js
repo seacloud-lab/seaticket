@@ -36,7 +36,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
   }, []);
 
   if (LLM_MODELS.length === 0) return null;
-  const value = options.find(m => m.model === selectedModel) || options.find(m => m.default === true) || options[0];
+  const value = options.find(m => m.value === selectedModel) || options.find(m => m.default === true) || options[0];
 
   return (
     <>
