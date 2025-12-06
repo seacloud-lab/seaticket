@@ -439,10 +439,11 @@ class SearchView(APIView):
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'query': query,
             'connection_ids': connection_ids,
+            'username': username,
             'count': count,
             'time_from': time_from,
             'time_to': time_to,
-            'search_type': search_type
+            'search_type': search_type,
         }
         results = search(params)
         

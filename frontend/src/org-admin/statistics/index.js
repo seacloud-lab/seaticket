@@ -12,6 +12,8 @@ import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import '@/css/statistics.css';
 
+import Picker from '../../project/main-panel/search/date-and-time-picker';
+
 const propTypes = {
   onCloseSidePanel: PropTypes.func
 };
@@ -77,11 +79,8 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
-        {groupBy === 'project_uuid' && (
+        {groupBy === 'project' && (
           <>
-            <td>
-              <span className="dtable-icon-table"></span>
-            </td>
             <td>{item.project_name || item.project_uuid}</td>
             <td>
               {(item.nickname || item.group_name) && (
@@ -91,6 +90,17 @@ class Item extends Component {
               )}
               {!(item.nickname || item.group_name) && item.owner}
             </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
+        {groupBy === 'workspace' && (
+          <>
+            <td>
+              <Link to={this.getOwnerURL(item.owner)}>
+                {item.workspace_name}
+              </Link>
+            </td>
+            <td><Link to={this.getOwnerURL(item.creator)}>{item.creator_name}</Link></td>
             <td>{item.total_cost}</td>
           </>
         )}
@@ -139,23 +149,28 @@ class Content extends Component {
         </div>
       );
     }
-
     return (
       <Fragment>
         <table className="table table-hover table-vcenter">
           <thead>
             {groupBy === 'owner' && (
               <tr>
-                <th>{`${gettext('User')} / ${gettext('Group')}`}</th>
+                <th>{`${gettext('User')}`}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
-            {groupBy === 'project_uuid' && (
+            {groupBy === 'project' && (
               <tr>
-                <th width="5%"></th>
-                <th width="35%">{gettext('Project')}</th>
+                <th width="40%">{gettext('Project')}</th>
                 <th width="35%">{`${gettext('User')} / ${gettext('Group')}`}</th>
                 <th width="25%">{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'workspace' && (
+              <tr>
+                <th>{gettext('Workspace')}</th>
+                <th>{gettext('Creator')}</th>
+                <th>{gettext('Cost')}</th>
               </tr>
             )}
           </thead>
@@ -213,7 +228,7 @@ class StatisticsAI extends Component {
     let dateParam = null;
     let monthParam = null;
 
-    if (queryDate === 'month' && groupBy === 'project_uuid') {
+    if (queryDate === 'month' && (groupBy === 'project' || groupBy === 'workspace')) {
       monthParam = month;
     } else {
       dateParam = date.format('YYYY-MM-DD');
@@ -242,11 +257,10 @@ class StatisticsAI extends Component {
       });
   };
 
-  onDateChange = (e) => {
-    const date = dayjs(e.target.value);
-    if (date.isValid()) {
+  onDateChange = (value) => {
+    if (value && value.isValid()) {
       this.setState({
-        date: date,
+        date: value,
         currentPage: this.initPage,
         results: []
       }, () => {
@@ -318,13 +332,19 @@ class StatisticsAI extends Component {
           className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
           onClick={() => this.changeTabActive('owner')}
         >
-          {`${gettext('Users')} / ${gettext('Group')}`}
+          {gettext('Users')}
         </div>
         <div
-          className={`statistic-tab-item ${groupBy === 'project_uuid' ? 'active' : ''}`}
-          onClick={() => this.changeTabActive('project_uuid')}
+          className={`statistic-tab-item ${groupBy === 'project' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('project')}
         >
           {gettext('Project')}
+        </div>
+        <div
+          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('workspace')}
+        >
+          {gettext('Workspace')}
         </div>
       </div>
     );
@@ -369,12 +389,12 @@ class StatisticsAI extends Component {
                 {queryDate === 'date' && (
                   <>
                     <span className="mr-2">{`${gettext('Date')}:`}</span>
-                    <input
-                      type="date"
-                      className="form-control"
-                      style={{ width: '200px' }}
-                      value={date.format('YYYY-MM-DD')}
+                    <Picker
+                      showHourAndMinute={false}
+                      disabledDate={() => false}
+                      value={date}
                       onChange={this.onDateChange}
+                      inputWidth={118}
                     />
                   </>
                 )}

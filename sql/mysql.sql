@@ -535,7 +535,7 @@ CREATE TABLE `chat_messages` (
   `updated_at` datetime(6) DEFAULT NULL,
   `is_agent_mode` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_session_uuid_created_at` (`session_uuid`, `created_at`);
+  KEY `idx_session_uuid_created_at` (`session_uuid`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_api_token` (
@@ -588,7 +588,7 @@ CREATE TABLE `stats_ai_by_project` (
   `project_uuid` varchar(36) NOT NULL,
   `date` date DEFAULT NULL,
   `model` varchar(100) NOT NULL,
-  `owner` varchar(255) DEFAULT NULL,
+  `username` varchar(255) DEFAULT NULL,
   `org_id` bigint(20) DEFAULT NULL,
   `input_tokens` int(11) DEFAULT NULL,
   `output_tokens` int(11) DEFAULT NULL,
@@ -596,10 +596,10 @@ CREATE TABLE `stats_ai_by_project` (
   `created_at` datetime(6) DEFAULT NULL,
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `project_date_model_uniq_key` (`project_uuid`,`date`,`model`),
-  KEY `date_owner_j3g9o2p1_key` (`date`,`owner`),
-  KEY `date_org_id_owner_h4b5k3v9_key` (`date`,`org_id`,`owner`)
+  KEY `project_uuid_date_key` (`project_uuid`,`date`),
+  KEY `date_org_id_username_key` (`date`,`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 CREATE TABLE `chat_tool_calls` (
   `id` bigint(11) NOT NULL AUTO_INCREMENT,

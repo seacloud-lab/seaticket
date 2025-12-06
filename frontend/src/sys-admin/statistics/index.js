@@ -11,6 +11,7 @@ import { TopBar } from '../main-panel';
 import Paginator from '@/components/paginator';
 import StatisticNav from './statistic-nav';
 import '@/css/statistics.css';
+import Picker from '../../project/main-panel/search/date-and-time-picker';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func
@@ -88,6 +89,26 @@ class Item extends Component {
             <td>{item.total_cost}</td>
           </>
         )}
+        {groupBy === 'workspace' && (
+          <>
+            <td>
+              {item.org_name && item.org_id > 0 && (
+                <Link to={this.getOrgURL(item.org_id)}>{item.org_name}</Link>
+              )}
+              {item.org_id === -1 && '-'}
+              {item.org_id !== -1 && !item.org_name && item.org_id}
+            </td>
+            <td>
+              {(item.workspace_name) && (
+                <Link to={this.getOwnerURL(item.owner)}>
+                  {item.workspace_name}
+                </Link>
+              )}
+              {!(item.workspace_name) && item.owner}
+            </td>
+            <td>{item.total_cost}</td>
+          </>
+        )}
         {groupBy === 'org_id' && (
           <>
             <td>
@@ -153,7 +174,14 @@ class Content extends Component {
             {groupBy === 'owner' && (
               <tr>
                 <th>{gettext('Organization')}</th>
-                <th>{`${gettext('Users')} / ${gettext('Group')}`}</th>
+                <th>{gettext('Users')}</th>
+                <th>{gettext('Cost')}</th>
+              </tr>
+            )}
+            {groupBy === 'workspace' && (
+              <tr>
+                <th>{gettext('Organization')}</th>
+                <th>{gettext('Workspace')}</th>
                 <th>{gettext('Cost')}</th>
               </tr>
             )}
@@ -236,12 +264,12 @@ class Statistics extends Component {
       });
   };
 
-  onDateChange = (e) => {
-    const date = dayjs(e.target.value);
-    if (date.isValid()) {
+  onDateChange = (value) => {
+    if (value && value.isValid()) {
       this.setState({
-        date: date,
-        currentPage: this.initPage
+        date: value,
+        currentPage: this.initPage,
+        results: []
       }, () => {
         this.getStatisticsByPage(this.initPage);
       });
@@ -275,7 +303,13 @@ class Statistics extends Component {
           className={`statistic-tab-item ${groupBy === 'owner' ? 'active' : ''}`}
           onClick={() => this.changeTabActive('owner')}
         >
-          {`${gettext('Users')} / ${gettext('Group')}`}
+          {gettext('Users')}
+        </div>
+        <div
+          className={`statistic-tab-item ${groupBy === 'workspace' ? 'active' : ''}`}
+          onClick={() => this.changeTabActive('workspace')}
+        >
+          {gettext('Workspaces')}
         </div>
         <div
           className={`statistic-tab-item ${groupBy === 'org_id' ? 'active' : ''}`}
@@ -300,12 +334,12 @@ class Statistics extends Component {
               {this.renderTabs()}
               <div className="d-flex align-items-center mt-4 mb-4">
                 <span className="mr-2">{`${gettext('Date')}:`}</span>
-                <input
-                  type="date"
-                  className="form-control"
-                  style={{ width: '200px' }}
-                  value={date.format('YYYY-MM-DD')}
+                <Picker
+                  showHourAndMinute={false}
+                  disabledDate={() => false}
+                  value={date}
                   onChange={this.onDateChange}
+                  inputWidth={118}
                 />
               </div>
               <Content
