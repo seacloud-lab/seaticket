@@ -9,7 +9,6 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
 
   const expandRow = useCallback((row) => {
-    console.log('row', row._id);
     togglePageSlugId(row._id);
   }, [togglePageSlugId]);
 

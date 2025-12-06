@@ -1,136 +1,86 @@
-.sea-qa-project-knowledge {
-  align-items: center;
-  display: flex;
-  flex: 1 1;
-  flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 0 16px;
-  width: 100%
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-simple-info-wrapper-sticky {
-  height: 62px;
-  position: sticky;
-  top: 0px;
-  z-index: 103;
-  background-color: #FFF;
-  padding: 8px 0;
-  gap: 4px;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-simple-info-wrapper-sticky .sea-qa-project-ticket-title-wrapper {
-  height: 22px;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-simple-info-wrapper-sticky .sea-qa-project-ticket-title-number-type {
-  margin-left: 16px;
+.sea-qa-project-edit-knowledge {
   flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  margin-right: 16px;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-simple-info-wrapper-sticky .sea-qa-project-ticket-title {
-  font-size: 18px;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-simple-info-wrapper-sticky .sea-qa-project-ticket-number {
-  font-size: 16px;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-knowledge-content-wrapper {
   width: 100%;
-  display: flex;
-  padding: 16px 0 50px 0;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-ticket-comment-container-wrapper {
-  width: 70%;
-  display: flex;
-  flex-direction: column;
-}
-
-.sea-qa-project-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
-  border-color: #1991eb;
-}
-
-.sea-qa-project-knowledge .sf-slate-viewer-scroll-container {
-  padding: 0;
   overflow-x: hidden;
-  width: 100%;
+  overflow-y: scroll;
+  padding: 16px;
+  display: flex;
 }
 
-.sea-qa-project-knowledge .sf-slate-viewer-scroll-container .sf-slate-article-content {
-  width: 100%;
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user {
+  width: 44px;
+  overflow: hidden;
 }
 
-.sea-qa-project-knowledge .sf-slate-viewer-scroll-container .sf-slate-viewer-article-container {
-  width: 100%;
-  margin: 0;
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-user img {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 12px;
 }
 
-.sea-qa-project-knowledge .sf-slate-viewer-scroll-container .article {
-  padding: 10px 16px;
-  border: unset;
-  height: auto;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100%;
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings {
+  flex: 1;
+  padding-top: 4px;
 }
 
-.sea-qa-project-knowledge .sea-qa-project-ticket-comment.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-comment-container {
-  border: none;
-  border-radius: 0;
-}
-
-.sea-qa-project-knowledge .sea-qa-project-ticket-comment.sea-qa-project-ticket-add-comment .sea-qa-project-ticket-comment-op {
-  border-bottom: none;
-  color: inherit;
-  font-weight: 600;
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-name {
   font-size: 16px;
-  height: 40px;
-  line-height: 32px;
-  padding-left: 0;
+  font-weight: 600;
+  width: 100%;
 }
 
-/* small */
-.sea-qa-project-knowledge.small .sea-qa-project-knowledge-content-wrapper {
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-settings-container {
+  display: flex;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content-settings {
+  width: 100%;
+  display: flex;
   flex-direction: column;
 }
 
-.sea-qa-project-knowledge.small .sea-qa-project-knowledge-content-wrapper .sea-qa-project-ticket-comment-container-wrapper {
-  width: 100%;
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-content {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 0;
   padding-bottom: 50px;
 }
 
-.sea-qa-project-knowledge.small .sea-qa-project-knowledge-content-wrapper .sea-qa-project-ticket-other-settings {
+.sea-qa-project-edit-knowledge .sea-qa-project-knowledge-footer .sea-qa-loading-icon {
+  height: 16px;
+  width: 16px;
+}
+
+.sea-qa-project-edit-knowledge .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: #1991eb;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-settings-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-content-settings {
   width: 100%;
 }
 
-.sea-qa-project-knowledge .sea-qa-project-ticket-footer {
-  flex-wrap: wrap;
-  width: 100%;
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-footer {
+  padding-bottom: 16px;
 }
 
-.sea-qa-project-knowledge .sea-qa-project-ticket-footer .sea-qa-project-ticket-submit-btns {
-  flex: 1;
-  margin-top: 16px;
-  min-width: fit-content;
+.sea-qa-project-edit-knowledge.small .sea-qa-project-knowledge-submit-btns {
+  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-}
-
-.sea-qa-project-knowledge.small .sea-qa-project-ticket-footer {
-  padding-left: 0;
-}
-
-.sea-qa-project-knowledge.small .sea-qa-project-ticket-footer .sea-qa-project-ticket-submit-btns {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: 0 !important;
+  padding-bottom: 50px;
 }

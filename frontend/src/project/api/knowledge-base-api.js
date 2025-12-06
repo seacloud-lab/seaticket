@@ -151,7 +151,7 @@ class KnowledgeBaseAPI {
           record: {
             '_pk': 3,
             'question': 'bbb',
-            'G0Fv': 'bbb\n',
+            'answer': 'bbb\n',
             '9NkH': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
             '6XGR': '2025-12-05T09:50:54.439471+08:00',
             'Geb8': 'cc85011e6cfd441f9071f7cec7ee78cb@auth.local',
