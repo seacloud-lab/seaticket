@@ -43,7 +43,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
     };
   }, []);
 
-  const ticketRef = useRef(null);
+  const knowledgeRef = useRef(null);
   const commentEditorRef = useRef(null);
   const containerRef = useRef(null);
   const headerRef = useRef(null);
@@ -190,8 +190,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
     setKnowledge(null);
     knowledgeBaseAPI.getRecord(projectUuid, knowledgeID).then(res => {
       console.log('res', res);
-      // const ticket = new TicketModel(res.data.ticket);
-      // setKnowledge(ticket);
+      setKnowledge(res.data.record);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -202,16 +201,16 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
 
   useEffect(() => {
     if (isLoading || !knowledge) return;
-    const ticketDom = ticketRef.current;
+    const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
-      if (!ticketDom) return;
-      setContainerWidth(ticketDom.offsetWidth);
+      if (!knowledgeDom) return;
+      setContainerWidth(knowledgeDom.offsetWidth);
     };
     const resizeObserver = new ResizeObserver(handleResize);
-    ticketDom && resizeObserver.observe(ticketDom);
+    knowledgeDom && resizeObserver.observe(knowledgeDom);
 
     return () => {
-      ticketDom && resizeObserver.unobserve(ticketDom);
+      knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
   }, [isLoading, knowledge]);
 
@@ -230,7 +229,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, knowledgeID, permission, isAdmi
     <div
       className={classnames('sea-qa-project-ticket', { 'small': isSmallScreen })}
       onScroll={handleScroll}
-      ref={ticketRef}
+      ref={knowledgeRef}
     >
       {/* <Header
         ref={headerRef}
