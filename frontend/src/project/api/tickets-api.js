@@ -161,25 +161,6 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
-  listProjectRelatedUsers(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
-    return this.req.get(url);
-  }
-
-  // user
-  listUserInfo(userIdList) {
-    var url = this.server + '/api/v2.1/user-list/';
-    let params = {
-      user_id_list: userIdList
-    };
-    return this._sendPostRequest(url, params, { headers: { 'Content-type': 'application/json' } });
-  }
-
-  getUserCommonInfo(email) {
-    const url = this.server + '/api/v2.1/user-common-info/' + email + '/';
-    return this.req.get(url);
-  }
-
   // upload file
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';

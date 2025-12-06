@@ -11,7 +11,6 @@ import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
 import TicketTopBar from './components/ticket-top-bar';
-import { CollaboratorsProvider } from '@/sea-metadata';
 import { ticketsAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
@@ -56,17 +55,12 @@ const Page = ({ toggleBar, isMyTicket }) => {
 const Tickets = ({ title, toggleBar, isMyTicket }) => {
   return (
     <DataCacheProvider>
-      <CollaboratorsProvider
-        listUserInfo={(...params) => ticketsAPI.listUserInfo(...params)}
-        getCollaborators={() => ticketsAPI.listProjectRelatedUsers(projectUuid)}
-      >
-        <MetadataProvider projectUuid={projectUuid}>
-          <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
-            <TicketTopBar title={title} isMyTicket={isMyTicket} />
-            <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
-          </TicketsPageProvider>
-        </MetadataProvider>
-      </CollaboratorsProvider>
+      <MetadataProvider projectUuid={projectUuid}>
+        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
+          <TicketTopBar title={title} isMyTicket={isMyTicket} />
+          <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
+        </TicketsPageProvider>
+      </MetadataProvider>
     </DataCacheProvider>
   );
 };

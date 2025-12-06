@@ -143,19 +143,6 @@ class KnowledgeBaseAPI {
     return this.req.delete(url, { params: { record_number: recordNumber } });
   }
 
-  listProjectRelatedUsers(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
-    return this.req.get(url);
-  }
-
-  listUserInfo(userIdList) {
-    var url = this.server + '/api/v2.1/user-list/';
-    let params = {
-      user_id_list: userIdList
-    };
-    return this._sendPostRequest(url, params, { headers: { 'Content-type': 'application/json' } });
-  }
-
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();
