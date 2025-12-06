@@ -101,6 +101,7 @@ class KnowledgeBaseAPIView(APIView):
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 100)
         view_id = request.GET.get('view_id')
+        record_number = request.GET.get('record_number')
 
         try:
             start = int(start)
@@ -109,15 +110,15 @@ class KnowledgeBaseAPIView(APIView):
             start = 0
             limit = 100
 
-        if start < 0:
-            error_msg = 'start invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if record_number not in (None, ''):
+            try:
+                record_number = int(record_number)
+            except Exception:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_number invalid')
+        else:
+            record_number = None
 
-        if limit < 0:
-            error_msg = 'limit invalid'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not view_id:
+        if record_number is None and not view_id:
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -136,19 +137,33 @@ class KnowledgeBaseAPIView(APIView):
 
         # main
         try:
-            view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
             seadb_api = SeaDBAPI(username)
-            records, columns = list_knowledge_base_records(
-                seadb_api, project_uuid, view, start, limit, username)
+            if record_number is not None:
+                record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_number)
+                if not record:
+                    error_msg = 'Knowledge base record not found.'
+                    return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+                return Response({'record': record})
+            else:
+                if start < 0:
+                    error_msg = 'start invalid'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+                if limit < 0:
+                    error_msg = 'limit invalid'
+                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+                view = KnowledgeBaseViews.objects.get_view(project_uuid=project_uuid, view_id=view_id)
+                records, columns = list_knowledge_base_records(
+                    seadb_api, project_uuid, view, start, limit, username)
+                return Response({
+                    'records': records,
+                    'columns': columns,
+                })
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({
-            'records': records,
-            'columns': columns,
-        })
 
     def put(self, request, project_uuid):
          # role permission check
@@ -204,6 +219,7 @@ class KnowledgeBaseAPIView(APIView):
          }
         seadb_api = SeaDBAPI(request.user.username)
         record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_number)
+        record.pop('deleted', None)
         if not record:
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
