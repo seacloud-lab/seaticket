@@ -245,11 +245,31 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
-        record_number = request.GET.get('record_number')
-        try:
-            record_number = int(record_number)
-        except Exception:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'record_number invalid')
+        
+        record_numbers = request.data.get('record_numbers')
+        if record_numbers:
+            # Batch delete mode
+            if not isinstance(record_numbers, list):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list')
+            if len(record_numbers) == 0:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers cannot be empty')
+            
+            # validate all record_numbers are valid integers
+            try:
+                record_numbers = [int(rn) for rn in record_numbers]
+            except (ValueError, TypeError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_numbers must be a list of integers')
+        else:
+            # single delete mode (backward compatibility)
+            record_number = request.GET.get('record_number')
+            if not record_number:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_number or record_numbers is required')
+            try:
+                record_number = int(record_number)
+                record_numbers = [record_number]
+            except Exception:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'record_number invalid')
+        
         # resources check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -262,11 +282,12 @@ class KnowledgeBaseAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
         seadb_api = SeaDBAPI(request.user.username)
         try:
-            seadb_api.delete_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), [record_number])
+            seadb_api.delete_rows(project_uuid, KnowledgeBaseTable.gen_table_name(), record_numbers)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        return Response({'success': True}, status=status.HTTP_200_OK)
+        return Response({'success': True, 'deleted_count': len(record_numbers)}, status=status.HTTP_200_OK)
