@@ -56,7 +56,7 @@ const Tickets = ({ title, toggleBar, isMyTicket }) => {
   return (
     <DataCacheProvider>
       <MetadataProvider projectUuid={projectUuid}>
-        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName}>
+        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} isMyTicket={isMyTicket}>
           <TicketTopBar title={title} isMyTicket={isMyTicket} />
           <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
         </TicketsPageProvider>
