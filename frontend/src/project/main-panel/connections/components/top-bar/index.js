@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import dayjs from '@/utils/dayjs';
+import { Button } from 'reactstrap';
 import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
 import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE } from '../../constants';
-import { IconButton, toaster } from '@/components';
+import { IconButton, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
@@ -18,8 +19,9 @@ const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, connectionInfo, togglePageSlugId } = useConnectionsPage();
-  const { modifyLocalConnectionRecord } = useConnections();
+  const { modifyLocalConnectionRecord, reloadConnections } = useConnections();
   const { name: connectionName, type: connectionType } = connectionInfo || {};
+  const [isSyncing, setIsSyncinig] = useState(false);
 
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);
@@ -53,9 +55,34 @@ const TopBar = ({ title, modifyLocalBar }) => {
     );
   }, [pageSlugId, title, connectionName, handleReturnConnectionsHome]);
 
+  const onQueryConnectionStatus = useCallback((connectionID) => {
+    setTimeout(() => {
+      connectionsAPI.getConnection(projectUuid, connectionID).then((res) => {
+        const { last_sync_status, last_sync_count } = JSON.parse(res.data.record.status);
+        if (last_sync_status === 'completed') {
+          if (last_sync_count > 0) {
+            reloadConnections();
+            const msg = gettext('%s records synced').replace('%s', last_sync_count);
+            toaster.success(msg);
+          } else {
+            toaster.success(gettext('No new records'));
+          }
+          setIsSyncinig(false);
+        } else {
+          onQueryConnectionStatus(connectionID);
+        }
+      }).catch((error) => {
+        setIsSyncinig(false);
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+      });
+    }, 2000);
+  }, [projectUuid]);
+
   const onManualSync = useCallback((connectionID) => {
     connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {
-      toaster.success(gettext('Sync task queued'));
+      setIsSyncinig(true);
+      onQueryConnectionStatus(connectionID);
       modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: 'pending' } });
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -66,6 +93,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       } else {
         error_msg = errorMessage;
       }
+      setIsSyncinig(false);
       toaster.danger(error_msg);
     });
   }, [modifyLocalConnectionRecord]);
@@ -79,10 +107,18 @@ const TopBar = ({ title, modifyLocalBar }) => {
         {(connectionType === CONNECTION_TYPE.GITHUB_ISSUE || connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) && (
           <AddButton onClick={handleOpenConnectionEmbeddingVisualizationOpen} text={gettext('Analyze')} className="mr-4" />
         )}
-        <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />
+        {isSyncing
+          ?
+          (
+            <Button className='sea-qa-project-syncing-connections-btn' disabled={true} color="primary">
+              <CenteredLoading className='mr-2' />
+              <span>{gettext('Syncing')}</span>
+            </Button>
+          )
+          : <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />}
       </>
     );
-  }, [pageSlugId, connectionType, handleNewConnection, onManualSync, handleOpenConnectionEmbeddingVisualizationOpen]);
+  }, [pageSlugId, connectionType, isSyncing, handleNewConnection, onManualSync, handleOpenConnectionEmbeddingVisualizationOpen]);
 
   return (
     <BasicTopBar>
