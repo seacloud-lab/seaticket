@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE } from '../../constants';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE } from '../../constants';
 import { ModalHeader } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
@@ -61,7 +61,16 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     }
     setSubmitting(true);
     let validConfig = { ...config };
-    const connectionFields = CONNECTION_FIELDS[record.type] || [];
+    let connectionFields = CONNECTION_FIELDS[record.type] || [];
+    if (record.type === CONNECTION_TYPE.EMAIL) {
+      connectionFields = connectionFields.reduce((acc, item) => {
+        if (item.type === CONNECTION_FIELD_TYPE.GROUP) {
+          return [...acc, ...item.children];
+        } else {
+          return [...acc, item];
+        }
+      }, []);
+    }
 
     Object.keys(config).forEach((key) => {
       const field = connectionFields.find(f => f.key === key);
@@ -69,6 +78,8 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
       if (fieldType === CONNECTION_FIELD_TYPE.NUMBER) {
         validConfig[key] = config[key] ? parseInt(config[key], 10) : '';
+      } else if (fieldType === CONNECTION_FIELD_TYPE.SELECT) {
+        validConfig[key] = config[key] || '';
       } else {
         validConfig[key] = config[key] ? config[key].trim() : '';
       }
