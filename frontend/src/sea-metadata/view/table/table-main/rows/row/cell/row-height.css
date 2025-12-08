@@ -1,4 +1,9 @@
 /* 56 */
+/* 56 - priority */
+.sea-metadata-table-row-height-56-cell .sea-metadata-priority-editor {
+  height: 20px;
+}
+
 /* 56 - text */
 .sea-metadata-table-row-height-56-cell .sea-metadata-text-formatter {
   -webkit-line-clamp: 2;
@@ -96,6 +101,11 @@
 }
 
 /* 88 */
+/* 88 - priority */
+.sea-metadata-table-row-height-88-cell .sea-metadata-priority-editor {
+  height: 20px;
+}
+
 /* 88 - text */
 .sea-metadata-table-row-height-88-cell .sea-metadata-text-formatter {
   -webkit-line-clamp: 4;
@@ -189,6 +199,11 @@
 }
 
 /* 128 */
+/* 128 - priority */
+.sea-metadata-table-row-height-128-cell .sea-metadata-priority-editor {
+  height: 20px;
+}
+
 /* 128 - text*/
 .sea-metadata-table-row-height-128-cell .sea-metadata-text-formatter {
   -webkit-line-clamp: 6;
