@@ -5,8 +5,6 @@ import './index.css';
 
 const TopBar = ({ children, className }) => {
   const _className = classnames('sea-qa-project-panel-header sea-qa-project-main-panel-header', className);
-
-
   if (!Array.isArray(children)) {
     return (
       <div className={_className}>

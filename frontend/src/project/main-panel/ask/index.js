@@ -4,7 +4,7 @@ import TopBar from '../top-bar';
 import Sessions from './sessions';
 import Chat from './chat';
 import { AskPageProvider, SessionsProvider, useAskPage, useSessions } from './hooks';
-import { PERMISSION_TYPES } from '@/constants';
+import { PERMISSION_TYPES, gettext } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
 
 import './index.css';
@@ -26,9 +26,20 @@ const Main = ({ title, settings }) => {
         {!isLoading && (
           <div className="d-flex">
             {permission === PERMISSION_TYPES.READ_WRITE && (
-              <IconButton icon="new-chat" onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)} style={{ marginRight: '10px' }} />
+              <IconButton
+                icon="new-chat"
+                onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
+                style={{ marginRight: '10px' }}
+                title={gettext('New chat')}
+                aria-label={gettext('New chat')}
+              />
             )}
-            <IconButton icon="history" onClick={toggleIsShowSessions} />
+            <IconButton
+              icon="history"
+              onClick={toggleIsShowSessions}
+              title={gettext('Histories')}
+              aria-label={gettext('Histories')}
+            />
           </div>
         )}
       </TopBar>

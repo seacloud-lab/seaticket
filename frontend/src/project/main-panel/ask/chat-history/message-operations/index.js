@@ -25,7 +25,7 @@ const MessageOperations = ({ getMessageHTML, getAIReply }) => {
 
   return (
     <div className="sea-qa-ai-answer-operations">
-      <IconButton icon="copy" onClick={onCopy} />
+      <IconButton icon="copy" onClick={onCopy} title={gettext('Copy')} aria-label={gettext('Copy')} />
     </div>
   );
 };

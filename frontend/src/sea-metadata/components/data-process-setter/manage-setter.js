@@ -19,7 +19,7 @@ const ManageSetter = () => {
       toggle={() => setIsOpen(!isOpen)}
     >
       <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn mr-2" tag="div">
-        <Icon symbol="manage" />
+        <Icon symbol="manage" title={gettext('Manage tags')} aria-label={gettext('Manage tags')} />
       </DropdownToggle>
       <DropdownMenu
         className="position-fixed"

@@ -13,7 +13,7 @@ const Sessions = ({ sessionId, permission }) => {
     <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 300 }}>
       <div className="sea-qa-ai-ask-sessions-header">
         <div>{gettext('Histories')}</div>
-        <IconButton icon="x" onClick={closeShowSessions} />
+        <IconButton icon="x" onClick={closeShowSessions} title={gettext('Close')} aria-label={gettext('Close')} />
       </div>
       <div className="sea-qa-ai-ask-sessions-body">
         {sessions.length === 0 && (

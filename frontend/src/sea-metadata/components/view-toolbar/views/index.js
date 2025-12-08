@@ -173,15 +173,26 @@ const Views = ({ view, toggleView }) => {
               icon="left"
               className={classnames('scroll-control-btn scroll-prev', { 'scroll-active': canScrollPrev })}
               onClick={() => onScrollControlClick('left')}
+              title={gettext('Scroll to the left')}
+              aria-label={gettext('Scroll to the left')}
             />
             <IconButton
               icon="right"
               className={classnames('scroll-control-btn scroll-next ml-2', { 'scroll-active': canScrollNext })}
               onClick={() => onScrollControlClick('right')}
+              title={gettext('Scroll to the right')}
+              aria-label={gettext('Scroll to the right')}
             />
           </div>
         )}
-        {context.canInsertView() && (<IconButton icon="add" onClick={() => openViewNameDialog()} />)}
+        {context.canInsertView() &&
+          <IconButton
+            icon="add"
+            onClick={() => openViewNameDialog()}
+            title={gettext('Add view')}
+            aria-label={gettext('Add view')}
+          />
+        }
       </div>
       {isShowViewNameDialog && (
         <CustomizeNameDialog
@@ -192,7 +203,6 @@ const Views = ({ view, toggleView }) => {
         />
       )}
     </>
-
   );
 };
 
