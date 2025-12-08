@@ -48,9 +48,14 @@ const Searcher = ({ onChange }) => {
 
   return (
     <div className="sea-metadata-searcher-container mr-2">
-      {!isSearchActive && (
-        <IconButton icon="search" onClick={onToggleSearch} />
-      )}
+      {!isSearchActive &&
+        <IconButton
+          icon="search"
+          onClick={onToggleSearch}
+          title={gettext('Search')}
+          aria-label={gettext('Search')}
+        />
+      }
       {isSearchActive && (
         <SearchInput
           ref={searchInputRef}

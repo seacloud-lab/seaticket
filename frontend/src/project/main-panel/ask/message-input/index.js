@@ -216,6 +216,8 @@ const MessageInput = forwardRef(({
                 icon="send"
                 className="sea-qa-ai-ask-icon-btn icon-send-wrapper"
                 onClick={disabled ? () => {} : onSendMessage}
+                title={gettext('Send')}
+                aria-label={gettext('Send')}
               />
             </div>
           </div>
