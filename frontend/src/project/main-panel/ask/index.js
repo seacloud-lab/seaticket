@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
 import TopBar from '../top-bar';
 import Sessions from './sessions';
@@ -6,6 +6,7 @@ import Chat from './chat';
 import { AskPageProvider, SessionsProvider, useAskPage, useSessions } from './hooks';
 import { PERMISSION_TYPES, gettext } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
+import { useConnections } from '../connections/hooks';
 
 import './index.css';
 
@@ -65,6 +66,12 @@ const Main = ({ title, settings }) => {
 };
 
 const Ask = ({ title, settings }) => {
+  const { reloadConnections } = useConnections();
+
+  useEffect(() => {
+    reloadConnections();
+  }, []);
+
   return (
     <AskPageProvider workspaceID={workspaceID} projectName={projectName} >
       <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} >
