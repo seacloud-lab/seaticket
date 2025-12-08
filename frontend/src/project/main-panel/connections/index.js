@@ -15,7 +15,7 @@ const Page = ({ toggleBar, modifyLocalBar }) => {
   if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
     return (<AllConnections projectUuid={projectUuid} projectName={projectName} modifyLocalBar={modifyLocalBar} />);
   }
-  return (<Connection projectUuid={projectUuid} permission={permission} connectionID={pageSlugId} toggleBar={toggleBar} />);
+  return (<Connection key={pageSlugId} projectUuid={projectUuid} permission={permission} connectionID={pageSlugId} toggleBar={toggleBar} />);
 };
 
 const Index = ({ title, toggleBar, modifyLocalBar }) => {
