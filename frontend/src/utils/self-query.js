@@ -67,6 +67,8 @@ class SelfQuery {
   }
 
   clear() {
+    this.id2retries = {};
+    this.ids = [];
     if (this.queryTimer) {
       clearTimeout(this.queryTimer);
       this.queryTimer = null;

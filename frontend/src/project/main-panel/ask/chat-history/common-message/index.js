@@ -28,8 +28,11 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
   const columns = useMemo(() => {
     return [
       { key: 'filename', name: 'filename' },
+      { key: 'path', name: 'path' },
       { key: 'title', name: 'title' },
       { key: 'url', name: 'url' },
+      { key: 'slug', name: 'slug' },
+      { key: 'topic_id', name: 'topic_id' },
     ];
   }, []);
 
@@ -41,7 +44,10 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
-      const { type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title } = source;
+      const {
+        type, connection_name, url, content_preview, bumped_at, mtime, updated_at, score, connection_id, _id, title,
+        filename, path, slug, topic_id,
+      } = source;
       let validURL = url || '';
       if (!validURL) {
         validURL = location.origin + '/workspace/' + workspaceID + '/project/' + projectName + '/connections/' + connection_id + '/';
@@ -59,6 +65,10 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
         content: content_preview,
         mtime: bumped_at || mtime || updated_at || '',
         score: getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 }),
+        filename,
+        path,
+        slug,
+        topic_id,
       };
     });
 
@@ -125,16 +135,29 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     return { aiReply: value, sources };
   }, [message, projectName, workspaceID]);
 
-  const openConnectionRecord = useCallback((event, connectionInfo) => {
-    setCurrentConnection({ type: connectionInfo.type, id: connectionInfo.connection_id });
+  const handleConnectionRecord = useCallback((record) => {
     setCurrentConnectionRecord({
-      _id: connectionInfo.connection_record_id,
-      title: connectionInfo.title,
-      connection_id: connectionInfo.connection_id,
-      url: connectionInfo.url,
+      _id: record.connection_record_id,
+      title: record.title,
+      connection_id: record.connection_id,
+      url: record.url,
+      filename: record.filename,
+      path: record.path,
+      slug: record.slug,
+      topic_id: record.topic_id,
     });
-    setIsShowConnectionRecord(true);
+    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(record.type)) {
+      setCurrentConnection({ type: record.type, id: record.connection_id });
+      setIsShowConnectionRecord(true);
+      return;
+    }
+    setIsShowConnectionRecord(false);
+    setIsShowLinkVerifiedDialog(true);
   }, []);
+
+  const openConnectionRecord = useCallback((event, record) => {
+    handleConnectionRecord(record);
+  }, [handleConnectionRecord]);
 
   const closeConnectionRecord = useCallback(() => {
     setCurrentConnectionRecord(null);
@@ -173,15 +196,8 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       newIndex = sources.length - 1;
     }
     const currentRow = sources[newIndex];
-    if (SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(currentRow.type)) {
-      setCurrentConnectionRecord({ _id: currentRow.connection_record_id, title: currentRow.title, connection_id: currentRow.connection_id, url: currentRow.url });
-      setCurrentConnection({ type: currentRow.type, id: currentRow.connection_id });
-      return;
-    }
-    setIsShowConnectionRecord(false);
-    setCurrentConnectionRecord({ _id: currentRow.connection_record_id, title: currentRow.title, connection_id: currentRow.connection_id, url: currentRow.url });
-    setIsShowLinkVerifiedDialog(true);
-  }, [sources, currentConnectionRecord]);
+    handleConnectionRecord(currentRow);
+  }, [sources, currentConnectionRecord, handleConnectionRecord]);
 
   useImperativeHandle(ref, () => ({
 

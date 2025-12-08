@@ -19,6 +19,12 @@
   flex: unset
 }
 
+.sea-qa-row-details-container .modal-header .open-in-new-tab-btn {
+  height: 28px;
+  width: 28px;
+  margin-left: 8px;
+}
+
 .sea-qa-row-details-container .row-expand-direct-icons {
   display: flex;
   justify-content: space-between;

@@ -18,7 +18,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CONNECTION}`;
     let urlPart = pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
 
-    if (isNumber(pageSlugId) && viewID) {
+    if (pageSlugId !== CONNECTION_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }
 

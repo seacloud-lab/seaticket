@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, Fragment, useMemo } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
-import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading } from '@/components';
+import { EmptyTip, ModalHeader, IconTooltip, CenteredError, CenteredLoading, IconButton } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { MarkdownViewer } from '@seafile/seafile-editor';
@@ -10,6 +10,8 @@ import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPE, SUPPORT_ROW_DETAILS_CONNECTION_TYPES } from '../../constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getOriginalPageUrl } from '../../utils';
+import { useConnections } from '../../hooks';
 
 import './index.css';
 
@@ -27,6 +29,8 @@ const RowDetailsDialog = ({
   const [errMessage, setErrMessage] = useState('');
   const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
 
+  const { connections } = useConnections();
+
   const rowTitle = useMemo(() => {
     const titleColumn = getColumnByName(columns, 'title');
     let title = getCellValueByColumn(row, titleColumn);
@@ -43,6 +47,12 @@ const RowDetailsDialog = ({
     }
     return rowTitle;
   }, [status, rowDetails, rowTitle]);
+
+  const url = useMemo(() => {
+    const validConnection = connections.find(c => c.id === connection.id);
+    if (!validConnection) return '';
+    return getOriginalPageUrl(validConnection, row, columns);
+  }, [connection, connections, row, columns]);
 
   const getFormatParamsByType = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.SITE) {
@@ -126,12 +136,7 @@ const RowDetailsDialog = ({
   }, [projectUuid, row, connection]);
 
   const renderContentByType = useCallback((type, content) => {
-    if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      return (
-        <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: content }} />
-      );
-    }
-    if (type === CONNECTION_TYPE.EMAIL) {
+    if (type === CONNECTION_TYPE.DISCOURSE_FORUM || type === CONNECTION_TYPE.EMAIL) {
       return (
         <div className="reply-item-content" dangerouslySetInnerHTML={{ __html: content }} />
       );
@@ -159,7 +164,15 @@ const RowDetailsDialog = ({
               onClick={() => handleSwitchRows(1)}
             />
           </div>
-          <div className="text-truncate flex-1" title={displayedTitle}>{displayedTitle}</div>
+          <div className="text-truncate" title={displayedTitle}>{displayedTitle}</div>
+          {url && (
+            <IconButton
+              className="open-in-new-tab-btn"
+              icon="open-in-new-tab"
+              title={gettext('Open in new tab')}
+              onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+            />
+          )}
         </div>
       </ModalHeader>
       <ModalBody>
