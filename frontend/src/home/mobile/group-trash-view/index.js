@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import { EmptyTip, Icon, Loading, MobileCommonHeader } from '../../../components';
-import DeletedGroupBaseItem from './deleted-group-base-item';
+import DeletedGroupProjectItem from './deleted-group-project-item';
 
 import './index.css';
 
@@ -23,8 +23,8 @@ function GroupTrashView(props) {
             </p>
           </div>
           <div className="trash-view-content-header d-flex">
-            <p className="trash-view-base-name">{gettext('Name')}</p>
-            <p className="trash-view-base-deleted-time">{gettext('Deleted at')}</p>
+            <p className="trash-view-project-name">{gettext('Name')}</p>
+            <p className="trash-view-project-deleted-time">{gettext('Deleted at')}</p>
           </div>
         </>
       )}
@@ -33,11 +33,11 @@ function GroupTrashView(props) {
         {!isLoading && trashList.length === 0 &&
           <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No deleted projects')} />
         }
-        {!isLoading && trashList.length > 0 && trashList.map(baseItem => {
+        {!isLoading && trashList.length > 0 && trashList.map(projectItem => {
           return (
-            <DeletedGroupBaseItem
-              key={baseItem.id}
-              baseItem={baseItem}
+            <DeletedGroupProjectItem
+              key={projectItem.id}
+              projectItem={projectItem}
               groupID={groupID}
               restoreProject={restoreProject}
             />

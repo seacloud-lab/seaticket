@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchedBase from './searched-project';
+import SearchedProject from './searched-project';
 import { Utils } from '@/utils/utils';
 import { QUERY_TYPE } from './constant';
 
@@ -41,8 +41,7 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
     props.handleClickSearchedItem(searchedItem);
     switch (searchedItem.query_type) {
       case QUERY_TYPE.PROJECT: {
-        const searchedBase = searchedList[highlightIndex];
-        clickSearched(searchedBase);
+        clickSearched(searchedList[highlightIndex]);
         break;
       }
       default: {
@@ -111,7 +110,7 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
         switch (query_type) {
           case QUERY_TYPE.PROJECT: {
             return (
-              <SearchedBase
+              <SearchedProject
                 key={`${query_type}-${project.id}-${index}`}
                 project={project}
                 selected={selected}

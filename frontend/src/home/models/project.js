@@ -1,5 +1,4 @@
-class Base {
-
+class Project {
   constructor(obj) {
     this.id = obj.id || '';
     this.uuid = obj.uuid || '';
@@ -13,7 +12,6 @@ class Base {
     this.modifier = obj.modifier || '';
     this.updated_at = obj.updated_at || '';
   }
-
 }
 
-export default Base;
+export default Project;

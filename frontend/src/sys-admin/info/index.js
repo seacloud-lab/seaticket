@@ -89,7 +89,7 @@ class Info extends Component {
     }
   };
 
-  renderBaseInfo = (base_count, archived_base_count, storage, archived_row_count) => {
+  renderProjectInfo = (base_count, archived_base_count, storage, archived_row_count) => {
     return (
       <Fragment>
         <table>
@@ -152,9 +152,9 @@ class Info extends Component {
               <dt className="info-item-heading">{gettext('Version info')}</dt>
               <dd className="info-item-content">{version}</dd>
 
-              <dt className="info-item-heading">{gettext('Bases')}</dt>
+              <dt className="info-item-heading">{gettext('Projects')}</dt>
               <dd className="info-item-content">
-                {this.renderBaseInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
+                {this.renderProjectInfo(projects_count, archived_base_count, archived_base_storage, archived_row_count)}
               </dd>
               {isPro ?
                 <Fragment>

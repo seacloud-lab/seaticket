@@ -15,7 +15,7 @@
   color: rgb(153, 153, 153);
 }
 
-.deleted-group-base-item-container {
+.deleted-group-project-item-container {
   display: flex;
   align-items: center;
   padding: 8px 3px;
@@ -35,19 +35,19 @@
   border-bottom: 1px solid #e9ecef;
 }
 
-.trash-view-content-header .trash-view-base-name {
+.trash-view-content-header .trash-view-project-name {
   padding-left: 42px;
   font-size: 0.8125rem;
   color: #666;
 }
 
-.trash-view-content-header .trash-view-base-deleted-time {
+.trash-view-content-header .trash-view-project-deleted-time {
   padding-left: 100px;
   font-size: 0.8125rem;
   color: #666;
 }
 
-.base-item-title {
+.project-item-title {
   flex: 1 1 auto;
   padding: 0 10px;
   width: 100px;
@@ -55,14 +55,14 @@
   font-weight: 500;
 }
 
-.base-item-delete-time {
+.project-item-delete-time {
   flex: 1 1 auto;
   min-width: 150px;
   color: #212529;
   font-size: 0.875rem;
 }
 
-.restore-base-button {
+.restore-project-button {
   min-width: 35px;
   padding-left: 5px;
   text-align: right;
