@@ -82,8 +82,9 @@ class Store {
   }
 
   async loadMore(limit) {
-    if (!this.data) return;
+    if (!this.data || !this.mounted) return;
     const res = await context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit });
+    if (!this.data || !this.mounted) return;
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
       this.hasMore = false;
