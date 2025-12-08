@@ -1,12 +1,12 @@
 import React from 'react';
 import { Modal, ModalBody } from 'reactstrap';
+import dayjs from 'dayjs';
+import { getPreviewContent } from '@seafile/seafile-editor';
 import { gettext } from '@/constants';
 import { ModalHeader } from '@/components';
-import { getPreviewContent } from '@seafile/seafile-editor';
 import { CONNECTION_TYPES } from '../../constants';
 import { getConnectionIcon } from '../../utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
-import dayjs from 'dayjs';
 
 import './index.css';
 
