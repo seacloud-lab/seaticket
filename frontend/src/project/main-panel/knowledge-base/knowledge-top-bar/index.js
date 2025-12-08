@@ -30,7 +30,18 @@ const KnowledgeTopBar = ({ title }) => {
         </>
       );
     }
-    return null;
+
+    const editTitle = gettext('Knowledge') + ' / #' + pageSlugId;
+    return (
+      <>
+        <IconButton
+          icon="down"
+          className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
+          onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
+        />
+        <span className="text-truncate" title={editTitle}>{editTitle}</span>
+      </>
+    );
   }, [pageSlugId, title, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
@@ -39,7 +50,14 @@ const KnowledgeTopBar = ({ title }) => {
         <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" />
       );
     }
-    return null;
+
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
+      return null;
+    }
+
+    return (
+      <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" />
+    );
   }, [pageSlugId, togglePageSlugId]);
 
   return (

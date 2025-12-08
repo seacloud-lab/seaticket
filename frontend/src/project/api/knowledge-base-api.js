@@ -143,6 +143,11 @@ class KnowledgeBaseAPI {
     return this.req.delete(url, { params: { record_number: recordNumber } });
   }
 
+  getRecord(projectUuid, knowledgeID) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
+    return this.req.get(url, { params: { record_number: knowledgeID } });
+  }
+
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();

@@ -1,23 +1,16 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { gettext } from '@/constants';
-import { toaster } from '@/components';
 import SeaMetadata from '@/sea-metadata';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import eventBus from '@/utils/event-bus';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { knowledgeBaseAPI } from '@/project/api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import AddKnowledgeDialog from '../../add-knowledge-dialog';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
-  const { viewID, toggleView } = useKnowledgePage();
-  const [isDialogOpen, setDialogOpen] = useState(false);
-  const [isSubmitting, setSubmitting] = useState(false);
-  const [editRowId, setEditRowId] = useState('');
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
+  const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
+
+  const expandRow = useCallback((row) => {
+    togglePageSlugId(row._id);
+  }, [togglePageSlugId]);
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
@@ -49,20 +42,6 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     };
   }, []);
 
-  const openEditDialog = useCallback((row) => {
-    setEditRowId(row._id);
-    setQuestion(row.question || '');
-    setAnswer(row.answer || '');
-    setDialogOpen(true);
-  }, []);
-
-  const closeDialog = useCallback(() => {
-    setDialogOpen(false);
-    setEditRowId('');
-    setQuestion('');
-    setAnswer('');
-  }, []);
-
   const createContextMenuOptions = useCallback(({ isGroupView, selectedRange, selectedPosition, table, rowMetrics, deleteRow, deleteRows, rowGetterByIndex, context }) => {
     let list = [];
     if (selectedRange) return list;
@@ -75,37 +54,9 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
-    list.push({ label: gettext('Edit record'), callback: () => {
-      const questionColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.QUESTION);
-      const answerColumn = getColumnByName(table.columns, KNOWLEDGE_PREDEFINED_COLUMN_NAME.ANSWER);
-      const newRow = {
-        _id: row._id,
-        question: getCellValueByColumn(row, questionColumn),
-        answer: getCellValueByColumn(row, answerColumn),
-      };
-      openEditDialog(newRow);
-    } });
     if (context.canDeleteRow()) list.push({ label: gettext('Delete record'), callback: () => deleteRow(row._id) });
     return list;
   }, []);
-
-  const onSubmit = useCallback(() => {
-    const q = question.trim();
-    const a = answer;
-    if (!q || !a || !((typeof a === 'object' ? a.text : a).trim())) return;
-    setSubmitting(true);
-    const action = knowledgeBaseAPI.updateRecord(projectUuid, editRowId, { question: q, answer: a });
-    action.then(() => {
-      toaster.success(gettext('Record updated'));
-      setDialogOpen(false);
-      setQuestion('');
-      setAnswer('');
-      eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
-    }).catch(error => {
-      const errorMessage = (error?.response?.data?.error_msg) || gettext('Failed to update record');
-      toaster.danger(errorMessage);
-    }).finally(() => setSubmitting(false));
-  }, [question, answer, editRowId]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-knowledge-base`, []);
 
@@ -117,29 +68,17 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   }), []);
 
   return (
-    <>
-      <SeaMetadata
-        viewID={viewID}
-        api={api}
-        permission={permission}
-        isViewComputedOnServer={true}
-        localStorageNamePrefix={localStorageName}
-        toggleView={toggleView}
-        t={t}
-        createContextMenuOptions={createContextMenuOptions}
-      />
-      <AddKnowledgeDialog
-        isOpen={isDialogOpen}
-        toggle={closeDialog}
-        isSubmitting={isSubmitting}
-        question={question}
-        answer={answer}
-        setQuestion={setQuestion}
-        setAnswer={setAnswer}
-        onSubmit={onSubmit}
-        editorAPI={editorAPI}
-      />
-    </>
+    <SeaMetadata
+      viewID={viewID}
+      api={api}
+      permission={permission}
+      isViewComputedOnServer={true}
+      localStorageNamePrefix={localStorageName}
+      toggleView={toggleView}
+      expandRow={expandRow}
+      t={t}
+      createContextMenuOptions={createContextMenuOptions}
+    />
   );
 };
 
