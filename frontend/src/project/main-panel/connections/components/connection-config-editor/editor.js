@@ -31,8 +31,6 @@ const Editor = ({ column, row, readonly, canModifyPassword = true, onChange }) =
           placeholder={placeholder}
           disabled={readonly}
           onChange={(e) => onChange(key, parseInt(e.target.value) || default_value)}
-          min="1"
-          max="20"
         />
       );
     }
