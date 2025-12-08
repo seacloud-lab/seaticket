@@ -3,7 +3,6 @@ import classnames from 'classnames';
 import { Icon, IconButton } from '../../../components';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import ConnectionNav from './connection-nav';
-import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -20,9 +19,9 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
     setIsShowChildren(!isShowChildren);
   }, [isShowChildren, reloadConnections]);
 
-  const toggleConnectionView = Utils.debounce(useCallback((connectionId) => {
+  const toggleConnectionView = useCallback((connectionId) => {
     onClick([nav.key, String(connectionId)]);
-  }, [nav, onClick]), 300);
+  }, [nav, onClick]);
 
   const { key, name, icon } = nav;
   let isActive = activeBar[0] === key;
