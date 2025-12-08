@@ -14,7 +14,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
 
   const api = useMemo(() => {
     const getMetadata = (...params) => {
-      return knowledgeBaseAPI.getKnowledgeBase(projectUuid, ...params).then(res => {
+      return knowledgeBaseAPI.getKnowledgeBases(projectUuid, ...params).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
@@ -37,8 +37,8 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       moveView: (sourceId, targetId) => knowledgeBaseAPI.moveView(projectUuid, sourceId, targetId),
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
-      deleteRow: (recordNumber) => knowledgeBaseAPI.deleteRecord(projectUuid, recordNumber),
-      deleteRows: (recordNumber) => knowledgeBaseAPI.deleteRecords(projectUuid, recordNumber),
+      deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
+      deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     };
   }, []);

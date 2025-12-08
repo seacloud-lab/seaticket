@@ -63,7 +63,6 @@ urlpatterns = [
     re_path(r'^api/v2.1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v2.1-ai-embedding-analysis'),
     re_path(r'^api/v2.1/ai/embedding-analysis-task-status/(?P<task_id>[-0-9a-zA-Z]+)/$', EmbeddingAnalysisTaskStatusView.as_view(), name='api-v2.1-ai-embedding-analysis-task-status'),
     re_path(r'^api/v2.1/ai/related-records/$', RelatedRecordsView.as_view(), name='api-v2.1-ai-related-records'),
-
 ]
 
 # files, must at last
