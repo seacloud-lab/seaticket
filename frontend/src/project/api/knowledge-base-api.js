@@ -59,8 +59,8 @@ class KnowledgeBaseAPI {
     }
   }
 
-  getKnowledgeBase(projectUuid, { view_id = 'open', start = 0, limit = 100, } = {}){
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
+  getKnowledgeBases(projectUuid, { view_id = 'open', start = 0, limit = 100, } = {}){
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
     let params = {
       view_id,
       start,
@@ -127,25 +127,34 @@ class KnowledgeBaseAPI {
   }
 
   createRecord(projectUuid, { question, answer }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
     const payload = { question, answer: (answer && typeof answer === 'object') ? JSON.stringify(answer) : answer };
     return this.req.post(url, payload);
   }
 
-  updateRecord(projectUuid, recordNumber, { question, answer }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
+  updateRecord(projectUuid, recordId, { question, answer }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
     const payload = { question, answer: (answer && typeof answer === 'object') ? JSON.stringify(answer) : answer };
-    return this.req.put(url, payload, { params: { record_number: recordNumber } });
+    return this.req.put(url, payload);
   }
 
-  deleteRecord(projectUuid, recordNumber) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
-    return this.req.delete(url, { params: { record_number: recordNumber } });
+  deleteRecord(projectUuid, recordId) {
+    return this.deleteRecords(projectUuid, [recordId]);
+  }
+
+  deleteRecords(projectUuid, recordIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
+    if (!Array.isArray(recordIds)) {
+      return Promise.reject(new Error('recordIds must be an array'));
+    }
+    return this.req.delete(url, {
+      data: { record_ids: recordIds }
+    });
   }
 
   getRecord(projectUuid, knowledgeID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/';
-    return this.req.get(url, { params: { record_number: knowledgeID } });
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + knowledgeID + '/';
+    return this.req.get(url);
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
