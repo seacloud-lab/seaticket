@@ -67,6 +67,12 @@ class ProjectConnectionsView(APIView):
         if not project:
             error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         records = ProjectConnections.objects.filter(project=project, deleted=False)[start:end]
         records = [record.to_dict() for record in records]
@@ -172,6 +178,12 @@ class ProjectConnectionView(APIView):
         if not project:
             error_msg = f'Project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
         if not project_connection:
