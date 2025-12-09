@@ -140,8 +140,8 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
   }, [groupRowGetter, rowGetter]);
 
   const getTableContentRect = useCallback(() => {
-    return containerRef?.current?.getBoundingClientRect() || { x: 0, right: window.innerWidth };
-  }, [containerRef]);
+    return containerRef?.current?.getBoundingClientRect() || { x: 0, right: window.innerWidth, width: 0 };
+  }, [containerRef?.current]);
 
   const onRowExpand = useCallback((row) => {
     if (isFunction(expandRow)) {

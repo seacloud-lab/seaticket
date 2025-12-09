@@ -25,10 +25,9 @@ class Rows extends Component {
     super(props);
     this.scrollTop = 0;
     this.isScrollByScrollbar = false;
-    const scrollLeft = context.localStorage.getItem('scroll_left');
-    this.scrollLeft = scrollLeft ? Number(scrollLeft) : 0;
-    this.lastScrollLeft = this.scrollLeft;
     this.initPosition = { idx: -1, rowIdx: -1, groupRowIndex: -1 };
+    this.scrollLeft = 0;
+    this.lastScrollLeft = this.scrollLeft;
     const columnMetrics = this.createColumnMetrics(props);
     const { width: tableContentWidth } = props.getTableContentRect();
     const initHorizontalScrollState = this.getHorizontalScrollState({ gridWidth: tableContentWidth, columnMetrics, scrollLeft: 0 });
@@ -61,7 +60,7 @@ class Rows extends Component {
     }
     this.unsubscribeSelectNone = context.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_NONE, this.selectNone);
     this.unsubscribeSelectCell = context.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_CELL, this.selectCell);
-    this.getScrollPosition();
+    this.initScroll();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -123,18 +122,26 @@ class Rows extends Component {
     this.props.modifyColumnWidth(column.key, width);
   };
 
-  getScrollPosition = () => {
-    let scrollLeft = context.localStorage.getItem('scroll_left') + '';
-    let scrollTop = context.localStorage.getItem('scroll_top') + '';
-    if (scrollLeft && scrollTop) {
-      if (this.bodyRef) {
-        scrollLeft = Number(scrollLeft);
-        scrollTop = Number(scrollTop);
-        this.bodyRef.setScrollTop(scrollTop);
-        this.setScrollLeft(scrollLeft);
-        this.handleHorizontalScroll(scrollLeft, scrollTop);
+  initScroll = () => {
+    this.setState({}, () => {
+      let scrollLeft = context.localStorage.getItem('scroll_left') + '';
+      let scrollTop = context.localStorage.getItem('scroll_top') + '';
+      if (scrollLeft && scrollTop) {
+        if (this.bodyRef) {
+          scrollLeft = Number(scrollLeft);
+          scrollTop = Number(scrollTop);
+          const { width: tableContentWidth } = this.props.getTableContentRect();
+          if (tableContentWidth > this.state.columnMetrics.totalWidth + SEQUENCE_COLUMN_WIDTH) {
+            scrollLeft = 0;
+          }
+          this.scrollLeft = scrollLeft || 0;
+          this.lastScrollLeft = this.scrollLeft;
+          this.bodyRef.setScrollTop(scrollTop);
+          this.setScrollLeft(scrollLeft);
+          this.handleHorizontalScroll(scrollLeft, scrollTop);
+        }
       }
-    }
+    });
   };
 
   storeScrollPosition = () => {
