@@ -52,6 +52,8 @@ def project_view(request, workspace_id, project_name, children_id = ''):
 
     is_project_admin = check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
+    if not permission:
+        return render_error(request, _('Permission denied'))
 
     return_dict = {
         'version': SEAQA_VERSION,
