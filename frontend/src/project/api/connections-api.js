@@ -225,6 +225,22 @@ class ConnectionsAPI {
     };
     return this.req.post(url, data);
   }
+
+  // records
+  modifyConnectionRecord(projectUuid, row_id, rowData, isCopyPaste) {
+    console.log(projectUuid, row_id, rowData, isCopyPaste);
+    return new Promise((resolve, reject) => {
+      resolve({ data: { success: true } });
+    });
+  }
+
+  modifyConnectionRecords(projectUuid, rowsData, isCopyPaste) {
+    console.log(projectUuid, rowsData, isCopyPaste);
+    return new Promise((resolve, reject) => {
+      resolve({ data: { success: true } });
+    });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

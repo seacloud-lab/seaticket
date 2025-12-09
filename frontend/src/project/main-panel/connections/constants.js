@@ -453,6 +453,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD]: {
       display_name: gettext('unread'),
       type: CellType.CHECKBOX,
+      editable: true,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
   }
