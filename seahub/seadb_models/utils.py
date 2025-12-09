@@ -551,6 +551,20 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, use
     ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return ticket_data
 
+
+def list_tickets_trash(seadb_api, project_uuid, start, limit):
+    sql =  f"SELECT title,modified_time FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=True)
+    records = res.get('results', [])
+    columns = get_tickets_columns(seadb_api, project_uuid)
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in TICKET_DISPLAY_ALL_COLUMNS:
+            display_columns.append(column)
+    return records, display_columns
+
+
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
     connection_type = connection.type
     table_name = get_connection_table_name(connection)

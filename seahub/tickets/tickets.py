@@ -22,7 +22,7 @@ from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
-from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, list_tickets_trash
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
@@ -313,6 +313,8 @@ class TicketsAPIView(APIView):
                 updated_row[TicketsTable.tags.name] = row_data.get('tags')
             if 'type' in row_data:
                 updated_row[TicketsTable.type.name] = row_data.get('type')
+            if 'deleted' in row_data:
+                updated_row[TicketsTable.deleted.name] = bool(row_data.get('deleted'))
             if 'content' in row_data:
                 content_dict = row_data.get('content')
                 if not isinstance(content_dict, dict):
@@ -528,6 +530,7 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         ticket_state_name = request.data.get('state')
+        deleted = request.data.get('deleted', '')
 
         is_update_type = 'type' in request.data
         type_name = request.data.get('type') or None
@@ -613,6 +616,8 @@ class TicketAPIView(APIView):
             participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
+            if deleted is not None:
+                update_row[TicketsTable.deleted.name] = bool(deleted)
 
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if ticket_state_name or ticket_state_name == '':
@@ -1109,7 +1114,6 @@ class MyTicketAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # argument check
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
 
@@ -1199,3 +1203,105 @@ class TicketMetadataAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response(select_option_metadata)
+
+
+class TicketTrashAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
+
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+
+        if start < 0:
+            error_msg = 'start invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if limit < 0:
+            error_msg = 'limit invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        try:
+            records, columns = list_tickets_trash(seadb_api, project_uuid, start, limit)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response({'records': records, 'columns': columns})
+
+    def delete(self, request, project_uuid):
+        ticket_ids = request.data.get('ticket_ids')
+        if not ticket_ids:
+            error_msg = 'ticket_ids is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
+        exist_ticket_ids = [ticket.get('_pk') for ticket in tickets]
+        fail_ticket_ids = []
+        for ticket_id in ticket_ids:
+            if int(ticket_id) not in exist_ticket_ids:
+                fail_ticket_ids.append(ticket_id)
+
+        need_delete_ticket_ids = list(set(ticket_ids) - set(fail_ticket_ids))
+        try:
+            seadb_api.delete_rows(project_uuid, 'tickets', need_delete_ticket_ids)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({
+            'success': need_delete_ticket_ids,
+            'failed': fail_ticket_ids
+        })
+
