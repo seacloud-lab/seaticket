@@ -133,9 +133,9 @@ class KnowledgeBaseAPI {
   }
 
   updateRecord(projectUuid, recordId, { question, answer }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
     const payload = { question, answer: (answer && typeof answer === 'object') ? JSON.stringify(answer) : answer };
-    return this.req.put(url, payload, { params: { record_id: recordId } });
+    return this.req.put(url, payload);
   }
 
   deleteRecord(projectUuid, recordId) {
@@ -153,8 +153,8 @@ class KnowledgeBaseAPI {
   }
 
   getRecord(projectUuid, knowledgeID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
-    return this.req.get(url, { params: { record_number: knowledgeID } });
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + knowledgeID + '/';
+    return this.req.get(url);
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
