@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import dayjs from '@/utils/dayjs';
 import { Button } from 'reactstrap';
 import { Utils } from '@/utils/utils';
@@ -18,9 +18,10 @@ import './index.css';
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
-  const { pageSlugId, connectionInfo, togglePageSlugId } = useConnectionsPage();
-  const { modifyLocalConnectionRecord, reloadConnections } = useConnections();
+  const { pageSlugId, connectionInfo, togglePageSlugId, onRefresh } = useConnectionsPage();
+  const { modifyLocalConnectionRecord } = useConnections();
   const { name: connectionName, type: connectionType } = connectionInfo || {};
+  const timer = useRef(null);
   const [isSyncing, setIsSyncinig] = useState(false);
 
   const handleNewConnection = useCallback(() => {
@@ -56,17 +57,18 @@ const TopBar = ({ title, modifyLocalBar }) => {
   }, [pageSlugId, title, connectionName, handleReturnConnectionsHome]);
 
   const onQueryConnectionStatus = useCallback((connectionID) => {
-    setTimeout(() => {
+    timer.current = setTimeout(() => {
       connectionsAPI.getConnection(projectUuid, connectionID).then((res) => {
         const { last_sync_status, last_sync_count } = JSON.parse(res.data.record.status);
         if (last_sync_status === 'completed') {
           if (last_sync_count > 0) {
-            reloadConnections();
+            onRefresh();
             const msg = gettext('%s records synced').replace('%s', last_sync_count);
             toaster.success(msg);
           } else {
             toaster.success(gettext('No new records'));
           }
+          clearTimeout(timer.current);
           setIsSyncinig(false);
         } else {
           onQueryConnectionStatus(connectionID);
@@ -76,7 +78,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
         const errorMessage = Utils.getErrorMsg(error);
         toaster.danger(errorMessage);
       });
-    }, 2000);
+    }, 3000);
   }, [projectUuid]);
 
   const onManualSync = useCallback((connectionID) => {
@@ -97,6 +99,12 @@ const TopBar = ({ title, modifyLocalBar }) => {
       toaster.danger(error_msg);
     });
   }, [modifyLocalConnectionRecord]);
+
+  useEffect(() => {
+    return () => {
+      timer.current && clearTimeout(timer.current);
+    };
+  }, []);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
