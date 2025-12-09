@@ -23,7 +23,7 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, EmailTable
+from seahub.seadb_models.models import GithubIssuesTable, DiscourseTopicsTable, ThreadTable
 
 
 logger = logging.getLogger(__name__)
@@ -314,7 +314,7 @@ class RelatedRecordsView(APIView):
             elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
                 table_name = DiscourseTopicsTable.gen_table_name(connection_id)
             elif connection.type == ConnectionType.EMAIL.value:
-                table_name = EmailTable.gen_table_name(connection_id)
+                table_name = ThreadTable.gen_table_name(connection_id)
 
         if not table_name:
             error_msg = 'Unsupported connection type for similarity search.'
@@ -398,7 +398,7 @@ class RelatedRecordsView(APIView):
                 elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
                     table_name = DiscourseTopicsTable.gen_table_name(result_connection_id)
                 elif connection_type == ConnectionType.EMAIL.value:
-                    table_name = EmailTable.gen_table_name(result_connection_id)
+                    table_name = ThreadTable.gen_table_name(result_connection_id)
                 else:
                     logger.warning(f'Unsupported issue connection type: {connection_type}')
                     continue
@@ -481,10 +481,7 @@ class RelatedRecordsView(APIView):
                     processed_result['modified_time'] = record.get('modified_time', '')
 
                 elif connection_type == ConnectionType.EMAIL.value:
-                    processed_result['content'] = record.get('content', '')
                     processed_result['title'] = record.get('title', '')
-                    processed_result['email_from'] = record.get('email_from', '')
-                    processed_result['email_to'] = record.get('email_to', '')
                     processed_result['modified_time'] = record.get('modified_time', '')
 
                 else:
