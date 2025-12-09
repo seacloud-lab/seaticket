@@ -33,6 +33,8 @@ from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import LLM_INPUT_CHARACTERS_LIMIT
+from seahub.utils.mq import get_mq
 
 
 logger = logging.getLogger(__name__)
@@ -525,3 +527,44 @@ def get_embedding_analysis_task_status(task_id):
         'is_finished': is_finished,
         'records': records
     }
+
+
+def generate_ai_summary(content, username, connection_type, project_uuid, org_id, include_vector=True):
+    params = {
+        'content': content[:LLM_INPUT_CHARACTERS_LIMIT],
+        'username': username,
+        'connection_type': connection_type,
+        'project_uuid': project_uuid,
+        'org_id': org_id,
+        'include_vector': include_vector,
+    }
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/generate-summary')
+    resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 500:
+        raise Exception('generate ai summary error status: %s body: %s' % (resp.status_code, resp.text))
+    resp_json = resp.json()
+    ai_summary = resp_json.get('summary', '')
+    vector = resp_json.get('embedding', [])
+    return ai_summary, vector
+
+
+def submit_summary_index_task(connection_id):
+    try:
+        mq = get_mq()
+        if not mq:
+            raise Exception('Redis MQ is not available')
+
+        summary_index_msg = {
+            'connection_id': connection_id,
+        }
+
+        mq.lpush('summary_index_task', json.dumps(summary_index_msg))
+        logger.info(f'Submitted summary index task for connection_id: {connection_id}')
+
+    except Exception as e:
+        logger.error(f'Failed to submit summary index task for connection {connection_id}: {str(e)}')
+        raise
+
