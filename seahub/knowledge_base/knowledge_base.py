@@ -93,6 +93,7 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({'row': row}, status=status.HTTP_201_CREATED)
 
+
     def get(self, request, project_uuid):
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -264,18 +265,52 @@ class KnowledgeBaseAPIView(APIView):
 
         workspace = project.workspace
 
-        # permission check
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        row = {
-            KnowledgeBaseTable.title.name: title,
-            KnowledgeBaseTable.content.name: content_text,
-            KnowledgeBaseTable.last_modifier.name: username,
-            KnowledgeBaseTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+        row = {}
+        
+        if 'question' in request.data:
+            question = request.data.get('question')
+            if not question:
+                error_msg = 'question field exists but is invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.question.name] = question
 
-         }
+        if 'answer' in request.data:
+            raw_answer = request.data.get('answer')
+            if not raw_answer:
+                error_msg = 'answer filed exists but is invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            answer_text = None
+            if isinstance(raw_answer, dict):
+                answer_text = raw_answer.get('text')
+            else:
+                try:
+                    ans_obj = json.loads(raw_answer)
+                    answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
+                except Exception:
+                    answer_text = raw_answer
+            if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
+                error_msg = 'answer field exists but wrong format.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.answer.name] = answer_text
+
+        if 'tags' in request.data:
+            tags = request.data.get('tags')
+            if not isinstance(tags, list):
+                error_msg = 'tags field exists but is invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.tags.name] = tags
+
+        if not row:
+            error_msg = 'No valid data to update.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        row[KnowledgeBaseTable.last_modifier.name] = username
+        row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+
         seadb_api = SeaDBAPI(request.user.username)
         record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
