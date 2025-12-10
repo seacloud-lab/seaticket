@@ -18,6 +18,8 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone as django_timezone
+from django.core.cache import cache
+
 from seahub.organizations.models import OrgSettings, OrgMemberQuota
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.role_permissions.models import UserRole
@@ -27,6 +29,7 @@ from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups, group_id_to_name
 from seahub.api2.utils import get_user_common_info
+from seahub.utils import normalize_cache_key
 
 from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
@@ -530,6 +533,10 @@ def get_embedding_analysis_task_status(task_id):
 
 def get_all_available_projects(request):
     username = request.user.username
+    cache_key = normalize_cache_key(username, 'AVAILABLE_PROJECTS_')
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
     groups = get_user_groups(username, return_ancestors=True)
     owner_list = [username] + ['%s@seafile_group' % group.group_id for group in groups]
     workspaces = Workspaces.objects.filter(owner__in=owner_list)
@@ -541,11 +548,10 @@ def get_all_available_projects(request):
         if '@seafile_group' in owner:
             group_id = int(owner.split('@')[0])
             info['group_name'] = group_id_to_name(group_id)
-            info['type'] = 'group'
         else:
             info['group_name'] = 'personal'
-            info['type'] = 'personal'
         projects.append(info)
+    cache.set(cache_key, projects, 60)
     return projects
 
 
