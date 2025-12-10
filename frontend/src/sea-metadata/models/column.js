@@ -2,13 +2,13 @@ import { isDarkColor } from '@/utils/color-utils';
 import { CellType } from '../constants';
 
 class Column {
-  constructor(object) {
+  constructor(object, columnWidthRules) {
     this.key = object.key || '';
     this.name = object.name || '';
     this.display_name = object.display_name || this.name || '';
     this.type = object.type || '';
     this.data = object.data || null;
-    this.width = object.width || 200;
+    this.width = object.width || (columnWidthRules ? (columnWidthRules[this.name] || 200) : 200);
     this.is_width_fixed = object.is_width_fixed || false;
 
     this.is_required = object.is_required || false;

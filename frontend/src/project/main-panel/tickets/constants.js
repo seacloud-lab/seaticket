@@ -194,3 +194,41 @@ export const TICKET_NOT_DISPLAY_COLUMNS = [
   PREDEFINED_TICKET_COLUMN_NAME.PK,
   PREDEFINED_TICKET_COLUMN_NAME.COMMENT_COUNT,
 ];
+
+export const TICKET_COLUMNS_ORDER_CONFIG = {
+  'priority': 1,
+  'title': 2,
+
+  'type': 3,
+  'state': 4,
+  'substate': 5,
+
+  'assignees': 6,
+  'participants': 7,
+  'tags': 8,
+
+  'content': 9,
+  'creator': 10,
+  'created_time': 11,
+  'modified_time': 12,
+  'closed_time': 13,
+};
+
+export const TICKET_COLUMNS_WIDTH_CONFIG = {
+  'priority': 33,
+  'title': 400,
+
+  'type': 120,
+  'state': 120,
+  'substate': 120,
+
+  'assignees': 200,
+  'participants': 200,
+  'tags': 200,
+
+  'content': 400,
+  'creator': 200,
+  'created_time': 200,
+  'modified_time': 200,
+  'closed_time': 200,
+};
