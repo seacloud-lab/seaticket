@@ -659,7 +659,7 @@ AI_PRICES = {}
 LLM_MODELS = []
 
 
-def validate_llm_models(models):
+def validate_llm_models_and_prices(models, ai_prices):
     if not models:
         return []
 
@@ -667,6 +667,7 @@ def validate_llm_models(models):
         return []
 
     validated_models = []
+    validated_ai_prices = {}
 
     for model in models:
         if not isinstance(model, dict):
@@ -679,8 +680,12 @@ def validate_llm_models(models):
             continue
         model['label'] = model.get('label', model['model'])
         validated_models.append(model)
+        if model['model'] in ai_prices:
+            validated_ai_prices[model['model']] = ai_prices[model['model']]
 
-    return validated_models
+    return validated_models, validated_ai_prices
+
+
 #####################
 # External settings #
 #####################
@@ -729,7 +734,8 @@ yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'sea
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
 # Available AI Models for user selection
-LLM_MODELS = validate_llm_models(configs.get('LLM_MODELS', LLM_MODELS))
+LLM_MODELS, AI_PRICES = validate_llm_models_and_prices(configs.get('LLM_MODELS', LLM_MODELS), configs.get('AI_PRICES', AI_PRICES))
+
 # jwt private key
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 
