@@ -27,7 +27,7 @@ from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
-from seahub.group.utils import get_user_groups, group_id_to_name
+from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
 
@@ -37,6 +37,7 @@ from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT
 
 
 logger = logging.getLogger(__name__)
@@ -500,13 +501,13 @@ def submit_embedding_analysis_task(params):
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'submit embedding analysis task error status: {resp.status_code} body: {resp.text}')
-    
+
     response_data = resp.json()
     task_id = response_data.get('task_id')
     if not task_id:
         logger.error('No task_id returned from seaqa-events')
         raise Exception('Failed to submit analysis task.')
-    
+
     return task_id
 
 
@@ -514,17 +515,17 @@ def get_embedding_analysis_task_status(task_id):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
-    
+
     url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, f'/embedding-analysis-task-status')
     params = {'task_id': task_id}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 500:
         raise Exception(f'get embedding analysis task status error status: {resp.status_code} body: {resp.text}')
-    
+
     response_data = resp.json()
     is_finished = response_data.get('is_finished')
     records = response_data.get('records', [])
-    
+
     return {
         'is_finished': is_finished,
         'records': records
@@ -533,7 +534,7 @@ def get_embedding_analysis_task_status(task_id):
 
 def get_all_available_projects(request):
     username = request.user.username
-    cache_key = normalize_cache_key(username, 'AVAILABLE_PROJECTS_')
+    cache_key = normalize_cache_key(username, USER_PROJECT_CACHE_PREFIX)
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
@@ -543,15 +544,12 @@ def get_all_available_projects(request):
     projects = []
     projects_qs = Projects.objects.filter(workspace__in=workspaces, deleted=False)
     for project in projects_qs:
-        info = project.to_dict()
-        owner = project.workspace.owner
-        if '@seafile_group' in owner:
-            group_id = int(owner.split('@')[0])
-            info['group_name'] = group_id_to_name(group_id)
-        else:
-            info['group_name'] = 'personal'
-        projects.append(info)
-    cache.set(cache_key, projects, 60)
+        project_info = {
+            'workspace_id': project.workspace_id,
+            'name': project.name,
+        }
+        projects.append(project_info)
+    cache.set(cache_key, projects, USER_PROJECT_CACHE_CACHE_TIMEOUT)
     return projects
 
 
