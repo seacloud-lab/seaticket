@@ -27,7 +27,8 @@ from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets
+    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
+    delete_ticket_comments_by_ids
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -1248,12 +1249,12 @@ class TicketTrashAPIView(APIView):
 
         seadb_api = SeaDBAPI(username)
         try:
-            records, columns = list_tickets_trash(seadb_api, project_uuid, start, limit)
+            tickets, columns = list_tickets_trash(seadb_api, project_uuid, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        return Response({'records': records, 'columns': columns})
+        return Response({'tickets': tickets, 'columns': columns})
 
     def delete(self, request, project_uuid):
         ticket_ids = request.data.get('ticket_ids')
@@ -1290,10 +1291,11 @@ class TicketTrashAPIView(APIView):
         fail_ticket_ids = []
         for ticket_id in ticket_ids:
             if int(ticket_id) not in exist_ticket_ids:
-                fail_ticket_ids.append(ticket_id)
+                fail_ticket_ids.append(int(ticket_id))
 
-        need_delete_ticket_ids = list(set(ticket_ids) - set(fail_ticket_ids))
+        need_delete_ticket_ids = [int(ticket_id) for ticket_id in set(ticket_ids) - set(fail_ticket_ids)]
         try:
+            delete_ticket_comments_by_ids(seadb_api, project_uuid, need_delete_ticket_ids)
             seadb_api.delete_rows(project_uuid, 'tickets', need_delete_ticket_ids)
         except Exception as e:
             logger.error(e)
