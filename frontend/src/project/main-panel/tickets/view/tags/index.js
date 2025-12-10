@@ -218,7 +218,7 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadTags();
+    loadTags(true);
   }, []);
 
   useEffect(() => {

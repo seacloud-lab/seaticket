@@ -91,9 +91,9 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifyTags]);
 
-  const loadTags = useCallback(() => {
+  const loadTags = useCallback((isForce = false) => {
     const currentTime = new Date();
-    if (tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
+    if (!isForce && tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
     const newTagsData = tagsData._updateLoading(true);
     setTagsData(deepCopy(newTagsData));
     ticketsAPI.listTicketTags(projectUuid).then(res => {
