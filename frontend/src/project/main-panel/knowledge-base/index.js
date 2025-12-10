@@ -6,7 +6,9 @@ import LongTextEditorUtilities from '@/utils/long-text';
 import NewKnowledge from './view/new-knowledge';
 import AllKnowledge from './view/all-knowledge';
 import EditKnowledge from './view/edit-knowledge';
+import Tags from './view/tags';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
+import { MetadataProvider } from './hooks/metadata';
 import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
@@ -24,6 +26,9 @@ const Page = ({ title }) => {
   }), []);
 
   if (isLoading) return null;
+  if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS) {
+    return (<Tags { ...props } />);
+  }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
     return (<AllKnowledge { ...props } editorAPI={longtextAPI} />);
   }
@@ -36,8 +41,10 @@ const Page = ({ title }) => {
 const KnowledgeBase = ({ title }) => {
   return (
     <KnowledgePageProvider workspaceID={workspaceID} projectName={projectName}>
-      <KnowledgeTopBar title={title} />
-      <Page title={title} />
+      <MetadataProvider projectUuid={projectUuid}>
+        <KnowledgeTopBar title={title} />
+        <Page title={title} />
+      </MetadataProvider>
     </KnowledgePageProvider>
   );
 };

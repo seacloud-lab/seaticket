@@ -1,12 +1,35 @@
 import React, { useMemo, useCallback } from 'react';
 import { gettext } from '@/constants';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { CellType } from '@/sea-metadata';
+import context from '@/sea-metadata/context';
+import { getTableColumnByKey } from '@/sea-metadata/utils/table';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
+import { useMetadata } from '../../hooks/metadata';
 import { knowledgeBaseAPI } from '@/project/api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+
+const convertRowToServerData = (rowUpdate, { data, tagsData }) => {
+  let serverRowData = {};
+  Object.keys(rowUpdate).forEach(key => {
+    const column = getTableColumnByKey(data, key);
+    if (!column) return;
+    const { name, type } = column;
+    let cellValue = rowUpdate[key];
+    if (type === CellType.TAGS) {
+      if (Array.isArray(cellValue) && cellValue.length > 0) {
+        const tags = getRowsByIds(tagsData, cellValue);
+        cellValue = tags.map(tag => tag.name);
+      }
+    }
+    serverRowData[name] = cellValue;
+  });
+  return serverRowData;
+};
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
+  const { tagsData, createTag } = useMetadata();
 
   const expandRow = useCallback((row) => {
     togglePageSlugId(row._id);
@@ -25,6 +48,10 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
             ...predefinedConfig,
           };
         });
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
         return { data: { rows, columns } };
       });
     };
@@ -37,11 +64,15 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       moveView: (sourceId, targetId) => knowledgeBaseAPI.moveView(projectUuid, sourceId, targetId),
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
+      modifyRow: (row_id, row_update, isCopyPaste, { data, tagsData } = {}) => {
+        const rowData = convertRowToServerData(row_update, { data, tagsData });
+        return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData);
+      },
       deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
       deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     };
-  }, []);
+  }, [projectUuid, tagsData]);
 
   const createContextMenuOptions = useCallback(({ isGroupView, selectedRange, selectedPosition, table, rowMetrics, deleteRow, deleteRows, rowGetterByIndex, context }) => {
     let list = [];
@@ -79,6 +110,9 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       expandRow={expandRow}
       t={t}
       createContextMenuOptions={createContextMenuOptions}
+      tagsData={tagsData}
+      createTag={createTag}
+      toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
     />
   );
 };

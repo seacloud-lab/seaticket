@@ -51,7 +51,6 @@ class KnowledgeBaseTagsAPIView(APIView):
         try:
             seadb_api = SeaDBAPI(username)
             tag_options, _ = get_kb_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or {}
-            print('tag_options', tag_options)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
