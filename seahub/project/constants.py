@@ -7,6 +7,9 @@ from django.utils.translation import gettext as _
 ORG_STORAGE_SIZE_PREFIX = 'ORG_STORAGE_SIZE_'
 ORG_STORAGE_SIZE_CACHE_TIMEOUT = 60 * 60 * 24
 
+USER_PROJECT_CACHE_PREFIX = 'USER_PROJECT_'
+USER_PROJECT_CACHE_CACHE_TIMEOUT = 60 * 60 * 24
+
 IMAGE_EXTS = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp']
 
 
@@ -336,3 +339,8 @@ class ConnectionCategory:
 
 ISSUE_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.ISSUE]
 DOCUMENT_CONNECTION_TYPES = ConnectionCategory._TYPE_MAPPING[ConnectionCategory.DOCUMENT]
+
+
+ITEMS_SEARCH_QUERY_TYPES_SUPPORT = [
+    'project'
+]

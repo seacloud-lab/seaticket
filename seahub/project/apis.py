@@ -15,7 +15,9 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_permission, get_project_related_users
+from seahub.project.utils import check_project_permission, get_project_related_users, \
+    query_items
+from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -65,3 +67,23 @@ class ProjectRelatedUsersView(APIView):
 
         return Response({"user_list": user_list})
 
+class ProjectItemsSearchView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request):
+        query_str = request.GET.get('query_str', '')
+        query_type = request.GET.get('query_type', '')
+        if not query_str:
+            error_msg = 'query invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if query_type not in ITEMS_SEARCH_QUERY_TYPES_SUPPORT:
+            error_msg = 'query type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        try:
+            results = query_items(request, query_str, query_type)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'results': results})

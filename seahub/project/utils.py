@@ -10,7 +10,7 @@ from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
-    StatsAIByTeam, StatsAIByOwner
+    StatsAIByTeam, StatsAIByOwner, Workspaces
 from seahub.chats.models import ChatSessions
 from seahub.chats.utils import delete_session
 from seahub.tickets.models import TicketViews
@@ -18,6 +18,8 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone as django_timezone
+from django.core.cache import cache
+
 from seahub.organizations.models import OrgSettings, OrgMemberQuota
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.role_permissions.models import UserRole
@@ -25,7 +27,9 @@ from seahub.group.utils import is_group_admin_or_owner, is_group_member
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.auth.models import EmailUser
 from seahub.group.models import Group, GroupUser
+from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
+from seahub.utils import normalize_cache_key
 
 from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
@@ -33,6 +37,7 @@ from seahub.constants import PERMISSION_READ_WRITE, ORG_DEFAULT, DEFAULT_USER
 from seahub.utils import s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.project.seadb_api import SeaDBAPI
+from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT
 
 
 logger = logging.getLogger(__name__)
@@ -496,13 +501,13 @@ def submit_embedding_analysis_task(params):
     resp = requests.post(url, json=params, headers=headers)
     if resp.status_code == 500:
         raise Exception(f'submit embedding analysis task error status: {resp.status_code} body: {resp.text}')
-    
+
     response_data = resp.json()
     task_id = response_data.get('task_id')
     if not task_id:
         logger.error('No task_id returned from seaqa-events')
         raise Exception('Failed to submit analysis task.')
-    
+
     return task_id
 
 
@@ -510,18 +515,56 @@ def get_embedding_analysis_task_status(task_id):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": f'Token {token}'}
-    
+
     url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, f'/embedding-analysis-task-status')
     params = {'task_id': task_id}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 500:
         raise Exception(f'get embedding analysis task status error status: {resp.status_code} body: {resp.text}')
-    
+
     response_data = resp.json()
     is_finished = response_data.get('is_finished')
     records = response_data.get('records', [])
-    
+
     return {
         'is_finished': is_finished,
         'records': records
     }
+
+
+def get_all_available_projects(request):
+    username = request.user.username
+    cache_key = normalize_cache_key(username, USER_PROJECT_CACHE_PREFIX)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    groups = get_user_groups(username, return_ancestors=True)
+    owner_list = [username] + ['%s@seafile_group' % group.group_id for group in groups]
+    workspaces = Workspaces.objects.filter(owner__in=owner_list)
+    projects = []
+    projects_qs = Projects.objects.filter(workspace__in=workspaces, deleted=False)
+    for project in projects_qs:
+        project_info = {
+            'workspace_id': project.workspace_id,
+            'name': project.name,
+        }
+        projects.append(project_info)
+    cache.set(cache_key, projects, USER_PROJECT_CACHE_CACHE_TIMEOUT)
+    return projects
+
+
+def query_projects(request, query_str):
+    all_projects = get_all_available_projects(request)
+    query_result = []
+    query_str = query_str.lower()
+    for p in all_projects:
+        name = (p.get('name') or '').lower()
+        if query_str in name:
+            query_result.append(p)
+    return query_result
+
+
+def query_items(request, query_str, query_type):
+    if query_type == 'project':
+        return query_projects(request, query_str)
+    return []
