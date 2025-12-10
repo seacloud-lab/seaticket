@@ -661,11 +661,11 @@ LLM_MODELS = []
 
 def validate_llm_models_and_prices(models, ai_prices):
     if not models:
-        return []
-
+        return [], {}
     if not isinstance(models, list):
-        return []
-
+        return [], {}
+    if not isinstance(ai_prices, dict):
+        ai_prices = {}
     validated_models = []
     validated_ai_prices = {}
 
