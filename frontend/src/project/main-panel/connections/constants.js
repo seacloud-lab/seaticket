@@ -159,13 +159,13 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_custom: true,
       tip: gettext('Your personal access token in GitHub Developer Settings')
-    }, {
-      key: 'webhook_secret',
-      name: gettext('Webhook secret (optional)'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: false,
-      is_custom: true,
-    }
+    // }, {
+    //   key: 'webhook_secret',
+    //   name: gettext('Webhook secret (optional)'),
+    //   type: CONNECTION_FIELD_TYPE.TEXT,
+    //   is_required: false,
+    //   is_custom: true,
+    },
   ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
     {

@@ -24,7 +24,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns.slice(0, -1);
+    if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     return _columns;
   }, [type]);
 
@@ -84,41 +84,40 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
   }, [config]);
 
   const handleSubmit = useCallback(() => {
-    if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      if (!config.webhook_secret) {
-        onToggle();
-        return;
-      }
-      modifyConnection({ name: name.trim(), config }, () => {
-        setSubmitting(false);
-      },
-      newRecord.id
-      );
-    } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      if (newRecord) {
-        if (!config.webhook_secret) {
-          onToggle();
-          return;
-        }
-        modifyConnection({ name: name.trim(), config }, () => {
-          setSubmitting(false);
-        },
-        newRecord.id
-        );
-      } else {
-        setSubmitting(true);
-        onSubmit({ type, name: name.trim(), config }, () => {
-          setSubmitting(false);
-        });
-      }
-    } else {
-      setSubmitting(true);
-      onSubmit({ type, name: name.trim(), config }, () => {
-        setSubmitting(false);
-      });
-    }
+    setSubmitting(true);
+    onSubmit({ type, name: name.trim(), config }, () => {
+      setSubmitting(false);
+    });
+    return;
+    // if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    //   if (!config.webhook_secret) {
+    //     onToggle();
+    //     return;
+    //   }
+    //   modifyConnection({ name: name.trim(), config }, () => {
+    //     setSubmitting(false);
+    //   },
+    //   newRecord.id
+    //   );
+    //   return;
+    // }
+    // if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+    //   if (newRecord) {
+    //     if (!config.webhook_secret) {
+    //       onToggle();
+    //       return;
+    //     }
+    //     modifyConnection({ name: name.trim(), config }, () => {
+    //       setSubmitting(false);
+    //     },
+    //     newRecord.id
+    //     );
+    //     return;
+    //   }
+    // }
   }, [name, type, config, onSubmit, onToggle, newRecord, modifyConnection]);
 
+  // eslint-disable-next-line no-unused-vars
   const handleSubmitGithub = useCallback(() => {
     setSubmitting(true);
     onSubmit({ type, name: name.trim(), config }, () => {
@@ -141,19 +140,20 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
       return [
         STEPS[0], // TYPE
         STEPS[1], // CONFIG
-        STEPS[2] // GITHUB
+        // STEPS[2] // GITHUB
       ];
-    } else if (isDiscourse) {
+    }
+    if (isDiscourse) {
       return [
         STEPS[0], // TYPE
         STEPS[1], // CONFIG
-        STEPS[3] // DISCOURSE
+        // STEPS[3] // DISCOURSE
       ];
-    } else {
-      return STEPS.slice(0, 2);
     }
+    return STEPS.slice(0, 2);
   }, [isGithub, isDiscourse]);
 
+  // eslint-disable-next-line no-unused-vars
   const handleSubmitDiscourse = useCallback(() => {
     setSubmitting(true);
     onSubmit({ type, name: name.trim(), config }, () => {
@@ -247,32 +247,32 @@ const NewConnectionDialog = ({ onSubmit, onToggle, modifyConnection }) => {
           </div>
         )}
       </ModalBody>
-      {isGithub &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>}
-        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
-      </ModalFooter>
-      }
-      {isDiscourse &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
-        {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting}>{gettext('Next')}</Button>}
-        {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
-      </ModalFooter>
-      }
-      {!isGithub && !isDiscourse &&
-      <ModalFooter>
-        {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
-        {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
-        {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
-        {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
-      </ModalFooter>
-      }
+      {isGithub && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+          {/* {stepIndex === 1 && <Button color="primary" onClick={handleSubmitGithub} disabled={isSubmitting}>{gettext('Next')}</Button>} */}
+          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+        </ModalFooter>
+      )}
+      {isDiscourse && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex === 0 && <Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>}
+          {/* {stepIndex === 1 && <Button color="primary" onClick={handleSubmitDiscourse} disabled={isSubmitting}>{gettext('Next')}</Button>} */}
+          {stepIndex === customSteps.length - 1 && <Button color="primary" onClick={handleSubmit}>{gettext('Submit')}</Button>}
+        </ModalFooter>
+      )}
+      {!isGithub && !isDiscourse && (
+        <ModalFooter>
+          {stepIndex === 0 && (<Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>)}
+          {stepIndex > 0 && stepIndex <= customSteps.length - 1 && (<Button color="secondary" onClick={() => setStepIndex(stepIndex - 1)}>{gettext('Previous')}</Button>)}
+          {stepIndex < customSteps.length - 1 && (<Button color="primary" onClick={() => setStepIndex(stepIndex + 1)}>{gettext('Next')}</Button>)}
+          {stepIndex === customSteps.length - 1 && (<Button color="primary" onClick={handleSubmit} disabled={isSubmitting || !isValid || !name}>{gettext('Submit')}</Button>)}
+        </ModalFooter>
+      )}
     </Modal>
   );
 };
