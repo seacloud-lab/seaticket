@@ -454,6 +454,14 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
         ]
     )
 
+    seadb_api.create_column_index(
+        project_uuid,
+        table_id,
+        [
+            KnowledgeBaseTable.deleted.name,
+        ]
+    )
+
 
 def get_connection_table_name(connection):
     connection_id = connection.id
