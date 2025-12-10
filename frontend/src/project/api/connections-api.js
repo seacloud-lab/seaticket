@@ -227,18 +227,14 @@ class ConnectionsAPI {
   }
 
   // records
-  modifyConnectionRecord(projectUuid, row_id, rowData, isCopyPaste) {
-    console.log(projectUuid, row_id, rowData, isCopyPaste);
-    return new Promise((resolve, reject) => {
-      resolve({ data: { success: true } });
-    });
+  modifyConnectionRecord(projectUuid, connectionID, row_id, rowData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + row_id + '/';
+    return this.req.put(url, rowData);
   }
 
-  modifyConnectionRecords(projectUuid, rowsData, isCopyPaste) {
-    console.log(projectUuid, rowsData, isCopyPaste);
-    return new Promise((resolve, reject) => {
-      resolve({ data: { success: true } });
-    });
+  modifyConnectionRecords(projectUuid, connectionID, rowsData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
+    return this.req.put(url, { records_data: rowsData });
   }
 
 }

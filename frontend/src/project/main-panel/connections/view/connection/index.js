@@ -157,11 +157,11 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (connection.type === CONNECTION_TYPE.EMAIL) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecord(projectUuid, row_id, rowData, isCopyPaste);
+        return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
       };
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecords(projectUuid, rowsData, isCopyPaste);
+        return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
       };
     }
 
