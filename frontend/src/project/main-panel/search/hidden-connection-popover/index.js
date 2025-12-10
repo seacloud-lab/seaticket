@@ -10,14 +10,19 @@ import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 
-const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, hiddenConnectionIDs: oldHiddenConnections }) => {
+const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, kbEnabled, hiddenConnectionIDs: oldHiddenConnections }) => {
   const [searchValue, setSearchValue] = useState('');
   const [hiddenConnectionIDs, setHiddenConnections] = useState(oldHiddenConnections);
+  const sources = useMemo(() => {
+    const base = Array.isArray(connections) ? connections : [];
+    return kbEnabled ? [...base, { id: '__kb__', key: '__kb__', name: gettext('Knowledge Base') }] : base;
+  }, [connections, kbEnabled]);
+
   const displayItems = useMemo(() => {
-    if (!searchValue) return Array.isArray(connections) ? connections : [];
+    if (!searchValue) return sources;
     const validSearchValueValue = searchValue.trim().toLocaleLowerCase();
-    return connections.filter(column => column.name.toLocaleLowerCase().indexOf(validSearchValueValue) > -1);
-  }, [searchValue, connections]);
+    return sources.filter(column => column.name.toLocaleLowerCase().indexOf(validSearchValueValue) > -1);
+  }, [searchValue, sources]);
 
   const popoverRef = useRef(null);
 
@@ -105,7 +110,7 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
       <div ref={popoverRef} onClick={onPopoverInsideClick} className="seaqa-hide-container" style={{ maxHeight: window.innerHeight - 100 }}>
         <div className="seaqa-hide-search-container">
           <SearchInput
-            placeholder={gettext('Search connection')}
+            placeholder={gettext('Search')}
             onKeyDown={onKeyDown}
             onChange={onChangeSearch}
             autoFocus={true}
@@ -147,6 +152,7 @@ HideConnectionPopover.propTypes = {
   target: PropTypes.string.isRequired,
   hiddenConnectionIDs: PropTypes.array.isRequired,
   connections: PropTypes.array.isRequired,
+  kbEnabled: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   hidePopover: PropTypes.func.isRequired,
   modifyColumnOrder: PropTypes.func,

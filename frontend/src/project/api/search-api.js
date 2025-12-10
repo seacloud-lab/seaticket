@@ -58,7 +58,7 @@ class SearchAPI {
     }
   }
 
-  search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, username, cancelToken, semanticSearch) {
+  search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, username, extraSources, cancelToken, semanticSearch) {
     const url = `${this.server}/api/v2.1/search/`;
     let params = {
       query: query,
@@ -68,6 +68,9 @@ class SearchAPI {
     };
     if (connectionIds) {
       params.connection_ids = connectionIds;
+    }
+    if (Array.isArray(extraSources) && extraSources.length > 0) {
+      params.extra_sources = extraSources;
     }
     if (timeFrom) {
       params.time_from = timeFrom;

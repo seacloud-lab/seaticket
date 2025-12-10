@@ -30,6 +30,11 @@ class SearchResult {
     if (this.type === CONNECTION_TYPE.SITE) {
       this.subtitle = this.url;
     }
+    if (this.type === 'knowledge_base') {
+      this.title = data.question || '';
+      this.content = data.answer || '';
+      this.subtitle = '';
+    }
   }
 }
 

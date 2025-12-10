@@ -5,7 +5,7 @@ import HideConnectionPopover from './hidden-connection-popover';
 import { gettext } from '../../../constants';
 import Icon from '../../../components/icon';
 
-const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
   const [isShowSetter, setShowSetter] = useState(false);
@@ -33,7 +33,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   useEffect(() => {
     if (connections.length === 0) return;
     const validConnectionIds = connections.map((c) => c.id);
-    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id));
+    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__');
     modifyHiddenConnections(newHiddenConnectionIDs);
   }, [connections]);
 
@@ -45,7 +45,11 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
     event.stopPropagation();
   }, [onSetterToggle]);
 
-  const showConnectionsLen = connections.length - hiddenConnectionIDs.length;
+  const validConnectionIds = connections.map((c) => c.id);
+  const hiddenOnConnectionsCount = hiddenConnectionIDs.filter(id => validConnectionIds.includes(id)).length;
+  const showConnectionsLen = connections.length - hiddenOnConnectionsCount;
+  const kbSelected = kbEnabled && !hiddenConnectionIDs.includes('__kb__');
+  const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0);
 
   return (
     <>
@@ -58,13 +62,11 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
         role="button"
       >
         <div className={classNames('search-filter-toggle', {
-          'active': isShowSetter && showConnectionsLen > 0,
-          'highlighted': showConnectionsLen > 0,
+          'active': isShowSetter && showSourcesLen > 0,
+          'highlighted': showSourcesLen > 0,
         })} >
           <div className="filter-label">
-            {showConnectionsLen < 1 && gettext('Connection')}
-            {showConnectionsLen === 1 && gettext('1 Connection')}
-            {showConnectionsLen > 1 && gettext('{placeholder} Connections').replace('{placeholder}', showConnectionsLen)}
+            {showSourcesLen > 0 ? `${showSourcesLen} ${gettext('Sources')}` : gettext('Sources')}
           </div>
           <Icon symbol="down"/>
         </div>
@@ -74,6 +76,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
           readOnly={readOnly}
           hiddenConnectionIDs={hiddenConnectionIDs}
           connections={connections}
+          kbEnabled={kbEnabled}
           target={target}
           placement="bottom-start"
           hidePopover={onSetterToggle}
@@ -87,6 +90,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
+  kbEnabled: PropTypes.bool,
 };
 
 export default HideConnectionSetter;

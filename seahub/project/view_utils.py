@@ -381,7 +381,7 @@ class MultipleSelectOperator(Operator):
             "column_name": self.column_name,
             "option_names_str": option_names_str
         })
-    
+
     def op_is_any_of(self):
         filter_term = self.filter_term
         if not filter_term:
@@ -981,7 +981,7 @@ def _get_operator_by_type(column_type):
         PropertyTypes.GEOLOCATION
     ]:
         return TextOperator
-    
+
     if column_type in [
         PropertyTypes.DURATION,
         PropertyTypes.NUMBER,
@@ -1174,9 +1174,9 @@ class SQLGenerator(object):
         filter_clause = self._filter_2_sql()
         if self.include_deleted:
             if filter_clause:
-                filter_clause = "%s AND `deleted` = False" % filter_clause
+                filter_clause = "%s AND (`deleted` = False OR `deleted` is NULL)" % filter_clause
             else:
-                filter_clause = "WHERE `deleted` = False"
+                filter_clause = "WHERE (`deleted` = False OR `deleted` is NULL)"
         sort_clause = self.sort_2_sql()
         limit_clause = self._limit_2_sql()
         if filter_clause:

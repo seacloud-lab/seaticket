@@ -419,6 +419,7 @@ CREATE TABLE `projects`  (
   `text_color` varchar(50) DEFAULT NULL,
   `icon` varchar(50) DEFAULT NULL,
   `settings` longtext DEFAULT NULL,
+  `knowledge_base_indexed_at` datetime(6) NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid`(`uuid`),
   UNIQUE KEY `projects_workspace_id_name_0b89d91b_uniq`(`workspace_id`, `name`),
