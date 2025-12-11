@@ -9,7 +9,7 @@ import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import {
-  generatorRowCopyLinkTool, generatorRowsMoreTool,
+  generatorTicketsRowsTools,
   convertRowToServerData, convertRowsToServerData,
   cascadeUpdateSubState, generatorTicketsContextMenuOptions
 } from '../../utils';
@@ -109,16 +109,8 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [toggleBar, updateAttachments]);
 
-  const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
-    let tools = [];
-    if (rows.length === 1) {
-      const row = rows[0];
-      const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
-      tools.push(tool);
-    }
-    const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI });
-    tools.push(moreTool);
-    return tools;
+  const createRowsTools = useCallback((props) => {
+    return generatorTicketsRowsTools({ ...props, projectName, workspaceID, chatTicketsByAI });
   }, [workspaceID, projectName, chatTicketsByAI]);
 
   const createContextMenuOptions = useCallback((props) => {

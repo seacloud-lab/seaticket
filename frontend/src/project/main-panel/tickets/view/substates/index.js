@@ -175,17 +175,22 @@ const AllSubstates = ({ projectUuid, permission }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
-    list.push({
-      label: gettext('Edit substate'),
-      callback: () => {
-        context.eventBus.dispatch('expand_row', row);
-      }
-    }, {
-      label: gettext('Delete substate'),
-      callback: () => {
-        deleteRow && deleteRow(row._id);
-      }
-    });
+    if (context.canModifyRow(row)) {
+      list.push({
+        label: gettext('Edit substate'),
+        callback: () => {
+          context.eventBus.dispatch('expand_row', row);
+        }
+      });
+    }
+    if (context.canDeleteRow()) {
+      list.push({
+        label: gettext('Delete substate'),
+        callback: () => {
+          deleteRow && deleteRow(row._id);
+        }
+      });
+    }
     return list;
   }, []);
 
