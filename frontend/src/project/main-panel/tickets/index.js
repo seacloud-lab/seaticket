@@ -7,6 +7,7 @@ import TypeTickets from './view/type-tickets';
 import Substates from './view/substates';
 import SubstateTickets from './view/substate-tickets';
 import AllTickets from './view/all-tickets';
+import MyTickets from './view/my-tickets';
 import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
@@ -14,6 +15,7 @@ import TicketTopBar from './components/ticket-top-bar';
 import { ticketsAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -21,7 +23,7 @@ const {
   projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
 
-const Page = ({ toggleBar, isMyTicket }) => {
+const Page = ({ toggleBar, type }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
@@ -44,7 +46,8 @@ const Page = ({ toggleBar, isMyTicket }) => {
     return (<SubstateTickets { ...props } substateID={childrenPageSlugId}/>);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
-    return (<AllTickets { ...props } isMyTicket={isMyTicket} />);
+    if (type === BAR_TYPE.MY_TICKET) return (<MyTickets { ...props } />);
+    return (<AllTickets { ...props } />);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
     return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
@@ -52,13 +55,13 @@ const Page = ({ toggleBar, isMyTicket }) => {
   return (<Ticket { ...props } ticketID={pageSlugId} editorAPI={longtextAPI} />);
 };
 
-const Tickets = ({ title, toggleBar, isMyTicket }) => {
+const Tickets = ({ title, toggleBar, type }) => {
   return (
     <DataCacheProvider>
       <MetadataProvider projectUuid={projectUuid}>
-        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} isMyTicket={isMyTicket}>
-          <TicketTopBar title={title} isMyTicket={isMyTicket} />
-          <Page toggleBar={toggleBar} isMyTicket={isMyTicket} />
+        <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
+          <TicketTopBar title={title} type={type} />
+          <Page toggleBar={toggleBar} type={type} />
         </TicketsPageProvider>
       </MetadataProvider>
     </DataCacheProvider>

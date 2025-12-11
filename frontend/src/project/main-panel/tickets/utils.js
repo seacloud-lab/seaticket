@@ -112,6 +112,18 @@ export const generatorRowsMoreTool = ({ rows, columns, modifyRows, chatTicketsBy
   };
 };
 
+export const generatorTicketsRowsTools = ({ rows, columns, workspaceID, projectName, modifyRows, chatTicketsByAI }) => {
+  let tools = [];
+  if (rows.length === 1) {
+    const row = rows[0];
+    const tool = generatorRowCopyLinkTool({ row, workspaceID, projectName });
+    tools.push(tool);
+  }
+  const moreTool = generatorRowsMoreTool({ rows, columns, modifyRows, chatTicketsByAI });
+  tools.push(moreTool);
+  return tools;
+};
+
 // server use name-optionName to update single-select/multiple-select
 // server use name-value to update row
 export const convertRowToServerData = (rowUpdate, { data, typesData, tagsData }) => {

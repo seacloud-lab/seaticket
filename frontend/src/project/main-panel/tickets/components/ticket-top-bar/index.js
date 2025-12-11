@@ -8,10 +8,11 @@ import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
 import AddButton from '@/project/components/add-button';
+import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const TicketTopBar = ({ title, isMyTicket }) => {
+const TicketTopBar = ({ title, type }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
   const { tagsData, typesData, substatesData } = useMetadata();
 
@@ -148,7 +149,7 @@ const TicketTopBar = ({ title, isMyTicket }) => {
   return (
     <TopBar>
       {renderLeftChildren()}
-      {!isMyTicket && renderRightChildren()}
+      {type === BAR_TYPE.TICKET && renderRightChildren()}
     </TopBar>
   );
 };

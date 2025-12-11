@@ -9,7 +9,7 @@ import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/con
 
 const TicketsPageContext = React.createContext(null);
 
-export const TicketsPageProvider = ({ workspaceID, projectName, isMyTicket, children }) => {
+export const TicketsPageProvider = ({ workspaceID, projectName, type, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
@@ -20,7 +20,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, isMyTicket, chil
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
-      if (isMyTicket) {
+      if (type === BAR_TYPE.MY_TICKET) {
         const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
         history.replaceState(null, null, myTicketsViewURL);
         return;
@@ -37,7 +37,7 @@ export const TicketsPageProvider = ({ workspaceID, projectName, isMyTicket, chil
       urlPart = urlPart + childrenPageSlugId + '/';
     }
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID, isMyTicket]);
+  }, [workspaceID, type]);
 
   const togglePageSlugId = useCallback((newPageSlugId, newChildrenPageSlugId = TICKET_CHILDREN_PAGE_SLUG_ID.ALL) => {
     if (pageSlugId !== newPageSlugId) {
