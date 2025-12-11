@@ -512,7 +512,7 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit, include_deleted=True)
+    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])
@@ -547,7 +547,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, use
 
     columns = table_metadata.get('columns') or []
     display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
-    sql = view_data_2_sql('tickets', display_columns, view, username, start, end, include_deleted=True)
+    sql = view_data_2_sql('tickets', display_columns, view, username, start, end)
     ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return ticket_data
 
@@ -696,7 +696,7 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         name = column['name']
         if name in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit, include_deleted=True)
+    sql = view_data_2_sql(KnowledgeBaseTable.gen_table_name(), display_columns, view_copy, username, start, limit)
     try:
         res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
         records = res.get('results', [])

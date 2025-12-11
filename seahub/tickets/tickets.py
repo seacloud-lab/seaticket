@@ -31,7 +31,6 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -230,7 +229,7 @@ class TicketsAPIView(APIView):
                 TicketsTable.modified_time.name: now_datetime,
                 TicketsTable.deleted.name: False,
             }
-            res = seadb_api.insert_rows(project_uuid, 'tickets', [row])
+            res = seadb_api.insert_rows(project_uuid, TABLE_TICKETS, [row])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 error_msg = 'Internal Server Error'
@@ -345,7 +344,7 @@ class TicketsAPIView(APIView):
             )
         if update_rows:
             try:
-                seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+                seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
             except Exception as e:
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
@@ -402,7 +401,7 @@ class TicketsAPIView(APIView):
             }
             update_rows.append(update_row)
         try:
-            seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -632,7 +631,7 @@ class TicketAPIView(APIView):
                     'row': update_row
                 }
             ]
-            seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -682,7 +681,7 @@ class TicketAPIView(APIView):
             }
         }
         try:
-            seadb_api.update_rows(project_uuid, 'tickets', [update_row])
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, [update_row])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -897,7 +896,7 @@ class TicketCommentsAPIView(APIView):
             if username not in participants:
                 participants.append(username)
             update_ticket['row']['participants'] = participants
-            seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, [update_ticket])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1020,7 +1019,7 @@ class TicketCommentAPIView(APIView):
                 'pk': ticket.get('_pk'),
                 'row': update_row,
             }
-            seadb_api.update_rows(project_uuid, 'tickets', [ticket_update])
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, [ticket_update])
         except Exception as e:
             logger.error(e)
 
@@ -1087,7 +1086,7 @@ class TicketCommentAPIView(APIView):
             if username not in participants:
                 participants.append(username)
                 update_ticket['row']['participants'] = participants
-            seadb_api.update_rows(project_uuid, 'tickets', [update_ticket])
+            seadb_api.update_rows(project_uuid, TABLE_TICKETS, [update_ticket])
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
