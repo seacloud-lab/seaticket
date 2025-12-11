@@ -177,12 +177,14 @@ const AllTags = ({ projectUuid, permission }) => {
     const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
-    list.push({
-      label: gettext('Edit tag'),
-      callback: () => {
-        context.eventBus.dispatch('expand_row', row);
-      }
-    });
+    if (context.canModifyRow(row)) {
+      list.push({
+        label: gettext('Edit tag'),
+        callback: () => {
+          context.eventBus.dispatch('expand_row', row);
+        }
+      });
+    }
 
     if (context.canDeleteRow()) {
       list.push({

@@ -20,8 +20,10 @@ import { BAR_TYPE } from '@/project/constants';
 import './index.css';
 
 const {
-  projectUuid, projectName, workspaceID, permission, isProjectAdmin
+  projectUuid, projectName, workspaceID, isProjectAdmin
 } = window.app.pageOptions;
+
+const permission = 'r';
 
 const Page = ({ toggleBar, type }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
@@ -60,7 +62,7 @@ const Tickets = ({ title, toggleBar, type }) => {
     <DataCacheProvider>
       <MetadataProvider projectUuid={projectUuid}>
         <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
-          <TicketTopBar title={title} type={type} />
+          <TicketTopBar title={title} type={type} permission={permission} />
           <Page toggleBar={toggleBar} type={type} />
         </TicketsPageProvider>
       </MetadataProvider>
