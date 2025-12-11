@@ -336,11 +336,11 @@ class Store {
     this.applyOperation(operation);
   }
 
-  deleteRows(rows_ids, { fail_callback, success_callback }) {
-    if (!Array.isArray(rows_ids) || rows_ids.length === 0) return;
+  deleteRows(row_ids, { fail_callback, success_callback }) {
+    if (!Array.isArray(row_ids) || row_ids.length === 0) return;
     const type = OPERATION_TYPE.DELETE_ROWS;
 
-    const valid_rows_ids = rows_ids.filter((rowId) => {
+    const valid_rows_ids = row_ids.filter((rowId) => {
       const row = getRowById(this.data, rowId);
       return row && context.canDeleteRow(row);
     });
@@ -348,7 +348,26 @@ class Store {
     if (valid_rows_ids.length === 0) return;
     const operation = this.createOperation({
       type,
-      rows_ids: valid_rows_ids,
+      row_ids: valid_rows_ids,
+      fail_callback,
+      success_callback,
+    });
+    this.applyOperation(operation);
+  }
+
+  deleteLocalRows(row_ids, { fail_callback, success_callback }) {
+    if (!Array.isArray(row_ids) || row_ids.length === 0) return;
+    const type = OPERATION_TYPE.DELETE_LOCAL_ROWS;
+
+    const valid_rows_ids = row_ids.filter((rowId) => {
+      const row = getRowById(this.data, rowId);
+      return row && context.canDeleteRow(row);
+    });
+
+    if (valid_rows_ids.length === 0) return;
+    const operation = this.createOperation({
+      type,
+      row_ids: valid_rows_ids,
       fail_callback,
       success_callback,
     });

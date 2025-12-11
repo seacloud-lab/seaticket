@@ -88,6 +88,11 @@ export default function apply(data, operation) {
       updateDataByDeleteRows(success_rows);
       return data;
     }
+    case OPERATION_TYPE.DELETE_LOCAL_ROWS: {
+      const { row_ids = [] } = operation;
+      updateDataByDeleteRows(row_ids);
+      return data;
+    }
     case OPERATION_TYPE.RESTORE_ROWS: {
       const { original_rows } = operation;
       const currentTime = dayjs().utc().format(UTC_FORMAT_DEFAULT);

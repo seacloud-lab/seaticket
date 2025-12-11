@@ -64,8 +64,8 @@ class ServerOperator {
         break;
       }
       case OPERATION_TYPE.DELETE_ROWS: {
-        const { rows_ids } = operation;
-        const rowIds = rows_ids.filter(Boolean);
+        const { row_ids } = operation;
+        const rowIds = row_ids.filter(Boolean);
         context.deleteRows(rowIds).then(res => {
           const { success, failed = [] } = res.data;
           const successRows = success === true ? rowIds : success;

@@ -138,9 +138,9 @@ export const MetadataProvider = forwardRef(({
     });
   }, [metadata, storeRef]);
 
-  const deleteRows = useCallback((rowsIds, { success_callback, fail_callback } = {}) => {
-    if (!Array.isArray(rowsIds) || rowsIds.length === 0) return;
-    storeRef.current.deleteRows(rowsIds, {
+  const deleteRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    storeRef.current.deleteRows(rowIds, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -154,6 +154,20 @@ export const MetadataProvider = forwardRef(({
         }
         success_callback && success_callback();
         updateSelectedRowIdsByDelete(successRows);
+      },
+    });
+  }, [updateSelectedRowIdsByDelete]);
+
+  const deleteLocalRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    storeRef.current.deleteLocalRows(rowIds, {
+      fail_callback: (error) => {
+        fail_callback && fail_callback(error);
+        error && toaster.danger(error);
+      },
+      success_callback: () => {
+        success_callback && success_callback();
+        updateSelectedRowIdsByDelete(rowIds);
       },
     });
   }, [updateSelectedRowIdsByDelete]);
@@ -325,6 +339,7 @@ export const MetadataProvider = forwardRef(({
         modifyRows,
         deleteRow,
         deleteRows,
+        deleteLocalRows,
         modifyRow,
         moveRow,
         duplicateRow,
