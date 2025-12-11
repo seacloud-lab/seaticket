@@ -3,8 +3,8 @@ import { gettext } from '@/constants';
 
 export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {
   PK: '_pk',
-  QUESTION: 'question',
-  ANSWER: 'answer',
+  TITLE: 'title',
+  CONTENT: 'content',
   CREATOR: 'creator',
   CREATED_TIME: 'created_time',
   LAST_MODIFIER: 'last_modifier',
@@ -12,12 +12,12 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {
 };
 
 export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
-  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.QUESTION]: {
-    display_name: gettext('Question'),
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.TITLE]: {
+    display_name: gettext('Title'),
     type: CellType.TEXT,
   },
-  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.ANSWER]: {
-    display_name: gettext('Answer'),
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CONTENT]: {
+    display_name: gettext('Content'),
     type: CellType.LONG_TEXT,
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CREATOR]: {

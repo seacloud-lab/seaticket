@@ -14,8 +14,8 @@ import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 import './index.css';
 
 const NewKnowledge = ({ editorAPI, projectUuid }) => {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -30,24 +30,24 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     };
   }, []);
   const disabled = useMemo(() => {
-    return (!question || !question.trim()) || (!answer || !answer.text.trim()) || isSubmitting;
-  }, [question, answer, isSubmitting]);
+    return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
+  }, [title, content, isSubmitting]);
 
   const { togglePageSlugId } = useKnowledgePage();
 
-  const onQuestionChange = useCallback((event) => {
-    const newQuestion = event.target.value;
-    if (newQuestion === question) return;
-    setQuestion(newQuestion);
-  }, [question]);
+  const onTitleChange = useCallback((event) => {
+    const newTitle = event.target.value;
+    if (newTitle === title) return;
+    setTitle(newTitle);
+  }, [title]);
 
-  const onAnswerChange = useCallback((value) => {
+  const onContentChange = useCallback((value) => {
     if (isLongTextValueExceedLimit(value)) {
       toaster.closeAll();
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setAnswer(value);
+    setContent(value);
   }, []);
 
   const handleFiles = useCallback((files) => {
@@ -65,8 +65,8 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
   }, [editorAPI]);
 
   const onSubmit = useCallback(() => {
-    const validQuestion = question.trim();
-    const data = { question: validQuestion, answer: answer.text };
+    const validTitle = title.trim();
+    const data = { title: validTitle, content: content.text };
     knowledgeBaseAPI.createRecord(projectUuid, data).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
@@ -74,7 +74,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [question, answer]);
+  }, [title, content]);
 
   useEffect(() => {
     const knowledgeDom = knowledgeRef.current;
@@ -115,22 +115,22 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
           <div className="sea-qa-project-knowledge-content-settings">
             <div className="sea-qa-project-knowledge-title mb-4">
               <Label>
-                {gettext('Question')}
+                {gettext('Title')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
-              <Input autoFocus disabled={isSubmitting} value={question} onChange={onQuestionChange} />
+              <Input autoFocus disabled={isSubmitting} value={title} onChange={onTitleChange} />
             </div>
             <div className="sea-qa-project-knowledge-content mb-4">
               <Label>
-                {gettext('Answer')}
+                {gettext('Content')}
                 <span className="required-tip" title={gettext('Required')}>{'*'}</span>
               </Label>
               <LongTextInlineEditor
                 isAlwaysEnableEdit={true}
                 ref={contentEditorRef}
                 lang={lang}
-                headerName={gettext('Answer')}
-                value={answer || ''}
+                headerName={gettext('Content')}
+                value={content || ''}
                 autoSave={true}
                 saveDelay={20 * 1000}
                 isCheckBrowser={true}
@@ -138,7 +138,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
                 isSupportMultipleFiles={true}
                 editorApi={editorAPI}
                 autoFocus={false}
-                onSaveEditorValue={onAnswerChange}
+                onSaveEditorValue={onContentChange}
               />
             </div>
             <div className="sea-qa-project-knowledge-footer">
