@@ -670,7 +670,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         thread_sql = f"SELECT title, modified_time FROM `{thread_table_name}` WHERE _pk = {_pk}"
         thread_res = seadb_api.query_rows(project_uuid, thread_sql)
         thread_record = thread_res.get('results')[0]
-        email_sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
+        email_sql = f"SELECT email_from, email_to, title, cc, content, modified_time, is_sender, html_content FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY {EmailTable.modified_time.name} ASC"
         email_res = seadb_api.query_rows(project_uuid, email_sql)
         email_record = email_res.get('results', [])
         thread_record['emails'] = email_record
