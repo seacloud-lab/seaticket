@@ -310,8 +310,14 @@ class DataProcessor {
         break;
       }
       case OPERATION_TYPE.DELETE_ROWS: {
-        const { rows_ids } = operation;
-        this.updateDataWithDeleteRows(rows_ids, table);
+        const { success_rows } = operation;
+        this.updateDataWithDeleteRows(success_rows, table);
+        this.updateSummaries();
+        break;
+      }
+      case OPERATION_TYPE.DELETE_LOCAL_ROWS: {
+        const { row_ids } = operation;
+        this.updateDataWithDeleteRows(row_ids, table);
         this.updateSummaries();
         break;
       }

@@ -13,7 +13,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
 
   const { collaborators } = useCollaborators();
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
-    searchRows, deleteRow, deleteRows, modifyRows, updateLocalRow,
+    searchRows, deleteRow, deleteRows, modifyRows, updateLocalRow, deleteLocalRows,
   } = useMetadata();
   const { selectedRowIds } = useSelectedRows();
 
@@ -37,6 +37,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
           selectNone={selectNone}
           deleteRow={deleteRow}
           deleteRows={deleteRows}
+          deleteLocalRows={deleteLocalRows}
           modifyRows={modifyRows}
           updateLocalRow={updateLocalRow}
           createTools={createRowsTools}

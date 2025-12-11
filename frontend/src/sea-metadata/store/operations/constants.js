@@ -32,6 +32,7 @@ export const OPERATION_TYPE = {
   MOVE_ROW: 'move_row',
   DUPLICATE_ROW: 'duplicate_row',
   SEARCH_ROWS: 'search_rows',
+  DELETE_LOCAL_ROWS: 'delete_local_rows',
 };
 
 export const COLUMN_DATA_OPERATION_TYPE = {
@@ -48,11 +49,12 @@ export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.MODIFY_ROW]: ['row_id', 'row_update', 'old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.MODIFY_ROWS]: ['row_ids', 'id_row_updates', 'id_old_row_data', 'is_copy_paste'],
   [OPERATION_TYPE.DELETE_ROW]: ['row_id', 'row_data'],
-  [OPERATION_TYPE.DELETE_ROWS]: ['rows_ids'],
+  [OPERATION_TYPE.DELETE_ROWS]: ['row_ids'],
   [OPERATION_TYPE.RELOAD_ROWS]: ['row_ids'],
   [OPERATION_TYPE.MOVE_ROW]: ['row_id', 'update_data'],
   [OPERATION_TYPE.DUPLICATE_ROW]: ['row_id'],
   [OPERATION_TYPE.MODIFY_LOCAL_ROW]: ['row_id', 'updates'],
+  [OPERATION_TYPE.DELETE_LOCAL_ROWS]: ['row_ids'],
 
   [OPERATION_TYPE.MODIFY_FILTERS]: ['view_id', 'filter_conjunction', 'filters', 'basic_filters'],
   [OPERATION_TYPE.MODIFY_SORTS]: ['view_id', 'sorts'],
@@ -76,8 +78,6 @@ export const OPERATION_ATTRIBUTES = {
 };
 
 export const UNDO_OPERATION_TYPE = [
-  OPERATION_TYPE.INSERT_ROW,
-  OPERATION_TYPE.DELETE_ROW,
   OPERATION_TYPE.MODIFY_ROW,
   OPERATION_TYPE.MODIFY_ROWS,
   OPERATION_TYPE.INSERT_COLUMN,
@@ -150,6 +150,7 @@ export const RE_SEARCH_ROWS_OPERATION = [
   OPERATION_TYPE.MODIFY_ROWS,
   OPERATION_TYPE.DELETE_ROW,
   OPERATION_TYPE.DELETE_ROWS,
+  OPERATION_TYPE.DELETE_LOCAL_ROWS,
   OPERATION_TYPE.RESTORE_ROWS,
   OPERATION_TYPE.RELOAD_ROWS,
   OPERATION_TYPE.MODIFY_ROW_VIA_BUTTON,

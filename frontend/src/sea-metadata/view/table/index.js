@@ -26,6 +26,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
     insertRow,
     deleteRow,
     deleteRows,
+    deleteLocalRows,
     modifyRow,
     modifyRows,
     modifyRowByRowExpand,
@@ -184,6 +185,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           modifyRows={modifyRows}
           deleteRow={deleteRow}
           deleteRows={deleteRows}
+          deleteLocalRows={deleteLocalRows}
           rowGetterById={rowGetterById}
           rowGetterByIndex={rowGetterByIndex}
           getTableContentRect={getTableContentRect}

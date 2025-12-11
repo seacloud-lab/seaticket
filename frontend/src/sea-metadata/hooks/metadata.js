@@ -59,6 +59,11 @@ export const MetadataProvider = forwardRef(({
     });
   }, []);
 
+  const clearData = useCallback(() => {
+    if (!storeRef.current?.data) return;
+    storeRef.current.clearData();
+  }, []);
+
   const modifyFilters = useCallback((filters, filterConjunction, basicFilters) => {
     storeRef.current.modifyFilters(filterConjunction, filters, basicFilters);
   }, [storeRef]);
@@ -133,9 +138,9 @@ export const MetadataProvider = forwardRef(({
     });
   }, [metadata, storeRef]);
 
-  const deleteRows = useCallback((rowsIds, { success_callback, fail_callback } = {}) => {
-    if (!Array.isArray(rowsIds) || rowsIds.length === 0) return;
-    storeRef.current.deleteRows(rowsIds, {
+  const deleteRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    storeRef.current.deleteRows(rowIds, {
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -149,6 +154,20 @@ export const MetadataProvider = forwardRef(({
         }
         success_callback && success_callback();
         updateSelectedRowIdsByDelete(successRows);
+      },
+    });
+  }, [updateSelectedRowIdsByDelete]);
+
+  const deleteLocalRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
+    if (!Array.isArray(rowIds) || rowIds.length === 0) return;
+    storeRef.current.deleteLocalRows(rowIds, {
+      fail_callback: (error) => {
+        fail_callback && fail_callback(error);
+        error && toaster.danger(error);
+      },
+      success_callback: () => {
+        success_callback && success_callback();
+        updateSelectedRowIdsByDelete(rowIds);
       },
     });
   }, [updateSelectedRowIdsByDelete]);
@@ -280,6 +299,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
     const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
+    const unsubscribeClearData = eventBus.subscribe(EVENT_BUS_TYPE.CLEAR_DATA, clearData);
 
     return () => {
       unsubscribeServerTableChanged();
@@ -291,8 +311,9 @@ export const MetadataProvider = forwardRef(({
       unsubscribeLocalColumnChanged();
       unsubscribeMoveRow();
       unsubscribeLoading();
+      unsubscribeClearData();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow, clearData]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,
@@ -318,6 +339,7 @@ export const MetadataProvider = forwardRef(({
         modifyRows,
         deleteRow,
         deleteRows,
+        deleteLocalRows,
         modifyRow,
         moveRow,
         duplicateRow,
