@@ -20,10 +20,8 @@ import { BAR_TYPE } from '@/project/constants';
 import './index.css';
 
 const {
-  projectUuid, projectName, workspaceID, isProjectAdmin
+  projectUuid, projectName, workspaceID, permission, isProjectAdmin
 } = window.app.pageOptions;
-
-const permission = 'r';
 
 const Page = ({ toggleBar, type }) => {
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
