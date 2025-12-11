@@ -59,6 +59,11 @@ export const MetadataProvider = forwardRef(({
     });
   }, []);
 
+  const clearData = useCallback(() => {
+    if (!storeRef.current?.data) return;
+    storeRef.current.clearData();
+  }, []);
+
   const modifyFilters = useCallback((filters, filterConjunction, basicFilters) => {
     storeRef.current.modifyFilters(filterConjunction, filters, basicFilters);
   }, [storeRef]);
@@ -280,6 +285,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
     const unsubscribeLoading = eventBus.subscribe(EVENT_BUS_TYPE.LOADING, (loading = false) => setLoading(loading));
+    const unsubscribeClearData = eventBus.subscribe(EVENT_BUS_TYPE.CLEAR_DATA, clearData);
 
     return () => {
       unsubscribeServerTableChanged();
@@ -291,8 +297,9 @@ export const MetadataProvider = forwardRef(({
       unsubscribeLocalColumnChanged();
       unsubscribeMoveRow();
       unsubscribeLoading();
+      unsubscribeClearData();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow, clearData]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,

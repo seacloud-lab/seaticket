@@ -19,12 +19,14 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     const { origin } = location;
     const url = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
+      const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
+      history.replaceState(null, null, myTicketsViewURL);
+      return;
+    }
+
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
-      if (type === BAR_TYPE.MY_TICKET) {
-        const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
-        history.replaceState(null, null, myTicketsViewURL);
-        return;
-      }
       urlPart = urlPart + '?view=' + viewID;
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId !== TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
