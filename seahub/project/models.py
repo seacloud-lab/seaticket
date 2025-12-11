@@ -287,6 +287,7 @@ class Projects(models.Model):
     text_color = models.CharField(max_length=50, null=True)
     icon = models.CharField(max_length=50, null=True)
     settings = models.TextField(null=True)
+    knowledge_base_indexed_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 
