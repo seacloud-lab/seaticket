@@ -371,6 +371,7 @@ class TicketsAPI {
     return this.req.get(url, { params: params });
   }
 
+  // trash
   listTicketsTrash(projectUuid, { start = 0, limit = 1000 }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
     const params = {
@@ -378,6 +379,15 @@ class TicketsAPI {
       limit
     };
     return this.req.get(url, { params: params });
+  }
+
+  deleteTicketsTrash(projectUuid, ticketIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
+    return this.req.delete(url, { data: { ticket_ids: ticketIds } });
+  }
+
+  restoreTickets(projectUuid, ticketIds) {
+    // API
   }
 
   getTicketMetadata(projectUuid) {

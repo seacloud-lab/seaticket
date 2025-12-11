@@ -22,9 +22,8 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
       return (<Search title={title} settings={settings} />);
     case BAR_TYPE.TICKET:
     case BAR_TYPE.MY_TICKET:
-      return (<Tickets key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
     case BAR_TYPE.TRASH:
-      return (<Tickets key={barKey} title={title} toggleBar={toggleBar} isMyTicket={true} />);
+      return (<Tickets key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
     case BAR_TYPE.SETTINGS:
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     case BAR_TYPE.KNOWLEDGE:
