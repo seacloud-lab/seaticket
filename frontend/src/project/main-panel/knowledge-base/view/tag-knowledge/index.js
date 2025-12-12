@@ -26,7 +26,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      return knowledgeBaseAPI.listKnowLedgeByTag(projectUuid, childrenPageSlugId).then(res => {
+      return knowledgeBaseAPI.listKnowledgeBaseByTag(projectUuid, childrenPageSlugId).then(res => {
         const rows = res?.data?.records || [];
         let columns = res?.data?.columns || [];
         columns = columns.filter(c => !KNOWLEDGE_NOT_DISPLAY_COLUMNS.includes(c.name)).map(c => {
