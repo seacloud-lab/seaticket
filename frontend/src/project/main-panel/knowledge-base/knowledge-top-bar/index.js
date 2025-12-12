@@ -63,6 +63,8 @@ const KnowledgeTopBar = ({ title }) => {
       return null;
     }
 
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS || pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) return null;
+
     return (
       <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" />
     );
