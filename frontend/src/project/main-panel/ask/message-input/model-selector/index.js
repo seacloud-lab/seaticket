@@ -42,7 +42,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
   return (
     <>
       <div
-        className="sea-qa-select custom-select sea-qa-customize-select sea-qa-ai-chat-tool-select sea-qa-ai-model-selector"
+        className="sea-qa-select custom-select sea-qa-customize-select sea-qa-ai-chat-tool-select sea-qa-ai-model-selector o-hidden"
         ref={ref}
         onClick={onMenuToggle}
       >
