@@ -95,7 +95,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     const currentTime = new Date();
     if (tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
     const newTagsData = tagsData._updateLoading(true);
-    setTagsData(newTagsData);
+    setTagsData(deepCopy(newTagsData));
     ticketsAPI.listTicketTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags, true);
@@ -103,7 +103,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       const newTagsData = tagsData._updateLoading(false);
-      setTagsData(newTagsData);
+      setTagsData(deepCopy(newTagsData));
     });
   }, [tagsData]);
 
@@ -190,7 +190,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     const currentTime = new Date();
     if (typesData.loadTime && dayjs(currentTime).diff(typesData.loadTime, 'hours') < 1) return;
     const newTypesData = typesData._updateLoading(true);
-    setTypesData(newTypesData);
+    setTypesData(deepCopy(newTypesData));
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
@@ -198,7 +198,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       const newTypesData = typesData._updateLoading(false);
-      setTypesData(newTypesData);
+      setTypesData(deepCopy(newTypesData));
     });
   }, [typesData]);
 
@@ -295,7 +295,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     const currentTime = new Date();
     if (substatesData.loadTime && dayjs(currentTime).diff(substatesData.loadTime, 'hours') < 1) return;
     const newSubstatesData = substatesData._updateLoading(true);
-    setSubstatesData(newSubstatesData);
+    setSubstatesData(deepCopy(newSubstatesData));
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);
@@ -303,7 +303,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       const newSubstatesData = substatesData._updateLoading(false);
-      setSubstatesData(newSubstatesData);
+      setSubstatesData(deepCopy(newSubstatesData));
     });
   }, [substatesData, initSubStates]);
 
