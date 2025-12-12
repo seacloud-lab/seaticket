@@ -88,7 +88,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   const loadTags = useCallback(() => {
     const newTagsData = tagsData._updateLoading(true);
-    setTagsData(newTagsData);
+    setTagsData(deepCopy(newTagsData));
     knowledgeBaseAPI.listKnowledgeBaseTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags, true);
@@ -96,7 +96,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       const newTagsData = tagsData._updateLoading(false);
-      setTagsData(newTagsData);
+      setTagsData(deepCopy(newTagsData));
     });
   }, [tagsData]);
 
