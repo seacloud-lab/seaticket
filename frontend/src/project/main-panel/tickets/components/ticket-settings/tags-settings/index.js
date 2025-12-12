@@ -3,7 +3,6 @@ import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Option from '../../option';
-import { useMetadata } from '../../../hooks';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
@@ -14,11 +13,12 @@ const TagsSettings = ({
   isReadonly,
   value = [],
   className = 'mb-4',
+  isLoading,
+  tagsData,
+  createTag,
   onChange,
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
-
-  const { isLoading, tagsData, createTag } = useMetadata();
 
   const editorRef = useRef(null);
 

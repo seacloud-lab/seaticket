@@ -143,7 +143,12 @@ const TicketTopBar = ({ title, type, permission }) => {
         <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} icon="add" />
       );
     }
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES || pageSlugId === TICKET_PAGE_SLUG_ID.TAGS || pageSlugId === TICKET_PAGE_SLUG_ID.NEW) return null;
+    if (
+      pageSlugId === TICKET_PAGE_SLUG_ID.TYPES ||
+      pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES ||
+      pageSlugId === TICKET_PAGE_SLUG_ID.TAGS ||
+      pageSlugId === TICKET_PAGE_SLUG_ID.NEW
+    ) return null;
 
     if (type === BAR_TYPE.MY_TICKET) return null;
     return (

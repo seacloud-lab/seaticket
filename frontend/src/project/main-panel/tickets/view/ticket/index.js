@@ -35,7 +35,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData } = useMetadata();
+  const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
   const { updateCacheData } = useDataCache();
 
   const user = useMemo(() => {
@@ -401,7 +401,14 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         <div className="sea-qa-project-ticket-other-settings">
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
-          <TagsSettings isReadonly={!editable} value={tags} onChange={onTagsChange} />
+          <TagsSettings
+            isReadonly={isSubmitting}
+            value={tags}
+            isLoading={isMetadataLoading}
+            tagsData={tagsData}
+            createTag={createTag}
+            onChange={onTagsChange}
+          />
           <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
           <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
