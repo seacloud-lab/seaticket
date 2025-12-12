@@ -217,7 +217,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}
       />
-      <CleanTickets />
+      <CleanTickets projectUuid={projectUuid} />
     </>
   );
 };

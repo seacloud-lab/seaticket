@@ -6,7 +6,7 @@ import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/co
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 
-const CleanTickets = () => {
+const CleanTickets = ({ projectUuid }) => {
   const [isShowConfirm, setIsShowConfirm] = useState(false);
 
   const closeConfirm = useCallback(() => {
