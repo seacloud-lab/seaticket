@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { gettext } from '@/constants';
-import { CommonOperationConfirmationDialog } from '@/components';
+import { ticketsAPI } from '../../../../api';
+import { CommonOperationConfirmationDialog, toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import eventBus from '@/utils/event-bus';
@@ -14,8 +15,12 @@ const CleanTickets = ({ projectUuid }) => {
   }, []);
 
   const cleanTickets = useCallback(() => {
-    // api
-    context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
+    ticketsAPI.cleanTicketsTrash(projectUuid).then(() => {
+      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.REFRESH_DATA);
+      toaster.success(gettext('Successfully cleaned the ticket trash'));
+    }).catch(() => {
+      toaster.danger(gettext('Failed to clean the ticket trash'));
+    });
   }, []);
 
   useEffect(() => {

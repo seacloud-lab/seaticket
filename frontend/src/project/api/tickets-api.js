@@ -381,13 +381,14 @@ class TicketsAPI {
     return this.req.get(url, { params: params });
   }
 
-  deleteTicketsTrash(projectUuid, ticketIds) {
+  cleanTicketsTrash(projectUuid) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
-    return this.req.delete(url, { data: { ticket_ids: ticketIds } });
+    return this.req.delete(url);
   }
 
   restoreTickets(projectUuid, ticketIds) {
-    // API
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
+    return this.req.put(url, { ticket_ids: ticketIds });
   }
 
   getTicketMetadata(projectUuid) {
