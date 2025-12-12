@@ -31,8 +31,8 @@ class SearchResult {
       this.subtitle = this.url;
     }
     if (this.type === 'knowledge_base') {
-      this.title = data.question || '';
-      this.content = data.answer || '';
+      this.title = data.title || '';
+      this.content = data.content || '';
       this.subtitle = '';
     }
   }

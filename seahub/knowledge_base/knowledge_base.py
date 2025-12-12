@@ -33,6 +33,29 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        title = request.data.get('title')
+        if not title:
+            error_msg = 'title invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        raw_content = request.data.get('content')
+        if not raw_content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        content_text = None
+        if isinstance(raw_content, dict):
+            content_text = raw_content.get('text')
+        else:
+            try:
+                ans_obj = json.loads(raw_content)
+                content_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_content
+            except Exception:
+                content_text = raw_content
+        if not content_text or not isinstance(content_text, str) or not content_text.strip():
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -44,33 +67,13 @@ class KnowledgeBasesAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        question = request.data.get('question')
-        if not question:
-            error_msg = 'question invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        raw_answer = request.data.get('answer')
-        if not raw_answer:
-            error_msg = 'answer invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        answer_text = None
-        if isinstance(raw_answer, dict):
-            answer_text = raw_answer.get('text')
-        else:
-            try:
-                ans_obj = json.loads(raw_answer)
-                answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
-            except Exception:
-                answer_text = raw_answer
-        if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
-            error_msg = 'answer invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         seadb_api = SeaDBAPI(request.user.username)
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         try:
             row = {
-                KnowledgeBaseTable.question.name: question,
-                KnowledgeBaseTable.answer.name: answer_text,
+                KnowledgeBaseTable.title.name: title,
+                KnowledgeBaseTable.content.name: content_text,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
@@ -232,6 +235,27 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        title = request.data.get('title')
+        if not title:
+            error_msg = 'title invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        raw_content = request.data.get('content')
+        if not raw_content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        content_text = None
+        if isinstance(raw_content, dict):
+            content_text = raw_content.get('text')
+        else:
+            try:
+                ans_obj = json.loads(raw_content)
+                content_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_content
+            except Exception:
+                content_text = raw_content
+        if not content_text or not isinstance(content_text, str) or not content_text.strip():
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -244,30 +268,10 @@ class KnowledgeBaseAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        question = request.data.get('question')
-        if not question:
-            error_msg = 'question invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        raw_answer = request.data.get('answer')
-        if not raw_answer:
-            error_msg = 'answer invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        answer_text = None
-        if isinstance(raw_answer, dict):
-            answer_text = raw_answer.get('text')
-        else:
-            try:
-                ans_obj = json.loads(raw_answer)
-                answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
-            except Exception:
-                answer_text = raw_answer
-        if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
-            error_msg = 'answer invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         row = {
-            KnowledgeBaseTable.question.name: question,
-            KnowledgeBaseTable.answer.name: answer_text,
+            KnowledgeBaseTable.title.name: title,
+            KnowledgeBaseTable.content.name: content_text,
             KnowledgeBaseTable.last_modifier.name: username,
             KnowledgeBaseTable.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
 

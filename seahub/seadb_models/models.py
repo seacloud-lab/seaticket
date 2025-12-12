@@ -403,8 +403,8 @@ class ThreadTable(BaseModel):
 
 
 class KnowledgeBaseTable(BaseModel):
-    question = MappedColumn('question', PropertyTypes.TEXT)
-    answer = MappedColumn('answer', PropertyTypes.TEXT, {'compressed': True})
+    title = MappedColumn('title', PropertyTypes.TEXT)
+    content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)
