@@ -355,8 +355,15 @@ export const generatorTicketsContextMenuOptions = ({
 
   list.push('Divider');
   list.push({
-    label: gettext('Chat ticket by AI'),
-    callback: () => handleChatTicketsByAI([row]),
+    key: 'AI',
+    label: gettext('AI'),
+    children: [
+      {
+        label: gettext('Chat ticket'),
+        key: 'chat_tickets',
+        callback: () => handleChatTicketsByAI([row]),
+      }
+    ],
   });
   return list;
 };
