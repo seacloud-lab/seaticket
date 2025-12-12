@@ -16,7 +16,7 @@ const CleanTickets = ({ projectUuid }) => {
 
   const cleanTickets = useCallback(() => {
     ticketsAPI.cleanTicketsTrash(projectUuid).then(() => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.REFRESH_DATA);
+      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
       toaster.success(gettext('Successfully cleaned the ticket trash'));
     }).catch(() => {
       toaster.danger(gettext('Failed to clean the ticket trash'));
