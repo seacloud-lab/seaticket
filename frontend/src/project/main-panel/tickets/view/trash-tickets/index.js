@@ -141,6 +141,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
       ticketsAPI.restoreTickets(projectUuid, ticketIds).then(res => {
         deleteLocalRows(ticketIds);
         selectNone && selectNone();
+        toaster.success(gettext('Tickets restored'));
       }).catch(error => {
         toaster.danger(gettext('Failed to restore tickets'));
       });
@@ -188,11 +189,13 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
     const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
     if (!row) return list;
 
-    list.push({
-      label: gettext('Restore'),
-      key: 'restore',
-      callback: () => handleRestoreTickets([row._id]),
-    });
+    if (selectedRowIds.length === 1) {
+      list.push({
+        label: gettext('Restore'),
+        key: 'restore',
+        callback: () => handleRestoreTickets([row._id]),
+      });
+    }
     return list;
   }, [projectName, workspaceID]);
 
