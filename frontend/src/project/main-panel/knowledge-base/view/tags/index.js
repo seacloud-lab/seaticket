@@ -7,6 +7,8 @@ import OptionDialog from '../../../tickets/components/option-dialog';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
 import { getRowById } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
+import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
   const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
@@ -215,7 +217,16 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadTags(true);
+    loadTags();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
+      context.eventBus.dispatch('expand_row');
+    });
+    return () => {
+      unsubscribeNewTag();
+    };
   }, []);
 
   if (isLoading || tagsData.isLoading) return (<CenteredLoading />);

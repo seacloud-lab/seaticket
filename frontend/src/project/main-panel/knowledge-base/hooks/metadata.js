@@ -1,10 +1,9 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import dayjs from 'dayjs';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { knowledgeBaseAPI } from '../../../api';
-import { OptionsData, Option } from '../../tickets/models';
+import { OptionsData, Option } from '../models';
 
 const MetadataContext = React.createContext(null);
 
@@ -87,9 +86,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifyTags]);
 
-  const loadTags = useCallback((isForce = false) => {
-    const currentTime = new Date();
-    if (!isForce && tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
+  const loadTags = useCallback(() => {
     const newTagsData = tagsData._updateLoading(true);
     setTagsData(newTagsData);
     knowledgeBaseAPI.listKnowledgeBaseTags(projectUuid).then(res => {

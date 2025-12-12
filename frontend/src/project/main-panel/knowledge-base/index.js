@@ -7,14 +7,15 @@ import NewKnowledge from './view/new-knowledge';
 import AllKnowledge from './view/all-knowledge';
 import EditKnowledge from './view/edit-knowledge';
 import Tags from './view/tags';
+import TagKnowledge from './view/tag-knowledge';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
 import { MetadataProvider } from './hooks/metadata';
-import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
+import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
 
 const Page = ({ title }) => {
-  const { isLoading, pageSlugId, togglePageSlugId } = useKnowledgePage();
+  const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useKnowledgePage();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
@@ -27,7 +28,8 @@ const Page = ({ title }) => {
 
   if (isLoading) return null;
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS) {
-    return (<Tags { ...props } />);
+    if (childrenPageSlugId === KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) return (<Tags { ...props } />);
+    return (<TagKnowledge { ...props } tagID={childrenPageSlugId} />);
   }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
     return (<AllKnowledge { ...props } editorAPI={longtextAPI} />);
