@@ -236,26 +236,19 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        title = request.data.get('title')
-        if not title:
-            error_msg = 'title invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        raw_content = request.data.get('content')
-        if not raw_content:
-            error_msg = 'content invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        content_text = None
-        if isinstance(raw_content, dict):
-            content_text = raw_content.get('text')
-        else:
-            try:
-                ans_obj = json.loads(raw_content)
-                content_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_content
-            except Exception:
-                content_text = raw_content
-        if not content_text or not isinstance(content_text, str) or not content_text.strip():
-            error_msg = 'content invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if 'title' in request.data:
+            title = request.data.get('title')
+            if not title:
+                error_msg = 'title invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.title.name] = title
+
+        if 'content' in request.data:
+            raw_content = request.data.get('content')
+            if not raw_content:
+                error_msg = 'content invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.content.name] = raw_content
 
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
