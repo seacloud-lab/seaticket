@@ -402,7 +402,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
           <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings
-            isReadonly={isSubmitting}
+            isReadonly={!editable}
             value={tags}
             isLoading={isMetadataLoading}
             tagsData={tagsData}
