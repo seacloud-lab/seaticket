@@ -19,7 +19,7 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
 
-  const { typesData, tagsData, substatesData } = useMetadata();
+  const { isLoading: isMetadataLoading, typesData, tagsData, substatesData, createTag } = useMetadata();
 
   useEffect(() => {
     if (initialData) {
@@ -120,7 +120,14 @@ const CreateTicketDialog = ({ initialData, isOpen, toggle, isLoading, projectUui
             <div className="sea-qa-create-ticket-dialog-other-settings">
               <RateSettings isReadonly={isLoading} value={priority} onChange={setPriority} />
               <CollaboratorsSettings isReadonly={isLoading} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
-              <TagsSettings isReadonly={isLoading} value={tags} onChange={setTags} />
+              <TagsSettings
+                isReadonly={isLoading}
+                value={tags}
+                isLoading={isMetadataLoading}
+                tagsData={tagsData}
+                createTag={createTag}
+                onChange={setTags}
+              />
               <TypeSettings isReadonly={isLoading} value={type} onChange={setType} />
             </div>
           </div>

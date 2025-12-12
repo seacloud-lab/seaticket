@@ -29,7 +29,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { tagsData, typesData, substatesData, isLoading: isMetadataLoading } = useMetadata();
+  const { tagsData, typesData, substatesData, isLoading: isMetadataLoading, createTag } = useMetadata();
 
   const user = useMemo(() => {
     return {
@@ -180,7 +180,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           <div className="sea-qa-project-ticket-other-settings">
             <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
             <CollaboratorsSettings isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
-            <TagsSettings isReadonly={isSubmitting} value={tags} onChange={setTags} />
+            <TagsSettings
+              isReadonly={isSubmitting}
+              value={tags}
+              isLoading={isMetadataLoading}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={setTags}
+            />
             <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
