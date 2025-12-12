@@ -33,25 +33,16 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        username = request.user.username
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         title = request.data.get('title')
         if not title:
             error_msg = 'title invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         raw_content = request.data.get('content')
         if not raw_content:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         content_text = None
         if isinstance(raw_content, dict):
             content_text = raw_content.get('text')
@@ -64,6 +55,18 @@ class KnowledgeBasesAPIView(APIView):
         if not content_text or not isinstance(content_text, str) or not content_text.strip():
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        username = request.user.username
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI(request.user.username)
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
@@ -232,18 +235,6 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        username = request.user.username
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        # permission check
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         title = request.data.get('title')
         if not title:
             error_msg = 'title invalid.'
@@ -264,6 +255,19 @@ class KnowledgeBaseAPIView(APIView):
         if not content_text or not isinstance(content_text, str) or not content_text.strip():
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        username = request.user.username
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        # permission check
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         row = {
             KnowledgeBaseTable.title.name: title,
