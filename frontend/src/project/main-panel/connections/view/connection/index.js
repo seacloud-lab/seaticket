@@ -13,6 +13,7 @@ import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
+  CONNECTION_PREDEFINED_COLUMN_NAME,
 } from '../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
@@ -83,10 +84,15 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         let rows = Array.isArray(records) ? records : [];
         let columns = res?.data?.columns || [];
         allColumns.current = columns;
-        let notDisplayColumnNames = ['_pk', 'slug', 'topic_id', 'url'];
+        let notDisplayColumnNames = [
+          CONNECTION_PREDEFINED_COLUMN_NAME._PK,
+          CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
+          CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
+          CONNECTION_PREDEFINED_COLUMN_NAME.URL,
+        ];
         let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
         if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-          const typeColum = columns.find(c => c.name === 'issue_type');
+          const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
           if (typeColum) {
             const options = typeColum.data?.options || [];
             const _typesData = options.map(o => ({ ...o, _id: o.id }));
@@ -100,7 +106,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             context.setSetting('typeColumnKey', typeColum.key);
           }
 
-          const stateColumnIndex = columns.findIndex(c => c.name === 'state');
+          const stateColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
           if (stateColumnIndex > -1) {
             const stateColumn = columns[stateColumnIndex];
             context.setSetting('stateColumnKey', stateColumn.key);
@@ -109,18 +115,17 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
             columns[stateColumnIndex].data = { ...stateColumn.data, options };
           }
 
-          const stateReasonColumnIndex = columns.findIndex(c => c.name === 'state_reason');
+          const stateReasonColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
           if (stateReasonColumnIndex > -1) {
             const stateReasonColumn = columns[stateReasonColumnIndex];
             let options = stateReasonColumn.data?.options || [];
             options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
             columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
           }
-          notDisplayColumnNames.push('url');
         }
         if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
-          columnConfig['title'] = {
-            ...columnConfig['title'],
+          columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
+            ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
             click: (row) => {
               const url = getOriginalPageUrl(connection, row, allColumns.current);
               if (!url) {

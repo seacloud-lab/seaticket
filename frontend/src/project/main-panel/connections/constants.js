@@ -309,9 +309,51 @@ export const CONNECTION_SYNC_COMPLETED_STATUS = [
   CONNECTION_SYNC_STATUS.FAILED,
 ];
 
+export const CONNECTION_PREDEFINED_COLUMN_NAME = {
+  _PK: '_pk',
+  TITLE: 'title',
+  AI_SUMMARY: 'ai_summary',
+  AI_PROCESSED_TIME: 'ai_processed_time',
+  AUTHOR: 'author',
+  STATE: 'state',
+  STATE_REASON: 'state_reason',
+  ISSUE_TYPE: 'issue_type',
+  LABELS: 'labels',
+  COMMENTS_COUNT: 'comments_count',
+  MODIFIED_TIME: 'modified_time',
+  CLOSED_TIME: 'closed_time',
+  CREATED_TIME: 'created_time',
+  VIEWS: 'views',
+  URL: 'url',
+  PATH: 'path',
+  UNREAD: 'unread',
+  SLUG: 'slug',
+  TOPIC_ID: 'topic_id',
+};
+
+const CONNECTION_PREDEFINED_COLUMN = {
+  [CONNECTION_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
+    display_name: gettext('Last modified time'),
+    type: CellType.MTIME,
+    data: {
+      format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
+    }
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.AI_SUMMARY]: {
+    display_name: gettext('AI Summary'),
+    type: CellType.TEXT,
+    is_hover_show_content: true,
+  },
+  [CONNECTION_PREDEFINED_COLUMN_NAME.AI_PROCESSED_TIME]: {
+    display_name: gettext('AI processed time'),
+    type: CellType.DATE,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' },
+  },
+};
+
 export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
   [CONNECTION_TYPE.GITHUB_ISSUE]: {
-    'title': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Title'),
       is_name_column: true,
       frozen: true,
@@ -322,91 +364,61 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
         }
       }
     },
-    'ai_summary': {
-      display_name: gettext('AI Summary'),
-      type: CellType.TEXT,
-      is_predefined: true,
-      is_hover_show_content: true,
-    },
-    'ai_processed_time': {
-      display_name: gettext('AI processed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-      is_predefined: true,
-    },
-    'author': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
       display_name: gettext('Author'),
       is_predefined: true,
     },
-    'state': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: {
       display_name: gettext('State'),
       is_predefined: true,
     },
-    'state_reason': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: {
       display_name: gettext('State reason'),
       is_predefined: true,
     },
-    'issue_type': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE]: {
       display_name: gettext('Type'),
       is_predefined: true,
     },
-    'labels': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LABELS]: {
       display_name: gettext('Labels'),
       is_predefined: true,
     },
-    'comments_count': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.COMMENTS_COUNT]: {
       display_name: gettext('Total comments'),
       type: CellType.NUMBER,
       is_predefined: true,
     },
-    'modified_time': {
-      display_name: gettext('Last modified time'),
-      type: CellType.MTIME,
-      is_predefined: true,
-    },
-    'closed_time': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CLOSED_TIME]: {
       display_name: gettext('Closed time'),
       type: CellType.DATE,
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
       is_predefined: true,
     },
-    'created_time': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
       display_name: gettext('Created time'),
       type: CellType.CTIME,
       is_predefined: true,
     },
+    ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.DISCOURSE_FORUM]: {
-    'title': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Title'),
       is_name_column: true, frozen: true,
     },
-    'views': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.VIEWS]: {
       display_name: gettext('Views count'),
       type: CellType.NUMBER,
     },
-    'modified_time': {
-      display_name: gettext('Last modified time'),
-      type: CellType.MTIME,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-    },
-    'created_time': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
       display_name: gettext('Created time'),
       type: CellType.CTIME,
     },
-    'ai_summary': {
-      display_name: gettext('AI Summary'),
-      type: CellType.TEXT,
-      is_hover_show_content: true,
-    },
-    'ai_processed_time': {
-      display_name: gettext('AI processed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.SITE]: {
-    'title': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Title'),
       is_name_column: true,
       frozen: true,
@@ -416,76 +428,33 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
         }
       }
     },
-    'url': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.URL]: {
       display_name: gettext('URL'),
       type: CellType.URL,
     },
-    'modified_time': {
-      display_name: gettext('Last modified time'),
-      type: CellType.MTIME,
-      sort_able: true, filter_able: true
-    },
-    'ai_summary': {
-      display_name: gettext('AI Summary'),
-      type: CellType.TEXT,
-      is_hover_show_content: true,
-    },
-    'ai_processed_time': {
-      display_name: gettext('AI processed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.SEAFILE]: {
-    'title': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('File name'),
       is_name_column: true, frozen: true,
     },
-    'path': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PATH]: {
       display_name: gettext('Parent folder'),
       type: CellType.TEXT,
     },
-    'modified_time': {
-      display_name: gettext('Last modified time'),
-      type: CellType.MTIME,
-    },
-    'ai_summary': {
-      display_name: gettext('AI Summary'),
-      type: CellType.TEXT,
-      is_hover_show_content: true,
-    },
-    'ai_processed_time': {
-      display_name: gettext('AI processed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-    }
+    ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.EMAIL]: {
-    'title': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
       display_name: gettext('Subject'),
       is_name_column: true, frozen: true,
     },
-    'unread': {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD]: {
       display_name: gettext('unread'),
       type: CellType.CHECKBOX,
     },
-    'modified_time': {
-      display_name: gettext('Last modified time'),
-      type: CellType.MTIME,
-      data: {
-        format: DATE_FORMAT_MAP['YYYY_MM_DD_HH_MM_SS'],
-      }
-    },
-    'ai_summary': {
-      display_name: gettext('AI Summary'),
-      type: CellType.TEXT,
-      is_hover_show_content: true,
-    },
-    'ai_processed_time': {
-      display_name: gettext('AI processed time'),
-      type: CellType.DATE,
-      data: { format: 'YYYY-MM-DD HH:mm:ss' },
-    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
