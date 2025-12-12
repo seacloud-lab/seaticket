@@ -1030,7 +1030,7 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, view, username='', start=0, limit=0, include_deleted=False):
+    def __init__(self, table_name, columns, view, username='', start=0, limit=0):
         self.table_name = table_name
         self.view = view
         self.columns = columns
@@ -1038,7 +1038,6 @@ class SQLGenerator(object):
         self.start = start
         self.limit = limit
         self.username = username
-        self.include_deleted = include_deleted
 
     def _get_column_by_key(self, col_key):
         for col in self.columns:
@@ -1172,11 +1171,10 @@ class SQLGenerator(object):
         column_join = ', '.join(['`%s`' % column_name for column_name in self.column_names])
         sql = f"SELECT {column_join} FROM `{self.table_name}`"
         filter_clause = self._filter_2_sql()
-        if self.include_deleted:
-            if filter_clause:
-                filter_clause = "%s AND (`deleted` = False OR `deleted` is NULL)" % filter_clause
-            else:
-                filter_clause = "WHERE (`deleted` = False OR `deleted` is NULL)"
+        if filter_clause:
+            filter_clause = "%s AND (`deleted` = False OR `deleted` is NULL)" % filter_clause
+        else:
+            filter_clause = "WHERE (`deleted` = False OR `deleted` is NULL)"
         sort_clause = self.sort_2_sql()
         limit_clause = self._limit_2_sql()
         if filter_clause:
@@ -1188,9 +1186,9 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, view, username, start, limit, include_deleted=False):
+def view_data_2_sql(table, columns, view, username, start, limit):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, username, start, limit, include_deleted=include_deleted)
+    sql_generator = SQLGenerator(table, columns, view, username, start, limit)
     sql = sql_generator.to_sql()
     return sql
 
