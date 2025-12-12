@@ -141,7 +141,7 @@ def get_ai_reply(params):
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
     headers = {"Authorization": "Token %s" % token}
     url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/get-ai-reply')
-    resp = requests.post(url, json=params, headers=headers)
+    resp = requests.post(url, json=params, headers=headers, timeout=180)
     if resp.status_code == 500:
         raise Exception('ask ai error status: %s body: %s', resp.status_code, resp.text)
     resp_json = resp.json()

@@ -328,6 +328,19 @@ class ChatView(APIView):
             error_msg = 'Internal server error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        connections = ProjectConnections.objects.filter(project=project, deleted=0)
+        document_connection_ids = []
+        issue_connections = []
+        for connection in connections:
+            if connection.type in ('seafile', 'site'):
+                document_connection_ids.append(connection.pk)
+            else:
+                issue_connections.append({
+                    'type': connection.type,
+                    'id': connection.pk,
+                    'config': json.loads(connection.config)
+                })
+
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),
             'session_uuid': session.session_uuid,
@@ -338,6 +351,8 @@ class ChatView(APIView):
             'username': username,
             'org_id': org_id,
             'llm_model': model,
+            'document_connection_ids': document_connection_ids,
+            'issue_connections': issue_connections
         }
 
         try:
