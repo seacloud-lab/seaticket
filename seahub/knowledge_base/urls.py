@@ -5,7 +5,8 @@ from seahub.knowledge_base.knowledge_base import KnowledgeBasesAPIView, Knowledg
 from seahub.knowledge_base.knowledge_base_views import KnowledgeBaseViewsAPI, KnowledgeBaseViewView, \
     KnowledgeBaseViewsMoveView, KnowledgeBaseViewsDuplicateView
 from seahub.knowledge_base.knowledge_base_tags import KnowledgeBaseTagsAPIView, KnowledgeBaseTagAPIView
-from seahub.knowledge_base.knowledge_base_excel import KnowledgeBaseConvertViewToExcel, KnowledgeBaseExportExcel, KnowledgeBaseIOStatus
+from seahub.knowledge_base.knowledge_base_excel import KnowledgeBaseConvertViewToExcel, KnowledgeBaseExportExcel, \
+    KnowledgeBaseIOStatus, KnowledgeBaseImportExcel
 
 
 urlpatterns = [
@@ -26,8 +27,12 @@ urlpatterns = [
     # Knowledge base metadata
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-base/metadata/$', KnowledgeBaseMetadataAPIView.as_view(), name='api-v2.1-knowledge-base-metadata'),
 
+    re_path(r'^api/v2.1/kb-io-status/$', KnowledgeBaseIOStatus.as_view(), name='api-v2.1-kb-io-status'),
+
     # Knowledge base export
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/convert-view-to-excel/$', KnowledgeBaseConvertViewToExcel.as_view(), name='api-v2.1-kb-convert-view-to-excel'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/export-excel/$', KnowledgeBaseExportExcel.as_view(), name='api-v2.1-kb-export-excel'),
-    re_path(r'^api/v2.1/kb-io-status/$', KnowledgeBaseIOStatus.as_view(), name='api-v2.1-kb-io-status'),
+
+    # Knowledge base import
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/knowledge-bases/import-excel/$', KnowledgeBaseImportExcel.as_view(), name='api-v2.1-kb-import-excel'),
 ]
