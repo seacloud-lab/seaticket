@@ -160,6 +160,20 @@ class KnowledgeBaseAPI {
     return this.req.get(url);
   }
 
+  convertViewToExcel(projectUuid, viewId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/convert-view-to-excel/?view_id=' + encodeURIComponent(viewId);
+    return this.req.get(url);
+  }
+
+  queryIOStatus(taskId) {
+    const url = this.server + '/api/v2.1/kb-io-status/?task_id=' + taskId;
+    return this.req.get(url);
+  }
+
+  getExportExcelUrl(projectUuid, taskId, viewId) {
+    return this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/export-excel/?task_id=' + taskId + '&view_id=' + encodeURIComponent(viewId);
+  }
+
   uploadFile(projectUuid, file, onUploadProgress = null) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();
