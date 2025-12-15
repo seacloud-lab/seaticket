@@ -124,6 +124,14 @@ class Store {
     DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
   }
 
+  async recalculate() {
+    if (!this.mounted) return;
+    DataProcessor.run(this.data, {
+      collaborators: this.collaborators,
+      typesData: this.typesData,
+    });
+  }
+
   clearData() {
     if (!this.data || !this.mounted) return;
 
@@ -451,7 +459,8 @@ class Store {
       basic_filters: basicFilters,
       view_id: this.viewId,
       success_callback: () => {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
+        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        context.eventBus.dispatch(eventName);
       }
     });
     this.applyOperation(operation);
@@ -464,7 +473,8 @@ class Store {
       sorts,
       view_id: this.viewId,
       success_callback: () => {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
+        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        context.eventBus.dispatch(eventName);
         displaySorts && context.eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
       }
     });
