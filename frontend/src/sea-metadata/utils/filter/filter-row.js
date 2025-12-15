@@ -38,10 +38,12 @@ const getFilterResult = (row, filter, { username, userId }) => {
     case CellType.CHECKBOX: {
       return checkboxFilter(cellValue, filter);
     }
-    case CellType.SINGLE_SELECT: {
+    case CellType.SINGLE_SELECT:
+    case CellType.TYPE: {
       return singleSelectFilter(cellValue, filter);
     }
-    case CellType.MULTIPLE_SELECT: {
+    case CellType.MULTIPLE_SELECT:
+    case CellType.TAGS: {
       return multipleSelectFilter(cellValue, filter);
     }
     case CellType.NUMBER:
@@ -114,7 +116,7 @@ const filterRows = (filterConjunction, filters, rows, { username, userId, isRetu
  * @param {string} userId
  * @returns filtered rows: row_ids and error message: error_message, object
  */
-const getFilteredRows = (table, rows, filterConjunction, filters, { username = null, userId = null, isReturnID = true } = {}) => {
+const getFilteredRows = (table, rows, { basicFilters, filters, filterConjunction }, { username = null, userId = null, isReturnID = true } = {}) => {
   const { columns } = table;
   let validFilters = [];
   try {
@@ -123,11 +125,19 @@ const getFilteredRows = (table, rows, filterConjunction, filters, { username = n
     return { rows: [], error_message: err.message };
   }
 
+  let validBasicFilters = [];
+  try {
+    validBasicFilters = deleteInvalidFilter(basicFilters, columns);
+  } catch (err) {
+    return { rows: [], error_message: err.message };
+  }
+
   let filteredRows = [];
-  if (validFilters.length === 0) {
+  if (validFilters.length === 0 && validBasicFilters.length === 0) {
     filteredRows = isReturnID ? rows.map((row) => row._id) : rows;
   } else {
-    filteredRows = filterRows(filterConjunction, validFilters, rows, { username, userId, isReturnID });
+    filteredRows = filterRows(FILTER_CONJUNCTION_TYPE.AND, validBasicFilters, rows, { username, userId, isReturnID: false });
+    filteredRows = filterRows(filterConjunction, validFilters, filteredRows, { username, userId, isReturnID });
   }
 
   return { rows: filteredRows, error_message: null };
