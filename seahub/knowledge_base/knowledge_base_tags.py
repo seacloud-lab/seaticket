@@ -232,12 +232,29 @@ class KnowledgeBaseTagAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         name = request.data.get('name')
-        description = request.POST.get('description')
-        color = request.POST.get('color')
-        text_color = request.POST.get('text_color')
-        if 'name' not in request.data and 'description' not in request.data and 'color' not in request.data and 'text_color' not in request.data:
-            error_msg = 'argument invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        description = request.data.get('description')
+        color = request.data.get('color')
+        text_color = request.data.get('text_color')
+        
+        if 'name' in request.data:
+            if not name or not name.strip():
+                error_msg = 'name invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        if 'description' in request.data:
+            if not description:
+                description = ''
+            description = description.strip()
+
+        if 'color' in request.data:
+            if not color or not color.strip():
+                error_msg = 'color invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        if 'text_color' in request.data:
+            if not text_color or not text_color.strip():
+                error_msg = 'text_color invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
