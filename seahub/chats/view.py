@@ -19,6 +19,9 @@ from seahub.chats.utils import delete_session, format_ask_thought_process, forma
 from seahub.tickets.ticket_utils import get_whole_tickets_data
 from django.utils.translation import gettext as _
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -305,8 +308,21 @@ class ChatView(APIView):
 
         issues = request.data.get('issues', [])
         if issues:
-            github_seadb_api = GitHubSeaDBAPI(project_uuid)
-            extra_contents += github_seadb_api.get_whole_issues_data(issues)
+            github_issues = [i for i in issues if i.get('connection_type') == ConnectionType.GITHUB_ISSUE.value]
+            email_issues = [i for i in issues if i.get('connection_type') == ConnectionType.EMAIL.value]
+            discourse_issues = [i for i in issues if i.get('connection_type') == ConnectionType.DISCOURSE_FORUM.value]
+
+            if github_issues:
+                github_seadb_api = GitHubSeaDBAPI(project_uuid)
+                extra_contents += github_seadb_api.get_whole_issues_data(github_issues)
+
+            if email_issues:
+                email_seadb_api = EmailSeaDBAPI(project_uuid)
+                extra_contents += email_seadb_api.get_whole_issues_data(email_issues)
+
+            if discourse_issues:
+                discourse_seadb_api = DiscourseSeaDBAPI(project_uuid)
+                extra_contents += discourse_seadb_api.get_whole_issues_data(discourse_issues)
 
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')

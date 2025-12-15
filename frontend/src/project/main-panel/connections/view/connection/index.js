@@ -226,7 +226,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (!enableUseAI) return null;
 
     const children = [
-      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
+      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL ? {
         label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
         key: 'chat_issues',
         callback: () => {
@@ -243,6 +243,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
               state: getCellValueByColumn(row, stateColumn),
               url: getCellValueByColumn(row, urlColumn),
               connection_id: connectionID,
+              connection_type: connection?.type,
             };
             newRows.push(new IssueForAI(newRow));
           });
