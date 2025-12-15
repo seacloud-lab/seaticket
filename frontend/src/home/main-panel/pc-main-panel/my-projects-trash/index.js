@@ -53,7 +53,7 @@ const MyProjectsTrash = () => {
                 { name: '', key: 'op', width: 44, isFixed: true }
               ]}
               api={listTrashProjects}
-              onRestore={(project) => homeAPI.restoreTrashProject(project.id)}
+              onRestore={(project) => homeAPI.restoreTrashProject(project.uuid)}
             >
               <p className="mt-4 seatable-tip-default text-secondary">
                 {gettext('Note: Projects are removed from trash {expireDays} days after their deletion. Once removed from trash, they cannot be recovered from trash.').replace('{expireDays}', trashCleanExpireDays)}
