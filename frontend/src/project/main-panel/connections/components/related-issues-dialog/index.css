@@ -76,6 +76,7 @@
 
 .issues-list-item-content .issues-list-item-time {
   font-size: 14px;
+  padding-right: 8px;
 }
 
 .issues-list-item-content .issues-list-item-detail {
