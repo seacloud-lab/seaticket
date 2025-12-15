@@ -618,3 +618,12 @@ CREATE TABLE `knowledge_base_views`  (
   PRIMARY KEY (`id`),
   KEY `knowledge_base_views_project_uuid`(`project_uuid`)
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `api2_token` (
+  `key` varchar(40) NOT NULL,
+  `user` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`key`),
+  UNIQUE KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
