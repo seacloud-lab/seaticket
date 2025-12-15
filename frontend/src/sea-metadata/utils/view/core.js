@@ -42,7 +42,8 @@ const getViewByName = (views, viewName) => {
  */
 const isFilterView = (view, columns) => {
   const validFilters = getValidFilters(view.filters, columns);
-  return validFilters.length > 0;
+  const validBasicFilters = getValidFilters(view.basic_filters, columns);
+  return validFilters.length > 0 || validBasicFilters.length > 0;
 };
 
 /**

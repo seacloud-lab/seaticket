@@ -9,6 +9,7 @@ import './index.css';
 const ViewItem = ({
   view,
   isSelect,
+  isViewComputedOnServer,
   modifyAble,
   deleteAble,
   moveAble,
@@ -132,7 +133,7 @@ const ViewItem = ({
           ref={viewRef}
         >
           {view.name}
-          {isSelect && (
+          {isSelect && isViewComputedOnServer && (
             <div
               className="sea-metadata-view-item-operation-down"
               onClick={openDropdownMenu}

@@ -11,6 +11,7 @@ import ServerOperator from './server-operator';
 import LocalOperator from './local-operator';
 import { Metadata, Row } from '../models';
 import context from '../context';
+import { isFunction } from '@/utils/type-detection';
 
 class Store {
 
@@ -26,6 +27,7 @@ class Store {
     this.serverOperator = new ServerOperator();
     this.localOperator = new LocalOperator();
     this.collaborators = props.collaborators || [];
+    this.dataDidMount = props.dataDidMount || null;
     this.tagsData = props?.tagsData || {};
     this.typesData = props?.typesData || {};
     this.mounted = true;
@@ -39,6 +41,7 @@ class Store {
     this.undo = [];
     this.pendingOperations = [];
     this.isSendingOperation = false;
+    this.dataDidMount = null;
     this.tagsData = {};
     this.typesData = {};
     this.mounted = false;
@@ -62,6 +65,9 @@ class Store {
       data.hasMore = loadedCount >= limit;
       this.data = data;
       this.startIndex += loadedCount;
+      if (isFunction(this.dataDidMount)) {
+        this.dataDidMount(this.data);
+      }
       DataProcessor.run(this.data, {
         collaborators: this.collaborators,
         typesData: this.typesData,

@@ -22,6 +22,7 @@ export const MetadataProvider = forwardRef(({
   createContextMenuOptions,
   cascadeUpdateCells,
   t,
+  dataDidMount,
   children,
   ...params
 }, ref) => {
@@ -267,7 +268,7 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, typesData, tagsData });
+    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, dataDidMount });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {
