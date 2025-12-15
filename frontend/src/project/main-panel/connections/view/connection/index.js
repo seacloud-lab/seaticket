@@ -41,9 +41,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
-  const [isRelatedIssuesDialogOpen, setIsRelatedIssuesDialogOpen] = useState(false);
-  const [relatedIssues, setRelatedIssues] = useState([]);
-  const [isLoadingRelatedIssues, setIsLoadingRelatedIssues] = useState(false);
+  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
 
@@ -184,21 +182,8 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
-    setIsLoadingRelatedIssues(true);
-    setRelatedIssues([]);
-    setIsRelatedIssuesDialogOpen(true);
-
-    connectionsAPI.findRelatedRecords(projectUuid, connectionID, row._id)
-      .then(res => {
-        const relatedRecords = res.data.related_records || [];
-        setRelatedIssues(relatedRecords);
-      })
-      .catch(error => {
-        toaster.danger(gettext('Failed to find related issues'));
-      })
-      .finally(() => {
-        setIsLoadingRelatedIssues(false);
-      });
+    setCurrentRow(row);
+    setIsShowRelatedIssuesDialog(true);
   }, [projectUuid, connectionID]);
 
   const generateFindRelatedIssuesOption = useCallback(({ row }) => {
@@ -428,62 +413,58 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   if (isLoading || isLoadingConnection) return null;
 
   return (
-    <>
-      <MetadataProvider projectUuid={projectUuid}>
-        <SeaMetadata
-          viewID={viewID}
-          api={api}
-          ref={seaMetaDataRef}
-          className="sea-qa-connection-details"
-          localStorageNamePrefix={localStorageName}
-          createRowsTools={createRowsTools}
-          createContextMenuOptions={createContextMenuOptions}
-          permission={permission}
-          typesData={typesData}
-          toggleView={toggleView}
-          expandRow={handleExpandRow}
-          t={t}
-        />
-        {isShowRowDetailsDialog && (
-          <RowDetailsDialog
-            projectUuid={projectUuid}
-            connection={connection}
-            row={currentRow}
-            columns={allColumns.current}
-            switchRow={switchRow}
-            onToggle={() => setIsShowRowDetailsDialog(false)}
-          />
-        )}
-        {isTicketDialogOpen && (
-          <CreateTicketDialog
-            projectUuid={projectUuid}
-            initialData={ticketData}
-            isLoading={isTicketLoading}
-            isOpen={isTicketDialogOpen}
-            toggle={() => setTicketDialogOpen(false)}
-          />
-        )}
-        {isEmbeddingVisualizationOpen && (
-          <EmbeddingVisualization
-            onClose={() => setEmbeddingVisualizationOpen(false)}
-            connectionId={connectionID}
-            connectionName={connection?.name || ''}
-            projectUuid={projectUuid}
-          />
-        )}
-      </MetadataProvider>
-      {isRelatedIssuesDialogOpen && (
-        <RelatedIssuesDialog
-          isOpen={isRelatedIssuesDialogOpen}
-          isLoading={isLoadingRelatedIssues}
-          relatedIssues={relatedIssues}
+    <MetadataProvider projectUuid={projectUuid}>
+      <SeaMetadata
+        viewID={viewID}
+        api={api}
+        ref={seaMetaDataRef}
+        className="sea-qa-connection-details"
+        localStorageNamePrefix={localStorageName}
+        createRowsTools={createRowsTools}
+        createContextMenuOptions={createContextMenuOptions}
+        permission={permission}
+        typesData={typesData}
+        toggleView={toggleView}
+        expandRow={handleExpandRow}
+        t={t}
+      />
+      {isShowRowDetailsDialog && (
+        <RowDetailsDialog
+          projectUuid={projectUuid}
           connection={connection}
-          connections={connections}
-          onClose={() => setIsRelatedIssuesDialogOpen(false)}
+          row={currentRow}
+          columns={allColumns.current}
+          switchRow={switchRow}
+          onToggle={() => setIsShowRowDetailsDialog(false)}
+        />
+      )}
+      {isTicketDialogOpen && (
+        <CreateTicketDialog
+          projectUuid={projectUuid}
+          initialData={ticketData}
+          isLoading={isTicketLoading}
+          isOpen={isTicketDialogOpen}
+          toggle={() => setTicketDialogOpen(false)}
+        />
+      )}
+      {isEmbeddingVisualizationOpen && (
+        <EmbeddingVisualization
+          onClose={() => setEmbeddingVisualizationOpen(false)}
+          connectionId={connectionID}
+          connectionName={connection?.name || ''}
+          projectUuid={projectUuid}
+        />
+      )}
+      {isShowRelatedIssuesDialog && (
+        <RelatedIssuesDialog
+          projectUuid={projectUuid}
+          row={currentRow}
+          connectionId={connectionID}
+          onClose={() => {setIsShowRelatedIssuesDialog(false); setCurrentRow({});}}
           onRowClick={handleCreateRelatedTicket}
         />
       )}
-    </>
+    </MetadataProvider>
   );
 
 };
