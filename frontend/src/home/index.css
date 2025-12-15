@@ -279,8 +279,10 @@
 }
 
 .search .project-item {
+  height: 56px;
   width: 100%;
   justify-content: left;
+  padding: 0px 12px;
 }
 
 .search .project-item:hover {
