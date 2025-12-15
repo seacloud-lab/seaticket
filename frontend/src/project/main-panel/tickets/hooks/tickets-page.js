@@ -21,7 +21,10 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
 
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
-      const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
+      let myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
+      if (viewID) {
+        myTicketsViewURL = myTicketsViewURL + '?view=' + viewID;
+      }
       history.replaceState(null, null, myTicketsViewURL);
       return;
     }

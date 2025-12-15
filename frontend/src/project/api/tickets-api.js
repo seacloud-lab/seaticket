@@ -362,11 +362,12 @@ class TicketsAPI {
     return this.req.get(url);
   }
 
-  listMyTickets(projectUuid, { start = 0, limit = 1000 }) {
+  listMyTickets(projectUuid, { view_id = 'open', start = 0, limit = 1000 }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/my-tickets/';
     const params = {
+      view_id,
       start,
-      limit
+      limit,
     };
     return this.req.get(url, { params: params });
   }
