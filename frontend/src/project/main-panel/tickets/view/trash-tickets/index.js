@@ -113,6 +113,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
         ticketsAPI.restoreTickets(projectUuid, rowIds).then(res => {
           deleteLocalRows(rowIds);
           selectNone && selectNone();
+          toaster.success(gettext('Tickets restored'));
         }).catch(error => {
           toaster.danger(gettext('Failed to restore tickets'));
         });

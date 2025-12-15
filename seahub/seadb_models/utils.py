@@ -552,7 +552,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, use
     return ticket_data
 
 
-def list_tickets_trash(seadb_api, project_uuid, start, limit):
+def list_trash_tickets(seadb_api, project_uuid, start, limit):
     query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
     sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)

@@ -22,7 +22,7 @@ from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
-from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, list_tickets_trash
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, list_trash_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
@@ -1211,22 +1211,8 @@ class TicketTrashAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
-
         try:
             start = int(start)
             limit = int(limit)
@@ -1242,9 +1228,22 @@ class TicketTrashAPIView(APIView):
             error_msg = 'limit invalid'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         seadb_api = SeaDBAPI(username)
         try:
-            tickets, columns = list_tickets_trash(seadb_api, project_uuid, start, limit)
+            tickets, columns = list_trash_tickets(seadb_api, project_uuid, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1252,14 +1251,14 @@ class TicketTrashAPIView(APIView):
         return Response({'tickets': tickets, 'columns': columns})
 
     def put(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'tickets_data is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
