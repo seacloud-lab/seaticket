@@ -132,9 +132,12 @@ class KnowledgeBaseAPI {
     return this.req.post(url, payload);
   }
 
-  updateRecord(projectUuid, recordId, { title, content }) {
+  updateRecord(projectUuid, recordId, update = {}) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
-    const payload = { title, content: (content && typeof content === 'object') ? JSON.stringify(content) : content };
+    let payload = { ...update };
+    if (payload.content && typeof payload.content === 'object') {
+      payload.content = JSON.stringify(payload.content);
+    }
     return this.req.put(url, payload);
   }
 
@@ -162,6 +165,54 @@ class KnowledgeBaseAPI {
     const formData = new FormData();
     formData.append('file', file);
     return this._sendPostRequest(url, formData, { onUploadProgress });
+  }
+
+  // tags
+  listKnowledgeBaseTags(projectUuid) {
+    let url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    return this.req.get(url);
+  }
+
+  createKnowledgeBaseTag(projectUuid, { name, description, color, text_color }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    let form = new FormData();
+    if (name) {
+      form.append('name', name);
+    }
+    if (description) {
+      form.append('description', description);
+    }
+    if (color) {
+      form.append('color', color);
+    }
+    if (text_color) {
+      form.append('text_color', text_color);
+    }
+    return this._sendPostRequest(url, form);
+  }
+
+  modifyKnowledgeBaseTag(projectUuid, tagId, update) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    let form = new FormData();
+    Object.keys(update).forEach(key => {
+      form.append(key, update[key]);
+    });
+    return this.req.put(url, form);
+  }
+
+  deleteKnowledgeBaseTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    return this.req.delete(url);
+  }
+
+  deleteKnowledgeBaseTags(projectUuid, tagIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    return this.req.delete(url, { data: { tag_ids: tagIds } });
+  }
+
+  listKnowledgeBaseByTag(projectUuid, tagId) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    return this.req.get(url);
   }
 }
 

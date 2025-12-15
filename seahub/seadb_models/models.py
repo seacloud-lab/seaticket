@@ -405,6 +405,7 @@ class ThreadTable(BaseModel):
 class KnowledgeBaseTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)

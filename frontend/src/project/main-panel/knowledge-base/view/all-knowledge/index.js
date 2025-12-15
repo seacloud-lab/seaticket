@@ -1,12 +1,16 @@
 import React, { useMemo, useCallback } from 'react';
 import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
+import context from '@/sea-metadata/context';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
+import { useMetadata } from '../../hooks/metadata';
 import { knowledgeBaseAPI } from '@/project/api';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { generatorKnowledgeContextMenuOptions, convertRowToServerData } from '../../utils';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
+  const { tagsData, createTag } = useMetadata();
 
   const expandRow = useCallback((row) => {
     togglePageSlugId(row._id);
@@ -25,6 +29,10 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
             ...predefinedConfig,
           };
         });
+        const tagsColumn = columns.find(c => c.name === 'tags');
+        if (tagsColumn) {
+          context.setSetting('tagsColumnKey', tagsColumn.key);
+        }
         return { data: { rows, columns } };
       });
     };
@@ -37,26 +45,18 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       moveView: (sourceId, targetId) => knowledgeBaseAPI.moveView(projectUuid, sourceId, targetId),
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
+      modifyRow: (row_id, row_update, isCopyPaste, { data, tagsData } = {}) => {
+        const rowData = convertRowToServerData(row_update, { data, tagsData });
+        return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData);
+      },
       deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
       deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     };
-  }, []);
+  }, [projectUuid, tagsData]);
 
-  const createContextMenuOptions = useCallback(({ isGroupView, selectedRange, selectedPosition, table, rowMetrics, deleteRow, deleteRows, rowGetterByIndex, context }) => {
-    let list = [];
-    if (selectedRange) return list;
-    const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap) : [];
-    if (selectedRowIds.length > 1) {
-      if (context.canDeleteRows()) list.push({ label: gettext('Delete records'), callback: () => deleteRows(selectedRowIds) });
-      return list;
-    }
-    if (!selectedPosition) return list;
-    const { groupRowIndex, rowIdx: rowIndex } = selectedPosition;
-    const row = rowGetterByIndex({ isGroupView, groupRowIndex, rowIndex }) || table.id_row_map[selectedRowIds[0]];
-    if (!row) return list;
-    if (context.canDeleteRow()) list.push({ label: gettext('Delete record'), callback: () => deleteRow(row._id) });
-    return list;
+  const createContextMenuOptions = useCallback((props) => {
+    return generatorKnowledgeContextMenuOptions({ ...props });
   }, []);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-knowledge-base`, []);
@@ -79,6 +79,9 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       expandRow={expandRow}
       t={t}
       createContextMenuOptions={createContextMenuOptions}
+      tagsData={tagsData}
+      createTag={createTag}
+      toggleAllTags={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.TAGS)}
     />
   );
 };
