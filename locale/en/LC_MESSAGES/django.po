@@ -660,7 +660,7 @@ msgid "The email address has already been bound to another account."
 msgstr ""
 
 #: seahub/profile/views.py:203 seahub/profile/views.py:214
-msgid "Back to SeaSearch"
+msgid "Back to SeaTicket"
 msgstr ""
 
 #: seahub/profile/views.py:212
@@ -761,7 +761,7 @@ msgstr ""
 
 #: seahub/templates/base.html:12 seahub/templates/base_clean.html:12
 #: seahub/templates/base_for_react.html:11
-msgid "SeaSearch - Solving issues with AI"
+msgid "SeaTicket - Solving issues with AI"
 msgstr ""
 
 #: seahub/templates/base.html:14 seahub/templates/base.html:23

@@ -197,8 +197,8 @@ class SidePanel extends React.Component {
                   height={logoHeight}
                   width={logoWidth}
                   title={siteTitle}
-                  alt={gettext('SeaSearch logo')}
-                  aria-label={gettext('SeaSearch logo')}
+                  alt={gettext('SeaTicket logo')}
+                  aria-label={gettext('SeaTicket logo')}
                 />
               </a>
             </header>

@@ -666,8 +666,8 @@ msgid "The email address has already been bound to another account."
 msgstr "该邮箱已绑定到另一个账号。"
 
 #: seahub/profile/views.py:203 seahub/profile/views.py:214
-msgid "Back to SeaSearch"
-msgstr "返回 SeaSearch"
+msgid "Back to SeaTicket"
+msgstr "返回 SeaTicket"
 
 #: seahub/profile/views.py:212
 msgid "Contact email has been updated."
@@ -770,8 +770,8 @@ msgstr "对不起，你访问的页面不存在。"
 
 #: seahub/templates/base.html:12 seahub/templates/base_clean.html:12
 #: seahub/templates/base_for_react.html:11
-msgid "SeaSearch - Solving issues with AI"
-msgstr "SeaSearch - 利用 AI 解决问题"
+msgid "SeaTicket - Solving issues with AI"
+msgstr "SeaTicket - 利用 AI 解决问题"
 
 #: seahub/templates/base.html:14 seahub/templates/base.html:23
 #: seahub/templates/base_clean.html:14 seahub/templates/base_for_react.html:13
