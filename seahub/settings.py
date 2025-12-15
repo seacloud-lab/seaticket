@@ -393,10 +393,10 @@ def genpassword():
 INIT_PASSWD = genpassword
 
 # browser tab title
-SITE_TITLE = 'SeaSearch'
+SITE_TITLE = 'SeaTicket'
 
 # Base name used in email sending
-SITE_NAME = 'SeaSearch'
+SITE_NAME = 'SeaTicket'
 
 # Path to the license file(relative to the media path)
 LICENSE_PATH = os.path.join(PROJECT_ROOT, '../../seatable-license.txt')
@@ -411,7 +411,7 @@ FAVICON_NOTIFICATION_PATH = 'favicons/notification-favicon.ico'
 APPLE_TOUCH_ICON_PATH = 'favicons/favicon.ico'
 
 # Path to the Logo Imagefile (relative to the media path)
-LOGO_PATH = 'img/SeaSearch.png'
+LOGO_PATH = 'img/SeaTicket.png'
 # logo size. the unit is 'px'
 LOGO_WIDTH = ''
 LOGO_HEIGHT = 32
@@ -617,7 +617,7 @@ PROJECT_FILE_MAX_SIZE = 25  # 25MB
 
 # PWA
 PWA_SERVICE_WORKER_PATH = os.path.join(PROJECT_ROOT, 'media/pwa/js', 'service-worker.js')
-PWA_APP_NAME = 'SeaSearch'
+PWA_APP_NAME = 'SeaTicket'
 PWA_APP_DESCRIPTION = "Online rich form application"
 PWA_APP_THEME_COLOR = '#0A0302'
 PWA_APP_BACKGROUND_COLOR = '#ffffff'

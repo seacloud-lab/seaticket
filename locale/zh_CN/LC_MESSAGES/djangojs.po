@@ -788,8 +788,8 @@ msgstr "删除群组"
 #: frontend/src/home/header/index.js:119 frontend/src/home/header/index.js:120
 #: frontend/src/home/side-panel/index.js:200
 #: frontend/src/home/side-panel/index.js:201
-msgid "SeaSearch logo"
-msgstr "SeaSearch logo"
+msgid "SeaTicket logo"
+msgstr "SeaTicket logo"
 
 #: frontend/src/home/main-panel/mb-main-panel/index.js:25
 #: frontend/src/home/side-panel/index.js:216
@@ -1116,12 +1116,12 @@ msgid "Copy"
 msgstr "复制"
 
 #: frontend/src/org-admin/saml/index.js:156
-msgid "Configure SeaSearch"
-msgstr "配置 SeaSearch"
+msgid "Configure SeaTicket"
+msgstr "配置 SeaTicket"
 
 #: frontend/src/org-admin/saml/index.js:157
-msgid "Use information from your Identity Provider to configure SeaSearch"
-msgstr "使用来自身份提供商的信息来配置 SeaSearch"
+msgid "Use information from your Identity Provider to configure SeaTicket"
+msgstr "使用来自身份提供商的信息来配置 SeaTicket"
 
 #: frontend/src/org-admin/saml/index.js:170
 msgid "Certificate"

@@ -785,7 +785,7 @@ msgstr ""
 #: frontend/src/home/header/index.js:119 frontend/src/home/header/index.js:120
 #: frontend/src/home/side-panel/index.js:200
 #: frontend/src/home/side-panel/index.js:201
-msgid "SeaSearch logo"
+msgid "SeaTicket logo"
 msgstr ""
 
 #: frontend/src/home/main-panel/mb-main-panel/index.js:25
@@ -1113,11 +1113,11 @@ msgid "Copy"
 msgstr ""
 
 #: frontend/src/org-admin/saml/index.js:156
-msgid "Configure SeaSearch"
+msgid "Configure SeaTicket"
 msgstr ""
 
 #: frontend/src/org-admin/saml/index.js:157
-msgid "Use information from your Identity Provider to configure SeaSearch"
+msgid "Use information from your Identity Provider to configure SeaTicket"
 msgstr ""
 
 #: frontend/src/org-admin/saml/index.js:170

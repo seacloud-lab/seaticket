@@ -200,7 +200,7 @@ def update_contact_email_view(request, update_key):
     if Profile.objects.get_username_by_contact_email(new_contact_email):
         tip = _('The email address has already been bound to another account.')
         next_url = 'edit_profile'
-        operation_text = _('Back to SeaSearch')
+        operation_text = _('Back to SeaTicket')
     else:
         try:
             Profile.objects.add_or_update(username, contact_email=new_contact_email)
@@ -211,7 +211,7 @@ def update_contact_email_view(request, update_key):
 
         tip = _('Contact email has been updated.')
         next_url = 'edit_profile'
-        operation_text = _('Back to SeaSearch')
+        operation_text = _('Back to SeaTicket')
 
     cache.delete(cache_key)
 

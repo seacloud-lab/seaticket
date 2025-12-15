@@ -5,11 +5,11 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
 <title>{% block sub_title %}{% endblock %}{{ site_title }}</title>
-<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaSearch" {% endif %} />
+<meta property="og:title" content={% if og_title %} "{{ og_title }}" {% else %} "SeaTicket" {% endif %} />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:image" content={% if og_image %} "{{ og_image }}" {% else %} "{{ MEDIA_URL }}img/og-seaqa-logo.png" {% endif %} />
-<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaSearch - Solving issues with AI" %}" {% endif %} />
+<meta property="og:description" content={% if og_description %} "{{ og_description }}" {% else %} "{% trans "SeaTicket - Solving issues with AI" %}" {% endif %} />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
 {% block viewport %}
