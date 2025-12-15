@@ -302,6 +302,17 @@ class HomeAPI {
     });
   }
 
+  // project trash
+  listTrashProjects() {
+    const url = this.server + '/api/v2.1/trash-projects/';
+    return this.req.get(url);
+  }
+
+  cleanTrashProjects() {
+    const url = this.server + '/api/v2.1/trash-projects/';
+    return this.req.delete(url);
+  }
+
 }
 
 const homeAPI = new HomeAPI();

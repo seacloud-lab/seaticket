@@ -238,6 +238,19 @@ class SidePanel extends React.Component {
                 >
                   {!this.state.isDataLoading && this.renderWorkspaceItems()}
                 </div>
+                <div
+                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'sea-qa-bg-orange' : ''}`}
+                  onClick={this.onTabClick.bind(this, 'project/trash')}
+                >
+                  <Link
+                    to={siteRoot + 'project/trash/'}
+                    aria-label={gettext('Trash')}
+                    className="nav-link sea-qa-nav-link"
+                  >
+                    <Icon symbol="trash" className="nav-icon" />
+                    <span className="nav-text">{gettext('Trash')}</span>
+                  </Link>
+                </div>
               </div>
             </nav>
           </div>

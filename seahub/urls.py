@@ -49,6 +49,7 @@ urlpatterns = [
     ### React ###
     re_path(r'^projects/$', seaqa_fake_view, name='projects_list'),
     re_path(r'^project/(?P<workspace_id>\d+)/$', seaqa_fake_view, name="project_workspace"),
+    re_path(r'^project/trash/$', seaqa_fake_view, name='projects-trash'),
 
     ### Apps ###
     re_path(r'^api2/', include('seahub.api2.urls')),
