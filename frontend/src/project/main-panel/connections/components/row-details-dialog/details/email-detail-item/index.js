@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import { gettext } from '@/constants';
 import { CustomizeMarkdownViewer } from '@/components';
+import HTMLContentWrapper from './html-content';
 
 import './index.css';
 
-const EmailDetailItem = ({ detail }) => {
+const EmailDetailItem = ({ detail, assetURLPrefix }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const ref = useRef(null);
@@ -100,7 +101,7 @@ const EmailDetailItem = ({ detail }) => {
       </div>
       <div className="email-body" ref={ref}>
         {isHTMLContent ? (
-          <div className="email-content-detail" dangerouslySetInnerHTML={{ __html: detailContent }} />
+          <HTMLContentWrapper assetURLPrefix={assetURLPrefix} value={detailContent} className="email-content-detail" />
         ) : (
           <CustomizeMarkdownViewer value={detailContent} />
         )}
