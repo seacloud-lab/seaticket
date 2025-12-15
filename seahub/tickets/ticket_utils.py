@@ -164,14 +164,7 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
     options = column_data.get('options', []) or []
     # tags is array; others are scalar strings
     if column_type == 'multiple-select':
-        # For multiple-select, need to flatten the array and count each option separately
-        option_name_to_option_count = {}
-        for row in rows:
-            tag_list = row.get(column_name)
-            if tag_list:
-                # Each row may have multiple tags, count each tag separately
-                for tag in tag_list:
-                    option_name_to_option_count[tag] = option_name_to_option_count.get(tag, 0) + row.get('count', 0)
+        option_name_to_option_count = {row.get(column_name)[0]: row.get('count') for row in rows if row.get(column_name)}
     else:
         option_name_to_option_count = {row.get(column_name): row.get('count') for row in rows if row.get(column_name)}
     for option in options:
