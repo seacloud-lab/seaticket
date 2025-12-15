@@ -225,6 +225,18 @@ class ConnectionsAPI {
     };
     return this.req.post(url, data);
   }
+
+  // records
+  modifyConnectionRecord(projectUuid, connectionID, row_id, rowData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + row_id + '/';
+    return this.req.put(url, rowData);
+  }
+
+  modifyConnectionRecords(projectUuid, connectionID, rowsData) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
+    return this.req.put(url, { records_data: rowsData });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

@@ -991,7 +991,7 @@ def _get_operator_by_type(column_type):
     ]:
         return NumberOperator
 
-    if column_type == PropertyTypes.CHECKBOX:
+    if column_type in [PropertyTypes.CHECKBOX, PropertyTypes.BOOL]:
         return CheckBoxOperator
 
     if column_type in [

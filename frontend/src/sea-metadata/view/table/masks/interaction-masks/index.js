@@ -13,7 +13,8 @@ import { isFunction } from '@/utils/type-detection';
 import { isEmptyObject } from '@/utils/object-utils';
 import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,
-  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP
+  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP,
+  NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
 } from '../../../../constants';
 import {
   getNewSelectedRange, getSelectedDimensions, selectedRangeIsSingleCell,
@@ -205,6 +206,7 @@ class InteractionMasks extends React.Component {
     // how to open editors?
     // 1. editor is closed
     // 2. row-cell is editable or open editor with preview mode
+    if (NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES[selectedColumn.type]) return;
     if (!isEditorEnabled && (this.checkIsSelectedCellEditable() || (openEditorMode === EDITOR_TYPE.PREVIEWER && checkIsColumnSupportPreview(selectedColumn)))) {
       this.setState({
         isEditorEnabled: true,
