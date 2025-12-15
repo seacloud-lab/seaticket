@@ -620,7 +620,7 @@ CREATE TABLE `knowledge_base_views`  (
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
-CREATE TABLE `api2_token` (
+CREATE TABLE `api_token` (
   `key` varchar(40) NOT NULL,
   `user` varchar(255) NOT NULL,
   `created` datetime NOT NULL,
