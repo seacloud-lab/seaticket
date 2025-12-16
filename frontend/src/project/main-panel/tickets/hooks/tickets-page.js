@@ -26,6 +26,12 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       return;
     }
 
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.TRASH) {
+      const myTicketsViewURL = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TRASH}/`;
+      history.replaceState(null, null, myTicketsViewURL);
+      return;
+    }
+
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && viewID) {
       urlPart = urlPart + '?view=' + viewID;
     }

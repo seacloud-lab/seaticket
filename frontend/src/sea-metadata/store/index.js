@@ -375,7 +375,7 @@ class Store {
 
     const valid_rows_ids = row_ids.filter((rowId) => {
       const row = getRowById(this.data, rowId);
-      return row && context.canDeleteRow(row);
+      return Boolean(row);
     });
 
     if (valid_rows_ids.length === 0) return;

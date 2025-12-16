@@ -8,6 +8,7 @@ import Substates from './view/substates';
 import SubstateTickets from './view/substate-tickets';
 import AllTickets from './view/all-tickets';
 import MyTickets from './view/my-tickets';
+import TrashTickets from './view/trash-tickets';
 import NewTicket from './view/new-ticket';
 import Ticket from './view/ticket';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
@@ -47,6 +48,7 @@ const Page = ({ toggleBar, type }) => {
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
     if (type === BAR_TYPE.MY_TICKET) return (<MyTickets { ...props } />);
+    if (type === BAR_TYPE.TRASH) return (<TrashTickets { ...props } />);
     return (<AllTickets { ...props } />);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
