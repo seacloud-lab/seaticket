@@ -28,6 +28,12 @@ const MyProjectsTrash = () => {
     });
   }, []);
 
+  const openCleanConfirm = useCallback(() => {
+    const { projects } = projectsRef.current.getData();
+    if (projects.length === 0) return;
+    setIsShowCleanConfirm(true);
+  }, []);
+
   const isDesktop = Utils.isDesktop();
 
   return (
@@ -37,7 +43,7 @@ const MyProjectsTrash = () => {
           <div className={`${isDesktop ? '' : 'p-0'} cur-view-content my-projects-trash`}>
             <div className="my-projects-trash-title">
               <span className="my-projects-trash-title-text">{gettext('Trash')}</span>
-              <Button onClick={() => setIsShowCleanConfirm(true)}>
+              <Button onClick={openCleanConfirm}>
                 {gettext('Clean')}
               </Button>
             </div>

@@ -116,7 +116,8 @@ const AdminProjects = forwardRef(({
       setCount(0);
     },
     loadData: () => loadData(page, perPage),
-  }), [page, perPage, loadData]);
+    getData: () => ({ projects }),
+  }), [page, perPage, projects, loadData]);
 
   if (isLoading) {
     return (
