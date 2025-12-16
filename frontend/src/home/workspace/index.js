@@ -153,13 +153,6 @@ class Workspace extends React.Component {
     let style = { width: projectItemWidth };
 
     if (this.isDesktop) {
-      const validIndex = index + 1;
-      if (validIndex % numberOfItemsPerRow === 0) {
-        className += 'mr-0 ';
-      }
-      if (validIndex > allLineProjectCount) {
-        className += 'mb-0 ';
-      }
       return { className, style };
     }
     if (index > numberOfItemsPerRow - 1) {

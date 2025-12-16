@@ -127,6 +127,7 @@ class ProjectSettingPopover extends React.Component {
         onEnter={this.onEnter}
         hideArrow={true}
         className={`project-icon-settings-popover ${this.props.className || ''}`}
+        modifiers={this.props.modifiers}
       >
         <PopoverBody className="project-icon-settings-content">
           {this.renderName()}

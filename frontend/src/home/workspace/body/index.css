@@ -148,7 +148,7 @@
 .project-group-container .project-item {
   min-width: 168px;
   height: 176px;
-  border-radius: 6px;
+  border-radius: 6px !important;
   overflow: hidden;
   padding: 14px;
   cursor: pointer;

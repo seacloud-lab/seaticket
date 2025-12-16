@@ -30,6 +30,7 @@ class VirtualProject extends React.Component {
       isDataLoaded: false,
       projectCreated: [],
     };
+    this.ref = null;
   }
 
   componentDidMount() {
@@ -108,6 +109,31 @@ class VirtualProject extends React.Component {
     this.setState({ name, isChange: true });
   };
 
+  renderSettingPopover = () => {
+    let { style = {} } = this.props;
+    const { name, icon, bgColor } = this.state;
+    const { right } = this.ref.getBoundingClientRect();
+    const offsetX = window.innerWidth - right > style.width ? 0 : style.width - 314 - 12;
+    return (
+      <ProjectSettingPopover
+        modifiers={[
+          { name: 'preventOverflow', options: { boundary: document.body } },
+          { name: 'offset', options: { offset: [offsetX, 0] } },
+        ]}
+        className="virtual-project-settings"
+        placement="bottom-start"
+        target={this.ref}
+        onToggle={this.onCreateProject}
+        name={name}
+        bgColor={bgColor}
+        icon={icon}
+        onColorChange={this.onColorChange}
+        onIconChange={this.onIconChange}
+        onNameChange={this.onNameChange}
+      />
+    );
+  };
+
   render() {
     let { className = '', style = {}, currentWorkspace } = this.props;
     const { name, icon, bgColor } = this.state;
@@ -115,7 +141,7 @@ class VirtualProject extends React.Component {
     return (
       <div
         className={`project-item d-flex ${className}`}
-        id="create-project"
+        ref={ref => this.ref = ref}
         style={{
           ...style,
           backgroundColor: backgroundColorMap[bgColor] || backgroundColorMap[DEFAULT_COLOR],
@@ -137,18 +163,7 @@ class VirtualProject extends React.Component {
           {currentWorkspace.name}
         </div>
         {this.state.isDataLoaded && (
-          <ProjectSettingPopover
-            className="virtual-project-settings"
-            placement="bottom-start"
-            target="create-project"
-            onToggle={this.onCreateProject}
-            name={name}
-            bgColor={bgColor}
-            icon={icon}
-            onColorChange={this.onColorChange}
-            onIconChange={this.onIconChange}
-            onNameChange={this.onNameChange}
-          />
+          <>{this.renderSettingPopover()}</>
         )}
       </div>
     );
