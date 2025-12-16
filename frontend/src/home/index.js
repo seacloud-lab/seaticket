@@ -28,6 +28,7 @@ class Home extends React.Component {
 
   componentDidMount() {
     const selectedTabs = [
+      'project/trash'
     ];
     let currentTab = selectedTabs.find(tab => {
       return location.href.indexOf(`${siteRoot}${tab}`) > -1;
