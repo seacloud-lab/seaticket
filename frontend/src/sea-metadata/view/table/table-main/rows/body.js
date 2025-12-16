@@ -571,9 +571,7 @@ class RowsBody extends Component {
             getCopiedRowsAndColumnsFromRange={this.props.getCopiedRowsAndColumnsFromRange}
             modifyColumnData={this.props.modifyColumnData}
             getTableCanvasContainerRect={this.props.getTableCanvasContainerRect}
-            updateFileTags={this.props.updateFileTags}
             deleteRows={this.props.deleteRows}
-            generateFileTags={this.props.generateFileTags}
           />
           <div className="sea-metadata-table-data" style={{ width: this.props.totalWidth + SEQUENCE_COLUMN_WIDTH }} ref={this.setResultRef}>
             {this.renderRows()}

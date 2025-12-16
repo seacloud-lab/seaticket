@@ -925,8 +925,6 @@ class GroupBody extends Component {
             getCopiedRowsAndColumnsFromRange={this.props.getCopiedRowsAndColumnsFromRange}
             modifyColumnData={this.props.modifyColumnData}
             getTableCanvasContainerRect={this.props.getTableCanvasContainerRect}
-            updateFileTags={this.props.updateFileTags}
-            generateFileTags={this.props.generateFileTags}
           />
           <div className="sea-metadata-table-data" ref={this.setResultRef}>
             {this.renderGroups()}

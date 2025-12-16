@@ -167,7 +167,7 @@ export const convertRowsToServerData = (rowsUpdate, { data, typesData, tagsData 
 // When the value of state is modified, the values of substate are updated in a cascading fashion.
 export const cascadeUpdateSubState = (table, rowId, rowUpdate, oldRowData) => {
   const row = getRowById(table, rowId);
-  if (!row) return;
+  if (!row || !rowUpdate) return;
   const updatedColumnKeys = Object.keys(rowUpdate);
   const stateColumn = getColumnByName(table.columns, 'state');
   if (!stateColumn || !updatedColumnKeys.includes(stateColumn?.key)) return;
