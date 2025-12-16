@@ -35,11 +35,25 @@
   display: none !important;
 }
 
+.sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell {
+  align-items: start;
+  padding: 4px 0px;
+  justify-content: center;
+}
+
+.sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .actions-checkbox .select-cell-checkbox-container {
+  align-items: start;
+  margin-top: 6px;
+}
+
 .sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .row-expand {
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
 }
 
 .sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .row-expand .row-expand-icon {
