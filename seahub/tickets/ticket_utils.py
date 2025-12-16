@@ -151,7 +151,7 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
     sql = (
         f"SELECT {column_name}, COUNT(*) AS count "
         f"FROM `{TABLE_TICKETS}` "
-        "WHERE `deleted` = False "
+        "WHERE (`deleted` = False OR `deleted` is NULL)"
         f"GROUP BY {column_name}"
     )
     res = seadb_api.query_rows(project_uuid, sql)
@@ -177,7 +177,7 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
     display_columns_join = ', '.join(TICKET_DISPLAY_ALL_COLUMNS)
     sql = (
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
-        f"WHERE `{column_name}` IN ({names_str}) AND `deleted` = False"
+        f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     tickets = res.get('results')

@@ -18,6 +18,7 @@ def get_kb_counts_group_by_column_name(seadb_api, project_uuid, column_name, col
     sql = (
         f"SELECT {column_name}, COUNT(*) AS count "
         f"FROM `{TABLE_KNOWLEDGE_BASE}` "
+        f"WHERE (`deleted` = False OR `deleted` is NULL) "
         f"GROUP BY {column_name}"
     )
     res = seadb_api.query_rows(project_uuid, sql)
@@ -46,7 +47,7 @@ def filter_kb_by_select(seadb_api, project_uuid, column_name, names):
     display_columns_join = ', '.join(KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS)
     sql = (
         f"SELECT {display_columns_join} FROM `{TABLE_KNOWLEDGE_BASE}` "
-        f"WHERE `{column_name}` IN ({names_str})"
+        f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results')
