@@ -196,7 +196,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
 
   const cascadeUpdateCells = useCallback((table, rowId, rowUpdate, oldRowData) => {
     const row = getRowById(table, rowId);
-    if (!row) return;
+    if (!row || !rowUpdate) return;
     const updatedColumnKeys = Object.keys(rowUpdate);
     updatedColumnKeys.forEach(key => {
       if (key === 'description') {
