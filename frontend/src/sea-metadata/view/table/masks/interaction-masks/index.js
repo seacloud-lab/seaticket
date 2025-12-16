@@ -979,11 +979,11 @@ class InteractionMasks extends React.Component {
   };
 
   handleDragCopy = (draggedRange) => {
-    const { columns, groupMetrics } = this.props;
+    const { columns, groupMetrics, gridUtils, table } = this.props;
     // compute the new rows
-    const newRows = this.props.getUpdateDraggedRows(draggedRange, columns, groupMetrics);
+    const { rowIds, idRowData, idOldRowOldData } = gridUtils.getUpdateDraggedRows(draggedRange, columns, table.rows, table.id_row_map, groupMetrics);
     if (this.props.modifyRows) {
-      this.props.modifyRows({ ...newRows, isCopyPaste: true });
+      this.props.modifyRows(rowIds, idRowData, idOldRowOldData, true);
     }
   };
 
@@ -1053,7 +1053,7 @@ class InteractionMasks extends React.Component {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
     const isDragEnabled = this.checkIsSelectedCellEditable();
-    const showDragHandle = (isDragEnabled && this.props.canModifyRows);
+    const showDragHandle = isDragEnabled && context.canModifyRows();
     return [
       <SelectionRangeMask
         key="range-mask"
@@ -1180,7 +1180,6 @@ InteractionMasks.propTypes = {
   appPage: PropTypes.object,
   onFillingDragRows: PropTypes.func,
   onCellsDragged: PropTypes.func,
-  getUpdateDraggedRows: PropTypes.func,
   getCopiedRowsAndColumnsFromRange: PropTypes.func,
   onCommit: PropTypes.func,
   getTableCanvasContainerRect: PropTypes.func,
