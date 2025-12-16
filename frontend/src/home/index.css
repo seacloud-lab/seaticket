@@ -270,12 +270,10 @@
 
 .search .project-item,
 .workspace .project-item-container .project-item {
-  width: 48%;
   justify-content: center;
   align-items: center;
   display: flex;
-  border-radius: 4px;
-  padding-right: 12px;
+  
 }
 
 .search .project-item {
@@ -283,6 +281,7 @@
   width: 100%;
   justify-content: left;
   padding: 0px 12px;
+  border-radius: 4px;
 }
 
 .search .project-item:hover {
