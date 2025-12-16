@@ -12,7 +12,7 @@ const PriorityFormatter = ({ value, className, showName = false, children: empty
   return (
     <div className={classnames('sea-metadata-ui cell-formatter-container priority-formatter', className, { 'w-auto': showName })}>
       {priority.icon && (
-        <Icon className="sea-metadata-icon mr-2" symbol={priority.icon} title={priority.name}/>
+        <Icon className="sea-metadata-icon" symbol={priority.icon} title={priority.name}/>
       )}
       {showName && (
         <span>{priority.name}</span>
