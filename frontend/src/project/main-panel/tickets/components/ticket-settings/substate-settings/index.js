@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { isInputOrEditorActive } from '@/utils/dom';
+import { isEsc, isShiftS } from '@/utils/hotkey';
 
 import '../state-settings/index.css';
 
@@ -46,6 +48,23 @@ const SubStateSettings = ({
     const [state, substate] = value.split('__');
     onChange(state, substate);
   }, [onChange]);
+
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive()) return;
+
+    if (isShiftS(event)) {
+      openEditor();
+    } else if (isEsc(event)) {
+      closeEditor();
+    }
+  }, [openEditor, closeEditor]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey, true);
+    return () => {
+      document.removeEventListener('keydown', onHotKey, true);
+    };
+  }, [onHotKey]);
 
   const substateOption = !isLoading && getRowById(substatesData, substate);
 

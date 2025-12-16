@@ -1,9 +1,11 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Collaborator, AsyncCollaborator, CollaboratorEditor } from '@/components';
 import { useCollaborators } from '@/sea-metadata';
+import { isInputOrEditorActive } from '@/utils/dom';
+import { isEsc, isA } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -32,14 +34,33 @@ const CollaboratorsSettings = ({
     setIsShowAssigneesEditor(false);
   }, [onChange]);
 
-  const openAssigneesEditor = useCallback(() => {
+  const openAssigneesEditor = useCallback((event) => {
     if (isReadonly) return;
+    event.preventDefault();
+    event.stopPropagation();
     setIsShowAssigneesEditor(true);
   }, [isReadonly]);
 
   const closeAssigneesEditor = useCallback(() => {
     setIsShowAssigneesEditor(false);
   }, []);
+
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive()) return;
+
+    if (isA(event)) {
+      openAssigneesEditor(event);
+    } else if (isEsc(event)) {
+      closeAssigneesEditor();
+    }
+  }, [openAssigneesEditor, closeAssigneesEditor]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey);
+    return () => {
+      document.removeEventListener('keydown', onHotKey);
+    };
+  }, [onHotKey]);
 
   return (
     <>

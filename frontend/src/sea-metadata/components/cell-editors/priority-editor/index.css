@@ -37,6 +37,10 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.sea-metadata-priority-item.active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 .sea-metadata-priority-item-readonly:hover {
   background-color: transparent;
 }

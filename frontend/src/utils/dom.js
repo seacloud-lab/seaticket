@@ -125,3 +125,9 @@ export const getTarget = (target, allElements) => {
   if (isArrayOrNodeList(els)) return els[0];
   return els[0];
 };
+
+export const isInputOrEditorActive = () => {
+  const activeEl = document.activeElement;
+  if (activeEl.tagName === 'INPUT' || activeEl.isContentEditable) return true;
+  return false;
+};

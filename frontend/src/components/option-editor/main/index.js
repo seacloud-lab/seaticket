@@ -97,6 +97,7 @@ const Main = forwardRef(({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
+    if (highlightIndex === -1) return;
     if (highlightIndex === 0) {
       setHighlightIndex(displayOptions.length - 1);
       displayOptionsRef.current.scrollTop = 0;
@@ -167,8 +168,8 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    const highlightIndex = displayOptions.length === 0 ? -1 : 0;
-    setHighlightIndex(highlightIndex);
+    // Reset highlightIndex
+    setHighlightIndex(-1);
   }, [displayOptions]);
 
   useEffect(() => {

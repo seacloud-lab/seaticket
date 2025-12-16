@@ -6,6 +6,7 @@ import { searchCollaborators } from '@/utils/search';
 import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
 import { isFunction } from '@utils/type-detection';
+import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -28,8 +29,165 @@ const Main = forwardRef(({
   const [searchValue, setSearchValue] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const displayCollaborators = useMemo(() => {
-    if (searchValue) return searchCollaborators(collaborators, searchValue);
-    return collaborators;
+    if (searchValue) return searchCollaborators([
+      {
+        'email': 'aaaf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'aaaa',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'bbbbf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'aa1',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'ccccf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'aa2',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'ddddf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'aa3',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'eeeef8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'eeee',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'fffff8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'ffff',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'hhhhf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'hhhhh',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'jjjjf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'jjjj',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'oooof8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'ooooo',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'kkkkf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'kkkkk',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'wwwwf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'wwwwww',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      }
+    ], searchValue);
+    // return collaborators;
+    return [
+      {
+        'email': 'aaaf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'aaaa',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'bbbbf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'bbbb',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'ccccf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'cccc',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'ddddf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'dddd',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'eeeef8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'eeee',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'fffff8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'ffff',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'hhhhf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'hhhhh',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'jjjjf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'jjjj',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'oooof8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'ooooo',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'kkkkf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'kkkkk',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      },
+      {
+        'email': 'wwwwf8d2fb419e7c40dbb075428aef4b69bc@auth.local',
+        'name': 'wwwwww',
+        'avatar_url': 'http://127.0.0.1:80/media/avatars/default.png',
+        'contact_email': 'test1@qq.com',
+        'name_pinyin': ''
+      }
+    ];
   }, [collaborators, searchValue]);
 
   const displayCollaboratorsRef = useRef(null);
@@ -95,9 +253,10 @@ const Main = forwardRef(({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
+    if (highlightIndex === -1) return;
     if (highlightIndex === 0) {
       setHighlightIndex(displayCollaborators.length - 1);
-      displayCollaboratorsRef.current.scrollTop = 0;
+      displayCollaboratorsRef.current.scrollTop = maxItemNum * optionHeight;
       return;
     }
     setHighlightIndex(highlightIndex - 1);
@@ -109,6 +268,7 @@ const Main = forwardRef(({
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
+
     if (highlightIndex === displayCollaborators.length - 1) {
       setHighlightIndex(0);
       displayCollaboratorsRef.current.scrollTop = 0;
@@ -124,20 +284,21 @@ const Main = forwardRef(({
     event.preventDefault();
     event.stopPropagation();
     onHidden && onHidden();
+    setHighlightIndex(-1);
   }, [onHidden]);
 
   const onHotKey = useCallback((event) => {
-    if (event.keyCode === KeyCodes.Enter) {
+    if (isEnter(event)) {
       onEnter(event);
-    } else if (event.keyCode === KeyCodes.UpArrow) {
+    } else if (isUpArrow(event)) {
       onUpArrow(event);
-    } else if (event.keyCode === KeyCodes.DownArrow) {
+    } else if (isDownArrow(event)) {
       onDownArrow(event);
-    } else if (event.keyCode === KeyCodes.Tab) {
+    } else if (isTab(event)) {
       if (isFunction(onPressTab)) {
         onPressTab(event);
       }
-    } else if (event.keyCode === KeyCodes.Esc) {
+    } else if (isEsc(event)) {
       onEsc(event);
     }
   }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc]);
@@ -161,8 +322,8 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    const highlightIndex = displayCollaborators.length === 0 ? -1 : 0;
-    setHighlightIndex(highlightIndex);
+    // Reset index
+    setHighlightIndex(-1);
   }, [displayCollaborators]);
 
   useImperativeHandle(ref, () => ({
@@ -210,7 +371,7 @@ const Main = forwardRef(({
               const isSelected = isMultiple && Array.isArray(value) && value.includes(c.email);
               return (
                 <div
-                  className="collaborator-editor-option"
+                  className={classnames('collaborator-editor-option', { 'active': highlightIndex === i })}
                   key={c.email}
                   onClick={() => toggleCollaborator(c.email)}
                   onMouseEnter={() => onMenuMouseEnter(i)}

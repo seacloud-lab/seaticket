@@ -1,11 +1,13 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Icon } from '@/components';
 import CustomizePopover from '@/components/customize-popover';
 import PriorityItem from '@/sea-metadata/components/cell-editors/priority-editor/priority-item';
+import { isInputOrEditorActive } from '@/utils/dom';
 import { PRIORITIES } from '@/sea-metadata/constants';
+import { isEsc, isEnter, isP, isUpArrow, isDownArrow } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -17,6 +19,7 @@ const RateSettings = ({
 }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
   const editorRef = useRef(null);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -25,12 +28,57 @@ const RateSettings = ({
 
   const closeEditor = useCallback(() => {
     setIsShowEditor(false);
+    setHighlightIndex(-1);
   }, []);
 
   const onChangeValue = useCallback((value) => {
     onChange(value);
     closeEditor();
   }, [onChange]);
+
+  const onUpArrow = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (highlightIndex === 0) {
+      setHighlightIndex(PRIORITIES.length - 1);
+      return;
+    }
+    setHighlightIndex(highlightIndex - 1);
+  }, [highlightIndex]);
+
+  const onDownArrow = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (highlightIndex === PRIORITIES.length - 1) {
+      setHighlightIndex(0);
+      return;
+    }
+    setHighlightIndex(highlightIndex + 1);
+  }, [highlightIndex]);
+
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive()) return;
+
+    if (isP(event)) {
+      openEditor();
+    } else if (isUpArrow(event)) {
+      onUpArrow(event);
+    } else if (isDownArrow(event)) {
+      onDownArrow(event);
+    } else if (isEsc(event)) {
+      closeEditor();
+    } else if (isEnter(event)) {
+      const value = PRIORITIES[highlightIndex].value;
+      onChangeValue(value);
+    }
+  }, [openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey, true);
+    return () => {
+      document.removeEventListener('keydown', onHotKey, true);
+    };
+  }, [onHotKey]);
 
   const rateOption = PRIORITIES.find(o => o.value === value);
 
@@ -65,6 +113,7 @@ const RateSettings = ({
                 onClick={onChangeValue}
                 readOnly={false}
                 isSelected={item.value === value}
+                isActive={highlightIndex === index}
               />
             ))}
           </div>
