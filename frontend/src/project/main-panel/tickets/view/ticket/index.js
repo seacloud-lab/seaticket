@@ -23,7 +23,6 @@ import { Ticket as TicketModel } from '../../models';
 import { useDataCache, useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
-import { isModEnter } from '@/utils/hotkey';
 import Header from './header';
 
 import './index.css';
