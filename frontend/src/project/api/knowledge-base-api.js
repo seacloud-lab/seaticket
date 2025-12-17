@@ -214,6 +214,11 @@ class KnowledgeBaseAPI {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
     return this.req.get(url);
   }
+
+  getKnowledgeBaseMetadata(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/metadata/';
+    return this.req.get(url);
+  }
 }
 
 const knowledgeBaseAPI = new KnowledgeBaseAPI();

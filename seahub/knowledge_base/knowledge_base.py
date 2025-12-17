@@ -15,10 +15,10 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.utils import check_project_permission
+from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
+from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE
 
 logger = logging.getLogger(__name__)
 
@@ -323,3 +323,46 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({'row': row}, status=status.HTTP_200_OK)
+
+class KnowledgeBaseMetadataAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        seadb_api = SeaDBAPI(username)
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
+            kb_column_name_to_return_name = {
+                KnowledgeBaseTable.tags.name: 'tags',
+            }
+            select_option_metadata = {}
+            for column in kb_meta.get('columns'):
+                column_name = column.get('name')
+                return_name = kb_column_name_to_return_name.get(column_name)
+                if return_name:
+                    column_data = column.get('data', {}) or {}
+                    select_option_metadata[return_name] = column_data
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        return Response(select_option_metadata)

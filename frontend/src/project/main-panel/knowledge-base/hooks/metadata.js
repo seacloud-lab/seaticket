@@ -101,9 +101,9 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [tagsData]);
 
   useEffect(() => {
-    knowledgeBaseAPI.listKnowledgeBaseTags(projectUuid).then(res => {
-      const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
-      applyCreateTags(tags, true);
+    knowledgeBaseAPI.getKnowledgeBaseMetadata(projectUuid).then(res => {
+      const { tags } = res?.data || {};
+      applyCreateTags(tags?.options);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
