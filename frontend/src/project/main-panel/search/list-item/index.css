@@ -77,3 +77,8 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+.list-item-detail-dialog .modal-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
