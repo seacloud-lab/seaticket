@@ -103,7 +103,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   useEffect(() => {
     knowledgeBaseAPI.getKnowledgeBaseMetadata(projectUuid).then(res => {
       const { tags } = res?.data || {};
-      applyCreateTags(tags?.options, true);
+      applyCreateTags(tags?.options);
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);

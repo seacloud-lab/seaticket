@@ -18,7 +18,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, get_kb_counts_group_by_column_name
+from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE
 
 logger = logging.getLogger(__name__)
 
@@ -349,13 +349,18 @@ class KnowledgeBaseMetadataAPIView(APIView):
 
         seadb_api = SeaDBAPI(username)
         try:
-            # Get tags with records_count
-            tag_options, _ = get_kb_counts_group_by_column_name(seadb_api, project_uuid, 'tags', 'multiple-select') or ([], {})
-            select_option_metadata = {
-                'tags': {
-                    'options': tag_options
-                }
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
+            kb_column_name_to_return_name = {
+                KnowledgeBaseTable.tags.name: 'tags',
             }
+            select_option_metadata = {}
+            for column in kb_meta.get('columns'):
+                column_name = column.get('name')
+                return_name = kb_column_name_to_return_name.get(column_name)
+                if return_name:
+                    column_data = column.get('data', {}) or {}
+                    select_option_metadata[return_name] = column_data
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
