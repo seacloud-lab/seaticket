@@ -39,21 +39,13 @@ const RateSettings = ({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === 0) {
-      setHighlightIndex(PRIORITIES.length - 1);
-      return;
-    }
-    setHighlightIndex(highlightIndex - 1);
+    highlightIndex > 0 ? setHighlightIndex(highlightIndex - 1) : setHighlightIndex(PRIORITIES.length - 1);
   }, [highlightIndex]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === PRIORITIES.length - 1) {
-      setHighlightIndex(0);
-      return;
-    }
-    setHighlightIndex(highlightIndex + 1);
+    highlightIndex < PRIORITIES.length - 1 ? setHighlightIndex(highlightIndex + 1) : setHighlightIndex(0);
   }, [highlightIndex]);
 
   const onHotKey = useCallback((event) => {

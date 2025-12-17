@@ -23,6 +23,7 @@ import { Ticket as TicketModel } from '../../models';
 import { useDataCache, useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { isModEnter } from '@/utils/hotkey';
 import Header from './header';
 
 import './index.css';
@@ -366,7 +367,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }}>
+          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }} onSubmitComment={onSubmitComment}>
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}

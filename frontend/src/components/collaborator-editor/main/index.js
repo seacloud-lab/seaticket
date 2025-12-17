@@ -253,30 +253,28 @@ const Main = forwardRef(({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === -1) return;
-    if (highlightIndex === 0) {
+    if (highlightIndex > 0) {
+      setHighlightIndex(highlightIndex - 1);
+      if (highlightIndex < displayCollaborators.length - maxItemNum) {
+        displayCollaboratorsRef.current.scrollTop -= optionHeight;
+      }
+    } else {
       setHighlightIndex(displayCollaborators.length - 1);
-      displayCollaboratorsRef.current.scrollTop = maxItemNum * optionHeight;
-      return;
-    }
-    setHighlightIndex(highlightIndex - 1);
-    if (highlightIndex > displayCollaborators.length - maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop -= optionHeight;
+      displayCollaboratorsRef.current.scrollTop = displayCollaboratorsRef.current.scrollHeight;
     }
   }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayCollaborators, optionHeight]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-
-    if (highlightIndex === displayCollaborators.length - 1) {
+    if (highlightIndex < displayCollaborators.length - 1) {
+      setHighlightIndex(highlightIndex + 1);
+      if (highlightIndex >= maxItemNum) {
+        displayCollaboratorsRef.current.scrollTop += optionHeight;
+      }
+    } else {
       setHighlightIndex(0);
       displayCollaboratorsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex + 1);
-    if (highlightIndex >= maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop += optionHeight;
     }
   }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayCollaborators, optionHeight]);
 
@@ -322,7 +320,7 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    // Reset index
+    // Reset highlight index
     setHighlightIndex(-1);
   }, [displayCollaborators]);
 

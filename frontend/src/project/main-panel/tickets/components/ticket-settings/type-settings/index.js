@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { isInputOrEditorActive } from '@/utils/dom';
+import { isEsc, isShiftT } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -28,7 +30,9 @@ const TypeSettings = ({
     })) : [];
   }, [isLoading, typesData.rows]);
 
-  const openEditor = useCallback(() => {
+  const openEditor = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (isReadonly) return;
     setIsShowEditor(true);
   }, [isReadonly]);
@@ -40,6 +44,23 @@ const TypeSettings = ({
   const onTypeChange = useCallback((type) => {
     onChange(type);
   }, [onChange]);
+
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive()) return;
+
+    if (isShiftT(event)) {
+      openEditor(event);
+    } else if (isEsc(event)) {
+      closeEditor();
+    }
+  }, [openEditor, closeEditor]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey, true);
+    return () => {
+      document.removeEventListener('keydown', onHotKey, true);
+    };
+  }, [onHotKey]);
 
   const typeOption = getRowById(typesData, value);
 

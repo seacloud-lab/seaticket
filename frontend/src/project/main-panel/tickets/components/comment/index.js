@@ -7,6 +7,7 @@ import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { isModEnter } from '@/utils/hotkey';
 import UploadFilesButton from '../upload-files-btn';
 
 import './index.css';
@@ -23,6 +24,7 @@ const Comment = ({
   children,
   onDelete,
   onModify,
+  onSubmitComment,
 }) => {
   const [creator, setCreator] = useState({});
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +81,10 @@ const Comment = ({
     setContent(value);
   }, []);
 
-  const handleUpdateComment = useCallback(() => {
+  const handleUpdateComment = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     setIsShowCommentLoading(true);
     onModify && onModify(content, (error) => {
       if (!error) {
@@ -127,9 +132,48 @@ const Comment = ({
     );
   }, [isShowStatus, isSmallScreen, creator, comment, renderAvatar]);
 
+  const isEditComment = !readonly && (onDelete || onModify);
+
+  const onEditHotKey = useCallback((event) => {
+    if (isModEnter(event)) {
+      const isActive = commentRef.current.contains(document.activeElement);
+      if (isActive) {
+        handleUpdateComment(event);
+      }
+    }
+  }, [handleUpdateComment, isModEnter]);
+
+  const onAddHotKey = useCallback((event) => {
+    if (isModEnter(event)) {
+      const isActive = commentRef.current.contains(document.activeElement);
+      if (isActive && onSubmitComment) {
+        onSubmitComment();
+      }
+    }
+  }, [onSubmitComment, isModEnter]);
+
+  useEffect(() => {
+    // Edit comment
+    if (isEditComment) {
+      if (isShowEditor) {
+        document.addEventListener('keydown', onEditHotKey, true);
+      } else {
+        document.removeEventListener('keydown', onEditHotKey, true);
+      }
+    // Add comment
+    } else {
+      document.addEventListener('keydown', onAddHotKey, true);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', onAddHotKey, true);
+      document.removeEventListener('keydown', onEditHotKey, true);
+    };
+  }, [onAddHotKey, onEditHotKey, isEditComment, isShowEditor]);
+
   if (!comment) return null;
 
-  if (!readonly && (onDelete || onModify)) {
+  if (isEditComment) {
     return (
       <>
         <div className={classnames('sea-qa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
@@ -217,7 +261,7 @@ const Comment = ({
   }
 
   return (
-    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
+    <div className={classnames('sea-qa-project-ticket-comment 123123', className, { 'small': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
       <div className="sea-qa-project-ticket-comment-container">
         <div className="sea-qa-project-ticket-comment-op">

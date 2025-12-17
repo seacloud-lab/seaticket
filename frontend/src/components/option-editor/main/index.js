@@ -9,6 +9,7 @@ import { gettext, KeyCodes } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { isFunction } from '@/utils/type-detection';
 import toaster from '../../toaster';
+import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -31,6 +32,7 @@ const Main = forwardRef(({
   onPressTab,
   addToolText = gettext('Add tag'),
 }, ref) => {
+
   const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [displayOptions, setDisplayOptions] = useState(options);
@@ -97,29 +99,28 @@ const Main = forwardRef(({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === -1) return;
-    if (highlightIndex === 0) {
+    if (highlightIndex > 0) {
+      setHighlightIndex(highlightIndex - 1);
+      if (highlightIndex < displayOptions.length - maxItemNum) {
+        displayOptionsRef.current.scrollTop -= optionHeight;
+      }
+    } else {
       setHighlightIndex(displayOptions.length - 1);
-      displayOptionsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex - 1);
-    if (highlightIndex > displayOptions.length - maxItemNum) {
-      displayOptionsRef.current.scrollTop -= optionHeight;
+      displayOptionsRef.current.scrollTop = displayOptionsRef.current.scrollHeight;
     }
   }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === displayOptions.length - 1) {
+    if (highlightIndex < displayOptions.length - 1) {
+      setHighlightIndex(highlightIndex + 1);
+      if (highlightIndex >= maxItemNum) {
+        displayOptionsRef.current.scrollTop += optionHeight;
+      }
+    } else {
       setHighlightIndex(0);
       displayOptionsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex + 1);
-    if (highlightIndex >= maxItemNum) {
-      displayOptionsRef.current.scrollTop += optionHeight;
     }
   }, [displayOptionsRef, highlightIndex, maxItemNum, displayOptions, optionHeight]);
 
@@ -128,23 +129,21 @@ const Main = forwardRef(({
   }, [onChange]);
 
   const onEsc = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
     blur();
   }, [blur]);
 
   const onHotKey = useCallback((event) => {
-    if (event.keyCode === KeyCodes.Enter) {
+    if (isEnter(event)) {
       onEnter(event);
-    } else if (event.keyCode === KeyCodes.UpArrow) {
+    } else if (isUpArrow(event)) {
       onUpArrow(event);
-    } else if (event.keyCode === KeyCodes.DownArrow) {
+    } else if (isDownArrow(event)) {
       onDownArrow(event);
-    } else if (event.keyCode === KeyCodes.Tab) {
+    } else if (isTab(event)) {
       if (isFunction(onPressTab)) {
         onPressTab(event);
       }
-    } else if (event.keyCode === KeyCodes.Esc) {
+    } else if (isEsc(event)) {
       onEsc(event);
     }
   }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc]);
@@ -168,7 +167,7 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    // Reset highlightIndex
+    // Reset highlight index
     setHighlightIndex(-1);
   }, [displayOptions]);
 

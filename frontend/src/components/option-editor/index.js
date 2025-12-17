@@ -17,6 +17,7 @@ const OptionsEditor = ({
   value,
   className,
   options = [],
+  optionHeight,
   onChange,
   onToggle,
   onCreate,
@@ -49,6 +50,7 @@ const OptionsEditor = ({
         emptyTip={emptyTip}
         value={value}
         options={options}
+        optionHeight={optionHeight}
         onChange={onChange}
         onToggle={onToggle}
         onCreate={onCreate}
