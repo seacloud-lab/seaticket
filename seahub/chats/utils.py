@@ -176,12 +176,19 @@ def format_extra_contents(extra_contents):
                 'title': extra_content['title']
             })
         elif extra_content['type'] == 'issue':
-            new_extra_contents.append({
+            formatted = {
                 'type': extra_content['type'],
                 'issue_id': extra_content['issue_id'],
                 'connection_id': extra_content['connection_id'],
-                'state': extra_content['state'],
-                'title': extra_content['title'],
-                'url': extra_content['url']
-            })
+                'title': extra_content.get('title', '')
+            }
+            if extra_content.get('state'):
+                formatted['state'] = extra_content['state']
+            if extra_content.get('url'):
+                formatted['url'] = extra_content['url']
+            if extra_content.get('slug'):
+                formatted['slug'] = extra_content['slug']
+            if extra_content.get('topic_id'):
+                formatted['topic_id'] = extra_content['topic_id']
+            new_extra_contents.append(formatted)
     return new_extra_contents
