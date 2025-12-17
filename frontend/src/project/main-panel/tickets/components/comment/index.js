@@ -261,7 +261,7 @@ const Comment = ({
   }
 
   return (
-    <div className={classnames('sea-qa-project-ticket-comment 123123', className, { 'small': isSmallScreen })} ref={commentRef}>
+    <div className={classnames('sea-qa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
       <div className="sea-qa-project-ticket-comment-container">
         <div className="sea-qa-project-ticket-comment-op">

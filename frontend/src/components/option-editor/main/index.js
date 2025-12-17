@@ -32,7 +32,6 @@ const Main = forwardRef(({
   onPressTab,
   addToolText = gettext('Add tag'),
 }, ref) => {
-
   const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
   const [searchValue, setSearchValue] = useState('');
   const [displayOptions, setDisplayOptions] = useState(options);
