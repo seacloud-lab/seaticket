@@ -35,18 +35,18 @@
   display: none !important;
 }
 
-.sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell {
+.sea-metadata-table-row .sea-metadata-table-cell.actions-cell {
   align-items: start;
   padding: 4px 0px;
   justify-content: center;
 }
 
-.sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .actions-checkbox .select-cell-checkbox-container {
+.sea-metadata-table-row .sea-metadata-table-cell.actions-cell .actions-checkbox .select-cell-checkbox-container {
   align-items: start;
   margin-top: 6px;
 }
 
-.sea-metadata-table-row:hover .sea-metadata-table-cell.actions-cell .row-expand {
+.sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-expand {
   display: flex;
   justify-content: center;
   align-items: center;
