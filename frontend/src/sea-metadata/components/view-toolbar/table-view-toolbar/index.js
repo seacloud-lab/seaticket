@@ -10,6 +10,7 @@ const TableViewToolbar = ({
   modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, searchRows
 }) => {
   const viewType = useMemo(() => view.type, [view]);
+  const viewId = useMemo(() => view._id, [view._id]);
   const viewColumns = useMemo(() => {
     if (!view) return [];
     return view.columns;
@@ -22,7 +23,7 @@ const TableViewToolbar = ({
   return (
     <>
       {tools.includes(VIEW_TOOL.SEARCH) && (
-        <Searcher onChange={searchRows} />
+        <Searcher viewId={viewId} onChange={searchRows} />
       )}
       {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
