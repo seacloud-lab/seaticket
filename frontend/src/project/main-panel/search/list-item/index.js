@@ -7,6 +7,7 @@ import { getConnectionIcon } from '../../connections/utils';
 import { formatWithTimezone, getNumberDisplayString } from '@/sea-metadata/utils/column';
 import { mediaUrl } from '@/constants';
 import CustomModalHeader from '@/components/modal-header/index';
+import IconButton from '@/components/icon-button/index';
 
 import './index.css';
 
@@ -70,7 +71,7 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         </div>
         <div className="list-item-content">
           <div className="list-item-title">
-            <span className="text-truncate list-item-title-content">{title || ''}</span>
+            <span className="text-truncate list-item-title-content" title={title || ''}>{title || ''}</span>
             {isShowScore && score && (
               <span className="list-item-score ml-2">
                 {getNumberDisplayString(score, { format: 'number', enable_precision: true, precision: 2 })}
@@ -89,13 +90,12 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
         </div>
       </div>
       <Modal isOpen={isDialogOpen} toggle={handleDialogClose} size="lg" className="list-item-detail-dialog">
-        <CustomModalHeader toggle={handleDialogClose}>{title}</CustomModalHeader>
+        <CustomModalHeader toggle={handleDialogClose}>
+          <span className="text-truncate list-item-title-content" title={title || ''}>{title || ''}</span>
+          <IconButton icon="url" onClick={handleContentClick} title={window.gettext('Open original URL')} />
+        </CustomModalHeader>
         <ModalBody>
-          <div
-            className="cursor-pointer"
-            dangerouslySetInnerHTML={{ __html: detailContentRef.current }}
-            onClick={handleContentClick}
-          />
+          <div dangerouslySetInnerHTML={{ __html: detailContentRef.current }} />
         </ModalBody>
       </Modal>
     </>

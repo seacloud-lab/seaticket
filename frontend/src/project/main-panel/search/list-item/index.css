@@ -78,7 +78,25 @@
   -webkit-box-orient: vertical;
 }
 
+.list-item-content .list-item-detail pre {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow-y: hidden;
+}
+
 .list-item-detail-dialog .modal-body {
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
+}
+
+.list-item-detail-dialog .modal-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.list-item-detail-dialog .list-item-title-content {
+  max-width: 500px;
+  margin-right: 0.5rem;
 }
