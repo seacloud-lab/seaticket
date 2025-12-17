@@ -7,9 +7,10 @@ import context from '../../context';
 
 import './index.css';
 
-const Searcher = ({ onChange }) => {
+const Searcher = ({ viewId, onChange }) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef(null);
+  const lastViewId = useRef('');
 
   const onToggleSearch = useCallback(() => {
     setIsSearchActive(!isSearchActive);
@@ -45,6 +46,12 @@ const Searcher = ({ onChange }) => {
       unsubscribeReSearch();
     };
   }, [onClear, onReSearch]);
+
+  useEffect(() => {
+    if (lastViewId.current === viewId) return;
+    lastViewId.current = viewId;
+    setIsSearchActive(false);
+  }, [viewId]);
 
   return (
     <div className="sea-metadata-searcher-container mr-2">
