@@ -39,6 +39,9 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         raw_content = request.data.get('content')
+        if not raw_content:
+            error_msg = 'content invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         content_text = None
         if isinstance(raw_content, dict):

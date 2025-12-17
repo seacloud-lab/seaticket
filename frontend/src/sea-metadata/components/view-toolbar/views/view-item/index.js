@@ -198,9 +198,11 @@ const ViewItem = ({
                   {gettext('Delete view')}
                 </button>
               )}
-              <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
-                {gettext('Export XLSX')}
-              </button>
+              {context.getSetting('enableExportXlsx', false) && (
+                <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
+                  {gettext('Export XLSX')}
+                </button>
+              )}
             </div>
           </ClickOutside>
         </ModalPortal>

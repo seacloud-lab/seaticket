@@ -76,6 +76,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       viewID={viewID}
       api={api}
       permission={permission}
+      settings={{ enableExportXlsx: true }}
       isViewComputedOnServer={true}
       localStorageNamePrefix={localStorageName}
       toggleView={toggleView}
