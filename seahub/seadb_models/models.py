@@ -92,14 +92,14 @@ class SelectTypes:
         },
         {
           "id": "0011",
-          "name": "Backlog",
-          "color": "#9C9C9E",
+          "name": "Working on",
+          "color": "#46A1FD",
           "text_color": "#FFFFFF",
         },
         {
           "id": "0012",
-          "name": "Working on",
-          "color": "#46A1FD",
+          "name": "Backlog",
+          "color": "#9C9C9E",
           "text_color": "#FFFFFF",
         },
         {
