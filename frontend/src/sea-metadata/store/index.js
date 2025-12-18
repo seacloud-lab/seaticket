@@ -11,6 +11,7 @@ import ServerOperator from './server-operator';
 import LocalOperator from './local-operator';
 import { Metadata, Row } from '../models';
 import context from '../context';
+import { isFunction } from '@/utils/type-detection';
 
 class Store {
 
@@ -26,6 +27,7 @@ class Store {
     this.serverOperator = new ServerOperator();
     this.localOperator = new LocalOperator();
     this.collaborators = props.collaborators || [];
+    this.dataDidMount = props.dataDidMount || null;
     this.tagsData = props?.tagsData || {};
     this.typesData = props?.typesData || {};
     this.columnOrderRules = props?.columnOrderRules || null;
@@ -41,6 +43,7 @@ class Store {
     this.undo = [];
     this.pendingOperations = [];
     this.isSendingOperation = false;
+    this.dataDidMount = null;
     this.tagsData = {};
     this.typesData = {};
     this.mounted = false;
@@ -64,6 +67,9 @@ class Store {
       data.hasMore = loadedCount >= limit;
       this.data = data;
       this.startIndex += loadedCount;
+      if (isFunction(this.dataDidMount)) {
+        this.dataDidMount(this.data);
+      }
       DataProcessor.run(this.data, {
         collaborators: this.collaborators,
         typesData: this.typesData,
@@ -118,6 +124,14 @@ class Store {
     this.data.id_row_map[newRowId] = newRow;
     this.data.rows[rowIndex] = newRow;
     DataProcessor.run(this.data, { collaborators: this.collaborators, typesData: this.typesData, });
+  }
+
+  async recalculate() {
+    if (!this.mounted) return;
+    DataProcessor.run(this.data, {
+      collaborators: this.collaborators,
+      typesData: this.typesData,
+    });
   }
 
   clearData() {
@@ -363,7 +377,7 @@ class Store {
 
     const valid_rows_ids = row_ids.filter((rowId) => {
       const row = getRowById(this.data, rowId);
-      return row && context.canDeleteRow(row);
+      return Boolean(row);
     });
 
     if (valid_rows_ids.length === 0) return;
@@ -447,7 +461,8 @@ class Store {
       basic_filters: basicFilters,
       view_id: this.viewId,
       success_callback: () => {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
+        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        context.eventBus.dispatch(eventName);
       }
     });
     this.applyOperation(operation);
@@ -460,7 +475,8 @@ class Store {
       sorts,
       view_id: this.viewId,
       success_callback: () => {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
+        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        context.eventBus.dispatch(eventName);
         displaySorts && context.eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
       }
     });

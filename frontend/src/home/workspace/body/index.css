@@ -118,6 +118,7 @@
 
 .project-group-container .project-group-content {
   flex-wrap: wrap;
+  gap: 16px;
 }
 
 .project-group-container .project-group-content .load-more-projects {
@@ -147,9 +148,7 @@
 .project-group-container .project-item {
   min-width: 168px;
   height: 176px;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  border-radius: 6px;
+  border-radius: 6px !important;
   overflow: hidden;
   padding: 14px;
   cursor: pointer;

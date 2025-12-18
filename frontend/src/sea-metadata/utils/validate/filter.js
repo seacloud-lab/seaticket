@@ -245,7 +245,8 @@ class ValidateFilter {
         }
         return this.isValidTermType(term, TERM_TYPE_MAP.STRING);
       }
-      case CellType.SINGLE_SELECT: {
+      case CellType.SINGLE_SELECT:
+      case CellType.TYPE: {
         const options = getColumnOptions(filterColumn);
         if (PREDICATES_REQUIRE_ARRAY_TERM.includes(predicate)) {
           if (!this.isValidTermType(term, TERM_TYPE_MAP.ARRAY)) {
@@ -263,7 +264,8 @@ class ValidateFilter {
         // invalid filter_term if selected option is deleted
         return !!options.find((option) => term === option.id);
       }
-      case CellType.MULTIPLE_SELECT: {
+      case CellType.MULTIPLE_SELECT:
+      case CellType.TAGS: {
         if (!this.isValidTermType(term, TERM_TYPE_MAP.ARRAY)) {
           return false;
         }

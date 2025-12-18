@@ -74,14 +74,12 @@ def get_ticket(seadb_api, project_uuid, ticket_id):
     return rows[0] if rows else None, res.get('metadata')
 
 
-def get_tickets(seadb_api, project_uuid):
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `deleted` = False"
-    tickets_data = seadb_api.query_rows(project_uuid, sql).get('results')
-    return tickets_data
-
 def get_my_tickets(seadb_api, project_uuid, username, start, limit):
     from seahub.seadb_models.utils import get_tickets_columns
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `deleted` = FALSE AND `state` = 'open' AND `participants` in ('{username}') LIMIT {limit} OFFSET {start}"
+    query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
+    sql = f"""SELECT {query_fields} FROM `{TABLE_TICKETS}` 
+    WHERE (`deleted` = FALSE OR `deleted` IS NULL) AND `state` = 'open' AND `participants` in ('{username}') 
+    LIMIT {limit} OFFSET {start}"""
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results')
     columns = get_tickets_columns(seadb_api, project_uuid)
@@ -151,7 +149,7 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
     sql = (
         f"SELECT {column_name}, COUNT(*) AS count "
         f"FROM `{TABLE_TICKETS}` "
-        "WHERE `deleted` = False "
+        "WHERE (`deleted` = False OR `deleted` is NULL)"
         f"GROUP BY {column_name}"
     )
     res = seadb_api.query_rows(project_uuid, sql)
@@ -177,7 +175,7 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
     display_columns_join = ', '.join(TICKET_DISPLAY_ALL_COLUMNS)
     sql = (
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
-        f"WHERE `{column_name}` IN ({names_str}) AND `deleted` = False"
+        f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     tickets = res.get('results')
@@ -241,6 +239,20 @@ def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records
             result[ticket_comment['ticket_id']].append(ticket_comment)
     return result
 
+def get_deleted_tickets_ids(seadb_api, project_uuid):
+    sql = f"SELECT _pk FROM `{TABLE_TICKETS}` WHERE `deleted` = True"
+    results = seadb_api.query_rows(project_uuid, sql).get('results')
+    ticket_ids = []
+    for result in results:
+        ticket_ids.append(result['_pk'])
+    return ticket_ids
+
+def delete_ticket_comments_by_ids(seadb_api, project_uuid, ticket_ids):
+    ticket_ids_str = ", ".join(map(str, ticket_ids))
+    sql = f"DELETE FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` IN ({ticket_ids_str})"
+    rows = seadb_api.query_rows(project_uuid, sql).get('results')
+    return rows
+
 
 def batch_delete_select_option(seadb_api, project_uuid, table_id, column_key, option_ids):
     option_data = {
@@ -277,7 +289,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
                 },
                 ...
             ]
-        }, 
+        },
         # {...}
     ]
     """

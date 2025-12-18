@@ -24,6 +24,7 @@ export const MetadataProvider = forwardRef(({
   columnOrderRules,
   columnWidthRules,
   t,
+  dataDidMount,
   children,
   ...params
 }, ref) => {
@@ -52,6 +53,19 @@ export const MetadataProvider = forwardRef(({
     if (!storeRef.current?.data) return;
     setLoading(true);
     storeRef.current.reload(PER_LOAD_NUMBER).then(() => {
+      setMetadata(storeRef.current.data);
+      setLoading(false);
+    }).catch(error => {
+      const errorMsg = Utils.getErrorMsg(error);
+      setErrorMessage(errorMsg);
+      setLoading(false);
+    });
+  }, []);
+
+  const recalculateData = useCallback(() => {
+    if (!storeRef.current?.data) return;
+    setLoading(true);
+    storeRef.current.recalculate().then(() => {
       setMetadata(storeRef.current.data);
       setLoading(false);
     }).catch(error => {
@@ -269,7 +283,7 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, columnOrderRules, columnWidthRules });
+    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, columnOrderRules, columnWidthRules, dataDidMount });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {
@@ -297,6 +311,7 @@ export const MetadataProvider = forwardRef(({
     const unsubscribeHandleTableError = eventBus.subscribe(EVENT_BUS_TYPE.TABLE_ERROR, handleTableError);
     const unsubscribeUpdateRows = eventBus.subscribe(EVENT_BUS_TYPE.UPDATE_TABLE_ROWS, updateMetadata);
     const unsubscribeReloadData = eventBus.subscribe(EVENT_BUS_TYPE.RELOAD_DATA, reloadMetadata);
+    const unsubscribeRecalculateData = eventBus.subscribe(EVENT_BUS_TYPE.RECALCULATE_DATA, recalculateData);
     const unsubscribeLocalRowChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, updateLocalRow);
     const unsubscribeLocalColumnChanged = eventBus.subscribe(EVENT_BUS_TYPE.LOCAL_COLUMN_DATA_CHANGED, updateLocalColumnData);
     const unsubscribeMoveRow = eventBus.subscribe(EVENT_BUS_TYPE.MOVE_ROW, moveRow);
@@ -309,13 +324,14 @@ export const MetadataProvider = forwardRef(({
       unsubscribeHandleTableError();
       unsubscribeUpdateRows();
       unsubscribeReloadData();
+      unsubscribeRecalculateData();
       unsubscribeLocalRowChanged();
       unsubscribeLocalColumnChanged();
       unsubscribeMoveRow();
       unsubscribeLoading();
       unsubscribeClearData();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, updateLocalRow, updateLocalColumnData, moveRow, clearData]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalColumnData, moveRow, clearData]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,

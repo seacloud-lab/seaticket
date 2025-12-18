@@ -9,6 +9,7 @@ import { getGroupRowByIndex } from './group-metrics';
 import { convertCellValue } from '../../../utils/convert-utils';
 import context from '../../../context';
 import { getRowIdFromRow } from '../../../utils/row';
+import { getType } from '@/utils/type-detection';
 
 const NORMAL_RULE = ({ value }) => {
   return value;
@@ -139,7 +140,7 @@ class GridUtils {
 
       for (let j = 0; j < pasteColumnsLen; j++) {
         const pasteColumn = getColumnByIndex(j + startColumnIndex, columns);
-        if (!pasteColumn || !context.canModifyRow(pasteRow)) {
+        if (!pasteColumn || !context.canModifyRow(pasteRow) || !context.canModifyCell(pasteColumn, pasteRow)) {
           continue;
         }
         const copiedColumnIndex = j % copiedColumnsLen;
@@ -170,8 +171,6 @@ class GridUtils {
 
   getUpdateDraggedRows(draggedRange, shownColumns, rows, idRowMap, groupMetrics) {
     let rowIds = [];
-    let updatedOriginalRows = {};
-    let oldOriginalRows = {};
     const updatedRows = {};
     const oldRows = {};
     const { overRowIdx, topLeft, bottomRight } = draggedRange;
@@ -204,20 +203,24 @@ class GridUtils {
       for (let j = startColumnIdx; j <= endColumnIdx; j++) {
         let column = shownColumns[j];
         let { key: cellKey, type } = column;
-        const columnName = getColumnOriginName(column);
-        if (context.canModifyColumn(column) && !NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES.includes(type)) {
+        if (context.canModifyCell(column, dragRow) && !NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES.includes(type)) {
           const value = draggedRangeMatrix[j - startColumnIdx][idx];
           const rule = rules[cellKey];
-          const fillingValue = rule({ n: fillingIndex - 1, value });
-          const oldValue = getCellValueByColumn(dragRow, column);
+          let fillingValue = rule({ n: fillingIndex - 1, value });
+          let oldValue = getCellValueByColumn(dragRow, column);
           if (isCellValueChanged(fillingValue, oldValue, type)) {
-            updatedOriginalRows[dragRowId] = Object.assign({}, updatedOriginalRows[dragRowId], { [columnName]: fillingValue });
-            oldOriginalRows[dragRowId] = Object.assign({}, oldOriginalRows[dragRowId], { [columnName]: oldValue });
-            const update = updatedOriginalRows[dragRowId];
-            const oldUpdate = oldOriginalRows[dragRowId];
-
-            updatedRows[dragRowId] = Object.assign({}, updatedRows[dragRowId], update);
-            oldRows[dragRowId] = Object.assign({}, oldRows[dragRowId], oldUpdate);
+            if (type === CellType.LONG_TEXT) {
+              if (fillingValue && getType(fillingValue) === 'String') {
+                const { previewText, images, links, checklist } = getPreviewContent(fillingValue);
+                fillingValue = { text: fillingValue, preview: previewText, images: images, links: links, checklist };
+              }
+              if (oldValue && getType(oldValue) === 'String') {
+                const { previewText, images, links, checklist } = getPreviewContent(oldValue);
+                oldValue = { text: oldValue, preview: previewText, images: images, links: links, checklist };
+              }
+            }
+            updatedRows[dragRowId] = Object.assign({}, updatedRows[dragRowId], { [cellKey]: fillingValue });
+            oldRows[dragRowId] = Object.assign({}, oldRows[dragRowId], { [cellKey]: oldValue });
           }
         }
       }
@@ -226,9 +229,7 @@ class GridUtils {
 
     return {
       rowIds: rowIds,
-      idOriginalRowUpdates: updatedOriginalRows,
-      idRowUpdates: updatedRows,
-      idOriginalOldRowData: oldOriginalRows,
+      idRowData: updatedRows,
       idOldRowOldData: oldRows
     };
   }

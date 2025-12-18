@@ -7,7 +7,6 @@ import { getGroupRows } from '../utils/group';
 import { sortTableRows } from '../utils/sort';
 import { isFilterView, isGroupView, isSortView } from '../utils/view';
 import { getSearchRule } from '../utils/search';
-import { username } from '@/constants';
 import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
 import context from '../context';
@@ -19,12 +18,6 @@ import context from '../context';
 
 // get rendered rows depend on filters/sorts etc.
 class DataProcessor {
-
-  static getFilteredRows(table, rows, filterConjunction, filters) {
-    const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
-    const { row_ids } = getFilteredRows(table, tableRows, filterConjunction, filters, { username });
-    return row_ids;
-  }
 
   static getSortedRows(table, rows, sorts, { collaborators, typesData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
@@ -41,8 +34,10 @@ class DataProcessor {
     // todo
   }
 
-  static hasRelatedFilters = (filters, updatedColumnKeyMap) => {
-    return filters.some(filter => updatedColumnKeyMap[filter.column_key]);
+  static hasRelatedFilters = (view, updatedColumnKeyMap) => {
+    const { filters, basic_filters = [] } = view;
+    return (Array.isArray(filters) && filters.some(filter => updatedColumnKeyMap[filter.column_key])) ||
+      (Array.isArray(basic_filters) && basic_filters.some(filter => updatedColumnKeyMap[filter.column_key]));
   };
 
   static hasRelatedSort = (sorts, updatedColumnKeyMap) => {
@@ -83,11 +78,16 @@ class DataProcessor {
 
   static run(table, { collaborators, username, userId, typesData }) {
     let rows = table.rows;
-    const { filters, filter_conjunction, sorts, groupbys } = table.view;
+    const { filters, filter_conjunction, basic_filters, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     if (!context.isViewComputedOnServer) {
-      if (isFilterView({ filters }, availableColumns)) {
-        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, rows, filter_conjunction, filters, { username, userId, isReturnID: false });
+      if (isFilterView(table.view, availableColumns)) {
+        const { rows: filterRows } = getFilteredRows(
+          { columns: availableColumns },
+          rows,
+          { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
+          { username, userId, isReturnID: false }
+        );
         rows = filterRows;
       }
 
@@ -109,13 +109,18 @@ class DataProcessor {
   }
 
   static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData }) {
-    const { filters, filter_conjunction, sorts, groupbys } = table.view;
+    const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     if (!context.isViewComputedOnServer) {
       let newRows = getRowsByIds(table, newRowIds);
-      if (isFilterView({ filters }, availableColumns)) {
-        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, newRows, filter_conjunction, filters, { username, userId, isReturnID: false });
+      if (isFilterView(table.view, availableColumns)) {
+        const { rows: filterRows } = getFilteredRows(
+          { columns: availableColumns },
+          newRows,
+          { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
+          { username, userId, isReturnID: false }
+        );
         newRows = filterRows;
       }
       rows = [...rows, ...newRows];
@@ -136,13 +141,18 @@ class DataProcessor {
   }
 
   static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData }) {
-    const { filters, filter_conjunction, sorts, groupbys } = table.view;
+    const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
     if (!context.isViewComputedOnServer) {
       let newRows = getRowsByIds(table, rowIds);
-      if (isFilterView({ filters }, availableColumns) && this.hasRelatedFilters(filters, relatedColumnKeyMap)) {
-        const { rows: filterRows } = getFilteredRows({ columns: availableColumns }, newRows, filter_conjunction, filters, { username, userId, isReturnID: false });
+      if (isFilterView(table.view, availableColumns) && this.hasRelatedFilters(table.view, relatedColumnKeyMap)) {
+        const { rows: filterRows } = getFilteredRows(
+          { columns: availableColumns },
+          newRows,
+          { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
+          { username, userId, isReturnID: false }
+        );
         newRows = filterRows;
       }
       if (newRows.length === 0) {

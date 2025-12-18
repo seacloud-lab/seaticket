@@ -26,6 +26,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { IssueForAI } from '../../models';
+import { convertRowToServerData, convertRowsToServerData } from '@/project/main-panel/tickets/utils';
 
 const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -143,8 +144,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
         };
       });
     };
-
-    return {
+    let _api = {
       getMetadata,
       getViews: () => connectionsAPI.listViews(projectUuid, connectionID),
       getView: (viewID) => connectionsAPI.getView(projectUuid, viewID, connectionID),
@@ -154,6 +154,18 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
       duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
       modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
     };
+    if (connection.type === CONNECTION_TYPE.EMAIL) {
+      _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
+        const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
+        return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
+      };
+      _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
+        const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
+        return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
+      };
+    }
+
+    return _api;
   }, [projectUuid, connectionID, connection]);
 
 
@@ -211,7 +223,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (!enableUseAI) return null;
 
     const children = [
-      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? {
+      connection?.type === CONNECTION_TYPE.GITHUB_ISSUE || connection?.type === CONNECTION_TYPE.DISCOURSE_FORUM || connection?.type === CONNECTION_TYPE.EMAIL ? {
         label: rows.length === 1 ? gettext('Chat issue') : gettext('Chat issues'),
         key: 'chat_issues',
         callback: () => {
@@ -228,6 +240,7 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
               state: getCellValueByColumn(row, stateColumn),
               url: getCellValueByColumn(row, urlColumn),
               connection_id: connectionID,
+              connection_type: connection?.type,
             };
             newRows.push(new IssueForAI(newRow));
           });

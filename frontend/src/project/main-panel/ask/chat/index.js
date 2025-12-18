@@ -77,7 +77,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     });
 
     const ticketIds = attachments.filter(a => a.type === 'ticket').map(t => t._id);
-    const issuesIds = attachments.filter(a => a.type === 'issue').map(i => ({ issue_id: i._id, connection_id: i.connection_id }));
+    const issuesIds = attachments.filter(a => a.type === 'issue').map(i => ({ issue_id: i._id, connection_id: i.connection_id, connection_type: i.connection_type }));
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
       eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });

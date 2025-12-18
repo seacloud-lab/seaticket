@@ -23,6 +23,9 @@ class Token(models.Model):
     user = LowerCaseCharField(max_length=255, unique=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'api_token'
+
     def save(self, *args, **kwargs):
         if not self.key:
             self.key = self.generate_key()

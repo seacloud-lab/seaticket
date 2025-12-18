@@ -302,6 +302,21 @@ class HomeAPI {
     });
   }
 
+  // project trash
+  listTrashProjects() {
+    const url = this.server + '/api/v2.1/trash-projects/';
+    return this.req.get(url);
+  }
+
+  cleanTrashProjects() {
+    const url = this.server + '/api/v2.1/trash-projects/';
+    return this.req.delete(url);
+  }
+
+  restoreTrashProject(projectUuid) {
+    let url = this.server + '/api/v2.1/trash-projects/' + projectUuid + '/';
+    return this.req.put(url);
+  }
 }
 
 const homeAPI = new HomeAPI();

@@ -371,6 +371,26 @@ class TicketsAPI {
     return this.req.get(url, { params: params });
   }
 
+  // trash
+  listTicketsTrash(projectUuid, { start = 0, limit = 1000 }) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
+    const params = {
+      start,
+      limit
+    };
+    return this.req.get(url, { params: params });
+  }
+
+  cleanTicketsTrash(projectUuid) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
+    return this.req.delete(url);
+  }
+
+  restoreTickets(projectUuid, ticketIds) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/tickets/trash/';
+    return this.req.put(url, { ticket_ids: ticketIds });
+  }
+
   getTicketMetadata(projectUuid) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/metadata/';
     return this.req.get(url);

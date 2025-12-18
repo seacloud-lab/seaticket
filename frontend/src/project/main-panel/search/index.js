@@ -204,7 +204,9 @@ const Search = ({ title, settings }) => {
             )}
             {value && results.length > 0 &&
               <div className="sea-qa-project-search-result-list">
-                {results.map(result => <ListItem key={result._id || result.uuid} {...result} searchValue={value} settings={settings} />)}
+                {results.map(result =>
+                  <ListItem key={result._id || result.uuid} {...result} searchValue={value} settings={settings} />
+                )}
               </div>
             }
           </>

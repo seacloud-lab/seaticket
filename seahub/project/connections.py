@@ -29,7 +29,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import WebCrawlTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 
 
@@ -684,3 +684,130 @@ class ProjectConnectionsStatusView(APIView):
             last_sync_status = connection_status.get('last_sync_status', '')
             connections_status[record.id] = last_sync_status
         return Response(connections_status)
+
+
+class ProjectConnectionRecordView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def put(self, request, project_uuid, connection_id, record_id):
+        """Update a single connection record
+        Currently only supports EMAIL type connections for updating the unread field.
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        row_data = request.data
+        if not row_data or not isinstance(row_data, dict):
+            error_msg = 'Request body must be a valid JSON object.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # currently only EMAIL type is supported
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support record editing.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        update_row = {'pk': int(record_id), 'row': {}}
+
+        # currently only unread field is supported
+        if 'unread' in row_data:
+            update_row['row']['unread'] = row_data.get('unread')
+
+        if not update_row['row']:
+            return Response({'success': True})
+
+        table_name = ThreadTable.gen_table_name(connection_id)
+        seadb_api = SeaDBAPI(username)
+
+        try:
+            seadb_api.update_rows(project_uuid, table_name, [update_row])
+        except Exception as e:
+            logger.error(f'update connection record error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class ProjectConnectionRecordsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def put(self, request, project_uuid, connection_id):
+        """Batch update connection records
+        Currently only supports EMAIL type connections for updating the unread field.
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        records_data = request.data.get('records_data')
+        if not records_data or not isinstance(records_data, list):
+            error_msg = 'records_data must be a non-empty list.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support record editing.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        update_rows = []
+        for record in records_data:
+            row_id = record.get('row_id')
+            row_data = record.get('row', {})
+            if not row_id or not isinstance(row_data, dict):
+                continue
+            update_row = {'pk': int(row_id), 'row': {}}
+            if 'unread' in row_data:
+                update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
+            if update_row['row']:
+                update_rows.append(update_row)
+
+        if not update_rows:
+            return Response({'success': True})
+
+        table_name = ThreadTable.gen_table_name(connection_id)
+        seadb_api = SeaDBAPI(username)
+
+        try:
+            seadb_api.update_rows(project_uuid, table_name, update_rows)
+        except Exception as e:
+            logger.error(f'batch update connection records error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})

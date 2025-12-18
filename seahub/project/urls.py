@@ -6,7 +6,7 @@ from .views import project_view
 from .apis import ProjectRelatedUsersView, ProjectItemsSearchView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
-    ProjectConnectionsStatusView, ProjectConnectionLogView
+    ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -25,6 +25,8 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/connections/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/settings/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/tags/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/tags/(?P<children_id>[-0-9a-zA-Z]+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/new/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/(?P<children_id>\d+)/$', project_view, name='project_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/knowledge-base/$', project_view, name='project_view'),
@@ -55,6 +57,8 @@ urlpatterns = [
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/row-detail/$', ProjectConnectionRowDetailView.as_view(), name='api-v2.1-connection-row-detail'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/query-status/$', ProjectConnectionsStatusView.as_view(), name='api-v2.1-connection-status'),
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/logs/$', ProjectConnectionLogView.as_view(), name='api-v2.1-connection-logs'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/$', ProjectConnectionRecordsView.as_view(), name='api-v2.1-connection-records'),
+    re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/(?P<record_id>\d+)/$', ProjectConnectionRecordView.as_view(), name='api-v2.1-connection-record'),
 
     # connection views
     re_path(r'^api/v2.1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/$', ConnectionViewsAPI.as_view(), name='api-v2.1-connection-views'),

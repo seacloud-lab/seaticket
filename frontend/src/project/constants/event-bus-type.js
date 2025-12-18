@@ -9,4 +9,5 @@ export const EVENT_BUS_TYPE = {
   NEW_TYPE: 'new_type',
   NEW_SUBSTATE: 'new_substate',
   OPEN_CONNECTION_EMBEDDING_VISUALIZATION: 'open_connection_embedding_visualization',
+  CLEAN_DELETED_TICKETS: 'clean_deleted_tickets',
 };

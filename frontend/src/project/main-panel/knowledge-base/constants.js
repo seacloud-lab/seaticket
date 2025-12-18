@@ -5,6 +5,7 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {
   PK: '_pk',
   TITLE: 'title',
   CONTENT: 'content',
+  TAGS: 'tags',
   CREATOR: 'creator',
   CREATED_TIME: 'created_time',
   LAST_MODIFIER: 'last_modifier',
@@ -19,6 +20,12 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CONTENT]: {
     display_name: gettext('Content'),
     type: CellType.LONG_TEXT,
+  },
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS]: {
+    type: CellType.TAGS,
+    display_name: gettext('Tags'),
+    editable: true,
+    modify_data_able: true,
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CREATOR]: {
     display_name: gettext('Creator'),
@@ -45,4 +52,9 @@ export const KNOWLEDGE_NOT_DISPLAY_COLUMNS = [
 export const KNOWLEDGE_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
+  TAGS: 'tags',
+};
+
+export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {
+  ALL: 'all',
 };

@@ -5,6 +5,7 @@ export const BAR_TYPE = {
   SEARCH: 'search',
   TICKET: 'tickets',
   MY_TICKET: 'my-tickets',
+  TRASH: 'trash',
   CONNECTION: 'connections',
   SETTINGS: 'settings',
   KNOWLEDGE: 'knowledge-base',
@@ -18,4 +19,5 @@ export const BAR_TYPES = [
   { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'knowledge-base' },
   { key: BAR_TYPE.TICKET, name: gettext('All tickets'), icon: 'all-tickets' },
   { key: BAR_TYPE.MY_TICKET, name: gettext('My tickets'), icon: 'my-tickets' },
+  { key: BAR_TYPE.TRASH, name: gettext('Trash'), icon: 'trash' },
 ];

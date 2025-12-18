@@ -151,6 +151,12 @@ const TicketTopBar = ({ title, type, permission }) => {
     ) return null;
 
     if (type === BAR_TYPE.MY_TICKET) return null;
+    if (type === BAR_TYPE.TRASH) {
+      if (!isRW) return null;
+      return (
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.CLEAN_DELETED_TICKETS)} text={gettext('Clean')} icon="" />
+      );
+    }
     return (
       <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="add" />
     );

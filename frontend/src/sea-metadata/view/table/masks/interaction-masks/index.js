@@ -13,7 +13,8 @@ import { isFunction } from '@/utils/type-detection';
 import { isEmptyObject } from '@/utils/object-utils';
 import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,
-  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP
+  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP,
+  NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
 } from '../../../../constants';
 import {
   getNewSelectedRange, getSelectedDimensions, selectedRangeIsSingleCell,
@@ -205,6 +206,7 @@ class InteractionMasks extends React.Component {
     // how to open editors?
     // 1. editor is closed
     // 2. row-cell is editable or open editor with preview mode
+    if (NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES[selectedColumn.type]) return;
     if (!isEditorEnabled && (this.checkIsSelectedCellEditable() || (openEditorMode === EDITOR_TYPE.PREVIEWER && checkIsColumnSupportPreview(selectedColumn)))) {
       this.setState({
         isEditorEnabled: true,
@@ -977,11 +979,11 @@ class InteractionMasks extends React.Component {
   };
 
   handleDragCopy = (draggedRange) => {
-    const { columns, groupMetrics } = this.props;
+    const { columns, groupMetrics, gridUtils, table } = this.props;
     // compute the new rows
-    const newRows = this.props.getUpdateDraggedRows(draggedRange, columns, groupMetrics);
+    const { rowIds, idRowData, idOldRowOldData } = gridUtils.getUpdateDraggedRows(draggedRange, columns, table.rows, table.id_row_map, groupMetrics);
     if (this.props.modifyRows) {
-      this.props.modifyRows({ ...newRows, isCopyPaste: true });
+      this.props.modifyRows(rowIds, idRowData, idOldRowOldData, true);
     }
   };
 
@@ -1051,7 +1053,7 @@ class InteractionMasks extends React.Component {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
     const isDragEnabled = this.checkIsSelectedCellEditable();
-    const showDragHandle = (isDragEnabled && this.props.canModifyRows);
+    const showDragHandle = isDragEnabled && context.canModifyRows();
     return [
       <SelectionRangeMask
         key="range-mask"
@@ -1178,7 +1180,6 @@ InteractionMasks.propTypes = {
   appPage: PropTypes.object,
   onFillingDragRows: PropTypes.func,
   onCellsDragged: PropTypes.func,
-  getUpdateDraggedRows: PropTypes.func,
   getCopiedRowsAndColumnsFromRange: PropTypes.func,
   onCommit: PropTypes.func,
   getTableCanvasContainerRect: PropTypes.func,

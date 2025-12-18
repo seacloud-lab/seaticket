@@ -11,7 +11,7 @@ const TableMain = ({
   isGroupView,
   metadata, tagsData, collaborators,
   modifyRow, modifyRows, loadMore, searchResult, rowGetterByIndex, rowGetterById, insertColumn,
-  modifyColumnData, updateFileTags,
+  modifyColumnData,
   ...props
 }) => {
 
@@ -22,9 +22,8 @@ const TableMain = ({
       rowGetterByIndex,
       rowGetterById,
       modifyColumnData,
-      updateFileTags,
     });
-  }, [metadata, modifyRow, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData, updateFileTags]);
+  }, [metadata, modifyRow, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData]);
 
   const groupbysCount = useMemo(() => {
     if (!isGroupView) return 0;
@@ -82,7 +81,6 @@ const TableMain = ({
         rowGetterByIndex={rowGetterByIndex}
         modifyColumnData={modifyColumnData}
         insertColumn={handleInsertColumn}
-        updateFileTags={updateFileTags}
         modifyRows={modifyRows}
         {...props}
       />

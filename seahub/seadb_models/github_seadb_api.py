@@ -64,7 +64,7 @@ class GitHubSeaDBAPI:
         Build a dict object from a github issue and its comments.
 
         Args:
-        - pconnection_ids_pks: [{"connection_id", "issue_id"}]
+        - pconnection_ids_pks: [{"connection_id", "_pk"}]
 
         Returns:
         [
@@ -96,8 +96,10 @@ class GitHubSeaDBAPI:
                 connection_ids_pks_map[connection_id_pk['connection_id']].append(connection_id_pk['issue_id'])
         
         result = []
-        for connection_id, issue_ids in connection_ids_pks_map.items():
-            issues = self.get_issues_by_pks(connection_id, issue_ids)
+        for connection_id, _pks in connection_ids_pks_map.items():
+            _pks_str = [str(_pk) for _pk in _pks]
+            issues = self.get_issues_by_pks(connection_id, _pks_str)
+            issue_ids = [str(issue['issue_id']) for issue in issues]
             issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
             for issue_data in issues:
                 whole_issue_data = {
@@ -112,7 +114,7 @@ class GitHubSeaDBAPI:
                     'comments': []
                 }
 
-                for comment in issues_comments_map.get(issue_data['_pk'], []):
+                for comment in issues_comments_map.get(issue_data['issue_id'], []):
                     whole_issue_data['comments'].append({
                         'author': comment.get('author'),
                         'content': comment.get('content'),

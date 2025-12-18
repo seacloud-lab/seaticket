@@ -92,14 +92,14 @@ class SelectTypes:
         },
         {
           "id": "0011",
-          "name": "Backlog",
-          "color": "#9C9C9E",
+          "name": "Working on",
+          "color": "#46A1FD",
           "text_color": "#FFFFFF",
         },
         {
           "id": "0012",
-          "name": "Working on",
-          "color": "#46A1FD",
+          "name": "Backlog",
+          "color": "#9C9C9E",
           "text_color": "#FFFFFF",
         },
         {
@@ -405,6 +405,7 @@ class ThreadTable(BaseModel):
 class KnowledgeBaseTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
+    tags = MappedColumn('tags', PropertyTypes.MULTIPLE_SELECT)
     creator = MappedColumn('creator', PropertyTypes.TEXT)
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     last_modifier = MappedColumn('last_modifier', PropertyTypes.TEXT)

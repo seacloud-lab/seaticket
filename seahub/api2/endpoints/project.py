@@ -22,15 +22,9 @@ from seahub.project.models import Workspaces, Projects, ProjectGroupOrders, \
     ProjectAPIToken, ProjectConnections
 from seahub.group.utils import group_id_to_name
 from seahub.project.utils import check_project_limit, check_project_admin_permission, \
-    convert_project_trash_names, check_project_permission, search
-
-from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table, \
-    get_connection_table_name
-
+    convert_project_trash_names, check_project_permission, search, delete_project, restore_trash_project_name
+from seahub.seadb_models.utils import init_ticket_seadb_table, init_knowledge_base_seadb_table
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.constants import ConnectionType
-
-from seahub.project.utils import get_file_from_s3_web_crawl, url_to_filename
 
 logger = logging.getLogger(__name__)
 
@@ -454,3 +448,81 @@ class SearchView(APIView):
         results = search(params)
         
         return Response({'results': results})
+
+
+class TrashProjectsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request):
+        # argument check
+        username = request.user.username
+        try:
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 25))
+        except Exception as e:
+            error_msg = 'per_page or page invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        start, end = (page - 1) * per_page, page * per_page
+        try:
+            projects = Projects.objects.filter(deleted=True,workspace__owner=username).select_related('workspace').order_by('-delete_time')
+        except Exception as e:
+            logger.error('get deleted projects error: %s', e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        count = projects.count()
+        results = [project.to_dict(include_deleted=True) for project in projects[start: end]]
+
+        return Response({'count': count, 'trash_project_list': results})
+
+    def delete(self, request):
+        username = request.user.username
+        try:
+            projects = Projects.objects.filter(deleted=True, workspace__owner=username).select_related('workspace')
+            for project in projects:
+                delete_project(project)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class TrashProjectView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle, )
+
+    def put(self, request, project_uuid):
+
+        username = request.user.username
+        # resource check
+        project = Projects.objects.filter(uuid=project_uuid, deleted=True).select_related('workspace').first()
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        # permission check
+        if username != project.workspace.owner:
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        new_project_name = restore_trash_project_name(project)
+        # check existed project
+        if Projects.objects.get_project(project.workspace, new_project_name):
+            error_msg = 'Project with name "%s" exists.' % new_project_name
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        # restore project
+        try:
+            Projects.objects.filter(
+                uuid=project_uuid, deleted=True).update(deleted=False, delete_time=None, name=new_project_name)
+        except Exception as e:
+            logger.error('restore project: %s name: %s error: %s', project.id, project.name, e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})

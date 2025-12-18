@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import dayjs from 'dayjs';
 import deepCopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
@@ -92,8 +91,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [projectUuid, applyModifyTags]);
 
   const loadTags = useCallback(() => {
-    const currentTime = new Date();
-    if (tagsData.loadTime && dayjs(currentTime).diff(tagsData.loadTime, 'hours') < 1) return;
     const newTagsData = tagsData._updateLoading(true);
     setTagsData(deepCopy(newTagsData));
     ticketsAPI.listTicketTags(projectUuid).then(res => {
@@ -187,8 +184,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [projectUuid, applyModifyTypes]);
 
   const loadTypes = useCallback(() => {
-    const currentTime = new Date();
-    if (typesData.loadTime && dayjs(currentTime).diff(typesData.loadTime, 'hours') < 1) return;
     const newTypesData = typesData._updateLoading(true);
     setTypesData(deepCopy(newTypesData));
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
@@ -292,8 +287,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
   }, [applyCreateSubstates]);
 
   const loadSubStates = useCallback(() => {
-    const currentTime = new Date();
-    if (substatesData.loadTime && dayjs(currentTime).diff(substatesData.loadTime, 'hours') < 1) return;
     const newSubstatesData = substatesData._updateLoading(true);
     setSubstatesData(deepCopy(newSubstatesData));
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {

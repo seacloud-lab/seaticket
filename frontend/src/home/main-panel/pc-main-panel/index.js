@@ -5,6 +5,7 @@ import homeAPI from '../../api';
 import Workspace from '../../models/workspace';
 import AllWorkspaces from './all-workspaces';
 import WorkspaceInMainPanel from './workspace-in-main-panel';
+import MyProjectsTrash from './my-projects-trash';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;
@@ -131,6 +132,9 @@ class MainPanel extends React.Component {
             onCopyProject={this.onCopyProject}
             onAddProject={this.onAddProject}
             updateSidePanelGroups={this.props.updateSidePanelGroups}
+          />
+          <MyProjectsTrash
+            path={siteRoot + 'project/trash/'}
           />
         </Router>
       </div>

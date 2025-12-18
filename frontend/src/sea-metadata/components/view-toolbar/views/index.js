@@ -10,7 +10,7 @@ import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
-const Views = ({ view, toggleView }) => {
+const Views = ({ isViewComputedOnServer, view, toggleView }) => {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [canViewsScroll, setViewsScroll] = useState(true);
@@ -146,6 +146,7 @@ const Views = ({ view, toggleView }) => {
               <ViewItem
                 key={v._id}
                 isSelect={isSelect}
+                isViewComputedOnServer={isViewComputedOnServer}
                 view={v}
                 modifyAble={modifyAble}
                 deleteAble={deleteAble}
