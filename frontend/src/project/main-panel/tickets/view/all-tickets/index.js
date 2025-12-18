@@ -3,7 +3,11 @@ import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS, TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG } from '../../constants';
+import {
+  TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
+  TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
+  TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
+} from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
@@ -40,15 +44,15 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
         return new Promise((resolve, reject) => {
           const rows = cachedData.rows;
           const columns = cachedData.columns;
-          const typeColum = columns.find(c => c.name === 'type');
+          const typeColum = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE);
           if (typeColum) {
             context.setSetting('typeColumnKey', typeColum.key);
           }
-          const statusColumn = columns.find(c => c.name === 'state');
-          if (statusColumn) {
-            context.setSetting('stateColumnKey', statusColumn.key);
+          const stateColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.STATE);
+          if (stateColumn) {
+            context.setSetting('stateColumnKey', stateColumn.key);
           }
-          const tagsColumn = columns.find(c => c.name === 'tags');
+          const tagsColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE.TAGS);
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
           }
@@ -79,15 +83,15 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
             ...otherConfig,
           };
         });
-        const typeColum = columns.find(c => c.name === 'type');
+        const typeColum = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE);
         if (typeColum) {
           context.setSetting('typeColumnKey', typeColum.key);
         }
-        const stateColumn = columns.find(c => c.name === 'state');
+        const stateColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.STATE);
         if (stateColumn) {
           context.setSetting('stateColumnKey', stateColumn.key);
         }
-        const tagsColumn = columns.find(c => c.name === 'tags');
+        const tagsColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TAGS);
         if (tagsColumn) {
           context.setSetting('tagsColumnKey', tagsColumn.key);
         }

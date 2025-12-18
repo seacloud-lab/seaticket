@@ -1110,6 +1110,8 @@ class MyTicketAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        # argument check
+        view_id = request.GET.get('view_id', 'open')
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
 
@@ -1119,6 +1121,10 @@ class MyTicketAPIView(APIView):
         except:
             start = 0
             limit = 1000
+
+        ticket_state = view_id
+        if ticket_state not in ['open', 'closed']:
+            ticket_state = 'open'
 
         if start < 0:
             error_msg = 'start invalid'
@@ -1143,7 +1149,7 @@ class MyTicketAPIView(APIView):
 
         seadb_api = SeaDBAPI(username)
         try:
-            tickets, columns = get_my_tickets(seadb_api, project_uuid, username, start, limit)
+            tickets, columns = get_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

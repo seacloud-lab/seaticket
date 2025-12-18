@@ -32,7 +32,7 @@ const Project = () => {
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE) && isKeepSearch) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.MY_TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);

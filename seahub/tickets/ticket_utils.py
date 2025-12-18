@@ -74,11 +74,11 @@ def get_ticket(seadb_api, project_uuid, ticket_id):
     return rows[0] if rows else None, res.get('metadata')
 
 
-def get_my_tickets(seadb_api, project_uuid, username, start, limit):
+def get_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit):
     from seahub.seadb_models.utils import get_tickets_columns
     query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
     sql = f"""SELECT {query_fields} FROM `{TABLE_TICKETS}` 
-    WHERE (`deleted` = FALSE OR `deleted` IS NULL) AND `state` = 'open' AND `participants` in ('{username}') 
+    WHERE (`deleted` = FALSE OR `deleted` IS NULL) AND `state` = '{ticket_state}' AND `participants` in ('{username}') 
     LIMIT {limit} OFFSET {start}"""
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
     records = res.get('results')
