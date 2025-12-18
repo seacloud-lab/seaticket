@@ -141,19 +141,11 @@ class KnowledgeBaseAPI {
 
   updateRecord(projectUuid, recordId, update = {}) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
-    // let payload = { ...update };
-    // if (payload.content && typeof payload.content === 'object') {
-    //   payload.content = JSON.stringify(payload.content);
-    // }
-    let form = new FormData();
-    Object.keys(update).forEach(key => {
-      let value = update[key];
-      if (typeof value === 'object') {
-        value = JSON.stringify(value);
-      }
-      form.append(key, value);
-    });
-    return this.req.put(url, form);
+    let payload = { ...update };
+    if (payload.content && typeof payload.content === 'object') {
+      payload.content = JSON.stringify(payload.content);
+    }
+    return this.req.put(url, payload);
   }
 
   deleteRecord(projectUuid, recordId) {

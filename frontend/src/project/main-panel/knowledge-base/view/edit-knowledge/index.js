@@ -81,7 +81,7 @@ const EditKnowledge = ({ editorAPI, projectUuid, permission }) => {
       }
       serverData[columnName] = value;
     });
-    knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, data).then(res => {
+    knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, serverData).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -93,16 +93,9 @@ const EditKnowledge = ({ editorAPI, projectUuid, permission }) => {
   useEffect(() => {
     if (!Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) {
       knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
-        console.log(res?.data.record);
         const { title = '', content = '', tags = [] } = res?.data.record || {};
         setTitle(title);
         setContent({ text: content });
-
-        console.log('tagsData, tags', tagsData, tags);
-        console.log(getRowsByIds(tagsData, tags));
-        const tagIds = getRowsByIds(tagsData, tags).map(tag => tag.name);
-
-
         setTags(tags);
         setLoading(false);
       }).catch(error => {
