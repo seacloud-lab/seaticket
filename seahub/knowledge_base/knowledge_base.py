@@ -236,6 +236,8 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        row = {}
+
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:
@@ -261,8 +263,6 @@ class KnowledgeBaseAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        row = {}
         
         if 'question' in request.data:
             question = request.data.get('question')
