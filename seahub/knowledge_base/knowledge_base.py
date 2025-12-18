@@ -56,6 +56,9 @@ class KnowledgeBasesAPIView(APIView):
         if not content_text or not isinstance(content_text, str) or not content_text.strip():
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        tag_names = request.data.get('tags', "[]")
+        tag_names = json.loads(tag_names)
 
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -75,6 +78,7 @@ class KnowledgeBasesAPIView(APIView):
             row = {
                 KnowledgeBaseTable.title.name: title,
                 KnowledgeBaseTable.content.name: content_text,
+                KnowledgeBaseTable.tags.name: tag_names,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
