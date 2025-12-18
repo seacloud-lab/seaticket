@@ -1,0 +1,150 @@
+# -*- coding: utf-8 -*-
+import pytest
+from unittest.mock import Mock, MagicMock, patch
+from rest_framework.test import APIClient
+from seahub.constants import PERMISSION_READ_WRITE
+
+
+@pytest.fixture
+def api_client():
+    """Create an authenticated API client for testing."""
+    client = APIClient()
+    # Create a mock user
+    mock_user = Mock()
+    mock_user.id = 1
+    mock_user.username = 'test@example.com'
+    mock_user.is_authenticated = True
+    # Force authenticate
+    client.force_authenticate(user=mock_user)
+    return client
+
+
+@pytest.fixture
+def mock_user():
+    """Create a mock user object."""
+    user = Mock()
+    user.id = 1
+    user.username = 'test@example.com'
+    user.is_authenticated = True
+    return user
+
+
+@pytest.fixture
+def project_uuid():
+    """Return a valid project UUID for testing."""
+    return '12345678-1234-1234-1234-123456789abc'
+
+
+@pytest.fixture
+def mock_workspace():
+    """Create a mock workspace object."""
+    workspace = Mock()
+    workspace.owner = 'test@example.com'
+    workspace.org_id = 1
+    return workspace
+
+
+@pytest.fixture
+def mock_project(mock_workspace):
+    """Create a mock project object with workspace."""
+    project = Mock()
+    project.workspace = mock_workspace
+    project.uuid = '12345678-1234-1234-1234-123456789abc'
+    project.name = 'Test Project'
+    return project
+
+
+@pytest.fixture
+def mock_org_context():
+    """Mock is_org_context to return True."""
+    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=True) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_org_context_false():
+    """Mock is_org_context to return False."""
+    with patch('seahub.knowledge_base.knowledge_base.is_org_context', return_value=False) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid(mock_project):
+    """Mock Projects.objects.get_project_by_uuid to return a mock project."""
+    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=mock_project) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_none():
+    """Mock Projects.objects.get_project_by_uuid to return None (project not found)."""
+    with patch('seahub.knowledge_base.knowledge_base.Projects.objects.get_project_by_uuid', return_value=None) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_granted():
+    """Mock check_project_permission to return permission granted."""
+    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=PERMISSION_READ_WRITE) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_denied():
+    """Mock check_project_permission to return None (permission denied)."""
+    with patch('seahub.knowledge_base.knowledge_base.check_project_permission', return_value=None) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_seadb_api():
+    """Mock SeaDBAPI class."""
+    with patch('seahub.knowledge_base.knowledge_base.SeaDBAPI') as mock_class:
+        mock_instance = MagicMock()
+        mock_class.return_value = mock_instance
+        yield mock_instance
+
+
+@pytest.fixture
+def mock_knowledge_base_views():
+    """Mock KnowledgeBaseViews.objects.get_view."""
+    mock_view = {
+        '_id': '0000',
+        'name': 'All',
+        'type': 'table',
+        'filters': [],
+        'sorts': [],
+    }
+    with patch('seahub.knowledge_base.knowledge_base.KnowledgeBaseViews.objects.get_view', return_value=mock_view) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_list_knowledge_base_records():
+    """Mock list_knowledge_base_records function."""
+    records = [
+        {'_pk': 1, 'title': 'Q1', 'content': 'A1'},
+        {'_pk': 2, 'title': 'Q2', 'content': 'A2'},
+    ]
+    columns = [
+        {'name': '_pk', 'type': 'int64'},
+        {'name': 'title', 'type': 'text'},
+        {'name': 'content', 'type': 'text'},
+    ]
+    with patch('seahub.knowledge_base.knowledge_base.list_knowledge_base_records', return_value=(records, columns)) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_knowledge_base_record_by_pk():
+    """Mock get_knowledge_base_record_by_pk function."""
+    record = {'_pk': 1, 'title': 'Test Title', 'content': 'Test Content'}
+    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=record) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_knowledge_base_record_by_pk_none():
+    """Mock get_knowledge_base_record_by_pk to return None (record not found)."""
+    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=None) as mock:
+        yield mock
