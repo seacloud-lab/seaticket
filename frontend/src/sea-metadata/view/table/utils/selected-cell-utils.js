@@ -2,7 +2,7 @@ import { isFunction } from '@/utils/type-detection';
 import { getCellValueByColumn, canEditCell } from '../../../utils/cell';
 import { getGroupByPath } from '../../../utils/view';
 import { getColumnByIndex, checkIsColumnEditable } from '../../../utils/column';
-import { SUPPORT_PREVIEW_COLUMN_TYPES, seaTableZIndexes } from '../../../constants';
+import { SUPPORT_PREVIEW_COLUMN_TYPES, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP, seaTableZIndexes } from '../../../constants';
 import { getGroupRowByIndex } from './group-metrics';
 import context from '../../../context';
 
@@ -12,6 +12,40 @@ const SELECT_DIRECTION = {
 };
 
 export const getRowTop = (rowIdx, rowHeight) => rowIdx * rowHeight;
+
+export const getColumnsFromSelectedRange = ({ selectedRange, columns }, editable = false) => {
+  const { topLeft, bottomRight } = selectedRange;
+  const { idx: startColumnIdx } = topLeft;
+  const { idx: endColumnIdx } = bottomRight;
+  let selectedColumns = [];
+
+  for (let j = startColumnIdx; j <= endColumnIdx; j++) {
+    const column = columns[j];
+    if (!column) continue;
+    selectedColumns.push(column);
+  }
+  if (!editable) return selectedColumns;
+
+  return selectedColumns.filter(column => !(!column.editable || NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP[column.type]));
+};
+
+export const getRowsFromSelectedRange = ({ selectedRange, isGroupView, rowGetterByIndex }) => {
+  const { topLeft, bottomRight } = selectedRange;
+  const { rowIdx: startRowIdx, groupRowIndex } = topLeft;
+  const { rowIdx: endRowIdx } = bottomRight;
+  let currentGroupRowIndex = groupRowIndex;
+  let rows = [];
+  for (let rowIndex = startRowIdx, endIdx = endRowIdx + 1; rowIndex < endIdx; rowIndex++) {
+    const row = rowGetterByIndex({ isGroupView, groupRowIndex: currentGroupRowIndex, rowIndex });
+    if (isGroupView) {
+      currentGroupRowIndex++;
+    }
+    if (row) {
+      rows.push(row);
+    }
+  }
+  return rows;
+};
 
 export const getSelectedRow = ({ selectedPosition, isGroupView, rowGetterByIndex }) => {
   const { groupRowIndex, rowIdx } = selectedPosition;
@@ -55,6 +89,12 @@ export const checkIsSelectedCellEditable = ({ enableCellSelect, selectedPosition
   if (!checkIsColumnEditable(column)) return false;
   const row = getSelectedRow({ selectedPosition, isGroupView, rowGetterByIndex });
   return context.canModifyCell(column, row);
+};
+
+export const checkIsSelectedCellsEditable = ({ columns, selectedRange }) => {
+  const selectedColumns = getColumnsFromSelectedRange({ selectedRange, columns }, true);
+  if (selectedColumns.length === 0) return false;
+  return true;
 };
 
 export function selectedRangeIsSingleCell(selectedRange) {
@@ -106,7 +146,7 @@ export function getNewSelectedRange(startCell, nextCellPosition) {
   return { topLeft, bottomRight };
 }
 
-const getColumnRangeProperties = (from, to, columns) => {
+const getColumnRangeProperties = (from, to, columns, scrollLeft) => {
   let totalWidth = 0;
   let anyColFrozen = false;
   for (let i = from; i <= to; i++) {
@@ -116,19 +156,19 @@ const getColumnRangeProperties = (from, to, columns) => {
       anyColFrozen = anyColFrozen || column.frozen;
     }
   }
-  return { totalWidth, anyColFrozen, left: columns[from].left };
+  return { totalWidth, anyColFrozen, left: anyColFrozen ? columns[from].left + scrollLeft : columns[from].left };
 };
 
 export const getSelectedRangeDimensions = ({
   selectedRange, columns, rowHeight, isGroupView, groups, groupMetrics,
-  groupOffsetLeft, getRowTopFromRowsBody,
+  groupOffsetLeft, getRowTopFromRowsBody, scrollLeft,
 }) => {
   const { topLeft, bottomRight, startCell, cursorCell } = selectedRange;
   if (topLeft.idx < 0) {
     return { width: 0, left: 0, top: 0, height: rowHeight, zIndex: seaTableZIndexes.CELL_MASK };
   }
 
-  let { totalWidth, anyColFrozen, left } = getColumnRangeProperties(topLeft.idx, bottomRight.idx, columns);
+  let { totalWidth, anyColFrozen, left } = getColumnRangeProperties(topLeft.idx, bottomRight.idx, columns, scrollLeft);
   let height;
   let top;
   if (isGroupView) {
@@ -173,22 +213,4 @@ export const getSelectedRangeDimensions = ({
 
   const zIndex = anyColFrozen ? seaTableZIndexes.FROZEN_CELL_MASK : seaTableZIndexes.CELL_MASK;
   return { width: totalWidth, left, top, height, zIndex };
-};
-
-export const getRowsFromSelectedRange = ({ selectedRange, isGroupView, rowGetterByIndex }) => {
-  const { topLeft, bottomRight } = selectedRange;
-  const { rowIdx: startRowIdx, groupRowIndex } = topLeft;
-  const { rowIdx: endRowIdx } = bottomRight;
-  let currentGroupRowIndex = groupRowIndex;
-  let rows = [];
-  for (let rowIndex = startRowIdx, endIdx = endRowIdx + 1; rowIndex < endIdx; rowIndex++) {
-    const row = rowGetterByIndex({ isGroupView, groupRowIndex: currentGroupRowIndex, rowIndex });
-    if (isGroupView) {
-      currentGroupRowIndex++;
-    }
-    if (row) {
-      rows.push(row);
-    }
-  }
-  return rows;
 };
