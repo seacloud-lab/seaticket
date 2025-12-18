@@ -341,8 +341,7 @@ class ChatView(APIView):
             else:
                 issue_connections.append({
                     'type': connection.type,
-                    'id': connection.pk,
-                    'config': json.loads(connection.config)
+                    'id': connection.pk
                 })
 
         params = {
