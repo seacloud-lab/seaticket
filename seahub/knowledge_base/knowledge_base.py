@@ -19,7 +19,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
-    send_knowledge_base_update_msg
+    send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +231,8 @@ class KnowledgeBaseAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+            record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+            record = convert_kb_record_tags_name_to_id(columns, record)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -274,6 +275,32 @@ class KnowledgeBaseAPIView(APIView):
         if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        if 'question' in request.data:
+            question = request.data.get('question')
+            if not question:
+                error_msg = 'question invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.question.name] = question
+
+        if 'answer' in request.data:
+            raw_answer = request.data.get('answer')
+            if not raw_answer:
+                error_msg = 'answer invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            answer_text = None
+            if isinstance(raw_answer, dict):
+                answer_text = raw_answer.get('text')
+            else:
+                try:
+                    ans_obj = json.loads(raw_answer)
+                    answer_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_answer
+                except Exception:
+                    answer_text = raw_answer
+            if not answer_text or not isinstance(answer_text, str) or not answer_text.strip():
+                error_msg = 'answer invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.answer.name] = answer_text
 
         if 'tags' in request.data:
             tags = request.data.get('tags')
@@ -290,7 +317,7 @@ class KnowledgeBaseAPIView(APIView):
         row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
 
         seadb_api = SeaDBAPI(request.user.username)
-        record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+        record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
