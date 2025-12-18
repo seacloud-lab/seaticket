@@ -30,6 +30,8 @@ class Store {
     this.dataDidMount = props.dataDidMount || null;
     this.tagsData = props?.tagsData || {};
     this.typesData = props?.typesData || {};
+    this.columnOrderRules = props?.columnOrderRules || null;
+    this.columnWidthRules = props?.columnWidthRules || null;
     this.mounted = true;
   }
 
@@ -58,8 +60,8 @@ class Store {
     if (!this.mounted) return;
     return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit })?.then(res => {
       const rows = res?.data?.rows || [];
-      const columns = normalizeColumns(res?.data?.columns || []);
-      let data = new Metadata({ rows, columns, view });
+      const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
+      let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules });
       data.view.rows = data.row_ids;
       const loadedCount = rows.length;
       data.hasMore = loadedCount >= limit;

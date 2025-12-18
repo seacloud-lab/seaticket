@@ -198,24 +198,42 @@ export const getColumnOriginType = (column) => {
   return type;
 };
 
-export const normalizeColumns = (columns) => {
+export const normalizeColumns = (columns, columnOrderRules) => {
   if (!Array.isArray(columns) || columns.length === 0) return [];
   const columnsWidth = context.localStorage.getItem('columns_width') || {};
   let displayColumns = [];
-  // find name column and move to first
-  columns.forEach(column => {
-    if (column.is_name_column) {
-      displayColumns.unshift(column);
-    } else {
-      displayColumns.push(column);
+
+  // Arrange columns based on predefined order
+  if (columnOrderRules) {
+    const otherColumns = [];
+    columns.forEach(column => {
+      const { name } = column;
+      const order = columnOrderRules[name];
+      if (order) {
+        const index = order - 1;
+        displayColumns[index] = column;
+      } else {
+        otherColumns.push(column);
+      }
+    });
+    displayColumns = [...displayColumns, ...otherColumns].filter(c => c); // remove undefined items
+  } else {
+    // find name column and move to first
+    columns.forEach(column => {
+      if (column.is_name_column) {
+        displayColumns.unshift(column);
+      } else {
+        displayColumns.push(column);
+      }
+    });
+    // find type === priority column and move to first
+    const priorityColumns = displayColumns.filter(c => c.type === CellType.PRIORITY);
+    // use only one priority type
+    if (priorityColumns.length > 0) {
+      displayColumns = [priorityColumns[0], ...displayColumns.filter(c => c.type !== CellType.PRIORITY)];
     }
-  });
-  // find type === priority column and move to first
-  const priorityColumns = displayColumns.filter(c => c.type === CellType.PRIORITY);
-  // use only one priority type
-  if (priorityColumns.length > 0) {
-    displayColumns = [priorityColumns[0], ...displayColumns.filter(c => c.type !== CellType.PRIORITY)];
   }
+
   return displayColumns.map(c => {
     if (columnsWidth[c.key]) {
       c.width = columnsWidth[c.key];

@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
 import SeaMetadata from '@/sea-metadata';
 import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
-import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS } from '../../constants';
+import { TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG, TICKET_NOT_DISPLAY_COLUMNS, TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
@@ -198,6 +198,8 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
       createSubstate={createSubstate}
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
       cascadeUpdateCells={cascadeUpdateSubState}
+      columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
+      columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
     />
   );
 };
