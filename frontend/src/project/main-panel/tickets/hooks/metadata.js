@@ -18,8 +18,13 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // tags
   const applyCreateTags = useCallback((newTags, isReload = false) => {
-    if (!Array.isArray(newTags) || newTags.length === 0) return;
+    if (!Array.isArray(newTags) || newTags.length === 0) {
+      const newData = tagsData._updateLoading(false);
+      setTagsData(deepCopy(newData));
+      return;
+    }
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(tagsData);
+    newData = newData._updateLoading(false);
     newTags.forEach(tag => {
       const newTag = tag instanceof Option ? tag : new Option(tag);
       newData.rows.push(newTag);
@@ -106,8 +111,13 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
-    if (!Array.isArray(newTypes) || newTypes.length === 0) return;
+    if (!Array.isArray(newTypes) || newTypes.length === 0) {
+      const newData = typesData._updateLoading(false);
+      setTypesData(deepCopy(newData));
+      return;
+    }
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(typesData);
+    newData = newData._updateLoading(false);
     newTypes.forEach(type => {
       const newType = type instanceof Option ? type : new Option(type);
       newData.rows.push(newType);
@@ -199,8 +209,13 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
-    if (!Array.isArray(newSubstates) || newSubstates.length === 0) return;
+    if (!Array.isArray(newSubstates) || newSubstates.length === 0) {
+      const newData = substatesData._updateLoading(false);
+      setSubstatesData(deepCopy(newData));
+      return;
+    }
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(substatesData);
+    newData = newData._updateLoading(false);
     newSubstates.forEach(substate => {
       const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
       newData.rows.push(newSubstate);
@@ -302,8 +317,13 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
-    if (!Array.isArray(newStates) || newStates.length === 0) return;
+    if (!Array.isArray(newStates) || newStates.length === 0) {
+      const newData = statesData._updateLoading(false);
+      setStatesData(deepCopy(newData));
+      return;
+    }
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(statesData);
+    newData = newData._updateLoading(false);
     newStates.forEach(state => {
       const option = state instanceof Option ? state : new Option(state);
       newData.rows.push(option);

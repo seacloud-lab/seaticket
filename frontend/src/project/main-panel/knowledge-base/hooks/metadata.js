@@ -14,8 +14,13 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // tags
   const applyCreateTags = useCallback((newTags, isReload = false) => {
-    if (!Array.isArray(newTags) || newTags.length === 0) return;
+    if (!Array.isArray(newTags) || newTags.length === 0) {
+      const newData = tagsData._updateLoading(false);
+      setTagsData(deepCopy(newData));
+      return;
+    }
     let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(tagsData);
+    newData = newData._updateLoading(false);
     newTags.forEach(tag => {
       const newTag = tag instanceof Option ? tag : new Option(tag);
       newData.rows.push(newTag);
