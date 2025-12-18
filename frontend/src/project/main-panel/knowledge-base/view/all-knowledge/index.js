@@ -52,6 +52,9 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
       deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
+      convertViewToExcel: (viewId) => knowledgeBaseAPI.convertViewToExcel(projectUuid, viewId),
+      queryIOStatus: (taskId) => knowledgeBaseAPI.queryIOStatus(taskId),
+      getExportExcelUrl: (taskId, viewId) => knowledgeBaseAPI.getExportExcelUrl(projectUuid, taskId, viewId),
     };
   }, [projectUuid, tagsData]);
 
@@ -73,6 +76,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       viewID={viewID}
       api={api}
       permission={permission}
+      settings={{ enableExportXlsx: true }}
       isViewComputedOnServer={true}
       localStorageNamePrefix={localStorageName}
       toggleView={toggleView}

@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
+import context from '@/sea-metadata/context';
 
 import './index.css';
 
@@ -115,6 +116,25 @@ const ViewItem = ({
     };
   }, [isShowDropdownMenu]);
 
+  const handleExport = useCallback(() => {
+    const api = context.api;
+    if (!api || !view) return;
+    api.convertViewToExcel(view._id).then(res => {
+      const taskId = res?.data?.task_id;
+      const poll = () => {
+        api.queryIOStatus(taskId).then(r => {
+          if (r?.data?.is_finished) {
+            const url = api.getExportExcelUrl(taskId, view._id);
+            window.open(url, '_self');
+          } else {
+            setTimeout(poll, 1000);
+          }
+        }).catch(() => {});
+      };
+      poll();
+    }).catch(() => {});
+  }, [view]);
+
   const props = moveAble ? { onDragStart, onDragEnter, onDragOver, onDragLeave, onDrop, draggable: 'true' } : {};
 
   return (
@@ -176,6 +196,11 @@ const ViewItem = ({
                 <button onClick={openDeleteConfirmationDialog} className="dropdown-item sea-qa-dropdown-item">
                   <Icon symbol="delete" />
                   {gettext('Delete view')}
+                </button>
+              )}
+              {context.getSetting('enableExportXlsx', false) && (
+                <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
+                  {gettext('Export XLSX')}
                 </button>
               )}
             </div>
