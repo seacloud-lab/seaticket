@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Knowledge base tags API unit tests.
-Covers:
-- KnowledgeBaseTagsAPIView (GET/POST/DELETE)
-- KnowledgeBaseTagAPIView (GET/PUT/DELETE)
+Unit tests for knowledge_base_tags API endpoints.
 """
 
 from copy import deepcopy

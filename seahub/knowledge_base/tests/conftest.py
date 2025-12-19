@@ -292,7 +292,7 @@ def mock_get_kb_counts():
         return_value=({'Tag1': 2}, None)
     ) as mock:
         yield mock
-        
+
 
 @pytest.fixture
 def mock_get_project_by_uuid_views(mock_project):
@@ -405,3 +405,74 @@ def mock_move_view():
         return_value=navigation
     ) as mock:
         yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_excel(mock_project):
+    """Mock Projects.objects.get_project_by_uuid for excel export."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.Projects.objects.get_project_by_uuid',
+        return_value=mock_project
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_none_excel():
+    """Return None when fetching project for excel export."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.Projects.objects.get_project_by_uuid',
+        return_value=None
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_granted_excel():
+    """Mock permission check to succeed for excel export."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.check_project_permission',
+        return_value=True
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_denied_excel():
+    """Mock permission check to fail for excel export."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.check_project_permission',
+        return_value=False
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_convert_kb_view_to_excel():
+    """Mock convert_kb_view_to_excel helper."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.convert_kb_view_to_excel',
+        return_value='task-123'
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_query_kb_task_status():
+    """Mock query_kb_task_status helper."""
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.query_kb_task_status'
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_view_excel():
+    """Mock KnowledgeBaseViews.objects.get_view for export."""
+    view = {'_id': '0000', 'name': 'All'}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_excel.KnowledgeBaseViews.objects.get_view',
+        return_value=view
+    ) as mock:
+        yield mock
+

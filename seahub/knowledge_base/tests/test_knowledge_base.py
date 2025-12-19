@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Unit tests for Knowledge Base API endpoints.
-
-Tests cover:
-- KnowledgeBasesAPIView (POST, GET, DELETE)
-- KnowledgeBaseAPIView (GET, PUT)
 """
 import json
 import pytest
