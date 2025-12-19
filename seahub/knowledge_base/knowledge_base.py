@@ -18,7 +18,8 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission, get_current_table_metadata
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
-from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE
+from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
+    send_knowledge_base_update_msg
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,9 @@ class KnowledgeBasesAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_knowledge_base_update_msg(project_uuid)
+
         return Response({'row': row}, status=status.HTTP_201_CREATED)
 
 
@@ -194,6 +198,9 @@ class KnowledgeBasesAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_knowledge_base_update_msg(project_uuid)
+
         return Response({'success': True}, status=status.HTTP_200_OK)
 
 
@@ -296,6 +303,9 @@ class KnowledgeBaseAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_knowledge_base_update_msg(project_uuid)
+
         return Response({'row': row}, status=status.HTTP_200_OK)
 
 class KnowledgeBaseMetadataAPIView(APIView):
