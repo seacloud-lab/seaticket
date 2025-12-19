@@ -16,8 +16,8 @@ import { TagsSettings } from '../../../tickets/components/ticket-settings';
 
 import './index.css';
 
-const EditKnowledge = ({ editorAPI, projectUuid, permission }) => {
-  const { isLoading: isMetadataLoading, tagsData, createTag, modifyTag } = useMetadata();
+const EditKnowledge = ({ editorAPI, projectUuid }) => {
+  const { isLoading: isMetadataLoading, tagsData, createTag } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
