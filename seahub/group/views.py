@@ -23,7 +23,7 @@ from seahub.settings import SEAQA_WEB_SERVICE_URL, GROUP_MEMBER_LIMIT, PERSONAL_
 from seahub.api2.utils import get_groups
 from seahub.admin_log.signals import org_admin_operation
 from seahub.admin_log.models import GROUP_MEMBER_ADD
-
+from seahub.notifications.utils import add_user_to_group_notice
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -163,6 +163,9 @@ def group_invite(request, token):
 
     try:
         GroupUser.objects.group_add_member(group_invite_link.group_id, email)
+        group = Group.objects.get_group(int(group_invite_link.group_id))
+        if group:
+            add_user_to_group_notice(email, group_invite_link.group_id, group.group_name, group_invite_link.created_by)
         org_admin_op_detail = {
             'username': email,
             'group_id': group_invite_link.group_id,

@@ -217,6 +217,7 @@ INSTALLED_APPS = [
     'seahub.organizations',
     'seahub.registration',
     'seahub.sysadmin_extra',
+    'seahub.notifications'
 ]
 
 # Enable or disable constance(web settings).

@@ -31,7 +31,7 @@ from seahub.profile.models import Profile
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.group.signals import add_user_to_group
 from seahub.project.utils import convert_project_trash_names, get_project_owner
-
+from seahub.notifications.utils import add_user_to_group_notice
 
 logger = logging.getLogger(__name__)
 
@@ -522,6 +522,7 @@ class AdminGroupMembers(APIView):
         for email in emails_need_add:
             try:
                 GroupUser.objects.group_add_member(group_id, email)
+                add_user_to_group_notice(email, group_id, group.group_name, request.user.username)
                 member_info = get_group_member_info(group_id, email)
                 result['success'].append(member_info)
             except Exception as e:
