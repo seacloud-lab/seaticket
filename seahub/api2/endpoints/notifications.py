@@ -197,7 +197,7 @@ class NotificationsAllView(APIView):
         project_uuids = [i.get('project_uuid') for i in project_group_list if i.get('project_uuid')]
         projects_by_uuid = {}
         try:
-            projects = Projects.objects.filter(uuid__in=project_uuids)
+            projects = Projects.objects.filter(uuid__in=project_uuids, deleted=False)
             projects_by_uuid = {str(p.uuid): p for p in projects}
         except Exception as e:
             logger.error(e)
