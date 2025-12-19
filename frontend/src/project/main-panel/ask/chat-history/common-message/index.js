@@ -7,6 +7,7 @@ import { CustomizeMarkdownViewer, LinkVerifiedDialog } from '@/components';
 import ThoughtProcess from '../thought-process';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
+import SeaqaMarkdownPreview from '../seaqa-markdown-preview';
 import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
@@ -36,11 +37,22 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     ];
   }, []);
 
-  const { aiReply, sources } = useMemo(() => {
-    if (Object.keys(message).length === 0) return '';
+  const { aiReply, sources, seaqaMarkdownContent, seaqaMarkdownFileName } = useMemo(() => {
+    if (Object.keys(message).length === 0) return { aiReply: '', sources: [], seaqaMarkdownContent: null, seaqaMarkdownFileName: null };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
 
-    if (Object.keys(message).length === 0) return [];
+    if (value && typeof value === 'string') {
+      const seaqaMarkdownMatch = value.match(/^<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>$/);
+      if (seaqaMarkdownMatch) {
+        return {
+          aiReply: null,
+          sources: [],
+          seaqaMarkdownContent: seaqaMarkdownMatch[2],
+          seaqaMarkdownFileName: seaqaMarkdownMatch[1] || null
+        };
+      }
+    }
+
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
@@ -132,7 +144,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;
     }
-    return { aiReply: value, sources };
+    return { aiReply: value, sources, seaqaMarkdownContent: null, seaqaMarkdownFileName: null };
   }, [message, projectName, workspaceID]);
 
   const handleConnectionRecord = useCallback((record) => {
@@ -225,6 +237,9 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
               onDefinitionClick={openConnectionRecord}
             />
           </div>
+        )}
+        {seaqaMarkdownContent && (
+          <SeaqaMarkdownPreview content={seaqaMarkdownContent} fileName={seaqaMarkdownFileName} />
         )}
       </div>
       {isShowConnectionRecord && (
