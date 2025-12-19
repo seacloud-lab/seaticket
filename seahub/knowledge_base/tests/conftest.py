@@ -292,3 +292,116 @@ def mock_get_kb_counts():
         return_value=({'Tag1': 2}, None)
     ) as mock:
         yield mock
+        
+
+@pytest.fixture
+def mock_get_project_by_uuid_views(mock_project):
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.Projects.objects.get_project_by_uuid',
+        return_value=mock_project
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_none_views():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.Projects.objects.get_project_by_uuid',
+        return_value=None
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_granted_views():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.check_project_permission',
+        return_value=True
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_denied_views():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.check_project_permission',
+        return_value=False
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_views_record():
+    record = Mock()
+    record.views_ids = ['0000']
+    record.folders_views_ids = ['0000']
+    record.details = '{}'
+    return record
+
+
+@pytest.fixture
+def mock_get_record_views(mock_views_record):
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_record',
+        return_value=mock_views_record
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_record_views_none():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_record',
+        return_value=None
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_list_views():
+    payload = {'views': [{'_id': '0000', 'name': 'All'}]}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.list_views',
+        return_value=payload
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_add_view():
+    new_view = {'_id': '0001', 'name': 'New view'}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.add_view',
+        return_value=new_view
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_view():
+    view = {'_id': '0000', 'name': 'All'}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.get_view',
+        return_value=view
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_duplicate_view():
+    new_view = {'_id': '0004', 'name': 'Duplicate'}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.duplicate_view',
+        return_value=new_view
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_move_view():
+    navigation = {'navigation': [{'_id': 'nav', 'type': 'view'}]}
+    with patch(
+        'seahub.knowledge_base.knowledge_base_views.KnowledgeBaseViews.objects.move_view',
+        return_value=navigation
+    ) as mock:
+        yield mock
