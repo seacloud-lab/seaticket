@@ -178,33 +178,6 @@ def add_connection_sync_task(params):
     return json.loads(resp.content)
 
 
-def add_knowledge_base_ai_process_and_index_task(params):
-    """Add knowledge base AI process task and index task
-    
-    Args:
-        params: dict with keys:
-            - project_uuid: str, project uuid
-            - knowledge_base_id: str or int, knowledge base record id
-    """
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAQA_INDEXER_INNER_SERVER_URL, '/add-knowledge-base-ai-process-and-index-task')
-    resp = requests.post(url, params=params, headers=headers)
-    
-    if resp.status_code != 200:
-        logger.error(f'Add knowledge base AI process task failed: status={resp.status_code}, body={resp.text}')
-        raise Exception(f'Failed with status code {resp.status_code}')
-    
-    if not resp.content:
-        return {'success': True}
-    
-    try:
-        return json.loads(resp.content)
-    except json.JSONDecodeError as e:
-        logger.error(f'Failed to parse response: {e}, content={resp.text}')
-        raise
-
 def manual_sync_connection(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
