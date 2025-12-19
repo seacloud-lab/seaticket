@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+from copy import deepcopy
 from unittest.mock import Mock, MagicMock, patch
 from rest_framework.test import APIClient
 from seahub.constants import PERMISSION_READ_WRITE
@@ -147,4 +148,146 @@ def mock_get_knowledge_base_record_by_pk():
 def mock_get_knowledge_base_record_by_pk_none():
     """Mock get_knowledge_base_record_by_pk to return None (record not found)."""
     with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=None) as mock:
+        yield mock
+
+
+@pytest.fixture
+def tag_option():
+    """Default tag option data."""
+    return {
+        'id': 'TAG1',
+        'name': 'Tag1',
+        'color': '#111111',
+        'text_color': '#eeeeee',
+        'description': '',
+    }
+
+
+@pytest.fixture
+def tag_table_metadata(tag_option):
+    """Base table metadata containing the tags column."""
+    return {
+        'id': 'table-1',
+        'columns': [
+            {
+                'name': 'tags',
+                'key': 'col-tags',
+                'data': {'options': [deepcopy(tag_option)]}
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_org_context_tags():
+    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=True) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_org_context_tags_false():
+    with patch('seahub.knowledge_base.knowledge_base_tags.is_org_context', return_value=False) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_tags(mock_project):
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
+        return_value=mock_project
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_project_by_uuid_none_tags():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.Projects.objects.get_project_by_uuid',
+        return_value=None
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_granted_tags():
+    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=True) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_check_permission_denied_tags():
+    with patch('seahub.knowledge_base.knowledge_base_tags.check_project_permission', return_value=None) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_seadb_api_tags():
+    with patch('seahub.knowledge_base.knowledge_base_tags.SeaDBAPI') as mock_class:
+        instance = MagicMock()
+        mock_class.return_value = instance
+        yield instance
+
+
+@pytest.fixture
+def mock_get_current_table_metadata(tag_table_metadata):
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.get_current_table_metadata',
+        return_value=deepcopy(tag_table_metadata)
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_column_from_columns_by_name(tag_table_metadata):
+    def _side_effect(columns, name):
+        for col in columns:
+            if col.get('name') == name:
+                return col
+        return None
+
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.get_column_from_columns_by_name',
+        side_effect=_side_effect
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_add_select_option(tag_option):
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.add_select_option',
+        return_value=deepcopy(tag_option)
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_batch_delete_select_option():
+    with patch('seahub.knowledge_base.knowledge_base_tags.batch_delete_select_option') as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_filter_kb_by_select():
+    records = [{'_pk': 1, 'title': 'Q1', 'content': 'A1'}]
+    columns = [{'name': 'title'}, {'name': 'content'}]
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.filter_kb_by_select',
+        return_value=(records, columns)
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_update_select_option():
+    with patch('seahub.knowledge_base.knowledge_base_tags.update_select_option') as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_get_kb_counts():
+    with patch(
+        'seahub.knowledge_base.knowledge_base_tags.get_kb_counts_group_by_column_name',
+        return_value=({'Tag1': 2}, None)
+    ) as mock:
         yield mock
