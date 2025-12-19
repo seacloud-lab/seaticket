@@ -13,13 +13,14 @@ import { isFunction } from '@/utils/type-detection';
 import { isEmptyObject } from '@/utils/object-utils';
 import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,
-  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP,
-  NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
+  TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
 } from '../../../../constants';
 import {
   getNewSelectedRange, getSelectedDimensions, selectedRangeIsSingleCell,
   getSelectedRangeDimensions, getSelectedRow, getSelectedColumn,
-  getRowsFromSelectedRange, getSelectedCellValue, checkIsSelectedCellEditable,
+  getRowsFromSelectedRange, getSelectedCellValue,
+  checkIsSelectedCellEditable, checkIsSelectedCellsEditable,
+  getColumnsFromSelectedRange,
 } from '../../utils/selected-cell-utils';
 import RowMetrics from '../../utils/row-metrics';
 import setEventTransfer from '../../../../utils/set-event-transfer';
@@ -314,6 +315,18 @@ class InteractionMasks extends React.Component {
     return checkIsSelectedCellEditable({ enableCellSelect, columns, isGroupView, selectedPosition, rowGetterByIndex });
   };
 
+  checkIsSelectedCellsEditable = () => {
+    const { enableCellSelect = true, columns, isGroupView = false, rowGetterByIndex } = this.props;
+    const { selectedRange } = this.state;
+    const canModifyRows = context.canModifyRows();
+    return canModifyRows && checkIsSelectedCellsEditable({ enableCellSelect, columns, isGroupView, selectedRange, rowGetterByIndex });
+  };
+
+  checkIsDragEnabled = () => {
+    const { modifyRows } = this.props;
+    return this.checkIsSelectedCellsEditable() && isFunction(modifyRows);
+  };
+
   isGridSelected = () => {
     return this.isCellWithinBounds(this.state.selectedPosition);
   };
@@ -330,16 +343,18 @@ class InteractionMasks extends React.Component {
 
   getSelectedRangeDimensions = (selectedRange) => {
     const { columns, rowHeight, isGroupView = false, groups, groupMetrics, groupOffsetLeft = 0, getRowTop: getRowTopFromRowsBody } = this.props;
+    const scrollLeft = this.props.getScrollLeft();
     return {
       ...getSelectedRangeDimensions({
-        selectedRange, columns, rowHeight, isGroupView, groups, groupMetrics, groupOffsetLeft, getRowTopFromRowsBody,
+        selectedRange, columns, scrollLeft, rowHeight, isGroupView, groups, groupMetrics, groupOffsetLeft, getRowTopFromRowsBody,
       })
     };
   };
 
   setScrollLeft = (scrollLeft, scrollTop) => {
-    const { selectionMask, state: { selectedPosition } } = this;
-    this.setMaskScrollLeft(selectionMask, selectedPosition, scrollLeft, scrollTop);
+    const { selectionMask, selectedRangeMask, state: { selectedPosition, selectedRange } } = this;
+    this.setMaskScrollStyle(selectedRangeMask, selectedRange, scrollTop);
+    this.setMaskScrollStyle(selectionMask, selectedPosition, scrollTop);
   };
 
   geHeaderHeight = () => {
@@ -351,10 +366,19 @@ class InteractionMasks extends React.Component {
     return containerHeight + 1;
   };
 
-  setMaskScrollLeft = (mask, position, scrollLeft, scrollTop) => {
+  setMaskScrollStyle = (mask, position, scrollTop) => {
     const headerHeight = this.geHeaderHeight();
     if (mask) {
-      const { idx, rowIdx, groupRowIndex } = position;
+      let idx; let rowIdx; let groupRowIndex;
+      if (position.topLeft) {
+        idx = position.topLeft.idx;
+        rowIdx = position.topLeft.rowIdx;
+        groupRowIndex = position.topLeft.groupRowIndex;
+      } else {
+        idx = position.idx;
+        rowIdx = position.rowIdx;
+        groupRowIndex = position.groupRowIndex;
+      }
       if (idx >= 0 && rowIdx >= 0) {
         const { columns, getRowTop, isGroupView = false, groupOffsetLeft = 0 } = this.props;
         const column = columns[idx];
@@ -387,7 +411,7 @@ class InteractionMasks extends React.Component {
     mask.style.position = 'absolute';
     mask.style.top = 0;
     mask.style.left = 0;
-    mask.style.transform = `translate(${left}px, ${top}px)`;
+    mask.style.transform = `translate(${left - 1}px, ${top}px)`;
   };
 
   getEditorPosition = () => {
@@ -461,24 +485,10 @@ class InteractionMasks extends React.Component {
   handleSelectCellsDelete = () => {
     const { isGroupView = false, rowGetterByIndex, columns } = this.props;
     const { selectedRange } = this.state;
-    const { topLeft, bottomRight } = selectedRange;
     const rowsFromSelectedRange = getRowsFromSelectedRange({ selectedRange, isGroupView, rowGetterByIndex });
     const editableRows = rowsFromSelectedRange.filter(row => context.canModifyRow(row));
     if (editableRows.length === 0) return;
-
-    const { idx: startColumnIdx } = topLeft;
-    const { idx: endColumnIdx } = bottomRight;
-    let editableColumns = [];
-
-    // get editable columns from selected range
-    for (let j = startColumnIdx; j <= endColumnIdx; j++) {
-      const column = columns[j];
-      if (!column || column.is_required || !column.editable || NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP[column.type]) {
-        continue;
-      }
-      editableColumns.push(column);
-    }
-
+    const editableColumns = getColumnsFromSelectedRange({ selectedRange, columns }, true);
     if (editableColumns.length === 0) return;
 
     let updateRowIds = [];
@@ -1031,7 +1041,7 @@ class InteractionMasks extends React.Component {
   renderSingleCellSelectView = () => {
     const { isEditorEnabled, selectedPosition } = this.state;
     const isDragEnabled = this.checkIsSelectedCellEditable();
-    const showDragHandle = (isDragEnabled && this.props.canModifyRows);
+    const showDragHandle = isDragEnabled && context.canModifyRows();
     if (isEditorEnabled) {
       return null;
     }
@@ -1052,7 +1062,7 @@ class InteractionMasks extends React.Component {
   renderCellRangeSelectView = () => {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
-    const isDragEnabled = this.checkIsSelectedCellEditable();
+    const isDragEnabled = this.checkIsSelectedCellsEditable();
     const showDragHandle = isDragEnabled && context.canModifyRows();
     return [
       <SelectionRangeMask
@@ -1179,7 +1189,6 @@ InteractionMasks.propTypes = {
   setGroupCanvasScrollTop: PropTypes.func,
   appPage: PropTypes.object,
   onFillingDragRows: PropTypes.func,
-  onCellsDragged: PropTypes.func,
   getCopiedRowsAndColumnsFromRange: PropTypes.func,
   onCommit: PropTypes.func,
   getTableCanvasContainerRect: PropTypes.func,
