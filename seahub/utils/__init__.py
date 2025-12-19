@@ -35,7 +35,8 @@ import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
     MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
     USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
-    S3_HOST, S3_KEY_ID, S3_SECRET_KEY
+    S3_HOST, S3_KEY_ID, S3_SECRET_KEY, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+from seahub.utils.mq import get_mq
 
 try:
     from seahub.settings import EMAIL_HOST
@@ -59,6 +60,8 @@ try:
 except Exception as e:
     logger.warning(e)
     s3_client = None
+
+mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
 
 
 def is_pro_version():
