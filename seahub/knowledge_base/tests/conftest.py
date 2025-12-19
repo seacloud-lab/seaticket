@@ -225,6 +225,7 @@ def mock_seadb_api_tags():
     with patch('seahub.knowledge_base.knowledge_base_tags.SeaDBAPI') as mock_class:
         instance = MagicMock()
         mock_class.return_value = instance
+        instance.assert_called_once = mock_class.assert_called_once
         yield instance
 
 
