@@ -620,7 +620,7 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
 def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, _pk):
     topics_table_name = DiscourseTopicsTable.gen_table_name(connection_id)
     replies_table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-    topics_sql = f"SELECT title, topic_id, created_time FROM `{topics_table_name}` WHERE _pk = {_pk}"
+    topics_sql = f"SELECT title, topic_id, created_time FROM `{topics_table_name}` WHERE _pk = {_pk} AND `deleted` = False"
     try:
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
         topic_record = topics_res.get('results')[0]

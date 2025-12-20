@@ -409,7 +409,7 @@ class RelatedRecordsView(APIView):
 
                 try:
                     pks_str = ','.join(map(str, pks))
-                    sql = f"SELECT * FROM `{table_name}` WHERE _pk IN ({pks_str})"
+                    sql = f"SELECT * FROM `{table_name}` WHERE _pk IN ({pks_str}) AND `deleted` = False"
                     res = seadb_api.query_rows(project_uuid_32, sql)
                     records = res.get('results', [])
 
