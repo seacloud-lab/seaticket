@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
@@ -52,7 +52,14 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
       toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
       return;
     }
-    setContent(value);
+    let normalized = value || { text: '' };
+    if (typeof normalized !== 'object') normalized = { text: normalized || '' };
+    const { previewText, images, links, checklist } = getPreviewContent(normalized.text || '', true, false);
+    normalized.preview = normalized.preview || previewText || '';
+    normalized.images = (Array.isArray(normalized.images) && normalized.images.length > 0) ? normalized.images : (images || []);
+    normalized.links = (Array.isArray(normalized.links) && normalized.links.length > 0) ? normalized.links : (links || []);
+    normalized.checklist = normalized.checklist || checklist || { total: 0, completed: 0 };
+    setContent(normalized);
   }, []);
 
   const handleFiles = useCallback((files) => {
@@ -71,7 +78,16 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const data = { title: validTitle, content: content.text, tags: tags || [] };
+    const text = (content && typeof content === 'object') ? (content.text || '') : (content || '');
+    const { previewText, images, links, checklist } = getPreviewContent(text, true, false);
+    const normalizedContent = {
+      text,
+      preview: previewText || '',
+      images: images || [],
+      links: links || [],
+      checklist: checklist || { total: 0, completed: 0 },
+    };
+    const data = { title: validTitle, content: normalizedContent, tags: tags || [] };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
