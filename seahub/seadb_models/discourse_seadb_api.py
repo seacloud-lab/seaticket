@@ -33,7 +33,7 @@ class DiscourseSeaDBAPI:
     def get_replies_by_topic_id(self, connection_id, topic_id):
         """Retrieve all replies for the specified topic_id."""
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id}"
+        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` = {topic_id} AND `deleted` = False"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
             return response['results']
@@ -47,7 +47,7 @@ class DiscourseSeaDBAPI:
 
     def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
         table_name = DiscourseRepliesTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
+        sql = f"SELECT * FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) AND `deleted` = False ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         replies = response.get('results', [])
         result = {}
