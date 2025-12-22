@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal, ModalHeader } from '@/components';
+import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal, ModalHeader, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
 import context from '@/sea-metadata/context';
@@ -232,17 +232,16 @@ const ViewItem = ({
                   {gettext('Delete view')}
                 </button>
               )}
-              {context.getSetting('enableExportXlsx', false) && (
-                <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
-                  {gettext('Export XLSX')}
-                </button>
+              {context.getSetting('enableExportAndImportXlsx', false) && (
+                <>
+                  <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
+                    {gettext('Export XLSX')}
+                  </button>
+                  <button onClick={handleImport} className="dropdown-item sea-qa-dropdown-item">
+                    {gettext('Import XLSX')}
+                  </button>
+                </>
               )}
-              <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
-                {gettext('Export XLSX')}
-              </button>
-              <button onClick={handleImport} className="dropdown-item sea-qa-dropdown-item">
-                {gettext('Import XLSX')}
-              </button>
             </div>
           </ClickOutside>
         </ModalPortal>
@@ -277,7 +276,8 @@ const ViewItem = ({
               if (!api) return;
               setIsImporting(true);
               api.commitImportExcel(importPreview.file_name).then(() => {
-                window.location.reload();
+                toaster.success(gettext('Updated successfully'));
+                setTimeout(() => window.location.reload(), 2000);
               }).catch(() => {
                 setIsImporting(false);
               });
