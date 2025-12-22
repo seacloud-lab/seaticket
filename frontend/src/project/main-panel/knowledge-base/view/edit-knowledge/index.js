@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
-import { KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
 import { useMetadata } from '../../hooks/metadata';
@@ -75,7 +75,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
-      if (columnName === 'tags' && Array.isArray(value) && value.length > 0) {
+      if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
         const tags = getRowsByIds(tagsData, value);
         value = tags.map(tag => tag.name);
       }
