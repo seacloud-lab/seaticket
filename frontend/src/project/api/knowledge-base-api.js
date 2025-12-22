@@ -126,10 +126,17 @@ class KnowledgeBaseAPI {
     return this._sendPostRequest(url, form);
   }
 
-  createRecord(projectUuid, { title, content }) {
+  createRecord(projectUuid, update) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
-    const payload = { title, content: (content && typeof content === 'object') ? JSON.stringify(content) : content };
-    return this.req.post(url, payload);
+    let form = new FormData();
+    Object.keys(update).forEach(key => {
+      let value = update[key];
+      if (typeof value === 'object') {
+        value = JSON.stringify(value);
+      }
+      form.append(key, value);
+    });
+    return this._sendPostRequest(url, form);
   }
 
   updateRecord(projectUuid, recordId, update = {}) {

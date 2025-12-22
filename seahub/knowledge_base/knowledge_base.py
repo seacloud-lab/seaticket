@@ -19,7 +19,7 @@ from seahub.project.utils import check_project_permission, get_current_table_met
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
-    send_knowledge_base_update_msg
+    send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,9 @@ class KnowledgeBasesAPIView(APIView):
         if not content_text or not isinstance(content_text, str) or not content_text.strip():
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        tag_names = request.data.get('tags', "[]")
+        tag_names = json.loads(tag_names)
 
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -75,6 +78,7 @@ class KnowledgeBasesAPIView(APIView):
             row = {
                 KnowledgeBaseTable.title.name: title,
                 KnowledgeBaseTable.content.name: content_text,
+                KnowledgeBaseTable.tags.name: tag_names,
                 KnowledgeBaseTable.creator.name: username,
                 KnowledgeBaseTable.created_time.name: now_datetime,
                 KnowledgeBaseTable.last_modifier.name: username,
@@ -227,7 +231,8 @@ class KnowledgeBaseAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI(username)
-            record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+            record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+            record = convert_kb_record_tags_name_to_id(columns, record)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -259,6 +264,13 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.content.name] = raw_content
 
+        if 'tags' in request.data:
+            tags = request.data.get('tags')
+            if not isinstance(tags, list):
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.tags.name] = tags
+
         username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -271,13 +283,6 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        if 'tags' in request.data:
-            tags = request.data.get('tags')
-            if not isinstance(tags, list):
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.tags.name] = tags
-
         if not row:
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -286,7 +291,7 @@ class KnowledgeBaseAPIView(APIView):
         row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
 
         seadb_api = SeaDBAPI(request.user.username)
-        record = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
+        record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)

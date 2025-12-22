@@ -4,20 +4,25 @@ import { Button, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { toaster } from '@/components';
-import { KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { toaster, CenteredLoading } from '@/components';
+import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
+import { useMetadata } from '../../hooks/metadata';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { TagsSettings } from '../../../tickets/components/ticket-settings';
 
 import './index.css';
 
 const NewKnowledge = ({ editorAPI, projectUuid }) => {
+  const { tagsData, createTag, isLoading: isMetadataLoading, } = useMetadata();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [tags, setTags] = useState([]);
 
   const contentEditorRef = useRef(null);
   const knowledgeRef = useRef(null);
@@ -66,17 +71,27 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const data = { title: validTitle, content: content.text };
-    knowledgeBaseAPI.createRecord(projectUuid, data).then(res => {
+    const data = { title: validTitle, content: content.text, tags: tags || [] };
+    let serverData = {};
+    Object.keys(data).forEach(columnName => {
+      let value = data[columnName];
+      if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
+        const tags = getRowsByIds(tagsData, value);
+        value = tags.map(tag => tag.name);
+      }
+      serverData[columnName] = value;
+    });
+    knowledgeBaseAPI.createRecord(projectUuid, serverData).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content]);
+  }, [title, content, tags]);
 
   useEffect(() => {
+    if (isMetadataLoading) return;
     const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
       if (!knowledgeDom) return;
@@ -88,7 +103,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, []);
+  }, [isMetadataLoading]);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
@@ -99,8 +114,10 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
     );
   }, [disabled, togglePageSlugId, onSubmit]);
 
-  // 616: comment min-width(584) + gap: 16 * 2
-  const isSmallScreen = containerWidth < 616;
+  if (isMetadataLoading) return (<CenteredLoading />);
+
+  // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
+  const isSmallScreen = containerWidth < 892;
 
   return (
     <div className={classnames('sea-qa-project-new-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
@@ -145,6 +162,16 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
               <UploadFilesButton onChange={handleFiles} />
               {!isSmallScreen && renderSubmitBtns()}
             </div>
+          </div>
+          <div className="sea-qa-project-knowledge-other-settings">
+            <TagsSettings
+              isReadonly={isSubmitting}
+              value={tags}
+              isLoading={isMetadataLoading}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={setTags}
+            />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-knowledge-submit-btns')}
         </div>

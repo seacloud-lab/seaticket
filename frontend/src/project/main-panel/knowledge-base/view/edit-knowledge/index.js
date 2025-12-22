@@ -5,21 +5,26 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
-import { KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
+import { useMetadata } from '../../hooks/metadata';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { TagsSettings } from '../../../tickets/components/ticket-settings';
 
 import './index.css';
 
 const EditKnowledge = ({ editorAPI, projectUuid }) => {
+  const { isLoading: isMetadataLoading, tagsData, createTag } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
   const [isLoading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [tags, setTags] = useState([]);
 
   const contentEditorRef = useRef(null);
   const knowledgeRef = useRef(null);
@@ -66,22 +71,32 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const data = { title: validTitle, content: content.text };
-    knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, data).then(res => {
+    const data = { title: validTitle, content: content.text, tags: tags || [] };
+    let serverData = {};
+    Object.keys(data).forEach(columnName => {
+      let value = data[columnName];
+      if (columnName === KNOWLEDGE_PREDEFINED_COLUMN_NAME.TAGS && Array.isArray(value) && value.length > 0) {
+        const tags = getRowsByIds(tagsData, value);
+        value = tags.map(tag => tag.name);
+      }
+      serverData[columnName] = value;
+    });
+    knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, serverData).then(res => {
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content]);
+  }, [title, content, tags]);
 
   useEffect(() => {
     if (!Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) {
       knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
-        const { title = '', content = '' } = res?.data.record || {};
+        const { title = '', content = '', tags = [] } = res?.data.record || {};
         setTitle(title);
         setContent({ text: content });
+        setTags(tags);
         setLoading(false);
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -89,10 +104,10 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
         setLoading(false);
       });
     }
-  }, [projectUuid, pageSlugId]);
+  }, []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isMetadataLoading) return;
     const knowledgeDom = knowledgeRef.current;
     const handleResize = () => {
       if (!knowledgeDom) return;
@@ -104,7 +119,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, [isLoading]);
+  }, [isLoading, isMetadataLoading]);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
@@ -115,10 +130,10 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     );
   }, [disabled, togglePageSlugId, onSubmit]);
 
-  if (isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
-  // 616: comment min-width(584) + gap: 16 * 2
-  const isSmallScreen = containerWidth < 616;
+  // 892: comment min-width(584) + others min-width(260) + gap: 16 * 3
+  const isSmallScreen = containerWidth < 892;
 
   return (
     <div className={classnames('sea-qa-project-edit-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
@@ -163,6 +178,15 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
               <UploadFilesButton onChange={handleFiles} />
               {!isSmallScreen && renderSubmitBtns()}
             </div>
+          </div>
+          <div className="sea-qa-project-knowledge-other-settings">
+            <TagsSettings
+              value={tags}
+              isLoading={isMetadataLoading}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={setTags}
+            />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-knowledge-submit-btns')}
         </div>
