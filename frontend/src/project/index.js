@@ -46,8 +46,22 @@ const Project = () => {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_SLUG_ID.NEW);
         return;
       }
-      if (activeBarKey === BAR_TYPE.TICKET && !location.pathname.endsWith('tickets/')) {
-        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
+      if (activeBarKey === BAR_TYPE.TICKET) {
+        if (!location.pathname.endsWith('tickets/')) {
+          eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
+        }
+        return;
+      }
+      if (activeBarKey === BAR_TYPE.MY_TICKET) {
+        if (!location.pathname.endsWith('my-tickets/')) {
+          eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
+        }
+        return;
+      }
+      if (activeBarKey === BAR_TYPE.TRASH) {
+        if (!location.pathname.endsWith('trash/')) {
+          eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
+        }
         return;
       }
       if (activeBarKey === BAR_TYPE.CONNECTION) {
