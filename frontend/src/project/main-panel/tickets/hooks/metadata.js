@@ -27,7 +27,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newTag._id] = newTag;
       });
     }
-    newData = newData._updateLoading(false);
+    newData.isLoading = false;
     setTagsData(newData);
   }, [tagsData]);
 
@@ -117,7 +117,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newType._id] = newType;
       });
     }
-    newData = newData._updateLoading(false);
+    newData.isLoading = false;
     setTypesData(newData);
   }, [typesData]);
 
@@ -212,7 +212,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newSubstate._id] = newSubstate;
       });
     }
-    newData = newData._updateLoading(false);
+    newData.isLoading = false;
     setSubstatesData(newData);
   }, [substatesData]);
 
@@ -317,7 +317,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[option._id] = option;
       });
     }
-    newData = newData._updateLoading(false);
+    newData.isLoading = false;
     setStatesData(newData);
   }, [statesData]);
 

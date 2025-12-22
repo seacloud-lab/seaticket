@@ -23,7 +23,7 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newTag._id] = newTag;
       });
     }
-    newData = newData._updateLoading(false);
+    newData.isLoading = false;
     setTagsData(newData);
   }, [tagsData]);
 
