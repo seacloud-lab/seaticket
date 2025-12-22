@@ -104,7 +104,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
         setLoading(false);
       });
     }
-  }, [projectUuid, pageSlugId, tagsData]);
+  }, []);
 
   useEffect(() => {
     if (isLoading || isMetadataLoading) return;
