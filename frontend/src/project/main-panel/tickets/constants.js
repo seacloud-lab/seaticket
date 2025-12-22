@@ -68,20 +68,27 @@ export const PREDEFINED_TICKET_SUBSTATE_OPTION = {
     border_color: '#9c9c9e',
   },
   '0013': {
+    name: gettext('Waiting on user'),
+    description: gettext('Waiting on user'),
+    text_color: '#FFF',
+    color: '#EAA775',
+    border_color: '#EAA775',
+  },
+  '0014': {
     name: gettext('Completed'),
     description: gettext('Done, closed, fixed, resolved'),
     text_color: '#FFF',
     color: '#8250df',
     border_color: '#8250df',
   },
-  '0014': {
+  '0015': {
     name: gettext('Not planned'),
     description: gettext('Won\'t fix, can\'t repro, stale'),
     text_color: '#FFF',
     color: '#59636e',
     border_color: '#59636e',
   },
-  '0015': {
+  '0016': {
     name: gettext('Duplicate'),
     description: gettext('Duplicate of another ticket'),
     text_color: '#FFF',

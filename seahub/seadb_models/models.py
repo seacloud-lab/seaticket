@@ -76,11 +76,12 @@ class SelectTypes:
           "0010",
           "0011",
           "0012",
+          "0013"
         ],
         "0002": [
-          "0013",
           "0014",
-          "0015"
+          "0015",
+          "0016"
         ]
       },
       "options": [
@@ -104,18 +105,24 @@ class SelectTypes:
         },
         {
           "id": "0013",
+          "name": "Waiting on user",
+          "color": "#EAA775",
+          "text_color": "#FFFFFF"
+        },
+        {
+          "id": "0014",
           "name": "Completed",
           "color": "#8250DF",
           "text_color": "#FFFFFF",
         },
         {
-          "id": "0014",
+          "id": "0015",
           "name": "Not planned",
           "color": "#59636E",
           "text_color": "#FFFFFF"
         },
         {
-          "id": "0015",
+          "id": "0016",
           "name": "Duplicate",
           "color": "#59636E",
           "text_color": "#FFFFFF"
