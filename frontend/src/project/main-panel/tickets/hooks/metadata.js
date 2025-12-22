@@ -18,14 +18,16 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // tags
   const applyCreateTags = useCallback((newTags, isReload = false) => {
-    if (!Array.isArray(newTags) || newTags.length === 0) return;
-    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(tagsData);
-    newTags.forEach(tag => {
-      const newTag = tag instanceof Option ? tag : new Option(tag);
-      newData.rows.push(newTag);
-      newData.row_ids.push(newTag._id);
-      newData.id_row_map[newTag._id] = newTag;
-    });
+    let newData = isReload ? new OptionsData({}) : deepCopy(tagsData);
+    if (Array.isArray(newTags) && newTags.length > 0) {
+      newTags.forEach(tag => {
+        const newTag = tag instanceof Option ? tag : new Option(tag);
+        newData.rows.push(newTag);
+        newData.row_ids.push(newTag._id);
+        newData.id_row_map[newTag._id] = newTag;
+      });
+    }
+    newData = newData._updateLoading(false);
     setTagsData(newData);
   }, [tagsData]);
 
@@ -106,14 +108,16 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
-    if (!Array.isArray(newTypes) || newTypes.length === 0) return;
-    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(typesData);
-    newTypes.forEach(type => {
-      const newType = type instanceof Option ? type : new Option(type);
-      newData.rows.push(newType);
-      newData.row_ids.push(newType._id);
-      newData.id_row_map[newType._id] = newType;
-    });
+    let newData = isReload ? new OptionsData({}) : deepCopy(typesData);
+    if (Array.isArray(newTypes) && newTypes.length > 0) {
+      newTypes.forEach(type => {
+        const newType = type instanceof Option ? type : new Option(type);
+        newData.rows.push(newType);
+        newData.row_ids.push(newType._id);
+        newData.id_row_map[newType._id] = newType;
+      });
+    }
+    newData = newData._updateLoading(false);
     setTypesData(newData);
   }, [typesData]);
 
@@ -199,14 +203,16 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
-    if (!Array.isArray(newSubstates) || newSubstates.length === 0) return;
-    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(substatesData);
-    newSubstates.forEach(substate => {
-      const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
-      newData.rows.push(newSubstate);
-      newData.row_ids.push(newSubstate._id);
-      newData.id_row_map[newSubstate._id] = newSubstate;
-    });
+    let newData = isReload ? new OptionsData({}) : deepCopy(substatesData);
+    if (Array.isArray(newSubstates) && newSubstates.length > 0) {
+      newSubstates.forEach(substate => {
+        const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
+        newData.rows.push(newSubstate);
+        newData.row_ids.push(newSubstate._id);
+        newData.id_row_map[newSubstate._id] = newSubstate;
+      });
+    }
+    newData = newData._updateLoading(false);
     setSubstatesData(newData);
   }, [substatesData]);
 
@@ -302,14 +308,16 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
-    if (!Array.isArray(newStates) || newStates.length === 0) return;
-    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(statesData);
-    newStates.forEach(state => {
-      const option = state instanceof Option ? state : new Option(state);
-      newData.rows.push(option);
-      newData.row_ids.push(option._id);
-      newData.id_row_map[option._id] = option;
-    });
+    let newData = isReload ? new OptionsData({}) : deepCopy(statesData);
+    if (Array.isArray(newStates) && newStates.length > 0) {
+      newStates.forEach(state => {
+        const option = state instanceof Option ? state : new Option(state);
+        newData.rows.push(option);
+        newData.row_ids.push(option._id);
+        newData.id_row_map[option._id] = option;
+      });
+    }
+    newData = newData._updateLoading(false);
     setStatesData(newData);
   }, [statesData]);
 

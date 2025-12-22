@@ -14,14 +14,16 @@ export const MetadataProvider = ({ projectUuid, children }) => {
 
   // tags
   const applyCreateTags = useCallback((newTags, isReload = false) => {
-    if (!Array.isArray(newTags) || newTags.length === 0) return;
-    let newData = isReload ? new OptionsData({}, new Date()) : deepCopy(tagsData);
-    newTags.forEach(tag => {
-      const newTag = tag instanceof Option ? tag : new Option(tag);
-      newData.rows.push(newTag);
-      newData.row_ids.push(newTag._id);
-      newData.id_row_map[newTag._id] = newTag;
-    });
+    let newData = isReload ? new OptionsData({}) : deepCopy(tagsData);
+    if (Array.isArray(newTags) && newTags.length) {
+      newTags.forEach(tag => {
+        const newTag = tag instanceof Option ? tag : new Option(tag);
+        newData.rows.push(newTag);
+        newData.row_ids.push(newTag._id);
+        newData.id_row_map[newTag._id] = newTag;
+      });
+    }
+    newData = newData._updateLoading(false);
     setTagsData(newData);
   }, [tagsData]);
 
