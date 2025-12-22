@@ -71,7 +71,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
 
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
-    const data = { title: validTitle, content: content.text, tags };
+    const data = { title: validTitle, content: content.text, tags: tags || [] };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
