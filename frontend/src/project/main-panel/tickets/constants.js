@@ -14,6 +14,8 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   SUB_STATE: 'substate',
   TYPE: 'type',
   CONTENT: 'content',
+  AI_SUMMARY: 'ai_summary',
+  AI_PROCESSED_TIME: 'ai_processed_time',
   ASSIGNEES: 'assignees',
   TAGS: 'tags',
   PARTICIPANTS: 'participants',
@@ -154,6 +156,18 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     editable: true,
     is_required: true,
   },
+  [PREDEFINED_TICKET_COLUMN_NAME.AI_SUMMARY]: {
+    type: CellType.TEXT,
+    display_name: gettext('AI Summary'),
+    editable: false,
+    is_hover_show_content: true,
+  },
+  [PREDEFINED_TICKET_COLUMN_NAME.AI_PROCESSED_TIME]: {
+    type: CellType.DATE,
+    display_name: gettext('AI processed time'),
+    editable: false,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' },
+  },
   [PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Assignees'),
@@ -215,10 +229,12 @@ export const TICKET_COLUMNS_ORDER_CONFIG = {
   'tags': 8,
 
   'content': 9,
-  'creator': 10,
-  'created_time': 11,
-  'modified_time': 12,
-  'closed_time': 13,
+  'ai_summary': 10,
+  'ai_processed_time': 11,
+  'creator': 12,
+  'created_time': 13,
+  'modified_time': 14,
+  'closed_time': 15,
 };
 
 export const TICKET_COLUMNS_WIDTH_CONFIG = {
@@ -234,6 +250,8 @@ export const TICKET_COLUMNS_WIDTH_CONFIG = {
   'tags': 200,
 
   'content': 400,
+  'ai_summary': 200,
+  'ai_processed_time': 200,
   'creator': 200,
   'created_time': 200,
   'modified_time': 200,
