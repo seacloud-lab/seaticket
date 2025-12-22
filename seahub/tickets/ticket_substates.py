@@ -102,7 +102,8 @@ class TicketSubstatesAPIView(APIView):
         if not text_color:
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
+        description = request.POST.get('description')
         parent_id = request.POST.get('parent_id')
         if not parent_id:
             error_msg = 'parent_id invalid.'
@@ -137,6 +138,8 @@ class TicketSubstatesAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             option_data = {'color': color, 'text_color': text_color}
+            if description:
+                option_data['description'] = description
             substate_option = add_select_option(seadb_api, project_uuid, table_id, substate_column_key, name, option_data)
             substate_option_id = substate_option.get('id', '')
 

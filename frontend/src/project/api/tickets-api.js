@@ -235,12 +235,13 @@ class TicketsAPI {
     return this.req.get(url, { params });
   }
 
-  createTicketSubstate(projectUuid, { name, color, text_color, parent_id }) {
+  createTicketSubstate(projectUuid, { name, color, text_color, parent_id, description }) {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/ticket/substates/';
     let form = new FormData();
     if (name) form.append('name', name);
     if (color) form.append('color', color);
     if (text_color) form.append('text_color', text_color);
+    if (description) form.append('description', description);
     if (parent_id) form.append('parent_id', parent_id);
     return this._sendPostRequest(url, form);
   }
