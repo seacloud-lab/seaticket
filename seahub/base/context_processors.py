@@ -63,7 +63,7 @@ def base(request):
     avatar_url = ''
     username = request.user.username
     if (not request.headers.get('x-requested-with') == 'XMLHttpRequest') and ("api2/" not in request.path) and \
-            ("api/v2.1/" not in request.path):
+            ("api/v1/" not in request.path):
 
         # get logo path
         custom_logo_file = os.path.join(MEDIA_ROOT, CUSTOM_LOGO_PATH)

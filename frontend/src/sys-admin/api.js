@@ -46,7 +46,7 @@ class SysAdminServiceApi {
 
   // sys-admin
   sysAdminListAllProjects(page, perPage) {
-    const url = this.server + '/api/v2.1/admin/projects/';
+    const url = this.server + '/api/v1/admin/projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -55,7 +55,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListTrashProjects(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/trash-projects/';
+    let url = this.server + '/api/v1/admin/trash-projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -66,7 +66,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminRestoreTrashProject(projectID, restoreToAdminAccount) {
-    const url = this.server + '/api/v2.1/admin/trash-projects/' + projectID + '/';
+    const url = this.server + '/api/v1/admin/trash-projects/' + projectID + '/';
     const data = {
       restore_to_admin_account: restoreToAdminAccount
     };
@@ -74,12 +74,12 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteProject(project_uuid) {
-    const url = this.server + '/api/v2.1/admin/projects/' + project_uuid + '/';
+    const url = this.server + '/api/v1/admin/projects/' + project_uuid + '/';
     return this.req.delete(url);
   }
 
   sysAdminSearchProjects(query, page, perPage) {
-    const url = this.server + '/api/v2.1/admin/search-projects/';
+    const url = this.server + '/api/v1/admin/search-projects/';
     let params = {
       query: query,
       page: page,
@@ -90,7 +90,7 @@ class SysAdminServiceApi {
 
 
   sysAdminListEmailSendingLogs(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/email-sending-logs/';
+    let url = this.server + '/api/v1/admin/email-sending-logs/';
     let params = {
       page: page,
       per_page: perPage
@@ -99,7 +99,7 @@ class SysAdminServiceApi {
   }
 
   listVirusFiles(page, perPage, hasHandled) {
-    const url = this.server + '/api/v2.1/admin/virus-files/';
+    const url = this.server + '/api/v1/admin/virus-files/';
     let params = {
       page: page,
       per_page: perPage
@@ -111,19 +111,19 @@ class SysAdminServiceApi {
   }
 
   deleteVirusFile(virusID) {
-    const url = this.server + '/api/v2.1/admin/virus-files/' + virusID + '/';
+    const url = this.server + '/api/v1/admin/virus-files/' + virusID + '/';
     return this.req.delete(url);
   }
 
   toggleIgnoreVirusFile(virusID, ignore) {
-    const url = this.server + '/api/v2.1/admin/virus-files/' + virusID + '/';
+    const url = this.server + '/api/v1/admin/virus-files/' + virusID + '/';
     let formData = new FormData();
     formData.append('ignore', ignore);
     return this.req.put(url, formData);
   }
 
   batchProcessVirusFiles(virusIDs, operation) {
-    const url = this.server + '/api/v2.1/admin/virus-files/batch/';
+    const url = this.server + '/api/v1/admin/virus-files/batch/';
     let formData = new FormData();
     for (let i = 0; i < virusIDs.length; i++) {
       formData.append('virus_ids', virusIDs[i]);
@@ -134,7 +134,7 @@ class SysAdminServiceApi {
 
   // sys admin org
   sysAdminListOrgs(page, per_page, role) {
-    const url = this.server + '/api/v2.1/admin/organizations/';
+    const url = this.server + '/api/v1/admin/organizations/';
     let params = {
       page,
       per_page,
@@ -146,12 +146,12 @@ class SysAdminServiceApi {
   }
 
   sysAdminGetOrg(orgID) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/';
     return this.req.get(url);
   }
 
   sysAdminUpdateOrg(orgID, orgInfo) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/';
     let formData = new FormData();
     if (orgInfo.orgName) {
       formData.append('org_name', orgInfo.orgName);
@@ -178,7 +178,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminAddOrg(orgName, adminEmail, adminName, password) {
-    const url = this.server + '/api/v2.1/admin/organizations/';
+    const url = this.server + '/api/v1/admin/organizations/';
     let formData = new FormData();
     formData.append('org_name', orgName);
     formData.append('admin_email', adminEmail);
@@ -188,17 +188,17 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteOrg(orgID) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/';
     return this.req.delete(url);
   }
 
   sysAdminListOrgUsers(orgID, is_staff) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/users/?is_staff=' + is_staff;
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/users/?is_staff=' + is_staff;
     return this.req.get(url);
   }
 
   sysAdminAddOrgUser(orgID, email, name, password) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/users/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/users/';
     let formData = new FormData();
     formData.append('email', email);
     formData.append('name', name);
@@ -207,7 +207,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminUpdateOrgUser(orgID, email, attribute, value) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/users/' + encodeURIComponent(email) + '/';
     let formData = new FormData();
     switch (attribute) {
       case 'active':
@@ -229,17 +229,17 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteOrgUser(orgID, email) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/users/' + encodeURIComponent(email) + '/';
     return this.req.delete(url);
   }
 
   sysAdminListOrgGroups(orgID) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/groups/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/groups/';
     return this.req.get(url);
   }
 
   sysAdminListOrgProjects(orgID, page, perPage) {
-    const url = this.server + '/api/v2.1/admin/organizations/' + orgID + '/projects/';
+    const url = this.server + '/api/v1/admin/organizations/' + orgID + '/projects/';
     let params = {
       page: page,
       per_page: perPage
@@ -250,7 +250,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminSearchOrgs(query) {
-    let url = this.server + '/api/v2.1/admin/search-organization/';
+    let url = this.server + '/api/v1/admin/search-organization/';
     let params = {
       query: query
     };
@@ -258,7 +258,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListUsers(page, perPage, isLDAPImport) {
-    let url = this.server + '/api/v2.1/admin/users/';
+    let url = this.server + '/api/v1/admin/users/';
     let params = {
       page: page,
       per_page: perPage
@@ -270,7 +270,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminAddUser(email, name, role, password) {
-    const url = this.server + '/api/v2.1/admin/users/';
+    const url = this.server + '/api/v1/admin/users/';
     let formData = new FormData();
     formData.append('email', email);
     formData.append('name', name);
@@ -280,7 +280,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminUpdateUser(email, attribute, value) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/';
     let formData = new FormData();
     switch (attribute) {
       case 'password':
@@ -335,23 +335,23 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteUser(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/';
     return this.req.delete(url);
   }
 
   sysAdminGetUser(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/';
     let params = {};
     return this.req.get(url, { params: params });
   }
 
   sysAdminResetUserPassword(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/reset-password/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/reset-password/';
     return this.req.put(url);
   }
 
   sysAdminDeleteUserInBatch(emails) {
-    const url = this.server + '/api/v2.1/admin/users/batch/';
+    const url = this.server + '/api/v1/admin/users/batch/';
     let formData = new FormData();
     emails.map(email => formData.append('email', email));
     formData.append('operation', 'delete-user');
@@ -360,31 +360,31 @@ class SysAdminServiceApi {
 
   sysAdminSetForceTwoFactorAuth(email, isForce2FA) {
     let isForce = isForce2FA ? 1 : 0;
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/two-factor-auth/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/two-factor-auth/';
     let formData = new FormData();
     formData.append('force_2fa', isForce);
     return this.req.put(url, formData);
   }
 
   sysAdminDeleteTwoFactorAuth(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/two-factor-auth/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/two-factor-auth/';
     return this.req.delete(url);
   }
 
   sysAdminImportUserViaFile(file) {
-    const url = this.server + '/api/v2.1/admin/import-users/';
+    const url = this.server + '/api/v1/admin/import-users/';
     let formData = new FormData();
     formData.append('file', file);
     return this._sendPostRequest(url, formData);
   }
 
   sysAdminListAdmins() {
-    const url = this.server + '/api/v2.1/admin/admin-users/';
+    const url = this.server + '/api/v1/admin/admin-users/';
     return this.req.get(url);
   }
 
   sysAdminUpdateAdminRole(email, role) {
-    const url = this.server + '/api/v2.1/admin/admin-role/';
+    const url = this.server + '/api/v1/admin/admin-role/';
     let formData = new FormData();
     formData.append('email', email);
     formData.append('role', role);
@@ -392,38 +392,38 @@ class SysAdminServiceApi {
   }
 
   sysAdminAddAdminInBatch(emails) {
-    const url = this.server + '/api/v2.1/admin/admin-users/batch/';
+    const url = this.server + '/api/v1/admin/admin-users/batch/';
     let formData = new FormData();
     emails.map(email => formData.append('email', email));
     return this._sendPostRequest(url, formData);
   }
 
   sysAdminListGroupsJoinedByUser(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/groups/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/groups/';
     return this.req.get(url);
   }
 
   sysAdminAddUserToGroups(email, groupIds) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/groups/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/groups/';
     const form = new FormData();
     groupIds.forEach(groupId => form.append('group_id', groupId));
     return this._sendPostRequest(url, form);
   }
 
   sysAdminListUserProjects(email) {
-    const url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/projects/';
+    const url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/projects/';
     return this.req.get(url);
   }
 
   sysAdminRenameUserFile(email, direntPath, newName) {
-    let url = this.server + '/api/v2.1/admin/users/' + encodeURIComponent(email) + '/storage/' + direntPath;
+    let url = this.server + '/api/v1/admin/users/' + encodeURIComponent(email) + '/storage/' + direntPath;
     let form = new FormData();
     form.append('new_name', newName);
     return this.req.put(url, form);
   }
 
   sysAdminSearchUsers(query, page, perPage) {
-    var url = this.server + '/api/v2.1/admin/search-user/';
+    var url = this.server + '/api/v1/admin/search-user/';
     var params = {
       query: query,
       page: page,
@@ -433,37 +433,37 @@ class SysAdminServiceApi {
   }
 
   sysAdminSearchUserByOrgID(queryStr, orgID, limit = 10) {
-    const url = this.server + '/api/v2.1/admin/search-user-by-org-id/?query=' + encodeURIComponent(queryStr) + '&org_id=' + orgID + '&limit=' + limit;
+    const url = this.server + '/api/v1/admin/search-user-by-org-id/?query=' + encodeURIComponent(queryStr) + '&org_id=' + orgID + '&limit=' + limit;
     return this.req.get(url);
   }
 
   sysAdminDismissGroupByID(groupID) {
-    const url = this.server + '/api/v2.1/admin/groups/' + groupID + '/';
+    const url = this.server + '/api/v1/admin/groups/' + groupID + '/';
     return this.req.delete(url);
   }
 
   sysAdminListGroupProjects(groupID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/projects/';
     return this.req.get(url);
   }
 
   sysAdminDeleteProjectsFromGroup(groupID, projectUuid) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/projects/' + projectUuid + '/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/projects/' + projectUuid + '/';
     return this.req.delete(url);
   }
 
   sysAdminListGroupMembers(groupID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/members/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/members/';
     return this.req.get(url);
   }
 
   sysAdminDeleteGroupMember(groupID, email) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/members/' + encodeURIComponent(email) + '/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/members/' + encodeURIComponent(email) + '/';
     return this.req.delete(url);
   }
 
   sysAdminAddGroupMember(groupID, emails) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/members/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/members/';
     let form = new FormData();
     for (var i = 0; i < emails.length; i++) {
       form.append('email', emails[i]);
@@ -472,14 +472,14 @@ class SysAdminServiceApi {
   }
 
   sysAdminUpdateGroupMemberRole(groupID, email, isAdmin) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/members/' + encodeURIComponent(email) + '/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/members/' + encodeURIComponent(email) + '/';
     let formData = new FormData();
     formData.append('is_admin', isAdmin);
     return this.req.put(url, formData);
   }
 
   sysAdminListAllGroups(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/groups/';
+    let url = this.server + '/api/v1/admin/groups/';
     let params = {
       page: page,
       per_page: perPage
@@ -488,7 +488,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminCreateNewGroup(groupName, ownerEmail) {
-    let url = this.server + '/api/v2.1/admin/groups/';
+    let url = this.server + '/api/v1/admin/groups/';
     let formData = new FormData();
     formData.append('group_name', groupName);
     formData.append('group_owner', ownerEmail);
@@ -496,14 +496,14 @@ class SysAdminServiceApi {
   }
 
   sysAdminTransferGroup(receiverEmail, groupID) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/';
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/';
     let formData = new FormData();
     formData.append('new_owner', receiverEmail);
     return this.req.put(url, formData);
   }
 
   sysAdminSearchGroups(query) {
-    let url = this.server + '/api/v2.1/admin/search-group/';
+    let url = this.server + '/api/v1/admin/search-group/';
     let params = {
       query: query
     };
@@ -511,31 +511,31 @@ class SysAdminServiceApi {
   }
 
   sysAdminRenameGroupFile(groupID, direntPath, newName) {
-    let url = this.server + '/api/v2.1/admin/groups/' + groupID + '/storage/' + direntPath;
+    let url = this.server + '/api/v1/admin/groups/' + groupID + '/storage/' + direntPath;
     let form = new FormData();
     form.append('new_name', newName);
     return this.req.put(url, form);
   }
 
   sysAdminListAllSysNotifications() {
-    let url = this.server + '/api/v2.1/admin/sys-notifications/';
+    let url = this.server + '/api/v1/admin/sys-notifications/';
     return this.req.get(url);
   }
 
   sysAdminAddSysNotification(msg) {
-    let url = this.server + '/api/v2.1/admin/sys-notifications/';
+    let url = this.server + '/api/v1/admin/sys-notifications/';
     let formData = new FormData();
     formData.append('msg', msg);
     return this._sendPostRequest(url, formData);
   }
 
   sysAdminDeleteSysNotification(nid) {
-    let url = this.server + '/api/v2.1/admin/sys-notifications/' + nid + '/';
+    let url = this.server + '/api/v1/admin/sys-notifications/' + nid + '/';
     return this.req.delete(url);
   }
 
   sysAdminUpdateSysNotification(nid, msg, primary) {
-    let url = this.server + '/api/v2.1/admin/sys-notifications/' + nid + '/';
+    let url = this.server + '/api/v1/admin/sys-notifications/' + nid + '/';
     let formData = new FormData();
     if (msg) {
       formData.append('msg', msg);
@@ -547,7 +547,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListAllSysUserNotifications(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/sys-user-notifications/';
+    let url = this.server + '/api/v1/admin/sys-user-notifications/';
     let params = {
       page: page,
       per_page: perPage
@@ -556,7 +556,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminAddSysUserNotification(msg, username) {
-    let url = this.server + '/api/v2.1/admin/sys-user-notifications/';
+    let url = this.server + '/api/v1/admin/sys-user-notifications/';
     let formData = new FormData();
     formData.append('msg', msg);
     formData.append('username', username);
@@ -564,12 +564,12 @@ class SysAdminServiceApi {
   }
 
   sysAdminDeleteSysUserNotification(nid) {
-    let url = this.server + '/api/v2.1/admin/sys-user-notifications/' + nid + '/';
+    let url = this.server + '/api/v1/admin/sys-user-notifications/' + nid + '/';
     return this.req.delete(url);
   }
 
   sysAdminListAuditLogs(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/audit-logs/';
+    let url = this.server + '/api/v1/admin/audit-logs/';
     let params = {
       page: page,
       per_page: perPage
@@ -578,7 +578,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListLoginLogs(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/logs/login-logs/';
+    let url = this.server + '/api/v1/admin/logs/login-logs/';
     let params = {
       page: page,
       per_page: perPage
@@ -587,7 +587,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListAdminLoginLogs(page, perPage) {
-    let url = this.server + '/api/v2.1/admin/admin-login-logs/';
+    let url = this.server + '/api/v1/admin/admin-login-logs/';
     let params = {
       page: page,
       per_page: perPage
@@ -596,7 +596,7 @@ class SysAdminServiceApi {
   }
 
   sysAdminListActiveUsersStatistics(startTime, endTime) {
-    const url = this.server + '/api/v2.1/admin/statistics/active-users/';
+    const url = this.server + '/api/v1/admin/statistics/active-users/';
     let params = {
       start: startTime,
       end: endTime,
@@ -605,32 +605,32 @@ class SysAdminServiceApi {
   }
 
   sysAdminUpdateLogo(file) {
-    let url = this.server + '/api/v2.1/admin/logo/';
+    let url = this.server + '/api/v1/admin/logo/';
     let formData = new FormData();
     formData.append('logo', file);
     return this._sendPostRequest(url, formData);
   }
 
   sysAdminUpdateLoginBG(file) {
-    let url = this.server + '/api/v2.1/admin/login-background-image/';
+    let url = this.server + '/api/v1/admin/login-background-image/';
     let formData = new FormData();
     formData.append('login_bg_image', file);
     return this._sendPostRequest(url, formData);
   }
 
   sysAdminExportProject(projectUuid) {
-    const url = this.server + '/api/v2.1/admin/projects/' + projectUuid + '/export-project/';
+    const url = this.server + '/api/v1/admin/projects/' + projectUuid + '/export-project/';
     return this.req.get(url);
   }
 
   sysAdminGetSysInfo() {
-    const url = this.server + '/api/v2.1/admin/sysinfo/';
+    const url = this.server + '/api/v1/admin/sysinfo/';
     return this.req.get(url);
   }
 
   // upload license
   sysAdminUploadLicense(file) {
-    const url = this.server + '/api/v2.1/admin/license/';
+    const url = this.server + '/api/v1/admin/license/';
     let formData = new FormData();
     formData.append('license', file);
     return this._sendPostRequest(url, formData);
@@ -638,7 +638,7 @@ class SysAdminServiceApi {
 
   // AI statistics
   sysAdminGetAIStatistics(date, groupBy, page, perPage) {
-    const url = this.server + '/api/v2.1/admin/statistics/ai/';
+    const url = this.server + '/api/v1/admin/statistics/ai/';
     let params = {
       date: date,
       group_by: groupBy,

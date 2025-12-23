@@ -56,69 +56,69 @@ urlpatterns = [
     re_path(r'^api2/', include('seahub.api2.urls')),
 
     ## slide captcha
-    re_path(r'^api/v2.1/slide-captcha/$', SlideCaptchaView.as_view(), name="api-v2.1-slide-captcha"),
+    re_path(r'^api/v1/slide-captcha/$', SlideCaptchaView.as_view(), name="api-v1-slide-captcha"),
 
     ## user
-    re_path(r'^api/v2.1/user/$', User.as_view(), name="api-v2.1-user"),
+    re_path(r'^api/v1/user/$', User.as_view(), name="api-v1-user"),
 
     ## user: update contact email
-    re_path(r'^api/v2.1/user/contact-email/$', UserContactEmailView.as_view(), name="api-v2.1-user-contact-email"),
+    re_path(r'^api/v1/user/contact-email/$', UserContactEmailView.as_view(), name="api-v1-user-contact-email"),
 
     # user list
-    re_path(r'^api/v2.1/user-list/$', UserListView.as_view(), name='api-v2.1-user-list'),
+    re_path(r'^api/v1/user-list/$', UserListView.as_view(), name='api-v1-user-list'),
 
     ## user:phone
-    re_path(r'^api/v2.1/user/sms-verify/$', SmsVerifyCodeView.as_view(), name="api-v2.1-user-sms-verify"),
-    re_path(r'^api/v2.1/user/bind-phone/$', BindPhoneView.as_view(), name="api-v2.1-user-phone-bind"),
-    re_path(r'^api/v2.1/user/unbind-phone/$', UnbindPhoneView.as_view(), name="api-v2.1-user-phone-unbind"),
+    re_path(r'^api/v1/user/sms-verify/$', SmsVerifyCodeView.as_view(), name="api-v1-user-sms-verify"),
+    re_path(r'^api/v1/user/bind-phone/$', BindPhoneView.as_view(), name="api-v1-user-phone-bind"),
+    re_path(r'^api/v1/user/unbind-phone/$', UnbindPhoneView.as_view(), name="api-v1-user-phone-unbind"),
 
     # user:password
-    re_path(r'^api/v2.1/user/remove-password/$', RemovePasswordView.as_view(), name="api-v2.1-user-remove-password"),
+    re_path(r'^api/v1/user/remove-password/$', RemovePasswordView.as_view(), name="api-v1-user-remove-password"),
 
     # user:reset password by phone
-    re_path(r'^api/v2.1/user/reset-password-by-phone/$', UserResetPasswordByPhoneView.as_view(), name="api-v2.1-user-reset-password-by-phone"),
-    re_path(r'^api/v2.1/user/reset-password/$', ResetPasswordView.as_view(), name="api-v2.1-user-reset-password"),
+    re_path(r'^api/v1/user/reset-password-by-phone/$', UserResetPasswordByPhoneView.as_view(), name="api-v1-user-reset-password-by-phone"),
+    re_path(r'^api/v1/user/reset-password/$', ResetPasswordView.as_view(), name="api-v1-user-reset-password"),
 
     ## sessions
-    re_path(r'^api/v2.1/sessions/$', SessionsView.as_view(), name='api-v2.1-sessions'),
-    re_path(r'^api/v2.1/sessions/(?P<session_id>\d+)/$', SessionView.as_view(), name='api-v2.1-session'),
-    re_path(r'^api/v2.1/online-sessions/(?P<session_id>\d+)/$', OnlineSessionView.as_view(), name='api-v2.1-online-session'),
+    re_path(r'^api/v1/sessions/$', SessionsView.as_view(), name='api-v1-sessions'),
+    re_path(r'^api/v1/sessions/(?P<session_id>\d+)/$', SessionView.as_view(), name='api-v1-session'),
+    re_path(r'^api/v1/online-sessions/(?P<session_id>\d+)/$', OnlineSessionView.as_view(), name='api-v1-online-session'),
 
     ## user::groups
-    re_path(r'^api/v2.1/groups/$', GroupsView.as_view(), name='api-v2.1-groups'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/$', GroupView.as_view(), name='api-v2.1-group'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/$', GroupMembers.as_view(), name='api-v2.1-group-members'),
-    re_path(r'^api/v2.1/groups/move-group/$', GroupMoveView.as_view(), name='api-v2.1-group-move'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/search-member/$', GroupSearchMember.as_view(), name='api-v2.1-group-search-member'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/bulk/$', GroupMembersBulk.as_view(), name='api-v2.1-group-members-bulk'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v2.1-group-member'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v2.1-group-trash-projects'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v2.1-group-trash-project'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/$', GroupInviteLinks.as_view(), name='api-v2.1-group-invite-links'),
-    re_path(r'^api/v2.1/groups/(?P<group_id>\d+)/invite-links/(?P<token>[-0-9a-f]{8})/$', GroupInviteLink.as_view(), name='api-v2.1-group-invite-link'),
-    re_path(r'^api/v2.1/search-group/$', SearchGroup.as_view(), name='api-v2.1-search-group'),
+    re_path(r'^api/v1/groups/$', GroupsView.as_view(), name='api-v1-groups'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/$', GroupView.as_view(), name='api-v1-group'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/members/$', GroupMembers.as_view(), name='api-v1-group-members'),
+    re_path(r'^api/v1/groups/move-group/$', GroupMoveView.as_view(), name='api-v1-group-move'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/search-member/$', GroupSearchMember.as_view(), name='api-v1-group-search-member'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/members/bulk/$', GroupMembersBulk.as_view(), name='api-v1-group-members-bulk'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/members/(?P<email>[^/]+)/$', GroupMember.as_view(), name='api-v1-group-member'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/trash-projects/$', GroupTrashProjectsView.as_view(), name='api-v1-group-trash-projects'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', GroupTrashProjectView.as_view(), name='api-v1-group-trash-project'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/invite-links/$', GroupInviteLinks.as_view(), name='api-v1-group-invite-links'),
+    re_path(r'^api/v1/groups/(?P<group_id>\d+)/invite-links/(?P<token>[-0-9a-f]{8})/$', GroupInviteLink.as_view(), name='api-v1-group-invite-link'),
+    re_path(r'^api/v1/search-group/$', SearchGroup.as_view(), name='api-v1-search-group'),
 
     ## org
-    re_path(r'^api/v2.1/organizations/(?P<org_id>\d+)/$', OrganizationView.as_view(), name='api-v2.1-organization'),
-    re_path(r'^api/v2.1/organizations/(?P<org_id>\d+)/members/$', OrganizationMembersView.as_view(), name='api-v2.1-organization-members'),
+    re_path(r'^api/v1/organizations/(?P<org_id>\d+)/$', OrganizationView.as_view(), name='api-v1-organization'),
+    re_path(r'^api/v1/organizations/(?P<org_id>\d+)/members/$', OrganizationMembersView.as_view(), name='api-v1-organization-members'),
 
     # user: project
-    re_path(r'^api/v2.1/workspaces/$', WorkspacesView.as_view(), name='api-v2.1-workspaces'),
-    re_path(r'^api/v2.1/projects/$', ProjectsView.as_view(), name='api-v2.1-projects'),
-    re_path(r'^api/v2.1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v2.1-workspace-project'),
-    re_path(r'^api/v2.1/trash-projects/$', TrashProjectsView.as_view(), name='api-v2.1-trash-projects'),
-    re_path(r'^api/v2.1/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', TrashProjectView.as_view(), name='api-v2.1-trash-project'),
+    re_path(r'^api/v1/workspaces/$', WorkspacesView.as_view(), name='api-v1-workspaces'),
+    re_path(r'^api/v1/projects/$', ProjectsView.as_view(), name='api-v1-projects'),
+    re_path(r'^api/v1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v1-workspace-project'),
+    re_path(r'^api/v1/trash-projects/$', TrashProjectsView.as_view(), name='api-v1-trash-projects'),
+    re_path(r'^api/v1/trash-projects/(?P<project_uuid>[-0-9a-f]+)/$', TrashProjectView.as_view(), name='api-v1-trash-project'),
 
     # search
-    re_path(r'^api/v2.1/search/$', SearchView.as_view(), name='api-v2.1-search'),
+    re_path(r'^api/v1/search/$', SearchView.as_view(), name='api-v1-search'),
 
     # chat
     re_path(r'^', include('seahub.chats.urls')),
 
     ## user::avatar
-    re_path(r'^api/v2.1/user-avatar/$', UserAvatarView.as_view(), name='api-v2.1-user-avatar'),
+    re_path(r'^api/v1/user-avatar/$', UserAvatarView.as_view(), name='api-v1-user-avatar'),
 
-    re_path(r'^api/v2.1/admin/', include('seahub.api2.endpoints.admin.urls')),
+    re_path(r'^api/v1/admin/', include('seahub.api2.endpoints.admin.urls')),
 
     re_path(r'^options/', include('seahub.options.urls')),
     re_path(r'^profile/', include('seahub.profile.urls')),
@@ -171,7 +171,7 @@ if settings.SERVE_STATIC:
 
 if getattr(settings, 'MULTI_TENANCY', False):
     urlpatterns += [
-        re_path(r'^api/v2.1/org/', include('seahub.organizations.api_urls')),
+        re_path(r'^api/v1/org/', include('seahub.organizations.api_urls')),
         re_path(r'^org/', include('seahub.organizations.urls')),
     ]
 

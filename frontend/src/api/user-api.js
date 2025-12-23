@@ -64,17 +64,17 @@ class UserAPI {
   }
 
   getUserInfo() {
-    const url = this.server + '/api/v2.1/user/';
+    const url = this.server + '/api/v1/user/';
     return this.req.get(url);
   }
 
   getUserCommonInfo(email) {
-    const url = this.server + '/api/v2.1/user-common-info/' + email + '/';
+    const url = this.server + '/api/v1/user-common-info/' + email + '/';
     return this.req.get(url);
   }
 
   listUserInfo(userIdList) {
-    var url = this.server + '/api/v2.1/user-list/';
+    var url = this.server + '/api/v1/user-list/';
     let operation = {
       user_id_list: userIdList
     };

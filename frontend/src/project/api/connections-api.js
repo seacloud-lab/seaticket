@@ -60,7 +60,7 @@ class ConnectionsAPI {
   }
 
   listConnections(projectUuid, page, perPage) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
     let params = {
       page: page,
       per_page: perPage,
@@ -69,7 +69,7 @@ class ConnectionsAPI {
   }
 
   createConnection(projectUuid, { type, name, config }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
     let form = new FormData();
     form.append('name', name);
     form.append('type', type);
@@ -78,7 +78,7 @@ class ConnectionsAPI {
   }
 
   modifyConnection(projectUuid, connectionID, { name, config }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('name', name);
     form.append('config', JSON.stringify(config));
@@ -86,22 +86,22 @@ class ConnectionsAPI {
   }
 
   deleteConnection(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     return this.req.delete(url);
   }
 
   getConnection(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     return this.req.get(url);
   }
 
   triggerSync(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/sync/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/sync/';
     return this.req.post(url);
   }
 
   getConnectionDetails(projectUuid, connectionID, { view_id = 'open', start = 0, limit = 100, } = {}){
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
     let params = {
       view_id,
       start,
@@ -111,17 +111,17 @@ class ConnectionsAPI {
   }
 
   getConnectionRowDetail(projectUuid, connectionID, params) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/details/row-detail/';
     return this.req.get(url, { params: params });
   }
 
   getConnectionLogs(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/logs/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/logs/';
     return this.req.get(url);
   }
 
   queryConnectionsStatus(projectUuid, connectionIds) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/query-status/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/query-status/';
     const params = {
       connection_ids: connectionIds.join(','),
     };
@@ -129,19 +129,19 @@ class ConnectionsAPI {
   }
 
   updateConnectionStatus(projectUuid, connectionID, { is_active }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/';
     let form = new FormData();
     form.append('is_active', is_active);
     return this.req.put(url, form);
   }
 
   listViews(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/views/';
     return this.req.get(url);
   }
 
   insertView(projectUuid, connectionID, name, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/views/';
     let form = new FormData();
     if (name) {
       form.append('name', name);
@@ -153,12 +153,12 @@ class ConnectionsAPI {
   }
 
   getView(projectUuid, viewID, connectionID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     return this.req.get(url);
   }
 
   modifyView(projectUuid, connectionID, viewID, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     const params = {
       view_data: viewData,
     };
@@ -166,12 +166,12 @@ class ConnectionsAPI {
   }
 
   deleteView(projectUuid, connectionID, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/views/' + viewID + '/';
     return this.req.delete(url);
   }
 
   moveView(projectUuid, connectionID, sourceViewID, targetViewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/move-views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/move-views/';
     let form = new FormData();
     if (sourceViewID) {
       form.append('source_view_id', sourceViewID);
@@ -183,7 +183,7 @@ class ConnectionsAPI {
   }
 
   duplicateView(projectUuid, connectionID, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/duplicate-view/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/duplicate-view/';
 
     let form = new FormData();
     if (viewID) {
@@ -193,7 +193,7 @@ class ConnectionsAPI {
   }
 
   convertRecordToTicket(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v2.1/ai/convert-record-to-ticket/';
+    const url = this.server + '/api/v1/ai/convert-record-to-ticket/';
     let form = new FormData();
     form.append('project_uuid', projectUuid);
     form.append('connection_id', connectionID);
@@ -203,7 +203,7 @@ class ConnectionsAPI {
 
 
   getEmbeddingAnalysis(projectUuid, connectionID) {
-    const url = this.server + '/api/v2.1/ai/embedding-analysis/';
+    const url = this.server + '/api/v1/ai/embedding-analysis/';
     const data = {
       project_uuid: projectUuid,
       connection_id: connectionID
@@ -212,12 +212,12 @@ class ConnectionsAPI {
   }
 
   getEmbeddingAnalysisTaskStatus(taskId) {
-    const url = this.server + `/api/v2.1/ai/embedding-analysis-task-status/${taskId}`;
+    const url = this.server + `/api/v1/ai/embedding-analysis-task-status/${taskId}`;
     return this.req.get(url);
   }
 
   findRelatedRecords(projectUuid, connectionID, recordID) {
-    const url = this.server + '/api/v2.1/ai/related-records/';
+    const url = this.server + '/api/v1/ai/related-records/';
     const data = {
       project_uuid: projectUuid,
       connection_id: connectionID,
@@ -228,12 +228,12 @@ class ConnectionsAPI {
 
   // records
   modifyConnectionRecord(projectUuid, connectionID, row_id, rowData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + row_id + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/' + row_id + '/';
     return this.req.put(url, rowData);
   }
 
   modifyConnectionRecords(projectUuid, connectionID, rowsData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
     return this.req.put(url, { records_data: rowsData });
   }
 

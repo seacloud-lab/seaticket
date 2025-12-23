@@ -60,14 +60,14 @@ class ProfileSettingsAPI {
   }
 
   bindContactEmail(newContactEmail) {
-    let url = this.server + '/api/v2.1/user/contact-email/';
+    let url = this.server + '/api/v1/user/contact-email/';
     let form = new FormData();
     form.append('new_contact_email', newContactEmail);
     return this.req.put(url, form);
   }
 
   sendVerifyCode(phone, type) {
-    let url = this.server + '/api/v2.1/user/sms-verify/';
+    let url = this.server + '/api/v1/user/sms-verify/';
     let data = {
       phone: phone,
       type: type
@@ -76,7 +76,7 @@ class ProfileSettingsAPI {
   }
 
   bindPhoneNumber(phone, code) {
-    let url = this.server + '/api/v2.1/user/bind-phone/';
+    let url = this.server + '/api/v1/user/bind-phone/';
     let data = {
       phone: phone,
       code: code
@@ -85,7 +85,7 @@ class ProfileSettingsAPI {
   }
 
   unbindPhoneNumber(phone, code) {
-    let url = this.server + '/api/v2.1/user/unbind-phone/';
+    let url = this.server + '/api/v1/user/unbind-phone/';
     let data = {
       phone: phone,
       code: code
@@ -104,19 +104,19 @@ class ProfileSettingsAPI {
 
   // user info
   getUserInfo() {
-    const url = this.server + '/api/v2.1/user/';
+    const url = this.server + '/api/v1/user/';
     return this.req.get(url);
   }
 
   updateUserAvatar(avatarFile) {
-    const url = this.server + '/api/v2.1/user-avatar/';
+    const url = this.server + '/api/v1/user-avatar/';
     let form = new FormData();
     form.append('avatar', avatarFile);
     return this._sendPostRequest(url, form);
   }
 
   updateUserInfo({ name, telephone, contact_email, list_in_address_book, sms_2fa }) {
-    const url = this.server + '/api/v2.1/user/';
+    const url = this.server + '/api/v1/user/';
     let data = {};
     if (name !== undefined) {
       data.name = name;
@@ -138,17 +138,17 @@ class ProfileSettingsAPI {
 
   // sessions
   listSessions() {
-    const url = this.server + '/api/v2.1/sessions/';
+    const url = this.server + '/api/v1/sessions/';
     return this.req.get(url);
   }
 
   deleteSession(session_key) {
-    const url = this.server + '/api/v2.1/sessions/' + session_key + '/';
+    const url = this.server + '/api/v1/sessions/' + session_key + '/';
     return this.req.delete(url);
   }
 
   logOutSession(session_key) {
-    const url = this.server + '/api/v2.1/online-sessions/' + session_key + '/';
+    const url = this.server + '/api/v1/online-sessions/' + session_key + '/';
     return this.req.delete(url);
   }
 
@@ -157,17 +157,17 @@ class ProfileSettingsAPI {
   }
 
   userConvertToTeam() {
-    const url = this.server + '/api/v2.1/user/convert-to-team/';
+    const url = this.server + '/api/v1/user/convert-to-team/';
     return this.req.post(url);
   }
 
   removePassword() {
-    const url = this.server + '/api/v2.1/user/remove-password/';
+    const url = this.server + '/api/v1/user/remove-password/';
     return this.req.put(url);
   }
 
   resetPasswordByPhone(phone, code, newPassword, confirmPassword) {
-    let url = this.server + '/api/v2.1/user/reset-password-by-phone/';
+    let url = this.server + '/api/v1/user/reset-password-by-phone/';
     let data = {
       phone: phone,
       code: code,
@@ -178,7 +178,7 @@ class ProfileSettingsAPI {
   }
 
   resetPassword(oldPassword, newPassword) {
-    let url = this.server + '/api/v2.1/user/reset-password/';
+    let url = this.server + '/api/v1/user/reset-password/';
     let data = {
       old_password: oldPassword,
       new_password: newPassword
