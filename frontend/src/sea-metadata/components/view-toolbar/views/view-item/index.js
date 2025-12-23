@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
+import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal, ModalHeader, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
 import context from '@/sea-metadata/context';
+import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
 
 import './index.css';
 
@@ -24,6 +25,9 @@ const ViewItem = ({
   const [isShowDropdownMenu, setIsShowDropdownMenu] = useState(false);
   const [dropRelativePosition, setDropRelativePosition] = useState('');
   const [isShowDeleteConfirmationDialog, setIsShowDeleteConfirmationDialog] = useState(false);
+  const [isShowImportDialog, setIsShowImportDialog] = useState(false);
+  const [importPreview, setImportPreview] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const containerRef = useRef(null);
   const viewRef = useRef(null);
@@ -135,6 +139,36 @@ const ViewItem = ({
     }).catch(() => {});
   }, [view]);
 
+  const handleImport = useCallback(() => {
+    setIsShowDropdownMenu(false);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const api = context.api;
+      if (!api) return;
+      api.importExcel(file, true).then(res => {
+        const taskId = res?.data?.task_id;
+        if (!taskId) return;
+        const poll = () => {
+          api.queryIOStatus(taskId).then(r => {
+            if (r?.data?.is_finished) {
+              const data = r?.data || {};
+              setImportPreview(data);
+              setIsShowImportDialog(true);
+            } else {
+              setTimeout(poll, 1000);
+            }
+          }).catch(() => {});
+        };
+        poll();
+      }).catch(() => {});
+    };
+    input.click();
+  }, []);
+
   const props = moveAble ? { onDragStart, onDragEnter, onDragOver, onDragLeave, onDrop, draggable: 'true' } : {};
 
   return (
@@ -198,14 +232,60 @@ const ViewItem = ({
                   {gettext('Delete view')}
                 </button>
               )}
-              {context.getSetting('enableExportXlsx', false) && (
-                <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
-                  {gettext('Export XLSX')}
-                </button>
+              {context.getSetting('enableExportAndImportXlsx', false) && (
+                <>
+                  <button onClick={handleExport} className="dropdown-item sea-qa-dropdown-item">
+                    {gettext('Export XLSX')}
+                  </button>
+                  <button onClick={handleImport} className="dropdown-item sea-qa-dropdown-item">
+                    {gettext('Import XLSX')}
+                  </button>
+                </>
               )}
             </div>
           </ClickOutside>
         </ModalPortal>
+      )}
+      {isShowImportDialog && (
+        <Modal isOpen={true} toggle={() => setIsShowImportDialog(false)}>
+          <ModalHeader toggle={() => setIsShowImportDialog(false)}>{gettext('Import preview')}</ModalHeader>
+          <ModalBody>
+            <div className="tip-default mb-2">{gettext('Total rows')}: {importPreview?.total_rows || 0}</div>
+            <table className="table kb-import-preview-table">
+              <thead>
+                <tr>
+                  <th>{gettext('Title')}</th>
+                  <th>{gettext('Content')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(importPreview?.preview_rows || []).map((row, index) => (
+                  <tr key={index}>
+                    <td><div className="kb-import-preview-title">{row?.title}</div></td>
+                    <td><div className="kb-import-preview-content">{row?.content}</div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={() => setIsShowImportDialog(false)}>{gettext('Cancel')}</Button>
+            <Button color="primary" onClick={() => {
+              if (!importPreview) return;
+              const api = context.api;
+              if (!api) return;
+              setIsImporting(true);
+              api.commitImportExcel(importPreview.file_name).then(() => {
+                toaster.success(gettext('Updated successfully'));
+                setTimeout(() => window.location.reload(), 2000);
+              }).catch(() => {
+                setIsImporting(false);
+              });
+            }} disabled={isImporting}>
+                {gettext('Import')}
+            </Button>
+          </ModalFooter>
+        </Modal>
       )}
     </>
   );

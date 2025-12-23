@@ -188,6 +188,22 @@ class KnowledgeBaseAPI {
     return this._sendPostRequest(url, formData, { onUploadProgress });
   }
 
+    importExcel(projectUuid, file, previewOnly = false) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/import-excel/';
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('preview_only', previewOnly ? 'true' : 'false');
+    return this._sendPostRequest(url, formData);
+  }
+
+  commitImportExcel(projectUuid, fileName) {
+    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/import-excel/';
+    const formData = new FormData();
+    formData.append('file_name', fileName);
+    formData.append('preview_only', 'false');
+    return this._sendPostRequest(url, formData);
+  }
+
   // tags
   listKnowledgeBaseTags(projectUuid) {
     let url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
@@ -240,6 +256,7 @@ class KnowledgeBaseAPI {
     const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/metadata/';
     return this.req.get(url);
   }
+
 }
 
 const knowledgeBaseAPI = new KnowledgeBaseAPI();

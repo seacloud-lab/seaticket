@@ -55,6 +55,8 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       convertViewToExcel: (viewId) => knowledgeBaseAPI.convertViewToExcel(projectUuid, viewId),
       queryIOStatus: (taskId) => knowledgeBaseAPI.queryIOStatus(taskId),
       getExportExcelUrl: (taskId, viewId) => knowledgeBaseAPI.getExportExcelUrl(projectUuid, taskId, viewId),
+      importExcel: (file, previewOnly) => knowledgeBaseAPI.importExcel(projectUuid, file, previewOnly),
+      commitImportExcel: (fileName) => knowledgeBaseAPI.commitImportExcel(projectUuid, fileName),
     };
   }, [projectUuid, tagsData]);
 
@@ -76,7 +78,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       viewID={viewID}
       api={api}
       permission={permission}
-      settings={{ enableExportXlsx: true }}
+      settings={{ enableExportAndImportXlsx: true }}
       isViewComputedOnServer={true}
       localStorageNamePrefix={localStorageName}
       toggleView={toggleView}

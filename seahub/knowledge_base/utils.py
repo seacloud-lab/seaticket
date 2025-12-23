@@ -33,3 +33,13 @@ def query_kb_task_status(task_id):
     headers = {"Authorization": "Token %s" % _sign_auth_token()}
     resp = requests.get(url, params={'task_id': task_id}, headers=headers)
     return resp
+
+
+def import_kb_from_excel(params):
+    url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/import-kb-from-excel')
+    headers = {"Authorization": "Token %s" % _sign_auth_token()}
+    resp = requests.post(url, json=params, headers=headers)
+    if not resp.ok:
+        logger.error(resp.text)
+        raise Exception('import kb from excel error')
+    return resp.json().get('task_id')

@@ -12,7 +12,7 @@ class Context {
       stateColumnKey: 'state',
       typeColumnKey: 'type',
       tagsColumnKey: 'tags',
-      enableExportXlsx: false,
+      enableExportAndImportXlsx: false,
     };
     this.api = null;
     this.localStorage = null;
@@ -66,7 +66,7 @@ class Context {
       stateColumnKey: 'state',
       typeColumnKey: 'type',
       tagsColumnKey: 'tags',
-      enableExportXlsx: false,
+      enableExportAndImportXlsx: false,
     };
     this.api = null;
     this.localStorage = null;
