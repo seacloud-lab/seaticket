@@ -54,7 +54,6 @@ class OrgAdminAPI {
   }
 
   orgAdminAddOrgUser(orgID, email, name, password) {
-    const url = this.server + '/api/v2.1/org/' + orgID + '/admin/users/';
     const url = this.server + '/api/v1/org/' + orgID + '/admin/users/';
     let form = new FormData();
     form.append('email', email);
