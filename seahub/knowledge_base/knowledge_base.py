@@ -249,7 +249,7 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         row = {}
-        
+
         if 'title' in request.data:
             title = request.data.get('title')
             if not title:

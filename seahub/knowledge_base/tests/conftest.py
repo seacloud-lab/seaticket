@@ -140,14 +140,15 @@ def mock_list_knowledge_base_records():
 def mock_get_knowledge_base_record_by_pk():
     """Mock get_knowledge_base_record_by_pk function."""
     record = {'_pk': 1, 'title': 'Test Title', 'content': 'Test Content'}
-    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=record) as mock:
+    columns = []
+    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=(record, columns)) as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_get_knowledge_base_record_by_pk_none():
-    """Mock get_knowledge_base_record_by_pk to return None (record not found)."""
-    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=None) as mock:
+    """Mock get_knowledge_base_record_by_pk to return (None, []) (record not found)."""
+    with patch('seahub.knowledge_base.knowledge_base.get_knowledge_base_record_by_pk', return_value=(None, [])) as mock:
         yield mock
 
 
