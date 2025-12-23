@@ -53,17 +53,17 @@ const RateSettings = ({
 
     if (isP(event)) {
       openEditor();
-    } else if (isUpArrow(event)) {
+    } else if (isUpArrow(event) && isShowEditor) {
       onUpArrow(event);
-    } else if (isDownArrow(event)) {
+    } else if (isDownArrow(event) && isShowEditor) {
       onDownArrow(event);
     } else if (isEsc(event)) {
       closeEditor();
-    } else if (isEnter(event)) {
+    } else if (isEnter(event) && isShowEditor) {
       const value = PRIORITIES[highlightIndex].value;
       onChangeValue(value);
     }
-  }, [openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex]);
+  }, [openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex, isShowEditor]);
 
   useEffect(() => {
     document.addEventListener('keydown', onHotKey, true);
