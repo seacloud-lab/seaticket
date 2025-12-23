@@ -8,6 +8,7 @@ import AllKnowledge from './view/all-knowledge';
 import EditKnowledge from './view/edit-knowledge';
 import Tags from './view/tags';
 import TagKnowledge from './view/tag-knowledge';
+import TrashKnowledge from './view/trash-knowledge';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
 import { MetadataProvider } from './hooks/metadata';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from './constants';
@@ -33,6 +34,9 @@ const Page = ({ title }) => {
   }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
     return (<AllKnowledge { ...props } editorAPI={longtextAPI} />);
+  }
+  if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
+    return (<TrashKnowledge { ...props } />);
   }
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.NEW) {
     return (<NewKnowledge { ...props } editorAPI={longtextAPI} />);

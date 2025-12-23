@@ -22,6 +22,9 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS && childrenPageSlugId !== KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
       urlPart = urlPart + childrenPageSlugId + '/';
     }
+    if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
+      urlPart = '/trash/';
+    }
     history.replaceState(null, null, url + urlPart);
   }, [workspaceID]);
 
@@ -52,12 +55,14 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
       if (childrenPageSlugIdFromURL !== KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
         childrenPageSlugId = childrenPageSlugIdFromURL || KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL;
       }
+    } else if (pageIdFromURL === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
+      pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.TRASH;
     } else {
       const ticketNumber = Number(pageIdFromURL);
       pageSlugId = pageIdFromURL && isNumber(ticketNumber) ? ticketNumber : KNOWLEDGE_PAGE_SLUG_ID.ALL;
     }
+    const searchParams = Utils.getUrlSearches();
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
-      const searchParams = Utils.getUrlSearches();
       const viewID = searchParams?.view || '';
       toggleView(viewID);
     }

@@ -56,5 +56,5 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/my-tickets/$', project_view, name='project_view'),
 
     # trash
-    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/trash/$', project_view, name='project_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>[^/]+)/trash/$', project_view, name='project_view'),
 ]

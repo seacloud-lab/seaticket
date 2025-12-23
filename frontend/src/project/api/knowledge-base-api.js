@@ -69,6 +69,17 @@ class KnowledgeBaseAPI {
     return this.req.get(url, { params: params });
   }
 
+  listTrashKnowledgeBases(projectUuid, { start = 0, limit = 1000 } = {}) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/trash/';
+    const params = { start, limit };
+    return this.req.get(url, { params });
+  }
+
+  restoreRecords(projectUuid, recordIds) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/trash/';
+    return this.req.put(url, { record_ids: recordIds });
+  }
+
   listViews(projectUuid) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/';
     return this.req.get(url);
