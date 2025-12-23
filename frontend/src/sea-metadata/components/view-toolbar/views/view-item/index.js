@@ -251,7 +251,7 @@ const ViewItem = ({
           <ModalHeader toggle={() => setIsShowImportDialog(false)}>{gettext('Import preview')}</ModalHeader>
           <ModalBody>
             <div className="tip-default mb-2">{gettext('Total rows')}: {importPreview?.total_rows || 0}</div>
-            <table className="table">
+            <table className="table kb-import-preview-table">
               <thead>
                 <tr>
                   <th>{gettext('Title')}</th>
@@ -261,8 +261,8 @@ const ViewItem = ({
               <tbody>
                 {(importPreview?.preview_rows || []).map((row, index) => (
                   <tr key={index}>
-                    <td>{row?.title}</td>
-                    <td className="text-truncate">{row?.content}</td>
+                    <td><div className="kb-import-preview-title">{row?.title}</div></td>
+                    <td><div className="kb-import-preview-content">{row?.content}</div></td>
                   </tr>
                 ))}
               </tbody>
