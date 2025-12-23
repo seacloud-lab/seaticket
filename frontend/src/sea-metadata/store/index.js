@@ -461,7 +461,8 @@ class Store {
       basic_filters: basicFilters,
       view_id: this.viewId,
       success_callback: () => {
-        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
+        const eventName = isFilterComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
         context.eventBus.dispatch(eventName);
       }
     });
@@ -475,7 +476,8 @@ class Store {
       sorts,
       view_id: this.viewId,
       success_callback: () => {
-        const eventName = context.isViewComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
+        const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+        const eventName = isSortComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
         context.eventBus.dispatch(eventName);
         displaySorts && context.eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
       }

@@ -80,20 +80,20 @@ class DataProcessor {
     let rows = table.rows;
     const { filters, filter_conjunction, basic_filters, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
-    if (!context.isViewComputedOnServer) {
-      if (isFilterView(table.view, availableColumns)) {
-        const { rows: filterRows } = getFilteredRows(
-          { columns: availableColumns },
-          rows,
-          { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
-          { username, userId, isReturnID: false }
-        );
-        rows = filterRows;
-      }
+    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    if (!isFilterComputedOnServer && isFilterView(table.view, availableColumns)) {
+      const { rows: filterRows } = getFilteredRows(
+        { columns: availableColumns },
+        rows,
+        { basicFilters: basic_filters, filters, filterConjunction: filter_conjunction },
+        { username, userId, isReturnID: false }
+      );
+      rows = filterRows;
+    }
 
-      if (isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
-      }
+    if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns)) {
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
     }
 
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
@@ -112,7 +112,9 @@ class DataProcessor {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
-    if (!context.isViewComputedOnServer) {
+    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    if (!isFilterComputedOnServer) {
       let newRows = getRowsByIds(table, newRowIds);
       if (isFilterView(table.view, availableColumns)) {
         const { rows: filterRows } = getFilteredRows(
@@ -124,9 +126,9 @@ class DataProcessor {
         newRows = filterRows;
       }
       rows = [...rows, ...newRows];
-      if (rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
-      }
+    }
+    if (!isSortComputedOnServer && rows.length !== table.view.rows.length && isSortView({ sorts }, availableColumns)) {
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {
@@ -144,7 +146,9 @@ class DataProcessor {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.available_columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
-    if (!context.isViewComputedOnServer) {
+    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    if (!isFilterComputedOnServer) {
       let newRows = getRowsByIds(table, rowIds);
       if (isFilterView(table.view, availableColumns) && this.hasRelatedFilters(table.view, relatedColumnKeyMap)) {
         const { rows: filterRows } = getFilteredRows(
@@ -158,9 +162,9 @@ class DataProcessor {
       if (newRows.length === 0) {
         rows = rows.filter(r => !rowIds.includes(r._id));
       }
-      if (isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
-        rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
-      }
+    }
+    if (!isSortComputedOnServer && isSortView({ sorts }, availableColumns) && this.hasRelatedSort(sorts, relatedColumnKeyMap)) {
+      rows = sortTableRows({ columns: availableColumns }, rows, sorts, { collaborators, typesData, isReturnID: false });
     }
     const _isGroupView = isGroupView({ groupbys }, availableColumns);
     if (!_isGroupView) {

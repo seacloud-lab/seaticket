@@ -223,7 +223,7 @@ const AllTypes = ({ projectUuid, permission }) => {
         localStorageNamePrefix={localStorageName}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
-        isViewComputedOnServer={false}
+        settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
         t={t}
       >
         <OptionDialog type={gettext('type')} canModifyDescription={false} />

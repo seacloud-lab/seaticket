@@ -20,7 +20,6 @@ const Main = forwardRef(({
   className,
   viewTools,
   fixedColumnCount = 1,
-  isViewComputedOnServer,
   tagsData,
   createTag,
   toggleAllTags,
@@ -67,7 +66,6 @@ const Main = forwardRef(({
                 <ViewToolBar
                   fixedColumnCount={fixedColumnCount}
                   tools={viewTools}
-                  isViewComputedOnServer={isViewComputedOnServer}
                   createRowsTools={createRowsTools}
                   toggleView={toggleView}
                 />
@@ -86,7 +84,6 @@ const SeaMetadata = forwardRef(({
   api,
   viewID,
   permission = PERMISSION_TYPES.READ_ONLY,
-  isViewComputedOnServer = true,
   settings,
   t,
   ...params
@@ -100,7 +97,6 @@ const SeaMetadata = forwardRef(({
       username,
       settings: { lang, server, mediaUrl, ...settings, },
       permission,
-      isViewComputedOnServer,
       api,
       t,
     });
@@ -144,7 +140,7 @@ const SeaMetadata = forwardRef(({
 
   return (
     <ViewsDataProvider ref={viewsDataRef} viewID={viewID} toggleView={toggleView}>
-      <Main ref={mainRef} viewID={viewID} toggleView={toggleView} isViewComputedOnServer={isViewComputedOnServer} { ...params } />
+      <Main ref={mainRef} viewID={viewID} toggleView={toggleView} { ...params } />
     </ViewsDataProvider>
   );
 });

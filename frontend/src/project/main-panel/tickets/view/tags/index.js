@@ -243,7 +243,7 @@ const AllTags = ({ projectUuid, permission }) => {
         permission={permission}
         createContextMenuOptions={createContextMenuOptions}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
-        isViewComputedOnServer={false}
+        settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false }}
         t={t}
         cascadeUpdateCells={cascadeUpdateCells}
       >

@@ -229,7 +229,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
         permission={permission}
         localStorageNamePrefix={localStorageName}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS]}
-        isViewComputedOnServer={false}
+        settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
         createContextMenuOptions={createContextMenuOptions}
         cascadeUpdateCells={cascadeUpdateCells}
         t={t}

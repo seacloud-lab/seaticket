@@ -79,7 +79,6 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       api={api}
       permission={permission}
       settings={{ enableExportAndImportXlsx: true }}
-      isViewComputedOnServer={true}
       localStorageNamePrefix={localStorageName}
       toggleView={toggleView}
       expandRow={expandRow}

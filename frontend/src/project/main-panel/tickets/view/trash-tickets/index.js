@@ -213,7 +213,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
         localStorageNamePrefix={localStorageName}
         toggleView={toggleView}
         permission={permission}
-        isViewComputedOnServer={false}
+        settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
         viewTools={[VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS]}
         tagsData={tagsData}
         typesData={typesData}

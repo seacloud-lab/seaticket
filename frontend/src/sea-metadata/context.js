@@ -4,20 +4,24 @@ import Translate from './utils/translate';
 import { CellType } from './constants';
 import { isFunction } from '@/utils/type-detection';
 
+const SETTINGS = {
+  stateColumnKey: 'state',
+  typeColumnKey: 'type',
+  tagsColumnKey: 'tags',
+  enableExportAndImportXlsx: false,
+  isFilterComputedOnServer: true,
+  isSortComputedOnServer: true,
+  canManageView: true,
+};
+
 class Context {
 
   constructor() {
     this.username = '';
-    this.settings = {
-      stateColumnKey: 'state',
-      typeColumnKey: 'type',
-      tagsColumnKey: 'tags',
-      enableExportAndImportXlsx: false,
-    };
+    this.settings = { ...SETTINGS };
     this.api = null;
     this.localStorage = null;
     this.permission = 'r';
-    this.isViewComputedOnServer = true;
     this.collaboratorsCache = {};
     this.translate = (key) => key;
     this.eventBus = eventBus;
@@ -29,7 +33,6 @@ class Context {
     permission = 'r',
     api,
     localStorageName,
-    isViewComputedOnServer = true,
     t,
   }) => {
     this.username = username;
@@ -39,7 +42,6 @@ class Context {
     };
     this.api = api;
     this.permission = permission;
-    this.isViewComputedOnServer = isViewComputedOnServer;
     this.collaboratorsCache = {};
     const translate = new Translate(t);
     this.translate = translate.translate;
@@ -62,16 +64,10 @@ class Context {
 
   destroy = () => {
     this.username = '';
-    this.settings = {
-      stateColumnKey: 'state',
-      typeColumnKey: 'type',
-      tagsColumnKey: 'tags',
-      enableExportAndImportXlsx: false,
-    };
+    this.settings = { ...SETTINGS };
     this.api = null;
     this.localStorage = null;
     this.permission = 'r';
-    this.isViewComputedOnServer = true;
     this.collaboratorsCache = {};
     this.translate = (key) => key;
     this.eventBus = eventBus;

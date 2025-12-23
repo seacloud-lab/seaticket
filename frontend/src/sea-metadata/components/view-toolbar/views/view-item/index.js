@@ -11,7 +11,6 @@ import './index.css';
 const ViewItem = ({
   view,
   isSelect,
-  isViewComputedOnServer,
   modifyAble,
   deleteAble,
   moveAble,
@@ -187,7 +186,7 @@ const ViewItem = ({
           ref={viewRef}
         >
           {view.name}
-          {isSelect && isViewComputedOnServer && (
+          {isSelect && context.getSetting('canManageView', true) && (
             <div
               className="sea-metadata-view-item-operation-down"
               onClick={openDropdownMenu}
@@ -282,7 +281,7 @@ const ViewItem = ({
                 setIsImporting(false);
               });
             }} disabled={isImporting}>
-                {gettext('Import')}
+              {gettext('Import')}
             </Button>
           </ModalFooter>
         </Modal>
