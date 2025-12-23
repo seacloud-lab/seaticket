@@ -27,7 +27,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newTag._id] = newTag;
       });
     }
-    newData.isLoading = false;
     setTagsData(newData);
   }, [tagsData]);
 
@@ -92,17 +91,15 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifyTags]);
 
-  const loadTags = useCallback(() => {
-    const newTagsData = tagsData._updateLoading(true);
-    setTagsData(deepCopy(newTagsData));
+  const loadTags = useCallback((callback) => {
     ticketsAPI.listTicketTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags, true);
+      callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      const newTagsData = tagsData._updateLoading(false);
-      setTagsData(deepCopy(newTagsData));
+      callback && callback();
     });
   }, [tagsData]);
 
@@ -117,7 +114,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newType._id] = newType;
       });
     }
-    newData.isLoading = false;
     setTypesData(newData);
   }, [typesData]);
 
@@ -187,17 +183,15 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifyTypes]);
 
-  const loadTypes = useCallback(() => {
-    const newTypesData = typesData._updateLoading(true);
-    setTypesData(deepCopy(newTypesData));
+  const loadTypes = useCallback((callback) => {
     ticketsAPI.listTicketTypes(projectUuid).then(res => {
       const types = Array.isArray(res.data.types) ? res.data.types : [];
       applyCreateTypes(types, true);
+      callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      const newTypesData = typesData._updateLoading(false);
-      setTypesData(deepCopy(newTypesData));
+      callback && callback();
     });
   }, [typesData]);
 
@@ -212,7 +206,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newSubstate._id] = newSubstate;
       });
     }
-    newData.isLoading = false;
     setSubstatesData(newData);
   }, [substatesData]);
 
@@ -292,17 +285,15 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     applyCreateSubstates(substatesOptions, isReload);
   }, [applyCreateSubstates]);
 
-  const loadSubStates = useCallback(() => {
-    const newSubstatesData = substatesData._updateLoading(true);
-    setSubstatesData(deepCopy(newSubstatesData));
+  const loadSubStates = useCallback((callback) => {
     ticketsAPI.listTicketSubstates(projectUuid).then(res => {
       const { substates, cascade_settings } = res.data;
       initSubStates(substates, cascade_settings, true);
+      callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      const newSubstatesData = substatesData._updateLoading(false);
-      setSubstatesData(deepCopy(newSubstatesData));
+      callback && callback();
     });
   }, [substatesData, initSubStates]);
 
@@ -317,7 +308,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[option._id] = option;
       });
     }
-    newData.isLoading = false;
     setStatesData(newData);
   }, [statesData]);
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
@@ -10,7 +10,8 @@ import OptionDialog from '../../components/option-dialog';
 import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllSubstates = ({ projectUuid, permission }) => {
-  const { isLoading, statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
+  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading: isMetadataLoading, statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -206,7 +207,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadSubStates();
+    loadSubStates(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -218,7 +219,7 @@ const AllSubstates = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || substatesData.isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <>

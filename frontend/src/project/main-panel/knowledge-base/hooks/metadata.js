@@ -23,7 +23,6 @@ export const MetadataProvider = ({ projectUuid, children }) => {
         newData.id_row_map[newTag._id] = newTag;
       });
     }
-    newData.isLoading = false;
     setTagsData(newData);
   }, [tagsData]);
 
@@ -88,17 +87,15 @@ export const MetadataProvider = ({ projectUuid, children }) => {
     });
   }, [projectUuid, applyModifyTags]);
 
-  const loadTags = useCallback(() => {
-    const newTagsData = tagsData._updateLoading(true);
-    setTagsData(deepCopy(newTagsData));
+  const loadTags = useCallback((callback) => {
     knowledgeBaseAPI.listKnowledgeBaseTags(projectUuid).then(res => {
       const tags = Array.isArray(res.data.tags) ? res.data.tags : [];
       applyCreateTags(tags, true);
+      callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      const newTagsData = tagsData._updateLoading(false);
-      setTagsData(deepCopy(newTagsData));
+      callback && callback();
     });
   }, [tagsData]);
 

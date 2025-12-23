@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMetadata, useTicketsPage } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
@@ -10,7 +10,8 @@ import { EVENT_BUS_TYPE } from '../../../../constants';
 import { getRowById } from '@/sea-metadata/utils/row';
 
 const AllTags = ({ projectUuid, permission }) => {
-  const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
+  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading: isMetadataLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -218,7 +219,7 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadTags();
+    loadTags(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -230,7 +231,7 @@ const AllTags = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || tagsData.isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <>
