@@ -521,6 +521,14 @@ class Store {
     this.applyOperation(operation);
   }
 
+  modifyViewLock(is_locked) {
+    const type = OPERATION_TYPE.MODIFY_VIEW_LOCK;
+    const operation = this.createOperation({
+      type, is_locked, view_id: this.viewId,
+    });
+    this.applyOperation(operation);
+  }
+
   modifySettings = (settings) => {
     const type = OPERATION_TYPE.MODIFY_SETTINGS;
     const operation = this.createOperation({

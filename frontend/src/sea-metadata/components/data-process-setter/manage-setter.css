@@ -1,0 +1,18 @@
+.sea-metadata-lock-view-item .seaqa-switch {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.sea-metadata-lock-view-item .seaqa-switch .custom-switch {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.sea-metadata-lock-view-item .seaqa-switch .custom-switch-description {
+  margin: 0;
+  flex: 1;
+}

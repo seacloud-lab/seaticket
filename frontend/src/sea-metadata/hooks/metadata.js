@@ -100,6 +100,10 @@ export const MetadataProvider = forwardRef(({
     storeRef.current.modifyHiddenColumns(hiddenColumns);
   }, [storeRef]);
 
+  const modifyViewLock = useCallback((isLocked) => {
+    storeRef.current.modifyViewLock(isLocked);
+  }, [storeRef]);
+
   const modifySettings = useCallback((settings) => {
     storeRef.current.modifySettings(settings);
   }, [storeRef]);
@@ -352,6 +356,7 @@ export const MetadataProvider = forwardRef(({
         modifyGroupbys,
         modifyRowHeight,
         modifyHiddenColumns,
+        modifyViewLock,
         insertRow,
         modifyRowByRowExpand,
         modifyRows,
