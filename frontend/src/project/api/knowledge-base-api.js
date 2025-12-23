@@ -188,7 +188,7 @@ class KnowledgeBaseAPI {
     return this._sendPostRequest(url, formData, { onUploadProgress });
   }
 
-    importExcel(projectUuid, file, previewOnly = false) {
+  importExcel(projectUuid, file, previewOnly = false) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/import-excel/';
     const formData = new FormData();
     formData.append('file', file);
