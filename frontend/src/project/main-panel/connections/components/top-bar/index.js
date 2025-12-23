@@ -5,7 +5,7 @@ import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
-import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE } from '../../constants';
+import { CONNECTION_PAGE_SLUG_ID } from '../../constants';
 import { IconButton, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
@@ -20,16 +20,12 @@ const { projectUuid } = window.app.pageOptions;
 const TopBar = ({ title, modifyLocalBar }) => {
   const { pageSlugId, connectionInfo, togglePageSlugId, onRefresh } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
-  const { name: connectionName, type: connectionType } = connectionInfo || {};
+  const { name: connectionName } = connectionInfo || {};
   const timer = useRef(null);
   const [isSyncing, setIsSyncinig] = useState(false);
 
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);
-  }, []);
-
-  const handleOpenConnectionEmbeddingVisualizationOpen = useCallback(() => {
-    eventBus.dispatch(EVENT_BUS_TYPE.OPEN_CONNECTION_EMBEDDING_VISUALIZATION);
   }, []);
 
   const handleReturnConnectionsHome = useCallback(() => {
@@ -112,9 +108,6 @@ const TopBar = ({ title, modifyLocalBar }) => {
     }
     return (
       <>
-        {(connectionType === CONNECTION_TYPE.GITHUB_ISSUE || connectionType === CONNECTION_TYPE.DISCOURSE_FORUM) && (
-          <AddButton onClick={handleOpenConnectionEmbeddingVisualizationOpen} text={gettext('Analyze')} className="mr-4" />
-        )}
         {isSyncing
           ?
           (
@@ -126,7 +119,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
           : <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />}
       </>
     );
-  }, [pageSlugId, connectionType, isSyncing, handleNewConnection, onManualSync, handleOpenConnectionEmbeddingVisualizationOpen]);
+  }, [pageSlugId, isSyncing, handleNewConnection, onManualSync]);
 
   return (
     <BasicTopBar>

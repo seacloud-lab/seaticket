@@ -204,9 +204,9 @@ class EmbeddingAnalysisView(APIView):
             error_msg = 'project_uuid is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        connection_id = request.data.get('connection_id')
-        if not connection_id:
-            error_msg = 'connection_id is required.'
+        connection_ids = request.data.get('connection_ids')
+        if not connection_ids:
+            error_msg = 'connection_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -220,16 +220,11 @@ class EmbeddingAnalysisView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         params = {
             'project_uuid': project_uuid,
-            'connection_id': connection_id,
+            'connection_ids': connection_ids,
             'username': username,
-            'connection_type': project_connection.type,
         }
 
         try:
@@ -526,6 +521,7 @@ class RelatedRecordsView(APIView):
                             reranked_results.append(key_to_result[reranked_key])
 
         except Exception as e:
+            print(e)
             logger.error(f"Error calling vector search indexer: {e}")
             error_msg = 'Error calling vector search indexer.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
