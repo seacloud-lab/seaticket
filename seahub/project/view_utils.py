@@ -1069,7 +1069,7 @@ class SQLGenerator(object):
                 order_condition = '`%s` %s' % (column.get('name'), sort_type)
                 clauses.append(order_condition)
         if not clauses:
-            return []
+            return ''
         return "%s%s" % (
             order_header,
             ', '.join(clauses)

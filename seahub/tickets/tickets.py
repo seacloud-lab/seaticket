@@ -22,12 +22,13 @@ from seahub.tickets.models import TicketViews
 from seahub.project.utils import check_project_permission, \
     replace_file_url_in_content, upload_files_to_s3, check_ticket_permission, \
     check_comment_permission, get_current_table_metadata
-from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, list_trash_tickets
+from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
+    list_trash_tickets, list_my_tickets
 from seahub.seadb_models.models import TicketCommentsTable, TicketsTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
-    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
+    convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, \
     delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
@@ -1183,7 +1184,7 @@ class MyTicketAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
-    def get(self, request, project_uuid):
+    def post(self, request, project_uuid):
         """
         Permission:
         1. owner
@@ -1194,16 +1195,19 @@ class MyTicketAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # argument check
-        view_id = request.GET.get('view_id', 'open')
-        start = request.GET.get('start', 0)
-        limit = request.GET.get('limit', 1000)
+        view_id = request.POST.get('view_id', 'open')
+        start = request.POST.get('start', 0)
+        limit = request.POST.get('limit', 1000)
+        view_config = request.POST.get('config', '{}')
 
         try:
             start = int(start)
             limit = int(limit)
+            view_config = json.loads(view_config)
         except:
             start = 0
             limit = 1000
+            view_config = {}
 
         ticket_state = view_id
         if ticket_state not in ['open', 'closed']:
@@ -1232,7 +1236,7 @@ class MyTicketAPIView(APIView):
 
         seadb_api = SeaDBAPI(username)
         try:
-            tickets, columns = get_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit)
+            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

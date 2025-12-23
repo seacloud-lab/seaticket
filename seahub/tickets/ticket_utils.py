@@ -76,22 +76,6 @@ def get_ticket(seadb_api, project_uuid, ticket_id):
     return rows[0] if rows else None, res.get('metadata')
 
 
-def get_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit):
-    from seahub.seadb_models.utils import get_tickets_columns
-    query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
-    sql = f"""SELECT {query_fields} FROM `{TABLE_TICKETS}` 
-    WHERE (`deleted` = FALSE OR `deleted` IS NULL) AND `state` = '{ticket_state}' AND `participants` in ('{username}') 
-    LIMIT {limit} OFFSET {start}"""
-    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-    records = res.get('results')
-    columns = get_tickets_columns(seadb_api, project_uuid)
-    display_columns = []
-    for column in columns:
-        name = column['name']
-        if name in TICKET_DISPLAY_ALL_COLUMNS:
-            display_columns.append(column)
-    return records, display_columns
-
 def get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end):
     ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` = {ticket_id} AND `deleted` = False ORDER BY `_pk` ASC LIMIT {start}, {end}"
     ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')

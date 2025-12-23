@@ -554,6 +554,39 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, use
     return ticket_data
 
 
+def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
+    columns = get_tickets_columns(seadb_api, project_uuid)
+    all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
+    if ticket_state == 'open':
+        all_columns_names = [column_name for column_name in all_columns_names if column_name != TicketsTable.closed_time.name]
+
+    display_columns = []
+    for column in columns:
+        name = column['name']
+        if name in all_columns_names:
+            display_columns.append(column)
+
+    view_copy = view_config.copy()
+    sorts = view_copy.get('sorts', [])
+    if not sorts:
+        sorts = [{ 'column_name': TicketsTable.modified_time.name, 'sort_type': 'down' }]
+    view_copy['sorts'] = sorts
+    basic_filters = view_copy.get('basic_filters', [])
+    if not basic_filters:
+        basic_filters = []
+    basic_filters.append({
+        'column_name': TicketsTable.state.name,
+        'filter_predicate': 'is',
+        'filter_term': '0001' if ticket_state == 'open' else '0002',
+    })
+    view_copy['basic_filters'] = basic_filters
+
+    sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    records = res.get('results')
+    return records, display_columns
+
+
 def list_trash_tickets(seadb_api, project_uuid, start, limit):
     query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
     sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
