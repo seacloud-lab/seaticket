@@ -5,7 +5,7 @@ import HideConnectionPopover from './hidden-connection-popover';
 import { gettext } from '../../../constants';
 import Icon from '../../../components/icon';
 
-const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, ticketEnabled }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
   const [isShowSetter, setShowSetter] = useState(false);
@@ -33,7 +33,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled })
   useEffect(() => {
     if (connections.length === 0) return;
     const validConnectionIds = connections.map((c) => c.id);
-    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__');
+    const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__');
     modifyHiddenConnections(newHiddenConnectionIDs);
   }, [connections]);
 
@@ -48,8 +48,12 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled })
   const validConnectionIds = connections.map((c) => c.id);
   const hiddenOnConnectionsCount = hiddenConnectionIDs.filter(id => validConnectionIds.includes(id)).length;
   const showConnectionsLen = connections.length - hiddenOnConnectionsCount;
+
+  console.log(connections);
+
   const kbSelected = kbEnabled && !hiddenConnectionIDs.includes('__kb__');
-  const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0);
+  const ticketSelected = ticketEnabled && !hiddenConnectionIDs.includes('__ticket__');
+  const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0) + (ticketSelected ? 1 : 0);
 
   return (
     <>
@@ -77,6 +81,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled })
           hiddenConnectionIDs={hiddenConnectionIDs}
           connections={connections}
           kbEnabled={kbEnabled}
+          ticketEnabled={ticketEnabled}
           target={target}
           placement="bottom-start"
           hidePopover={onSetterToggle}
@@ -91,6 +96,7 @@ HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
   kbEnabled: PropTypes.bool,
+  ticketEnabled: PropTypes.bool,
 };
 
 export default HideConnectionSetter;
