@@ -1,11 +1,9 @@
-import datetime
 import json
 import logging
 
 from django.db import models
 
 from seahub.base.fields import LowerCaseCharField
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +23,10 @@ class UserNotificationManager(models.Manager):
 
 class UserNotification(models.Model):
     to_user = LowerCaseCharField(db_index=True, max_length=255)
-    msg_type = models.CharField(db_index=True, max_length=30)
+    msg_type = models.CharField(max_length=30)
     detail = models.TextField()
-    timestamp = models.DateTimeField(db_index=True, default=datetime.datetime.now)
-    seen = models.BooleanField('seen', default=False)
+    timestamp = models.DateTimeField(db_index=True, auto_now_add=True)
+    seen = models.BooleanField(default=False)
     objects = UserNotificationManager()
 
     class InvalidDetailError(Exception):
@@ -47,7 +45,7 @@ class UserNotification(models.Model):
             'id': self.pk,
             'msg_type': self.msg_type,
             'detail': detail,
-            'time': datetime_to_isoformat_timestr(self.timestamp),
+            'time': self.timestamp,
             'seen': self.seen,
         }
 
@@ -75,11 +73,11 @@ class ProjectNotificationManager(models.Manager):
 
 class ProjectNotification(models.Model):
     project_uuid = models.CharField(max_length=36)
-    to_user = models.CharField(max_length=255)
+    to_user = models.CharField(db_index=True, max_length=255)
     msg_type = models.CharField(max_length=36)
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
     detail = models.TextField()
-    seen = models.BooleanField(default=False)
+    seen = models.BooleanField(db_index=True, default=False)
 
     objects = ProjectNotificationManager()
 
@@ -96,7 +94,7 @@ class ProjectNotification(models.Model):
             'project_uuid': self.project_uuid,
             'to_user': self.to_user,
             'msg_type': self.msg_type,
-            'time': datetime_to_isoformat_timestr(self.timestamp),
+            'time': self.timestamp,
             'detail': detail,
             'seen': self.seen,
         }

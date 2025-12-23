@@ -8,11 +8,9 @@ from .models import UserNotification
 def add_user_to_group_notice(to_user, group_id, group_name, group_staff_email):
     if not to_user or not group_staff_email or to_user == group_staff_email:
         return
-    avatar_url, _is_default, _date_uploaded = api_avatar_url(group_staff_email)
     detail = {
         'group_staff_email': group_staff_email,
         'group_staff_name': email2nickname(group_staff_email),
-        'group_staff_avatar_url': avatar_url,
         'group_id': group_id,
         'group_name': group_name,
     }
@@ -42,24 +40,24 @@ def get_user_notifications(username, page, per_page):
     }
 
 
-def ticket_assignee_added_msg_to_json(ticket_id, ticket_title, from_user_email, workspace_id=None, project_name=None):
+def ticket_assignee_added_msg_to_json(ticket_id, ticket_title, from_user_id, workspace_id=None, project_name=None):
     return json.dumps({
         'ticket_id': ticket_id,
         'ticket_title': ticket_title,
-        'from_user_name': email2nickname(from_user_email),
-        'from_user_email': from_user_email,
-        'from_user_avatar': api_avatar_url(from_user_email)[0],
+        'from_user_name': email2nickname(from_user_id),
+        'from_user_id': from_user_id,
+        'from_user_avatar': api_avatar_url(from_user_id)[0],
         'workspace_id': workspace_id,
         'project_name': project_name,
     })
 
-def ticket_comment_msg_to_json(ticket_id, ticket_title, from_user_email, comment_id=None, comment_content=None, workspace_id=None, project_name=None):
+def ticket_comment_msg_to_json(ticket_id, ticket_title, from_user_id, comment_id=None, comment_content=None, workspace_id=None, project_name=None):
     return json.dumps({
         'ticket_id': ticket_id,
         'ticket_title': ticket_title,
-        'from_user_name': email2nickname(from_user_email),
-        'from_user_email': from_user_email,
-        'from_user_avatar': api_avatar_url(from_user_email)[0],
+        'from_user_name': email2nickname(from_user_id),
+        'from_user_id': from_user_id,
+        'from_user_avatar': api_avatar_url(from_user_id)[0],
         'comment_id': comment_id,
         'comment_content': comment_content,
         'workspace_id': workspace_id,

@@ -624,7 +624,7 @@ CREATE TABLE `knowledge_base_views`  (
 CREATE TABLE `api_token` (
   `key` varchar(40) NOT NULL,
   `user` varchar(255) NOT NULL,
-  `created` datetime NOT NULL,
+  `created` datetime(6) NOT NULL,
   PRIMARY KEY (`key`),
   UNIQUE KEY `user` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -634,11 +634,10 @@ CREATE TABLE `user_notifications` (
   `to_user` varchar(255) NOT NULL,
   `msg_type` varchar(30) NOT NULL,
   `detail` longtext NOT NULL,
-  `timestamp` datetime NOT NULL,
+  `timestamp` datetime(6) NOT NULL,
   `seen` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `user_notification_to_user` (`to_user`),
-  KEY `user_notification_msg_type` (`msg_type`),
   KEY `user_dnotification_timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -647,7 +646,7 @@ CREATE TABLE `project_notification` (
   `project_uuid` varchar(36) NOT NULL,
   `to_user` varchar(255) NOT NULL,
   `msg_type` varchar(36) NOT NULL,
-  `timestamp` datetime NOT NULL,
+  `timestamp` datetime(6) NOT NULL,
   `detail` longtext NOT NULL,
   `seen` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
