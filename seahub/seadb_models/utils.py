@@ -420,6 +420,8 @@ def init_knowledge_base_seadb_table(seadb_api, project_uuid):
             'column_name': column.name,
             'column_type': column.type,
         }
+        if column.data:
+            mapped_column['column_data'] = column.data
         seadb_api.add_column(project_uuid, table_id, mapped_column)
 
     seadb_api.create_column_index(
