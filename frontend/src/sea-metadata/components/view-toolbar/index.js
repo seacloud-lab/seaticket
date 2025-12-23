@@ -9,7 +9,7 @@ import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const ViewToolBar = ({ fixedColumnCount, isViewComputedOnServer, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
+const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
 
   const { collaborators } = useCollaborators();
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
@@ -45,10 +45,10 @@ const ViewToolBar = ({ fixedColumnCount, isViewComputedOnServer, tools = VIEW_TO
       );
     }
     if (tools.includes(VIEW_TOOL.VIEWS)) {
-      return (<Views view={view} isViewComputedOnServer={isViewComputedOnServer} toggleView={toggleView} />);
+      return (<Views view={view} toggleView={toggleView} />);
     }
     return (<div className="sea-metadata-views"></div>);
-  }, [selectedRowIds, isViewComputedOnServer, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows]);
+  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows]);
 
   const view = metadata?.view;
   const viewType = view?.type;

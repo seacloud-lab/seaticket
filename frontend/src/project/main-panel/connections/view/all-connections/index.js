@@ -122,6 +122,10 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     selfQuery.start(synchronizingRows);
   }, [selfQuery]);
 
+  const rowsWillUnmount = useCallback(() => {
+    selfQuery.clear();
+  }, []);
+
   useEffect(() => {
     reloadConnections();
     return () => {
@@ -161,6 +165,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         onUpdate={modifyConnectionStatus}
         handleStatusActive={handleStatusActive}
         rowsDidMount={rowsDidMount}
+        rowsWillUnmount={rowsWillUnmount}
         getRowStatus={getConnectionStatus}
         modifyLocalRow={modifyLocalConnectionRecord}
       />

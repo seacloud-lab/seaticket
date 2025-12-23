@@ -140,7 +140,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     <SeaMetadata
       viewID="0000"
       api={api}
-      isViewComputedOnServer={false}
+      settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
       permission={permission}
       localStorageNamePrefix={localStorageName}
       createContextMenuOptions={createContextMenuOptions}
