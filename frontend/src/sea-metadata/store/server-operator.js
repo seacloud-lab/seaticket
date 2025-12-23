@@ -207,6 +207,15 @@ class ServerOperator {
         callback({ operation });
         break;
       }
+      case OPERATION_TYPE.MODIFY_VIEW_LOCK: {
+        const { view_id, is_locked } = operation;
+        context.modifyView(view_id, { is_locked }).then(res => {
+          callback({ operation });
+        }).catch(error => {
+          callback({ operation, error: gettext('Failed to modify view lock') });
+        });
+        break;
+      }
 
       default: {
         break;

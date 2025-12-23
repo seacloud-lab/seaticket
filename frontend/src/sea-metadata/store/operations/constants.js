@@ -8,6 +8,7 @@ export const OPERATION_TYPE = {
   MODIFY_SETTINGS: 'modify_settings',
   MODIFY_LOCAL_VIEW: 'modify_local_view',
   MODIFY_VIEW_TYPE: 'modify_view_type',
+  MODIFY_VIEW_LOCK: 'modify_view_lock',
 
   // column
   INSERT_COLUMN: 'insert_column',
@@ -63,6 +64,7 @@ export const OPERATION_ATTRIBUTES = {
   [OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS]: ['view_id', 'hidden_columns'],
   [OPERATION_TYPE.MODIFY_LOCAL_VIEW]: ['view_id', 'update'],
   [OPERATION_TYPE.MODIFY_VIEW_TYPE]: ['view_id', 'update'],
+  [OPERATION_TYPE.MODIFY_VIEW_LOCK]: ['view_id', 'is_locked'],
 
   [OPERATION_TYPE.INSERT_COLUMN]: ['name', 'column_type', 'column_key', 'data', 'column'],
   [OPERATION_TYPE.RENAME_COLUMN]: ['column_key', 'new_name', 'old_name'],

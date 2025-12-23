@@ -185,16 +185,21 @@ const ViewItem = ({
           onClick={() => onSelect && onSelect(view._id)} key={view._id}
           ref={viewRef}
         >
-          {view.name}
-          {isSelect && context.getSetting('canManageView', true) && (
-            <div
-              className="sea-metadata-view-item-operation-down"
-              onClick={openDropdownMenu}
-              ref={downBtnRef}
-            >
-              <Icon symbol="down" />
-            </div>
-          )}
+          <span className="sea-metadata-view-item-name">
+            {view.name}
+            {isSelect && context.getSetting('canManageView', true) && (
+              <div
+                className="sea-metadata-view-item-operation-down"
+                onClick={openDropdownMenu}
+                ref={downBtnRef}
+              >
+                <Icon symbol="down" />
+              </div>
+            )}
+            {view.is_locked && (
+              <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('View is locked')} />
+            )}
+          </span>
         </div>
       </div>
       {isShowDeleteConfirmationDialog && (
@@ -214,19 +219,31 @@ const ViewItem = ({
               style={menuStyle.current}
             >
               {modifyAble && (
-                <button onClick={handleModify} className="dropdown-item sea-qa-dropdown-item">
+                <button
+                  onClick={handleModify}
+                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  disabled={view.is_locked}
+                >
                   <Icon symbol="rename" />
                   {gettext('Rename view')}
                 </button>
               )}
               {duplicateAble && (
-                <button onClick={handleDuplicate} className="dropdown-item sea-qa-dropdown-item">
+                <button
+                  onClick={handleDuplicate}
+                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  disabled={view.is_locked}
+                >
                   <Icon symbol="copy" />
                   {gettext('Duplicate view')}
                 </button>
               )}
               {deleteAble && (
-                <button onClick={openDeleteConfirmationDialog} className="dropdown-item sea-qa-dropdown-item">
+                <button
+                  onClick={openDeleteConfirmationDialog}
+                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  disabled={view.is_locked}
+                >
                   <Icon symbol="delete" />
                   {gettext('Delete view')}
                 </button>
