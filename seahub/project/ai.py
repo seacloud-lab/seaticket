@@ -521,7 +521,6 @@ class RelatedRecordsView(APIView):
                             reranked_results.append(key_to_result[reranked_key])
 
         except Exception as e:
-            print(e)
             logger.error(f"Error calling vector search indexer: {e}")
             error_msg = 'Error calling vector search indexer.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
