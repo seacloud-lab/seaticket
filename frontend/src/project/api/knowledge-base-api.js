@@ -60,7 +60,7 @@ class KnowledgeBaseAPI {
   }
 
   getKnowledgeBases(projectUuid, { view_id = 'open', start = 0, limit = 100, } = {}){
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/';
     let params = {
       view_id,
       start,
@@ -70,12 +70,12 @@ class KnowledgeBaseAPI {
   }
 
   listViews(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/';
     return this.req.get(url);
   }
 
   insertView(projectUuid, name, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/';
     let form = new FormData();
     if (name) {
       form.append('name', name);
@@ -87,12 +87,12 @@ class KnowledgeBaseAPI {
   }
 
   getView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
     return this.req.get(url);
   }
 
   modifyView(projectUuid, viewID, viewData) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
     const params = {
       view_data: viewData,
     };
@@ -100,12 +100,12 @@ class KnowledgeBaseAPI {
   }
 
   deleteView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-views/' + viewID + '/';
     return this.req.delete(url);
   }
 
   moveView(projectUuid, sourceViewID, targetViewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-move-views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-move-views/';
     let form = new FormData();
     if (sourceViewID) {
       form.append('source_view_id', sourceViewID);
@@ -117,7 +117,7 @@ class KnowledgeBaseAPI {
   }
 
   duplicateView(projectUuid, viewID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base-duplicate-views/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base-duplicate-views/';
 
     let form = new FormData();
     if (viewID) {
@@ -127,7 +127,7 @@ class KnowledgeBaseAPI {
   }
 
   createRecord(projectUuid, update) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/';
     let form = new FormData();
     Object.keys(update).forEach(key => {
       let value = update[key];
@@ -140,7 +140,7 @@ class KnowledgeBaseAPI {
   }
 
   updateRecord(projectUuid, recordId, update = {}) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
     let payload = { ...update };
     if (payload.content && typeof payload.content === 'object') {
       payload.content = JSON.stringify(payload.content);
@@ -153,7 +153,7 @@ class KnowledgeBaseAPI {
   }
 
   deleteRecords(projectUuid, recordIds) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/';
     if (!Array.isArray(recordIds)) {
       return Promise.reject(new Error('recordIds must be an array'));
     }
@@ -163,33 +163,33 @@ class KnowledgeBaseAPI {
   }
 
   getRecord(projectUuid, knowledgeID) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/' + knowledgeID + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/' + knowledgeID + '/';
     return this.req.get(url);
   }
 
   convertViewToExcel(projectUuid, viewId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/convert-view-to-excel/?view_id=' + encodeURIComponent(viewId);
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/convert-view-to-excel/?view_id=' + encodeURIComponent(viewId);
     return this.req.get(url);
   }
 
   queryIOStatus(taskId) {
-    const url = this.server + '/api/v2.1/kb-io-status/?task_id=' + taskId;
+    const url = this.server + '/api/v1/kb-io-status/?task_id=' + taskId;
     return this.req.get(url);
   }
 
   getExportExcelUrl(projectUuid, taskId, viewId) {
-    return this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/export-excel/?task_id=' + taskId + '&view_id=' + encodeURIComponent(viewId);
+    return this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/export-excel/?task_id=' + taskId + '&view_id=' + encodeURIComponent(viewId);
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/upload-file/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/upload-file/';
     const formData = new FormData();
     formData.append('file', file);
     return this._sendPostRequest(url, formData, { onUploadProgress });
   }
 
     importExcel(projectUuid, file, previewOnly = false) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/import-excel/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/import-excel/';
     const formData = new FormData();
     formData.append('file', file);
     formData.append('preview_only', previewOnly ? 'true' : 'false');
@@ -197,7 +197,7 @@ class KnowledgeBaseAPI {
   }
 
   commitImportExcel(projectUuid, fileName) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-bases/import-excel/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/import-excel/';
     const formData = new FormData();
     formData.append('file_name', fileName);
     formData.append('preview_only', 'false');
@@ -206,12 +206,12 @@ class KnowledgeBaseAPI {
 
   // tags
   listKnowledgeBaseTags(projectUuid) {
-    let url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    let url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
     return this.req.get(url);
   }
 
   createKnowledgeBaseTag(projectUuid, { name, description, color, text_color }) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
     let form = new FormData();
     if (name) {
       form.append('name', name);
@@ -229,7 +229,7 @@ class KnowledgeBaseAPI {
   }
 
   modifyKnowledgeBaseTag(projectUuid, tagId, update) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
     let form = new FormData();
     Object.keys(update).forEach(key => {
       form.append(key, update[key]);
@@ -238,22 +238,22 @@ class KnowledgeBaseAPI {
   }
 
   deleteKnowledgeBaseTag(projectUuid, tagId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
     return this.req.delete(url);
   }
 
   deleteKnowledgeBaseTags(projectUuid, tagIds) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/';
     return this.req.delete(url, { data: { tag_ids: tagIds } });
   }
 
   listKnowledgeBaseByTag(projectUuid, tagId) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/tags/' + tagId + '/';
     return this.req.get(url);
   }
 
   getKnowledgeBaseMetadata(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/knowledge-base/metadata/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-base/metadata/';
     return this.req.get(url);
   }
 

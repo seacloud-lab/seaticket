@@ -59,17 +59,17 @@ class ChatAPI {
   }
 
   sendChatMessage(params) {
-    const url = this.server + '/api/v2.1/ai/chat/';
+    const url = this.server + '/api/v1/ai/chat/';
     return this._sendPostRequest(url, params);
   }
   // chat sessions api
   listChatSessions(projectUuid) {
-    const url = this.server + '/api/v2.1/chat/sessions/?project_uuid=' + projectUuid;
+    const url = this.server + '/api/v1/chat/sessions/?project_uuid=' + projectUuid;
     return this.req.get(url);
   }
 
   createChatSession(projectUuid, sessionName) {
-    const url = this.server + '/api/v2.1/chat/sessions/';
+    const url = this.server + '/api/v1/chat/sessions/';
     const data = {
       project_uuid: projectUuid,
       session_name: sessionName,
@@ -78,7 +78,7 @@ class ChatAPI {
   }
 
   deleteChatSession(projectUuid, sessionUuid) {
-    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/';
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
     const data = {
       project_uuid: projectUuid
     };
@@ -86,7 +86,7 @@ class ChatAPI {
   }
 
   modifyChatSession(projectUuid, sessionUuid, update) {
-    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/';
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/';
     const data = {
       ...update,
       project_uuid: projectUuid
@@ -95,7 +95,7 @@ class ChatAPI {
   }
 
   getChatMessages(projectUuid, sessionUuid) {
-    const url = this.server + '/api/v2.1/chat/sessions/' + sessionUuid + '/messages/?project_uuid=' + projectUuid;
+    const url = this.server + '/api/v1/chat/sessions/' + sessionUuid + '/messages/?project_uuid=' + projectUuid;
     return this.req.get(url);
   }
 

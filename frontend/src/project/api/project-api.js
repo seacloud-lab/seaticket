@@ -60,7 +60,7 @@ class ProjectAPI {
   }
 
   updateProject(workspaceID, project_name, updates) {
-    const url = this.server + '/api/v2.1/workspace/' + workspaceID + '/project/';
+    const url = this.server + '/api/v1/workspace/' + workspaceID + '/project/';
     let form = new FormData();
 
     form.append('name', project_name);
@@ -81,7 +81,7 @@ class ProjectAPI {
 
   // related users
   listProjectRelatedUsers(projectUuid) {
-    const url = this.server + '/api/v2.1/project/' + projectUuid + '/related-users/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/related-users/';
     return this.req.get(url);
   }
 

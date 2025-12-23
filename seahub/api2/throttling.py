@@ -275,7 +275,7 @@ class OrgAdminRateThrottle(SimpleRateThrottle):
         return int(member_quota)
 
     def is_org_admin_add_user(self, request):
-        if request.method == 'POST' and request.path == '/api/v2.1/org/%s/admin/users/' % request.user.org.org_id:
+        if request.method == 'POST' and request.path == '/api/v1/org/%s/admin/users/' % request.user.org.org_id:
             return True
         return False
 

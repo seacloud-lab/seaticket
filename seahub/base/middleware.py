@@ -95,20 +95,20 @@ class UserPermissionMiddleware(MiddlewareMixin):
 
         permission_url = {
             'can_view_system_info': [
-                'api/v2.1/admin/sysinfo',
+                'api/v1/admin/sysinfo',
             ],
             'can_view_statistic': [
                 'sys/statistic/file',
                 'sys/statistic/storage',
                 'sys/statistic/user',
                 'sys/trafficadmin',
-                'api/v2.1/admin/statistics',
+                'api/v1/admin/statistics',
             ],
             'can_config_system': [
                 'sys/settings',
-                'api/v2.1/admin/logo',
-                'api/v2.1/admin/favicon',
-                'api/v2.1/admin/login-background-image',
+                'api/v1/admin/logo',
+                'api/v1/admin/favicon',
+                'api/v1/admin/login-background-image',
             ],
             'can_manage_user': [
                 'sys/users',
@@ -128,11 +128,11 @@ class UserPermissionMiddleware(MiddlewareMixin):
                 'users/password/reset',
                 'users/batchmakeadmin',
                 'users/batchadduser',
-                'api/v2.1/admin/users/batch',
+                'api/v1/admin/users/batch',
             ],
             'can_manage_group': [
                 'sys/groups/export-excel',
-                'api/v2.1/admin/groups',
+                'api/v1/admin/groups',
             ],
             'can_view_user_log': [
                 'sys/loginadmin',
@@ -144,14 +144,14 @@ class UserPermissionMiddleware(MiddlewareMixin):
                 'sys/log/fileupdate/export-excel',
                 'sys/log/permaudit',
                 'sys/log/permaudit/export-excel',
-                'api/v2.1/admin/logs/login',
-                'api/v2.1/admin/logs/file-audit',
-                'api/v2.1/admin/logs/file-update',
-                'api/v2.1/admin/logs/perm-audit',
+                'api/v1/admin/logs/login',
+                'api/v1/admin/logs/file-audit',
+                'api/v1/admin/logs/file-update',
+                'api/v1/admin/logs/perm-audit',
             ],
             'can_view_admin_log': [
-                'api/v2.1/admin/admin-logs',
-                'api/v2.1/admin/admin-login-logs',
+                'api/v1/admin/admin-logs',
+                'api/v1/admin/admin-login-logs',
             ],
         }
 

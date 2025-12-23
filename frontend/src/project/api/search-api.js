@@ -59,7 +59,7 @@ class SearchAPI {
   }
 
   search(workspaceID, projectUuid, query, connectionIds, timeFrom, timeTo, username, extraSources, cancelToken, semanticSearch) {
-    const url = `${this.server}/api/v2.1/search/`;
+    const url = `${this.server}/api/v1/search/`;
     let params = {
       query: query,
       project_uuid: projectUuid,
