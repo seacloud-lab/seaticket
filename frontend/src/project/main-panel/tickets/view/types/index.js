@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTicketsPage, useMetadata } from '../../hooks';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
@@ -9,7 +9,8 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTypes = ({ projectUuid, permission }) => {
-  const { isLoading, typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
+  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading: isMetadataLoading, typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useTicketsPage();
 
   const columns = useMemo(() => [
@@ -199,7 +200,7 @@ const AllTypes = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadTypes();
+    loadTypes(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -211,7 +212,7 @@ const AllTypes = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || typesData.isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <>

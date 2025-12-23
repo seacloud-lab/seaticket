@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMetadata } from '../../hooks/metadata';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { CenteredLoading } from '@/components';
@@ -11,7 +11,8 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 
 const AllTags = ({ projectUuid, permission }) => {
-  const { isLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
+  const [isLoading, setIsLoading] = useState(true);
+  const { isLoading: isMetadataLoading, tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useMetadata();
   const { pageSlugId, togglePageSlugId } = useKnowledgePage();
 
   const columns = useMemo(() => [
@@ -217,7 +218,7 @@ const AllTags = ({ projectUuid, permission }) => {
   }, []);
 
   useEffect(() => {
-    loadTags();
+    loadTags(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -229,7 +230,7 @@ const AllTags = ({ projectUuid, permission }) => {
     };
   }, []);
 
-  if (isLoading || tagsData.isLoading) return (<CenteredLoading />);
+  if (isLoading || isMetadataLoading) return (<CenteredLoading />);
 
   return (
     <>

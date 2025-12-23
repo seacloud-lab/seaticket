@@ -60,13 +60,7 @@ class OptionsData {
     });
 
     this.hasMore = true;
-    this.isLoading = false;
   }
-
-  _updateLoading = (isLoading) => {
-    this.isLoading = isLoading;
-    return this;
-  };
 }
 
 export default OptionsData;
