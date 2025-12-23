@@ -302,7 +302,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
 # These columns are must returned to the front end to make some frontend functions work
 CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['url'],
-    ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'has_accepted_answer'],
+    ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
