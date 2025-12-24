@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CenteredLoading, ModalHeader, toaster } from '@/components';
+import { CenteredLoading, ModalHeader, toaster, Icon } from '@/components';
 import { connectionsAPI } from '../../../api';
 import { Utils } from '@/utils/utils';
 import { Connection } from '../models';
 import DateFormatter from './cell-formatter/date-formatter';
 import { CONNECTION_TYPE } from '../constants';
+import './connection-status-dialog.css';
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   const [record, setRecord] = useState(null);
@@ -27,35 +28,99 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
     getConnectionRecord();
   }, []);
 
+  console.log('record', record);
+
   return (
-    <Modal isOpen={true} toggle={onToggle}>
+    <Modal isOpen={true} toggle={onToggle} className="connection-status-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Connection status')}</ModalHeader>
       <ModalBody>
         {isLoading ?
           <CenteredLoading />
           :
-          <>
-            <p>{gettext('Total records')}: {record.status.total_records}</p>
-            <p>{gettext('Last sync count')}: {record.status.last_sync_count}</p>
-            <p>{gettext('Last sync status')}: {record.status.last_sync_status}</p>
-            <p>{gettext('Last sync time')}: <DateFormatter value={record.last_sync_time} /></p>
-            <p>{gettext('Last indexed count')}: {record.status.last_indexed_count}</p>
-            <p>{gettext('Last index status')}: {record.status.last_index_status}</p>
-            <p>{gettext('Last index time')}: <DateFormatter value={record.indexed_at} /></p>
-            <p>{gettext('Last AI processing count')}: {record.ai_status.last_ai_processing_count}</p>
-            <p>{gettext('Last AI processing status')}: {record.ai_status.last_ai_processing_status}</p>
-            <p>{gettext('Last AI processing time')}: <DateFormatter value={record.last_ai_processing_time} /></p>
-            <p>{gettext('Last AI indexed count')}: {record.ai_status.last_ai_indexed_count}</p>
-            <p>{gettext('Last AI indexed status')}: {record.ai_status.last_ai_index_status}</p>
-            <p>{gettext('Last AI indexed time')}: <DateFormatter value={record.ai_indexed_at} /></p>
-            {record.type === CONNECTION_TYPE.SITE &&
-              <>
-                <p>{gettext('Last vector indexed count')}: {record.content_vector_status.last_content_vector_indexed_count}</p>
-                <p>{gettext('Last vector indexed status')}: {record.content_vector_status.last_content_vector_index_status}</p>
-                <p>{gettext('Last vector indexed time')}: <DateFormatter value={record.content_vector_indexed_at} /></p>
-              </>
-            }
-          </>
+          <div className="connection-status-container">
+            <div className="status-header">
+              <div className="total-records">{gettext('Total records')}: {record.status.total_records}</div>
+            </div>
+            <div className="timeline">
+              {/* Last Sync Status */}
+              <div className="timeline-item">
+                <div className="timeline-icon sync-status">
+                  <Icon symbol="sync" />
+                </div>
+                <div className="timeline-content">
+                  <div className="timeline-title">
+                    {gettext('Last sync status')} {record.status.last_sync_status}
+                  </div>
+                  <div className="timeline-time">
+                    <DateFormatter value={record.last_sync_time} />
+                  </div>
+                  <div className="timeline-stats">
+                    <span className="stat-value">{record.status.last_sync_count}</span>
+                    <span className="stat-label">{gettext('records synced')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Last Index Status */}
+              <div className="timeline-item">
+                <div className="timeline-icon index-status">
+                  <Icon symbol="index" />
+                </div>
+                <div className="timeline-content">
+                  <div className="timeline-title">
+                    {gettext('Last index status')} {record.status.last_index_status}
+                  </div>
+                  <div className="timeline-time">
+                    <DateFormatter value={record.indexed_at} />
+                  </div>
+                  <div className="timeline-stats">
+                    <span className="stat-value">{record.status.last_indexed_count}</span>
+                    <span className="stat-label">{gettext('records indexed')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Last AI Processing Status */}
+              <div className="timeline-item">
+                <div className="timeline-icon ai-status">
+                  <Icon symbol="ai-processing" />
+                </div>
+                <div className="timeline-content">
+                  <div className="timeline-title">
+                    {gettext('Last AI processing status')} {record.ai_status.last_ai_processing_status}
+                  </div>
+                  <div className="timeline-time">
+                    <DateFormatter value={record.last_ai_processing_time} />
+                  </div>
+                  <div className="timeline-stats">
+                    <span className="stat-value">{record.ai_status.last_ai_processing_count}</span>
+                    <span className="stat-label">{gettext('records processed')}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vector Indexed Status (for SITE type) */}
+              {record.type === CONNECTION_TYPE.SITE &&
+                <div className="timeline-item">
+                  <div className="timeline-icon pending">
+                    <Icon symbol="vector" />
+                  </div>
+                  <div className="timeline-content">
+                    <div className="timeline-title">
+                      {gettext('Last vector indexed status')} {record.content_vector_status.last_content_vector_index_status}
+                    </div>
+                    <div className="timeline-time">
+                      <DateFormatter value={record.content_vector_indexed_at} />
+                    </div>
+                    <div className="timeline-stats">
+                      <span className="stat-value">{record.content_vector_status.last_content_vector_indexed_count}</span>
+                      <span className="stat-label">{gettext('records indexed')}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         }
       </ModalBody>
     </Modal>
