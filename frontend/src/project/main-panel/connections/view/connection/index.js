@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import SeaMetadata from '@/sea-metadata';
 import RowDetailsDialog from '../../components/row-details-dialog';
-import EmbeddingVisualization from '../../components/embedding-visualization';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
@@ -21,8 +20,6 @@ import { useConnections } from '../../hooks';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { MetadataProvider } from '../../../tickets/hooks';
-import eventBus from '@/utils/event-bus';
-import { EVENT_BUS_TYPE } from '@/project/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { IssueForAI } from '../../models';
@@ -38,7 +35,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isLoadingConnection, setLoadingConnection] = useState(true);
   const [typesData, setTypesData] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
-  const [isEmbeddingVisualizationOpen, setEmbeddingVisualizationOpen] = useState(false);
   const [ticketData, setTicketData] = useState(null);
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
@@ -414,15 +410,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, []);
 
-  useEffect(() => {
-    const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.OPEN_CONNECTION_EMBEDDING_VISUALIZATION, () => {
-      setEmbeddingVisualizationOpen(true);
-    });
-    return () => {
-      unsubscribeNewConnection();
-    };
-  }, []);
-
   if (isLoading || isLoadingConnection) return null;
 
   return (
@@ -458,14 +445,6 @@ const Connection = ({ projectUuid, permission, connectionID, toggleBar }) => {
           isLoading={isTicketLoading}
           isOpen={isTicketDialogOpen}
           toggle={() => setTicketDialogOpen(false)}
-        />
-      )}
-      {isEmbeddingVisualizationOpen && (
-        <EmbeddingVisualization
-          onClose={() => setEmbeddingVisualizationOpen(false)}
-          connectionId={connectionID}
-          connectionName={connection?.name || ''}
-          projectUuid={projectUuid}
         />
       )}
       {isShowRelatedIssuesDialog && (

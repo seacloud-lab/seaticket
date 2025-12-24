@@ -202,11 +202,11 @@ class ConnectionsAPI {
   }
 
 
-  getEmbeddingAnalysis(projectUuid, connectionID) {
+  getConnectionsEmbeddingAnalysis(projectUuid, connectionIds) {
     const url = this.server + '/api/v1/ai/embedding-analysis/';
     const data = {
       project_uuid: projectUuid,
-      connection_id: connectionID
+      connection_ids: connectionIds.join(',')
     };
     return this.req.post(url, data);
   }
