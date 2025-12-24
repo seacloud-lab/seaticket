@@ -68,21 +68,22 @@ class KnowledgeBaseTagsAPIView(APIView):
             error_msg = 'Feature is not enabled.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        name = request.POST.get('name')
+        data = request.data or {}
+        name = data.get('name')
         if not name:
             error_msg = 'name invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        description = request.POST.get('description')
-        if not description:
+        description = data.get('description')
+        if description is None:
             description = ''
 
-        color = request.POST.get('color')
+        color = data.get('color')
         if not color:
             error_msg = 'color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        text_color = request.POST.get('text_color')
+        text_color = data.get('text_color')
         if not text_color:
             error_msg = 'text_color invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
