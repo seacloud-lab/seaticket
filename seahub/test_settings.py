@@ -733,7 +733,7 @@ else:
     del seaqa_web_settings
 
 # config in yaml & env
-yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', '~/dev/seaqa-dev/data/conf/seaqa_config.yaml'))
+yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
 # Available AI Models for user selection

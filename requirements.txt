@@ -40,5 +40,3 @@ django-s3-storage==0.15.*
 Markdown==3.6
 dnspython==2.7.*
 pyyaml==6.0.*
-pytest==9.0.*
-pytest-django==4.11.*
