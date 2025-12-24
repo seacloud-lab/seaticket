@@ -1,8 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { EmbeddingView as AtlasEmbeddingView } from 'embedding-atlas/react';
 
-import './index.css';
-
 const EmbeddingView = ({
   embeddingData,
   categoryData,
