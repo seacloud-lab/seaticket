@@ -288,6 +288,7 @@ class Projects(models.Model):
     icon = models.CharField(max_length=50, null=True)
     settings = models.TextField(null=True)
     knowledge_base_indexed_at = models.DateTimeField(null=True)
+    knowledge_base_ai_indexed_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 

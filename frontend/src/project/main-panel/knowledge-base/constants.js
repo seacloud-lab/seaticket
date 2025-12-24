@@ -6,6 +6,8 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {
   TITLE: 'title',
   CONTENT: 'content',
   TAGS: 'tags',
+  AI_SUMMARY: 'ai_summary',
+  AI_PROCESSED_TIME: 'ai_processed_time',
   CREATOR: 'creator',
   CREATED_TIME: 'created_time',
   LAST_MODIFIER: 'last_modifier',
@@ -26,6 +28,16 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
     display_name: gettext('Tags'),
     editable: true,
     modify_data_able: true,
+  },
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.AI_SUMMARY]: {
+    display_name: gettext('AI Summary'),
+    type: CellType.TEXT,
+    is_hover_show_content: true,
+  },
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.AI_PROCESSED_TIME]: {
+    display_name: gettext('AI processed time'),
+    type: CellType.DATE,
+    data: { format: 'YYYY-MM-DD HH:mm:ss' },
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.CREATOR]: {
     display_name: gettext('Creator'),
