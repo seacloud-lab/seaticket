@@ -95,7 +95,7 @@ const Search = ({ title, settings }) => {
         timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
       }
       const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      const extraSources = includeKBLocal ? ['knowledge_base'] : [];
+      const extraSources = [...(includeKBLocal ? ['knowledge_base'] : []), ...(includeTicketLocal ? ['ticket'] : [])];
       searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, username, extraSources, source.token, semanticEnabled).then(res => {
         const rawResults = res.data?.results || [];
         setResults(rawResults.map(result => new SearchResult(result)));
