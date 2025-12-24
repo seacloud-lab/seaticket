@@ -161,8 +161,6 @@ const Search = ({ title, settings }) => {
 
   if (!isConnectionsLoaded || (isLoading && connections.length === 0)) return null;
 
-  console.log(connections);
-
   return (
     <>
       <TopBar>

@@ -48,9 +48,6 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, t
   const validConnectionIds = connections.map((c) => c.id);
   const hiddenOnConnectionsCount = hiddenConnectionIDs.filter(id => validConnectionIds.includes(id)).length;
   const showConnectionsLen = connections.length - hiddenOnConnectionsCount;
-
-  console.log(connections);
-
   const kbSelected = kbEnabled && !hiddenConnectionIDs.includes('__kb__');
   const ticketSelected = ticketEnabled && !hiddenConnectionIDs.includes('__ticket__');
   const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0) + (ticketSelected ? 1 : 0);
