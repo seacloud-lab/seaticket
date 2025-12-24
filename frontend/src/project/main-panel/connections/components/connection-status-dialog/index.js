@@ -6,7 +6,7 @@ import { CenteredLoading, ModalHeader, toaster, Icon } from '@/components';
 import { connectionsAPI } from '@/project/api/connections-api';
 import { Utils } from '@/utils/utils';
 import { Connection } from '../../models';
-import DateFormatter from '.././cell-formatter/date-formatter';
+import DateFormatter from '../cell-formatter/date-formatter';
 import { CONNECTION_TYPE } from '../../constants';
 
 import './index.css';

@@ -5,7 +5,7 @@ import { connectionsAPI } from '../../../../api';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
-import ConnectionStatusDialog from '../../components/connection-status-dialog/connection-status-dialog';
+import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import ConnectionLogsDialog from '../../components/connection-logs-dialog';
 import createFormatter from '../../components/cell-formatter';
 import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_COMPLETED_STATUS } from '../../constants';
