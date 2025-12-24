@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftS } from '@/utils/hotkey';
 
 import '../state-settings/index.css';
@@ -50,7 +50,7 @@ const SubStateSettings = ({
   }, [onChange]);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
+    if (isInputOrEditorActive() || isActiveOtherPopover('substate-editor-popover')) return;
 
     if (isShiftS(event)) {
       openEditor();
@@ -78,6 +78,7 @@ const SubStateSettings = ({
       </div>
       {!isReadonly && isShowEditor && (
         <OptionEditor
+          id="substate-editor-popover"
           target={editorRef}
           isMultiple={false}
           isSearchEnabled={false}

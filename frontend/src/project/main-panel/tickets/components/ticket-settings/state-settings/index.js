@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { TICKET_STATE_OPTIONS } from '../../../constants';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isS } from '@/utils/hotkey';
 
 import './index.css';
@@ -72,7 +72,7 @@ const StateSettings = ({
   }, [onChange]);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
+    if (isInputOrEditorActive() || isActiveOtherPopover('state-editor-popover')) return;
 
     if (isS(event)) {
       openEditor();
@@ -100,6 +100,7 @@ const StateSettings = ({
       </div>
       {!isReadonly && isShowEditor && (
         <OptionEditor
+          id="state-editor-popover"
           target={editorRef}
           isMultiple={false}
           isSearchEnabled={false}

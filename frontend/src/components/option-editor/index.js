@@ -6,6 +6,7 @@ import Main from './main';
 import './index.css';
 
 const OptionsEditor = ({
+  id,
   target,
   isMultiple = false,
   isSearchEnabled = true,
@@ -40,6 +41,7 @@ const OptionsEditor = ({
       hidePopoverWithEsc={handleClose}
     >
       <Main
+        id={id}
         ref={mainRef}
         isMultiple={isMultiple}
         placeholder={placeholder}

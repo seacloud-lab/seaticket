@@ -179,8 +179,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           </div>
           <div className="sea-qa-project-ticket-other-settings">
             <RateSettings isReadonly={isSubmitting} value={priority} onChange={setPriority} />
-            <CollaboratorsSettings isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
+            <CollaboratorsSettings id="assignees-editor-popover" isReadonly={isSubmitting} title={gettext('Assignees')} value={assignees} onChange={setAssignees} />
             <TagsSettings
+              id="tags-editor-popover"
               isReadonly={isSubmitting}
               value={tags}
               isLoading={isMetadataLoading}
@@ -188,7 +189,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
               createTag={createTag}
               onChange={setTags}
             />
-            <TypeSettings isReadonly={isSubmitting} value={type} onChange={setType} />
+            <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} onChange={setType} />
           </div>
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>

@@ -400,8 +400,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
+          <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings
+            id="tags-editor-popover"
             isReadonly={!editable}
             value={tags}
             isLoading={isMetadataLoading}
@@ -411,7 +412,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           />
           <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
-          <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
+          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
       </div>

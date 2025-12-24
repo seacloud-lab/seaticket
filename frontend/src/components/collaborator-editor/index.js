@@ -6,6 +6,7 @@ import { areArraysEqual } from '../../utils/array-utils';
 import './index.css';
 
 const CollaboratorEditor = ({
+  id,
   target,
   isShowDeleteArea = true,
   isSearchEnabled = true,
@@ -38,6 +39,7 @@ const CollaboratorEditor = ({
     >
       <Main
         ref={mainRef}
+        id={id}
         isShowDeleteArea={isShowDeleteArea}
         isSearchEnabled={isSearchEnabled}
         isMultiple={isMultiple}

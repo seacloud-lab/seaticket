@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { Icon } from '@/components';
 import CustomizePopover from '@/components/customize-popover';
 import PriorityItem from '@/sea-metadata/components/cell-editors/priority-editor/priority-item';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import { isEsc, isEnter, isP, isUpArrow, isDownArrow } from '@/utils/hotkey';
 
@@ -49,7 +49,7 @@ const RateSettings = ({
   }, [highlightIndex]);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
+    if (isInputOrEditorActive() || isActiveOtherPopover('priority-editor-popover')) return;
 
     if (isP(event)) {
       openEditor();
@@ -62,6 +62,15 @@ const RateSettings = ({
     } else if (isEnter(event) && isShowEditor) {
       const value = PRIORITIES[highlightIndex].value;
       onChangeValue(value);
+    } else if (isShowEditor && Number(event.key) >= 0 && Number(event.key) <= 4) {
+      event.preventDefault();
+      event.stopPropagation();
+      // eslint-disable-next-line
+      const selectedPriority = PRIORITIES.find(item => item.hotKey == event.key);
+      if (selectedPriority && selectedPriority.value !== value) {
+        onChangeValue(selectedPriority.value);
+        closeEditor();
+      }
     }
   }, [openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex, isShowEditor]);
 
@@ -96,7 +105,7 @@ const RateSettings = ({
             { name: 'offset', options: { offset: [-6, 8] } }
           ]}
         >
-          <div className="sea-metadata-priority-editor-popover">
+          <div className="sea-metadata-priority-editor-popover" id="priority-editor-popover">
             {PRIORITIES.map((item, index) => (
               <PriorityItem
                 key={index}

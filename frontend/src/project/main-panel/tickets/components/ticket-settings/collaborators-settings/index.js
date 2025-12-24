@@ -4,12 +4,13 @@ import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Collaborator, AsyncCollaborator, CollaboratorEditor } from '@/components';
 import { useCollaborators } from '@/sea-metadata';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isA } from '@/utils/hotkey';
 
 import './index.css';
 
 const CollaboratorsSettings = ({
+  id,
   isReadonly,
   value,
   className = 'mb-4',
@@ -46,8 +47,7 @@ const CollaboratorsSettings = ({
   }, []);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
-
+    if (isInputOrEditorActive() || isActiveOtherPopover('assignees-editor-popover')) return;
     if (isA(event)) {
       openAssigneesEditor(event);
     } else if (isEsc(event)) {
@@ -88,6 +88,7 @@ const CollaboratorsSettings = ({
       </div>
       {!isReadonly && isShowAssigneesEditor && (
         <CollaboratorEditor
+          id={id}
           target={assigneesRef}
           value={value}
           placeholder={gettext('Search users')}

@@ -11,6 +11,7 @@ import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 import './index.css';
 
 const Main = forwardRef(({
+  id,
   isShowDeleteArea = true,
   isSearchEnabled = true,
   isMultiple = true,
@@ -172,7 +173,7 @@ const Main = forwardRef(({
   }), [value]);
 
   return (
-    <div className="collaborator-editor-container">
+    <div className="collaborator-editor-container" id={id}>
       {isMultiple && isShowDeleteArea && (
         <div className="collaborator-editor-selected-container">
           {Array.isArray(value) && value.map(email => {

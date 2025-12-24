@@ -14,6 +14,7 @@ import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 import './index.css';
 
 const Main = forwardRef(({
+  id,
   isMultiple = false,
   isSearchEnabled = true,
   checkPlacement = 'right',
@@ -185,7 +186,7 @@ const Main = forwardRef(({
   }), [value]);
 
   return (
-    <div className={classnames('option-editor-container', className)}>
+    <div id={id} className={classnames('option-editor-container', className)}>
       {children && (
         <div className="option-editor-selected-value-wrapper">
           {children}

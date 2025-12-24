@@ -5,12 +5,13 @@ import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftT } from '@/utils/hotkey';
 
 import './index.css';
 
 const TypeSettings = ({
+  id,
   isReadonly,
   value,
   className = 'mb-4',
@@ -46,7 +47,7 @@ const TypeSettings = ({
   }, [onChange]);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
+    if (isInputOrEditorActive() || isActiveOtherPopover('type-editor-popover')) return;
 
     if (isShiftT(event)) {
       openEditor(event);
@@ -74,6 +75,7 @@ const TypeSettings = ({
       </div>
       {!isReadonly && isShowEditor && (
         <OptionEditor
+          id={id}
           target={editorRef}
           isMultiple={false}
           value={value}

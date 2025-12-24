@@ -6,12 +6,13 @@ import Option from '../../option';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
-import { isInputOrEditorActive } from '@/utils/dom';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
 
 import './index.css';
 
 const TagsSettings = ({
+  id,
   isReadonly,
   value = [],
   className = 'mb-4',
@@ -83,7 +84,7 @@ const TagsSettings = ({
   }, [onChange, value]);
 
   const onHotKey = useCallback((event) => {
-    if (isInputOrEditorActive()) return;
+    if (isInputOrEditorActive() || isActiveOtherPopover('tags-editor-popover')) return;
 
     if (isT(event)) {
       openEditor(event);
@@ -115,6 +116,7 @@ const TagsSettings = ({
       </div>
       {isShowEditor && (
         <OptionEditor
+          id={id}
           target={editorRef}
           isLoading={isLoading}
           isMultiple={true}
