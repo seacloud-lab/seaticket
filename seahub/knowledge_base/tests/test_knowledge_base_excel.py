@@ -7,15 +7,15 @@ from unittest.mock import Mock, patch
 
 
 def get_kb_convert_view_url(project_uuid):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-bases/convert-view-to-excel/'
+    return f'/api/v1/project/{project_uuid}/knowledge-bases/convert-view-to-excel/'
 
 
 def get_kb_io_status_url():
-    return '/api/v2.1/kb-io-status/'
+    return '/api/v1/kb-io-status/'
 
 
 def get_kb_export_url(project_uuid):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-bases/export-excel/'
+    return f'/api/v1/project/{project_uuid}/knowledge-bases/export-excel/'
 
 
 class TestKnowledgeBaseConvertViewToExcel:

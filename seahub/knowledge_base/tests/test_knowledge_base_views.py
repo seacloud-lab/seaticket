@@ -10,19 +10,19 @@ from unittest.mock import patch, Mock
 # URL helper constructors ------------------------------------------------------
 
 def get_kb_views_url(project_uuid):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-base-views/'
+    return f'/api/v1/project/{project_uuid}/knowledge-base-views/'
 
 
 def get_kb_view_url(project_uuid, view_id):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-base-views/{view_id}/'
+    return f'/api/v1/project/{project_uuid}/knowledge-base-views/{view_id}/'
 
 
 def get_kb_move_views_url(project_uuid):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-base-move-views/'
+    return f'/api/v1/project/{project_uuid}/knowledge-base-move-views/'
 
 
 def get_kb_duplicate_views_url(project_uuid):
-    return f'/api/v2.1/project/{project_uuid}/knowledge-base-duplicate-views/'
+    return f'/api/v1/project/{project_uuid}/knowledge-base-duplicate-views/'
 
 
 # KnowledgeBaseViewsAPI.get --------------------------------------------------
