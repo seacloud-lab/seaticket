@@ -1,6 +1,5 @@
 import json
 
-from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.base.templatetags.seahub_tags import email2nickname
 from .models import UserNotification
 
@@ -46,7 +45,6 @@ def ticket_assignee_added_msg_to_json(ticket_id, ticket_title, from_user_id, wor
         'ticket_title': ticket_title,
         'from_user_name': email2nickname(from_user_id),
         'from_user_id': from_user_id,
-        'from_user_avatar': api_avatar_url(from_user_id)[0],
         'workspace_id': workspace_id,
         'project_name': project_name,
     })
@@ -57,7 +55,6 @@ def ticket_comment_msg_to_json(ticket_id, ticket_title, from_user_id, comment_id
         'ticket_title': ticket_title,
         'from_user_name': email2nickname(from_user_id),
         'from_user_id': from_user_id,
-        'from_user_avatar': api_avatar_url(from_user_id)[0],
         'comment_id': comment_id,
         'comment_content': comment_content,
         'workspace_id': workspace_id,

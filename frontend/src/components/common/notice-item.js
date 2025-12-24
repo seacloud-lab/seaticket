@@ -28,7 +28,6 @@ class NoticeItem extends React.Component {
 
     if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED || noticeType === MSG_TYPE_TICKET_COMMENTED) {
       const {
-        from_user_avatar,
         from_user_name,
         from_user_id,
         ticket_id,
@@ -38,7 +37,7 @@ class NoticeItem extends React.Component {
         comment_content,
       } = detail;
 
-      const avatar_url = from_user_avatar || null;
+      const avatar_url = null;
       const username = from_user_name || from_user_id || gettext('System');
 
       let ticketUrl = null;
@@ -70,7 +69,7 @@ class NoticeItem extends React.Component {
     }
 
     if (noticeType === MSG_TYPE_ADD_USER_TO_GROUP) {
-      let avatar_url = '';
+      let avatar_url = null;
       let groupStaff = detail.group_staff_name;
       // group name does not support special characters
       let userHref = siteRoot + 'profile/' + encodeURIComponent(detail.group_staff_email) + '/';
