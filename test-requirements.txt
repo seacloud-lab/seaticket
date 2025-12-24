@@ -3,5 +3,5 @@
 mock
 exam
 splinter
-pytest
-pytest-django
+pytest==8.4.0
+pytest-django==4.2.23
