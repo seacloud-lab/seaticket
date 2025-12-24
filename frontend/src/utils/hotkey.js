@@ -36,9 +36,10 @@ const isT = isHotkey('t'); // tags setting
 const isS = isHotkey('s'); // state setting
 const isShiftS = isHotkey('shift+s'); // sub state setting
 const isShiftT = isHotkey('shift+t'); // type setting
+const isShiftSlash = isHotkey('shift+/');
 
 export { isModS, isModZ, isModL, isModF, isModP, isModG, isModDot, isModComma, isModUp, isModDown, isModLeft, isModRight,
   isShiftEnter, isModSlash, isModBackslash, isModSemicolon, isSpace, isEnter, isEsc, isOptPageDown, isOptPageUp, isShiftModEnter,
   isModShiftZ, isModShiftG, isModShiftDot, isModShiftComma, isModEnter, isTab, isUpArrow, isDownArrow,
-  isP, isA, isT, isS, isShiftS, isShiftT
+  isP, isA, isT, isS, isShiftS, isShiftT, isShiftSlash
 };

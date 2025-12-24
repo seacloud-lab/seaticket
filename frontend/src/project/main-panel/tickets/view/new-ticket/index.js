@@ -6,7 +6,9 @@ import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAG
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_STATE } from '../../constants';
+import { isShiftSlash } from '@/utils/hotkey';
 import { CollaboratorsSettings, TagsSettings, TypeSettings, RateSettings } from '../../components/ticket-settings';
+import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { useTicketsPage } from '../../hooks';
@@ -25,6 +27,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const [priority, setPriority] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
 
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
@@ -119,6 +122,21 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     };
   }, [isMetadataLoading]);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (isShiftSlash(event)) {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsShowKeyboardShortcuts(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, []);
+
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
@@ -194,6 +212,9 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
           {isSmallScreen && renderSubmitBtns('sea-qa-project-ticket-submit-btns')}
         </div>
       </div>
+      {isShowKeyboardShortcuts && (
+        <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
+      )}
     </div>
   );
 
