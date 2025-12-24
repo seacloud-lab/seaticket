@@ -6,6 +6,7 @@ import Main from './main';
 import './index.css';
 
 const OptionsEditor = ({
+  id,
   target,
   isMultiple = false,
   isSearchEnabled = true,
@@ -17,6 +18,7 @@ const OptionsEditor = ({
   value,
   className,
   options = [],
+  optionHeight,
   onChange,
   onToggle,
   onCreate,
@@ -39,6 +41,7 @@ const OptionsEditor = ({
       hidePopoverWithEsc={handleClose}
     >
       <Main
+        id={id}
         ref={mainRef}
         isMultiple={isMultiple}
         placeholder={placeholder}
@@ -49,6 +52,7 @@ const OptionsEditor = ({
         emptyTip={emptyTip}
         value={value}
         options={options}
+        optionHeight={optionHeight}
         onChange={onChange}
         onToggle={onToggle}
         onCreate={onCreate}

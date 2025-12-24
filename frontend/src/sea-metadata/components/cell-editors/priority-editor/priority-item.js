@@ -5,7 +5,7 @@ import { Icon } from '@/components';
 import { PRIORITY_MAP } from '../../../constants';
 import { gettext } from '@/constants';
 
-const PriorityItem = ({ value, readOnly, onClick, isSelected, hotKey }) => {
+const PriorityItem = ({ value, readOnly, onClick, isSelected, hotKey, isActive }) => {
   const priority = PRIORITY_MAP[value];
   if (!priority) return null;
   if (readOnly) {
@@ -16,7 +16,7 @@ const PriorityItem = ({ value, readOnly, onClick, isSelected, hotKey }) => {
     );
   }
   return (
-    <div className={classnames('sea-metadata-priority-item')} onClick={() => onClick(value)}>
+    <div className={classnames('sea-metadata-priority-item', { 'active': isActive })} onClick={() => onClick(value)}>
       <span className={classnames('sea-metadata-priority-item-left')}>
         {priority.icon ?
           <Icon className="sea-metadata-icon" symbol={priority.icon} title={priority.name}/>

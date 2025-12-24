@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, OptionEditor } from '@/components';
 import { useMetadata } from '../../../hooks';
 import { TICKET_STATE_OPTIONS } from '../../../constants';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
+import { isEsc, isS } from '@/utils/hotkey';
 
 import './index.css';
 
@@ -69,6 +71,23 @@ const StateSettings = ({
     onChange(state, substate);
   }, [onChange]);
 
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive() || isActiveOtherPopover('state-editor-popover')) return;
+
+    if (isS(event)) {
+      openEditor();
+    } else if (isEsc(event)) {
+      closeEditor();
+    }
+  }, [openEditor, closeEditor]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey, true);
+    return () => {
+      document.removeEventListener('keydown', onHotKey, true);
+    };
+  }, [onHotKey]);
+
   const stateOption = TICKET_STATE_OPTIONS.find(o => o.id === state);
 
   return (
@@ -81,6 +100,7 @@ const StateSettings = ({
       </div>
       {!isReadonly && isShowEditor && (
         <OptionEditor
+          id="state-editor-popover"
           target={editorRef}
           isMultiple={false}
           isSearchEnabled={false}

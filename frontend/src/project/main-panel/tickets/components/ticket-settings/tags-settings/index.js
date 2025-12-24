@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Label } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
@@ -6,10 +6,13 @@ import Option from '../../option';
 import { OptionEditor } from '@/components';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
+import { isEsc, isT } from '@/utils/hotkey';
 
 import './index.css';
 
 const TagsSettings = ({
+  id,
   isReadonly,
   value = [],
   className = 'mb-4',
@@ -42,8 +45,10 @@ const TagsSettings = ({
     }) : [];
   }, [tagsData, isLoading]);
 
-  const openEditor = useCallback(() => {
+  const openEditor = useCallback((event) => {
     if (isReadonly) return;
+    event.preventDefault();
+    event.stopPropagation();
     setIsShowEditor(true);
   }, [isReadonly]);
 
@@ -78,6 +83,23 @@ const TagsSettings = ({
     onChange(newValue);
   }, [onChange, value]);
 
+  const onHotKey = useCallback((event) => {
+    if (isInputOrEditorActive() || isActiveOtherPopover('tags-editor-popover')) return;
+
+    if (isT(event)) {
+      openEditor(event);
+    } else if (isEsc(event)) {
+      closeEditor();
+    }
+  }, [openEditor, closeEditor]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', onHotKey, true);
+    return () => {
+      document.removeEventListener('keydown', onHotKey, true);
+    };
+  }, [onHotKey]);
+
   const selectedTags = getRowsByIds(tagsData, value).filter(tag => tag);
 
   return (
@@ -94,6 +116,7 @@ const TagsSettings = ({
       </div>
       {isShowEditor && (
         <OptionEditor
+          id={id}
           target={editorRef}
           isLoading={isLoading}
           isMultiple={true}
@@ -102,6 +125,7 @@ const TagsSettings = ({
           emptyTip={gettext('No tags')}
           value={value}
           options={tagOptions}
+          optionHeight={36}
           onToggle={closeEditor}
           onChange={handleChange}
           onCreate={handleCreateTag}

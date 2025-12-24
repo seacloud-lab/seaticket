@@ -7,6 +7,7 @@ import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafil
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
 import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
+import { isShiftSlash } from '@/utils/hotkey';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES
@@ -18,6 +19,7 @@ import {
 } from '../../components/ticket-settings';
 import Comment from '../../components/comment';
 import StatusToggleButton from './status-toggle-btn';
+import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
 import { useDataCache, useMetadata } from '../../hooks';
@@ -34,6 +36,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
 
   const { isLoading: isMetadataLoading, typesData, tagsData, statesData, substatesData, createTag } = useMetadata();
   const { updateCacheData } = useDataCache();
@@ -191,6 +194,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [ticket, modifyTicket]);
 
   const onTagsChange = useCallback((tags) => {
+    if (!Array.isArray(tags)) return;
     return modifyTicket(ticket.id, { tags }).then(res => {
       // todo
     }).catch(error => {
@@ -307,6 +311,21 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
     };
   }, [isLoading, isMetadataLoading, ticket]);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (isShiftSlash(event)) {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsShowKeyboardShortcuts(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, []);
+
   if (isLoading || isMetadataLoading) return (<CenteredLoading />);
   if (!ticket) return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('Not found ticket')} />);
 
@@ -366,7 +385,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
               />
             );
           })}
-          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }}>
+          <Comment className="sea-qa-project-ticket-add-comment mb-0" isSmallScreen={isSmallScreen} comment={{ creator: username }} onSubmitComment={onSubmitComment}>
             <span className="sea-qa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
             <LongTextInlineEditor
               isAlwaysEnableEdit={true}
@@ -400,8 +419,9 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
         </div>
         <div className="sea-qa-project-ticket-other-settings">
           <RateSettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <CollaboratorsSettings isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
+          <CollaboratorsSettings id="assignees-editor-popover" isReadonly={!editable} title={gettext('Assignees')} value={assignees} onChange={onAssigneesChange} />
           <TagsSettings
+            id="tags-editor-popover"
             isReadonly={!editable}
             value={tags}
             isLoading={isMetadataLoading}
@@ -411,10 +431,13 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
           />
           <StateSettings isReadonly={!editable} state={state} substate={substate} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} onChange={onSubstateChange} />
-          <TypeSettings isReadonly={!editable} value={type} onChange={onTypeChange} />
+          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} onChange={onTypeChange} />
           <CollaboratorsSettings isReadonly={true} title={gettext('Participants')} value={participants} />
         </div>
       </div>
+      {isShowKeyboardShortcuts && (
+        <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
+      )}
     </div>
   );
 };

@@ -6,10 +6,12 @@ import { searchCollaborators } from '@/utils/search';
 import IconButton from '../../icon-button';
 import { KeyCodes } from '@constants/keyCodes';
 import { isFunction } from '@utils/type-detection';
+import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
 
 import './index.css';
 
 const Main = forwardRef(({
+  id,
   isShowDeleteArea = true,
   isSearchEnabled = true,
   isMultiple = true,
@@ -95,28 +97,28 @@ const Main = forwardRef(({
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === 0) {
+    if (highlightIndex > 0) {
+      setHighlightIndex(highlightIndex - 1);
+      if (highlightIndex < displayCollaborators.length - maxItemNum) {
+        displayCollaboratorsRef.current.scrollTop -= optionHeight;
+      }
+    } else {
       setHighlightIndex(displayCollaborators.length - 1);
-      displayCollaboratorsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex - 1);
-    if (highlightIndex > displayCollaborators.length - maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop -= optionHeight;
+      displayCollaboratorsRef.current.scrollTop = displayCollaboratorsRef.current.scrollHeight;
     }
   }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayCollaborators, optionHeight]);
 
   const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (highlightIndex === displayCollaborators.length - 1) {
+    if (highlightIndex < displayCollaborators.length - 1) {
+      setHighlightIndex(highlightIndex + 1);
+      if (highlightIndex >= maxItemNum) {
+        displayCollaboratorsRef.current.scrollTop += optionHeight;
+      }
+    } else {
       setHighlightIndex(0);
       displayCollaboratorsRef.current.scrollTop = 0;
-      return;
-    }
-    setHighlightIndex(highlightIndex + 1);
-    if (highlightIndex >= maxItemNum) {
-      displayCollaboratorsRef.current.scrollTop += optionHeight;
     }
   }, [displayCollaboratorsRef, highlightIndex, maxItemNum, displayCollaborators, optionHeight]);
 
@@ -124,20 +126,21 @@ const Main = forwardRef(({
     event.preventDefault();
     event.stopPropagation();
     onHidden && onHidden();
+    setHighlightIndex(-1);
   }, [onHidden]);
 
   const onHotKey = useCallback((event) => {
-    if (event.keyCode === KeyCodes.Enter) {
+    if (isEnter(event)) {
       onEnter(event);
-    } else if (event.keyCode === KeyCodes.UpArrow) {
+    } else if (isUpArrow(event)) {
       onUpArrow(event);
-    } else if (event.keyCode === KeyCodes.DownArrow) {
+    } else if (isDownArrow(event)) {
       onDownArrow(event);
-    } else if (event.keyCode === KeyCodes.Tab) {
+    } else if (isTab(event)) {
       if (isFunction(onPressTab)) {
         onPressTab(event);
       }
-    } else if (event.keyCode === KeyCodes.Esc) {
+    } else if (isEsc(event)) {
       onEsc(event);
     }
   }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc]);
@@ -161,8 +164,8 @@ const Main = forwardRef(({
   }, [onHotKey]);
 
   useEffect(() => {
-    const highlightIndex = displayCollaborators.length === 0 ? -1 : 0;
-    setHighlightIndex(highlightIndex);
+    // Reset highlight index
+    setHighlightIndex(-1);
   }, [displayCollaborators]);
 
   useImperativeHandle(ref, () => ({
@@ -170,7 +173,7 @@ const Main = forwardRef(({
   }), [value]);
 
   return (
-    <div className="collaborator-editor-container">
+    <div className="collaborator-editor-container" id={id}>
       {isMultiple && isShowDeleteArea && (
         <div className="collaborator-editor-selected-container">
           {Array.isArray(value) && value.map(email => {
@@ -210,7 +213,7 @@ const Main = forwardRef(({
               const isSelected = isMultiple && Array.isArray(value) && value.includes(c.email);
               return (
                 <div
-                  className="collaborator-editor-option"
+                  className={classnames('collaborator-editor-option', { 'active': highlightIndex === i })}
                   key={c.email}
                   onClick={() => toggleCollaborator(c.email)}
                   onMouseEnter={() => onMenuMouseEnter(i)}

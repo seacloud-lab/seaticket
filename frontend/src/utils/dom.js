@@ -125,3 +125,16 @@ export const getTarget = (target, allElements) => {
   if (isArrayOrNodeList(els)) return els[0];
   return els[0];
 };
+
+export const isInputOrEditorActive = () => {
+  const activeEl = document.activeElement;
+  if (activeEl.tagName === 'INPUT' || activeEl.isContentEditable) return true;
+  return false;
+};
+
+const allPopovers = ['priority-editor-popover', 'assignees-editor-popover', 'tags-editor-popover', 'state-editor-popover', 'substate-editor-popover', 'type-editor-popover'];
+export const isActiveOtherPopover = (curPopover) => {
+  const otherPopovers = allPopovers.filter(p => p !== curPopover);
+  const otherPopover = otherPopovers.find(p => document.getElementById(p));
+  return !!otherPopover;
+};

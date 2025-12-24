@@ -47,6 +47,11 @@
   cursor: pointer;
 }
 
+.option-editor-popover .option-editor-content .option-editor-option.active {
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
 .option-editor-popover .option-editor-option .sea-qa-icon-btn {
   height: 20px;
   width: 20px;
