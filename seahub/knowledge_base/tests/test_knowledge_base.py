@@ -10,12 +10,12 @@ from django.urls import reverse
 
 def get_knowledge_bases_url(project_uuid):
     """Get URL for knowledge bases list/create/delete endpoint."""
-    return f'/api/v2.1/project/{project_uuid}/knowledge-bases/'
+    return f'/api/v1/project/{project_uuid}/knowledge-bases/'
 
 
 def get_knowledge_base_url(project_uuid, knowledge_id):
     """Get URL for single knowledge base endpoint."""
-    return f'/api/v2.1/project/{project_uuid}/knowledge-bases/{knowledge_id}/'
+    return f'/api/v1/project/{project_uuid}/knowledge-bases/{knowledge_id}/'
 
 
 # ============================================================================
@@ -23,7 +23,7 @@ def get_knowledge_base_url(project_uuid, knowledge_id):
 # ============================================================================
 
 class TestKnowledgeBasesPost:
-    """Tests for POST /api/v2.1/project/{project_uuid}/knowledge-bases/"""
+    """Tests for POST /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_post_non_org_context_returns_403(
         self, api_client, project_uuid, mock_org_context_false
@@ -172,7 +172,7 @@ class TestKnowledgeBasesPost:
 # ============================================================================
 
 class TestKnowledgeBasesGet:
-    """Tests for GET /api/v2.1/project/{project_uuid}/knowledge-bases/"""
+    """Tests for GET /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_get_non_org_context_returns_403(
         self, api_client, project_uuid, mock_org_context_false
@@ -288,7 +288,7 @@ class TestKnowledgeBasesGet:
 # ============================================================================
 
 class TestKnowledgeBasesDelete:
-    """Tests for DELETE /api/v2.1/project/{project_uuid}/knowledge-bases/"""
+    """Tests for DELETE /api/v1/project/{project_uuid}/knowledge-bases/"""
 
     def test_delete_non_org_context_returns_403(
         self, api_client, project_uuid, mock_org_context_false
@@ -392,7 +392,7 @@ class TestKnowledgeBasesDelete:
 # ============================================================================
 
 class TestKnowledgeBaseGet:
-    """Tests for GET /api/v2.1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
+    """Tests for GET /api/v1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
 
     def test_get_non_org_context_returns_403(
         self, api_client, project_uuid, mock_org_context_false
@@ -477,7 +477,7 @@ class TestKnowledgeBaseGet:
 # ============================================================================
 
 class TestKnowledgeBasePut:
-    """Tests for PUT /api/v2.1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
+    """Tests for PUT /api/v1/project/{project_uuid}/knowledge-bases/{knowledge_id}/"""
 
     def test_put_non_org_context_returns_403(
         self, api_client, project_uuid, mock_org_context_false
