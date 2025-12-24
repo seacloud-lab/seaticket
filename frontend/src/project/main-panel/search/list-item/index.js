@@ -60,8 +60,24 @@ const ListItem = ({ type, id, title, subtitle, url, content = '', bumped_at = ''
     openOriginalURL();
   }, [openOriginalURL]);
 
-  const iconSrc = type === 'knowledge_base' ? `${mediaUrl}img/knowledge-base.png` : getConnectionIcon(type);
-  const altText = connectionOption ? connectionOption.name : (type === 'knowledge_base' ? 'Knowledge Base' : (type || ''));
+  let iconSrc = '';
+  let altText = '';
+
+  if (type === 'knowledge_base') {
+    iconSrc = `${mediaUrl}img/knowledge-base.png`;
+  } else if (type === 'ticket') {
+    iconSrc = `${mediaUrl}img/ticket.png`;
+  } else {
+    iconSrc = getConnectionIcon(type);
+  }
+
+  if (type === 'knowledge_base') {
+    altText = 'Knowledge Base';
+  } else if (type === 'ticket') {
+    altText = 'Ticket';
+  } else {
+    altText = connectionOption ? connectionOption.name : (type || '');
+  }
 
   return (
     <>
