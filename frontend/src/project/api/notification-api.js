@@ -34,45 +34,45 @@ class NotificationAPI {
   }
 
   listNotifications(page = 1, perPage = 20) {
-    const url = this.server + '/api/v2.1/notifications/';
+    const url = this.server + '/api/v1/notifications/';
     const params = { page, per_page: perPage };
     return this.req.get(url, { params });
   }
 
   listAllNotifications(page = 1, perPage = 25) {
-    const url = this.server + '/api/v2.1/notifications/all/';
+    const url = this.server + '/api/v1/notifications/all/';
     const params = { page, per_page: perPage };
     return this.req.get(url, { params });
   }
 
   listProjectNotifications(projectUuid, page = 1, perPage = 20) {
-    const url = this.server + '/api/v2.1/projects/' + projectUuid + '/notifications/';
+    const url = this.server + '/api/v1/projects/' + projectUuid + '/notifications/';
     const params = { page, per_page: perPage };
     return this.req.get(url, { params });
   }
 
   markProjectNoticeAsRead(notificationID) {
-    const url = this.server + '/api/v2.1/projects/notifications/' + notificationID + '/';
+    const url = this.server + '/api/v1/projects/notifications/' + notificationID + '/';
     return this.req.put(url, {});
   }
 
   markAllProjectRead(projectUuid) {
-    const url = this.server + '/api/v2.1/projects/' + projectUuid + '/notifications/';
+    const url = this.server + '/api/v1/projects/' + projectUuid + '/notifications/';
     return this.req.put(url, {});
   }
 
   markAllRead() {
-    const url = this.server + '/api/v2.1/notifications/';
+    const url = this.server + '/api/v1/notifications/';
     return this.req.put(url, {});
   }
 
   markNoticeAsRead(notificationID) {
-    const url = this.server + '/api/v2.1/notifications/' + notificationID + '/';
+    const url = this.server + '/api/v1/notifications/' + notificationID + '/';
     return this.req.put(url, {});
   }
 
   clearAll() {
-    const url = this.server + '/api/v2.1/notifications/';
+    const url = this.server + '/api/v1/notifications/';
     return this.req.delete(url);
   }
 }

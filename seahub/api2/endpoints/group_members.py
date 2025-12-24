@@ -25,7 +25,6 @@ from seahub.settings import GROUP_MEMBER_LIMIT
 from seahub.utils import string2list, is_org_context
 from seahub.group.models import Group, GroupUser
 from seahub.organizations.models import OrgUser
-from seahub.notifications.utils import add_user_to_group_notice
 
 from .utils import api_check_group
 
@@ -142,9 +141,6 @@ class GroupMembers(APIView):
                 user_name=email,
                 is_staff=False,
             )
-            group = Group.objects.get_group(int(group_id))
-            if group:
-                add_user_to_group_notice(email, group_id, group.group_name, username)
             add_user_to_group.send(sender=None,
                                    group_staff=username,
                                    group_id=group_id,
@@ -381,9 +377,6 @@ class GroupMembersBulk(APIView):
                     user_name=email,
                     is_staff=False,
                 )
-                group = Group.objects.get_group(int(group_id))
-                if group:
-                    add_user_to_group_notice(email, group_id, group.group_name, username)
                 member_info = get_group_member_info(group_id, email)
                 result['success'].append(member_info)
             except Exception as e:
@@ -392,7 +385,6 @@ class GroupMembersBulk(APIView):
                     'email': email,
                     'error_msg': 'Internal Server Error'
                     })
-
             add_user_to_group.send(sender=None,
                                    group_staff=username,
                                    group_id=group_id,

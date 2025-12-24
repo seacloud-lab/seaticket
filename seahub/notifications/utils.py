@@ -1,28 +1,13 @@
 import json
 
 from seahub.base.templatetags.seahub_tags import email2nickname
-from .models import UserNotification
 
-
-def add_user_to_group_notice(to_user, group_id, group_name, group_staff_email):
-    if not to_user or not group_staff_email or to_user == group_staff_email:
-        return
-    detail = {
-        'group_staff_email': group_staff_email,
-        'group_staff_name': email2nickname(group_staff_email),
-        'group_id': group_id,
-        'group_name': group_name,
-    }
-    UserNotification.objects.create(
-        to_user=to_user,
-        msg_type='add_user_to_group',
-        detail=json.dumps(detail),
-    )
 
 def get_user_notifications(username, page, per_page):
     start = (page - 1) * per_page
     end = page * per_page
 
+    from .models import UserNotification
     notice_list = UserNotification.objects.get_user_notifications(username)[start:end]
     notification_list = []
     for i in notice_list:

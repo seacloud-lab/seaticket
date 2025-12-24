@@ -11,7 +11,6 @@ from rest_framework import status
 
 from seahub.group.utils import get_group_member_info, is_group_member, get_group_members
 from seahub.group.signals import add_user_to_group
-from seahub.avatar.settings import AVATAR_DEFAULT_SIZE
 from seahub.base.accounts import User
 from seahub.settings import GROUP_MEMBER_LIMIT
 from seahub.base.templatetags.seahub_tags import email2nickname
@@ -25,7 +24,6 @@ from seahub.admin_log.signals import admin_operation
 from seahub.admin_log.models import GROUP_MEMBER_ADD, GROUP_MEMBER_DELETE
 from seahub.group.models import Group, GroupUser
 from seahub.project.models import Workspaces
-from seahub.notifications.utils import add_user_to_group_notice
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +176,6 @@ class AdminGroupMembers(APIView):
         for email in emails_need_add:
             try:
                 GroupUser.objects.group_add_member(group_id, email)
-                add_user_to_group_notice(email, group_id, group.group_name, request.user.username)
                 member_info = get_group_member_info(group_id, email)
                 result['success'].append(member_info)
             except Exception as e:
@@ -187,7 +184,6 @@ class AdminGroupMembers(APIView):
                     'email': email,
                     'error_msg': 'Internal Server Error'
                     })
-
             add_user_to_group.send(sender=None,
                                    group_staff=request.user.username,
                                    group_id=group_id,

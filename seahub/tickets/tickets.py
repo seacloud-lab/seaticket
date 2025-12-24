@@ -29,8 +29,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
     delete_ticket_comments_by_ids, get_deleted_tickets_ids
-from seahub.notifications.models import ProjectNotification, MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
-from seahub.notifications.utils import ticket_assignee_added_msg_to_json, ticket_comment_msg_to_json
+from seahub.notifications.models import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
+from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -245,21 +245,17 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            need_send_notification_users = set(assignees) - set([username])
-            if need_send_notification_users:
-                detail = ticket_assignee_added_msg_to_json(
-                    ticket_pk, title, username,
-                    workspace_id=workspace.id, project_name=project.project_name
-                )
-                ProjectNotification.objects.bulk_create([
-                    ProjectNotification(
-                        project_uuid=project_uuid,
-                        to_user=assignee,
-                        msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
-                        detail=detail
-                    )
-                    for assignee in need_send_notification_users
-                ])
+            ticket_assignees_added.send(
+                sender=None,
+                project_uuid=project_uuid,
+                assignees=assignees,
+                msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                from_user_id=username,
+                ticket_id=ticket_pk,
+                ticket_title=title,
+                workspace_id=workspace.id,
+                project_name=project.project_name,
+            )
         except Exception as e:
             logger.error(e)
 
@@ -375,38 +371,27 @@ class TicketsAPIView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
             try:
-                notifications_to_create = []
-                for row in results:
-                    row_data = ticket_id_to_row.get(str(row.get('_pk')))
+                for ticket in results:
+                    row_data = ticket_id_to_row.get(str(ticket.get('_pk')))
                     if not row_data:
                         continue
-
                     if 'assignees' not in row_data:
                         continue
 
-                    old_assignees = set(row.get('assignees') or [])
+                    old_assignees = set(ticket.get('assignees') or [])
                     new_assignees = set(row_data.get('assignees') or [])
-                    added_assignees = new_assignees - old_assignees - set([username])
-                    if not added_assignees:
-                        continue
-
-                    ticket_title = row_data.get('title') or row.get('title')
-                    detail = ticket_assignee_added_msg_to_json(
-                        row.get('_pk'), ticket_title, username,
-                        workspace_id=workspace.id, project_name=project.project_name
+                    added_assignees = new_assignees - old_assignees
+                    ticket_assignees_added.send(
+                        sender=None,
+                        project_uuid=project_uuid,
+                        assignees=list(added_assignees),
+                        msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                        from_user_id=username,
+                        ticket_id=ticket.get('_pk'),
+                        ticket_title=row_data.get('title') or ticket.get('title'),
+                        workspace_id=workspace.id,
+                        project_name=project.project_name,  
                     )
-                    notifications_to_create.extend([
-                        ProjectNotification(
-                            project_uuid=project_uuid,
-                            to_user=assignee,
-                            msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
-                            detail=detail
-                        )
-                        for assignee in added_assignees
-                    ])
-
-                if notifications_to_create:
-                    ProjectNotification.objects.bulk_create(notifications_to_create)
             except Exception as e:
                 logger.error(e)
 
@@ -699,26 +684,21 @@ class TicketAPIView(APIView):
 
         try:
             old_assignees = set(ticket.get('assignees') or [])
-            added_assignees = set()
             if is_update_assignees:
                 new_assignees = set(assignees or [])
                 added_assignees = new_assignees - old_assignees
-                ticket_title = title or ticket.get('title')
-                need_send_notification_users = set(added_assignees) - set([username])
-                if need_send_notification_users:
-                    detail = ticket_assignee_added_msg_to_json(
-                        ticket.get('_pk'), ticket_title, username,
-                        workspace_id=workspace.id, project_name=project.project_name
+                if added_assignees:
+                    ticket_assignees_added.send(
+                        sender=None,
+                        project_uuid=project_uuid,
+                        assignees=added_assignees,
+                        from_user_id=username,
+                        msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                        ticket_id=ticket.get('_pk'),
+                        ticket_title=title or ticket.get('title'),
+                        workspace_id=workspace.id,
+                        project_name=project.project_name,
                     )
-                    ProjectNotification.objects.bulk_create([
-                        ProjectNotification(
-                            project_uuid=project_uuid,
-                            to_user=assignee,
-                            msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
-                            detail=detail
-                        )
-                        for assignee in need_send_notification_users
-                    ])
         except Exception as e:
             logger.error(e)
 
@@ -988,27 +968,22 @@ class TicketCommentsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            ticket_title = ticket.get('title')
             assignees = ticket.get('assignees') or []
             related_users = set(assignees) | set(participants)
-            if username in related_users:
-                related_users.remove(username)
-            comment_summary = content[:100] if content else ''
             if related_users:
-                detail = ticket_comment_msg_to_json(
-                    ticket.get('_pk'), ticket_title, username, comment_id=pk,
-                    comment_content=comment_summary,
-                    workspace_id=workspace.id, project_name=project.project_name
+                ticket_commented.send(
+                    sender=None,
+                    project_uuid=project_uuid,
+                    related_users=list(related_users),
+                    msg_type=MSG_TYPE_TICKET_COMMENTED,
+                    from_user_id=username,
+                    ticket_id=ticket.get('_pk'),
+                    comment_id=pk,
+                    comment_content=content[:100] if content else '',
+                    ticket_title=ticket.get('title'),
+                    workspace_id=workspace.id,
+                    project_name=project.project_name,
                 )
-                ProjectNotification.objects.bulk_create([
-                    ProjectNotification(
-                        project_uuid=project_uuid,
-                        to_user=to_user,
-                        msg_type=MSG_TYPE_TICKET_COMMENTED,
-                        detail=detail
-                    )
-                    for to_user in related_users
-                ])
         except Exception as e:
             logger.error(e)
 
