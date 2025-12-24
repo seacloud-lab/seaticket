@@ -49,9 +49,9 @@ class KeyboardShortcuts extends React.PureComponent {
             {this.renderContainer(['P'], gettext('Open priority panel'))}
             {this.renderContainer(['A'], gettext('Open assignees panel'))}
             {this.renderContainer(['T'], gettext('Open tags panel'))}
-            {this.renderContainer(['S'], gettext('Open states panel'))}
-            {this.renderContainer(['Shift', 'S'], gettext('Open substates panel'))}
-            {this.renderContainer(['Shift', 'T'], gettext('Open types panel'))}
+            {this.renderContainer(['S'], gettext('Open state panel'))}
+            {this.renderContainer(['Shift', 'S'], gettext('Open substate panel'))}
+            {this.renderContainer(['Shift', 'T'], gettext('Open type panel'))}
             {this.renderContainer(['Shift', '/'], gettext('Open keyboard shortcuts'))}
           </div>
         </ModalBody>

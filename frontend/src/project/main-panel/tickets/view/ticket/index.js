@@ -194,6 +194,7 @@ const Ticket = ({ editorAPI, projectUuid, ticketID, permission, isAdmin }) => {
   }, [ticket, modifyTicket]);
 
   const onTagsChange = useCallback((tags) => {
+    if (!Array.isArray(tags)) return;
     return modifyTicket(ticket.id, { tags }).then(res => {
       // todo
     }).catch(error => {
