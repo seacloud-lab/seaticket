@@ -381,12 +381,6 @@ def replace_file_url_in_content(content, new_file_urls_dict):
 def delete_project(project):
     project_uuid = str(project.uuid)
     try:
-        DeletedProjects(project_uuid=project_uuid).save()
-        Projects.objects.delete_project(project.workspace, project.name)
-    except Exception as e:
-        logger.error('delete project: %s error: %s', str(project_uuid), e)
-
-    try:
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
         KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
@@ -403,6 +397,11 @@ def delete_project(project):
     except Exception as e:
         logger.error(e)
 
+    try:
+        Projects.objects.delete_project(project.workspace, project.name)
+        DeletedProjects(project_uuid=project_uuid).save()
+    except Exception as e:
+        logger.error('delete project: %s error: %s', str(project_uuid), e)
 
 def get_current_table_metadata(tables, table_name):
     for table in tables:
