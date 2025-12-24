@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import dayjs from 'dayjs';
 import { ticketsAPI } from '../../../../api';
-import SeaMetadata from '@/sea-metadata';
-import { useMetadata, useTicketsPage, useDataCache } from '../../hooks';
+import SeaMetadata, { useDataCache } from '@/sea-metadata';
+import { useMetadata, useTicketsPage } from '../../hooks';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,

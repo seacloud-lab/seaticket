@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { TicketsPageProvider, useTicketsPage, DataCacheProvider, MetadataProvider } from './hooks';
+import { DataCacheProvider } from '@/sea-metadata';
+import { TicketsPageProvider, useTicketsPage, MetadataProvider } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
 import TagTickets from './view/tag-tickets';

@@ -3,6 +3,7 @@ import {
   CollaboratorsProvider, useCollaborators,
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
+  DataCacheProvider, useDataCache,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
 import { CellType, VIEW_TOOL } from './constants';
@@ -17,6 +18,7 @@ export {
   CollaboratorsProvider, useCollaborators,
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
+  DataCacheProvider, useDataCache,
   ViewToolBar, View,
   CellType, context,
   VIEW_TOOL,
