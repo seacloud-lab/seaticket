@@ -29,7 +29,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
     delete_ticket_comments_by_ids, get_deleted_tickets_ids
-from seahub.notifications.models import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
+from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -244,20 +244,17 @@ class TicketsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        try:
-            ticket_assignees_added.send(
-                sender=None,
-                project_uuid=project_uuid,
-                assignees=assignees,
-                msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
-                from_user_id=username,
-                ticket_id=ticket_pk,
-                ticket_title=title,
-                workspace_id=workspace.id,
-                project_name=project.project_name,
-            )
-        except Exception as e:
-            logger.error(e)
+        ticket_assignees_added.send(
+            sender=None,
+            project_uuid=project_uuid,
+            assignees=assignees,
+            msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+            from_user_id=username,
+            ticket_id=ticket_pk,
+            ticket_title=title,
+            workspace_id=workspace.id,
+            project_name=project.project_name,
+        )
 
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
@@ -682,25 +679,22 @@ class TicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        try:
-            old_assignees = set(ticket.get('assignees') or [])
-            if is_update_assignees:
-                new_assignees = set(assignees or [])
-                added_assignees = new_assignees - old_assignees
-                if added_assignees:
-                    ticket_assignees_added.send(
-                        sender=None,
-                        project_uuid=project_uuid,
-                        assignees=added_assignees,
-                        from_user_id=username,
-                        msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
-                        ticket_id=ticket.get('_pk'),
-                        ticket_title=title or ticket.get('title'),
-                        workspace_id=workspace.id,
-                        project_name=project.project_name,
-                    )
-        except Exception as e:
-            logger.error(e)
+        old_assignees = set(ticket.get('assignees') or [])
+        if is_update_assignees:
+            new_assignees = set(assignees or [])
+            added_assignees = new_assignees - old_assignees
+            if added_assignees:
+                ticket_assignees_added.send(
+                    sender=None,
+                    project_uuid=project_uuid,
+                    assignees=added_assignees,
+                    from_user_id=username,
+                    msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                    ticket_id=ticket.get('_pk'),
+                    ticket_title=title or ticket.get('title'),
+                    workspace_id=workspace.id,
+                    project_name=project.project_name,
+                )
 
         return Response({'success': True})
 
@@ -967,25 +961,22 @@ class TicketCommentsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        try:
-            assignees = ticket.get('assignees') or []
-            related_users = set(assignees) | set(participants)
-            if related_users:
-                ticket_commented.send(
-                    sender=None,
-                    project_uuid=project_uuid,
-                    related_users=list(related_users),
-                    msg_type=MSG_TYPE_TICKET_COMMENTED,
-                    from_user_id=username,
-                    ticket_id=ticket.get('_pk'),
-                    comment_id=pk,
-                    comment_content=content[:100] if content else '',
-                    ticket_title=ticket.get('title'),
-                    workspace_id=workspace.id,
-                    project_name=project.project_name,
-                )
-        except Exception as e:
-            logger.error(e)
+        assignees = ticket.get('assignees') or []
+        related_users = set(assignees) | set(participants)
+        if related_users:
+            ticket_commented.send(
+                sender=None,
+                project_uuid=project_uuid,
+                related_users=list(related_users),
+                msg_type=MSG_TYPE_TICKET_COMMENTED,
+                from_user_id=username,
+                ticket_id=ticket.get('_pk'),
+                comment_id=pk,
+                comment_content=content[:100] if content else '',
+                ticket_title=ticket.get('title'),
+                workspace_id=workspace.id,
+                project_name=project.project_name,
+            )
 
         return Response({'ticket_comment': row}, status=status.HTTP_201_CREATED)
 
