@@ -1,5 +1,5 @@
-import { getTableColumnByName } from '@/sea-metadata/utils/table';
 import React, { useCallback, useContext, useState } from 'react';
+import { getTableColumnByName } from '../utils/table';
 
 const DataCacheContext = React.createContext(null);
 

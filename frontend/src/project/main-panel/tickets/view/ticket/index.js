@@ -6,6 +6,7 @@ import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
+import { useDataCache } from '@/sea-metadata';
 import { TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
 import { isShiftSlash } from '@/utils/hotkey';
 import {
@@ -22,7 +23,7 @@ import StatusToggleButton from './status-toggle-btn';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { useDataCache, useMetadata } from '../../hooks';
+import { useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import Header from './header';
