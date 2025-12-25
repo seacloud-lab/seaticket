@@ -17,7 +17,7 @@ from seahub.auth.decorators import login_required
 from seahub.utils import is_org_context, is_pro_version, is_valid_username
 from seahub.base.accounts import User, UNUSABLE_PASSWORD
 from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
-from seahub.options.models import UserOptions
+from seahub.options.models import UserOptions, COLLABORATE_EMAIL_INTERVAL_DEFAULT
 from seahub.utils import render_error, get_update_contact_email_cache_key
 from seahub.utils.two_factor_auth import has_two_factor_auth
 from seahub.settings import ENABLE_SSO_USER_CHANGE_PASSWORD, ENABLE_DELETE_ACCOUNT, ENABLE_UPDATE_USER_INFO, ENABLE_BIND_PHONE, \
@@ -36,7 +36,6 @@ except ImportError as e:
     SAML_PROVIDER_IDENTIFIER = 'saml'
 
 logger = logging.getLogger(__name__)
-COLLABORATE_EMAIL_INTERVAL_DEFAULT = 3600 # One hour by seconds
 
 @login_required
 def edit_profile(request):
@@ -53,8 +52,8 @@ def edit_profile(request):
 
     project_updates_email_interval = UserOptions.objects.get_project_updates_email_interval(username)
     project_updates_email_interval = project_updates_email_interval if project_updates_email_interval is not None else 0
-    project_collaborate_email_interval = UserOptions.objects.get_project_collaborate_email_interval(username)
-    project_collaborate_email_interval = project_collaborate_email_interval if project_collaborate_email_interval is not None else COLLABORATE_EMAIL_INTERVAL_DEFAULT
+    collaborate_email_interval = UserOptions.objects.get_collaborate_email_interval(username)
+    collaborate_email_interval = collaborate_email_interval if collaborate_email_interval is not None else COLLABORATE_EMAIL_INTERVAL_DEFAULT
 
     # social oauth
     enable_saml = False
@@ -98,7 +97,7 @@ def edit_profile(request):
             'ENABLE_UPDATE_USER_INFO': ENABLE_UPDATE_USER_INFO,
             'webdav_passwd': webdav_passwd,
             'project_updates_email_interval': project_updates_email_interval,
-            'project_collaborate_email_interval': project_collaborate_email_interval,
+            'collaborate_email_interval': collaborate_email_interval,
             'social_next_page': reverse('edit_profile'),
             'ENABLE_USER_SET_CONTACT_EMAIL': settings.ENABLE_USER_SET_CONTACT_EMAIL,
             'ENABLE_USER_SET_NAME' : ENABLE_USER_SET_NAME,

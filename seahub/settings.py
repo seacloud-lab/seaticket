@@ -552,13 +552,13 @@ FILESERVER_TOKEN_ONCE_ONLY = True
 # Email sending #
 #################
 
-EMAIL_USE_TLS = os.environ.get('SEATABLE_EMAIL_USE_TLS', False)
-EMAIL_HOST = os.environ.get('SEATABLE_EMAIL_HOST', '')
-EMAIL_HOST_USER = os.environ.get('SEATABLE_EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('SEATABLE_EMAIL_HOST_PASSWORD', '')
-EMAIL_PORT = os.environ.get('SEATABLE_EMAIL_PORT', 25)
-DEFAULT_FROM_EMAIL = os.environ.get('SEATABLE_DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
-SERVER_EMAIL = os.environ.get('SEATABLE_SERVER_EMAIL', EMAIL_HOST_USER)
+EMAIL_USE_TLS = os.environ.get('SEAQA_EMAIL_USE_TLS', False)
+EMAIL_HOST = os.environ.get('SEAQA_EMAIL_HOST', '')
+EMAIL_HOST_USER = os.environ.get('SEAQA_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('SEAQA_EMAIL_HOST_PASSWORD', '')
+EMAIL_PORT = os.environ.get('SEAQA_EMAIL_PORT', 25)
+DEFAULT_FROM_EMAIL = os.environ.get('SEAQA_DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+SERVER_EMAIL = os.environ.get('SEAQA_SERVER_EMAIL', EMAIL_HOST_USER)
 
 SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER = True # Whether to send email when a system staff adding new member.
 SEND_EMAIL_ON_RESETTING_USER_PASSWD = True # Whether to send email when a system staff resetting user's password.
