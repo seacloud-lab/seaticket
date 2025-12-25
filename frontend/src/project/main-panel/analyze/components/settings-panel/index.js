@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { gettext } from '@/constants';
-import { Icon, IconButton, IconTooltip, toaster } from '@/components';
+import { Icon, IconButton, IconTooltip, toaster, Loading } from '@/components';
 import { connectionsAPI } from '@/project/api';
 import { getConnectionIcon } from '../../../connections/utils';
+import YearRangePicker from '../year-range-picker';
 
 import './index.css';
 
@@ -16,10 +17,15 @@ const SettingsPanel = ({
   colorBy,
   onColorByChange,
   displayMode,
-  onDisplayModeChange
+  onDisplayModeChange,
+  startYear,
+  endYear,
+  onDateRangeChange,
+  onAnalyze,
+  isLoading
 }) => {
   const [connections, setConnections] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingConnections, setIsLoadingConnections] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [tempSelectedConnections, setTempSelectedConnections] = useState([]);
   const dropdownRef = useRef(null);
@@ -54,7 +60,7 @@ const SettingsPanel = ({
   }, [closeDropdown]);
 
   const loadConnections = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingConnections(true);
     try {
       const res = await connectionsAPI.listConnections(projectUuid, 1, 1000);
       const allConnections = res.data.records || [];
@@ -63,7 +69,7 @@ const SettingsPanel = ({
       console.error('Failed to load connections:', error);
       toaster.danger(gettext('Failed to load connections'));
     } finally {
-      setIsLoading(false);
+      setIsLoadingConnections(false);
     }
   }, []);
 
@@ -128,7 +134,7 @@ const SettingsPanel = ({
 
             {isDropdownOpen && (
               <div className="analyze-connection-dropdown">
-                {isLoading ? (
+                {isLoadingConnections ? (
                   <div className="analyze-dropdown-loading">{gettext('Loading...')}</div>
                 ) : connections.length === 0 ? (
                   <div className="analyze-dropdown-empty">{gettext('No available connections')}</div>
@@ -155,6 +161,15 @@ const SettingsPanel = ({
               </div>
             )}
           </div>
+        </div>
+
+        <div className="analyze-settings-section">
+          <div className="analyze-settings-label">{gettext('Date range')}</div>
+          <YearRangePicker
+            startYear={startYear}
+            endYear={endYear}
+            onChange={onDateRangeChange}
+          />
         </div>
 
         <div className="analyze-settings-section">
@@ -185,6 +200,16 @@ const SettingsPanel = ({
             </select>
           </div>
         </div>
+      </div>
+      <div className="analyze-settings-footer">
+        <button
+          className="analyze-btn"
+          onClick={onAnalyze}
+          disabled={isLoading || selectedConnections.length === 0}
+        >
+          {isLoading && <Loading />}
+          <span>{isLoading ? gettext('Analyzing') : gettext('Analyze')}</span>
+        </button>
       </div>
     </div>
   );

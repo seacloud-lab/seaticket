@@ -1,0 +1,123 @@
+.year-range-picker {
+  position: relative;
+}
+
+.year-range-input {
+  cursor: pointer;
+}
+
+.year-range-input input {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.year-range-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 12px;
+}
+
+.year-range-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 12px;
+}
+
+.year-display {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  min-width: 50px;
+  text-align: center;
+}
+
+.year-separator {
+  color: #333;
+}
+
+.year-panels {
+  display: flex;
+  gap: 16px;
+}
+
+.year-panel {
+  width: 200px;
+}
+
+.year-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.year-nav-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.year-nav-btn:hover:not(:disabled) {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.year-nav-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.decade-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.year-cell {
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #333;
+  transition: all 0.15s ease;
+}
+
+.year-cell:hover:not(:disabled):not(.selected) {
+  background: #f5f5f5;
+}
+
+.year-cell.selected {
+  background: #eb8205;
+  color: #fff;
+}
+
+.year-cell.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}

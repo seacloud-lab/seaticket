@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import UserRateThrottle
+from seahub.api2.throttling import UserRateThrottle, EmbeddingAnalysisThrottle
 from seahub.api2.utils import api_error
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -192,7 +192,7 @@ class ConvertRecordToTicket(APIView):
 class EmbeddingAnalysisView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
+    throttle_classes = (EmbeddingAnalysisThrottle, )
 
     def post(self, request):
         if not is_org_context(request):
@@ -208,6 +208,9 @@ class EmbeddingAnalysisView(APIView):
         if not connection_ids:
             error_msg = 'connection_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        start_year = request.data.get('start_year')
+        end_year = request.data.get('end_year')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -225,6 +228,8 @@ class EmbeddingAnalysisView(APIView):
             'project_uuid': project_uuid,
             'connection_ids': connection_ids,
             'username': username,
+            'start_year': start_year,
+            'end_year': end_year
         }
 
         try:
