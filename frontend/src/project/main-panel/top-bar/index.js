@@ -24,7 +24,7 @@ const TopBar = ({ children, className }) => {
         </div>
       </div>
       {children[1] && (
-        <div className="sea-qa-project-main-panel-header-right">
+        <div className="sea-qa-project-main-panel-header-right d-flex">
           {children[1]}
         </div>
       )}

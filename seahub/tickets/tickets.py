@@ -29,6 +29,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
     delete_ticket_comments_by_ids, get_deleted_tickets_ids
+from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
+from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -242,6 +244,18 @@ class TicketsAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        ticket_assignees_added.send(
+            sender=None,
+            project_uuid=project_uuid,
+            assignees=assignees,
+            msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+            from_user_id=username,
+            ticket_id=ticket_pk,
+            ticket_title=title,
+            workspace_id=workspace.id,
+            project_name=project.project_name,
+        )
+
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
     def put(self, request, project_uuid):
@@ -283,12 +297,13 @@ class TicketsAPIView(APIView):
         try:
             ticket_ids = ticket_id_to_row.keys()
             ticket_ids_str = ','.join(ticket_ids)
-            sql = f'SELECT `_pk` FROM `tickets` WHERE `_pk` IN ({ticket_ids_str})'
+            sql = f'SELECT `_pk`, `assignees`, `title` FROM `tickets` WHERE `_pk` IN ({ticket_ids_str})'
             query_result = seadb_api.query_rows(project_uuid, sql)
         except Exception as e:
             logger.exception(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
         results = query_result.get('results')
         if not results:
             # file or folder has been deleted
@@ -343,6 +358,7 @@ class TicketsAPIView(APIView):
                     'row': updated_row,
                 }
             )
+
         if update_rows:
             try:
                 seadb_api.update_rows(project_uuid, TABLE_TICKETS, update_rows)
@@ -350,6 +366,31 @@ class TicketsAPIView(APIView):
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+            try:
+                for ticket in results:
+                    row_data = ticket_id_to_row.get(str(ticket.get('_pk')))
+                    if not row_data:
+                        continue
+                    if 'assignees' not in row_data:
+                        continue
+
+                    old_assignees = set(ticket.get('assignees') or [])
+                    new_assignees = set(row_data.get('assignees') or [])
+                    added_assignees = new_assignees - old_assignees
+                    ticket_assignees_added.send(
+                        sender=None,
+                        project_uuid=project_uuid,
+                        assignees=list(added_assignees),
+                        msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                        from_user_id=username,
+                        ticket_id=ticket.get('_pk'),
+                        ticket_title=row_data.get('title') or ticket.get('title'),
+                        workspace_id=workspace.id,
+                        project_name=project.project_name,  
+                    )
+            except Exception as e:
+                logger.error(e)
 
         return Response({'success': True})
 
@@ -611,10 +652,10 @@ class TicketAPIView(APIView):
                 update_row[TicketsTable.priority.name] = priority
             if is_update_assignees:
                 update_row[TicketsTable.assignees.name] = assignees
+
             participants = ticket.get('participants') or []
             if username not in participants:
                 participants.append(username)
-
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
             if ticket_state_name or ticket_state_name == '':
                 ticket_state_name = ticket_state_name.lower()
@@ -637,6 +678,23 @@ class TicketAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        old_assignees = set(ticket.get('assignees') or [])
+        if is_update_assignees:
+            new_assignees = set(assignees or [])
+            added_assignees = new_assignees - old_assignees
+            if added_assignees:
+                ticket_assignees_added.send(
+                    sender=None,
+                    project_uuid=project_uuid,
+                    assignees=added_assignees,
+                    from_user_id=username,
+                    msg_type=MSG_TYPE_TICKET_ASSIGNEE_ADDED,
+                    ticket_id=ticket.get('_pk'),
+                    ticket_title=title or ticket.get('title'),
+                    workspace_id=workspace.id,
+                    project_name=project.project_name,
+                )
 
         return Response({'success': True})
 
@@ -902,6 +960,23 @@ class TicketCommentsAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        assignees = ticket.get('assignees') or []
+        related_users = set(assignees) | set(participants)
+        if related_users:
+            ticket_commented.send(
+                sender=None,
+                project_uuid=project_uuid,
+                related_users=list(related_users),
+                msg_type=MSG_TYPE_TICKET_COMMENTED,
+                from_user_id=username,
+                ticket_id=ticket.get('_pk'),
+                comment_id=pk,
+                comment_content=content[:100] if content else '',
+                ticket_title=ticket.get('title'),
+                workspace_id=workspace.id,
+                project_name=project.project_name,
+            )
 
         return Response({'ticket_comment': row}, status=status.HTTP_201_CREATED)
 

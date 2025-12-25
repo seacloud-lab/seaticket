@@ -138,7 +138,7 @@ class GroupMembers(APIView):
 
             GroupUser.objects.create(
                 group_id=group_id,
-                user_name=username,
+                user_name=email,
                 is_staff=False,
             )
             add_user_to_group.send(sender=None,
@@ -385,7 +385,6 @@ class GroupMembersBulk(APIView):
                     'email': email,
                     'error_msg': 'Internal Server Error'
                     })
-
             add_user_to_group.send(sender=None,
                                    group_staff=username,
                                    group_id=group_id,

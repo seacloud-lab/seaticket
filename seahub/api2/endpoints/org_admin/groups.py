@@ -32,7 +32,6 @@ from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 from seahub.group.signals import add_user_to_group
 from seahub.project.utils import convert_project_trash_names, get_project_owner
 
-
 logger = logging.getLogger(__name__)
 
 

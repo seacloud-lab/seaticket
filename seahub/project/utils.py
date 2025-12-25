@@ -30,6 +30,7 @@ from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
 from seahub.api2.utils import get_user_common_info
 from seahub.utils import normalize_cache_key
+from seahub.notifications.models import ProjectNotification
 
 from seahub.settings import SEAQA_INDEXER_INNER_SERVER_URL, JWT_PRIVATE_KEY,\
     SEAQA_AI_INNER_SERVER_URL, SEAQA_EVENTS_INNER_SERVER_URL
@@ -384,6 +385,7 @@ def delete_project(project):
         ConnectionsViews.objects.filter(project_uuid=project_uuid).delete()
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
         KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
+        ProjectNotification.objects.filter(project_uuid=project_uuid).delete()
         delete_session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
         for session_uuid in set(delete_session_uuids):
             delete_session(session_uuid)

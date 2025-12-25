@@ -25,6 +25,9 @@ from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectV
 
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
+from seahub.api2.endpoints.notifications import NotificationsView, NotificationView, NotificationsAllView, \
+    ProjectNotificationsView, ProjectNotificationView
+
 from seahub.api2.endpoints.user_list import UserListView
 
 urlpatterns = [
@@ -117,6 +120,16 @@ urlpatterns = [
 
     ## user::avatar
     re_path(r'^api/v1/user-avatar/$', UserAvatarView.as_view(), name='api-v1-user-avatar'),
+
+    re_path(r'^api/v1/admin/', include('seahub.api2.endpoints.admin.urls')),
+
+    # notifications
+    re_path(r'^api/v1/notifications/$', NotificationsView.as_view(), name='api-v2.1-notifications'),
+    re_path(r'^api/v1/notifications/all/$', NotificationsAllView.as_view(), name='api-v2.1-notifications-all'),
+    re_path(r'^api/v1/notifications/(?P<notification_id>\d+)/$', NotificationView.as_view(), name='api-v2.1-notification'),
+
+    re_path(r'^api/v1/projects/(?P<project_uuid>[0-9a-f\-]{36})/notifications/$', ProjectNotificationsView.as_view(), name='api-v2.1-project-notifications'),
+    re_path(r'^api/v1/projects/notifications/(?P<notification_id>\d+)/$', ProjectNotificationView.as_view(), name='api-v2.1-project-notification'),
 
     re_path(r'^api/v1/admin/', include('seahub.api2.endpoints.admin.urls')),
 

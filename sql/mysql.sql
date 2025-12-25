@@ -624,7 +624,33 @@ CREATE TABLE `knowledge_base_views`  (
 CREATE TABLE `api_token` (
   `key` varchar(40) NOT NULL,
   `user` varchar(255) NOT NULL,
-  `created` datetime NOT NULL,
+  `created` datetime(6) NOT NULL,
   PRIMARY KEY (`key`),
   UNIQUE KEY `user` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `user_notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `to_user` varchar(255) NOT NULL,
+  `msg_type` varchar(30) NOT NULL,
+  `detail` longtext NOT NULL,
+  `timestamp` datetime(6) NOT NULL,
+  `seen` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_notification_to_user` (`to_user`),
+  KEY `user_dnotification_timestamp` (`timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `project_notification` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` varchar(36) NOT NULL,
+  `to_user` varchar(255) NOT NULL,
+  `msg_type` varchar(36) NOT NULL,
+  `timestamp` datetime(6) NOT NULL,
+  `detail` longtext NOT NULL,
+  `seen` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `project_notification_project_uuid_to_user` (`project_uuid`,`to_user`),
+  KEY `project_notification_timestamp` (`timestamp`),
+  KEY `idx_user_seen` (`to_user`,`seen`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
