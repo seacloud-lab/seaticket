@@ -4,6 +4,7 @@ import Header from './header';
 import { BAR_TYPES } from '../constants';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
+import TicketsMoreNav from './nav/tickets-more-nav';
 
 import './index.css';
 
@@ -36,7 +37,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
             <Nav nav={BAR_TYPES[6]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <Nav nav={BAR_TYPES[7]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[8]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <TicketsMoreNav activeBar={activeBar} onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
             <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
           </div>

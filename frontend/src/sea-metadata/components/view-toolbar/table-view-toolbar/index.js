@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, ManageSetter, RowHeightSetter } from '../../data-process-setter';
+import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowHeightSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
 
@@ -80,9 +80,6 @@ const TableViewToolbar = ({
           modifyHiddenColumns={modifyHiddenColumns}
           modifyColumnOrder={modifyColumnOrder}
         />
-      )}
-      {tools.includes(VIEW_TOOL.MANAGE) && (
-        <ManageSetter />
       )}
     </>
   );
