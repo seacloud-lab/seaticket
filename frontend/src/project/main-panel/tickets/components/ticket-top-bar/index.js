@@ -36,21 +36,9 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
 
-    const toggleBtn = (
-      <IconButton
-        icon="down"
-        className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
-        onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
-      />
-    );
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return (
-          <>
-            {toggleBtn}
-            <span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>
-          </>
-        );
+        return <span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>;
       }
       const tag = getRowById(tagsData, childrenPageSlugId);
       const customTitle = gettext('Tags') + ' / ' + (tag?.name || '');
@@ -67,12 +55,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return (
-          <>
-            {toggleBtn}
-            <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>
-          </>
-        );
+        return <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>;
       }
       const type = getRowById(typesData, childrenPageSlugId);
       const customTitle = gettext('Types') + ' / ' + (type?.name || '');
@@ -88,21 +71,11 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
-      return (
-        <>
-          {toggleBtn}
-          <span className="text-truncate" title={gettext('New ticket')}>{gettext('New ticket')}</span>
-        </>
-      );
+      return <span className="text-truncate" title={gettext('New ticket')}>{gettext('New ticket')}</span>;
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return (
-          <>
-            {toggleBtn}
-            <span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>
-          </>
-        );
+        return <span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>;
       }
       const substate = getRowById(substatesData, childrenPageSlugId);
       const customTitle = gettext('Substates') + ' / ' + (substate?.name || '');
@@ -118,12 +91,7 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
     const ticketTitle = gettext('Tickets') + ' / #' + pageSlugId;
-    return (
-      <>
-        {toggleBtn}
-        <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
-      </>
-    );
+    return <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>;
   }, [pageSlugId, childrenPageSlugId, title, tagsData, typesData, substatesData, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
