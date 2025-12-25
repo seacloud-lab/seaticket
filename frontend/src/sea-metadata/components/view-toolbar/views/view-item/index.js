@@ -187,6 +187,9 @@ const ViewItem = ({
         >
           <span className="sea-metadata-view-item-name">
             {view.name}
+            {view.is_locked && (
+              <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('Lock view view settings cannot be changed')} />
+            )}
             {isSelect && context.getSetting('canManageView', true) && (
               <div
                 className="sea-metadata-view-item-operation-down"
@@ -195,9 +198,6 @@ const ViewItem = ({
               >
                 <Icon symbol="down" />
               </div>
-            )}
-            {view.is_locked && (
-              <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('View is locked')} />
             )}
           </span>
         </div>
