@@ -8,6 +8,7 @@ import hashlib
 import json
 from urllib.parse import urljoin, quote_plus
 from datetime import datetime, timezone
+from botocore.exceptions import ClientError
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     StatsAIByTeam, StatsAIByOwner, Workspaces
@@ -346,9 +347,21 @@ def get_file_from_s3(project_uuid, file_path):
     return file
 
 
+class FileNotFound(Exception):
+    pass
+
+
 def get_file_from_s3_web_crawl(project_uuid, site_id, filename):
     s3_file_path = gen_s3_web_crawl_file_path(project_uuid, site_id, filename)
-    response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+    try:
+        response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchKey':
+            raise FileNotFound()
+        else:
+            raise e
+
     file = response['Body']
     return file
 

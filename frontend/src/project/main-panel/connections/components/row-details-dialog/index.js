@@ -165,7 +165,7 @@ const RowDetailsDialog = ({
           <CenteredError>{errMessage}</CenteredError>
         )}
         {status === 'loaded' && (
-          <Details details={rowDetails?.details} type={connection.type} />
+          <Details details={rowDetails?.details} type={connection.type} projectUuid={projectUuid} connection={connection} />
         )}
       </ModalBody>
     </Modal>
