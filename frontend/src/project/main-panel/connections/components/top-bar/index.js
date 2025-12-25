@@ -12,13 +12,14 @@ import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import AddButton from '@/project/components/add-button';
 import { BAR_TYPE } from '../../../../constants';
+import { isConnectionRecordsView } from '../../utils';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
-  const { pageSlugId, connectionInfo, togglePageSlugId, onRefresh } = useConnectionsPage();
+  const { pageSlugId, childrenPageSlugId, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
   const { name: connectionName } = connectionInfo || {};
   const timer = useRef(null);
@@ -39,7 +40,20 @@ const TopBar = ({ title, modifyLocalBar }) => {
         <div className="w-100 text-truncate">{title}</div>
       );
     }
-    const connectionTitle = gettext('Connections') + ' / ' + connectionName;
+    let connectionTitle = gettext('Connections') + ' / ' + connectionName;
+    if (childrenPageSlugId) {
+      connectionTitle = connectionTitle + ' / #' + childrenPageSlugId;
+      return (
+        <>
+          <IconButton
+            icon="down"
+            className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
+            onClick={() => toggleChildrenPageSlugId('')}
+          />
+          <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
+        </>
+      );
+    }
     return (
       <>
         <IconButton
@@ -50,7 +64,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
       </>
     );
-  }, [pageSlugId, title, connectionName, handleReturnConnectionsHome]);
+  }, [pageSlugId, childrenPageSlugId, title, connectionName, handleReturnConnectionsHome, toggleChildrenPageSlugId]);
 
   const onQueryConnectionStatus = useCallback((connectionID) => {
     timer.current = setTimeout(() => {
@@ -106,6 +120,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="add" />);
     }
+    if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
     return (
       <>
         {isSyncing
@@ -119,7 +134,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
           : <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />}
       </>
     );
-  }, [pageSlugId, isSyncing, handleNewConnection, onManualSync]);
+  }, [pageSlugId, childrenPageSlugId, isSyncing, handleNewConnection, onManualSync]);
 
   return (
     <BasicTopBar>

@@ -1,24 +1,32 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import DateFormatter from '../../../cell-formatter/date-formatter';
-import { gettext } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { CustomizeMarkdownViewer } from '@/components';
+import DateFormatter from '../../../cell-formatter/date-formatter';
+import { getInfoByEmailFrom } from '../../../../utils';
 import HTMLContentWrapper from './html-content';
 
 import './index.css';
 
-const EmailDetailItem = ({ detail, assetURLPrefix }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const Item = ({ isExpand, detail, assetURLPrefix }) => {
+  const [isExpanded, setIsExpanded] = useState(isExpand);
 
   const ref = useRef(null);
 
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
+  const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
-    return content ? content.replace(hrefReg, '').replace('\n', ' ').substring(0, 150) : '';
-  }, [content]);
+    let value = content ? content.replace(hrefReg, '').replace('\n', ' ').substring(0, 150) : '';
+    const isGitLog = email.indexOf('github.com') > -1 || email.indexOf('gitlab') > -1;
+    if (!isGitLog) return value;
+    if (value.startsWith(`@${sender}`)) {
+      value = value.replace(`@${sender}`, '');
+    }
+    return value.charAt(0).toLowerCase() + value.slice(1);
+  }, [content, sender, email]);
 
   const detailContent = useMemo(() => {
     const value = isHTMLContent ? HTMLContent : content;
@@ -75,27 +83,38 @@ const EmailDetailItem = ({ detail, assetURLPrefix }) => {
 
   if (!isExpanded) {
     return (
-      <div className="sea-qa-connection-email-item" onClick={openExpanded}>
-        <div className="email-subject">{detail['email_from']}</div>
-        <div className="email-content">{contentStart}</div>
-        <div className="email-time">
-          <DateFormatter value={detail.modified_time} />
+      <div className="sea-qa-connection-email-record-details collapsed" onClick={openExpanded}>
+        <div className="email-avatar">
+          <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+        </div>
+        <div className="email-record-info">
+          <div className="email-record-info-container">
+            <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
+            <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
+            <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+          </div>
+          <div className="email-record-info-to">
+            {gettext('To')}: {detail['email_to'].split(',').join(', ')}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="sea-qa-connection-email-item sea-qa-connection-expand-email-item">
+    <div className="sea-qa-connection-email-record-details expanded">
       <div className="email-header" onClick={() => setIsExpanded(false)}>
-        <div className="email-from-to">
-          <div className="email-message">{gettext('From')}: {detail['email_from']}</div>
-          <div className="email-message">{gettext('To')}: {detail['email_to'].split(',').join(', ')}</div>
+        <div className="email-avatar">
+          <img alt='' src={`${mediaUrl}avatars/default.png`}/>
         </div>
-        <div className="text-right flex-shrink-0 ml-1">
-          <div className="email-message date">
-            <DateFormatter value={detail.modified_time} />
-            <span>{''}</span>
+        <div className="email-record-info">
+          <div className="email-record-info-container">
+            <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{detail['email_from']}</span>
+            <span className="email-record-info-content text-truncate"></span>
+            <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+          </div>
+          <div className="email-record-info-to">
+            {gettext('To')}: {detail['email_to'].split(',').join(', ')}
           </div>
         </div>
       </div>
@@ -110,4 +129,4 @@ const EmailDetailItem = ({ detail, assetURLPrefix }) => {
   );
 };
 
-export default EmailDetailItem;
+export default Item;

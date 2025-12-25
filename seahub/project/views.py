@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def project_view(request, workspace_id, project_name, children_id = ''):
+def project_view(request, workspace_id, project_name, children_id = '', record_id = ''):
     # resource check
     workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
     if not workspace:

@@ -607,6 +607,7 @@ class ProjectConnectionRowDetailView(APIView):
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         record['connection_type'] = project_connection.type
+        record['connection_name'] = project_connection.name
 
         return Response(record)
 

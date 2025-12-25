@@ -1,5 +1,5 @@
 import { mediaUrl, projectName, server, workspaceID } from '@/constants';
-import { CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
+import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
@@ -59,4 +59,80 @@ export const getOriginalPageUrl = (connection, row, columns) => {
       return '';
     }
   }
+};
+
+export const isConnectionRecordsView = (page) => {
+  return page !== CONNECTION_PAGE_SLUG_ID.ALL && page !== CONNECTION_PAGE_SLUG_ID.NEW;
+};
+
+// Format data according to different connection types,site and seafile only have one detail content
+export const initConnectionRecordDetail = ({
+  title,
+  modified_time,
+  content,
+  author,
+  created_time,
+  comments,
+  replies,
+  emails,
+  connection_type
+}) => {
+  if (connection_type === CONNECTION_TYPE.SITE || connection_type === CONNECTION_TYPE.SEAFILE) {
+    return {
+      title: title,
+      time: modified_time,
+      details: content
+    };
+  }
+  if (connection_type === CONNECTION_TYPE.GITHUB_ISSUE) {
+    const mainPost = {
+      author: author,
+      time: created_time,
+      body: content || '',
+    };
+    const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
+      ...detail,
+      time: detail.created_time,
+      body: detail.content || '',
+    })) : [];
+    return {
+      title,
+      details: [mainPost, ...initComments]
+    };
+  }
+  if (connection_type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+    return {
+      title,
+      details: Array.isArray(replies) && replies.length > 0 ? replies.map(detail => ({
+        ...detail,
+        time: detail.modified_time,
+        body: detail.content || '',
+      })) : [],
+    };
+  }
+  if (connection_type === CONNECTION_TYPE.EMAIL) {
+    return {
+      title,
+      details: Array.isArray(emails) && emails.length > 0 ? emails.map(detail => ({
+        ...detail,
+        time: detail.modified_time,
+        body: detail.content || '',
+      })) : [],
+    };
+  }
+};
+
+export const getInfoByEmailFrom = (emailFrom) => {
+  if (!emailFrom) return { sender: '', email: '' };
+  const regex = /^([^<]+?)\s*(?:<([^>]+)>)?$/;
+  const match = emailFrom.match(regex);
+  if (!match) return { sender: emailFrom, email: '' };
+  const sender = match[1].trim();
+  const email = match[2] ? match[2].trim() : null;
+  return { sender, email };
+};
+
+export const generatorConnectionAssetURLPrefix = (projectUuid, connectionId) => {
+  const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connectionId}/path/`;
+  return assetURLPrefix;
 };
