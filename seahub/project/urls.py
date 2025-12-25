@@ -6,7 +6,7 @@ from .views import project_view
 from .apis import ProjectRelatedUsersView, ProjectItemsSearchView
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, GithubWebhookView, ProjectConnectionRowDetailView, DiscourseWebhookView, \
-    ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView
+    ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, ConnectionFileView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -79,5 +79,6 @@ urlpatterns += [
     re_path(r'^upload-file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectUploadFileView.as_view(), name='api-v1-get-project-upload-file'),
 
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', ProjectFileAPIView.as_view(), name='api-v1-project-file'),
+    re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/path/(?P<file_path>.*)$', ConnectionFileView.as_view(), name='api-v1-connection-file'),
     re_path(r'^file/project/(?P<project_uuid>[-0-9a-f]+)/(?P<file_path>.*)$', GetProjectFileView.as_view(), name='api-v1-get-project-file'),
 ]

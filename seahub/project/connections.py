@@ -4,8 +4,12 @@ import hashlib
 import logging
 import json
 import datetime
+import sys
+from email.utils import formatdate
 
 from django.utils.translation import gettext as _
+from django.http import FileResponse
+from django.utils import timezone
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -23,7 +27,7 @@ from seahub.project.models import Projects, ProjectConnections, decrypt_config, 
 from seahub.project.utils import check_project_admin_permission, add_connection_sync_task, \
     manual_sync_connection, \
     update_github_issue_by_webhook, check_project_permission, get_file_from_s3_web_crawl, \
-    url_to_filename, update_discourse_topic_by_webhook
+    url_to_filename, update_discourse_topic_by_webhook, FileNotFound
 from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_forum_seadb_table, \
     init_github_issues_seadb_table, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
@@ -811,3 +815,47 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
+
+
+class ConnectionFileView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid, connection_id, file_path):
+        """
+        Permission:
+        1. group member
+        """
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        project_uuid = uuid_str_to_32_chars(project_uuid)
+        try:
+            file = get_file_from_s3_web_crawl(project_uuid, str(connection_id), file_path)
+        except FileNotFound:
+            error_msg = 'File not exist'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        response = FileResponse(file)
+        response['Cache-Control'] = 'max-age=604800, public'
+        response['ETag'] = '"' + str(sys.getsizeof(file)) + '"'
+        response['Last-Modified'] = formatdate(int(timezone.now().timestamp()), usegmt=True)
+        return response

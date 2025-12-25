@@ -11,7 +11,7 @@ const Details = ({ details, type, connection, projectUuid }) => {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} />);
     }
     const Detail = type === CONNECTION_TYPE.EMAIL ? EmailDetailItem : CommonDetailItem;
-    const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}${projectUuid}/${connection.id}/`;
+    const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connection.id}/path/`;
     return (
       <div className="sea-qa-connection-row-details">
         {details.map((detail, index) => {
