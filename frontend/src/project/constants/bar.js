@@ -25,7 +25,7 @@ export const BAR_TYPES = [
   { key: BAR_TYPE.TICKET, name: gettext('All tickets'), icon: 'all-tickets' },
   { key: BAR_TYPE.MY_TICKET, name: gettext('My tickets'), icon: 'my-tickets' },
   { key: BAR_TYPE.TRASH, name: gettext('Trash'), icon: 'trash' },
-  { key: BAR_TYPE.TAGS, name: gettext('Tags'), icon: 'tag' },
-  { key: BAR_TYPE.TYPES, name: gettext('Types'), icon: 'single-select' },
-  { key: BAR_TYPE.SUBSTATES, name: gettext('Substates'), icon: 'single-select' }
+  { key: BAR_TYPE.TAGS, name: gettext('Manage tags'), icon: 'tag' },
+  { key: BAR_TYPE.TYPES, name: gettext('Manage types'), icon: 'single-select' },
+  { key: BAR_TYPE.SUBSTATES, name: gettext('Manage substates'), icon: 'single-select' }
 ];
