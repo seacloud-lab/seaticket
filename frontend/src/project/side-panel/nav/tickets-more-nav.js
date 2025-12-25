@@ -1,40 +1,55 @@
 import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Icon, IconButton } from '../../../components';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Icon } from '../../../components';
 import { BAR_TYPES } from '../../constants';
-import Nav from '../nav';
 
-import './index.css';
+import './tickets-more-nav.css';
 
-const TicketsMoreNav = ({ activeBar, onClick }) => {
+const TicketsMoreNav = ({ onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);
 
-  const toggleShowChildren = useCallback((event) => {
-    event.nativeEvent.stopImmediatePropagation();
-    event.stopPropagation();
+  const toggleShowChildren = useCallback(() => {
     setIsShowChildren(!isShowChildren);
   }, [isShowChildren]);
 
+  const handleItemClick = useCallback((navKey) => {
+    onClick([navKey]);
+    setIsShowChildren(false);
+  }, [onClick]);
+
   return (
-    <>
-      <div
+    <Dropdown isOpen={isShowChildren} toggle={toggleShowChildren} className="sea-qa-tickets-more-nav" direction="right">
+      <DropdownToggle
+        tag="div"
         className={classnames('sea-qa-project-navigation-item')}
         style={{ paddingLeft: 8 }}
       >
         <Icon symbol={'more'} className="sea-qa-project-navigation-item-icon" />
         <span className="sea-qa-project-navigation-item-name">{window.gettext('More')}</span>
-        <IconButton icon="down" className={classnames({ 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
-      </div>
-      <div
-        className={classnames('w-100 o-hidden', { 'side-panel-slide': isShowChildren, 'side-panel-slide-up': !isShowChildren })}
-        style={{ height: isShowChildren ? 4 * 32 : 0, opacity: isShowChildren ? 1 : 0 }}
+      </DropdownToggle>
+      <DropdownMenu
+        className="position-fixed"
+        modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <Nav nav={BAR_TYPES[8]} activeBar={activeBar} level={2} onClick={onClick} />
-        <Nav nav={BAR_TYPES[9]} activeBar={activeBar} level={2} onClick={onClick} />
-        <Nav nav={BAR_TYPES[10]} activeBar={activeBar} level={2} onClick={onClick} />
-        <Nav nav={BAR_TYPES[11]} activeBar={activeBar} level={2} onClick={onClick} />
-      </div>
-    </>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[8].key)}>
+          <Icon symbol={BAR_TYPES[8].icon} />
+          <span className="ml-2">{BAR_TYPES[8].name}</span>
+        </DropdownItem>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[9].key)}>
+          <Icon symbol={BAR_TYPES[9].icon} />
+          <span className="ml-2">{BAR_TYPES[9].name}</span>
+        </DropdownItem>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[10].key)}>
+          <Icon symbol={BAR_TYPES[10].icon} />
+          <span className="ml-2">{BAR_TYPES[10].name}</span>
+        </DropdownItem>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[11].key)}>
+          <Icon symbol={BAR_TYPES[11].icon} />
+          <span className="ml-2">{BAR_TYPES[11].name}</span>
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
   );
 };
 
