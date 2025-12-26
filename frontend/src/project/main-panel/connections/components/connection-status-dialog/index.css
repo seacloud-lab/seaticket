@@ -49,6 +49,11 @@
   z-index: 1;
 }
 
+.connection-status-container .timeline .timeline-item .timeline-icon .sea-qa-icon-svg {
+  width: 24px;
+  height: 24px;
+}
+
 .connection-status-container .timeline .timeline-item .timeline-icon.sync-status {
   background-color: #ff8000;
   color: #fff;
@@ -60,7 +65,7 @@
 }
 
 .connection-status-container .timeline .timeline-item .timeline-icon.ai-status {
-  background-color: #656453;
+  background-color: #656463;
   color: #fff;
 }
 

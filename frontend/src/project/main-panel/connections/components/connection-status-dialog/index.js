@@ -56,7 +56,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
                     <DateFormatter value={record.last_sync_time} />
                   </div>
                   <div className="timeline-stats">
-                    <span className="stat-value">{record.status.last_sync_count}</span>
+                    <span className="stat-value mr-1">{record.status.last_sync_count}</span>
                     <span className="stat-label">{gettext('records synced')}</span>
                   </div>
                 </div>
@@ -75,7 +75,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
                     <DateFormatter value={record.indexed_at} />
                   </div>
                   <div className="timeline-stats">
-                    <span className="stat-value">{record.status.last_indexed_count}</span>
+                    <span className="stat-value mr-1">{record.status.last_indexed_count}</span>
                     <span className="stat-label">{gettext('records indexed')}</span>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
                     <DateFormatter value={record.last_ai_processing_time} />
                   </div>
                   <div className="timeline-stats">
-                    <span className="stat-value">{record.ai_status.last_ai_processing_count}</span>
+                    <span className="stat-value mr-1">{record.ai_status.last_ai_processing_count}</span>
                     <span className="stat-label">{gettext('records processed')}</span>
                   </div>
                 </div>
@@ -103,8 +103,8 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
               {/* Vector Indexed Status (for SITE type) */}
               {record.type === CONNECTION_TYPE.SITE &&
                 <div className="timeline-item">
-                  <div className="timeline-icon pending">
-                    <Icon symbol="vector" />
+                  <div className="timeline-icon index-status">
+                    <Icon symbol="index" />
                   </div>
                   <div className="timeline-content">
                     <div className="timeline-title">
