@@ -48,7 +48,8 @@ const CollaboratorFilter = ({ readOnly, filterIndex, filterTerm, collaborators, 
               </div>
             </div>
           </Fragment>
-        )
+        ),
+        name: collaborator.name,
       };
     });
   }, [filterIndex, collaborators, filterTerm]);
