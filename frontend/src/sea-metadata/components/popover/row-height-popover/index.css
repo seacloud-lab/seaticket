@@ -39,10 +39,6 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.sea-metadata-row-height-item.disabled {
-  cursor: not-allowed;
-}
-
 .sea-metadata-row-height-item-left,
 .sea-metadata-row-height-item-right {
   display: flex;

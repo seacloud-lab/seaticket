@@ -27,7 +27,7 @@ const Views = ({ view, toggleView }) => {
     if (!navigation || !views) return [];
     return navigation.map(n => {
       const curView = views.find(v => v._id === n._id);
-      if (curView._id === view._id) return { ...curView, ...view };
+      if (curView._id === view._id) return { ...curView, is_locked: view.is_locked };
       return curView;
     });
   }, [isLoading, viewsData, view]);

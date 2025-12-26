@@ -114,39 +114,12 @@
   vertical-align: top;
 }
 
-.sea-metadata-views .sea-metadata-view-item .sea-metadata-view-item-name {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.sea-metadata-views .sea-metadata-view-item .sea-metadata-view-item-name .sea-metadata-view-lock-icon {
+.sea-metadata-views .sea-metadata-view-item .sea-metadata-view-lock-icon {
   height: 12px;
   width: 12px;
   color: #999;
 }
 
-.sea-metadata-views .sea-metadata-view-item.active .sea-metadata-view-item-name .sea-metadata-view-lock-icon {
+.sea-metadata-views .sea-metadata-view-item.active .sea-metadata-view-lock-icon {
   color: #ED7109;
-}
-
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled {
-  color: #c2c2c2;
-  cursor: not-allowed !important;
-}
-
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled .sea-qa-icon-svg {
-  color: #c2c2c2;
-}
-
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled:hover,
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled:focus {
-  background-color: transparent;
-  color: #c2c2c2;
-}
-
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled:hover .sea-qa-icon-svg,
-.sea-metadata-view-dropdown-menu .dropdown-item.disabled:focus .sea-qa-icon-svg {
-  color: #c2c2c2;
-  cursor: not-allowed !important;
 }

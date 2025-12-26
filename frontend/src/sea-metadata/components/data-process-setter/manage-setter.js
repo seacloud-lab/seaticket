@@ -1,8 +1,6 @@
-
 import { useState, useCallback } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { Icon } from '@/components';
-import { Switch } from '@/components';
+import { Icon, Switch } from '@/components';
 import { useMetadata } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 

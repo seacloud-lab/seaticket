@@ -185,21 +185,19 @@ const ViewItem = ({
           onClick={() => onSelect && onSelect(view._id)} key={view._id}
           ref={viewRef}
         >
-          <span className="sea-metadata-view-item-name">
-            {view.name}
-            {view.is_locked && (
-              <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('Lock view view settings cannot be changed')} />
-            )}
-            {isSelect && context.getSetting('canManageView', true) && (
-              <div
-                className="sea-metadata-view-item-operation-down"
-                onClick={openDropdownMenu}
-                ref={downBtnRef}
-              >
-                <Icon symbol="down" />
-              </div>
-            )}
-          </span>
+          {view.name}
+          {view.is_locked && (
+            <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('Lock view (view settings cannot be changed)')} />
+          )}
+          {isSelect && context.getSetting('canManageView', true) && (
+            <div
+              className="sea-metadata-view-item-operation-down"
+              onClick={openDropdownMenu}
+              ref={downBtnRef}
+            >
+              <Icon symbol="down" />
+            </div>
+          )}
         </div>
       </div>
       {isShowDeleteConfirmationDialog && (
@@ -229,11 +227,7 @@ const ViewItem = ({
                 </button>
               )}
               {duplicateAble && (
-                <button
-                  onClick={handleDuplicate}
-                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
-                  disabled={view.is_locked}
-                >
+                <button onClick={handleDuplicate} className="dropdown-item sea-qa-dropdown-item">
                   <Icon symbol="copy" />
                   {gettext('Duplicate view')}
                 </button>
