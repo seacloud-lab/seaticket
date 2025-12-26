@@ -1,22 +1,17 @@
 import { useState, useCallback } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Icon, Switch } from '@/components';
-import { useMetadata } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 
 import './manage-setter.css';
 
-const ManageSetter = ({ readOnly, modifyViewLock }) => {
+const ManageSetter = ({ readOnly, view, modifyViewLock }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const { metadata } = useMetadata();
-
-  const view = metadata?.view;
 
   const handleLockView = useCallback((e) => {
     const isLocked = e.target.checked;
     modifyViewLock(isLocked);
-  }, [view, modifyViewLock]);
+  }, [modifyViewLock]);
 
   if (readOnly) return null;
 
@@ -36,17 +31,15 @@ const ManageSetter = ({ readOnly, modifyViewLock }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        {view && (
-          <DropdownItem id='lock-view-dropdown-item' className="sea-metadata-lock-view-item">
-            <Switch
-              checked={view.is_locked}
-              onChange={handleLockView}
-              placeholder={gettext('Lock view')}
-              size="small"
-              textPosition="left"
-            />
-          </DropdownItem>
-        )}
+        <DropdownItem id='lock-view-dropdown-item' className="sea-metadata-lock-view-item">
+          <Switch
+            checked={view.is_locked}
+            onChange={handleLockView}
+            placeholder={gettext('Lock view')}
+            size="small"
+            textPosition="left"
+          />
+        </DropdownItem>
       </DropdownMenu>
     </Dropdown>
   );

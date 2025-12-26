@@ -77,6 +77,10 @@
   width: 100%;
 }
 
+.sea-metadata-hide-columns-popover .hide-column-item .hide-column-item-switch.disabled .custom-switch {
+  cursor: auto;
+}
+
 .sea-metadata-hide-columns-popover .hide-column-item .custom-switch {
   padding-left: 0;
   display: inline-flex;

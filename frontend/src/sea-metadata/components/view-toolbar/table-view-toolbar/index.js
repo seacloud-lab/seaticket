@@ -88,6 +88,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.MANAGE) && (
         <ManageSetter
           readOnly={readOnly}
+          view={view}
           modifyViewLock={modifyViewLock}
         />
       )}
