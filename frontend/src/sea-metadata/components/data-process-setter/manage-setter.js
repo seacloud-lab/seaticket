@@ -32,7 +32,7 @@ const ManageSetter = ({ readOnly, modifyViewLock }) => {
       }}
     >
       <DropdownToggle className="dropdown-toggle-button sea-qa-icon-btn mr-2" tag="div">
-        <Icon symbol="manage" title={gettext('Manage')} aria-label={gettext('Manage')} />
+        <Icon symbol="manage" title={gettext('Settings')} aria-label={gettext('Settings')} />
       </DropdownToggle>
       <DropdownMenu
         className="position-fixed"
