@@ -36,6 +36,13 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
 
+    const toggleBtn = (
+      <IconButton
+        icon="down"
+        className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
+        onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
+      />
+    );
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
         return <span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>;
@@ -71,7 +78,12 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
-      return <span className="text-truncate" title={gettext('New ticket')}>{gettext('New ticket')}</span>;
+      return (
+        <>
+          {toggleBtn}
+          <span className="text-truncate" title={gettext('New ticket')}>{gettext('New ticket')}</span>
+        </>
+      );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
@@ -91,7 +103,12 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
     const ticketTitle = gettext('Tickets') + ' / #' + pageSlugId;
-    return <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>;
+    return (
+      <>
+        {toggleBtn}
+        <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
+      </>
+    );
   }, [pageSlugId, childrenPageSlugId, title, tagsData, typesData, substatesData, togglePageSlugId]);
 
   const renderRightChildren = useCallback(() => {
