@@ -217,7 +217,6 @@ class Project extends React.Component {
         <div className="project-item-name" title={project.name}>
           {project.name}
         </div>
-        <div className="project-item-group"></div>
         {this.state.isShowSettings && (
           <ProjectSettingPopover
             target={`project-item-${id}`}

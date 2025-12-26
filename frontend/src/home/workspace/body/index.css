@@ -146,11 +146,11 @@
 /* project item and project folder item */
 .project-group-container .project-folder-item,
 .project-group-container .project-item {
-  min-width: 168px;
-  height: 176px;
-  border-radius: 6px !important;
+  min-width: 148px;
+  height: 160px;
+  border-radius: 8px !important;
   overflow: hidden;
-  padding: 14px;
+  padding: 20px 20px 16px 20px;
   cursor: pointer;
   flex-direction: column;
   flex-shrink: 0;
@@ -219,31 +219,13 @@
 
 .project-folder-item .project-folder-item-name,
 .project-item .project-item-name {
-  height: 42px;
   width: 100%;
-  margin-top: 14px;
-  margin-bottom: 40px;
   font-size: 14px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
   word-break: break-all;
-}
-
-.project-item .project-item-group {
-  height: 18px;
-  width: 100%;
-  line-height: 18px;
-  font-size: 12px;
-  color: #666666;
-}
-
-.project-item .project-item-group .project-workspace-icon {
-  height: 12px;
-  width: 12px;
-  margin-right: 4px;
-  margin-top: -1px;
 }
 
 .project-item .project-item-records {

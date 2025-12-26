@@ -31,6 +31,8 @@ const propTypes = {
   emptyTip: PropTypes.object
 };
 
+const PROJECT_ITEM_DEFAULT_WIDTH = 148;
+
 class Workspace extends React.Component {
 
   constructor(props) {
@@ -58,7 +60,7 @@ class Workspace extends React.Component {
       isShowMovingDialog: false,
       isShowAPITokenDialog: false,
       isParsing: false,
-      projectItemWidth: 168,
+      projectItemWidth: PROJECT_ITEM_DEFAULT_WIDTH,
       numberOfItemsPerRow: 1,
     };
     this.isDropdownOpen = false;
@@ -105,20 +107,20 @@ class Workspace extends React.Component {
 
   onResize = () => {
     // 16: project item margin with or view content padding width
-    // 184: project Item min-width[168] and margin right[16]
-    // 352: two project Item min-width sum[336] + padding[32] + margin right[16]
-    // 536: three project Item min-width sum[504] + padding[32] + two margin right[32]
+    // 164: PROJECT_ITEM_DEFAULT_WIDTH + margin right[16]
+    // 312: PROJECT_ITEM_DEFAULT_WIDTH * 2 + padding[32] + margin right[16]
+    // 476: PROJECT_ITEM_DEFAULT_WIDTH * 3 + padding[32] + two margin right[32]
     if (!this.curViewContent) return;
     if (!this.isDesktop) {
       const { clientWidth } = this.curViewContent;
       const contentWidth = clientWidth - 16 * 2;
       let numberOfItemsPerRow = 1;
       let projectItemWidth = contentWidth;
-      if (contentWidth >= 536) {
+      if (contentWidth >= 476) {
         numberOfItemsPerRow = 3;
         // The first and second project items margin-right sum is 32
         projectItemWidth = (contentWidth - 32) / 3;
-      } else if (contentWidth >= 352) {
+      } else if (contentWidth >= 312) {
         numberOfItemsPerRow = 2;
         // The first project item margin-right is 16
         projectItemWidth = (contentWidth - 16) / 2;
@@ -128,13 +130,13 @@ class Workspace extends React.Component {
       const { clientWidth: pageClientWidth, offsetWidth: pageOffsetWidth } = this.curViewContent.parentNode;
       const scrollBarWidth = pageOffsetWidth - pageClientWidth;
       const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 16 * 2 + 16 - scrollBarWidth);
-      const numberOfItemsPerRow = Math.floor(projectListWidth / 184);
-      const remainingWidth = projectListWidth % 184;
+      const numberOfItemsPerRow = Math.floor(projectListWidth / 164);
+      const remainingWidth = projectListWidth % 164;
       let projectItemWidth;
       if (remainingWidth > 0) {
-        projectItemWidth = 168 + remainingWidth / numberOfItemsPerRow;
+        projectItemWidth = PROJECT_ITEM_DEFAULT_WIDTH + remainingWidth / numberOfItemsPerRow;
       } else {
-        projectItemWidth = 168;
+        projectItemWidth = PROJECT_ITEM_DEFAULT_WIDTH;
       }
       this.setState({ projectItemWidth, numberOfItemsPerRow });
     }
@@ -144,7 +146,6 @@ class Workspace extends React.Component {
     const { projectItemWidth, numberOfItemsPerRow } = this.state;
 
     // 0.22: percentage of side panel; 16: cur-view-content's padding left/right;
-    // 168: project item width; 20: project item margin right/bottom
     let allLineProjectCount = parseInt(totalCount / numberOfItemsPerRow) * numberOfItemsPerRow;
     if (allLineProjectCount === totalCount) {
       allLineProjectCount = allLineProjectCount - numberOfItemsPerRow;

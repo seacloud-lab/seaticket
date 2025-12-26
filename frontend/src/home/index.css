@@ -270,10 +270,9 @@
 
 .search .project-item,
 .workspace .project-item-container .project-item {
-  justify-content: center;
-  align-items: center;
   display: flex;
-  
+  justify-content: space-between;
+  align-items: center;
 }
 
 .search .project-item {

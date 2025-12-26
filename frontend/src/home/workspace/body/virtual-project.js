@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon, toaster } from '@/components';
+import { toaster } from '@/components';
 import homeAPI from '../../api';
 import Project from '../../models/project';
 import { Utils } from '@/utils/utils';
@@ -135,7 +135,7 @@ class VirtualProject extends React.Component {
   };
 
   render() {
-    let { className = '', style = {}, currentWorkspace } = this.props;
+    let { className = '', style = {} } = this.props;
     const { name, icon, bgColor } = this.state;
     return (
       <div
@@ -157,10 +157,6 @@ class VirtualProject extends React.Component {
         </div>
         <div className="project-item-name" title={name}>
           {name}
-        </div>
-        <div className="project-item-group text-truncate">
-          <Icon symbol="collaborator" className="project-workspace-icon" />
-          {currentWorkspace.name}
         </div>
         {this.state.isDataLoaded && (
           <>{this.renderSettingPopover()}</>
