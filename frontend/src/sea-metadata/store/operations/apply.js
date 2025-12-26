@@ -215,6 +215,11 @@ export default function apply(data, operation) {
       data.view = { ...data.view, ...update };
       return data;
     }
+    case OPERATION_TYPE.MODIFY_VIEW_LOCK: {
+      const { is_locked } = operation;
+      data.view.is_locked = is_locked;
+      return data;
+    }
     case OPERATION_TYPE.INSERT_COLUMN: {
       const { column } = operation;
       const newColumn = new Column(column);

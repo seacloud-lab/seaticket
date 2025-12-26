@@ -186,6 +186,9 @@ const ViewItem = ({
           ref={viewRef}
         >
           {view.name}
+          {view.is_locked && (
+            <Icon symbol="lock" className="sea-metadata-view-lock-icon" title={gettext('Lock view (view settings cannot be changed)')} />
+          )}
           {isSelect && context.getSetting('canManageView', true) && (
             <div
               className="sea-metadata-view-item-operation-down"
@@ -214,7 +217,11 @@ const ViewItem = ({
               style={menuStyle.current}
             >
               {modifyAble && (
-                <button onClick={handleModify} className="dropdown-item sea-qa-dropdown-item">
+                <button
+                  onClick={handleModify}
+                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  disabled={view.is_locked}
+                >
                   <Icon symbol="rename" />
                   {gettext('Rename view')}
                 </button>
@@ -226,7 +233,11 @@ const ViewItem = ({
                 </button>
               )}
               {deleteAble && (
-                <button onClick={openDeleteConfirmationDialog} className="dropdown-item sea-qa-dropdown-item">
+                <button
+                  onClick={openDeleteConfirmationDialog}
+                  className={classnames('dropdown-item sea-qa-dropdown-item', { 'disabled': view.is_locked })}
+                  disabled={view.is_locked}
+                >
                   <Icon symbol="delete" />
                   {gettext('Delete view')}
                 </button>

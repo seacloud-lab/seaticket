@@ -25,7 +25,11 @@ const Views = ({ view, toggleView }) => {
     if (isLoading) return [];
     const { navigation, views } = viewsData;
     if (!navigation || !views) return [];
-    return navigation.map(n => views.find(v => v._id === n._id));
+    return navigation.map(n => {
+      const curView = views.find(v => v._id === n._id);
+      if (curView._id === view._id) return { ...curView, is_locked: view.is_locked };
+      return curView;
+    });
   }, [isLoading, viewsData, view]);
 
   const isSelected = useMemo(() => {

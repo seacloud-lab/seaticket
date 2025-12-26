@@ -57,6 +57,7 @@ class View {
 
     // settings
     this.settings = object.settings || VIEW_DEFAULT_SETTINGS[this.type];
+    this.is_locked = object.is_locked || false;
   }
 
 }

@@ -113,3 +113,13 @@
 .kb-import-preview-table td {
   vertical-align: top;
 }
+
+.sea-metadata-views .sea-metadata-view-item .sea-metadata-view-lock-icon {
+  height: 12px;
+  width: 12px;
+  color: #999;
+}
+
+.sea-metadata-views .sea-metadata-view-item.active .sea-metadata-view-lock-icon {
+  color: #ED7109;
+}

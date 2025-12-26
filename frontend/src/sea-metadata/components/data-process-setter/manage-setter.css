@@ -1,0 +1,29 @@
+.sea-metadata-manage-dropdown .dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: inherit;
+}
+
+.sea-metadata-manage-dropdown .dropdown-item:focus {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: inherit;
+}
+
+.sea-metadata-manage-dropdown .sea-metadata-lock-view-item .seaqa-switch {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.sea-metadata-manage-dropdown .sea-metadata-lock-view-item .seaqa-switch .custom-switch {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.sea-metadata-manage-dropdown .sea-metadata-lock-view-item .seaqa-switch .custom-switch-description {
+  margin: 0;
+  flex: 1;
+  color: initial;
+}
