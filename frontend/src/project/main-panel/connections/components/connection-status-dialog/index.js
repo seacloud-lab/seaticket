@@ -29,8 +29,6 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
     getConnectionRecord();
   }, []);
 
-  console.log('record', record);
-
   return (
     <Modal isOpen={true} toggle={onToggle} className="connection-status-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Connection status')}</ModalHeader>
