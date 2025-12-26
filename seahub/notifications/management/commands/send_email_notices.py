@@ -69,29 +69,13 @@ class Command(BaseCommand):
     def _format_add_user_to_group_msg(self, notice):
         d = json.loads(notice.detail) if notice.detail else {}
 
-        group_id = d.get('group_id')
         group_name = d.get('group_name') or ''
         group_staff_name = d.get('group_staff_name') or ''
         group_staff_email = d.get('group_staff_email') or ''
 
-        group_url = ''
-        if group_id is not None:
-            try:
-                group_url = '%s%s' % (
-                    get_site_scheme_and_netloc(),
-                    (HASH_URLS.get('GROUP_MEMBERS') % {'group_id': group_id})
-                )
-            except Exception:
-                group_url = ''
-
         staff_display = escape(group_staff_name or email2nickname(group_staff_email) or group_staff_email)
         group_display = escape(group_name)
-        if group_url:
-            return _('User %(user)s has added you to group <a href="%(group_url)s">%(group_name)s</a>.') % {
-                'user': staff_display,
-                'group_url': group_url,
-                'group_name': group_display,
-            }
+
         return _('User %(user)s has added you to group %(group_name)s.') % {
             'user': staff_display,
             'group_name': group_display,
@@ -154,7 +138,7 @@ class Command(BaseCommand):
                 'title': title_display,
             }
         if comment_display:
-            return '%s %s' % (base_msg, comment_display)
+            return '%s <br /> comment: %s' % (base_msg, comment_display)
         return base_msg
 
     def format_notice_item(self, notice):
