@@ -350,6 +350,9 @@ class SeafileTable(BaseModel):
 class TicketsTable(BaseModel):
     title = MappedColumn('title', PropertyTypes.TEXT)
     content = MappedColumn('content', PropertyTypes.TEXT)
+    ai_summary = MappedColumn('ai_summary', PropertyTypes.TEXT)
+    ai_processed_time = MappedColumn('ai_processed_time', PropertyTypes.DATETIME)
+    ai_summary_vector = MappedColumn('ai_summary_vector', PropertyTypes.LIST, ListTypes.vector)
     state = MappedColumn('state', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_status)
     substate = MappedColumn('substate', PropertyTypes.SINGLE_SELECT, data=SelectTypes.ticket_substate)
     type = MappedColumn('type', PropertyTypes.SINGLE_SELECT)

@@ -289,6 +289,7 @@ class Projects(models.Model):
     settings = models.TextField(null=True)
     knowledge_base_indexed_at = models.DateTimeField(null=True)
     knowledge_base_ai_indexed_at = models.DateTimeField(null=True)
+    ticket_ai_indexed_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 

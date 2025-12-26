@@ -28,7 +28,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
     convert_ticket_select_column_name_to_option_id, TABLE_TICKETS, get_tickets_by_ids, get_my_tickets, \
-    delete_ticket_comments_by_ids, get_deleted_tickets_ids
+    delete_ticket_comments_by_ids, get_deleted_tickets_ids, send_ticket_update_msg
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 
@@ -256,6 +256,8 @@ class TicketsAPIView(APIView):
             project_name=project.project_name,
         )
 
+        send_ticket_update_msg(project_uuid)
+
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
     def put(self, request, project_uuid):
@@ -448,6 +450,8 @@ class TicketsAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_ticket_update_msg(project_uuid)
 
         return Response({
             'success': need_delete_ticket_ids,
@@ -696,6 +700,8 @@ class TicketAPIView(APIView):
                     project_name=project.project_name,
                 )
 
+        send_ticket_update_msg(project_uuid)
+
         return Response({'success': True})
 
     def delete(self, request, project_uuid, ticket_id):
@@ -745,6 +751,8 @@ class TicketAPIView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_ticket_update_msg(project_uuid)
 
         return Response({'success': True})
 
@@ -1376,6 +1384,8 @@ class TicketTrashAPIView(APIView):
                 logger.exception(e)
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        send_ticket_update_msg(project_uuid)
 
         return Response({'success': True})
 

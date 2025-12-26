@@ -14,6 +14,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
   const documentConnections = useMemo(() => {
     return connections.filter((connection) => {
       if (connection.id === '__kb__') return true;
+      if (connection.id === '__ticket__') return false;
       if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return true;
       if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return false;
       return false;
@@ -22,6 +23,7 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
 
   const issueConnections = useMemo(() => {
     return connections.filter((connection) => {
+      if (connection.id === '__ticket__') return true;
       if (DOCUMENT_CONNECTION_TYPE_MAP[connection.type]) return false;
       if (ISSUE_CONNECTION_TYPE_MAP[connection.type]) return true;
       return false;

@@ -13,8 +13,8 @@ qrcode==7.3.*
 django-formtools==2.3
 django-simple-captcha==0.6.*
 djangorestframework==3.14.*
-python-dateutil==2.8.*
-requests==2.31.*
+python-dateutil==2.9.*
+requests==2.32.*
 chardet==5.1.*
 pillow==10.4.*
 pyjwt==2.8.*

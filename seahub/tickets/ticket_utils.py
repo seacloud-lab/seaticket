@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 from datetime import datetime
@@ -6,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 from seahub.settings import AI_CHAT_TICKET_MAX_COMMENTS_NUM
 from seahub.profile.models import Profile
 from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS
+from seahub.utils import mq, uuid_str_to_32_chars
 
 TABLE_TICKETS = 'tickets'
 TABLE_TICKET_COMMENTS = 'ticket_comments'
@@ -332,3 +334,14 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
             })
         result.append(whole_ticket_data)
     return result
+
+
+def send_ticket_update_msg(project_uuid):
+    try:
+        msg_content = json.dumps({'project_uuid': uuid_str_to_32_chars(project_uuid)})
+        if mq.publish('ticket_update', msg_content) > 0:
+            logger.debug('Publish ticket_update event: %s' % msg_content)
+        else:
+            logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
+    except Exception as e:
+        logger.error('send ticket update msg failed, error: %s', e)

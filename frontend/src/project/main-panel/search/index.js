@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { toaster, EmptyTip, CenteredLoading } from '@/components';
 import GlobalSearchInput from '@/components/search-input/global-search-input';
-import { searchAPI, knowledgeBaseAPI } from '../../api';
+import { searchAPI, knowledgeBaseAPI, ticketsAPI } from '../../api';
 import { useConnections } from '../connections/hooks/connections';
 import { gettext, mediaUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -37,7 +37,7 @@ const Search = ({ title, settings }) => {
   );
 
   const [isKBEnabled, setKBEnabled] = useState(false);
-
+  const [isTicketEnabled, setTicketEnabled] = useState(false);
   const sourceRef = useRef(null);
   const timer = useRef(null);
 
@@ -52,7 +52,8 @@ const Search = ({ title, settings }) => {
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
     const hasSelectedConnections = Array.isArray(connections) && connections.some(c => !hiddenConnectionIDs.includes(c.id));
     const includeKBLocal = isKBEnabled && !hiddenConnectionIDs.includes('__kb__');
-    if (!hasSelectedConnections && !includeKBLocal) {
+    const includeTicketLocal = isTicketEnabled && !hiddenConnectionIDs.includes('__ticket__');
+    if (!hasSelectedConnections && !includeKBLocal && !includeTicketLocal) {
       setValue(value);
       setResults([]);
       setSearching(false);
@@ -94,7 +95,7 @@ const Search = ({ title, settings }) => {
         timeTo = isCustom ? filterDate.to?.unix() : filterDate.to;
       }
       const showConnectionIds = connections.map(item => item.id).filter(i => !hiddenConnectionIDs.includes(i)).join(',');
-      const extraSources = includeKBLocal ? ['knowledge_base'] : [];
+      const extraSources = [...(includeKBLocal ? ['knowledge_base'] : []), ...(includeTicketLocal ? ['ticket'] : [])];
       searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, username, extraSources, source.token, semanticEnabled).then(res => {
         const rawResults = res.data?.results || [];
         setResults(rawResults.map(result => new SearchResult(result)));
@@ -136,6 +137,7 @@ const Search = ({ title, settings }) => {
   useEffect(() => {
     reloadConnections();
     knowledgeBaseAPI.listViews(projectUuid).then(() => setKBEnabled(true)).catch(() => setKBEnabled(false));
+    ticketsAPI.listViews(projectUuid).then(() => setTicketEnabled(true)).catch(() => setTicketEnabled(false));
     return () => {
       timer.current && clearTimeout(timer.current);
     };
@@ -176,7 +178,7 @@ const Search = ({ title, settings }) => {
           storeKey={SEARCH_STORE_KEY}
         />
         <div className="search-filters-container" style={{ justifyContent: 'space-between' }}>
-          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} kbEnabled={isKBEnabled} />
+          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} kbEnabled={isKBEnabled} ticketEnabled={isTicketEnabled} />
           <FilterByDate date={filterDate} onChange={onFilterDateChange} />
           <div className="search-filter ml-auto">
             <Switch
