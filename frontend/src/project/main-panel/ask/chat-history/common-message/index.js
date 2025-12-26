@@ -126,58 +126,58 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       // [Reference 1] => [Source title][1]
       const reference2Md = /\[(Reference)\s+(\d+)\]/g;
 
-    const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
+      const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
 
-    const lastTextSegmentIndex = contentSegments.map((s, i) => s.type === 'text' ? i : -1).filter(i => i !== -1).pop();
+      const lastTextSegmentIndex = contentSegments.map((s, i) => s.type === 'text' ? i : -1).filter(i => i !== -1).pop();
 
-    contentSegments.forEach((segment, index) => {
-      if (segment.type === 'text') {
-        let processedContent = segment.content
-          .replace(regex, (_, openBracket, refType, ordersPart, closeBracket) => {
-            const orders = ordersPart.split(',').map(orderPart => {
-              return orderPart.replace(referenceMark, '').trim();
-            }).filter(num => num !== '');
-            return orders.map(order => `[Reference ${order}]`).join('');
-          })
-          .replace(formatReference, (_, order, linkReference) => {
-            if (!linkReference) return `[Reference ${order}]`;
-            const linkReferenceIncludesParentheses = linkReference.endsWith(')');
-            const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
-            const urlObject = new URL(validLinkReference);
-            const url = urlObject.href;
-            const sourceIndex = sources.findIndex(source => source.url === url);
-            if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-            const referenceIndex = sources.length;
-            sources.push({
-              title: url,
-              url: url,
-              connection_id: `unknown_${referenceIndex}`,
-              _id: referenceIndex,
-              type: 'unknown',
-              content: validLinkReference + '',
-              icon: getConnectionIcon('unknown'),
-              connection_name: gettext('Unknown')
+      contentSegments.forEach((segment, index) => {
+        if (segment.type === 'text') {
+          let processedContent = segment.content
+            .replace(regex, (_, openBracket, refType, ordersPart, closeBracket) => {
+              const orders = ordersPart.split(',').map(orderPart => {
+                return orderPart.replace(referenceMark, '').trim();
+              }).filter(num => num !== '');
+              return orders.map(order => `[Reference ${order}]`).join('');
+            })
+            .replace(formatReference, (_, order, linkReference) => {
+              if (!linkReference) return `[Reference ${order}]`;
+              const linkReferenceIncludesParentheses = linkReference.endsWith(')');
+              const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
+              const urlObject = new URL(validLinkReference);
+              const url = urlObject.href;
+              const sourceIndex = sources.findIndex(source => source.url === url);
+              if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+              const referenceIndex = sources.length;
+              sources.push({
+                title: url,
+                url: url,
+                connection_id: `unknown_${referenceIndex}`,
+                _id: referenceIndex,
+                type: 'unknown',
+                content: validLinkReference + '',
+                icon: getConnectionIcon('unknown'),
+                connection_name: gettext('Unknown')
+              });
+              return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+            })
+            .replaceAll(removeParentheses, (_, p1) => p1)
+            .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
+            .replace(reference2Md, (_, text, orderString) => {
+              const order = Number(orderString);
+              const source = sources[order - 1];
+              if (!source) return '';
+              return `[${source.title}][${order}]`;
             });
-            return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-          })
-          .replaceAll(removeParentheses, (_, p1) => p1)
-          .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
-          .replace(reference2Md, (_, text, orderString) => {
-            const order = Number(orderString);
-            const source = sources[order - 1];
-            if (!source) return '';
-            return `[${source.title}][${order}]`;
-          });
-        if (index === lastTextSegmentIndex) {
-          segment.content = processedContent + `\n\n${sourcesString}`;
-        } else {
-          segment.content = processedContent;
+          if (index === lastTextSegmentIndex) {
+            segment.content = processedContent + `\n\n${sourcesString}`;
+          } else {
+            segment.content = processedContent;
+          }
         }
-      }
-    });
-  }
+      });
+    }
 
-  return { contentSegments, sources };
+    return { contentSegments, sources };
   }, [message, projectName, workspaceID]);
 
   const handleConnectionRecord = useCallback((record) => {
