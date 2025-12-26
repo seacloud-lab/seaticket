@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
+import React, { useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ELementTypes } from '@seafile/seafile-editor';
@@ -37,19 +37,40 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     ];
   }, []);
 
-  const { aiReply, sources, seaqaMarkdownContent, seaqaMarkdownFileName } = useMemo(() => {
-    if (Object.keys(message).length === 0) return { aiReply: '', sources: [], seaqaMarkdownContent: null, seaqaMarkdownFileName: null };
+  const { contentSegments, sources } = useMemo(() => {
+    if (Object.keys(message).length === 0) return { contentSegments: [], sources: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
 
+    const contentSegments = [];
     if (value && typeof value === 'string') {
-      const seaqaMarkdownMatch = value.match(/^<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>$/);
-      if (seaqaMarkdownMatch) {
-        return {
-          aiReply: null,
-          sources: [],
-          seaqaMarkdownContent: seaqaMarkdownMatch[2],
-          seaqaMarkdownFileName: seaqaMarkdownMatch[1] || null
-        };
+      const seaqaMarkdownRegex = /<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = seaqaMarkdownRegex.exec(value)) !== null) {
+        if (match.index > lastIndex) {
+          const textContent = value.slice(lastIndex, match.index).trim();
+          if (textContent) {
+            contentSegments.push({ type: 'text', content: textContent });
+          }
+        }
+        contentSegments.push({
+          type: 'seaqa-markdown',
+          fileName: match[1] || null,
+          content: match[2]
+        });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < value.length) {
+        const textContent = value.slice(lastIndex).trim();
+        if (textContent) {
+          contentSegments.push({ type: 'text', content: textContent });
+        }
+      }
+
+      if (contentSegments.length === 0 && value.trim()) {
+        contentSegments.push({ type: 'text', content: value });
       }
     }
 
@@ -84,7 +105,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       };
     });
 
-    if (value && sources.length > 0) {
+    if (sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
 
@@ -105,46 +126,58 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       // [Reference 1] => [Source title][1]
       const reference2Md = /\[(Reference)\s+(\d+)\]/g;
 
-      value = value
-        .replace(regex, (match, openBracket, refType, ordersPart, closeBracket) => {
-          const orders = ordersPart.split(',').map(orderPart => {
-            return orderPart.replace(referenceMark, '').trim();
-          }).filter(num => num !== '');
-          return orders.map(order => `[Reference ${order}]`).join('');
-        })
-        .replace(formatReference, (match, order, linkReference) => {
-          if (!linkReference) return `[Reference ${order}]`;
-          const linkReferenceIncludesParentheses = linkReference.endsWith(')');
-          const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
-          const urlObject = new URL(validLinkReference);
-          const url = urlObject.href;
-          const sourceIndex = sources.findIndex(source => source.url === url);
-          if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-          const referenceIndex = sources.length;
-          sources.push({
-            title: url,
-            url: url,
-            connection_id: `unknown_${referenceIndex}`,
-            _id: referenceIndex,
-            type: 'unknown',
-            content: validLinkReference + '',
-            icon: getConnectionIcon('unknown'),
-            connection_name: gettext('Unknown')
+    const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
+
+    const lastTextSegmentIndex = contentSegments.map((s, i) => s.type === 'text' ? i : -1).filter(i => i !== -1).pop();
+
+    contentSegments.forEach((segment, index) => {
+      if (segment.type === 'text') {
+        let processedContent = segment.content
+          .replace(regex, (_, openBracket, refType, ordersPart, closeBracket) => {
+            const orders = ordersPart.split(',').map(orderPart => {
+              return orderPart.replace(referenceMark, '').trim();
+            }).filter(num => num !== '');
+            return orders.map(order => `[Reference ${order}]`).join('');
+          })
+          .replace(formatReference, (_, order, linkReference) => {
+            if (!linkReference) return `[Reference ${order}]`;
+            const linkReferenceIncludesParentheses = linkReference.endsWith(')');
+            const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
+            const urlObject = new URL(validLinkReference);
+            const url = urlObject.href;
+            const sourceIndex = sources.findIndex(source => source.url === url);
+            if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+            const referenceIndex = sources.length;
+            sources.push({
+              title: url,
+              url: url,
+              connection_id: `unknown_${referenceIndex}`,
+              _id: referenceIndex,
+              type: 'unknown',
+              content: validLinkReference + '',
+              icon: getConnectionIcon('unknown'),
+              connection_name: gettext('Unknown')
+            });
+            return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+          })
+          .replaceAll(removeParentheses, (_, p1) => p1)
+          .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
+          .replace(reference2Md, (_, text, orderString) => {
+            const order = Number(orderString);
+            const source = sources[order - 1];
+            if (!source) return '';
+            return `[${source.title}][${order}]`;
           });
-          return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-        })
-        .replaceAll(removeParentheses, (match, p1) => p1)
-        .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
-        .replace(reference2Md, (match, text, orderString) => {
-          const order = Number(orderString);
-          const source = sources[order - 1];
-          if (!source) return '';
-          return `[${source.title}][${order}]`;
-        });
-      const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
-      value = value + `\n\n${sourcesString}` ;
-    }
-    return { aiReply: value, sources, seaqaMarkdownContent: null, seaqaMarkdownFileName: null };
+        if (index === lastTextSegmentIndex) {
+          segment.content = processedContent + `\n\n${sourcesString}`;
+        } else {
+          segment.content = processedContent;
+        }
+      }
+    });
+  }
+
+  return { contentSegments, sources };
   }, [message, projectName, workspaceID]);
 
   const handleConnectionRecord = useCallback((record) => {
@@ -214,12 +247,16 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
   useImperativeHandle(ref, () => ({
 
     getHTML: () => {
-      if (!aiReply) return '';
-      return contentRef.current.innerHTML;
+      return contentRef.current?.innerHTML || '';
     },
 
-    getAIReply: () => aiReply,
-  }), [message, aiReply, contentRef]);
+    getAIReply: () => {
+      return contentSegments
+        .filter(segment => segment.type === 'text')
+        .map(segment => segment.content)
+        .join('\n\n');
+    },
+  }), [message, contentSegments, contentRef]);
 
   return (
     <>
@@ -227,20 +264,27 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
-        {aiReply && (
-          <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
-            <CustomizeMarkdownViewer
-              value={aiReply}
-              showTOC={false}
-              options={options}
-              beforeRenderCallback={beforeAIReplyRenderCallback}
-              onDefinitionClick={openConnectionRecord}
-            />
-          </div>
-        )}
-        {seaqaMarkdownContent && (
-          <SeaqaMarkdownPreview content={seaqaMarkdownContent} fileName={seaqaMarkdownFileName} />
-        )}
+        {contentSegments.map((segment, index) => {
+          if (segment.type === 'text') {
+            return (
+              <div key={index} className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
+                <CustomizeMarkdownViewer
+                  value={segment.content}
+                  showTOC={false}
+                  options={options}
+                  beforeRenderCallback={beforeAIReplyRenderCallback}
+                  onDefinitionClick={openConnectionRecord}
+                />
+              </div>
+            );
+          }
+          if (segment.type === 'seaqa-markdown') {
+            return (
+              <SeaqaMarkdownPreview key={index} content={segment.content} fileName={segment.fileName} />
+            );
+          }
+          return null;
+        })}
       </div>
       {isShowConnectionRecord && (
         <RowDetailsDialog
