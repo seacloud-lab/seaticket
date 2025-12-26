@@ -337,6 +337,9 @@ CACHES = {
         'LOCATION': 'redis://127.0.0.1:6379',
     },
 }
+REDIS_HOST = 'redis'
+REDIS_PORT = 6379
+REDIS_PASSWORD = ''
 BROWSER_CACHE_MAX_AGE = 60 * 60 * 24 * 30
 
 # rest_framework
@@ -759,7 +762,7 @@ if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
 
     if DATABASES['default'].get('PORT'):
         try:
-            int(DATABASES['default']['PORT'])
+            isinstance(DATABASES['default']['PORT'], int) or int(DATABASES['default']['PORT'])
         except:
             raise ValueError(f"Invalid database port: {DATABASES['default']['PORT']}")
 
@@ -769,26 +772,34 @@ if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default
     cache_cfg = CACHES['default'].get('LOCATION').split('://', 1)[-1]
     if redis_cache:
         try:
-            redis_pwd, redis_host_info = cache_cfg.split('@', 1)
-            redis_host, redis_port = redis_host_info.split(':', 1)
+            REDIS_PASSWORD, redis_host_info = cache_cfg.split('@', 1)
+            REDIS_HOST, REDIS_PORT = redis_host_info.split(':', 1)
         except:
-            redis_pwd = ''
-            redis_host, redis_port = cache_cfg.split(':', 1)
-        redis_host = configs.get('REDIS_HOST', redis_host)
-        redis_port = configs.get('REDIS_PORT', redis_port)
+            REDIS_PASSWORD = ''
+            REDIS_HOST, REDIS_PORT = cache_cfg.split(':', 1)
+        REDIS_HOST = configs.get('REDIS_HOST', REDIS_HOST)
+        REDIS_PORT = configs.get('REDIS_PORT', REDIS_PORT)
         try:
-            int(redis_port.split('/', 1)[0])
+            isinstance(REDIS_PORT, int) or int(REDIS_PORT.split('/', 1)[0])
         except:
-            raise ValueError(f"Invalid radis port: {redis_port}")
-        redis_pwd = configs.get('REDIS_PASSWORD', redis_pwd)
+            raise ValueError(f"Invalid radis port: {REDIS_PORT}")
+        REDIS_PASSWORD = configs.get('REDIS_PASSWORD', REDIS_PASSWORD)
 
-        CACHES['default']['LOCATION'] = f'redis://{(redis_pwd + "@") if redis_pwd else ""}{redis_host}:{redis_port}'
+        CACHES['default']['LOCATION'] = f'redis://{(REDIS_PASSWORD + "@") if REDIS_PASSWORD else ""}{REDIS_HOST}:{REDIS_PORT}'
 
-        if redis_pwd:
+        if REDIS_PASSWORD:
             try:
                 del CACHES['default']['OPTIONS']['PASSWORD']
             except:
                 pass
+    else:
+        REDIS_HOST = configs.get('REDIS_HOST', REDIS_HOST)
+        REDIS_PORT = configs.get('REDIS_PORT', REDIS_PORT)
+        REDIS_PASSWORD = configs.get('REDIS_PASSWORD', REDIS_PASSWORD)
+else:
+    REDIS_HOST = configs.get('REDIS_HOST', REDIS_HOST)
+    REDIS_PORT = configs.get('REDIS_PORT', REDIS_PORT)
+    REDIS_PASSWORD = configs.get('REDIS_PASSWORD', REDIS_PASSWORD)
 
 # merge RESTFUL API RATES
 REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update(API_THROTTLE_RATES)
@@ -865,9 +876,5 @@ SEADB_INNER_SERVER_URL = configs.get('SEADB_INNER_SERVER_URL', SEADB_INNER_SERVE
 SEAQA_INDEXER_INNER_SERVER_URL = configs.get('SEAQA_INDEXER_INNER_SERVER_URL', SEAQA_INDEXER_INNER_SERVER_URL)
 SEAQA_AI_INNER_SERVER_URL = configs.get('SEAQA_AI_INNER_SERVER_URL', SEAQA_AI_INNER_SERVER_URL)
 SEAQA_EVENTS_INNER_SERVER_URL = configs.get('SEAQA_EVENTS_INNER_SERVER_URL', SEAQA_EVENTS_INNER_SERVER_URL)
-
-REDIS_HOST = configs.get('REDIS_HOST', 'redis')
-REDIS_PORT = configs.get('REDIS_PORT', 6379)
-REDIS_PASSWORD = configs.get('REDIS_PASSWORD', '')
 
 TEMP_EXPORT_VIEW_DIR = configs.get('TEMP_EXPORT_VIEW_DIR', TEMP_EXPORT_VIEW_DIR)

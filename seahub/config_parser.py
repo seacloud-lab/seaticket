@@ -1,5 +1,6 @@
 import os
 import yaml
+import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -52,4 +53,11 @@ class ConfigParser(object):
     
     @_check_type
     def get(self, key, default=None):
-        return os.getenv(key) if key in os.environ else self.yaml_configs.get(key, default)
+        if key in os.environ:
+            value = os.getenv(key)
+            try:
+                value = json.loads(value)
+            except:
+                pass
+            return value
+        return self.yaml_configs.get(key, default)
