@@ -6,7 +6,7 @@ import Project from '../../models/project';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import { ProjectSettingPopover } from '../../popover';
-import { PROJECT_BACKGROUND_COLOR_MAP, DEFAULT_COLOR } from '../constants';
+import { DEFAULT_COLOR } from '@/constants/project-icon';
 import userAPI from '@/api/user-api';
 
 const gettext = window.gettext;
@@ -24,7 +24,7 @@ class VirtualProject extends React.Component {
     this.state = {
       name: gettext('Untitled project'),
       icon: '',
-      bgColor: '',
+      bgColor: DEFAULT_COLOR,
       isChange: true,
       isCreatingProject: false,
       isDataLoaded: false,
@@ -137,14 +137,14 @@ class VirtualProject extends React.Component {
   render() {
     let { className = '', style = {}, currentWorkspace } = this.props;
     const { name, icon, bgColor } = this.state;
-    const backgroundColorMap = PROJECT_BACKGROUND_COLOR_MAP;
     return (
       <div
         className={`project-item d-flex ${className}`}
         ref={ref => this.ref = ref}
         style={{
           ...style,
-          backgroundColor: backgroundColorMap[bgColor] || backgroundColorMap[DEFAULT_COLOR],
+          backgroundColor: `${bgColor}0F`, // opacity 6%
+          border: `1.5px solid ${bgColor}80`, // opacity 50%
         }}
       >
         <div className="project-item-icon-more d-flex">

@@ -1,7 +1,7 @@
 import React from 'react';
 import NotificationPopover from './notification-popover';
 import { gettext, siteRoot } from '@constants/config';
-import { DEFAULT_COLOR } from '../../home/workspace/constants';
+import { DEFAULT_COLOR } from '@/constants/project-icon';
 import NoticeItem from './notice-item';
 import UserNotificationsDialog from '../../user-notifications';
 import { Utils } from '../../utils/utils';
