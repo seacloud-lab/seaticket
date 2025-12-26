@@ -326,7 +326,6 @@ class GithubIssueCommentsTable(BaseModel):
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     created_time = MappedColumn('created_time', PropertyTypes.DATETIME)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
-    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
     @classmethod
     def gen_table_name(cls, connection_id):
