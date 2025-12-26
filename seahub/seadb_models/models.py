@@ -261,7 +261,6 @@ class DiscourseRepliesTable(BaseModel):
     content = MappedColumn('content', PropertyTypes.TEXT, {'compressed': True})
     author = MappedColumn('author', PropertyTypes.TEXT)
     modified_time = MappedColumn('modified_time', PropertyTypes.DATETIME)
-    deleted = MappedColumn('deleted', PropertyTypes.BOOL)
 
     @classmethod
     def gen_table_name(cls, connection_id):
