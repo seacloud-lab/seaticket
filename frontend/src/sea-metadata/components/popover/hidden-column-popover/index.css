@@ -63,6 +63,11 @@
   cursor: pointer;
 }
 
+.sea-metadata-hide-columns-popover .hide-columns-list .hide-column-item.disabled:hover,
+.sea-metadata-hide-columns-popover .hide-columns-list .hide-column-item.disabled:hover * {
+  cursor: default;
+}
+
 .sea-metadata-hide-columns-popover .hide-column-item .hide-column-item-switch {
   flex: 1;
   overflow: hidden;
