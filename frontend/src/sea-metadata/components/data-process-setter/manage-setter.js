@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Icon } from '@/components';
 import { Switch } from '@/components';
-import { useTagsData, useMetadata } from '@/sea-metadata/hooks';
+import { useMetadata } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
 
 import './manage-setter.css';
@@ -11,7 +11,6 @@ import './manage-setter.css';
 const ManageSetter = ({ readOnly, modifyViewLock }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { toggleAllTags } = useTagsData();
   const { metadata } = useMetadata();
 
   const view = metadata?.view;
@@ -39,7 +38,6 @@ const ManageSetter = ({ readOnly, modifyViewLock }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        {toggleAllTags && (<DropdownItem onClick={toggleAllTags}>{gettext('Manage tags')}</DropdownItem>)}
         {view && (
           <DropdownItem id='lock-view-dropdown-item' className="sea-metadata-lock-view-item">
             <Switch
