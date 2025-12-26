@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
+import classNames from 'classnames';
 import { gettext } from '@/constants';
 import { CenteredLoading, ModalHeader, toaster, Icon } from '@/components';
 import { connectionsAPI } from '@/project/api/connections-api';
@@ -11,19 +12,72 @@ import { CONNECTION_TYPE } from '../../constants';
 
 import './index.css';
 
+const allStatus = ['sync', 'index', 'ai-status', 'vector-index'];
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
-  const [record, setRecord] = useState(null);
+  const [totalRecords, setTotalRecords] = useState('');
   const [isLoading, setLoading] = useState(true);
+  const [statusData, setStatusData] = useState([]);
 
   const getConnectionRecord = useCallback(() => {
     connectionsAPI.getConnection(projectUuid, connectionId).then(res => {
-      setRecord(new Connection(res.data.record));
+      const record = new Connection(res.data.record);
+      record.status.last_indexed_count = 1;
+      setTotalRecords(record.status.total_records);
+      setStatusData(allStatus.map(status => {
+        if (status === 'sync') {
+          return {
+            title: gettext('Last sync status'),
+            time: record.last_sync_time,
+            status: record.status.last_sync_status,
+            count: record.status.last_sync_count,
+            label: record.status.last_sync_count === 1 ? 'record synced' : 'records synced',
+            iconClassName: 'sync-status',
+            iconType: 'sync',
+          };
+        } else if (status === 'index') {
+          return {
+            title: gettext('Last index status'),
+            time: record.indexed_at,
+            status: record.status.last_index_status,
+            count: record.status.last_indexed_count,
+            label: record.status.last_indexed_count === 1 ? 'record indexed' : 'records indexed',
+            iconClassName: 'index-status',
+            iconType: 'index',
+          };
+        } else if (status === 'ai-status') {
+          return {
+            title: gettext('Last AI processing status'),
+            time: record.last_ai_processing_time,
+            status: record.ai_status.last_ai_processing_status,
+            count: record.ai_status.last_ai_processing_count,
+            label: record.ai_status.last_ai_processing_count === 1 ? 'record processed' : 'records processed',
+            iconClassName: 'ai-status',
+            iconType: 'ai-processing',
+          };
+        } else if (status === 'vector-index' && record.type === CONNECTION_TYPE.SITE) {
+          return {
+            title: gettext('Last vector indexed status'),
+            time: record.content_vector_indexed_at,
+            status: record.content_vector_status.last_content_vector_index_status,
+            count: record.content_vector_status.last_content_vector_indexed_count,
+            label: record.content_vector_status.last_content_vector_indexed_count === 1 ? 'record indexed' : 'records indexed',
+            iconClassName: 'index-status',
+            iconType: 'index',
+          };
+        }
+        return null;
+      }));
       setLoading(false);
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [record, isLoading]);
+  }, [isLoading]);
+
+  const renderLabel = useCallback((count, label) => {
+    if (count === 0) return gettext('No') + ' ' + gettext(label);
+    return count + ' ' + gettext(label);
+  }, []);
 
   useEffect(() => {
     getConnectionRecord();
@@ -38,86 +92,30 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
           :
           <div className="connection-status-container">
             <div className="status-header">
-              <div className="total-records">{gettext('Total records')}: {record.status.total_records}</div>
+              <div className="total-records">{gettext('Total records')}: {totalRecords}</div>
             </div>
             <div className="timeline">
-              {/* Last Sync Status */}
-              <div className="timeline-item">
-                <div className="timeline-icon sync-status">
-                  <Icon symbol="sync" />
-                </div>
-                <div className="timeline-content">
-                  <div className="timeline-title">
-                    {gettext('Last sync status')} {record.status.last_sync_status}
-                  </div>
-                  <div className="timeline-time">
-                    <DateFormatter value={record.last_sync_time} />
-                  </div>
-                  <div className="timeline-stats">
-                    <span className="stat-value mr-1">{record.status.last_sync_count}</span>
-                    <span className="stat-label">{gettext('records synced')}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Last Index Status */}
-              <div className="timeline-item">
-                <div className="timeline-icon index-status">
-                  <Icon symbol="index" />
-                </div>
-                <div className="timeline-content">
-                  <div className="timeline-title">
-                    {gettext('Last index status')} {record.status.last_index_status}
-                  </div>
-                  <div className="timeline-time">
-                    <DateFormatter value={record.indexed_at} />
-                  </div>
-                  <div className="timeline-stats">
-                    <span className="stat-value mr-1">{record.status.last_indexed_count}</span>
-                    <span className="stat-label">{gettext('records indexed')}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Last AI Processing Status */}
-              <div className="timeline-item">
-                <div className="timeline-icon ai-status">
-                  <Icon symbol="ai-processing" />
-                </div>
-                <div className="timeline-content">
-                  <div className="timeline-title">
-                    {gettext('Last AI processing status')} {record.ai_status.last_ai_processing_status}
-                  </div>
-                  <div className="timeline-time">
-                    <DateFormatter value={record.last_ai_processing_time} />
-                  </div>
-                  <div className="timeline-stats">
-                    <span className="stat-value mr-1">{record.ai_status.last_ai_processing_count}</span>
-                    <span className="stat-label">{gettext('records processed')}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Vector Indexed Status (for SITE type) */}
-              {record.type === CONNECTION_TYPE.SITE &&
-                <div className="timeline-item">
-                  <div className="timeline-icon index-status">
-                    <Icon symbol="index" />
-                  </div>
-                  <div className="timeline-content">
-                    <div className="timeline-title">
-                      {gettext('Last vector indexed status')} {record.content_vector_status.last_content_vector_index_status}
+              {statusData.map(data => {
+                if (!data) return null;
+                return (
+                  <div className="timeline-item">
+                    <div className={classNames('timeline-icon', data?.iconClassName)}>
+                      <Icon symbol={data?.iconType} />
                     </div>
-                    <div className="timeline-time">
-                      <DateFormatter value={record.content_vector_indexed_at} />
-                    </div>
-                    <div className="timeline-stats">
-                      <span className="stat-value">{record.content_vector_status.last_content_vector_indexed_count}</span>
-                      <span className="stat-label">{gettext('records indexed')}</span>
+                    <div className="timeline-content">
+                      <div className="timeline-title">
+                        {data?.title} {data?.status}
+                      </div>
+                      <div className="timeline-time">
+                        <DateFormatter value={data?.time} />
+                      </div>
+                      <div className="timeline-stats">
+                        {renderLabel(data?.count, data?.label)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              }
+                );
+              })}
             </div>
           </div>
         }

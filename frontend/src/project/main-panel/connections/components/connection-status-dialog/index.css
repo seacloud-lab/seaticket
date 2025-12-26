@@ -1,5 +1,7 @@
 .connection-status-dialog {
-  max-width: 600px;
+  max-height: calc(100% - 56px);
+  height: auto !important;
+  object-fit: contain;
 }
 
 .connection-status-dialog .modal-body {
