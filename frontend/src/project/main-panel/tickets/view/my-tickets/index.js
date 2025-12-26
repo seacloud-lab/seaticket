@@ -69,10 +69,6 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
           if (typeColum) {
             context.setSetting('typeColumnKey', typeColum.key);
           }
-          const stateColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.STATE);
-          if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
-          }
           const tagsColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TAGS);
           if (tagsColumn) {
             context.setSetting('tagsColumnKey', tagsColumn.key);
@@ -88,7 +84,11 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
           return res;
         });
       }
-      return ticketsAPI.listMyTickets(projectUuid, ...params).then(res => {
+      const sorts = context.localStorage.getItem('sorts') || [];
+      const filters = context.localStorage.getItem('filters') || [];
+      const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
+      const basic_filters = context.localStorage.getItem('basic_filters') || [];
+      return ticketsAPI.listMyTickets(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts }).then(res => {
         const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
         let columns = res?.data?.columns || [];
         const othersConfig = {
@@ -107,10 +107,6 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
         const typeColum = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE);
         if (typeColum) {
           context.setSetting('typeColumnKey', typeColum.key);
-        }
-        const stateColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.STATE);
-        if (stateColumn) {
-          context.setSetting('stateColumnKey', stateColumn.key);
         }
         const tagsColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TAGS);
         if (tagsColumn) {
@@ -243,7 +239,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
       createRowsTools={createRowsTools}
       expandRow={expandRow}
       toggleView={toggleView}
-      settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}
+      settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}
       viewTools={viewTools}
       tagsData={tagsData}
