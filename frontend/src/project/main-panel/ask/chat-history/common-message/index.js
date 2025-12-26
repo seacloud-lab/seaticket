@@ -128,9 +128,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
 
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
 
-      const lastTextSegmentIndex = contentSegments.map((s, i) => s.type === 'text' ? i : -1).filter(i => i !== -1).pop();
-
-      contentSegments.forEach((segment, index) => {
+      contentSegments.forEach((segment) => {
         if (segment.type === 'text') {
           let processedContent = segment.content
             .replace(regex, (_, openBracket, refType, ordersPart, closeBracket) => {
@@ -168,13 +166,18 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
               if (!source) return '';
               return `[${source.title}][${order}]`;
             });
-          if (index === lastTextSegmentIndex) {
-            segment.content = processedContent + `\n\n${sourcesString}`;
-          } else {
-            segment.content = processedContent;
-          }
+          segment.content = processedContent;
         }
       });
+
+      const lastSegment = contentSegments[contentSegments.length - 1];
+      if (lastSegment) {
+        if (lastSegment.type === 'text') {
+          lastSegment.content = lastSegment.content + `\n\n${sourcesString}`;
+        } else {
+          contentSegments.push({ type: 'text', content: sourcesString });
+        }
+      }
     }
 
     return { contentSegments, sources };
