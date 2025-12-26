@@ -7,7 +7,7 @@ import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPE } from '../../constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { getOriginalPageUrl } from '../../utils';
+import { getOriginalPageUrl, initConnectionRecordDetail } from '../../utils';
 import { useConnections } from '../../hooks';
 import Details from './details';
 
@@ -54,56 +54,11 @@ const RowDetailsDialog = ({
     return { _pk: row._id };
   }, [connection, columns]);
 
-  const getFormatDetailDataByType = useCallback((res) => {
-    // Format data according to different connection types,site and seafile only have one detail content
-    const mainTitle = res.data.title;
-    if (connection.type === CONNECTION_TYPE.SITE || connection.type === CONNECTION_TYPE.SEAFILE) {
-      return {
-        title: mainTitle,
-        time: res.data.modified_time,
-        details: res.data.content
-      };
-    } else if (connection.type === CONNECTION_TYPE.GITHUB_ISSUE) {
-      const mainPost = {
-        author: res.data.author,
-        time: res.data.created_time,
-        body: res.data.content || '',
-      };
-      const comments = res.data.comments?.map(detail => ({
-        ...detail,
-        time: detail.created_time,
-        body: detail.content || '',
-      }));
-      return {
-        title: mainTitle,
-        details: [mainPost, ...comments]
-      };
-    } else if (connection.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      return {
-        title: mainTitle,
-        details: res.data.replies?.map(detail => ({
-          ...detail,
-          time: detail.modified_time,
-          body: detail.content || '',
-        })),
-      };
-    } else if (connection.type === CONNECTION_TYPE.EMAIL) {
-      return {
-        title: mainTitle,
-        details: res.data.emails?.map(detail => ({
-          ...detail,
-          time: detail.modified_time,
-          body: detail.content || '',
-        })),
-      };
-    }
-  }, [connection]);
-
   const getRowDetails = useCallback(() => {
     setStatus('loading');
     const params = getFormatParamsByType(row);
     connectionsAPI.getConnectionRowDetail(projectUuid, connection.id, params).then((res) => {
-      const detailData = getFormatDetailDataByType(res);
+      const detailData = initConnectionRecordDetail(res.data);
       setRowDetails(detailData);
       setStatus('loaded');
     }).catch((error) => {

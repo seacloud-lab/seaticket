@@ -1,8 +1,8 @@
-import { isValidUrl } from '@/utils/validate';
 import React, { useEffect, useRef } from 'react';
+import { isValidUrl } from '@/utils/validate';
 
 const HTMLContent = ({
-  assetURLPrefix,
+  assetURLPrefix = '',
   className,
   value,
 }) => {

@@ -1,0 +1,53 @@
+.sea-connection-record-details {
+  flex: 1;
+  height: fit-content;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.sea-connection-record-details .sea-connection-record-details-header {
+  overflow: hidden;
+  width: 100%;
+  font-size: 24px;
+  line-height: 1.5;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.sea-connection-record-details .sea-connection-record-details-body {
+  display: flex;
+  width: 100%;
+  padding: 16px 0 50px 0;
+  flex-shrink: 0;
+  height: fit-content;
+}
+
+.sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-container {
+  width: 70%;
+}
+
+.sea-connection-record-details .sea-connection-record-details-body .sea-connection-record-details-others {
+  width: 30%;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* small */
+.sea-connection-record-details.small .sea-connection-record-details-body {
+  flex-direction: column;
+}
+
+.sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-container {
+  width: 100%;
+}
+
+.sea-connection-record-details.small .sea-connection-record-details-body .sea-connection-record-details-others {
+  width: 100%;
+}
