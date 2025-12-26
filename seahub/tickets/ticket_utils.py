@@ -345,4 +345,3 @@ def send_ticket_update_msg(project_uuid):
             logger.info('No one subscribed to ticket_update channel, event (%s) has not been send' % msg_content)
     except Exception as e:
         logger.error('send ticket update msg failed, error: %s', e)
-        
