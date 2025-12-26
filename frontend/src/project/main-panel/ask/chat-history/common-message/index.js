@@ -166,17 +166,19 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
               if (!source) return '';
               return `[${source.title}][${order}]`;
             });
-          segment.content = processedContent;
+          // Every text segment needs sourcesString for LinkReference to work
+          segment.content = processedContent + `\n\n${sourcesString}`;
         }
       });
 
+      // If the last segment is seaqa-markdown, add a text segment for sourcesString
       const lastSegment = contentSegments[contentSegments.length - 1];
-      if (lastSegment) {
-        if (lastSegment.type === 'text') {
-          lastSegment.content = lastSegment.content + `\n\n${sourcesString}`;
-        } else {
-          contentSegments.push({ type: 'text', content: sourcesString });
-        }
+      if (lastSegment && lastSegment.type !== 'text') {
+        contentSegments.push({ type: 'text', content: sourcesString });
+      }
+      const lastTextSegmentIndex = contentSegments.findLastIndex(s => s.type === 'text');
+      if (lastTextSegmentIndex > -1) {
+        contentSegments[lastTextSegmentIndex].isLastTextSegment = true;
       }
     }
 
@@ -226,6 +228,15 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     };
   }, [sources, settings, openConnectionRecord]);
 
+  const optionsWithoutDefinition = useMemo(() => {
+    return {
+      ...options,
+      [ELementTypes.DEFINITION]: {
+        render: (<></>)
+      }
+    };
+  }, [options]);
+
   const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
       setAIMessageType('text');
@@ -274,7 +285,7 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
                 <CustomizeMarkdownViewer
                   value={segment.content}
                   showTOC={false}
-                  options={options}
+                  options={segment.isLastTextSegment ? options : optionsWithoutDefinition}
                   beforeRenderCallback={beforeAIReplyRenderCallback}
                   onDefinitionClick={openConnectionRecord}
                 />
