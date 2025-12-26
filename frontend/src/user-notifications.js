@@ -7,7 +7,7 @@ import { gettext, siteRoot } from '@constants';
 import { notificationAPI } from './project/api';
 import Loading from './components/loading';
 import NoticeItem from './components/common/notice-item';
-import { DEFAULT_COLOR } from './home/workspace/constants';
+import { DEFAULT_COLOR } from '@/constants/project-icon';
 
 import './css/toolbar.css';
 import './css/user-notifications.css';

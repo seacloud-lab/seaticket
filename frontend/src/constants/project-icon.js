@@ -30,19 +30,21 @@ export const PROJECT_ICON_LIST = [
   'icon-club-members',
 ];
 
+export const DEFAULT_COLOR = '#FF8000';
+
 export const PROJECT_ICON_COLORS = [
   '#FF8000',
-  '#FFB600',
-  '#E91E63',
-  '#EB00B1',
-  '#7626FD',
-  '#972CB0',
-  '#1DDD1D',
-  '#4CAF50',
-  '#02C0FF',
-  '#00C9C7',
-  '#1688FC',
-  '#656463'
+  '#FDA900',
+  '#F5475C',
+  '#EC00B1',
+  '#7E35F8',
+  '#B830D7',
+  '#44D243',
+  '#28C38D',
+  '#00B3EE',
+  '#00B7B5',
+  '#1588FC',
+  '#574F49',
 ];
 
 export const DEFAULT_MARKER_STYLE = { type: 'check', color: '#1DDD1D' };

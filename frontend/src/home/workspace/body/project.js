@@ -4,7 +4,7 @@ import { IconButton, ProjectIcon, toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import { ProjectSettingPopover } from '../../popover';
-import { PROJECT_BACKGROUND_COLOR_MAP, PROJECT_HOVER_COLOR_MAP, DEFAULT_COLOR } from '../constants';
+import { DEFAULT_COLOR } from '@/constants/project-icon';
 import ProjectItemPopover from './project-item-popover';
 
 const gettext = window.gettext;
@@ -161,7 +161,16 @@ class Project extends React.Component {
     let { workspace_id, id } = project;
     let projectHref = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project.name) + '/';
     const isDesktop = Utils.isDesktop();
-    const backgroundColorMap = (active || isMoreOperationPopoverShow) ? PROJECT_HOVER_COLOR_MAP : PROJECT_BACKGROUND_COLOR_MAP;
+
+    const projectColor = project.color || DEFAULT_COLOR;
+    const projectStyle = { ...style };
+    if (active || isMoreOperationPopoverShow) {
+      projectStyle.background = `${projectColor}0F`; // opacity 6%
+      projectStyle.border = `1.5px solid ${projectColor}80`; // opacity 50%
+    } else {
+      projectStyle.background = `linear-gradient(to bottom, ${projectColor}08, #FFFFFF08)`; // opacity 3% gradient
+      projectStyle.border = `1.5px solid ${projectColor}33`; // opacity 20%
+    }
 
     if (!isDesktop) {
       return (
@@ -180,10 +189,7 @@ class Project extends React.Component {
         id={`project-item-${id}`}
         className={`project-item d-flex ${className}`}
         onClick={(e) => this.onItemClick(e, projectHref)}
-        style={{
-          ...style,
-          backgroundColor: backgroundColorMap[project.color || DEFAULT_COLOR],
-        }}
+        style={projectStyle}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
       >
@@ -211,7 +217,6 @@ class Project extends React.Component {
         <div className="project-item-name" title={project.name}>
           {project.name}
         </div>
-        <div className="project-item-group"></div>
         {this.state.isShowSettings && (
           <ProjectSettingPopover
             target={`project-item-${id}`}
