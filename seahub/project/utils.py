@@ -44,6 +44,10 @@ from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CAC
 logger = logging.getLogger(__name__)
 
 
+class TaskConflictError(Exception):
+    pass
+
+
 def check_project_limit(workspace, request):
     from seahub.settings import PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
     org_id = workspace.org_id
@@ -500,6 +504,8 @@ def submit_embedding_analysis_task(params):
     headers = {"Authorization": f'Token {token}'}
     url = urljoin(SEAQA_EVENTS_INNER_SERVER_URL, '/add-embedding-analysis-task')
     resp = requests.post(url, json=params, headers=headers)
+    if resp.status_code == 409:
+        raise TaskConflictError(resp.text)
     if resp.status_code == 500:
         raise Exception(f'submit embedding analysis task error status: {resp.status_code} body: {resp.text}')
 

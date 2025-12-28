@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import UserRateThrottle, EmbeddingAnalysisThrottle
+from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -19,7 +19,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, \
     convert_record_to_ticket, check_ai_limit, \
     submit_embedding_analysis_task, get_embedding_analysis_task_status, \
-    find_related_records, rank_related_issues
+    find_related_records, rank_related_issues, TaskConflictError
 from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -192,7 +192,7 @@ class ConvertRecordToTicket(APIView):
 class EmbeddingAnalysisView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
-    throttle_classes = (EmbeddingAnalysisThrottle, )
+    throttle_classes = (UserRateThrottle, )
 
     def post(self, request):
         if not is_org_context(request):
@@ -234,10 +234,11 @@ class EmbeddingAnalysisView(APIView):
 
         try:
             task_id = submit_embedding_analysis_task(params)
+        except TaskConflictError as e:
+            return api_error(status.HTTP_409_CONFLICT, str(e))
         except Exception as e:
             logger.error(f'Failed to submit embedding analysis task: {e}')
-            error_msg = 'Failed to submit analysis task.'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to submit analysis task.')
 
         return Response({
             'task_id': task_id,
