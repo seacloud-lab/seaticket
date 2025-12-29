@@ -168,13 +168,6 @@ def init_github_issues_seadb_table(seadb_api, project_uuid, connection_id):
         ],
     )
 
-    seadb_api.create_column_index(
-        project_uuid,
-        table_id,
-        [
-            github_issues_table.deleted.name
-        ],
-    )
 
 def init_discourse_forum_seadb_table(seadb_api, project_uuid, connection_id):
     """Initialize SeaDB tables for Discourse Forum connection"""
