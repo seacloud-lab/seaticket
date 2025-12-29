@@ -131,7 +131,16 @@ class KnowledgeBaseAPI {
     let form = new FormData();
     Object.keys(update).forEach(key => {
       let value = update[key];
-      if (typeof value === 'object') {
+      if (key === 'content') {
+        const obj = (value && typeof value === 'object') ? value : {
+          text: value || '',
+          preview: value || '',
+          images: [],
+          links: [],
+          checklist: { total: 0, completed: 0 }
+        };
+        value = JSON.stringify(obj);
+      } else if (typeof value === 'object') {
         value = JSON.stringify(value);
       }
       form.append(key, value);
@@ -142,8 +151,16 @@ class KnowledgeBaseAPI {
   updateRecord(projectUuid, recordId, update = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/' + recordId + '/';
     let payload = { ...update };
-    if (payload.content && typeof payload.content === 'object') {
-      payload.content = JSON.stringify(payload.content);
+    if ('content' in payload) {
+      const value = payload.content;
+      const obj = (value && typeof value === 'object') ? value : {
+        text: value || '',
+        preview: value || '',
+        images: [],
+        links: [],
+        checklist: { total: 0, completed: 0 }
+      };
+      payload.content = JSON.stringify(obj);
     }
     return this.req.put(url, payload);
   }

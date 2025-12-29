@@ -15,13 +15,31 @@ from seahub.utils import is_org_context
 from seahub.project.models import Projects
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.utils import check_project_permission, get_current_table_metadata
+from seahub.project.utils import check_project_permission, get_current_table_metadata, upload_files_to_s3, \
+    replace_file_url_in_content
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
     send_knowledge_base_update_msg, convert_kb_record_tags_name_to_id
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_content(raw_content):
+    content_obj = json.loads(raw_content) if isinstance(raw_content, str) else raw_content
+    if not isinstance(content_obj, dict):
+        raise ValueError('content invalid.')
+    content_text = content_obj.get('text')
+    if not content_text or not isinstance(content_text, str) or not content_text.strip():
+        raise ValueError('content invalid.')
+    images = content_obj.get('images')
+    links = content_obj.get('links')
+    file_urls = []
+    if images and isinstance(images, list):
+        file_urls += images
+    if links and isinstance(links, list):
+        file_urls += links
+    return content_text, file_urls
 
 
 class KnowledgeBasesAPIView(APIView):
@@ -44,19 +62,12 @@ class KnowledgeBasesAPIView(APIView):
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        content_text = None
-        if isinstance(raw_content, dict):
-            content_text = raw_content.get('text')
-        else:
-            try:
-                ans_obj = json.loads(raw_content)
-                content_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_content
-            except Exception:
-                content_text = raw_content
-        if not content_text or not isinstance(content_text, str) or not content_text.strip():
+        try:
+            content_text, file_urls = _parse_content(raw_content)
+        except ValueError:
             error_msg = 'content invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        
+
         tag_names = request.data.get('tags', "[]")
         tag_names = json.loads(tag_names)
 
@@ -74,6 +85,14 @@ class KnowledgeBasesAPIView(APIView):
 
         seadb_api = SeaDBAPI(request.user.username)
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         try:
             row = {
                 KnowledgeBaseTable.title.name: title,
@@ -249,6 +268,7 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         row = {}
+        username = request.user.username
 
         if 'title' in request.data:
             title = request.data.get('title')
@@ -257,24 +277,19 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.title.name] = title
 
+        file_urls = None
+        content_text = None
         if 'content' in request.data:
             raw_content = request.data.get('content')
             if not raw_content:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            content_text = None 
-            if isinstance(raw_content, dict):
-                content_text = raw_content.get('text')
-            else:
-                try:
-                    ans_obj = json.loads(raw_content)
-                    content_text = ans_obj.get('text') if isinstance(ans_obj, dict) else raw_content
-                except Exception:
-                    content_text = raw_content
-            if not content_text or not isinstance(content_text, str) or not content_text.strip():
+
+            try:
+                content_text, file_urls = _parse_content(raw_content)
+            except ValueError:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.content.name] = raw_content
 
         if 'tags' in request.data:
             tags = request.data.get('tags')
@@ -283,7 +298,6 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.tags.name] = tags
 
-        username = request.user.username
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = f'Project {project_uuid} not found.'
@@ -299,14 +313,25 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        row[KnowledgeBaseTable.last_modifier.name] = username
-        row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
-
         seadb_api = SeaDBAPI(request.user.username)
         record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        row[KnowledgeBaseTable.content.name] = content_text
+
+        row[KnowledgeBaseTable.last_modifier.name] = username
+        row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+
         update_rows = [
             {
                 'pk': record.get('_pk'),
