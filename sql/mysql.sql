@@ -421,6 +421,7 @@ CREATE TABLE `projects`  (
   `settings` longtext DEFAULT NULL,
   `knowledge_base_indexed_at` datetime(6) NULL,
   `knowledge_base_ai_indexed_at` datetime(6) NULL,
+  `ticket_indexed_at` datetime(6) NULL,
   `ticket_ai_indexed_at` datetime(6) NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid`(`uuid`),
