@@ -30,7 +30,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             time: record.last_sync_time,
             status: record.status.last_sync_status,
             count: record.status.last_sync_count,
-            label: record.status.last_sync_count === 1 ? 'record synced' : 'records synced',
+            label: record.status.last_sync_count === 1 ? gettext('record synced') : gettext('records synced'),
             iconClassName: 'sync-status',
             iconType: 'sync',
           };
@@ -40,7 +40,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             time: record.indexed_at,
             status: record.status.last_index_status,
             count: record.status.last_indexed_count,
-            label: record.status.last_indexed_count === 1 ? 'record indexed' : 'records indexed',
+            label: record.status.last_indexed_count === 1 ? gettext('record indexed') : gettext('records indexed'),
             iconClassName: 'index-status',
             iconType: 'index',
           };
@@ -50,7 +50,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             time: record.last_ai_processing_time,
             status: record.ai_status.last_ai_processing_status,
             count: record.ai_status.last_ai_processing_count,
-            label: record.ai_status.last_ai_processing_count === 1 ? 'record processed' : 'records processed',
+            label: record.ai_status.last_ai_processing_count === 1 ? gettext('record processed') : gettext('records processed'),
             iconClassName: 'ai-status',
             iconType: 'ai-processing',
           };
@@ -60,7 +60,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
             time: record.content_vector_indexed_at,
             status: record.content_vector_status.last_content_vector_index_status,
             count: record.content_vector_status.last_content_vector_indexed_count,
-            label: record.content_vector_status.last_content_vector_indexed_count === 1 ? 'record indexed' : 'records indexed',
+            label: record.content_vector_status.last_content_vector_indexed_count === 1 ? gettext('record indexed') : gettext('records indexed'),
             iconClassName: 'index-status',
             iconType: 'index',
           };
@@ -75,8 +75,8 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle }) => {
   }, [isLoading]);
 
   const renderLabel = useCallback((count, label) => {
-    if (count === 0) return gettext('No') + ' ' + gettext(label);
-    return count + ' ' + gettext(label);
+    if (count === 0) return gettext('No') + ' ' + label;
+    return count + ' ' + label;
   }, []);
 
   useEffect(() => {
