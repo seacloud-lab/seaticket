@@ -256,11 +256,8 @@ class UserNotificationsDialog extends React.Component {
             onKeyDown={Utils.onKeyDown}
           >
             <div className="notification-project-item">
-              <div
-                className="project-item-icon d-flex align-items-center justify-content-center"
-                style={{ backgroundColor: item.project_color || DEFAULT_COLOR }}
-              >
-                <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${item.project_icon || 'icon-worksheet'}`}></i>
+              <div className="project-item-icon">
+                <i className={`project-icon project-icon-style ${item.project_icon || 'icon-worksheet'}`} style={{ color: item.project_color || DEFAULT_COLOR }}></i>
               </div>
               <div className="notification-project-name" title={item.project_name}>{item.project_name}</div>
               {item.unseen_count > 0 && (
