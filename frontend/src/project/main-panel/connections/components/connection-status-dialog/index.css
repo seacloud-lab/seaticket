@@ -1,0 +1,102 @@
+.connection-status-dialog {
+  max-height: calc(100% - 56px);
+  height: auto !important;
+  object-fit: contain;
+}
+
+.connection-status-dialog .modal-body {
+  min-height: 383px;
+  display: flex;
+  align-items: center;
+}
+
+.connection-status-container .status-header {
+  margin-bottom: 24px;
+}
+
+.connection-status-container .status-header .total-records {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.connection-status-container .timeline {
+  position: relative;
+}
+
+.connection-status-container .timeline .timeline-item:not(:last-child)::before  {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  bottom: -32px;
+  width: 1px;
+  background-color:  #eaeaea;
+}
+
+.connection-status-container .timeline .timeline-item {
+  display: flex;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: white;
+  z-index: 1;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-icon .sea-qa-icon-svg {
+  width: 24px;
+  height: 24px;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-icon.sync-status {
+  background-color: #ff8000;
+  color: #fff;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-icon.index-status {
+  background-color: #1688fc;
+  color: #fff;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-icon.ai-status {
+  background-color: #656463;
+  color: #fff;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-content {
+  margin-left: 16px;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-content .timeline-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-content .timeline-time {
+  font-size: 12px;
+  color: #666666;
+  margin-bottom: 4px;
+  font-weight: 400;
+}
+
+.connection-status-container .timeline .timeline-item .timeline-content .timeline-stats {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #4b2703;
+  font-weight: 400;
+  height: 24px;
+  background-color: #ff800033;
+  padding: 0 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
