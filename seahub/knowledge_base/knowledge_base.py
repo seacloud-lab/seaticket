@@ -268,6 +268,7 @@ class KnowledgeBaseAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         row = {}
+        username = request.user.username
 
         if 'title' in request.data:
             title = request.data.get('title')
@@ -281,29 +282,6 @@ class KnowledgeBaseAPIView(APIView):
             if not raw_content:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        else:
-            raw_content = ''
-
-        if 'tags' in request.data:
-            tags = request.data.get('tags')
-            if not isinstance(tags, list):
-                error_msg = 'tags invalid.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            row[KnowledgeBaseTable.tags.name] = tags
-
-        username = request.user.username
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        workspace = project.workspace
-
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        if raw_content:
             try:
                 content_text, file_urls = _parse_content(raw_content)
             except ValueError:
@@ -318,6 +296,24 @@ class KnowledgeBaseAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             row[KnowledgeBaseTable.content.name] = content_text
+
+        if 'tags' in request.data:
+            tags = request.data.get('tags')
+            if not isinstance(tags, list):
+                error_msg = 'tags invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[KnowledgeBaseTable.tags.name] = tags
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        workspace = project.workspace
+
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not row:
             error_msg = 'No valid data to update.'
