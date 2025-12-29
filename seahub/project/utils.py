@@ -561,6 +561,8 @@ def get_all_available_projects(request):
         project_info = {
             'workspace_id': project.workspace_id,
             'name': project.name,
+            'icon': project.icon,
+            'color': project.color,
         }
         projects.append(project_info)
     cache.set(cache_key, projects, USER_PROJECT_CACHE_CACHE_TIMEOUT)
