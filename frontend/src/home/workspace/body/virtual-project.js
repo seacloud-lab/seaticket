@@ -148,11 +148,8 @@ class VirtualProject extends React.Component {
         }}
       >
         <div className="project-item-icon-more d-flex">
-          <div
-            className="project-item-icon d-flex align-items-center justify-content-center"
-            style={{ backgroundColor: bgColor || DEFAULT_COLOR }}
-          >
-            <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${icon || 'icon-worksheet'}`}></i>
+          <div className="project-item-icon">
+            <i className={`project-icon project-icon-style ${icon || 'icon-worksheet'}`} style={{ color: bgColor || DEFAULT_COLOR }}></i>
           </div>
         </div>
         <div className="project-item-name" title={name}>

@@ -165,13 +165,6 @@
   justify-content: space-between;
 }
 
-.project-item .project-item-icon {
-  height: 32px;
-  width: 32px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
 .project-item .project-item-icon-more-toggle-btn .sea-qa-icon-svg {
   color: #999;
 }
@@ -201,10 +194,6 @@
 .project-item .project-item-more {
   height: 24px;
   width: 24px;
-}
-
-.project-item .project-item-icon-font {
-  font-size: 20px;
 }
 
 .project-access-permissions .sea-qa-icon-svg {

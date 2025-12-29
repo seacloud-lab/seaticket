@@ -7,8 +7,8 @@ import './index.css';
 
 const ProjectIcon = ({ className, bgColor, icon, size = '' }) => {
   return (
-    <div className={classnames('project-icon', className, size)}style={{ backgroundColor: bgColor || PROJECT_ICON_COLORS[0] }}>
-      <i className={`project-icon icon-color-white ${icon || PROJECT_ICON_LIST[0]} project-icon-style`}></i>
+    <div className={classnames('project-item-icon', className, size)}>
+      <i className={`project-icon ${icon || PROJECT_ICON_LIST[0]} project-icon-style`} style={{ color: bgColor || PROJECT_ICON_COLORS[0] }}></i>
     </div>
   );
 };

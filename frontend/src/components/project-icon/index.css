@@ -1,6 +1,7 @@
 .project-icon {
   height: 32px;
   width: 32px;
+  font-size: 32px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,7 +9,7 @@
 }
 
 .project-icon .project-icon-style {
-  font-size: 20px;
+  font-size: 32px;
 }
 
 /* large */

@@ -194,11 +194,8 @@ class Project extends React.Component {
         onMouseLeave={this.onMouseLeave}
       >
         <div className="project-item-icon-more d-flex">
-          <div
-            className="project-item-icon d-flex align-items-center justify-content-center"
-            style={{ backgroundColor: project.color || DEFAULT_COLOR }}
-          >
-            <i className={`project-item-icon-font icon-color-white project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}></i>
+          <div className="project-item-icon">
+            <i className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} style={{ color: project.color || DEFAULT_COLOR }}></i>
           </div>
           {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) && (
             <IconButton className="no-hover-bg project-item-icon-more-toggle-btn" icon="more" onClick={this.toggleMoreOperation} title={gettext('More operations')} aria-label={gettext('More operations')} />
