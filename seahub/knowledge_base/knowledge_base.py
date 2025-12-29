@@ -277,25 +277,19 @@ class KnowledgeBaseAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             row[KnowledgeBaseTable.title.name] = title
 
+        file_urls = None
+        content_text = None
         if 'content' in request.data:
             raw_content = request.data.get('content')
             if not raw_content:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
             try:
                 content_text, file_urls = _parse_content(raw_content)
             except ValueError:
                 error_msg = 'content invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if file_urls:
-                try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
-                    content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
-                except Exception as e:
-                    logger.error(e)
-                    error_msg = 'Upload files failed.'
-                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-            row[KnowledgeBaseTable.content.name] = content_text
 
         if 'tags' in request.data:
             tags = request.data.get('tags')
@@ -319,14 +313,25 @@ class KnowledgeBaseAPIView(APIView):
             error_msg = 'No valid data to update.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        row[KnowledgeBaseTable.last_modifier.name] = username
-        row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
-
         seadb_api = SeaDBAPI(request.user.username)
         record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
         if not record:
             error_msg = 'Knowledge base record not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if file_urls:
+            try:
+                new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username)
+                content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
+            except Exception as e:
+                logger.error(e)
+                error_msg = 'Upload files failed.'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        row[KnowledgeBaseTable.content.name] = content_text
+
+        row[KnowledgeBaseTable.last_modifier.name] = username
+        row[KnowledgeBaseTable.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+
         update_rows = [
             {
                 'pk': record.get('_pk'),
