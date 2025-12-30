@@ -23,7 +23,6 @@ const AllTags = ({ projectUuid, permission }) => {
       editable: false,
       is_name_column: true,
       frozen: true,
-      click: (row) => togglePageSlugId(pageSlugId, row._id)
     },
     {
       type: CellType.TEXT,
