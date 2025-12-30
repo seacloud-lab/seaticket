@@ -486,7 +486,6 @@ class KnowledgeBasesTrashAPIView(APIView):
                     'pk': int(r_id),
                     'row': {
                         KnowledgeBaseTable.deleted.name: False,
-                        KnowledgeBaseTable.last_modifier.name: username,
                         KnowledgeBaseTable.modified_time.name: now_datetime,
                     }
                 })
