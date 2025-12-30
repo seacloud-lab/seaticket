@@ -237,6 +237,11 @@ class ConnectionsAPI {
     return this.req.put(url, { records_data: rowsData });
   }
 
+  deleteConnectionRecords(projectUuid, connectionID, recordIDs) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/';
+    return this.req.delete(url, { data: { record_ids: recordIDs } });
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

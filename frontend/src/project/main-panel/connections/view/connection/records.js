@@ -42,6 +42,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isTicketLoading, setTicketLoading] = useState(false);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
+  const [isDeletingRecords, setIsDeletingRecords] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
 
@@ -235,6 +236,32 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     setIsShowRelatedIssuesDialog(true);
   }, [projectUuid, connectionID]);
 
+  const handleDeleteRecords = useCallback((rows, deleteLocalRows) => {
+    if (!rows || rows.length === 0) return;
+
+    const recordCount = rows.length;
+    setIsDeletingRecords(true);
+    const recordIDs = rows.map(row => row._id);
+
+    connectionsAPI.deleteConnectionRecords(projectUuid, connectionID, recordIDs)
+      .then(() => {
+        const successMessage = recordCount === 1
+          ? gettext('Email deleted successfully')
+          : gettext('Emails deleted successfully');
+        toaster.success(successMessage);
+        deleteLocalRows && deleteLocalRows(recordIDs);
+      })
+      .catch(() => {
+        const dangerMessage = recordCount === 1
+          ? gettext('Failed to delete email')
+          : gettext('Failed to delete emails');
+        toaster.danger(dangerMessage);
+      })
+      .finally(() => {
+        setIsDeletingRecords(false);
+      });
+  }, [projectUuid, connectionID]);
+
   const generateFindRelatedIssuesOption = useCallback(({ row }) => {
     const enableFindRelatedIssues = SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES.includes(connection?.type);
     if (!enableFindRelatedIssues) return null;
@@ -305,7 +332,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
   }, [connection]);
 
-  const createRowsTools = useCallback(({ rows, columns }) => {
+  const createRowsTools = useCallback(({ rows, columns, deleteLocalRows }) => {
     let children = [];
     if (rows.length === 1) {
       const row = rows[0];
@@ -326,15 +353,27 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     if (AIOption) {
       children.push(AIOption);
     }
-    const tools = [
-      {
+
+    const tools = [];
+
+    if (connection.type === CONNECTION_TYPE.EMAIL && rows.length > 0) {
+      tools.push({
+        key: 'delete',
+        icon: 'delete',
+        callback: () => handleDeleteRecords(rows, deleteLocalRows),
+        disabled: isDeletingRecords,
+      });
+    }
+
+    if (children.length > 0) {
+      tools.push({
         key: 'more',
         icon: 'more',
         children,
-      }
-    ];
+      });
+    }
     return tools;
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions, handleDeleteRecords, isDeletingRecords]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
