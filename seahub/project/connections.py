@@ -857,7 +857,7 @@ class ProjectConnectionRecordsView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
-        modified_time = timezone.now().isoformat()
+        modified_time = datetime.datetime.now(datetime.UTC).isoformat()
         for record_id in record_ids:
             update_rows.append({
                 'pk': record_id,

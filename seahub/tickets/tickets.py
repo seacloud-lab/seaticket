@@ -262,14 +262,14 @@ class TicketsAPIView(APIView):
         return Response({'ticket': row},status=status.HTTP_201_CREATED)
 
     def put(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         tickets_data = request.data.get('tickets_data')
         if not tickets_data:
             error_msg = 'tickets_data is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -390,7 +390,7 @@ class TicketsAPIView(APIView):
                         ticket_id=ticket.get('_pk'),
                         ticket_title=row_data.get('title') or ticket.get('title'),
                         workspace_id=workspace.id,
-                        project_name=project.project_name,  
+                        project_name=project.project_name,
                     )
             except Exception as e:
                 logger.error(e)
@@ -398,14 +398,14 @@ class TicketsAPIView(APIView):
         return Response({'success': True})
 
     def delete(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         ticket_ids = request.data.get('ticket_ids')
         if not ticket_ids:
             error_msg = 'ticket_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        if not is_org_context(request):
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
