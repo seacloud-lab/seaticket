@@ -248,6 +248,14 @@ class ConnectionsAPI {
     return this.req.delete(url, { data: { record_ids: recordIDs } });
   }
 
+  markConnectionRecordsOutdated(projectUuid, connectionID, recordIds = []) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/records/mark-outdated/';
+    const data = {
+      record_ids: recordIds,
+    };
+    return this.req.put(url, data);
+  }
+
 }
 
 const connectionsAPI = new ConnectionsAPI();

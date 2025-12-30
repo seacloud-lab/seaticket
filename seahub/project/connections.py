@@ -33,7 +33,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 
@@ -828,6 +828,84 @@ class ProjectConnectionRecordsView(APIView):
             seadb_api.update_rows(project_uuid, table_name, update_rows)
         except Exception as e:
             logger.error(f'batch delete connection records error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class ProjectConnectionRecordsOutdatedView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def put(self, request, project_uuid, connection_id):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        record_ids = request.data.get('record_ids')
+        if not record_ids or not isinstance(record_ids, list):
+            error_msg = 'record_ids must be a non-empty list.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            record_ids = [int(record_id) for record_id in record_ids]
+        except (ValueError, TypeError):
+            error_msg = 'record_ids must be a list of integers.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not record_ids:
+            return Response({'success': True})
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        supported_types = [ConnectionType.DISCOURSE_FORUM.value, ConnectionType.GITHUB_ISSUE.value]
+        if project_connection.type not in supported_types:
+            error_msg = f'Connection type {project_connection.type} does not support mark outdated.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        table_cls = None
+        if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
+            table_cls = DiscourseTopicsTable
+        elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+            table_cls = GithubIssuesTable
+
+        outdated_field = getattr(table_cls, 'outdated', None)
+        modified_time_field = getattr(table_cls, 'modified_time', None)
+        if not outdated_field:
+            error_msg = 'Outdated field not supported for this connection.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        update_rows = []
+        modified_time = datetime.datetime.now(datetime.UTC).isoformat() if modified_time_field else None
+        for record_id in record_ids:
+            row = {outdated_field.name: True}
+            if modified_time:
+                row[modified_time_field.name] = modified_time
+            update_rows.append({'pk': record_id, 'row': row})
+
+        table_name = table_cls.gen_table_name(connection_id)
+        seadb_api = SeaDBAPI(username)
+
+        try:
+            seadb_api.update_rows(project_uuid, table_name, update_rows)
+        except Exception as e:
+            logger.error(f'mark connection records outdated error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

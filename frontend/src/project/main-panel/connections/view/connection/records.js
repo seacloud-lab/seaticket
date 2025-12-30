@@ -13,10 +13,12 @@ import {
   CONNECTION_TYPE, GITHUB_STATE_REASON_NAME_MAP, GITHUB_STATE_OPTION_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG,
   SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES, SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES,
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
+  SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
   CONNECTION_PREDEFINED_COLUMN_NAME,
 } from '../../constants';
 import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants/event-bus-type';
 import { useConnections } from '../../hooks';
 import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
@@ -230,6 +232,20 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     toggleBar([BAR_TYPE.CHAT]);
   }, [connectionID, toggleBar, updateAttachments]);
 
+  const handleMarkAsOutdated = useCallback((rows) => {
+    if (!rows) return;
+    const rowList = Array.isArray(rows) ? rows : [rows];
+    const recordIds = rowList.filter(row => row && row._id).map(row => row._id);
+    if (recordIds.length === 0) return;
+    connectionsAPI.markConnectionRecordsOutdated(projectUuid, connectionID, recordIds)
+      .then(() => {
+        toaster.success(gettext('Marked as outdated'));
+        context.eventBus.emit(EVENT_BUS_TYPE.RELOAD_DATA);
+      }, () => {
+        toaster.danger(gettext('Failed to mark as outdated'));
+      });
+  }, [projectUuid, connectionID]);
+
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
     setCurrentRow(row);
@@ -281,6 +297,18 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       callback: () => handleCreateRelatedTicket(row),
     };
   }, [connection, handleCreateRelatedTicket]);
+
+  const generateMarkAsOutdatedOption = useCallback(({ rows }) => {
+    const enableMarkAsOutdated = SUPPORT_MARK_OUTDATED_CONNECTION_TYPES.includes(connection?.type);
+    if (!enableMarkAsOutdated) return null;
+    const rowList = Array.isArray(rows) ? rows : [rows];
+    if (rowList.length === 0) return null;
+    return {
+      key: 'mark_as_outdated',
+      label: gettext('Mark as outdated'),
+      callback: () => handleMarkAsOutdated(rowList),
+    };
+  }, [connection, handleMarkAsOutdated]);
 
   const generateAIOptions = useCallback(({ rows }) => {
     const enableUseAI = SUPPORT_AI_CONNECTION_TYPES.includes(connection?.type);
@@ -339,11 +367,19 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       const openOriginalPageOption = generateOpenOriginalPageOption({ row });
       const createRelatedTicketOption = generateCreateRelatedTicketOption({ row });
       const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
+      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row] });
       children = [
         openOriginalPageOption,
         createRelatedTicketOption,
         findRelatedIssuesOption,
+        markAsOutdatedOption,
       ].filter(Boolean);
+    } else if (rows.length > 1) {
+      // handle multiple rows selection
+      const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
+      if (markAsOutdatedOption) {
+        children.push(markAsOutdatedOption);
+      }
     }
 
     const AIOption = generateAIOptions({ rows, columns });
@@ -373,7 +409,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       });
     }
     return tools;
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions, handleDeleteRecords, isDeletingRecords]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions, handleDeleteRecords, isDeletingRecords, generateMarkAsOutdatedOption]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -398,7 +434,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       }
       if (rows.length > 0) {
+        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
+        if (markAsOutdatedOption) {
+          list.push(markAsOutdatedOption);
+          if (AIOptions) {
+            list.push('Divider');
+          }
+        }
         if (AIOptions) {
           list.push(AIOptions);
         }
@@ -417,7 +460,14 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         }
       });
       if (rows.length > 0) {
+        const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows });
         const AIOptions = generateAIOptions({ rows, columns: table.columns });
+        if (markAsOutdatedOption) {
+          list.push(markAsOutdatedOption);
+          if (AIOptions) {
+            list.push('Divider');
+          }
+        }
         if (AIOptions) {
           list.push(AIOptions);
         }
@@ -440,6 +490,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const findRelatedIssuesOption = generateFindRelatedIssuesOption({ row });
     list.push(findRelatedIssuesOption);
 
+    const markAsOutdatedOption = generateMarkAsOutdatedOption({ rows: [row] });
+    list.push(markAsOutdatedOption);
+
     list = list.filter(Boolean);
 
     const AIOptions = generateAIOptions({ rows: [row], columns: table.columns });
@@ -448,7 +501,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
     list.push(AIOptions);
     return list.filter(Boolean);
-  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateAIOptions]);
+  }, [connection, generateOpenOriginalPageOption, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption, generateMarkAsOutdatedOption, generateAIOptions]);
 
   const localStorageName = useMemo(() => `sea-qa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
 
