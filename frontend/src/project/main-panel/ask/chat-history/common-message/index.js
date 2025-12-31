@@ -37,7 +37,7 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
     ];
   }, []);
 
-  const { aiReply, sources, mdFiles } = useMemo(() => {
+  const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
     if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
 
@@ -86,7 +86,6 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
           return `[${fileName}](${url})`;
         });
     }
-    console.log(mdFiles);
 
     if (value && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
@@ -148,7 +147,12 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;
     }
-    return { aiReply: value, sources, mdFiles };
+    let aiReplyForCopy = value;
+    mdFiles.forEach(file => {
+      const { url, name } = file;
+      aiReplyForCopy = aiReplyForCopy.replace(`[${name}](${url})`, `\n${name}\n`);
+    });
+    return { aiReply: value, aiReplyForCopy, sources, mdFiles };
   }, [message, projectName, workspaceID, chatId]);
 
   const handleConnectionRecord = useCallback((record) => {
@@ -225,8 +229,8 @@ const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, proj
       return contentRef.current.innerHTML;
     },
 
-    getAIReply: () => aiReply,
-  }), [message, aiReply, contentRef]);
+    getAIReply: () => aiReplyForCopy,
+  }), [message, aiReply, aiReplyForCopy, contentRef]);
 
   return (
     <>
