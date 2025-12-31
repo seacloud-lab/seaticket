@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
+import React, { Fragment, useCallback, useRef, useState, useImperativeHandle, forwardRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ELementTypes } from '@seafile/seafile-editor';
@@ -7,7 +7,7 @@ import { CustomizeMarkdownViewer, LinkVerifiedDialog } from '@/components';
 import ThoughtProcess from '../thought-process';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
-import SeaqaMarkdownPreview from '../seaqa-markdown-preview';
+import CustomizeLink from '../customize-link';
 import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
@@ -17,7 +17,7 @@ import Attachments from '../attachments';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName, workspaceID }, ref) => {
+const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, projectName, workspaceID }, ref) => {
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
@@ -37,42 +37,9 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     ];
   }, []);
 
-  const { contentSegments, sources } = useMemo(() => {
-    if (Object.keys(message).length === 0) return { contentSegments: [], sources: [] };
+  const { aiReply, sources, mdFiles } = useMemo(() => {
+    if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
-
-    const contentSegments = [];
-    if (value && typeof value === 'string') {
-      const seaqaMarkdownRegex = /<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
-      let lastIndex = 0;
-      let match;
-
-      while ((match = seaqaMarkdownRegex.exec(value)) !== null) {
-        if (match.index > lastIndex) {
-          const textContent = value.slice(lastIndex, match.index).trim();
-          if (textContent) {
-            contentSegments.push({ type: 'text', content: textContent });
-          }
-        }
-        contentSegments.push({
-          type: 'seaqa-markdown',
-          fileName: match[1] || null,
-          content: match[2]
-        });
-        lastIndex = match.index + match[0].length;
-      }
-
-      if (lastIndex < value.length) {
-        const textContent = value.slice(lastIndex).trim();
-        if (textContent) {
-          contentSegments.push({ type: 'text', content: textContent });
-        }
-      }
-
-      if (contentSegments.length === 0 && value.trim()) {
-        contentSegments.push({ type: 'text', content: value });
-      }
-    }
 
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
@@ -104,8 +71,24 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
         topic_id,
       };
     });
+    let mdFiles = [];
+    if (value) {
+      const mdRegex = /<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
+      value = value
+        .replace(mdRegex, (match, fileName, content) => {
+          const urlObject = new URL(`file:///sea-ticket/${fileName}?t=${chatId}`);
+          const url = urlObject.href;
+          mdFiles.push({
+            name: fileName,
+            url,
+            content: content.trimStart(),
+          });
+          return `[${fileName}](${url})`;
+        });
+    }
+    console.log(mdFiles);
 
-    if (sources.length > 0) {
+    if (value && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
       const referenceMark = new RegExp(`(${referenceMarkString})\\s*`, 'gi');
 
@@ -126,64 +109,47 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       // [Reference 1] => [Source title][1]
       const reference2Md = /\[(Reference)\s+(\d+)\]/g;
 
+      value = value
+        .replace(regex, (match, openBracket, refType, ordersPart, closeBracket) => {
+          const orders = ordersPart.split(',').map(orderPart => {
+            return orderPart.replace(referenceMark, '').trim();
+          }).filter(num => num !== '');
+          return orders.map(order => `[Reference ${order}]`).join('');
+        })
+        .replace(formatReference, (match, order, linkReference) => {
+          if (!linkReference) return `[Reference ${order}]`;
+          const linkReferenceIncludesParentheses = linkReference.endsWith(')');
+          const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
+          const urlObject = new URL(validLinkReference);
+          const url = urlObject.href;
+          const sourceIndex = sources.findIndex(source => source.url === url);
+          if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+          const referenceIndex = sources.length;
+          sources.push({
+            title: url,
+            url: url,
+            connection_id: `unknown_${referenceIndex}`,
+            _id: referenceIndex,
+            type: 'unknown',
+            content: validLinkReference + '',
+            icon: getConnectionIcon('unknown'),
+            connection_name: gettext('Unknown')
+          });
+          return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+        })
+        .replaceAll(removeParentheses, (match, p1) => p1)
+        .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
+        .replace(reference2Md, (match, text, orderString) => {
+          const order = Number(orderString);
+          const source = sources[order - 1];
+          if (!source) return '';
+          return `[${source.title}][${order}]`;
+        });
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
-
-      contentSegments.forEach((segment) => {
-        if (segment.type === 'text') {
-          let processedContent = segment.content
-            .replace(regex, (_, openBracket, refType, ordersPart, closeBracket) => {
-              const orders = ordersPart.split(',').map(orderPart => {
-                return orderPart.replace(referenceMark, '').trim();
-              }).filter(num => num !== '');
-              return orders.map(order => `[Reference ${order}]`).join('');
-            })
-            .replace(formatReference, (_, order, linkReference) => {
-              if (!linkReference) return `[Reference ${order}]`;
-              const linkReferenceIncludesParentheses = linkReference.endsWith(')');
-              const validLinkReference = linkReferenceIncludesParentheses ? linkReference.slice(0, -1) : linkReference;
-              const urlObject = new URL(validLinkReference);
-              const url = urlObject.href;
-              const sourceIndex = sources.findIndex(source => source.url === url);
-              if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-              const referenceIndex = sources.length;
-              sources.push({
-                title: url,
-                url: url,
-                connection_id: `unknown_${referenceIndex}`,
-                _id: referenceIndex,
-                type: 'unknown',
-                content: validLinkReference + '',
-                icon: getConnectionIcon('unknown'),
-                connection_name: gettext('Unknown')
-              });
-              return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
-            })
-            .replaceAll(removeParentheses, (_, p1) => p1)
-            .replace(removeComma, (match) => match.replace(/\],\s*\[/g, ']['))
-            .replace(reference2Md, (_, text, orderString) => {
-              const order = Number(orderString);
-              const source = sources[order - 1];
-              if (!source) return '';
-              return `[${source.title}][${order}]`;
-            });
-          // Every text segment needs sourcesString for LinkReference to work
-          segment.content = processedContent + `\n\n${sourcesString}`;
-        }
-      });
-
-      // If the last segment is seaqa-markdown, add a text segment for sourcesString
-      const lastSegment = contentSegments[contentSegments.length - 1];
-      if (lastSegment && lastSegment.type !== 'text') {
-        contentSegments.push({ type: 'text', content: sourcesString });
-      }
-      const lastTextSegmentIndex = contentSegments.findLastIndex(s => s.type === 'text');
-      if (lastTextSegmentIndex > -1) {
-        contentSegments[lastTextSegmentIndex].isLastTextSegment = true;
-      }
+      value = value + `\n\n${sourcesString}` ;
     }
-
-    return { contentSegments, sources };
-  }, [message, projectName, workspaceID]);
+    return { aiReply: value, sources, mdFiles };
+  }, [message, projectName, workspaceID, chatId]);
 
   const handleConnectionRecord = useCallback((record) => {
     setCurrentConnectionRecord({
@@ -224,18 +190,12 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       },
       [ELementTypes.LINK_REFERENCE]: {
         render: (<CustomizeLinkReference />)
+      },
+      [ELementTypes.LINK]: {
+        render: (<CustomizeLink mdFiles={mdFiles} />)
       }
     };
-  }, [sources, settings, openConnectionRecord]);
-
-  const optionsWithoutDefinition = useMemo(() => {
-    return {
-      ...options,
-      [ELementTypes.DEFINITION]: {
-        render: (<></>)
-      }
-    };
-  }, [options]);
+  }, [sources, mdFiles, settings, openConnectionRecord]);
 
   const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
@@ -261,16 +221,12 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
   useImperativeHandle(ref, () => ({
 
     getHTML: () => {
-      return contentRef.current?.innerHTML || '';
+      if (!aiReply) return '';
+      return contentRef.current.innerHTML;
     },
 
-    getAIReply: () => {
-      return contentSegments
-        .filter(segment => segment.type === 'text')
-        .map(segment => segment.content)
-        .join('\n\n');
-    },
-  }), [message, contentSegments, contentRef]);
+    getAIReply: () => aiReply,
+  }), [message, aiReply, contentRef]);
 
   return (
     <>
@@ -278,27 +234,17 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       <div className="sea-qa-ai-ask-message-content" ref={contentRef}>
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
-        {contentSegments.map((segment, index) => {
-          if (segment.type === 'text') {
-            return (
-              <div key={index} className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
-                <CustomizeMarkdownViewer
-                  value={segment.content}
-                  showTOC={false}
-                  options={segment.isLastTextSegment ? options : optionsWithoutDefinition}
-                  beforeRenderCallback={beforeAIReplyRenderCallback}
-                  onDefinitionClick={openConnectionRecord}
-                />
-              </div>
-            );
-          }
-          if (segment.type === 'seaqa-markdown') {
-            return (
-              <SeaqaMarkdownPreview key={index} content={segment.content} fileName={segment.fileName} />
-            );
-          }
-          return null;
-        })}
+        {aiReply && (
+          <div className={classnames('sea-qa-message-ai-reply', aiMessageType)}>
+            <CustomizeMarkdownViewer
+              value={aiReply}
+              showTOC={false}
+              options={options}
+              beforeRenderCallback={beforeAIReplyRenderCallback}
+              onDefinitionClick={openConnectionRecord}
+            />
+          </div>
+        )}
       </div>
       {isShowConnectionRecord && (
         <RowDetailsDialog

@@ -3,10 +3,11 @@ import { CenteredLoading, IconButton } from '@/components';
 import TopBar from '../top-bar';
 import Sessions from './sessions';
 import Chat from './chat';
-import { AskPageProvider, SessionsProvider, useAskPage, useSessions } from './hooks';
+import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from './hooks';
 import { PERMISSION_TYPES, gettext } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
 import { useConnections } from '../connections/hooks';
+import Documents from './documents';
 
 import './index.css';
 
@@ -49,14 +50,17 @@ const Main = ({ title, settings }) => {
           <CenteredLoading />
         ) : (
           <>
-            <Chat
-              sessionId={pageSlugId}
-              isShowSessions={isShowSessions}
-              workspaceID={workspaceID}
-              projectUuid={projectUuid}
-              projectName={projectName}
-              settings={settings}
-            />
+            <div className="sea-ticket-ask-chat-documents">
+              <Chat
+                sessionId={pageSlugId}
+                isShowSessions={isShowSessions}
+                workspaceID={workspaceID}
+                projectUuid={projectUuid}
+                projectName={projectName}
+                settings={settings}
+              />
+              <Documents />
+            </div>
             {isShowSessions && (<Sessions sessionId={pageSlugId} permission={permission} />)}
           </>
         )}
@@ -75,7 +79,9 @@ const Ask = ({ title, settings }) => {
   return (
     <AskPageProvider workspaceID={workspaceID} projectName={projectName} >
       <SessionsProvider workspaceID={workspaceID} projectUuid={projectUuid} >
-        <Main title={title} settings={settings} />
+        <DocumentsProvider>
+          <Main title={title} settings={settings} />
+        </DocumentsProvider>
       </SessionsProvider>
     </AskPageProvider>
   );

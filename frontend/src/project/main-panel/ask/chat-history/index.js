@@ -8,7 +8,7 @@ import { CHAT_MESSAGE_TYPE } from '../constants';
 import './index.css';
 
 const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
-  const { message, isUserSpeak, type } = chat;
+  const { _id, message, isUserSpeak, type } = chat;
   const ref = useRef(null);
 
   const getMessageHTML = useCallback(() => {
@@ -26,6 +26,7 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) 
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage
         message={message}
+        chatId={_id || ''}
         settings={settings}
         projectUuid={projectUuid}
         projectName={projectName}

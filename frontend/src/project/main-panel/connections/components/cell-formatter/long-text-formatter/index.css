@@ -16,13 +16,13 @@
   background-color: #f0f0f0;
   color: #666;
   height: 20px;
-  margin: 0 4px;
-  padding: 0 3px;
+  margin: 0 4px !important;
+  padding: 0 3px !important;
 }
 
 .long-text-formatter .links-container .sea-qa-icon-svg,
 .long-text-formatter .check-list-container .sea-qa-icon-svg {
-  margin-right: 4px;
+  margin-right: 4px !important;
   height: 12px;
   width: 12px;
 }
@@ -32,7 +32,7 @@
 }
 
 .long-text-formatter .images-container {
-  margin-right: -10px;
+  margin-right: -10px !important;
 }
 
 .long-text-formatter .images-container img {
