@@ -39,6 +39,7 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} {...commonProps} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} {...commonProps} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} {...commonProps} />
             {isProjectAdmin &&
               <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
             }

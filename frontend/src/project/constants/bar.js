@@ -9,6 +9,7 @@ export const BAR_TYPE = {
   CONNECTION: 'connections',
   SETTINGS: 'settings',
   EXTERNAL_PORTAL: 'external-portal',
+  INBOX: 'inbox',
   KNOWLEDGE: 'knowledge-base',
   ANALYZE: 'analyze',
   TAGS: 'tickets/tags',
@@ -77,5 +78,10 @@ export const BAR_TYPE_CONFIG = {
   [BAR_TYPE.SUBSTATES]: {
     key: BAR_TYPE.SUBSTATES,
     name: gettext('Manage substates')
-  }
+  },
+  [BAR_TYPE.INBOX]: {
+    key: BAR_TYPE.INBOX,
+    name: gettext('Inbox'),
+    icon: 'inbox',
+  },
 };

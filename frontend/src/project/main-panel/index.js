@@ -8,6 +8,7 @@ import Ask from './ask';
 import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
+import Inbox from './inbox';
 
 import './index.css';
 
@@ -33,6 +34,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.SETTINGS: {
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
+    }
+    case BAR_TYPE.INBOX: {
+      return (<Inbox title={title} />);
     }
     case BAR_TYPE.KNOWLEDGE: {
       return (<KnowledgeBase title={title} />);
