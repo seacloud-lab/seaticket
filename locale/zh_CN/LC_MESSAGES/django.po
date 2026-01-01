@@ -295,6 +295,10 @@ msgstr "请登录。"
 #: seahub/templates/registration/multi_saml_sso.html:14
 #: seahub/templates/registration/multi_saml_sso.html:15
 #: seahub/templates/registration/multi_saml_sso.html:16
+#: seahub/invitations/templates/invitations/token_view.html:10
+#: seahub/templates/registration/login.html:54
+#: seahub/templates/registration/login.html:55
+#: seahub/templates/registration/login.html:56
 msgid "Email"
 msgstr "邮箱"
 
@@ -572,13 +576,6 @@ msgstr "创建账号"
 #: seahub/invitations/templates/invitations/token_view.html:8
 msgid "Set your password"
 msgstr "设置你的密码"
-
-#: seahub/invitations/templates/invitations/token_view.html:10
-#: seahub/templates/registration/login.html:54
-#: seahub/templates/registration/login.html:55
-#: seahub/templates/registration/login.html:56
-msgid "Email"
-msgstr "邮箱"
 
 #: seahub/invitations/templates/invitations/token_view.html:17
 #: seahub/templates/organizations/org_register.html:41
