@@ -32,21 +32,18 @@ const TicketsMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[8].key)}>
-          <Icon symbol={BAR_TYPES[8].icon} />
-          <span className="ml-2">{BAR_TYPES[8].name}</span>
-        </DropdownItem>
         <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[9].key)}>
-          <Icon symbol={BAR_TYPES[9].icon} />
-          <span className="ml-2">{BAR_TYPES[9].name}</span>
+          <span>{BAR_TYPES[9].name}</span>
         </DropdownItem>
         <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[10].key)}>
-          <Icon symbol={BAR_TYPES[10].icon} />
-          <span className="ml-2">{BAR_TYPES[10].name}</span>
+          <span>{BAR_TYPES[10].name}</span>
         </DropdownItem>
         <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[11].key)}>
-          <Icon symbol={BAR_TYPES[11].icon} />
-          <span className="ml-2">{BAR_TYPES[11].name}</span>
+          <span>{BAR_TYPES[11].name}</span>
+        </DropdownItem>
+        <div className="dropdown-divider"></div>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[8].key)}>
+          <span>{BAR_TYPES[8].name}</span>
         </DropdownItem>
       </DropdownMenu>
     </Dropdown>
