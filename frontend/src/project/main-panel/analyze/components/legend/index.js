@@ -8,7 +8,6 @@ const Legend = ({
   onItemClick
 }) => {
   if (!items || items.length === 0) return null;
-  console.log(items);
 
   return (
     <div className="embedding-legend">

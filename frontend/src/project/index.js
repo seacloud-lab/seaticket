@@ -12,6 +12,7 @@ import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import { ConnectionsProvider } from './main-panel/connections/hooks';
 import { AIChatToolsProvider } from './main-panel/ask/hooks';
+import { AnalyzeTaskProvider } from './main-panel/analyze/hooks/analyze-task';
 import projectAPI from './api/project-api';
 import { Utils } from '@/utils/utils';
 import userAPI from '@/api/user-api';
@@ -147,8 +148,10 @@ const Project = () => {
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <AIChatToolsProvider >
               <ConnectionsProvider projectUuid={projectUuid} >
-                <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+                <AnalyzeTaskProvider>
+                  <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+                  <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+                </AnalyzeTaskProvider>
               </ConnectionsProvider>
             </AIChatToolsProvider>
           </CollaboratorsProvider>

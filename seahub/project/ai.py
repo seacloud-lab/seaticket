@@ -19,7 +19,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, \
     convert_record_to_ticket, check_ai_limit, \
     submit_embedding_analysis_task, get_embedding_analysis_task_status, \
-    find_related_records, rank_related_issues
+    find_related_records, rank_related_issues, TaskConflictError
 from seahub.project.constants import ConnectionType, ConnectionCategory
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.project.seadb_api import SeaDBAPI
@@ -208,6 +208,9 @@ class EmbeddingAnalysisView(APIView):
         if not connection_ids:
             error_msg = 'connection_ids is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        
+        start_year = request.data.get('start_year')
+        end_year = request.data.get('end_year')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -225,14 +228,17 @@ class EmbeddingAnalysisView(APIView):
             'project_uuid': project_uuid,
             'connection_ids': connection_ids,
             'username': username,
+            'start_year': start_year,
+            'end_year': end_year
         }
 
         try:
             task_id = submit_embedding_analysis_task(params)
+        except TaskConflictError as e:
+            return api_error(status.HTTP_409_CONFLICT, str(e))
         except Exception as e:
             logger.error(f'Failed to submit embedding analysis task: {e}')
-            error_msg = 'Failed to submit analysis task.'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to submit analysis task.')
 
         return Response({
             'task_id': task_id,

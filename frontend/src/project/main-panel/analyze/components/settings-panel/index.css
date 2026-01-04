@@ -34,7 +34,7 @@
 .analyze-settings-body {
   flex: 1;
   padding: 16px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .analyze-settings-section {
@@ -218,4 +218,41 @@
   outline: none;
   border-color: #1677ff;
   box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+
+.analyze-settings-footer {
+  padding: 16px;
+}
+
+.analyze-btn {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background-color: #eb8205;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  background-color: #d47504;
+}
+
+.analyze-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.analyze-btn .sea-qa-loading-icon {
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+  margin: 0;
 }

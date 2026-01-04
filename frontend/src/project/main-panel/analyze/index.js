@@ -2,31 +2,37 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { defaultCategoryColors } from 'embedding-atlas/react';
 import { gettext } from '@/constants';
 import { Loading, IconButton } from '@/components';
-import { connectionsAPI } from '@/project/api';
 import TopBar from '../top-bar';
 import SettingsPanel from './components/settings-panel';
 import Legend from './components/legend';
 import EmbeddingView from './components/embedding-view';
-import { STORAGE_KEY, projectUuid } from './constants';
+import { useAnalyzeTask } from './hooks/analyze-task';
+import { SETTINGS_STORAGE_KEY } from './constants';
 
 import './index.css';
 
+const getStoredSettings = () => {
+  try {
+    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
 const Analyze = ({ title }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, records, error, startAnalysis, resetAnalysis } = useAnalyzeTask();
   const [embeddingData, setEmbeddingData] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedConnections, setSelectedConnections] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+
+  const storedSettings = getStoredSettings();
+  const [selectedConnections, setSelectedConnections] = useState(storedSettings.connections || []);
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
-  const [colorBy, setColorBy] = useState('--');
-  const [displayMode, setDisplayMode] = useState('points');
+  const [colorBy, setColorBy] = useState(storedSettings.colorBy || '--');
+  const [displayMode, setDisplayMode] = useState(storedSettings.displayMode || 'points');
+  const [startYear, setStartYear] = useState(storedSettings.startYear || null);
+  const [endYear, setEndYear] = useState(storedSettings.endYear || null);
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -58,65 +64,41 @@ const Analyze = ({ title }) => {
 
   useEffect(() => {
     try {
-      const connectionsToSave = selectedConnections.map(c => ({
-        id: c.id,
-        name: c.name,
-        type: c.type
-      }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(connectionsToSave));
+      const settings = {
+        connections: selectedConnections.map(c => ({
+          id: c.id,
+          name: c.name,
+          type: c.type
+        })),
+        colorBy,
+        displayMode,
+        startYear,
+        endYear
+      };
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
-      console.error('Failed to save connections to localStorage:', e);
+      console.error('Failed to save settings to localStorage:', e);
     }
-  }, [selectedConnections]);
+  }, [selectedConnections, colorBy, displayMode, startYear, endYear]);
 
-  const loadEmbeddingData = useCallback(async (connectionIds) => {
-    if (!connectionIds || connectionIds.length === 0) {
-      setEmbeddingData(null);
-      setMetadata(null);
-      return;
-    }
-
-    setIsLoading(true);
-    setSelectedCategories([]);
-
-    try {
-      const response = await connectionsAPI.getConnectionsEmbeddingAnalysis(projectUuid, connectionIds);
-      const { task_id } = response.data;
-
-      const records = await pollTaskStatus(task_id);
+  useEffect(() => {
+    if (records) {
       processBackendData(records);
-    } catch (error) {
-      console.error('Failed to load embedding data:', error);
-      setIsLoading(false);
+    }
+  }, [records]);
+
+  useEffect(() => {
+    if (error) {
       setEmbeddingData(null);
       setMetadata({
         error: true,
-        errorMessage: error.response?.data?.error_msg || 'Failed to load data'
+        errorMessage: error.message || 'Failed to load data'
       });
     }
-  }, []);
-
-  const pollTaskStatus = (taskId) => {
-    return new Promise((resolve, reject) => {
-      const poll = () => {
-        connectionsAPI.getEmbeddingAnalysisTaskStatus(taskId)
-          .then(statusResponse => {
-            const { is_finished, records } = statusResponse.data;
-            if (is_finished) {
-              resolve(records);
-            } else {
-              setTimeout(poll, 2000);
-            }
-          })
-          .catch(reject);
-      };
-      poll();
-    });
-  };
+  }, [error]);
 
   const processBackendData = (records) => {
     if (!records || records.length === 0) {
-      setIsLoading(false);
       setEmbeddingData(null);
       setMetadata({
         error: true,
@@ -133,7 +115,6 @@ const Analyze = ({ title }) => {
     );
 
     if (validRecords.length === 0) {
-      setIsLoading(false);
       setEmbeddingData(null);
       setMetadata({
         error: true,
@@ -151,30 +132,31 @@ const Analyze = ({ title }) => {
       yArray[index] = parseFloat(record.y);
 
       dataPoints.push({
-        id: record.id || record._id || `record_${index}`,
+        id: `record_${index}`,
         x: xArray[index],
         y: yArray[index],
-        title: record.ai_summary,
         ...record
       });
     });
 
     setEmbeddingData({ x: xArray, y: yArray });
     setMetadata({ records: dataPoints });
-    setIsLoading(false);
+    setSelectedCategories([]);
   };
 
   useEffect(() => {
-    if (selectedConnections.length > 0) {
-      const timer = setTimeout(() => {
-        loadEmbeddingData(selectedConnections.map(c => c.id));
-      }, 2000);
-      return () => clearTimeout(timer);
-    } else {
+    if (selectedConnections.length === 0) {
       setEmbeddingData(null);
       setMetadata(null);
+      resetAnalysis();
     }
-  }, [selectedConnections, loadEmbeddingData]);
+  }, [selectedConnections, resetAnalysis]);
+
+  const handleAnalyze = useCallback(() => {
+    if (selectedConnections.length > 0) {
+      startAnalysis(selectedConnections.map(c => c.id), startYear, endYear);
+    }
+  }, [selectedConnections, startYear, endYear, startAnalysis]);
 
   const createCategoryMapping = (records, colorByField) => {
     if (!records || records.length === 0) return null;
@@ -320,13 +302,15 @@ const Analyze = ({ title }) => {
     setSelectedConnections(prev => prev.filter(c => c.id !== connectionId));
   }, []);
 
+  const handleDateRangeChange = useCallback((newStartYear, newEndYear) => {
+    setStartYear(newStartYear);
+    setEndYear(newEndYear);
+  }, []);
+
   const renderContent = () => {
     if (selectedConnections.length === 0) {
       return (
         <div className="analyze-empty-state">
-          <div className="analyze-empty-icon">
-            <i className="sf3-font sf3-font-chart" style={{ fontSize: '48px', color: '#999' }}></i>
-          </div>
           <p className="analyze-empty-text">{gettext('Select connections to analyze')}</p>
         </div>
       );
@@ -352,7 +336,11 @@ const Analyze = ({ title }) => {
     }
 
     if (!embeddingData) {
-      return null;
+      return (
+        <div className="analyze-empty-state">
+          <p className="analyze-empty-text">{gettext('Click Analyze to start')}</p>
+        </div>
+      );
     }
 
     const { embeddingData: displayData, categoryData } = filteredData;
@@ -405,6 +393,11 @@ const Analyze = ({ title }) => {
             onColorByChange={handleColorByChange}
             displayMode={displayMode}
             onDisplayModeChange={setDisplayMode}
+            startYear={startYear}
+            endYear={endYear}
+            onDateRangeChange={handleDateRangeChange}
+            onAnalyze={handleAnalyze}
+            isLoading={isLoading}
           />
         )}
       </div>

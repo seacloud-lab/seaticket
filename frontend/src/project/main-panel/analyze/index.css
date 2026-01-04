@@ -22,19 +22,9 @@
   color: #999;
 }
 
-.analyze-empty-icon {
-  margin-bottom: 16px;
-}
-
 .analyze-empty-text {
   font-size: 16px;
-  margin-bottom: 8px;
   color: #666;
-}
-
-.analyze-empty-hint {
-  font-size: 14px;
-  color: #999;
 }
 
 .embedding-visualization-container {
