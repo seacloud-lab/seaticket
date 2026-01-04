@@ -190,7 +190,7 @@ class Account extends Component {
           <div className="account-info row-used">
             <p>{gettext('API calls count')}{': '}{this.state.apiCallsCount} / {this.state.apiCallsLimit > 0 ? this.state.apiCallsLimit : '--'} </p>
             <div id="quota-bar">
-              <span id="quota-usage" className="usage sea-qa-bg-orange" style={{ width: this.state.apiCallsUsageRate }}></span>
+              <span id="quota-usage" className="usage sea-qa-bg-grey" style={{ width: this.state.apiCallsUsageRate }}></span>
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ class Account extends Component {
             <div className="account-info row-used">
               <p>{gettext('AI credit used')}{': '}{this.state.aiCost} / {this.state.aiCredit > 0 ? this.state.aiCredit : '--'} </p>
               <div id="quota-bar">
-                <span id="ai-credit-usage" className="usage sea-qa-bg-orange" style={{ width: this.state.aiUsageRate }}></span>
+                <span id="ai-credit-usage" className="usage sea-qa-bg-grey" style={{ width: this.state.aiUsageRate }}></span>
               </div>
             </div>
           </div>

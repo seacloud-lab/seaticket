@@ -23,7 +23,7 @@ const propTypes = {
   isDesktop: PropTypes.bool.isRequired,
 };
 
-const GROUP_ITEM_HEIGHT = 28;
+const GROUP_ITEM_HEIGHT = 40;
 
 class SidePanel extends React.Component {
 
@@ -151,7 +151,7 @@ class SidePanel extends React.Component {
       <div id="workspace-items">
         {personalWorkspace && (
           <div
-            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'sea-qa-bg-orange active' : ''}`}
+            className={`nav-item workspace-nav-item ${this.getActiveClass(`project/${personalWorkspace.id}`) ? 'sea-qa-bg-grey active' : ''}`}
             onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
@@ -208,7 +208,7 @@ class SidePanel extends React.Component {
               <span className="sea-qa-nav-title">{gettext('Workspace')}</span>
               <div className="nav nav-pills flex-column sea-qa-nav-list">
                 <div
-                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'sea-qa-bg-orange' : ''}`}
+                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('projects')} ${this.getActiveClass('projects') ? 'sea-qa-bg-grey' : ''}`}
                   onClick={this.onTabClick.bind(this, 'projects')}
                 >
                   <Link
@@ -239,7 +239,7 @@ class SidePanel extends React.Component {
                   {!this.state.isDataLoading && this.renderWorkspaceItems()}
                 </div>
                 <div
-                  className={`nav-item sea-qa-nav-item projects-nav ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'sea-qa-bg-orange' : ''}`}
+                  className={`nav-item sea-qa-nav-item projects-nav ${this.props.isOpenGroupExpanded ? 'mt-3' : ''} ${this.getActiveClass('project/trash')} ${this.getActiveClass('project/trash') ? 'sea-qa-bg-grey' : ''}`}
                   onClick={this.onTabClick.bind(this, 'project/trash')}
                 >
                   <Link

@@ -28,20 +28,9 @@ class WorkspaceHeader extends Component {
     const { type, name } = workspace;
     const isPersonal = type === 'personal';
     if (isPersonal) {
-      return (
-        <>
-          <Icon symbol="creator" className="project-workspace-icon" />
-          <span className="text-truncate flex-1" title={gettext('My projects')}>{gettext('My projects')}</span>
-        </>
-      );
+      return <span className="text-truncate flex-1" title={gettext('My projects')}>{gettext('My projects')}</span>;
     }
-
-    return (
-      <>
-        <Icon symbol="collaborator" className="project-workspace-icon"/>
-        <span className="text-truncate flex-1" title={name}>{name}</span>
-      </>
-    );
+    return <span className="text-truncate flex-1" title={name}>{name}</span>;
   };
 
   render() {

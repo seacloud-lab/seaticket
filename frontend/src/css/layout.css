@@ -19,6 +19,7 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  background-color: #f7f7f5;
 }
 
 @media (max-width: 767px) {
@@ -42,8 +43,7 @@
   padding: 0.5rem 1rem;
   display: flex;
   flex-shrink: 0;
-  background: #ffffff;
-  border-bottom: 1px solid #e8e8e8;
+  background: #f7f7f5;
   z-index: 100;
 }
 
@@ -66,10 +66,15 @@
   position: relative;
 }
 
+.main-panel-center {
+  background-color: #fff;
+  border-radius: 10px 10px 0 0;
+  margin-right: 24px;
+}
+
 .side-panel-center,
 .side-panel-footer {
   min-height: 0;
-  border-right: 1px solid #eee;
 }
 
 .side-panel-footer .side-nav-footer {
@@ -116,7 +121,7 @@
 }
 
 .cur-view-content {
-  padding: 0rem 1rem;
+  padding: 0rem 1.5rem;
   flex: 1;
   min-height: 0;
   overflow: auto;

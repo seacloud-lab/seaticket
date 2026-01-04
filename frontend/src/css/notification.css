@@ -37,8 +37,10 @@
   position: absolute;
   left: 18px;
   padding: 0 2px;
-  min-width: 14px;
+  width: 14px;
   height: 14px;
+  min-width: 14px;
+  min-height: 14px;
   font-size: 9px;
   line-height: 14px;
   color: #fff;
