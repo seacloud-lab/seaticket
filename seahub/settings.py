@@ -356,7 +356,6 @@ REST_FRAMEWORK = {
         'import': '20/minute',
         'export': '20/minute',
         'repair-base': '6/minute',
-        'embedding_analysis': '15/minute'
     },
     # https://github.com/tomchristie/django-rest-framework/issues/2891
     'UNICODE_JSON': False,
