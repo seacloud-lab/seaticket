@@ -15,7 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import delete_session, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
+from seahub.chats.utils import delete_sessions, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
 from seahub.tickets.ticket_utils import get_whole_tickets_data
 from django.utils.translation import gettext as _
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
@@ -185,11 +185,8 @@ class ChatSessionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            if delete_session(session_uuid):
-                return Response({'success': True})
-            else:
-                error_msg = 'Failed to delete session.'
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            delete_sessions([session_uuid])
+            return Response({'success': True})
 
         except Exception as e:
             logger.error(e)

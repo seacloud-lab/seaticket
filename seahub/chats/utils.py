@@ -13,15 +13,13 @@ from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 logger = logging.getLogger(__name__)
 
 
-def delete_session(session_uuid):
+def delete_sessions(session_uuids):
     try:
-        ChatMessages.objects.filter(session_uuid=session_uuid).delete()
-        ChatToolCalls.objects.filter(session_uuid=session_uuid).delete()
-        ChatSessions.objects.filter(session_uuid=session_uuid).delete()
-        return True
+        ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
+        ChatToolCalls.objects.filter(session_uuid__in=session_uuids).delete()
+        ChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
     except Exception as e:
-        logger.error('delete session: %s error: %s', str(session_uuid), e)
-        return False
+        logger.error('delete sessions error: %s', e)
 
 
 def format_ask_thought_process(tool_calls):

@@ -3,9 +3,9 @@ from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.db import transaction
 
-from seahub.chats.models import ChatMessages, ChatSessions, ChatToolCalls
+from seahub.chats.models import ChatSessions
+from seahub.chats.utils import delete_sessions
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +25,8 @@ class Command(BaseCommand):
         days = options['days']
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        old_sessions = ChatSessions.objects.filter(updated_at__lt=cutoff_date)
-        session_uuids = list(old_sessions.values_list('session_uuid', flat=True))
+        session_uuids = ChatSessions.objects.filter(updated_at__lt=cutoff_date).values_list('session_uuid', flat=True)
+        count = len(session_uuids)
+        delete_sessions(session_uuids)
 
-        with transaction.atomic():
-            deleted_sessions, _ = old_sessions.delete()
-            ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
-            ChatToolCalls.objects.filter(session_uuid__in=session_uuids).delete()
-
-        self.stdout.write(f"Deleted {deleted_sessions} sessions.")
+        self.stdout.write(f"Deleted {count} sessions.")
