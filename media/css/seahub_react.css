@@ -497,9 +497,7 @@ li {
 }
 
 .nav .nav-item .nav-link.active {
-  color: #ED7109;
   text-decoration: none;
-  border-bottom: 0.125rem solid #ED7109;
 }
 
 .nav-pills .nav-item .nav-link {
@@ -512,8 +510,7 @@ li {
 }
 
 .nav-pills .nav-item .nav-link.active {
-  background-color: #ED7109;
-  color: #fff;
+  background-color: rgba(0, 0, 0, 0.04);
   border: none;
 }
 
@@ -561,11 +558,6 @@ li {
   display: block;
   padding-left: 0;
   margin-right: 0;
-}
-
-.side-nav-con .active .sharp,
-.side-nav-con .active .nav-text {
-  font-weight: bold;
 }
 
 .side-nav-con .active [class^="sf2-icon-"],
@@ -631,9 +623,11 @@ li {
 
 #notifications .no-deco {
   position: relative;
-  display: block;
+  display: flex;
   width: 100%;
   height: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 #notifications .sea-qa-icon-svg-notice {

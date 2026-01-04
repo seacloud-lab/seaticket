@@ -129,7 +129,7 @@ class Workspace extends React.Component {
     } else {
       const { clientWidth: pageClientWidth, offsetWidth: pageOffsetWidth } = this.curViewContent.parentNode;
       const scrollBarWidth = pageOffsetWidth - pageClientWidth;
-      const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 16 * 2 + 16 - scrollBarWidth);
+      const projectListWidth = parseInt(window.innerWidth * (1 - 0.22) - 24 * 3 + 16 - scrollBarWidth);
       const numberOfItemsPerRow = Math.floor(projectListWidth / 164);
       const remainingWidth = projectListWidth % 164;
       let projectItemWidth;
@@ -145,7 +145,7 @@ class Workspace extends React.Component {
   getProjectClassAndStyle = (index, totalCount) => {
     const { projectItemWidth, numberOfItemsPerRow } = this.state;
 
-    // 0.22: percentage of side panel; 16: cur-view-content's padding left/right;
+    // 0.22: percentage of side panel; 24: cur-view-content's padding left/right;
     let allLineProjectCount = parseInt(totalCount / numberOfItemsPerRow) * numberOfItemsPerRow;
     if (allLineProjectCount === totalCount) {
       allLineProjectCount = allLineProjectCount - numberOfItemsPerRow;
@@ -157,7 +157,7 @@ class Workspace extends React.Component {
       return { className, style };
     }
     if (index > numberOfItemsPerRow - 1) {
-      style.marginLeft = index % numberOfItemsPerRow === 0 ? - ((projectItemWidth + 16) * numberOfItemsPerRow) : 0;
+      style.marginLeft = index % numberOfItemsPerRow === 0 ? - ((projectItemWidth + 24) * numberOfItemsPerRow) : 0;
       style.marginTop = parseInt(index / numberOfItemsPerRow) * 192;
       return { className, style };
     }

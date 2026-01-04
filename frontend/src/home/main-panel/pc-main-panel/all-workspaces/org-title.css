@@ -1,10 +1,10 @@
 .project-center .project-org-title {
   width: 100%;
-  min-height: 38px;
   display: flex;
   align-items: center;
-  margin-top: 20px;
   flex-direction: row;
+  border-bottom: 1px solid #ededed;
+  min-height: 56px;
 }
 
 .project-center .project-org-title.project-mobile-org-title {
@@ -17,11 +17,23 @@
 
 .project-center .project-org-title .project-org-name {
   max-width: calc(100% - 36px);
-  margin: 0 8px;
+  margin: 0;
   font-weight: 400;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   display: inline;
   font-size: 20px;
+}
+
+.project-org-title-btn {
+  color: #ED7109;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.project-org-title-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }

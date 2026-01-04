@@ -43,6 +43,7 @@
 .project-icon-settings-popover .sea-qa-color-item .colorinput-color {
   height: 20px;
   width: 20px;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;

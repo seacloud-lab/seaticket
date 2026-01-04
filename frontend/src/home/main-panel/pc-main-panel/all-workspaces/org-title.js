@@ -10,20 +10,19 @@ function OrgTitle(props) {
   return (
     <div className={`justify-content-between project-org-title${isDesktop ? '' : ' project-mobile-org-title'}`}>
       <div className="project-org-title-left">
-        <Icon symbol="organization-name" className="project-org-icon" />
         <h1 title={orgName} aria-label={orgName} className="project-org-name">{orgName}</h1>
       </div>
       <div className="project-org-title-right">
         {isDesktop && canAddGroup &&
-          <button
-            className="btn btn-primary d-flex align-items-center"
+          <div
+            className="project-org-title-btn d-flex align-items-center"
             onClick={onCreateGroupToggle}
             title={gettext('New group')}
             aria-label={gettext('New group')}
           >
-            <Icon symbol="add" className="mr-1" />
+            <Icon symbol="add" className="mr-2" />
             <span>{gettext('New group')}</span>
-          </button>
+          </div>
         }
       </div>
     </div>
