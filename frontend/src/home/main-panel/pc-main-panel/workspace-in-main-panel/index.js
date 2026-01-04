@@ -61,7 +61,6 @@ class WorkspaceInMainPanel extends React.Component {
             <div className={`${isDesktop ? '' : 'p-0'} cur-view-content`}>
               {isOrgContext &&
                 <div className={`justify-content-start project-org-title${isDesktop ? '' : ' project-mobile-org-title'}`}>
-                  <Icon symbol="organization-name" className="project-org-icon" />
                   <h1 title={orgName} aria-label={orgName} className="project-org-name">{orgName}</h1>
                 </div>
               }
