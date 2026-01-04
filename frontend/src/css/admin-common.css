@@ -5,6 +5,11 @@
   min-height: 0;
 }
 
+.org-admin .side-nav,
+.sys-admin .side-nav {
+  background-color: #f7f7f5;
+}
+
 .org-admin .side-nav-con svg.sea-qa-icon-svg,
 .sys-admin .side-nav-con svg.sea-qa-icon-svg {
   height: 20px;
@@ -12,11 +17,6 @@
   margin-right: 6px;
   margin-left: 6px;
   color: #999;
-}
-
-.org-admin .side-nav-con .active svg.sea-qa-icon-svg,
-.sys-admin .side-nav-con .active svg.sea-qa-icon-svg {
-  color: #fff;
 }
 
 .org-admin .side-nav-title,
@@ -30,7 +30,6 @@
 .sys-admin .main-panel .heading {
   height: 40px;
   padding: 0 16px;
-  background: #f9f9f9;
   font-size: 1rem;
   font-weight: normal;
   line-height: 40px;
@@ -97,7 +96,6 @@
 /* admin info */
 .sea-qa-admin-info-center .cur-view-content {
   padding: 0rem 1rem;
-  background-color: #f5f5f5;
   flex: 1 1;
   overflow: auto;
 }
