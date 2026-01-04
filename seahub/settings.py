@@ -552,13 +552,12 @@ FILESERVER_TOKEN_ONCE_ONLY = True
 # Email sending #
 #################
 
-EMAIL_USE_TLS = os.environ.get('SEAQA_EMAIL_USE_TLS', False)
-EMAIL_HOST = os.environ.get('SEAQA_EMAIL_HOST', '')
-EMAIL_HOST_USER = os.environ.get('SEAQA_EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('SEAQA_EMAIL_HOST_PASSWORD', '')
-EMAIL_PORT = os.environ.get('SEAQA_EMAIL_PORT', 25)
-DEFAULT_FROM_EMAIL = os.environ.get('SEAQA_DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
-SERVER_EMAIL = os.environ.get('SEAQA_SERVER_EMAIL', EMAIL_HOST_USER)
+EMAIL_USE_TLS = False
+EMAIL_HOST = ''
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 25
+DEFAULT_FROM_EMAIL = ''
 
 SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER = True # Whether to send email when a system staff adding new member.
 SEND_EMAIL_ON_RESETTING_USER_PASSWD = True # Whether to send email when a system staff resetting user's password.
@@ -871,3 +870,10 @@ REDIS_PORT = configs.get('REDIS_PORT', 6379)
 REDIS_PASSWORD = configs.get('REDIS_PASSWORD', '')
 
 TEMP_EXPORT_VIEW_DIR = configs.get('TEMP_EXPORT_VIEW_DIR', TEMP_EXPORT_VIEW_DIR)
+
+EMAIL_HOST = configs.get('EMAIL_HOST', EMAIL_HOST)
+EMAIL_HOST_USER = configs.get('EMAIL_HOST_USER', EMAIL_HOST_USER)
+EMAIL_HOST_PASSWORD = configs.get('EMAIL_HOST_PASSWORD', EMAIL_HOST_PASSWORD)
+EMAIL_PORT = configs.get('EMAIL_PORT', EMAIL_PORT)
+DEFAULT_FROM_EMAIL = configs.get('DEFAULT_FROM_EMAIL', DEFAULT_FROM_EMAIL)
+SERVER_EMAIL = configs.get('SERVER_EMAIL', EMAIL_HOST_USER)
