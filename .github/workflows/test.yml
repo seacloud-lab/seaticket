@@ -7,6 +7,11 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   REDIS_HOST: localhost
+  SEAQA_MYSQL_DB_HOST: 127.0.0.1
+  SEAQA_MYSQL_DB_PORT: 3306
+  SEAQA_MYSQL_DB_USER: root
+  SEAQA_MYSQL_DB_PASSWORD: root
+  SEAQA_MYSQL_SEAQA_DB_NAME: sea_qa
 
 permissions:
   contents: read
@@ -26,6 +31,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
           MYSQL_DATABASE: sea_qa
         ports:
           - 3306:3306
@@ -37,7 +43,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.12"
@@ -57,9 +64,58 @@ jobs:
         run: |
           echo "REDIS_HOST=localhost" >> $GITHUB_ENV
 
-      - name: run pytest
+      - name: Create seaqa_config.yaml for tests
+        run: |
+          cat > /tmp/seaqa_config.yaml <<'EOF'
+          global:
+            SEAQA_WEB_SECRET_KEY: "test-secret-key"
+            JWT_PRIVATE_KEY: "qwertyuiop"
+            LLM_MODELS: []
+            AI_PRICES: {}
+          seaqa-web: {}
+          EOF
+
+      - name: Detect backend changes
+        id: backend_changes
         run: |
           cd $GITHUB_WORKSPACE
+          chmod +x tests/test_seaqa_backend_changes.sh
+          if ./tests/test_seaqa_backend_changes.sh; then
+            echo "run_backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_backend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: run pytest
+        # if: steps.backend_changes.outputs.run_backend == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE
+          export CONF_PATH=/tmp
+          export SEAQA_CONFIG_NAME=seaqa_config.yaml
           export DJANGO_SETTINGS_MODULE=seahub.test_settings
           export JWT_PRIVATE_KEY=qwertyuiop
           pytest
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+
+      - name: Detect frontend changes
+        id: frontend_changes
+        run: |
+          cd $GITHUB_WORKSPACE
+          chmod +x tests/test_seaqa_frontend_changes.sh
+          if ./tests/test_seaqa_frontend_changes.sh; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: run npm lint and npm test
+        # if: steps.frontend_changes.outputs.changed == 'true'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >~/.npmrc
+          cd $GITHUB_WORKSPACE/frontend
+          npm ci
+          npm run lint
+          npm run test
