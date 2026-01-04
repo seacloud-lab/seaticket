@@ -5,7 +5,7 @@ export const BAR_TYPE = {
   SEARCH: 'search',
   TICKET: 'tickets',
   MY_TICKET: 'my-tickets',
-  TRASH: 'trash',
+  TRASH: 'tickets/trash',
   CONNECTION: 'connections',
   SETTINGS: 'settings',
   KNOWLEDGE: 'knowledge-base',

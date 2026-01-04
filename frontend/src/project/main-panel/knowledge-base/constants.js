@@ -65,6 +65,7 @@ export const KNOWLEDGE_PAGE_SLUG_ID = {
   ALL: 'all',
   NEW: 'new',
   TAGS: 'tags',
+  TRASH: 'trash',
 };
 
 export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {

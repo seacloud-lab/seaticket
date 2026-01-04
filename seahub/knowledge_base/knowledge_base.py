@@ -17,6 +17,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission, get_current_table_metadata, upload_files_to_s3, \
     replace_file_url_in_content
+from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
@@ -392,3 +393,107 @@ class KnowledgeBaseMetadataAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response(select_option_metadata)
+
+
+class KnowledgeBasesTrashAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    def get(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 1000)
+        try:
+            start = int(start)
+            limit = int(limit)
+        except:
+            start = 0
+            limit = 1000
+
+        if start < 0:
+            error_msg = 'start invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if limit < 0:
+            error_msg = 'limit invalid'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            kb_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_KNOWLEDGE_BASE)
+            kb_columns = kb_meta.get('columns') or []
+            display_columns = []
+            for column in kb_columns:
+                if column.get('name') in KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS:
+                    display_columns.append(column)
+            query_fields = ', '.join(KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS)
+            sql = f"SELECT {query_fields} FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `deleted` = True LIMIT {limit} OFFSET {start}"
+            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+            records = res.get('results', [])
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'records': records, 'columns': display_columns})
+
+    def put(self, request, project_uuid):
+        if not is_org_context(request):
+            error_msg = 'Feature is not enabled.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        record_ids = request.data.get('record_ids')
+        if not record_ids:
+            error_msg = 'record_ids is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        if not isinstance(record_ids, list):
+            error_msg = 'record_ids must be a list'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        try:
+            seadb_api = SeaDBAPI(username)
+            now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+            update_rows = []
+            for r_id in record_ids:
+                update_rows.append({
+                    'pk': int(r_id),
+                    'row': {
+                        KnowledgeBaseTable.deleted.name: False,
+                        KnowledgeBaseTable.modified_time.name: now_datetime,
+                    }
+                })
+            if update_rows:
+                seadb_api.update_rows(project_uuid, TABLE_KNOWLEDGE_BASE, update_rows)
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
