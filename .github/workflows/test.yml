@@ -1,0 +1,65 @@
+name: SeaQA Web Test CI
+
+on:
+  pull_request:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  REDIS_HOST: localhost
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:latest
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        ports:
+          - 6379:6379
+
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: sea_qa
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: apt install
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y build-essential pkg-config python3-dev default-libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev
+
+      - name: pip install
+        run: |
+          cd $GITHUB_WORKSPACE
+          pip install -r test-requirements.txt
+          sudo rm -rf /usr/lib/python3/dist-packages/pytz/
+
+      - name: Set REDIS_HOST environment variable
+        run: |
+          echo "REDIS_HOST=localhost" >> $GITHUB_ENV
+
+      - name: run pytest
+        run: |
+          cd $GITHUB_WORKSPACE
+          export DJANGO_SETTINGS_MODULE=seahub.test_settings
+          export JWT_PRIVATE_KEY=qwertyuiop
+          pytest
