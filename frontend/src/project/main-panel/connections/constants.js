@@ -329,6 +329,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   UNREAD: 'unread',
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
+  RESOLVED: 'resolved',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -414,6 +415,10 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
       display_name: gettext('Created time'),
       type: CellType.CTIME,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.RESOLVED]: {
+      display_name: gettext('Resolved'),
+      type: CellType.CHECKBOX,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
   },
