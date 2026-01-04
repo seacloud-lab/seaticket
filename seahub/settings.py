@@ -355,7 +355,7 @@ REST_FRAMEWORK = {
         'app': '1000/minute',
         'import': '20/minute',
         'export': '20/minute',
-        'repair-base': '6/minute',
+        'repair-base': '6/minute'
     },
     # https://github.com/tomchristie/django-rest-framework/issues/2891
     'UNICODE_JSON': False,
