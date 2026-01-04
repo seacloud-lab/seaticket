@@ -45,10 +45,12 @@ class NotificationAPI {
     return this.req.get(url, { params });
   }
 
-  listProjectNotifications(projectUuid, page = 1, perPage = 20) {
+  listProjectNotifications(projectUuid, page = 1, perPage = 20, options = {}) {
     const url = this.server + '/api/v1/projects/' + projectUuid + '/notifications/';
     const params = { page, per_page: perPage };
-    return this.req.get(url, { params });
+    const config = { params };
+    if (options.signal) config.signal = options.signal;
+    return this.req.get(url, config);
   }
 
   markProjectNoticeAsRead(notificationID) {
