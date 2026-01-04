@@ -33,7 +33,7 @@ from seahub.seadb_models.utils import init_site_seadb_table, init_discourse_foru
     list_connection_view_records, list_github_issue_record_details, init_seafile_seadb_table, init_email_seadb_table, \
     list_seafile_record_details, list_site_record_details, list_email_record_details
 from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_INTERVAL, MANUAL_CRAWL_INTERVAL
-from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable
+from seahub.seadb_models.models import WebCrawlTable, ThreadTable, DiscourseTopicsTable, GithubIssuesTable, SeafileTable, WebCrawlTable, ThreadTable
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 
@@ -874,7 +874,13 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        supported_types = [ConnectionType.DISCOURSE_FORUM.value, ConnectionType.GITHUB_ISSUE.value]
+        supported_types = [
+            ConnectionType.DISCOURSE_FORUM.value, 
+            ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.SITE.value,
+            ConnectionType.SEAFILE.value,
+            ConnectionType.EMAIL.value,
+        ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support mark outdated.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -884,6 +890,12 @@ class ProjectConnectionRecordsOutdatedView(APIView):
             table_cls = DiscourseTopicsTable
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             table_cls = GithubIssuesTable
+        elif project_connection.type == ConnectionType.SITE.value:
+            table_cls = WebCrawlTable
+        elif project_connection.type == ConnectionType.SEAFILE.value:
+            table_cls = SeafileTable
+        elif project_connection.type == ConnectionType.EMAIL.value:
+            table_cls = ThreadTable
 
         outdated_field = getattr(table_cls, 'outdated', None)
         modified_time_field = getattr(table_cls, 'modified_time', None)
