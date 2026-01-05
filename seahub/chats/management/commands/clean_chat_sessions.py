@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from django.db.models import Subquery
 
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
 
@@ -26,8 +27,8 @@ class Command(BaseCommand):
         old_sessions = ChatSessions.objects.filter(updated_at__lt=cutoff_date)
         count = old_sessions.count()
 
-        ChatMessages.objects.filter(session_uuid__in=old_sessions.values('session_uuid')).delete()
-        ChatToolCalls.objects.filter(session_uuid__in=old_sessions.values('session_uuid')).delete()
+        ChatMessages.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
+        ChatToolCalls.objects.filter(session_uuid__in=Subquery(old_sessions.values('session_uuid'))).delete()
         old_sessions.delete()
 
         self.stdout.write(f"Deleted {count} sessions.")
