@@ -6,6 +6,7 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 export const getConnectionIcon = (type) => {
   if (!type) return null;
   const connection = CONNECTION_TYPES.find(c => c.type === type);
+  if (type === 'ticket') return `${mediaUrl}img/ticket.png`;
   if (!connection) return `${mediaUrl}img/connection/sites.png`;
   return `${mediaUrl}img/connection/${connection.icon}.png`;
 };

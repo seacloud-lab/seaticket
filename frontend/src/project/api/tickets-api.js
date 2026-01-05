@@ -402,6 +402,15 @@ class TicketsAPI {
     const url = this.server + '/api/v1/project/' + projectUuid + '/ticket/metadata/';
     return this.req.get(url);
   }
+
+  findRelatedIssues(projectUuid, ticketId) {
+    const url = this.server + '/api/v1/ai/related-records/';
+    const data = {
+      project_uuid: projectUuid,
+      ticket_id: ticketId
+    };
+    return this.req.post(url, data);
+  }
 }
 
 const ticketsAPI = new TicketsAPI();
