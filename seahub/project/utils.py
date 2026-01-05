@@ -12,8 +12,7 @@ from botocore.exceptions import ClientError
 
 from seahub.project.models import Projects, DeletedProjects, ConnectionsViews, \
     StatsAIByTeam, StatsAIByOwner, Workspaces
-from seahub.chats.models import ChatSessions
-from seahub.chats.utils import delete_session
+from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
 from seahub.tickets.models import TicketViews
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from django.db.models import Sum, Value
@@ -395,6 +394,14 @@ def replace_file_url_in_content(content, new_file_urls_dict):
     return content
 
 
+def delete_sessions(session_uuids):
+    try:
+        ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
+        ChatToolCalls.objects.filter(session_uuid__in=session_uuids).delete()
+        ChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
+    except Exception as e:
+        logger.error('delete sessions error: %s', e)
+
 
 def delete_project(project):
     project_uuid = str(project.uuid)
@@ -403,9 +410,8 @@ def delete_project(project):
         TicketViews.objects.filter(project_uuid=project_uuid).delete()
         KnowledgeBaseViews.objects.filter(project_uuid=project_uuid).delete()
         ProjectNotification.objects.filter(project_uuid=project_uuid).delete()
-        delete_session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
-        for session_uuid in set(delete_session_uuids):
-            delete_session(session_uuid)
+        session_uuids = ChatSessions.objects.filter(project_uuid=project_uuid).values_list('session_uuid', flat=True)
+        delete_sessions(session_uuids)
         seadb_api = SeaDBAPI()
         seadb_api.delete_base(project_uuid)
     except Exception as e:
