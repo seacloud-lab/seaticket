@@ -1,0 +1,37 @@
+@import '@/project/main-panel/tickets/view/new-ticket/index.css';
+
+.sea-qa-portal-content .sea-qa-project-new-ticket {
+  padding: 0;
+}
+
+.sea-qa-portal-content .sea-qa-project-new-ticket .required-tip {
+  color: #ff1920;
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 6px;
+}
+
+.sea-qa-portal-content .sf-long-text-inline-editor-container {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+}
+
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-simple-slate-editor-container {
+  min-width: 540px;
+}
+
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content,
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-scroll-container,
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-editor-content,
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article,
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .sf-slate-article-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.sea-qa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article>div:first-child {
+  flex: 1;
+}

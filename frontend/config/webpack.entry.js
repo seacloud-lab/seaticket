@@ -6,6 +6,7 @@ const entryFiles = {
   sysAdmin: '/sys-admin',
   home: '/home',
   project: '/project',
+  portal: '/portal',
   eyeIcon: '/icon-page/eye-icon',
   checkCircleIcon: '/icon-page/check-circle',
   exclamationCircleIcon: '/icon-page/exclamation-circle',
