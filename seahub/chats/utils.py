@@ -9,6 +9,14 @@ import time
 from urllib.parse import urljoin
 from seahub.chats.models import ChatToolCalls
 from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
+from seahub.knowledge_base.knowledge_base_utils import get_whole_knowledge_bases_data
+from seahub.tickets.ticket_utils import get_whole_tickets_data
+from seahub.seadb_models.site_seadb_api import SiteSeaDBAPI
+from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
+from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
+from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +162,68 @@ def gen_message_id(session_uuid, max_try=5):
         raise Exception(f'Failure to generate message_id')
 
     return new_message_id
+
+def get_extra_contents(seadb_api, project_uuid, extra_contents):
+    knowledge_base_ids = []
+    site_documents = []
+    seafile_documents = []
+    ticket_ids = []
+    github_issues = []
+    discourse_issues = []
+    email_issues = []
+
+    for extra_content in extra_contents:
+        if extra_content.get('record_id', -1) < 0:
+            continue
+
+        # documents
+        if extra_content.get('connection_type') == 'knowledge_base':
+            knowledge_base_ids.append(extra_content['record_id'])
+        elif extra_content.get('connection_type') == ConnectionType.SITE.value:
+            site_documents.append(extra_content)
+        elif extra_content.get('connection_type') == ConnectionType.SEAFILE.value:
+            seafile_documents.append(extra_content)
+        
+        # issues
+        elif extra_content.get('connection_type') == 'ticket':
+            ticket_ids.append(extra_content['record_id'])
+        elif extra_content.get('connection_type') == ConnectionType.GITHUB_ISSUE.value:
+            github_issues.append(extra_content)
+        elif extra_content.get('connection_type') == ConnectionType.EMAIL.value:
+            email_issues.append(extra_content)
+        elif extra_content.get('connection_type') == ConnectionType.DISCOURSE_FORUM.value:
+            discourse_issues.append(extra_content)
+
+    results = []
+    ## documents
+    if knowledge_base_ids:
+        results += get_whole_knowledge_bases_data(seadb_api, project_uuid, knowledge_base_ids)
+    
+    if site_documents:
+        site_seadb_api = SiteSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += site_seadb_api.get_whole_sites_data(project_uuid, site_documents)
+    
+    if seafile_documents:
+        seafile_seadb_api = SeafileSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += seafile_seadb_api.get_whole_seafiles_data(seafile_documents)
+
+    ## issues
+    if ticket_ids:
+        results += get_whole_tickets_data(seadb_api, project_uuid, ticket_ids)
+
+    if github_issues:
+        github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += github_seadb_api.get_whole_issues_data(github_issues)
+
+    if email_issues:
+        email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += email_seadb_api.get_whole_issues_data(email_issues)
+
+    if discourse_issues:
+        discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += discourse_seadb_api.get_whole_issues_data(discourse_issues)
+    
+    return results
 
 def format_extra_contents(extra_contents):
     new_extra_contents = []

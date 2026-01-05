@@ -752,3 +752,67 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         logger.error(f'SeaDB query error for knowledge base : {e}')
         records = []
     return records, display_columns
+
+def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_type_map, search_text, limit, username=''):
+    search_tables = [
+        {
+            'name': KnowledgeBaseTable.gen_table_name(),
+            'type': 'knowledge_base'
+        }
+    ]
+
+    for connection_id, connection_type in documents_connection_id_type_map.items():
+        if connection_type == ConnectionType.SITE.value:
+            search_tables.append({
+                'name': WebCrawlTable.gen_table_name(connection_id),
+                'type': ConnectionType.SITE.value,
+                'connection_id': connection_id
+            })
+        elif connection_type == ConnectionType.SEAFILE.value:
+            search_tables.append({
+                'name': SeafileTable.gen_table_name(connection_id),
+                'type': ConnectionType.SEAFILE.value,
+                'connection_id': connection_id
+            })
+
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+
+    results = []
+    for table in search_tables:
+        if len(results) >= limit:
+            break
+
+        table_metadata = get_current_table_metadata(tables_metadata, table['name'])
+        if not table_metadata:
+            continue
+
+        columns = table_metadata.get('columns') or []
+        display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
+    
+        # find title column
+        title_column = {}
+        for column in display_columns:
+            if column.get('name') == 'title':
+                title_column = column
+                break
+        
+        if not title_column:
+            continue
+
+        view = {
+            'basic_filters': [],
+            'filters': [
+                {'column_key': title_column.get('key'), 'filter_predicate': 'contains', 'filter_term': search_text}
+            ] if search_text else [],
+            'filter_conjunction': 'Or'
+        }
+
+        sql = view_data_2_sql(table['name'], display_columns, view, username, 0, limit - len(results))
+
+        for result in seadb_api.query_rows(project_uuid, sql).get('results'):
+            result['type'] = table['type']
+            result['connection_id'] = table['connection_id']
+            results.append(result)
+
+    return results

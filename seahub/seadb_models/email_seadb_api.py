@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class EmailSeaDBAPI:
-    def __init__(self, base_id, username='', timeout=30):
+    def __init__(self, base_id, username='', timeout=30, seadb_api=None):
         self.base_id = base_id
-        self.seadb_api = SeaDBAPI(username=username, timeout=timeout)
+        self.seadb_api = seadb_api or SeaDBAPI(username=username, timeout=timeout)
 
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""
@@ -40,14 +40,22 @@ class EmailSeaDBAPI:
         return []
 
     def get_threads_by_pks(self, connection_id, _pks):
+        _pks_str = ', '.join([
+            str(_pk)
+            for _pk in _pks
+        ])
         table_name = ThreadTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({', '.join(_pks)})"
+        sql = f"SELECT * FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
     def get_emails_by_thread_ids(self, connection_id, thread_ids, limit_for_each_id):
+        thread_ids_str = ', '.join([
+            str(thread_id)
+            for thread_id in thread_ids
+        ])
         table_name = EmailTable.gen_table_name(connection_id)
-        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` in ({', '.join(thread_ids)}) ORDER BY {EmailTable.modified_time.name} ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
+        sql = f"SELECT * FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY {EmailTable.modified_time.name} ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         emails = response.get('results', [])
         result = {}
@@ -64,14 +72,14 @@ class EmailSeaDBAPI:
         Build a dict object from an email thread and its emails.
 
         Args:
-        - connection_ids_pks: [{"connection_id": ..., "_pk": ...}]
+        - connection_ids_pks: [{"connection_id": ..., "record_id": ...}]
 
         Returns:
         [
             {
                 "type": "issue",
                 "connection_id": ...,
-                "issue_id": ...,
+                "record_id": ...,
                 "title": ...,
                 "created_at": ...,
                 "emails": [
@@ -90,23 +98,22 @@ class EmailSeaDBAPI:
         connection_ids_pks_map = {}
         for connection_id_pk in connection_ids_pks:
             connection_id = connection_id_pk['connection_id']
-            issue_id = connection_id_pk['issue_id']
+            record_id = connection_id_pk['record_id']
             if connection_id not in connection_ids_pks_map:
-                connection_ids_pks_map[connection_id] = [issue_id]
+                connection_ids_pks_map[connection_id] = [record_id]
             else:
-                connection_ids_pks_map[connection_id].append(issue_id)
+                connection_ids_pks_map[connection_id].append(record_id)
 
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
-            _pks_str = [str(tid) for tid in _pks]
-            threads = self.get_threads_by_pks(connection_id, _pks_str)
-            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks_str, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
+            threads = self.get_threads_by_pks(connection_id, _pks)
+            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
 
             for thread_data in threads:
                 whole_thread_data = {
                     'type': 'issue',
                     'connection_id': int(connection_id),
-                    'issue_id': int(thread_data['_pk']),
+                    'record_id': int(thread_data['_pk']),
                     'title': thread_data.get('title'),
                     'created_at': thread_data.get('modified_time'),
                     'emails': []

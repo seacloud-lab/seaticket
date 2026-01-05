@@ -76,11 +76,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       messageInputRef.current?.clearInput();
     });
 
-    const ticketIds = attachments.filter(a => a.type === 'ticket').map(t => t._id);
-    const issuesIds = attachments.filter(a => a.type === 'issue').map(i => ({ issue_id: i._id, connection_id: i.connection_id, connection_type: i.connection_type }));
-
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments, model });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -89,7 +86,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, attachments, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
