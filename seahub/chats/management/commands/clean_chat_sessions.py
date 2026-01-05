@@ -26,7 +26,7 @@ class Command(BaseCommand):
         cutoff_date = timezone.now() - timedelta(days=days)
 
         session_uuids = ChatSessions.objects.filter(updated_at__lt=cutoff_date).values_list('session_uuid', flat=True)
-        count = len(session_uuids)
+        count = session_uuids.count()
         delete_sessions(session_uuids)
 
         self.stdout.write(f"Deleted {count} sessions.")
