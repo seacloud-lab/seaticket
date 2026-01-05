@@ -572,6 +572,11 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         'filter_predicate': 'is',
         'filter_term': '0001' if ticket_state == 'open' else '0002',
     })
+    basic_filters.append({
+        'column_name': TicketsTable.participants.name,
+        'filter_predicate': 'include_me',
+    })
+
     view_copy['basic_filters'] = basic_filters
 
     sql = view_data_2_sql('tickets', display_columns, view_copy, username, start, limit)
