@@ -280,14 +280,17 @@ class RelatedRecordsView(APIView):
             error_msg = 'project_uuid is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        # Support two source types: ticket or connection record
+        ticket_id = request.data.get('ticket_id')
         connection_id = request.data.get('connection_id')
-        if not connection_id:
-            error_msg = 'connection_id is required.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         record_id = request.data.get('record_id')
-        if not record_id:
-            error_msg = 'record_id is required.'
+
+        # Either ticket_id or (connection_id + record_id) must be provided
+        is_ticket_source = bool(ticket_id)
+        is_connection_source = bool(connection_id and record_id)
+
+        if not is_ticket_source and not is_connection_source:
+            error_msg = 'Either ticket_id or (connection_id and record_id) is required.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -301,53 +304,75 @@ class RelatedRecordsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        current_category = ConnectionCategory.from_type(connection.type)
-
-        table_name = None
-        if current_category == ConnectionCategory.ISSUE:
-            if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                table_name = GithubIssuesTable.gen_table_name(connection_id)
-            elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
-                table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            elif connection.type == ConnectionType.EMAIL.value:
-                table_name = ThreadTable.gen_table_name(connection_id)
-
-        if not table_name:
-            error_msg = 'Unsupported connection type for similarity search.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         seadb_api = SeaDBAPI(username)
         project_uuid_32 = uuid_str_to_32_chars(project_uuid)
 
-        sql = f"SELECT ai_summary_vector, title, ai_summary FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
-        result = seadb_api.query_rows(project_uuid_32, sql)
-        if not result['results'] or not result['results'][0].get('ai_summary_vector'):
-            error_msg = 'NO AI summary vector.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        # Determine source type and get query vector
+        if is_ticket_source:
+            # Query from tickets table
+            sql = f"SELECT ai_summary_vector, title, ai_summary FROM `tickets` WHERE _pk = {int(ticket_id)} AND (`deleted` = False OR `deleted` IS NULL) LIMIT 1"
+            result = seadb_api.query_rows(project_uuid_32, sql)
+            if not result['results'] or not result['results'][0].get('ai_summary_vector'):
+                error_msg = 'NO AI summary vector.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        query_record = result['results'][0]
-        target_vector = query_record['ai_summary_vector']
+            query_record = result['results'][0]
+            target_vector = query_record['ai_summary_vector']
+            current_category = ConnectionCategory.ISSUE  # Tickets search in ISSUE category
+            source_connection_id = None
+            source_record_id = int(ticket_id)
+        else:
+            # Query from connection table
+            connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+            if not connection:
+                error_msg = f'Connection {connection_id} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+            current_category = ConnectionCategory.from_type(connection.type)
+
+            table_name = None
+            if current_category == ConnectionCategory.ISSUE:
+                if connection.type == ConnectionType.GITHUB_ISSUE.value:
+                    table_name = GithubIssuesTable.gen_table_name(connection_id)
+                elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
+                    table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+                elif connection.type == ConnectionType.EMAIL.value:
+                    table_name = ThreadTable.gen_table_name(connection_id)
+
+            if not table_name:
+                error_msg = 'Unsupported connection type for similarity search.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            sql = f"SELECT ai_summary_vector, title, ai_summary FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
+            result = seadb_api.query_rows(project_uuid_32, sql)
+            if not result['results'] or not result['results'][0].get('ai_summary_vector'):
+                error_msg = 'NO AI summary vector.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            query_record = result['results'][0]
+            target_vector = query_record['ai_summary_vector']
+            source_connection_id = int(connection_id)
+            source_record_id = int(record_id)
+
+        # Get all ISSUE type connections for the project
         project_connections = ProjectConnections.objects.filter(
             project=project,
             deleted=False
         ).select_related('project')
 
-        connection_ids = []
+        search_connection_ids = []
         for proj_conn in project_connections:
             if ConnectionCategory.from_type(proj_conn.type) == current_category:
-                connection_ids.append(proj_conn.id)
+                search_connection_ids.append(proj_conn.id)
 
         search_data = {
             'query_vector': target_vector,
             'project_uuid': project_uuid,
             'count': 51,
-            'connection_ids': connection_ids
+            'connection_ids': search_connection_ids,
+            'include_tickets': is_ticket_source or current_category == ConnectionCategory.ISSUE,
         }
+        print(f'[DEBUG]: search_data: {search_data}')
 
         try:
             search_results = find_related_records(search_data)
@@ -358,15 +383,30 @@ class RelatedRecordsView(APIView):
                 })
 
             top_candidates = []
-            connection_objects = {int(connection_id): connection}
+            connection_objects = {}
+            if not is_ticket_source and connection_id:
+                connection_objects[int(connection_id)] = connection
 
             connection_pks_map = {}
+            ticket_pks = []
 
             for result in search_results:
-                result_connection_id = int(result.get('connection_id', connection_id))
+                result_type = result.get('source_type', 'connection')
                 pk = result.get('pk')
 
-                if result_connection_id == int(connection_id) and pk == int(record_id):
+                # Handle ticket results
+                if result_type == 'ticket':
+                    # Skip if this is the source ticket
+                    if is_ticket_source and pk == int(ticket_id):
+                        continue
+                    ticket_pks.append(pk)
+                    continue
+
+                # Handle connection results
+                result_connection_id = int(result.get('connection_id', connection_id or 0))
+
+                # Skip if this is the source connection record
+                if not is_ticket_source and result_connection_id == source_connection_id and pk == source_record_id:
                     continue
 
                 if result_connection_id not in connection_pks_map:
@@ -375,20 +415,35 @@ class RelatedRecordsView(APIView):
                 connection_pks_map[result_connection_id]['pks'].append(pk)
                 connection_pks_map[result_connection_id]['results'].append(result)
 
+            # Fetch connection objects
             unique_connection_ids = list(connection_pks_map.keys())
-            additional_connections = ProjectConnections.objects.filter(id__in=unique_connection_ids, deleted=False)
-            for conn in additional_connections:
-                connection_objects[conn.id] = conn
+            if unique_connection_ids:
+                additional_connections = ProjectConnections.objects.filter(id__in=unique_connection_ids, deleted=False)
+                for conn in additional_connections:
+                    connection_objects[conn.id] = conn
 
             records_map = {}
 
+            # Fetch ticket records
+            if ticket_pks:
+                try:
+                    pks_str = ','.join(map(str, ticket_pks))
+                    sql = f"SELECT * FROM `tickets` WHERE _pk IN ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+                    res = seadb_api.query_rows(project_uuid_32, sql)
+                    tickets = res.get('results', [])
+                    records_map['tickets'] = {ticket.get('_pk'): ticket for ticket in tickets}
+                except Exception as e:
+                    logger.error(f'Error batch querying tickets: {e}')
+                    records_map['tickets'] = {}
+
+            # Fetch connection records
             for result_connection_id, data in connection_pks_map.items():
                 if result_connection_id not in connection_objects:
                     logger.warning(f'Connection {result_connection_id} not found or deleted')
                     continue
 
-                connection = connection_objects[result_connection_id]
-                connection_type = connection.type
+                conn = connection_objects[result_connection_id]
+                connection_type = conn.type
 
                 if ConnectionCategory.from_type(connection_type) != current_category:
                     continue
@@ -422,17 +477,44 @@ class RelatedRecordsView(APIView):
                     logger.error(f'Error batch querying records for connection {result_connection_id}: {e}')
                     records_map[result_connection_id] = {}
 
+            # Process search results
             for result in search_results:
-                result_connection_id = int(result.get('connection_id', connection_id))
+                result_type = result.get('source_type', 'connection')
                 pk = result.get('pk')
                 score = result.get('score', 0.0)
                 ai_summary = result.get('ai_summary', '')
 
+                # Process ticket results
+                if result_type == 'ticket':
+                    if is_ticket_source and pk == int(ticket_id):
+                        continue
+
+                    ticket = records_map.get('tickets', {}).get(pk)
+                    if not ticket:
+                        logger.warning(f'Ticket not found for pk {pk}')
+                        continue
+
+                    processed_result = {
+                        '_id': pk,
+                        'score': score,
+                        'type': 'ticket',
+                        'ai_summary': ai_summary,
+                        'title': ticket.get('title', ''),
+                        'content': ticket.get('content', ''),
+                        'modified_time': ticket.get('modified_time', ''),
+                        'state': ticket.get('state', ''),
+                    }
+                    top_candidates.append(processed_result)
+                    continue
+
+                # Process connection results
+                result_connection_id = int(result.get('connection_id', connection_id or 0))
+
                 if result_connection_id not in connection_objects:
                     continue
 
-                connection = connection_objects[result_connection_id]
-                connection_type = connection.type
+                conn = connection_objects[result_connection_id]
+                connection_type = conn.type
 
                 record = records_map.get(result_connection_id, {}).get(pk)
                 if not record:
@@ -448,7 +530,7 @@ class RelatedRecordsView(APIView):
                 }
 
                 if connection_type == ConnectionType.DISCOURSE_FORUM.value:
-                    connection_config = json.loads(connection.config)
+                    connection_config = json.loads(conn.config)
                     discourse_forum_url = connection_config.get('url', '')
                     slug = record.get('slug', '')
                     topic_id = record.get('topic_id', '')
@@ -462,7 +544,7 @@ class RelatedRecordsView(APIView):
                     processed_result['modified_time'] = record.get('modified_time', '')
 
                 elif connection_type == ConnectionType.GITHUB_ISSUE.value:
-                    connection_config = json.loads(connection.config)
+                    connection_config = json.loads(conn.config)
                     server_url = connection_config.get('repository', '')
                     issue_number = record.get('issue_number', '')
                     if server_url and issue_number:
@@ -503,7 +585,8 @@ class RelatedRecordsView(APIView):
                 for candidate in top_candidates:
                     candidate_records.append({
                         '_id': candidate['_id'],
-                        'connection_id': candidate['connection_id'],
+                        'connection_id': candidate.get('connection_id'),
+                        'type': candidate.get('type', 'connection'),
                         'title': candidate.get('title', ''),
                         'ai_summary': candidate.get('ai_summary', '')
                     })
@@ -519,9 +602,17 @@ class RelatedRecordsView(APIView):
                 }
 
                 reranked_keys = rank_related_issues(rerank_params)
-
                 if reranked_keys:
-                    key_to_result = {f'{r['_id']}:{r['connection_id']}': r for r in top_candidates}
+                    # Build key considering both tickets and connections
+                    key_to_result = {}
+                    for r in top_candidates:
+                        if r.get('type') == 'ticket':
+                            # Use 'None' to match the format from rank_related_issues
+                            key = f"{r['_id']}:None"
+                        else:
+                            key = f"{r['_id']}:{r.get('connection_id')}"
+                        key_to_result[key] = r
+
                     for reranked_key in reranked_keys:
                         if reranked_key in key_to_result:
                             reranked_results.append(key_to_result[reranked_key])
