@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from django.http import FileResponse
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import UserRateThrottle, ExportRateThrottle
+from seahub.api2.throttling import UserRateThrottle, ExportRateThrottle, ImportRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission
@@ -123,7 +123,7 @@ class KnowledgeBaseExportExcel(APIView):
 class KnowledgeBaseImportExcel(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
+    throttle_classes = (ImportRateThrottle,)
 
     def post(self, request, project_uuid):
         project = Projects.objects.get_project_by_uuid(project_uuid)
