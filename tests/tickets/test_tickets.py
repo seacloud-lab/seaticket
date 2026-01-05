@@ -434,14 +434,14 @@ class TestTicketsSearchAPIView:
 
 class TestMyTicketAPIView:
     def test_feature_not_enabled(self, factory, user):
-        request = factory.get('/api/v1/projects/p1/tickets/my/')
+        request = factory.post('/api/v1/projects/p1/tickets/my/')
         request.user = user
         with patch('seahub.tickets.tickets.is_org_context', return_value=False):
             resp = MyTicketAPIView.as_view()(request, project_uuid='p1')
         assert resp.status_code == 403
 
-    def test_get_success(self, factory, user):
-        request = factory.get('/api/v1/projects/p1/tickets/my/')
+    def test_post_success(self, factory, user):
+        request = factory.post('/api/v1/projects/p1/tickets/my/')
         request.user = user
         project = Mock()
         project.workspace = Mock()
@@ -450,13 +450,17 @@ class TestMyTicketAPIView:
                 patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI'), \
-                patch('seahub.tickets.tickets.get_my_tickets', return_value=([{'_pk': 1}], ['title'])):
+                patch('seahub.tickets.tickets.list_my_tickets', return_value=([{'_pk': 1}], ['title'])):
             resp = MyTicketAPIView.as_view()(request, project_uuid='p1')
         assert resp.status_code == 200
         assert 'tickets' in resp.data
 
-    def test_get_invalid_view_id_default_open(self, factory, user):
-        request = factory.get('/api/v1/projects/p1/tickets/my/', {'view_id': 'invalid'})
+    def test_post_invalid_view_id_default_open(self, factory, user):
+        request = factory.post(
+            '/api/v1/projects/p1/tickets/my/',
+            data={'view': 'invalid', 'config': {"filters": [], "filter_conjunction": "And", "basic_filters": [], "sorts": []}},
+            format='json',
+        )
         request.user = user
         project = Mock()
         project.workspace = Mock()
@@ -466,10 +470,10 @@ class TestMyTicketAPIView:
                 patch('seahub.tickets.tickets.Projects.objects.get_project_by_uuid', return_value=project), \
                 patch('seahub.tickets.tickets.check_project_permission', return_value=True), \
                 patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.tickets.tickets.get_my_tickets', return_value=([], [])) as get_my_tickets_mock:
+                patch('seahub.tickets.tickets.list_my_tickets', return_value=([], [])) as list_my_tickets_mock:
             resp = MyTicketAPIView.as_view()(request, project_uuid='p1')
         assert resp.status_code == 200
-        assert get_my_tickets_mock.call_args[0][3] == 'open'
+        assert list_my_tickets_mock.call_args[0][3] == 'open'
 
 
 class TestTicketMetadataAPIView:

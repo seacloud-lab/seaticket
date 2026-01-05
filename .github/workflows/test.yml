@@ -43,8 +43,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.12"
@@ -87,7 +85,7 @@ jobs:
           fi
 
       - name: run pytest
-        if: steps.backend_changes.outputs.run_backend == 'true'
+        # if: steps.backend_changes.outputs.run_backend == 'true'
         run: |
           cd $GITHUB_WORKSPACE
           export CONF_PATH=/tmp
@@ -112,7 +110,7 @@ jobs:
           fi
 
       - name: run npm lint and npm test
-        if: steps.frontend_changes.outputs.changed == 'true'
+        # if: steps.frontend_changes.outputs.changed == 'true'
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >~/.npmrc
           cd $GITHUB_WORKSPACE/frontend
