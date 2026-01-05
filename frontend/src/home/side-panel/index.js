@@ -155,7 +155,7 @@ class SidePanel extends React.Component {
             onClick={(event) => this.onGroupTabClick(event, `project/${personalWorkspace.id}`)}
           >
             <Link tabIndex={tabIndex} to={siteRoot + 'project/' + personalWorkspace.id + '/'} className="workspace-nav-link ellipsis">
-              <Icon className="project-workspace-icon" symbol="creator" />
+              <Icon className="project-workspace-icon" symbol="my-projects-navbar" />
               <span className="nav-text">{gettext('My projects')}</span>
             </Link>
           </div>
@@ -216,7 +216,7 @@ class SidePanel extends React.Component {
                     aria-label={gettext('Projects')}
                     className="nav-link sea-qa-nav-link"
                   >
-                    <Icon symbol="home" className="nav-icon" />
+                    <Icon symbol="projects-navbar" className="nav-icon" />
                     <span className="nav-text">{gettext('Projects')}</span>
                   </Link>
                   <IconButton
@@ -247,7 +247,7 @@ class SidePanel extends React.Component {
                     aria-label={gettext('Trash')}
                     className="nav-link sea-qa-nav-link"
                   >
-                    <Icon symbol="trash" className="nav-icon" />
+                    <Icon symbol="trash-navbar" className="nav-icon" />
                     <span className="nav-text">{gettext('Trash')}</span>
                   </Link>
                 </div>
