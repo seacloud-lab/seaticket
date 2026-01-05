@@ -21,7 +21,7 @@ export const BAR_TYPES = [
   { key: BAR_TYPE.SEARCH, name: gettext('Search'), icon: 'search' },
   { key: BAR_TYPE.CONNECTION, name: gettext('Connections'), icon: 'connection' },
   { key: BAR_TYPE.SETTINGS, name: gettext('Settings'), icon: 'settings-thin' },
-  { key: BAR_TYPE.EXTERNAL_PORTAL, name: gettext('External portal')},
+  { key: BAR_TYPE.EXTERNAL_PORTAL, name: gettext('External portal'), icon: 'external-portal' },
   { key: BAR_TYPE.ANALYZE, name: gettext('Analyze'), icon: 'chart' },
   { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'knowledge-base' },
   { key: BAR_TYPE.TICKET, name: gettext('All tickets'), icon: 'all-tickets' },
