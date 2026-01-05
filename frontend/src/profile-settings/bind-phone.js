@@ -244,7 +244,7 @@ class BindPhone extends React.Component {
             {this.state.phoneNumberMessage && (
               <div className="col-sm-auto ml-1 bind-phone-message">
                 {this.state.isSendCodeError ?
-                  (<Icon className="error" symbol="exclamation-circle" />) :
+                  (<Icon className="error" symbol="exclamation-circle-filled" />) :
                   (<Icon className="success" symbol="check-circle" />)
                 }
                 <span className={`ml-1 ${this.state.isSendCodeError ? 'error' : 'success'}`}>{phoneNumberMessage}</span>

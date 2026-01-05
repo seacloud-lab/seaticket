@@ -46,7 +46,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
             onClick={() => toggleChildrenPageSlugId('')}
           />
@@ -57,7 +57,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
     return (
       <>
         <IconButton
-          icon="down"
+          icon="arrow-down"
           className="rotate-icon-90 sea-qa-project-toggle-connections-btn"
           onClick={handleReturnConnectionsHome}
         />
@@ -118,7 +118,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
-      return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="add" />);
+      return (<AddButton onClick={handleNewConnection} text={gettext('New connection')} icon="plus" />);
     }
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
     return (

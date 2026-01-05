@@ -18,12 +18,12 @@
   color: var(--bas-dark);
 }
 
-.sea-qa-ai-thought-process-btn .sea-qa-icon-svg-open-in-new {
+.sea-qa-ai-thought-process-btn .sea-qa-icon-svg-open-in-new-tab {
   height: 12px;
   width: 12px;
 }
 
-.sea-qa-ai-thought-process-btn:hover .sea-qa-icon-svg-open-in-new {
+.sea-qa-ai-thought-process-btn:hover .sea-qa-icon-svg-open-in-new-tab {
   cursor: pointer;
   color: var(--bas-dark);
 }

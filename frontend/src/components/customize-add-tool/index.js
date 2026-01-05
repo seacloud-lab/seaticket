@@ -7,7 +7,7 @@ import './index.css';
 function CustomizeAddTool({ callBack, name, className }) {
   return (
     <div className={`customize-add-tool ${className || ''}`} onClick={(e) => {e.stopPropagation(); callBack(e);}}>
-      <Icon symbol="add" className="customize-add-tool-icon" />
+      <Icon symbol="plus" className="customize-add-tool-icon" />
       <span className="text-truncate" title={name} aria-label={name}>{name}</span>
     </div>
   );

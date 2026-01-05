@@ -89,7 +89,7 @@ class OrgSamlConfigInput extends Component {
               {isBtnsShown &&
                 <>
                   <Button color="primary" onClick={this.onSubmit} title={gettext('Submit')} aria-label={gettext('Submit')}>
-                    <Icon symbol={'check'} />
+                    <Icon symbol={'check-mark'} />
                   </Button>
                   <Button color="secondary" onClick={this.hideBtns} title={gettext('Cancel')} aria-label={gettext('Cancel')} className="ml-2">
                     <Icon symbol={'x'} />

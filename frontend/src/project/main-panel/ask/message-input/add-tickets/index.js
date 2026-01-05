@@ -53,7 +53,7 @@ const AddTickets = ({ projectUuid, value: attachments = [], onChange: propsOnCha
         onClick={openSelector}
       >
         <div className="selected-option">
-          <Icon symbol="add" />
+          <Icon symbol="plus" />
           <div className="selected-option-show">{gettext('Add ticket')}</div>
         </div>
       </div>

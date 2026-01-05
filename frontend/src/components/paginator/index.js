@@ -68,7 +68,7 @@ class Paginator extends Component {
     return (
       <DropdownItem onClick={() => this.resetPerPage(perPage)} key={perPage}>
         <span className='paginator-dropdown-tick'>
-          {curPerPage === perPage && (<Icon symbol="check" />)}
+          {curPerPage === perPage && (<Icon symbol="check-mark" />)}
         </span>
         <span>
           {this.getPerPageText(perPage)}
@@ -83,9 +83,9 @@ class Paginator extends Component {
     let rightDisabled = !this.props.hasNextPage;
     return (
       <div className="my-6 paginator d-flex align-items-center justify-content-center">
-        <IconBtn icon="left" disabled={leftDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToPrevious} />
+        <IconBtn icon="arrow-left" disabled={leftDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToPrevious} />
         <div className="btn btn-primary mx-4 paginator-btn">{currentPage}</div>
-        <IconBtn icon="right" disabled={rightDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToNext} />
+        <IconBtn icon="arrow-right" disabled={rightDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToNext} />
         <Dropdown isOpen={this.state.isMenuShow} toggle={this.toggleOperationMenu} direction="up" className="paginator-dropdown">
           <DropdownToggle
             className="ml-6"
@@ -94,7 +94,7 @@ class Paginator extends Component {
             onClick={this.toggleOperationMenu}
           >
             <span className="pr-3">{this.getPerPageText(curPerPage)}</span>
-            <Icon symbol="down" className={classnames('d-inline-block', { 'rotate-180': this.state.isMenuShow })} />
+            <Icon symbol="arrow-down" className={classnames('d-inline-block', { 'rotate-180': this.state.isMenuShow })} />
           </DropdownToggle>
           <DropdownMenu>
             {PAGES.map(perPage => {

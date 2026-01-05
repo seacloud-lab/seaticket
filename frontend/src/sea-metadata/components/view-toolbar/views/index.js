@@ -174,14 +174,14 @@ const Views = ({ view, toggleView }) => {
               toggleView={toggleView}
             />
             <IconButton
-              icon="left"
+              icon="arrow-left"
               className={classnames('scroll-control-btn scroll-prev', { 'scroll-active': canScrollPrev })}
               onClick={() => onScrollControlClick('left')}
               title={gettext('Scroll to the left')}
               aria-label={gettext('Scroll to the left')}
             />
             <IconButton
-              icon="right"
+              icon="arrow-right"
               className={classnames('scroll-control-btn scroll-next ml-2', { 'scroll-active': canScrollNext })}
               onClick={() => onScrollControlClick('right')}
               title={gettext('Scroll to the right')}
@@ -191,7 +191,7 @@ const Views = ({ view, toggleView }) => {
         )}
         {context.canInsertView() &&
           <IconButton
-            icon="add"
+            icon="plus"
             onClick={() => openViewNameDialog()}
             title={gettext('Add view')}
             aria-label={gettext('Add view')}

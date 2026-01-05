@@ -52,7 +52,7 @@ class TopBar extends Component {
           </div>
           <IconButton icon="menu" className="side-nav-toggle mobile-toolbar-icon" onClick={this.onCloseSidePanel}/>
           {children && (
-            <IconButton icon="add" className="mobile-toolbar-icon" onClick={this.onShowOperationToggle}/>
+            <IconButton icon="plus" className="mobile-toolbar-icon" onClick={this.onShowOperationToggle}/>
           )}
         </div>
         <div className="common-toolbar" style={{ alignItems: 'center' }}>

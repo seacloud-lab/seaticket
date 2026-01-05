@@ -86,7 +86,7 @@ const InsertColumn = ({ lastColumn, height, groupOffsetLeft, insertColumn: inser
           tag="span"
           className="sea-metadata-table-cell column insert-column"
         >
-          <Icon symbol="add" />
+          <Icon symbol="plus" />
         </DropdownToggle>
         <CustomDropdownMenu onSelect={handleSelect} />
       </Dropdown>

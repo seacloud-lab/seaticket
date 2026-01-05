@@ -154,7 +154,7 @@ const CustomDropdownMenu = ({ modifiers, onSelect }) => {
                 >
                   <Icon symbol="edit" className="sea-metadata-icon" />
                   <span className="mr-auto">{gettext('Custom properties')}</span>
-                  <Icon symbol="down" />
+                  <Icon symbol="arrow-down" />
                 </DropdownToggle>
                 <DropdownMenu>
                   {basicsColumns.map((item, index) => (

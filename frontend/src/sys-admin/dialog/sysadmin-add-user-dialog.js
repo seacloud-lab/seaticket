@@ -148,7 +148,7 @@ class SysAdminAddUserDialog extends React.Component {
                   {gettext('Role')}
                   <Icon
                     className="ml-1 sea-qa-help-icon"
-                    symbol="help"
+                    symbol="question-circle-filled"
                     title={gettext('You can also add a user as a guest, who will not be allowed to create projects and groups.')}
                   />
                 </Label>

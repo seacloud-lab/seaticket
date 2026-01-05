@@ -28,7 +28,7 @@ const KnowledgeTopBar = ({ title }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
@@ -41,7 +41,7 @@ const KnowledgeTopBar = ({ title }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
             onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
           />
@@ -54,7 +54,7 @@ const KnowledgeTopBar = ({ title }) => {
     return (
       <>
         <IconButton
-          icon="down"
+          icon="arrow-down"
           className="rotate-icon-90 sea-qa-project-toggle-knowledge-btn"
           onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}
         />
@@ -67,7 +67,7 @@ const KnowledgeTopBar = ({ title }) => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
         <>
-          <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" className="mr-2" />
+          <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
           <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-inline-flex">
             <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} />
             <CustomizeDropdownMenu>
@@ -80,7 +80,7 @@ const KnowledgeTopBar = ({ title }) => {
 
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS && childrenPageSlugId === KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) {
       return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="add" />
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="plus" />
       );
     }
 
@@ -92,7 +92,7 @@ const KnowledgeTopBar = ({ title }) => {
 
     return (
       <>
-        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="add" className="mr-2" />
+        <AddButton onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="plus" className="mr-2" />
         <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-inline-flex">
           <CustomizeDropdownMoreToggle isOpen={isMoreMenuShow} />
           <CustomizeDropdownMenu>

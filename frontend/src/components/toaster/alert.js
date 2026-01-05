@@ -17,10 +17,10 @@ class Alert extends React.PureComponent {
       case 'success':
         return 'check-circle';
       case 'warning':
-        return 'exclamation-triangle';
+        return 'exclamation-triangle-filled';
       case 'none':
       case 'danger':
-        return 'exclamation-circle';
+        return 'exclamation-circle-filled';
       default:
         return 'check-circle';
     }

@@ -48,7 +48,7 @@ const ModelSelector = ({ selectedModel, updateModel }) => {
       >
         <div className="selected-option">
           <div className="selected-option-show">{value?.label}</div>
-          <Icon symbol="down" />
+          <Icon symbol="arrow-down" />
         </div>
       </div>
       {isShowMenu && (

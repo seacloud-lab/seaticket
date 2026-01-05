@@ -26,7 +26,7 @@ const PriorityItem = ({ value, readOnly, onClick, isSelected, hotKey, isActive }
         <span className="ml-2">{priority.name}</span>
       </span>
       <span className={classnames('sea-metadata-priority-item-right')}>
-        {isSelected && <Icon className="sea-metadata-icon" symbol="check" title={gettext('Selected')}/>}
+        {isSelected && <Icon className="sea-metadata-icon" symbol="check-mark" title={gettext('Selected')}/>}
         <span className="ml-2">{hotKey}</span>
       </span>
     </div>

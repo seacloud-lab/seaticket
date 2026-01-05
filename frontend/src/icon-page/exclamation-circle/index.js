@@ -6,6 +6,6 @@ const root = createRoot(document.getElementById('exclamation-circle-icon-wrapper
 
 root.render(
   <>
-    <Icon symbol="exclamation-circle" />
+    <Icon symbol="exclamation-circle-filled" />
   </>
 );

@@ -29,7 +29,7 @@ class GroupHeaderLeft extends Component {
       >
         <IconBtn
           className={classnames('group-toggle-btn no-hover-bg', { 'rotate-icon-270': !isExpanded })}
-          icon="down"
+          icon="arrow-down"
           onClick={this.props.onExpandGroupToggle}
         />
         <GroupTitle

@@ -79,7 +79,7 @@ class WebSettingInput extends Component {
           isBtnsShown ?
             <Fragment>
               <OpBtn onMouseDown={this.onSubmit} title={gettext('Submit')} className="web-setting-icon-btn-submit">
-                <Icon symbol="check" />
+                <Icon symbol="check-mark" />
               </OpBtn>
               <OpBtn className="ml-2 web-setting-icon-btn-cancel" title={gettext('Cancel')}>
                 <Icon symbol="x" />

@@ -230,11 +230,11 @@ const Main = forwardRef(({
                   {validCheckPlacement === 'right' ? (
                     <>
                       {option.label ? option.label : (<Option option={option} />)}
-                      <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                      <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
                     </>
                   ) : (
                     <>
-                      <IconButton icon={isSelected ? 'check' : ''} className="no-hover-bg" />
+                      <IconButton icon={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
                       {option.label ? option.label : (<Option option={option} />)}
                     </>
                   )}

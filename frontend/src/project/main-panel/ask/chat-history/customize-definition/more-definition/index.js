@@ -84,9 +84,9 @@ const MoreDefinition = ({ element, attributes, editor, sources, settings, onClic
         >
           <div className="sea-ai-chat-customize-definitions-container" style={{ width: moreRef.current?.getBoundingClientRect()?.width }}>
             <div className="sea-ai-chat-customize-definitions-title">
-              <IconButton icon="left" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
+              <IconButton icon="arrow-left" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(-1)} />
               <div className="sea-ai-chat-customize-definitions-index">{`${definitionIndex} / ${sourcesCount}`}</div>
-              <IconButton icon="right" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(1)} />
+              <IconButton icon="arrow-right" className="sea-ai-chat-customize-definitions-index-btn" onClick={() => moveDefinitionIndex(1)} />
             </div>
             <Definition
               element={{ id: definitionIndex, identifier: definitionIndex }}

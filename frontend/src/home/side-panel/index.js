@@ -227,7 +227,7 @@ class SidePanel extends React.Component {
                     role="button"
                     onKeyDown={this.onKeyDown}
                     onClick={this.onListExtended}
-                    icon={this.state.isDataLoading ? '' : 'down'}
+                    icon={this.state.isDataLoading ? '' : 'arrow-down'}
                     iconClassName="nav-toggle-icon"
                   />
                 </div>

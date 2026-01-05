@@ -104,7 +104,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission }) => 
     let tools = [];
     tools.push({
       key: 'restore',
-      icon: 'restore',
+      icon: 'revoke',
       label: gettext('Restore'),
       callback: (event) => {
         event && event.stopPropagation();

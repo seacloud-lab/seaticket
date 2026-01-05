@@ -40,7 +40,7 @@ const RowHeightPopover = ({ hidePopover, onChange, target, rowHeight, readOnly }
               <span className="ml-2">{item.name}</span>
             </span>
             <span className="sea-metadata-row-height-item-right">
-              {rowHeight === item.value && <Icon className="sea-metadata-icon" symbol="check" title={gettext('Selected')}/>}
+              {rowHeight === item.value && <Icon className="sea-metadata-icon" symbol="check-mark" title={gettext('Selected')}/>}
             </span>
           </div>
         ))}

@@ -69,7 +69,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, t
           <div className="filter-label">
             {showSourcesLen > 0 ? `${showSourcesLen} ${gettext('Sources')}` : gettext('Sources')}
           </div>
-          <Icon symbol="down"/>
+          <Icon symbol="arrow-down"/>
         </div>
       </div>
       {isShowSetter && (

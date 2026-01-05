@@ -2,14 +2,14 @@ import { gettext } from '@/constants';
 import CellType from './type';
 
 const COLUMNS_ICON_CONFIG = {
-  [CellType.CREATOR]: 'creator',
-  [CellType.LAST_MODIFIER]: 'creator',
+  [CellType.CREATOR]: 'user',
+  [CellType.LAST_MODIFIER]: 'user',
   [CellType.CTIME]: 'date-time',
   [CellType.MTIME]: 'date-time',
   [CellType.DEFAULT]: 'text',
   [CellType.TEXT]: 'text',
   [CellType.CHECKBOX]: 'checkbox',
-  [CellType.COLLABORATOR]: 'collaborator',
+  [CellType.COLLABORATOR]: 'group',
   [CellType.DATE]: 'date',
   [CellType.LONG_TEXT]: 'long-text',
   [CellType.SINGLE_SELECT]: 'single-select',
