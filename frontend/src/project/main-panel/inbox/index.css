@@ -115,13 +115,13 @@
 
 .sea-qa-inbox-item .dot {
   width: 8px;
-	height: 8px;
-	border-radius: 4px;
-	background: #ff6b00;
-	margin-left: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #ff6b00;
+  margin-left: 8px;
 }
 
 .sea-qa-inbox-item .text {
-	color: #333;
-	line-height: 1.4; 
+  color: #333;
+  line-height: 1.4; 
 }
