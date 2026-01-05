@@ -1,55 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { notificationAPI } from '../../api';
+import React from 'react';
 import NoticeInboxItem from '@/components/common/notice-inbox-item';
-import { CenteredLoading, Icon, toaster, EmptyTip } from '@/components';
+import { CenteredLoading, Icon, EmptyTip } from '@/components';
+import { useNotification } from '@/sea-metadata';
 import { gettext, mediaUrl } from '@/constants';
-import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
 const Inbox = ({ title }) => {
-  const [notificationList, setNotificationList] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback((page = 1, perPage = 20, signal) => {
-    if (!projectUuid) return;
-    return notificationAPI.listProjectNotifications(projectUuid, page, perPage, { signal })
-      .then(res => {
-        const list = res.data.notification_list || [];
-        setNotificationList(list);
-      }).catch(err => {
-        const errorMsg = Utils.getErrorMsg(err);
-        toaster.danger(errorMsg);
-      }).finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    load(1, 20, controller.signal);
-    return () => controller.abort();
-  }, [load]);
-
-  const onNoticeClick = (noticeItem) => {
-    if (!noticeItem.seen) {
-      notificationAPI.markProjectNoticeAsRead(noticeItem.id).then(() => {
-        setNotificationList(prev => prev.map(it => it.id === noticeItem.id ? { ...it, seen: true } : it));
-      }).catch((err) => {
-        const errorMsg = Utils.getErrorMsg(err);
-        toaster.danger(errorMsg);
-      });
-    }
-  };
-
-  const onMarkAll = () => {
-    if (!projectUuid) return;
-    notificationAPI.markAllProjectRead(projectUuid).then(() => {
-      setNotificationList(prev => prev.map(it => ({ ...it, seen: true })));
-    }).catch(err => {
-      const errorMsg = Utils.getErrorMsg(err);
-      toaster.danger(errorMsg);
-    });
-  };
+  const { loading, notificationList, markAsRead, markAllAsRead, } = useNotification();
 
   return (
     <div className="sea-qa-inbox-container">
@@ -58,7 +16,7 @@ const Inbox = ({ title }) => {
           <span className="heading">{title}</span>
           <div className="sea-qa-inbox-actions">
             <Icon symbol="mark-all-as-read" />
-            <div className="mark-all-as-read" onClick={onMarkAll}>
+            <div className="mark-all-as-read" onClick={markAllAsRead}>
               {gettext('Mark all as read')}
             </div>
           </div>
@@ -75,7 +33,7 @@ const Inbox = ({ title }) => {
           {!loading && notificationList.length > 0 && (
             <>
               {notificationList.map(item => (
-                <NoticeInboxItem key={item.id} noticeItem={item} onNoticeItemClick={onNoticeClick} />
+                <NoticeInboxItem key={item.id} noticeItem={item} onNoticeItemClick={() => markAsRead(item.id)} />
               ))}
             </>
           )}

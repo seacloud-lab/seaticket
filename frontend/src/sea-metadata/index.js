@@ -4,6 +4,7 @@ import {
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
   DataCacheProvider, useDataCache,
+  NotificationProvider, useNotification,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
 import { CellType, VIEW_TOOL } from './constants';
@@ -19,6 +20,7 @@ export {
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
   DataCacheProvider, useDataCache,
+  NotificationProvider, useNotification,
   ViewToolBar, View,
   CellType, context,
   VIEW_TOOL,

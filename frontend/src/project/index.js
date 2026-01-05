@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
-import { CollaboratorsProvider } from '@/sea-metadata';
+import { CollaboratorsProvider, NotificationProvider } from '@/sea-metadata';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';
@@ -148,10 +148,12 @@ const Project = () => {
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <AIChatToolsProvider >
               <ConnectionsProvider projectUuid={projectUuid} >
-                <AnalyzeTaskProvider>
-                  <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
-                  <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-                </AnalyzeTaskProvider>
+                <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
+                  <AnalyzeTaskProvider>
+                    <SidePanel activeBar={activeBar} toggleBar={toggleBar} />
+                    <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+                  </AnalyzeTaskProvider>
+                </NotificationProvider>
               </ConnectionsProvider>
             </AIChatToolsProvider>
           </CollaboratorsProvider>

@@ -1,31 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import classnames from 'classnames';
-import { Icon, toaster } from '../../../components';
-import { notificationAPI } from '../../api';
-import { Utils } from '@/utils/utils';
+import { Icon } from '../../../components';
+import { useNotification } from '@/sea-metadata';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
 const InboxNav = ({ nav, level, activeBar, onClick }) => {
-  const [unseen, setUnseen] = useState(0);
+  const { unseen } = useNotification();
   const { key, name, icon } = nav;
   const isActive = activeBar[0] === key;
-
-  useEffect(() => {
-    if (!projectUuid) return;
-    const controller = new AbortController();
-    notificationAPI.listProjectNotifications(projectUuid, 1, 1, { signal: controller.signal })
-      .then(res => {
-        const unseenCount = res.data.unseen_count || 0;
-        setUnseen(unseenCount);
-      }).catch((error) => {
-        const errorMsg = Utils.getErrorMsg(error);
-        toaster.danger(errorMsg);
-      });
-    return () => { controller.abort(); };
-  }, []);
-
   const displayCount = unseen > 99 ? '99+' : unseen > 0 ? unseen : null;
 
   return (
