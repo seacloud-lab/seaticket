@@ -30,7 +30,7 @@ class TestKnowledgeBasesPost:
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_bases_url(project_uuid)
-        data = {'title': 'Test Title', 'content': 'Test Content'}
+        data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
         response = api_client.post(url, data, format='json')
 
@@ -42,10 +42,11 @@ class TestKnowledgeBasesPost:
     ):
         """Test that non-existent project returns 404."""
         url = get_knowledge_bases_url(project_uuid)
-        data = {'title': 'Test Q', 'content': 'Test A'}
+        data = {'title': 'Test Q', 'content': {'text': 'Test A'}}
 
         response = api_client.post(url, data, format='json')
 
+        print(f'[DEBUG]: response.data["error_msg"]: {response.data["error_msg"]}')
         assert response.status_code == 404
         assert 'not found' in response.data['error_msg']
 
@@ -55,7 +56,7 @@ class TestKnowledgeBasesPost:
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_bases_url(project_uuid)
-        data = {'title': 'Test Title', 'content': 'Test Content'}
+        data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
         response = api_client.post(url, data, format='json')
 
@@ -68,7 +69,7 @@ class TestKnowledgeBasesPost:
     ):
         """Test that missing title returns 400."""
         url = get_knowledge_bases_url(project_uuid)
-        data = {'content': 'Test Content'}
+        data = {'content': {'text': 'Test Content'}}
 
         response = api_client.post(url, data, format='json')
 
@@ -140,7 +141,7 @@ class TestKnowledgeBasesPost:
         mock_seadb_api.insert_rows.side_effect = Exception('Database error')
 
         url = get_knowledge_bases_url(project_uuid)
-        data = {'title': 'Test Title', 'content': 'Test Content'}
+        data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
         response = api_client.post(url, data, format='json')
 
@@ -155,7 +156,7 @@ class TestKnowledgeBasesPost:
         mock_seadb_api.insert_rows.return_value = {'pks': [123]}
 
         url = get_knowledge_bases_url(project_uuid)
-        data = {'title': 'Test Title', 'content': 'Test Content'}
+        data = {'title': 'Test Title', 'content': {'text': 'Test Content'}}
 
         response = api_client.post(url, data, format='json')
 
@@ -484,7 +485,7 @@ class TestKnowledgeBasePut:
     ):
         """Test that non-org context returns 403 Forbidden."""
         url = get_knowledge_base_url(project_uuid, 1)
-        data = {'title': 'Updated Q', 'content': 'Updated A'}
+        data = {'title': 'Updated Q', 'content': {'text': 'Updated A'}}
 
         response = api_client.put(url, data, format='json')
 
@@ -496,7 +497,7 @@ class TestKnowledgeBasePut:
     ):
         """Test that non-existent project returns 404."""
         url = get_knowledge_base_url(project_uuid, 1)
-        data = {'title': 'Updated Title', 'content': 'Updated Content'}
+        data = {'title': 'Updated Title', 'content': {'text': 'Updated Content'}}
 
         response = api_client.put(url, data, format='json')
 
@@ -509,7 +510,7 @@ class TestKnowledgeBasePut:
     ):
         """Test that permission denied returns 403."""
         url = get_knowledge_base_url(project_uuid, 1)
-        data = {'title': 'Updated Q', 'content': 'Updated A'}
+        data = {'title': 'Updated Q', 'content': {'text': 'Updated A'}}
 
         response = api_client.put(url, data, format='json')
 
@@ -536,7 +537,7 @@ class TestKnowledgeBasePut:
     ):
         """Test that non-existent record returns 404."""
         url = get_knowledge_base_url(project_uuid, 999)
-        data = {'title': 'Updated Title', 'content': 'Updated Content'}
+        data = {'title': 'Updated Title', 'content': {'text': 'Updated Content'}}
 
         response = api_client.put(url, data, format='json')
 
@@ -552,7 +553,7 @@ class TestKnowledgeBasePut:
         mock_seadb_api.update_rows.side_effect = Exception('Database error')
 
         url = get_knowledge_base_url(project_uuid, 1)
-        data = {'title': 'Updated Title', 'content': 'Updated Content'}
+        data = {'title': 'Updated Title', 'content': {'text': 'Updated Content'}}
 
         response = api_client.put(url, data, format='json')
 
@@ -568,7 +569,7 @@ class TestKnowledgeBasePut:
         mock_seadb_api.update_rows.return_value = None
 
         url = get_knowledge_base_url(project_uuid, 1)
-        data = {'title': 'Updated Title', 'content': 'Updated Content'}
+        data = {'title': 'Updated Title', 'content': {'text': 'Updated Content'}}
 
         response = api_client.put(url, data, format='json')
 
