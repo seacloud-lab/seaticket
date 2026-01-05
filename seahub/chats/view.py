@@ -12,10 +12,10 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context, uuid_str_to_32_chars
 from seahub.project.models import Projects, ProjectConnections
-from seahub.project.utils import check_project_permission, check_ai_limit
+from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import delete_sessions, format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
+from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, format_extra_contents
 from seahub.tickets.ticket_utils import get_whole_tickets_data
 from django.utils.translation import gettext as _
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI

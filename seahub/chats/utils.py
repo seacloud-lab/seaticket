@@ -7,19 +7,10 @@ import jwt
 import uuid
 import time
 from urllib.parse import urljoin
-from seahub.chats.models import ChatMessages, ChatToolCalls, ChatSessions
+from seahub.chats.models import ChatToolCalls
 from seahub.settings import JWT_PRIVATE_KEY, SEAQA_AI_INNER_SERVER_URL
 
 logger = logging.getLogger(__name__)
-
-
-def delete_sessions(session_uuids):
-    try:
-        ChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
-        ChatToolCalls.objects.filter(session_uuid__in=session_uuids).delete()
-        ChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
-    except Exception as e:
-        logger.error('delete sessions error: %s', e)
 
 
 def format_ask_thought_process(tool_calls):

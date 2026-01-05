@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from seahub.chats.models import ChatSessions
-from seahub.chats.utils import delete_sessions
+from seahub.project.utils import delete_sessions
 
 logger = logging.getLogger(__name__)
 
