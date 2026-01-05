@@ -9,11 +9,8 @@ import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
 import AddButton from '@/project/components/add-button';
 import { BAR_TYPE } from '@/project/constants';
-import Notification from '@/components/common/notifications';
 
 import './index.css';
-
-const { projectUuid } = window.app.pageOptions;
 
 const TicketTopBar = ({ title, type, permission }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
@@ -146,10 +143,7 @@ const TicketTopBar = ({ title, type, permission }) => {
       );
     }
     return (
-      <>
-        <Notification mode="project" projectUuid={projectUuid} triggerId="ticket-notice-icon" targetId="ticket-notification-popover" />
-        <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="plus" />
-      </>
+      <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="plus" />
     );
   }, [type, permission, pageSlugId, childrenPageSlugId, togglePageSlugId]);
 

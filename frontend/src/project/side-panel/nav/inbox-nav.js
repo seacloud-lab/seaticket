@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import classnames from 'classnames';
-import { Icon } from '../../../components';
-import toaster from '@/components/toaster';
+import { Icon, toaster } from '../../../components';
 import { notificationAPI } from '../../api';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
 
+const { projectUuid } = window.app.pageOptions;
 const InboxNav = ({ nav, level, activeBar, onClick }) => {
   const [unseen, setUnseen] = useState(0);
   const { key, name, icon } = nav;
   const isActive = activeBar[0] === key;
 
   useEffect(() => {
-    const projectUuid = window.app && window.app.pageOptions && window.app.pageOptions.projectUuid;
     if (!projectUuid) return;
     const controller = new AbortController();
     notificationAPI.listProjectNotifications(projectUuid, 1, 1, { signal: controller.signal })
