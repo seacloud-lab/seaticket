@@ -26,7 +26,7 @@ class AuthenticationForm(forms.Form):
     Base class for authenticating users. Extend this to get a form that accepts
     username/password logins.
     """
-    login = forms.CharField(label=_("Email or username"), max_length=255)
+    login = forms.CharField(label=_("Email"), max_length=255)
     password = forms.CharField(label=_("Password"), max_length=4096, widget=forms.PasswordInput)
 
     def __init__(self, request=None, *args, **kwargs):
