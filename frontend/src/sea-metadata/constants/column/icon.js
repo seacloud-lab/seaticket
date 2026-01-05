@@ -4,8 +4,8 @@ import CellType from './type';
 const COLUMNS_ICON_CONFIG = {
   [CellType.CREATOR]: 'creator',
   [CellType.LAST_MODIFIER]: 'creator',
-  [CellType.CTIME]: 'ctime',
-  [CellType.MTIME]: 'ctime',
+  [CellType.CTIME]: 'date-time',
+  [CellType.MTIME]: 'date-time',
   [CellType.DEFAULT]: 'text',
   [CellType.TEXT]: 'text',
   [CellType.CHECKBOX]: 'checkbox',
@@ -17,10 +17,10 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.MULTIPLE_SELECT]: 'multiple-select',
   [CellType.NUMBER]: 'number',
   [CellType.RATE]: 'rate',
-  [CellType.TAGS]: 'tag',
-  [CellType.TAG]: 'tag',
+  [CellType.TAGS]: 'tag-filled',
+  [CellType.TAG]: 'tag-filled',
   [CellType.URL]: 'url',
-  [CellType.PRIORITY]: 'priority',
+  [CellType.PRIORITY]: 'flag',
 };
 
 const COLUMNS_ICON_NAME = {
