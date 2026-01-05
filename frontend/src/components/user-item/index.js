@@ -37,7 +37,7 @@ class UserItem extends React.Component {
           <span className="user-name text-truncate">{name}</span>
         </div>
         {enableDelete && (
-          <IconButton icon="x" className="user-remove ml-2 no-hover-bg" onClick={this.onDelete} title={gettext('Remove')} />
+          <IconButton icon="close" className="user-remove ml-2 no-hover-bg" onClick={this.onDelete} title={gettext('Remove')} />
         )}
       </div>
     );

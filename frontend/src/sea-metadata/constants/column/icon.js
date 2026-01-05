@@ -8,7 +8,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.MTIME]: 'date-time',
   [CellType.DEFAULT]: 'text',
   [CellType.TEXT]: 'text',
-  [CellType.CHECKBOX]: 'checkbox',
+  [CellType.CHECKBOX]: 'check-box',
   [CellType.COLLABORATOR]: 'group',
   [CellType.DATE]: 'date',
   [CellType.LONG_TEXT]: 'long-text',

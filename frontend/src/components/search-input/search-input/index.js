@@ -84,7 +84,7 @@ class SearchInput extends Component {
     if (!isFunction(onClear)) return null;
     if (!isShowClearIcon && !searchValue) return null;
     return (
-      <IconButton icon="x" className="sea-qa-search-input-clear" onClick={this.onClear} style={{ height: 20, width: 20, top: (size - 20) / 2, right: (size - 20) / 2 }} />
+      <IconButton icon="close" className="sea-qa-search-input-clear" onClick={this.onClear} style={{ height: 20, width: 20, top: (size - 20) / 2, right: (size - 20) / 2 }} />
     );
   };
 

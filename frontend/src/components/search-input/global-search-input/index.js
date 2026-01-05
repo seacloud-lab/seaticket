@@ -110,7 +110,7 @@ class GlobalSearchInput extends Component {
     };
     return (
       <IconButton
-        icon="x"
+        icon="close"
         className="sea-qa-search-input-clear"
         onClick={this.onClear}
         style={clearButtonStyle}

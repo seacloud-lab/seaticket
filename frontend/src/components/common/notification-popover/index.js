@@ -66,7 +66,7 @@ class NotificationPopover extends React.Component {
           <div className="notification-header modal">
             {headerText}
             <div className='notification-close-icon'>
-              <IconButton icon="x" onClick={this.props.onNotificationListToggle} />
+              <IconButton icon="close" onClick={this.props.onNotificationListToggle} />
             </div>
           </div>
           <div className="notification-body">

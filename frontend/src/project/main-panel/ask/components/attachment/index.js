@@ -35,7 +35,7 @@ const Attachment = ({ attachment, index, onRemove }) => {
       <span className="text-truncate flex-1" title={title} aria-label={title}>{title}</span>
       {onRemove && (
         <IconTooltip
-          icon="x"
+          icon="close"
           className="sea-qa-ai-chat-attachment-remove"
           tip={gettext('Remove')}
           placement="bottom"

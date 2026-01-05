@@ -67,7 +67,7 @@ const SidePanelGroupItem = ({ item, index, getActiveClass, onGroupTabClick, isOp
           icon="drag"
         />
         <Link tabIndex={tabIndex} to={siteRoot + 'project/' + item.id + '/'} className="workspace-nav-link ellipsis">
-          <Icon symbol={'group'} className="project-workspace-icon" />
+          <Icon symbol={'groupby'} className="project-workspace-icon" />
           <span className="nav-text">{item.name}</span>
         </Link>
       </div>

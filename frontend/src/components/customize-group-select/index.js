@@ -79,7 +79,7 @@ class GroupSelect extends Component {
               {selectedOptions.map(item =>
                 <span key={item.id} className="selected-option-item mr-1 pr-1 pl-2">
                   <span className='selected-option-item-name'>{item.name}</span>
-                  <IconButton icon="x" className="ml-1 selected-option-item-delete-btn" onClick={() => this.props.onDeleteOption(item)} />
+                  <IconButton icon="close" className="ml-1 selected-option-item-delete-btn" onClick={() => this.props.onDeleteOption(item)} />
                 </span>
               )}
             </span>

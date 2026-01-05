@@ -5,7 +5,7 @@ import './index.css';
 
 const RemoveBtn = ({ callback }) => {
   return (
-    <IconButton icon="x" onClick={callback} className="sea-metadata-tag-remove no-hover-bg" />
+    <IconButton icon="close" onClick={callback} className="sea-metadata-tag-remove no-hover-bg" />
   );
 };
 

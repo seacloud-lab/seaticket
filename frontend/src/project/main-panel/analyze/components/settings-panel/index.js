@@ -96,7 +96,7 @@ const SettingsPanel = ({
     <div className="analyze-settings-panel">
       <div className="analyze-settings-header">
         <span className="analyze-settings-title">{gettext('Settings')}</span>
-        <IconButton icon="x" onClick={onClose} className="analyze-settings-close" />
+        <IconButton icon="close" onClick={onClose} className="analyze-settings-close" />
       </div>
       <div className="analyze-settings-body">
         <div className="analyze-settings-section">
@@ -115,7 +115,7 @@ const SettingsPanel = ({
                   />
                   <span className="analyze-tag-name">{connection.name}</span>
                   <IconTooltip
-                    icon="x"
+                    icon="close"
                     className="analyze-tag-remove"
                     tip={gettext('Remove')}
                     placement="bottom"

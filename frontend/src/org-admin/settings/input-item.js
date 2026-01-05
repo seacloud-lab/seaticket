@@ -82,7 +82,7 @@ class WebSettingInput extends Component {
                 <Icon symbol="check-mark" />
               </OpBtn>
               <OpBtn className="ml-2 web-setting-icon-btn-cancel" title={gettext('Cancel')}>
-                <Icon symbol="x" />
+                <Icon symbol="close" />
               </OpBtn>
             </Fragment> : null
         }

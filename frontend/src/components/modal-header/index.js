@@ -16,7 +16,7 @@ const ModalHeader = ({ children, ...props }) => {
         title={gettext('Close')}
         onClick={props.toggle}
       >
-        <IconButton icon="x" className="sea-qa-modal-close-inner" />
+        <IconButton icon="close" className="sea-qa-modal-close-inner" />
       </button>
     }>
       {children}
