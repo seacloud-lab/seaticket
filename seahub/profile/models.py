@@ -107,6 +107,12 @@ class ProfileManager(models.Manager):
             return p.contact_email
 
         return None
+    
+    def get_contact_email_map_by_users(self, usernames):
+        """Get contact email map for multiple users.
+        """
+        profiles = super(ProfileManager, self).filter(user__in=usernames)
+        return {p.user: p.contact_email for p in profiles if p.contact_email}
 
     def get_profile_by_phone(self, phone):
         return super(ProfileManager, self).filter(phone=phone).first()

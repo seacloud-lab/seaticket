@@ -1,10 +1,12 @@
 # encoding: utf-8
 import datetime
+import signal
 import logging
 import json
 import re
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.core.mail import get_connection
 from django.utils.html import escape
 from django.utils import translation
 from django.utils import timezone
@@ -13,7 +15,7 @@ from django.utils.translation import gettext as _
 from seahub.avatar.templatetags.avatar_tags import avatar
 from seahub.notifications.signal_handler import MSG_TYPE_ADD_USER_TO_GROUP, MSG_TYPE_TICKET_ASSIGNEE_ADDED, MSG_TYPE_TICKET_COMMENTED
 from seahub.notifications.models import UserNotification, ProjectNotification
-from seahub.utils import send_html_email, get_site_scheme_and_netloc
+from seahub.utils import send_html_email, get_site_scheme_and_netloc, IS_EMAIL_CONFIGURED
 from seahub.avatar.util import get_default_avatar_url
 from seahub.base.accounts import User
 from seahub.base.templatetags.seahub_tags import email2nickname
@@ -27,13 +29,61 @@ from seahub.utils.auth import VIRTUAL_ID_EMAIL_DOMAIN
 # Get an instance of a logger
 logger = logging.getLogger('seahub_email_sender')
 
+
+class _MaxExecutionTime(object):
+
+    def __init__(self, seconds):
+        self.seconds = seconds
+        self._old_handler = None
+
+    def __enter__(self):
+        if not hasattr(signal, 'SIGALRM'):
+            return
+
+        def _handle_timeout(signum, frame):
+            raise TimeoutError('send_email_notices exceeded max execution time (%s seconds)' % self.seconds)
+
+        self._old_handler = signal.getsignal(signal.SIGALRM)
+        signal.signal(signal.SIGALRM, _handle_timeout)
+        signal.setitimer(signal.ITIMER_REAL, self.seconds)
+
+    def __exit__(self, exc_type, exc, tb):
+        if not hasattr(signal, 'SIGALRM'):
+            return False
+
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        if self._old_handler is not None:
+            signal.signal(signal.SIGALRM, self._old_handler)
+        return False
+
+
 class Command(BaseCommand):
     help = 'Send Email notifications to user if he/she has an unread notices every period of seconds .'
     label = "notifications_send_notices"
 
+    MAX_EXECUTION_SECONDS = 30 * 60
+
+    def smtp_ping(self):
+        if not IS_EMAIL_CONFIGURED:
+            raise RuntimeError('Email is not configured')
+
+        conn = get_connection(timeout=10)
+        conn.open()
+        conn.close()
+
     def handle(self, *args, **options):
         logger.debug('Start sending user notices...')
-        self.do_action()
+        try:
+            self.smtp_ping()
+            with _MaxExecutionTime(self.MAX_EXECUTION_SECONDS):
+                self.do_action()
+        except TimeoutError as e:
+            logger.error('send_email_notices timeout: %s', e)
+            raise CommandError(str(e))
+        except Exception as e:
+            logger.error('send_email_notices failed: %s', e)
+            raise CommandError(str(e))
+
         logger.debug('Finish sending user notices.\n')
 
     def get_avatar(self, username):
@@ -262,18 +312,20 @@ class Command(BaseCommand):
 
         # save current language
         cur_language = translation.get_language()
-        for (to_user, interval_val, notices) in user_interval_notices:
+        now = timezone.now().replace(microsecond=0)
+        to_users = [to_user for (to_user, interval_val, notices) in user_interval_notices]
+        contact_email_map = Profile.objects.get_contact_email_map_by_users(to_users)
 
+        for (to_user, interval_val, notices) in user_interval_notices:
             if not user_active_dict[to_user]:
                 continue
 
-            contact_email = Profile.objects.get_contact_email_by_user(to_user)
+            contact_email = contact_email_map.get(to_user)
             if not contact_email or VIRTUAL_ID_EMAIL_DOMAIN in contact_email:
                 continue
 
             # get last_emailed_time if any, defaults to today 00:00:00.0
             last_emailed_time = user_last_emailed_time_dict.get(to_user, None)
-            now = timezone.now().replace(microsecond=0)
             if not last_emailed_time:
                 last_emailed_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
             else:
