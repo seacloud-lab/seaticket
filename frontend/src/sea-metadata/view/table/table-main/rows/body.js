@@ -44,8 +44,8 @@ class RowsBody extends Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { rowsCount, rowIds } = nextProps;
-    if (rowsCount !== this.props.rowsCount || rowIds !== this.props.rowIds) {
-      this.recalculateRenderIndex(rowIds);
+    if (rowsCount !== this.props.rowsCount || rowIds !== this.props.rowIds || this.props.rowHeight !== nextProps.rowHeight) {
+      this.recalculateRenderIndex(nextProps);
     }
   }
 
@@ -95,12 +95,13 @@ class RowsBody extends Component {
     return columnVisibleEnd;
   };
 
-  recalculateRenderIndex = (rowIds) => {
+  recalculateRenderIndex = (props) => {
+    const { rowIds } = props;
     const { startRenderIndex, endRenderIndex } = this.state;
     const contentScrollTop = this.resultContentRef.scrollTop;
-    const start = Math.max(0, Math.floor(contentScrollTop / this.getRowHeight()) - RENDER_MORE_NUMBER);
+    const start = Math.max(0, Math.floor(contentScrollTop / this.getRowHeight(props)) - RENDER_MORE_NUMBER);
     const { height } = this.props.getTableContentRect();
-    const end = Math.min(Math.ceil((contentScrollTop + height) / this.getRowHeight()) + RENDER_MORE_NUMBER, rowIds.length);
+    const end = Math.min(Math.ceil((contentScrollTop + height) / this.getRowHeight(props)) + RENDER_MORE_NUMBER, rowIds.length);
     if (start !== startRenderIndex) {
       this.setState({ startRenderIndex: start });
     }
@@ -123,8 +124,8 @@ class RowsBody extends Component {
     return this.getRowHeight() * rowIdx;
   };
 
-  getRowHeight = () => {
-    return ROW_HEIGHT_MAP[this.props.rowHeight] + 1;
+  getRowHeight = (props = this.props) => {
+    return ROW_HEIGHT_MAP[props.rowHeight] + 1;
   };
 
   jumpToRow = (scrollToRowIndex) => {
