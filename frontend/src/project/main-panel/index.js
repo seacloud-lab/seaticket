@@ -9,6 +9,8 @@ import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Inbox from './inbox';
+import { useNotification } from '@/sea-metadata';
+import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -35,9 +37,6 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.SETTINGS: {
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
     }
-    case BAR_TYPE.INBOX: {
-      return (<Inbox title={title} />);
-    }
     case BAR_TYPE.KNOWLEDGE: {
       return (<KnowledgeBase title={title} />);
     }
@@ -50,9 +49,12 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
 };
 
 const MainPanel = (props) => {
+  const { showInboxDrawer } = useNotification();
+
   return (
     <div className="sea-qa-project-main-panel">
       <Container { ...props } />
+      {showInboxDrawer && <Inbox title={gettext('Inbox')} />}
     </div>
   );
 };

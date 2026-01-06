@@ -7,6 +7,7 @@ import { BAR_TYPE } from '@/project/constants';
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
+  const [showInboxDrawer, setShowInboxDrawer] = useState(false);
   const [notificationList, setNotificationList] = useState([]);
   const [unseen, setUnseen] = useState(0);
   const [allNotificationCount, setAllNotificationCount] = useState(0);
@@ -103,6 +104,8 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    showInboxDrawer,
+    setShowInboxDrawer
   };
 
   return (

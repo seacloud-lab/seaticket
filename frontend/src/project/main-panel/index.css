@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .sea-qa-ticket-priority-dropdown-item:focus .sea-qa-icon-svg-priority-02,
