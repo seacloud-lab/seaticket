@@ -1,13 +1,27 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import NoticeInboxItem from '@/components/common/notice-inbox-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
 import { useNotification } from '@/sea-metadata';
 import { gettext, mediaUrl } from '@/constants';
+import { isNearBottom } from '@/utils/dom.js';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
 const Inbox = ({ title }) => {
-  const { loading, notificationList, markAsRead, markAllAsRead, } = useNotification();
+  const { loading, loadingMore, notificationList, allNotificationCount, markAsRead, markAllAsRead, fetchNotifications } = useNotification();
+  const page = useRef(1);
+
+  const onScroll = useCallback((e) => {
+    const hasMore = notificationList.length < allNotificationCount;
+    if (loadingMore || !hasMore) return;
+
+    // Load more notifications when near bottom
+    if (isNearBottom(e.target)) {
+      page.current = page.current + 1;
+      fetchNotifications(page.current, 20, true);
+    }
+  }, [loadingMore, notificationList]);
 
   return (
     <div className="sea-qa-inbox-container">
@@ -21,7 +35,7 @@ const Inbox = ({ title }) => {
             </div>
           </div>
         </div>
-        <div className="sea-qa-inbox-list">
+        <div className="sea-qa-inbox-list" onScroll={Utils.debounce(onScroll)}>
           {loading && <CenteredLoading />}
           {!loading && notificationList.length === 0 && (
             <EmptyTip

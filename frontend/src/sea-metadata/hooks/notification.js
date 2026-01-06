@@ -9,12 +9,14 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
   const [notificationList, setNotificationList] = useState([]);
   const [unseen, setUnseen] = useState(0);
+  const [allNotificationCount, setAllNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const firstLoadedRef = useRef(true);
   const abortControllerRef = useRef(null);
   const isActiveInbox = activeBar[0] === BAR_TYPE.INBOX;
 
-  const fetchNotifications = useCallback((page = 1, perPage = 20) => {
+  const fetchNotifications = useCallback((page = 1, perPage = 20, isfetchMore) => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -23,20 +25,31 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    setLoading(true);
+    if (isfetchMore) {
+      setLoadingMore(true);
+    }
+
     return notificationAPI.listProjectNotifications(projectUuid, page, perPage, { signal: controller.signal })
       .then(res => {
         const list = res.data.notification_list || [];
         const count = res.data.unseen_count || 0;
-        setNotificationList(list);
-        setUnseen(count);
+        if (isfetchMore) {
+          setNotificationList([...notificationList, ...list]);
+        } else {
+          setNotificationList(list);
+          setAllNotificationCount(res.data.count || 0);
+          setUnseen(count);
+        }
       })
       .catch(err => {
         const errorMsg = Utils.getErrorMsg(err);
         toaster.danger(errorMsg);
       })
-      .finally(() => setLoading(false));
-  }, [projectUuid]);
+      .finally(() => {
+        setLoading(false);
+        setLoadingMore(false);
+      });
+  }, [projectUuid, notificationList]);
 
   const markAsRead = useCallback((noticeId) => {
     return notificationAPI.markProjectNoticeAsRead(noticeId)
@@ -83,8 +96,10 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
 
   const value = {
     notificationList,
+    allNotificationCount,
     unseen,
     loading,
+    loadingMore,
     fetchNotifications,
     markAsRead,
     markAllAsRead,
