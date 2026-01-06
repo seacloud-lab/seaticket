@@ -1,10 +1,8 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # encoding: utf-8
-import io
 import logging
 from importlib import import_module
 
-import jwt
 from rest_framework import parsers
 from rest_framework import status
 from rest_framework import renderers
@@ -48,40 +46,6 @@ class Ping(APIView):
 
     def head(self, request, format=None):
         return Response(headers={'foo': 'bar',})
-
-
-class SendEmailNoticesInternal(APIView):
-
-    authentication_classes = ()
-    permission_classes = ()
-
-    def post(self, request, format=None):
-
-        auth = request.META.get('HTTP_AUTHORIZATION', '').split()
-        if len(auth) != 2:
-            return Response({'error': 'permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-        credential = auth[1]
-
-        jwt_private_key = getattr(dj_settings, 'JWT_PRIVATE_KEY', '')
-        if not jwt_private_key:
-            return Response({'error': 'jwt private key not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        try:
-            jwt.decode(credential, jwt_private_key, algorithms=['HS256'])
-        except Exception:
-            return Response({'error': 'permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-        try:
-            from seahub.notifications.management.commands.send_email_notices import Command
-            cmd = Command()
-            cmd.stdout = io.StringIO()
-            cmd.stderr = io.StringIO()
-            cmd.do_action()
-        except Exception as e:
-            logger.exception('Failed to send email notices via internal API: %s', e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return Response({'success': True})
 
 class AuthPing(APIView):
     """
