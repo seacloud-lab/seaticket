@@ -14,7 +14,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import is_org_context
 from seahub.project.models import Projects
-from seahub.project.utils import replace_file_url_in_content, upload_files_to_s3
+from seahub.project.utils import replace_file_url_in_content, upload_files_to_s3, check_same_org_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import TicketsTable
 from seahub.seadb_models.utils import list_my_tickets
@@ -92,6 +92,10 @@ class PortalTicketsView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         seadb_api = SeaDBAPI(username)
@@ -185,6 +189,10 @@ class PortalMyTicketsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         username = request.user.username
         seadb_api = SeaDBAPI(username)
 
@@ -224,6 +232,10 @@ class PortalTicketTypesView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         username = request.user.username
         seadb_api = SeaDBAPI(username)
 
@@ -251,6 +263,10 @@ class PortalTicketTagsView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_same_org_permission(request.user, project.workspace):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
         seadb_api = SeaDBAPI(username)

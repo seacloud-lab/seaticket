@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_admin_permission
+from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL
@@ -21,6 +21,10 @@ def portal_view(request, project_uuid, page=None):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
+
+    workspace = project.workspace
+    if not check_same_org_permission(request.user, workspace):
+        return render_error(request, _('Permission denied'))
 
     return_dict = {
         'version': SEAQA_VERSION,
