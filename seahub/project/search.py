@@ -80,6 +80,8 @@ class SearchTickectsAndDocumentsView(APIView):
                 results += list_documents_by_search(seadb_api, project_uuid, documents_connection_id_type_map, query, limit)
         except Exception as e:
             logger.error(e)
+            import traceback
+            traceback.print_exc()
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

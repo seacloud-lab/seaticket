@@ -177,21 +177,21 @@ def get_extra_contents(seadb_api, project_uuid, extra_contents):
             continue
 
         # documents
-        if extra_content.get('connection_type') == 'knowledge_base':
+        if extra_content.get('type') == 'knowledge_base':
             knowledge_base_ids.append(extra_content['record_id'])
-        elif extra_content.get('connection_type') == ConnectionType.SITE.value:
+        elif extra_content.get('type') == ConnectionType.SITE.value:
             site_documents.append(extra_content)
-        elif extra_content.get('connection_type') == ConnectionType.SEAFILE.value:
+        elif extra_content.get('type') == ConnectionType.SEAFILE.value:
             seafile_documents.append(extra_content)
         
         # issues
-        elif extra_content.get('connection_type') == 'ticket':
+        elif extra_content.get('type') == 'ticket':
             ticket_ids.append(extra_content['record_id'])
-        elif extra_content.get('connection_type') == ConnectionType.GITHUB_ISSUE.value:
+        elif extra_content.get('type') == ConnectionType.GITHUB_ISSUE.value:
             github_issues.append(extra_content)
-        elif extra_content.get('connection_type') == ConnectionType.EMAIL.value:
+        elif extra_content.get('type') == ConnectionType.EMAIL.value:
             email_issues.append(extra_content)
-        elif extra_content.get('connection_type') == ConnectionType.DISCOURSE_FORUM.value:
+        elif extra_content.get('type') == ConnectionType.DISCOURSE_FORUM.value:
             discourse_issues.append(extra_content)
 
     results = []
@@ -225,29 +225,16 @@ def get_extra_contents(seadb_api, project_uuid, extra_contents):
     
     return results
 
-def format_extra_contents(extra_contents):
-    new_extra_contents = []
+def remove_content_details_in_extra_contents(extra_contents):
     for extra_content in extra_contents:
-        if extra_content['type'] == 'ticket':
-            new_extra_contents.append({
-                'type': extra_content['type'],
-                'ticket_id': extra_content['ticket_id'],
-                'title': extra_content['title']
-            })
-        elif extra_content['type'] == 'issue':
-            formatted = {
-                'type': extra_content['type'],
-                'issue_id': extra_content['issue_id'],
-                'connection_id': extra_content['connection_id'],
-                'title': extra_content.get('title', '')
-            }
-            if extra_content.get('state'):
-                formatted['state'] = extra_content['state']
-            if extra_content.get('url'):
-                formatted['url'] = extra_content['url']
-            if extra_content.get('slug'):
-                formatted['slug'] = extra_content['slug']
-            if extra_content.get('topic_id'):
-                formatted['topic_id'] = extra_content['topic_id']
-            new_extra_contents.append(formatted)
-    return new_extra_contents
+        try:
+            del extra_content['content']
+        except:
+            pass
+
+        try:
+            del extra_content['comments']
+        except:
+            pass
+    
+    return extra_contents

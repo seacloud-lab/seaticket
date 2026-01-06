@@ -22,7 +22,7 @@ import { getOriginalPageUrl } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { IssueForAI } from '../../models';
+import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToServerData, convertRowsToServerData } from '@/project/main-panel/tickets/utils';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
@@ -304,9 +304,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
               state: getCellValueByColumn(row, stateColumn),
               url: getCellValueByColumn(row, urlColumn),
               connection_id: connectionID,
-              connection_type: connection?.type,
+              type: connection?.type,
             };
-            newRows.push(new IssueForAI(newRow));
+            newRows.push(new AttachmentObject(newRow));
           });
           handleResolveIssueByAI(newRows);
         }

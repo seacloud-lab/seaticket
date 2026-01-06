@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { Icon, SyncOptionsEditor } from '@/components';
 import { gettext } from '@/constants';
 import { searchAPI } from '@/project/api';
-import { ExtraContentsSearchResult } from '@/project/main-panel/search/models';
+import { AttachmentObject } from '@/project/main-panel/ask/models';
 
 import './index.css';
 
@@ -19,7 +19,7 @@ const AddTicketsAndDocs = ({ projectUuid, value: attachments = [], onChange: pro
 
   const onSearch = useCallback((value, signal) => {
     return searchAPI.searchTicketsAndDocuments(projectUuid, value, signal).then(res => {
-      const newResults = Array.isArray(res.data.results) ? res.data.results.map(res => new ExtraContentsSearchResult(res)) : [];
+      const newResults = Array.isArray(res.data.results) ? res.data.results.map(res => new AttachmentObject(res)) : [];
       attachmentsRef.current = [...attachments, ...newResults];
       return newResults.map(res => ({
         value: res.key,

@@ -1,12 +1,16 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { IconTooltip, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { generatorTicketURL } from '@/project/main-panel/tickets/utils';
+import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/utils';
 import { workspaceID, projectName } from '@/constants';
+import { AttachmentObject } from '../../models';
 
 import './index.css';
 
-const Attachment = ({ attachment, index, onRemove }) => {
+const Attachment = ({ value, index, onRemove }) => {
+
+  const attachment = useMemo(() => new AttachmentObject({ ...value }), [value]);
 
   const handleRemove = useCallback((event) => {
     event.stopPropagation();
@@ -20,8 +24,8 @@ const Attachment = ({ attachment, index, onRemove }) => {
     let url = '';
     if (attachment.type === 'ticket') {
       url = generatorTicketURL({ row: attachment, workspaceID, projectName });
-    } else if (attachment.type === 'issue') {
-      url = attachment.url;
+    } else if (attachment.type === 'knowledge_base') {
+      url = generatorKnowledgeBaseURL({ row: attachment, workspaceID, projectName });
     }
     if (!url) return;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -31,7 +35,7 @@ const Attachment = ({ attachment, index, onRemove }) => {
 
   return (
     <div className="sea-qa-ai-chat-attachment" onClick={onClick}>
-      <Icon symbol={icon} className={`sea-qa-project-ticket-state-${icon}-icon mr-2`} />
+      <Icon symbol={icon} className={`sea-qa-project-ticket-state-${icon}-icon sea-qa-project-ai-attachment-icon mr-2`} />
       <span className="text-truncate flex-1" title={title} aria-label={title}>{title}</span>
       {onRemove && (
         <IconTooltip

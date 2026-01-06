@@ -15,8 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, \
-    get_extra_contents, format_extra_contents
+from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_extra_contents, remove_content_details_in_extra_contents
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -235,7 +234,7 @@ class ChatMessagesView(APIView):
             for message in messages:
                 data = message.to_dict()
                 if message.role == 'user':
-                    data['extra_contents'] = format_extra_contents(data['extra_contents'])
+                    data['extra_contents'] = remove_content_details_in_extra_contents(data['extra_contents'])
                 elif message.role == 'assistant':
                     if message.is_agent_mode:
                         if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
@@ -293,8 +292,11 @@ class ChatView(APIView):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         # Extra contents
-        extra_contents = get_extra_contents(SeaDBAPI(username), project_uuid, request.data.get('extra_contents', []))
-            
+        try:
+            extra_contents = get_extra_contents(SeaDBAPI(username), project_uuid, request.data.get('extra_contents', []))
+        except Exception as e:
+            logger.warning(f'Failure to get extra contents: {e}')
+
         resolve_type = request.data.get('resolve_type', 'ask')
         model = request.data.get('model')
 
@@ -378,7 +380,7 @@ class ChatView(APIView):
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'extra_contents': format_extra_contents(extra_contents)
+            'extra_contents': remove_content_details_in_extra_contents(extra_contents)
         })
 
         return Response(ai_response)

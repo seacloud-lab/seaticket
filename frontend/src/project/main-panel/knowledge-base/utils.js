@@ -1,7 +1,13 @@
 import { gettext } from '@/constants';
 import { CellType } from '@/sea-metadata';
+import { BAR_TYPE } from '@/project/constants';
 import { getTableColumnByKey } from '@/sea-metadata/utils/table';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
+
+export const generatorKnowledgeBaseURL = ({ row, workspaceID, projectName }) => {
+  const { origin } = location;
+  return `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.KNOWLEDGE}/${row._id}/`;
+};
 
 export const generatorKnowledgeContextMenuOptions = ({
   isGroupView,

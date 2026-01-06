@@ -269,7 +269,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     [
         {
             "type": "ticket",
-            "ticket_id": ...,
+            "record_id": ...,
             "state": ...,
             "title": ...,
             "content": ...,
@@ -307,7 +307,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
         created_time = time_str_to_utc_time(created_time).isoformat()
         whole_ticket_data = {
             'type': 'ticket',
-            'ticket_id': int(ticket['_pk']),
+            'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),
             'content': ticket.get('content'),
