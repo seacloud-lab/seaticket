@@ -86,6 +86,16 @@ def check_project_admin_permission(username, owner):
             return False
 
 
+def check_same_org_permission(user, workspace):
+    """Check if user is in the same organization as the workspace.
+    """
+    project_org_id = workspace.org_id
+    user_org_id = user.org.org_id if hasattr(user, 'org') else -1
+    if project_org_id == -1 or user_org_id != project_org_id:
+        return False
+    return True
+
+
 def check_project_permission(username, workspace_owner, project=None):
     """Check workspace/project access permission of a user.
     """

@@ -1,0 +1,59 @@
+{% load seahub_tags i18n static %}
+{% load render_bundle from webpack_loader %}
+{% load pwa %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+<title>{{ project_name }} - {% trans "Portal" %}</title>
+{% progressive_web_app_meta %}
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+{% if request.is_mobile or request.is_tablet %}
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+{% else %}
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+{% endif %}
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20250826" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/project-icon.css?t=20250826" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20251015" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seafile-editor-font.css?t=20250917" />
+{% render_bundle 'portal' 'css' %}
+{% if branding_css != '' %}<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ branding_css }}" />{% endif %}
+{% if enable_branding_css %}<link rel="stylesheet" type="text/css" href="{% url 'custom_css' %}" />{% endif %}
+</head>
+
+<body>
+    <div id="wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="modal-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+    <div id="widget-wrapper" class="{{ LANGUAGE_CODE }}"></div>
+
+<script type="text/javascript">
+    window.app = {
+        config: {
+            version: '{{ version }}',
+            siteRoot: '{{ SITE_ROOT }}',
+            mediaUrl: '{{ media_url }}',
+            lang: '{{ LANGUAGE_CODE }}',
+            loginUrl: '{{ LOGIN_URL }}',
+            faviconPath: '{{ favicon_path }}',
+        },
+        pageOptions: {
+            server: '{{ service_url }}',
+            csrfToken: "{{ csrf_token }}",
+            name: "{{request.user.username|email2nickname|escapejs}}",
+            username: "{{request.user.username|escapejs}}",
+            avatarURL: '{{ avatar_url }}',
+            projectName: '{{ project_name|escapejs }}',
+            projectUuid: '{{ project_uuid }}',
+            isEditMode: {% if is_edit_mode %}true{% else %}false{% endif %},
+        }
+     };
+</script>
+<script src="{{ STATIC_URL }}scripts/i18n/{{ LANGUAGE_CODE }}/djangojs.js?v={{ version }}"></script>
+<script src="{{ MEDIA_URL }}js/init-scroll-bar.js" ></script>
+{% render_bundle 'portal' 'js' %}
+</body>
+</html>

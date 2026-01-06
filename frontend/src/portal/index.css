@@ -1,0 +1,208 @@
+.sea-qa-portal {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: #fff;
+}
+
+.sea-qa-portal-side-panel {
+  width: 220px;
+  min-width: 220px;
+  height: 100%;
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-portal-side-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sea-qa-portal-side-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  background-color: #FF8000;
+  border-radius: 4px;
+}
+
+.sea-qa-portal-side-panel-icon .project-icon {
+  font-size: 16px;
+}
+
+.sea-qa-portal-side-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.sea-qa-portal-navigation {
+  flex: 1;
+  padding: 8px;
+}
+
+.sea-qa-portal-nav-item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #333;
+}
+
+.sea-qa-portal-nav-item:hover,
+.sea-qa-portal-nav-item.active {
+  background-color: #EDEDEA;
+}
+
+.sea-qa-portal-nav-item-icon {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  color: #666;
+}
+
+.sea-qa-portal-nav-item-name {
+  font-size: 14px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-qa-portal-main-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sea-qa-portal-top-bar {
+  height: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.sea-qa-portal-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-qa-portal-content.with-padding {
+  overflow: auto;
+  padding: 20px;
+}
+
+/* Submit ticket form */
+.sea-qa-portal-submit-ticket {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sea-qa-portal-submit-ticket .form-group {
+  margin-bottom: 20px;
+}
+
+.sea-qa-portal-submit-ticket .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.sea-qa-portal-submit-ticket .required-tip {
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+.sea-qa-portal-submit-ticket .form-control {
+  width: 100%;
+}
+
+.sea-qa-portal-submit-ticket .content-editor {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  min-height: 200px;
+}
+
+.sea-qa-portal-submit-ticket .submit-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* My tickets list */
+.sea-qa-portal-my-tickets {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.sea-qa-portal-tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sea-qa-portal-tickets-table th,
+.sea-qa-portal-tickets-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.sea-qa-portal-tickets-table th {
+  font-weight: 500;
+  color: #666;
+  background-color: #f8f9fa;
+}
+
+.sea-qa-portal-tickets-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+.sea-qa-portal-ticket-title {
+  cursor: pointer;
+  color: #1976d2;
+}
+
+.sea-qa-portal-ticket-title:hover {
+  text-decoration: underline;
+}
+
+.sea-qa-portal-ticket-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sea-qa-portal-ticket-status.open {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.sea-qa-portal-ticket-status.closed {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.sea-qa-portal-empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}

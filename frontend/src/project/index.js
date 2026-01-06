@@ -51,7 +51,7 @@ const Project = () => {
     }
 
     if (activeBar[0] === activeBarKey) {
-      if ([BAR_TYPE.SEARCH, BAR_TYPE.SETTINGS].includes(activeBarKey)) return;
+      if ([BAR_TYPE.SEARCH, BAR_TYPE.SETTINGS, BAR_TYPE.EXTERNAL_PORTAL].includes(activeBarKey)) return;
       if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
         eventBus.dispatch(EVENT_BUS_TYPE.ASK_PAGE, TICKET_PAGE_SLUG_ID.NEW);
         return;
