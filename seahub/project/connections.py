@@ -298,10 +298,6 @@ class ProjectConnectionSyncView(APIView):
     def post(self, request, project_uuid, connection_id):
         """trigger manual sync for a connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         if not is_org_context(request):
             error_msg = 'Feature is not enabled.'
@@ -315,7 +311,7 @@ class ProjectConnectionSyncView(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
+        if not check_project_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
