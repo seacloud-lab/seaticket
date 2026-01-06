@@ -10,20 +10,21 @@ SRCDIR=$(dirname "${TESTSDIR}")
 cd "$SRCDIR"
 
 function commit_dist_files() {
+    echo 'commit seaqa-web'
     git checkout -b dist-$GITHUB_BRANCH
     git add -u .
-    git add -A frontend/build
+    git add -A frontend/build -f
     git add -A frontend/webpack-stats.pro.json
     git add -A media/assets
     git add -A static/scripts
     git add -A locale
-    git add -A seahub/trusted_ip/locale
     git config --global user.email "github_actions@seafile.com"
     git config --global user.name "GitHub Actions CI"
     git commit -m "[dist][CI SKIP] GitHub Actions CI build: #$GITHUB_RUN_NUMBER, based on commit $GITHUB_SHA."
 }
 
 function upload_files() {
+    echo "Pushing dist to seaqa-web"
     git remote add token-origin https://x-access-token:$GITHUB_TOKEN@github.com/seafileltd/seaqa-web.git
     git push -f token-origin dist-$GITHUB_BRANCH
 }
