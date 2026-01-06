@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { notificationAPI } from '../../project/api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import { BAR_TYPE } from '@/project/constants';
 
 const NotificationContext = createContext();
 
@@ -15,7 +14,6 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const firstLoadedRef = useRef(true);
   const abortControllerRef = useRef(null);
-  const isActiveInbox = activeBar[0] === BAR_TYPE.INBOX;
 
   const fetchNotifications = useCallback((page = 1, perPage = 20, isfetchMore) => {
     // Cancel previous request if it exists
@@ -28,6 +26,8 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
 
     if (isfetchMore) {
       setLoadingMore(true);
+    } else {
+      setLoading(true);
     }
 
     return notificationAPI.listProjectNotifications(projectUuid, page, perPage, { signal: controller.signal })
@@ -80,7 +80,7 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
 
   useEffect(() => {
     // Fetch on initial mount and re-fetch when activated
-    const shouldFetch = firstLoadedRef.current || isActiveInbox;
+    const shouldFetch = firstLoadedRef.current || showInboxDrawer;
     if (!shouldFetch) return;
 
     if (firstLoadedRef.current) {
@@ -93,7 +93,7 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
         abortControllerRef.current.abort();
       }
     };
-  }, [isActiveInbox]);
+  }, [showInboxDrawer]);
 
   const value = {
     notificationList,
