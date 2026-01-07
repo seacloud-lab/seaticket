@@ -295,8 +295,8 @@ msgstr "请登录。"
 #: seahub/templates/registration/multi_saml_sso.html:14
 #: seahub/templates/registration/multi_saml_sso.html:15
 #: seahub/templates/registration/multi_saml_sso.html:16
-msgid "Email or username"
-msgstr "邮箱或用户名"
+msgid "Email"
+msgstr "邮箱"
 
 #: seahub/auth/forms.py:30 seahub/auth/forms.py:249
 #: seahub/invitations/templates/invitations/token_view.html:13
@@ -1041,13 +1041,10 @@ msgstr "忘记密码？"
 msgid "Failed to refresh the CAPTCHA, please try again later."
 msgstr ""
 
-#: seahub/templates/registration/login.html:242
-#: seahub/templates/registration/multi_saml_sso.html:72
-msgid "Email or username cannot be blank"
-msgstr "刷新验证码失败，请稍后尝试。"
-
 #: seahub/templates/registration/login.html:244
 #: seahub/templates/registration/registration_form.html:122
+#: seahub/templates/registration/login.html:242
+#: seahub/templates/registration/multi_saml_sso.html:72
 msgid "Email cannot be blank"
 msgstr "邮箱不能为空"
 
