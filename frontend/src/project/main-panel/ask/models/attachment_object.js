@@ -27,8 +27,6 @@ class AttachmentObject {
       this.icon = '';
     }
 
-    console.log(this);
-
   }
 }
 
