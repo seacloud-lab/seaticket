@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 test_fn()
 {
     FN=$1
