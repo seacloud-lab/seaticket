@@ -2,6 +2,7 @@ import logging
 
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import SeafileTable
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ class SeafileSeaDBAPI:
             current_seafiles = self.get_seafiles_by_pks(connection_id, document_ids)
             result += [
                 {
-                    'type': 'seafile',
+                    'type': ConnectionType.SEAFILE.value,
                     'connection_id': connection_id,
                     'record_id': seafile['_pk'],
                     'title': seafile['title'],

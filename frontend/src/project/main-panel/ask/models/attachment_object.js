@@ -20,7 +20,7 @@ class AttachmentObject {
     } else if (this.type === CONNECTION_TYPE.GITHUB_ISSUE) {
       this.icon = object.state === 'closed' || object.state === '0002' ? 'circle-check' : 'circle-dot';
     } else if (this.type === CONNECTION_TYPE.DISCOURSE_FORUM) {
-      this.icon = 'discourse_forum';
+      this.icon = 'discourse-forum';
     } else if (this.type === CONNECTION_TYPE.EMAIL) {
       this.icon = 'email';
     } else {

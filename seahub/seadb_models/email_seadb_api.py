@@ -3,6 +3,7 @@ import logging
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import EmailTable, ThreadTable
 from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ class EmailSeaDBAPI:
                 result[thread_id].append(email)
         return result
 
-    def get_whole_issues_data(self, connection_ids_pks):
+    def get_whole_email_data(self, connection_ids_pks):
         """
         Build a dict object from an email thread and its emails.
 
@@ -77,7 +78,7 @@ class EmailSeaDBAPI:
         Returns:
         [
             {
-                "type": "issue",
+                "type": "email",
                 "connection_id": ...,
                 "record_id": ...,
                 "title": ...,
@@ -111,7 +112,7 @@ class EmailSeaDBAPI:
 
             for thread_data in threads:
                 whole_thread_data = {
-                    'type': 'issue',
+                    'type': ConnectionType.EMAIL.value,
                     'connection_id': int(connection_id),
                     'record_id': int(thread_data['_pk']),
                     'title': thread_data.get('title'),
