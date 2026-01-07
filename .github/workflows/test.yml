@@ -1,0 +1,95 @@
+name: SeaQA Web Test CI
+
+on:
+  pull_request:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  REDIS_HOST: localhost
+  SEAQA_MYSQL_DB_HOST: 127.0.0.1
+  SEAQA_MYSQL_DB_PORT: 3306
+  SEAQA_MYSQL_DB_USER: root
+  SEAQA_MYSQL_DB_PASSWORD: root
+  SEAQA_MYSQL_SEAQA_DB_NAME: sea_qa
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:latest
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        ports:
+          - 6379:6379
+
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: sea_qa
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: apt install
+        run: |
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y build-essential pkg-config python3-dev default-libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev
+
+      - name: pip install
+        run: |
+          cd $GITHUB_WORKSPACE
+          pip install -r test-requirements.txt
+          sudo rm -rf /usr/lib/python3/dist-packages/pytz/
+
+      - name: Set REDIS_HOST environment variable
+        run: |
+          echo "REDIS_HOST=localhost" >> $GITHUB_ENV
+
+      - name: Create seaqa_config.yaml for tests
+        run: |
+          cat > /tmp/seaqa_config.yaml <<'EOF'
+          global:
+            SEAQA_WEB_SECRET_KEY: "test-secret-key"
+            JWT_PRIVATE_KEY: "qwertyuiop"
+            LLM_MODELS: []
+            AI_PRICES: {}
+          seaqa-web: {}
+          EOF
+
+      - name: Detect backend changes
+        id: backend_changes
+        run: |
+          cd $GITHUB_WORKSPACE
+          chmod +x tests/test_seaqa_backend_changes.sh
+          if ./tests/test_seaqa_backend_changes.sh; then
+            echo "run_backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_backend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: run pytest
+        if: steps.backend_changes.outputs.run_backend == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE
+          export CONF_PATH=/tmp
+          export SEAQA_CONFIG_NAME=seaqa_config.yaml
+          export DJANGO_SETTINGS_MODULE=seahub.test_settings
+          export JWT_PRIVATE_KEY=qwertyuiop
+          pytest tests/knowledge_base tests/tickets

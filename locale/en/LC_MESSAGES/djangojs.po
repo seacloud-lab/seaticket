@@ -2666,11 +2666,6 @@ msgstr ""
 msgid "opened"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
-msgid "Comment"
-msgstr ""
-
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:179
 msgid "Update comment"
 msgstr ""
@@ -3025,14 +3020,12 @@ msgstr ""
 msgid "The ticket link has been copied"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:251
-msgid "Not found ticket"
-msgstr ""
-
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:300
 msgid "Add a comment"
 msgstr ""
 
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:326
 msgid "Comment"
 msgstr ""

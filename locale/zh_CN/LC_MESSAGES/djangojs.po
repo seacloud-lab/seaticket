@@ -2683,11 +2683,6 @@ msgstr "启用开发者模式，以显示用于开发和调试的高级功能。
 msgid "opened"
 msgstr "打开于"
 
-#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
-msgid "Comment"
-msgstr "回复"
-
 #: frontend/src/project/main-panel/tickets/components/reply/index.js:179
 msgid "Update comment"
 msgstr "更新评论"
@@ -3042,14 +3037,12 @@ msgstr "标签"
 msgid "The ticket link has been copied"
 msgstr "ticket 链接已复制"
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:251
-msgid "Not found ticket"
-msgstr "没有找到 ticket"
-
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:300
 msgid "Add a comment"
 msgstr "添加品论"
 
+#: frontend/src/project/main-panel/tickets/components/reply/index.js:159
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:305
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:326
 msgid "Comment"
 msgstr "评论"
