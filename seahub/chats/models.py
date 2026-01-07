@@ -96,7 +96,7 @@ class ChatToolCalls(models.Model):
         }
 
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_uuid, message_id, username, role, content, is_agent_mode, sources='', extra_contents=[]):
+    def create_message(self, session_uuid, message_id, username, role, content, is_agent_mode, sources='', attachments=[]):
         """Create a new chat message"""
         message = self.model(
             session_uuid=session_uuid,
@@ -104,7 +104,7 @@ class ChatMessagesManager(models.Manager):
             username=username,
             role=role,
             content=content,
-            extra_contents=json.dumps(extra_contents),
+            attachments=json.dumps(attachments),
             sources=sources,
             is_agent_mode=is_agent_mode
         )
@@ -128,7 +128,7 @@ class ChatMessages(models.Model):
     username = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
-    extra_contents = models.TextField(null=True)
+    attachments = models.TextField(null=True)
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -155,12 +155,12 @@ class ChatMessages(models.Model):
             sources = []
         
         try:
-            extra_contents = json.loads(self.extra_contents)
+            attachments = json.loads(self.attachments)
         except:
-            extra_contents = self.extra_contents
+            attachments = self.attachments
 
-        if not isinstance(extra_contents, list):
-            extra_contents = []
+        if not isinstance(attachments, list):
+            attachments = []
 
         return {
             'id': self.id,
@@ -169,7 +169,7 @@ class ChatMessages(models.Model):
             'username': self.username,
             'role': self.role,
             'content': self.content,
-            'extra_contents': extra_contents,
+            'attachments': attachments,
             'sources': sources,
             'created_at': self.created_at,
             'updated_at': self.updated_at,

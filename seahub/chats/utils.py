@@ -163,7 +163,7 @@ def gen_message_id(session_uuid, max_try=5):
 
     return new_message_id
 
-def get_extra_contents(seadb_api, project_uuid, extra_contents):
+def get_attachments(seadb_api, project_uuid, attachments):
     knowledge_base_ids = []
     site_documents = []
     seafile_documents = []
@@ -172,27 +172,27 @@ def get_extra_contents(seadb_api, project_uuid, extra_contents):
     discourse_issues = []
     email_issues = []
 
-    for extra_content in extra_contents:
-        if extra_content.get('record_id', -1) < 0:
+    for attachment in attachments:
+        if attachment.get('record_id', -1) < 0:
             continue
 
         # documents
-        if extra_content.get('type') == 'knowledge_base':
-            knowledge_base_ids.append(extra_content['record_id'])
-        elif extra_content.get('type') == ConnectionType.SITE.value:
-            site_documents.append(extra_content)
-        elif extra_content.get('type') == ConnectionType.SEAFILE.value:
-            seafile_documents.append(extra_content)
+        if attachment.get('type') == 'knowledge_base':
+            knowledge_base_ids.append(attachment['record_id'])
+        elif attachment.get('type') == ConnectionType.SITE.value:
+            site_documents.append(attachment)
+        elif attachment.get('type') == ConnectionType.SEAFILE.value:
+            seafile_documents.append(attachment)
         
         # issues
-        elif extra_content.get('type') == 'ticket':
-            ticket_ids.append(extra_content['record_id'])
-        elif extra_content.get('type') == ConnectionType.GITHUB_ISSUE.value:
-            github_issues.append(extra_content)
-        elif extra_content.get('type') == ConnectionType.EMAIL.value:
-            email_issues.append(extra_content)
-        elif extra_content.get('type') == ConnectionType.DISCOURSE_FORUM.value:
-            discourse_issues.append(extra_content)
+        elif attachment.get('type') == 'ticket':
+            ticket_ids.append(attachment['record_id'])
+        elif attachment.get('type') == ConnectionType.GITHUB_ISSUE.value:
+            github_issues.append(attachment)
+        elif attachment.get('type') == ConnectionType.EMAIL.value:
+            email_issues.append(attachment)
+        elif attachment.get('type') == ConnectionType.DISCOURSE_FORUM.value:
+            discourse_issues.append(attachment)
 
     results = []
     ## documents
@@ -225,16 +225,16 @@ def get_extra_contents(seadb_api, project_uuid, extra_contents):
     
     return results
 
-def remove_content_details_in_extra_contents(extra_contents):
-    for extra_content in extra_contents:
+def remove_content_details_in_attachments(attachments):
+    for attachment in attachments:
         try:
-            del extra_content['content']
+            del attachment['content']
         except:
             pass
 
         try:
-            del extra_content['comments']
+            del attachment['comments']
         except:
             pass
     
-    return extra_contents
+    return attachments

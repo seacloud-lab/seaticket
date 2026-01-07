@@ -75,7 +75,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     });
 
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, extraContents: attachments, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments: attachments, model });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -84,7 +84,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, extraContents: attachments, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, attachments: attachments, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
@@ -111,7 +111,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
         if (item.role === 'user') {
-          let attachments = item?.extra_contents || [];
+          let attachments = item?.attachments || [];
           return new ChatMessage({
             _id: item.id,
             message: {

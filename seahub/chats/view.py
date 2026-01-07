@@ -15,7 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.chats.models import ChatSessions, ChatMessages, ChatToolCalls
-from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_extra_contents, remove_content_details_in_extra_contents
+from seahub.chats.utils import format_ask_thought_process, format_agent_thought_process, get_ai_reply, gen_message_id, get_attachments, remove_content_details_in_attachments
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -234,7 +234,7 @@ class ChatMessagesView(APIView):
             for message in messages:
                 data = message.to_dict()
                 if message.role == 'user':
-                    data['extra_contents'] = remove_content_details_in_extra_contents(data['extra_contents'])
+                    data['attachments'] = remove_content_details_in_attachments(data['attachments'])
                 elif message.role == 'assistant':
                     if message.is_agent_mode:
                         if agent_thought_process := format_agent_thought_process(tool_calls_history.get(message.message_id, {})):
@@ -293,7 +293,7 @@ class ChatView(APIView):
 
         # Extra contents
         try:
-            extra_contents = get_extra_contents(SeaDBAPI(username), project_uuid, request.data.get('extra_contents', []))
+            attachments = get_attachments(SeaDBAPI(username), project_uuid, request.data.get('attachments', []))
         except Exception as e:
             logger.warning(f'Failure to get extra contents: {e}')
 
@@ -338,7 +338,7 @@ class ChatView(APIView):
             'session_uuid': session.session_uuid,
             'message_id': message_id,
             'query': query,
-            'extra_contents': extra_contents,
+            'attachments': attachments,
             'resolve_type': resolve_type,
             'username': username,
             'org_id': org_id,
@@ -373,14 +373,14 @@ class ChatView(APIView):
         except Exception as e:
             logger.warning(f'Failure to query connection info: {e}')
 
-        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', extra_contents=extra_contents)
+        user_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'user', query, resolve_type == 'agent', attachments=attachments)
         ai_reply_message = ChatMessages.objects.create_message(session.session_uuid, message_id, request.user.username, 'assistant', ai_response['ai_reply'], resolve_type == 'agent', sources=json.dumps(ai_response['sources']))
 
         ai_response.update({
             'session_uuid': session_uuid,
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
-            'extra_contents': remove_content_details_in_extra_contents(extra_contents)
+            'attachments': remove_content_details_in_attachments(attachments)
         })
 
         return Response(ai_response)
