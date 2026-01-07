@@ -16,18 +16,18 @@ export const BAR_TYPE = {
   SUBSTATES: 'tickets/substates',
 };
 
-export const BAR_TYPES = [
-  { key: BAR_TYPE.CHAT, name: gettext('Chat'), icon: 'ask' },
-  { key: BAR_TYPE.SEARCH, name: gettext('Search'), icon: 'search' },
-  { key: BAR_TYPE.CONNECTION, name: gettext('Connections'), icon: 'connection' },
-  { key: BAR_TYPE.SETTINGS, name: gettext('Settings'), icon: 'set-up' },
-  { key: BAR_TYPE.EXTERNAL_PORTAL, name: gettext('External portal'), icon: 'external-portal' },
-  { key: BAR_TYPE.ANALYZE, name: gettext('Analyze'), icon: 'analyze' },
-  { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'knowledge-base' },
-  { key: BAR_TYPE.TICKET, name: gettext('All tickets'), icon: 'all-tickets' },
-  { key: BAR_TYPE.MY_TICKET, name: gettext('My tickets'), icon: 'my-tickets' },
-  { key: BAR_TYPE.TRASH, name: gettext('Trash') },
-  { key: BAR_TYPE.TAGS, name: gettext('Manage tags') },
-  { key: BAR_TYPE.TYPES, name: gettext('Manage types') },
-  { key: BAR_TYPE.SUBSTATES, name: gettext('Manage substates') }
-];
+export const BAR_TYPE_CONFIG = {
+  [BAR_TYPE.CHAT]: { key: BAR_TYPE.CHAT, name: gettext('Chat'), icon: 'ask' },
+  [BAR_TYPE.SEARCH]: { key: BAR_TYPE.SEARCH, name: gettext('Search'), icon: 'search' },
+  [BAR_TYPE.CONNECTION]: { key: BAR_TYPE.CONNECTION, name: gettext('Connections'), icon: 'connection' },
+  [BAR_TYPE.SETTINGS]: { key: BAR_TYPE.SETTINGS, name: gettext('Settings'), icon: 'set-up' },
+  [BAR_TYPE.EXTERNAL_PORTAL]: { key: BAR_TYPE.EXTERNAL_PORTAL, name: gettext('External portal'), icon: 'external-portal' },
+  [BAR_TYPE.ANALYZE]: { key: BAR_TYPE.ANALYZE, name: gettext('Analyze'), icon: 'analyze' },
+  [BAR_TYPE.KNOWLEDGE]: { key: BAR_TYPE.KNOWLEDGE, name: gettext('Knowledge base'), icon: 'knowledge-base' },
+  [BAR_TYPE.TICKET]: { key: BAR_TYPE.TICKET, name: gettext('All tickets'), icon: 'all-tickets' },
+  [BAR_TYPE.MY_TICKET]: { key: BAR_TYPE.MY_TICKET, name: gettext('My tickets'), icon: 'my-tickets' },
+  [BAR_TYPE.TRASH]: { key: BAR_TYPE.TRASH, name: gettext('Trash') },
+  [BAR_TYPE.TAGS]: { key: BAR_TYPE.TAGS, name: gettext('Manage tags') },
+  [BAR_TYPE.TYPES]: { key: BAR_TYPE.TYPES, name: gettext('Manage types') },
+  [BAR_TYPE.SUBSTATES]: { key: BAR_TYPE.SUBSTATES, name: gettext('Manage substates') },
+};
