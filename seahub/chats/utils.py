@@ -173,12 +173,16 @@ def get_attachments(seadb_api, project_uuid, attachments):
     email_issues = []
 
     for attachment in attachments:
-        if attachment.get('record_id', -1) < 0:
+        try:
+            record_id = int(attachment.get('record_id', -1))
+        except:
+            continue
+        if record_id < 0:
             continue
 
         # documents
         if attachment.get('type') == 'knowledge_base':
-            knowledge_base_ids.append(attachment['record_id'])
+            knowledge_base_ids.append(record_id)
         elif attachment.get('type') == ConnectionType.SITE.value:
             site_documents.append(attachment)
         elif attachment.get('type') == ConnectionType.SEAFILE.value:
@@ -186,7 +190,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
         
         # issues
         elif attachment.get('type') == 'ticket':
-            ticket_ids.append(attachment['record_id'])
+            ticket_ids.append(record_id)
         elif attachment.get('type') == ConnectionType.GITHUB_ISSUE.value:
             github_issues.append(attachment)
         elif attachment.get('type') == ConnectionType.EMAIL.value:
