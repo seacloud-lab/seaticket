@@ -84,6 +84,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
 
   const loadMore = useCallback(async () => {
     if (!metadata.hasMore) return;
+    if (metadata.isSearchView) return;
     if (isLoadingMore) return;
     setLoadingMore(true);
 

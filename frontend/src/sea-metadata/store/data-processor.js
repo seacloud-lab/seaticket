@@ -391,6 +391,7 @@ class DataProcessor {
       case OPERATION_TYPE.SEARCH_ROWS: {
         const { value } = operation;
         if (!value) {
+          table.isSearchView = false;
           table.view.rows = table.rows.map(r => r._id);
         } else {
           const regValue = getSearchRule(value);
@@ -416,6 +417,7 @@ class DataProcessor {
             }
           }
           table.view.rows = viewRows;
+          table.isSearchView = true;
         }
         const { available_columns, groupbys, rows } = table.view;
         if (!isGroupView({ groupbys }, available_columns)) {
