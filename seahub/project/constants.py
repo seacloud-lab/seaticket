@@ -326,12 +326,10 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
-            ExtraSourceType.KNOWLEDGE_BASE.value
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
             ConnectionType.SITE.value,
-            ExtraSourceType.TICKET.value
         ]
     }
 
