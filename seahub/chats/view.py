@@ -295,6 +295,7 @@ class ChatView(APIView):
         try:
             attachments = get_attachments(SeaDBAPI(username), project_uuid, request.data.get('attachments', []))
         except Exception as e:
+            attachments = []
             logger.warning(f'Failure to get extra contents: {e}')
 
         resolve_type = request.data.get('resolve_type', 'ask')
