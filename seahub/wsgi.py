@@ -33,6 +33,5 @@ application = get_wsgi_application()
 # skip OSS info logs
 try:
     logging.getLogger('oss2.api').setLevel(logging.WARNING)
-    logging.root.handlers[0].setLevel(logging.WARNING)
 except:
     pass
