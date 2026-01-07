@@ -41,14 +41,14 @@
   margin: 0px;
 }
 
-.sea-qa-row-details-container .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-down {
+.sea-qa-row-details-container .row-expand-direct-icons .direct-icon .sea-qa-icon-svg-arrow-down {
   color: #000;
   width: 16px !important;
   height: 16px !important;
   opacity: .5;
 }
 
-.sea-qa-row-details-container .row-expand-direct-icons .direct-icon:hover .sea-qa-icon-svg-down {
+.sea-qa-row-details-container .row-expand-direct-icons .direct-icon:hover .sea-qa-icon-svg-arrow-down {
   opacity: .75;
 }
 

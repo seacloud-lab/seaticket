@@ -41,7 +41,7 @@ const ConnectionsNav = ({ nav, level, activeBar, onClick }) => {
       >
         {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
         <span className="sea-qa-project-navigation-item-name">{name}</span>
-        <IconButton icon="down" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
+        <IconButton icon="arrow-down" className={classnames('', { 'rotate-icon-90': !isShowChildren })} onClick={toggleShowChildren} />
       </div>
       <div
         className={classnames('w-100 o-hidden', { 'side-panel-slide': isShowChildren, 'side-panel-slide-up': !isShowChildren })}

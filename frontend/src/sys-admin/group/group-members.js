@@ -153,7 +153,7 @@ class Item extends Component {
             {item.role !== 'Owner' &&
             <IconButton
               className={`action-icon ${isOpIconShown ? '' : 'invisible'}`}
-              icon="x"
+              icon="close"
               title={gettext('Remove')}
               aria-label={gettext('Remove')}
               onClick={this.toggleDeleteDialog}

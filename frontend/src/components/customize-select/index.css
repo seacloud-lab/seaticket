@@ -36,11 +36,11 @@
   border-color: rgb(179, 179, 179);
 }
 
-.sea-qa-select .sea-qa-icon-svg-down {
+.sea-qa-select .sea-qa-icon-svg-arrow-down {
   color: #999;
 }
 
-.sea-qa-select .sea-qa-icon-svg-down:hover {
+.sea-qa-select .sea-qa-icon-svg-arrow-down:hover {
   color: #555;
 }
 

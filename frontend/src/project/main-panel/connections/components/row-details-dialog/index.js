@@ -87,14 +87,14 @@ const RowDetailsDialog = ({
         <div className="d-flex align-items-center">
           <div className="row-expand-direct-icons user-select-none mr-2">
             <IconTooltip
-              icon="down"
+              icon="arrow-down"
               tip={gettext('Previous record')}
               className="direct-icon rotate-icon-180"
               placement="bottom"
               onClick={() => handleSwitchRows(-1)}
             />
             <IconTooltip
-              icon="down"
+              icon="arrow-down"
               tip={gettext('Next record')}
               className="direct-icon"
               placement="bottom"

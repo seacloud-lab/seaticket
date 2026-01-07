@@ -5,7 +5,7 @@ import IconButton from '../icon-button';
 
 import './index.css';
 
-const IconTooltip = ({ icon = 'help', tip, className, placement = 'right', hoverBackground = false, ...props }) => {
+const IconTooltip = ({ icon = 'question-circle-filled', tip, className, placement = 'right', hoverBackground = false, ...props }) => {
   const ref = useRef(null);
   return (
     <>

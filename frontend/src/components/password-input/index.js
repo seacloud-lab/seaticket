@@ -91,7 +91,7 @@ const PasswordInput = ({
       {enableRandomGeneration && (
         <IconButton
           disabled={disabled}
-          icon="magic"
+          icon="generate-password"
           className="password-op-icon btn btn-secondary p-0"
           style={{ height: size, width: size }}
           onClick={generatePassword}

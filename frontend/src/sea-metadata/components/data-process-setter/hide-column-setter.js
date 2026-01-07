@@ -40,7 +40,7 @@ const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColum
   return (
     <>
       <IconBtn
-        icon="hide"
+        icon="eye-slash"
         size={24}
         className={className}
         onClick={onSetterToggle}

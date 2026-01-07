@@ -6,6 +6,6 @@ const root = createRoot(document.getElementById('down-icon-wrapper'));
 
 root.render(
   <>
-    <Icon symbol="down" />
+    <Icon symbol="arrow-down" />
   </>
 );

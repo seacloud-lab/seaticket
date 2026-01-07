@@ -2,14 +2,14 @@ import { gettext } from '@/constants';
 import CellType from './type';
 
 const COLUMNS_ICON_CONFIG = {
-  [CellType.CREATOR]: 'creator',
-  [CellType.LAST_MODIFIER]: 'creator',
-  [CellType.CTIME]: 'ctime',
-  [CellType.MTIME]: 'ctime',
+  [CellType.CREATOR]: 'user',
+  [CellType.LAST_MODIFIER]: 'user',
+  [CellType.CTIME]: 'date-time',
+  [CellType.MTIME]: 'date-time',
   [CellType.DEFAULT]: 'text',
   [CellType.TEXT]: 'text',
-  [CellType.CHECKBOX]: 'checkbox',
-  [CellType.COLLABORATOR]: 'collaborator',
+  [CellType.CHECKBOX]: 'check-box',
+  [CellType.COLLABORATOR]: 'group',
   [CellType.DATE]: 'date',
   [CellType.LONG_TEXT]: 'long-text',
   [CellType.SINGLE_SELECT]: 'single-select',
@@ -17,10 +17,10 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.MULTIPLE_SELECT]: 'multiple-select',
   [CellType.NUMBER]: 'number',
   [CellType.RATE]: 'rate',
-  [CellType.TAGS]: 'tag',
-  [CellType.TAG]: 'tag',
+  [CellType.TAGS]: 'tag-filled',
+  [CellType.TAG]: 'tag-filled',
   [CellType.URL]: 'url',
-  [CellType.PRIORITY]: 'priority',
+  [CellType.PRIORITY]: 'flag',
 };
 
 const COLUMNS_ICON_NAME = {

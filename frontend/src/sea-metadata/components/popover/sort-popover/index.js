@@ -195,7 +195,7 @@ class SortPopover extends Component {
       <div key={'sort-item-' + index} className="sort-item">
         {!readOnly &&
           <div className="delete-sort" onClick={(viewType === VIEW_TYPE.GALLERY && index === 0) ? () => {} : (event) => this.deleteSort(event, index)}>
-            {!(viewType === VIEW_TYPE.GALLERY && index === 0) && <Icon className="sea-metadata-icon" symbol="x"/>}
+            {!(viewType === VIEW_TYPE.GALLERY && index === 0) && <Icon className="sea-metadata-icon" symbol="close"/>}
           </div>
         }
         <div className="condition">

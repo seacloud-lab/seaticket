@@ -146,7 +146,7 @@
 }
 
 .sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .selected-option-show,
-.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .sea-qa-icon-svg-down {
+.sea-qa-ai-ask-chat-operations-container .sea-qa-ai-chat-tool-select.sea-qa-customize-select.highlighted .sea-qa-icon-svg-arrow-down {
   color: #ed7109;
 }
 
@@ -169,11 +169,11 @@
   color: #fff !important;
 }
 
-.sea-qa-ai-chat-tool-type-select-editor .option-editor-option .sea-qa-icon-btn .sea-qa-icon-svg-check {
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option .sea-qa-icon-btn .sea-qa-icon-svg-check-mark {
   height: 14px;
   width: 14px;
 }
 
-.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover .sea-qa-icon-btn .sea-qa-icon-svg-check {
+.sea-qa-ai-chat-tool-type-select-editor .option-editor-option:hover .sea-qa-icon-btn .sea-qa-icon-svg-check-mark {
   color: #fff !important;
 }

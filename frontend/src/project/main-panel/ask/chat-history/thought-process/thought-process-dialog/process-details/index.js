@@ -34,7 +34,7 @@ const ProcessDetails = ({ value }) => {
     return (
       <>
         <div className="sea-qa-ai-thought-process-order" onClick={toggle}>
-          <IconButton icon="down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })}/>
+          <IconButton icon="arrow-down" className={classnames('no-hover-bg', { 'rotate-icon-270': !isShowDetails })}/>
           <span className="sea-qa-ai-thought-process-order-title">
             {value.name}
           </span>

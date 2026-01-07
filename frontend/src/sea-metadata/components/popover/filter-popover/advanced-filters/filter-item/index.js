@@ -517,7 +517,7 @@ class FilterItem extends React.Component {
     if (isRenderErrorTips) return null;
     return (
       <div className="ml-2" >
-        <IconBtn id={`filter-tool-tip-${filterColumn.key}`} icon="exclamation-triangle" iconStyle={{ color: '#FFC92C' }} />
+        <IconBtn id={`filter-tool-tip-${filterColumn.key}`} icon="exclamation-triangle-filled" iconStyle={{ color: '#FFC92C' }} />
         <UncontrolledTooltip placement="bottom" target={`filter-tool-tip-${filterColumn.key}`} fade={false} className="sea-metadata-tooltip">
           {gettext('If there are multiple items in the cell, a random one will be chosen and be compared with the filter value.')}
         </UncontrolledTooltip>
@@ -532,7 +532,7 @@ class FilterItem extends React.Component {
     return (
       <div className="ml-2">
         <div ref={this.invalidFilterTip}>
-          <IconBtn icon="exclamation-triangle" iconStyle={{ color: '#cd201f' }}/>
+          <IconBtn icon="exclamation-triangle-filled" iconStyle={{ color: '#cd201f' }}/>
         </div>
         <UncontrolledTooltip
           target={this.invalidFilterTip}
@@ -567,7 +567,7 @@ class FilterItem extends React.Component {
       <div className="filter-item">
         {!readOnly && (
           <div className="delete-filter" onClick={this.onDeleteFilter}>
-            <Icon className="sea-metadata-icon" symbol="x"/>
+            <Icon className="sea-metadata-icon" symbol="close"/>
           </div>
         )}
         <div className="condition">

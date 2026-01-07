@@ -17,8 +17,8 @@
   background-color: transparent;
 }
 
-.sea-metadata-basic-filters-select.sea-qa-customize-select .selected-option .sea-qa-icon-svg-down,
-.sea-metadata-basic-filters-select.sea-metadata-basic-filter-tags-select .sea-qa-icon-svg-down {
+.sea-metadata-basic-filters-select.sea-qa-customize-select .selected-option .sea-qa-icon-svg-arrow-down,
+.sea-metadata-basic-filters-select.sea-metadata-basic-filter-tags-select .sea-qa-icon-svg-arrow-down {
   margin-left: 0;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .sea-metadata-basic-filters-select.highlighted .selected-option .selected-option-show,
-.sea-metadata-basic-filters-select.highlighted .selected-option .sea-qa-icon-svg-down {
+.sea-metadata-basic-filters-select.highlighted .selected-option .sea-qa-icon-svg-arrow-down {
   color: #ed7109;
 }
 

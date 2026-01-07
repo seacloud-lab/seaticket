@@ -149,7 +149,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
             text={gettext('Connections enable you to sync contents from third party applications and search them')}
           >
             <Button color="primary" className="mt-6 d-flex align-items-center" onClick={() => handleModify()}>
-              <Icon symbol="add" className="mr-1" />
+              <Icon symbol="plus" className="mr-1" />
               {gettext('New connection')}
             </Button>
           </EmptyTip>

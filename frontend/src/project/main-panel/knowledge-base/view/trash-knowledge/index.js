@@ -47,7 +47,7 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
   const createRowsTools = useCallback(({ rows, deleteLocalRows, selectNone }) => {
     return [{
       key: 'restore',
-      icon: 'restore',
+      icon: 'revoke',
       label: gettext('Restore'),
       callback: (event) => {
         event && event.stopPropagation();

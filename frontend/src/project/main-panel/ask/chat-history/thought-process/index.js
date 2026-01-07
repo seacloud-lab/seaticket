@@ -18,7 +18,7 @@ const ThoughtProcess = ({ value }) => {
     <>
       <div className="sea-qa-ai-thought-process-btn" onClick={openDetails}>
         <span className="mr-2">{gettext('Thought process')}</span>
-        <Icon symbol="open-in-new" />
+        <Icon symbol="open-in-new-tab" />
       </div>
       {isShowDetails && (
         <ThoughtProcessDialog value={value} onToggle={() => setIsShowDetails(false)} />

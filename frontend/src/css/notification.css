@@ -30,7 +30,7 @@
 }
 
 #notifications .sf-icon-bell:hover {
-  background-color: var(--bs-hover-bg);
+  background-color: var(--bs-hover-tertiary-bg);
 }
 
 #notifications .num {

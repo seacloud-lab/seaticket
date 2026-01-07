@@ -103,7 +103,7 @@ const AllViews = ({
       <div className='sea-metadata-view-container sea-metadata-all-views-container' onClick={openDropdownMenu}>
         <div className={classnames('sea-metadata-view-item', { 'active': isSelected })} ref={viewRef}>
           <div className="sea-metadata-view-item-operation-down">
-            <Icon symbol="down" />
+            <Icon symbol="arrow-down" />
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@ const AllViews = ({
                       {view.name}
                     </span>
                     <span className="view-item-right">
-                      {view._id === viewID && <Icon symbol="check" />}
+                      {view._id === viewID && <Icon symbol="check-mark" />}
                     </span>
                   </div>
                 );

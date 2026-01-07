@@ -28,7 +28,7 @@ const SubDropdown = ({
       <SubDropdownToggle
         text={menu.label}
         className={menu.className}
-        icon="down"
+        icon="arrow-down"
         onMouseEnter={(event) => onShow && onShow(event, menu)}
         onClick={(event) => onToggle && onToggle(event, menu)}
       />

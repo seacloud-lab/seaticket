@@ -61,13 +61,13 @@
   cursor: pointer;
 }
 
-.sea-metadata-groupbys-popover .delete-groupby .sea-qa-icon-svg-x {
+.sea-metadata-groupbys-popover .delete-groupby .sea-qa-icon-svg-close {
   color: #999;
   height: 14px;
   width: 14px;
 }
 
-.sea-metadata-groupbys-popover .delete-groupby:hover .sea-qa-icon-svg-x {
+.sea-metadata-groupbys-popover .delete-groupby:hover .sea-qa-icon-svg-close {
   color: #666;
 }
 

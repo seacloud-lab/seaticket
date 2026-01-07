@@ -35,7 +35,7 @@ const ResolveType = ({ resolveType, updateResolveType }) => {
       >
         <div className="selected-option">
           <div className="selected-option-show">{AI_RESOLVE_TYPES.find(t => t.value === resolveType)?.label}</div>
-          <Icon symbol="down" />
+          <Icon symbol="arrow-down" />
         </div>
       </div>
       {isShowMenu && (

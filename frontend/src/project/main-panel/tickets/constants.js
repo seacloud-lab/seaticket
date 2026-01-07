@@ -30,13 +30,13 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
 export const TICKET_STATE_CONFIG = {
   [TICKET_STATE.OPEN]: {
     value: TICKET_STATE.OPEN,
-    icon: 'circle-dot',
+    icon: 'dot-circle-stroked',
     statusName: gettext('Open'), // Applied to ticket status display
     shortName: gettext('Open'), // Applied to status toggle btn
   },
   [TICKET_STATE.CLOSED]: {
     value: TICKET_STATE.CLOSED,
-    icon: 'circle-check',
+    icon: 'check-circle-stroked',
     statusName: gettext('Close'),
     shortName: gettext('Close ticket'),
   }

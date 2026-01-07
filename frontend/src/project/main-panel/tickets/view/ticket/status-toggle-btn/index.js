@@ -22,7 +22,7 @@ const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, 
         const { parent_id, description, _id, name } = subState;
         return {
           value: `${parent_id}--${_id}`,
-          icon: 'circle-dot',
+          icon: 'dot-circle-stroked',
           description,
           name,
           state: parent_id,
@@ -38,7 +38,7 @@ const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, 
         const { parent_id, description, _id, name } = subState;
         return {
           value: `${parent_id}--${_id}`,
-          icon: 'circle-check',
+          icon: 'check-circle-stroked',
           description,
           name,
           state: parent_id,
@@ -81,7 +81,7 @@ const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, 
   }, [oldState, oldSubState, openOptions, closeOptions]);
 
   const icon = useMemo(() => {
-    return state === TICKET_STATE.OPEN ? 'circle-dot' : 'circle-check';
+    return state === TICKET_STATE.OPEN ? 'dot-circle-stroked' : 'check-circle-stroked';
   }, [state]);
 
   const name = useMemo(() => {
@@ -129,7 +129,7 @@ const StatusToggleButton = ({ state: oldState, substate: oldSubState, disabled, 
           <span>{name}</span>
         </Button>
         <Button className="sea-qa-project-ticket-state-toggle-btn" innerRef={downBtn} onClick={openPopover}>
-          <Icon symbol="down" />
+          <Icon symbol="arrow-down" />
         </Button>
       </ButtonGroup>
       {isShowPopover && (

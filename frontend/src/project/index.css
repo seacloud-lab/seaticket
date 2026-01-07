@@ -36,11 +36,11 @@ body {
 }
 
 /* icon color */
-.sea-qa-project-ticket-state-circle-check-icon {
+.sea-qa-project-ticket-state-check-circle-stroked-icon {
   color: var(--ticket-close-color);
 }
 
-.sea-qa-project-ticket-state-circle-dot-icon,
+.sea-qa-project-ticket-state-dot-circle-stroked-icon,
 .sea-qa-project-ticket-state-loop-dot-icon {
   color: var(--ticket-open-color);
   flex-shrink: 0;

@@ -86,7 +86,7 @@ class CustomizeSelect extends Component {
             :
             <span className="select-placeholder">{placeholder}</span>
           }
-          {!disabled && (<Icon symbol="down" />)}
+          {!disabled && (<Icon symbol="arrow-down" />)}
         </div>
         {this.state.isShowSelectOptions && !isInModal && (
           <OptionGroup

@@ -38,7 +38,7 @@ const TicketTopBar = ({ title, type, permission }) => {
 
     const toggleBtn = (
       <IconButton
-        icon="down"
+        icon="arrow-down"
         className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
         onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
       />
@@ -52,7 +52,7 @@ const TicketTopBar = ({ title, type, permission }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
           />
@@ -69,7 +69,7 @@ const TicketTopBar = ({ title, type, permission }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
           />
@@ -94,7 +94,7 @@ const TicketTopBar = ({ title, type, permission }) => {
       return (
         <>
           <IconButton
-            icon="down"
+            icon="arrow-down"
             className="rotate-icon-90 sea-qa-project-toggle-tickets-btn"
             onClick={() => togglePageSlugId(pageSlugId, TICKET_CHILDREN_PAGE_SLUG_ID.ALL)}
           />
@@ -116,19 +116,19 @@ const TicketTopBar = ({ title, type, permission }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="add" />
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)} text={gettext('New tag')} icon="plus" />
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)} text={gettext('New type')} icon="add" />
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)} text={gettext('New type')} icon="plus" />
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} icon="add" />
+        <AddButton onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} icon="plus" />
       );
     }
     if (
@@ -148,7 +148,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     return (
       <>
         <Notification mode="project" projectUuid={projectUuid} triggerId="ticket-notice-icon" targetId="ticket-notification-popover" />
-        <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="add" />
+        <AddButton onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} icon="plus" />
       </>
     );
   }, [type, permission, pageSlugId, childrenPageSlugId, togglePageSlugId]);

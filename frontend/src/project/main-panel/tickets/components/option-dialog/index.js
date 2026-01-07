@@ -44,7 +44,7 @@ const OptionDialog = ({
         label: (
           <div className="select-option-name single-option-name">
             <SelectOption option={option} className="single-select-option ml-0" />
-            <IconButton className="single-check-icon no-hover-bg" icon={parentId === option.id ? 'check' : ''} />
+            <IconButton className="single-check-icon no-hover-bg" icon={parentId === option.id ? 'check-mark' : ''} />
           </div>
         ),
       };

@@ -503,6 +503,7 @@ li {
 .nav-pills .nav-item .nav-link {
   padding: 0.25rem;
   color: #212529;
+  border: none;
 }
 
 .nav-pills .nav-item .nav-link:hover {

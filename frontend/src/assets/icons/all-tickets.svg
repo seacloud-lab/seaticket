@@ -1,15 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#999999;}
-</style>
-<title>all-tickets</title>
-<g id="all-tickets">
-	<path id="形状" class="st0" d="M28.5,1C29.9,1,31,2.1,31,3.5v25c0,1.4-1.1,2.5-2.5,2.5h-1.2l-5-2.5L16,31l-5-2.5L4.8,31H3.5
-		C2.1,31,1,29.9,1,28.5v-25C1,2.1,2.1,1,3.5,1H28.5z M28,4H4v24l6.8-2.8l5.3,2.7l6.7-2.7l5.2,2.6V4z M21,16.6c1,0,1.8,0.8,1.9,1.7
-		c0.1,1-0.6,1.9-1.6,2l-0.3,0H11c-1,0-1.8-0.8-1.9-1.7c-0.1-1,0.6-1.9,1.6-2l0.3,0H21z M21.1,9c1,0,1.8,0.6,1.9,1.4
-		s-0.7,1.5-1.6,1.6l-0.3,0H10.9c-1,0-1.8-0.6-1.9-1.4C8.9,9.8,9.7,9.1,10.6,9l0.3,0H21.1z"/>
-</g>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 22H10V19H17V22Z"/>
+<path d="M22 16H10V13H22V16Z"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23.5 3.99963H29.5V24.5004C29.5 27.538 27.0376 30.0004 24 30.0004H2.5V3.99963H8.5V1.99963H23.5V3.99963ZM5.5 27.0004H24C25.3807 27.0004 26.5 25.8811 26.5 24.5004V6.99963H23.5V8.99963H8.5V6.99963H5.5V27.0004ZM11.5 5.99963H20.5V4.99963H11.5V5.99963Z"/>
 </svg>

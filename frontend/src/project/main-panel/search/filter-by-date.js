@@ -144,7 +144,7 @@ const FilterByDate = ({ date, onChange }) => {
           <div className="filter-label" style={{ maxWidth: 300 }} title={gettext('Last modified time')}>
             {gettext('Last modified time')}
           </div>
-          <Icon symbol="down"/>
+          <Icon symbol="arrow-down"/>
         </DropdownToggle>
         <ModalPortal>
           <DropdownMenu className="sea-qa-dropdown-menu search-filter-menu filter-by-date-menu">
@@ -162,7 +162,7 @@ const FilterByDate = ({ date, onChange }) => {
                   toggle={false}
                 >
                   {option.label}
-                  {isSelected && <Icon symbol="check" className="dropdown-item-tick" />}
+                  {isSelected && <Icon symbol="check-mark" className="dropdown-item-tick" />}
                 </DropdownItem>
               );
             })}

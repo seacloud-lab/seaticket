@@ -61,19 +61,17 @@ class SelectAll extends Component {
           </label> :
           <>
             {isSelectedParts ?
-              (<Icon symbol="partially-selected" />) :
-              (
-                <input
-                  id="select-all-checkbox"
-                  className="select-all-checkbox"
-                  type="checkbox"
-                  name={gettext('Select all')}
-                  title={gettext('Select all')}
-                  aria-label={gettext('Select all')}
-                  checked={isSelectedAll}
-                  readOnly
-                />
-              )
+              <Icon symbol="partially-selected" /> :
+              <input
+                id="select-all-checkbox"
+                className="select-all-checkbox"
+                type="checkbox"
+                name={gettext('Select all')}
+                title={gettext('Select all')}
+                aria-label={gettext('Select all')}
+                checked={isSelectedAll}
+                readOnly
+              />
             }
           </>
         }

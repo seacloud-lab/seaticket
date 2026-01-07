@@ -80,8 +80,8 @@ class HeaderDropdownMenu extends React.Component {
           aria-haspopup={true}
           tabIndex={0}
         >
-          <Icon symbol="add" />
-          <Icon symbol="down" />
+          <Icon symbol="plus" />
+          <Icon symbol="arrow-down" />
         </DropdownToggle>
         <CustomizeDropdownMenu className="drop-list">
           {showAddProject &&

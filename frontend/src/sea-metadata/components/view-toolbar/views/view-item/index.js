@@ -195,7 +195,7 @@ const ViewItem = ({
               onClick={openDropdownMenu}
               ref={downBtnRef}
             >
-              <Icon symbol="down" />
+              <Icon symbol="arrow-down" />
             </div>
           )}
         </div>

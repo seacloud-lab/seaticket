@@ -163,7 +163,7 @@ class Member extends React.PureComponent {
         </td>
         <td>
           {(deleteAuthority && !isItemFreezed) && (
-            <IconButton icon="x" className="delete-group-member-icon" name={memberItem.email} onClick={this.deleteMember.bind(this, memberItem.email)} />
+            <IconButton icon="close" className="delete-group-member-icon" name={memberItem.email} onClick={this.deleteMember.bind(this, memberItem.email)} />
           )}
         </td>
       </tr>
