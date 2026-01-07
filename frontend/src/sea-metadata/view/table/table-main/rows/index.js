@@ -775,6 +775,7 @@ class Rows extends Component {
         <RowsFooter
           ref={ref => this.rowsFooterRef = ref}
           rowsCount={rowsCount}
+          isSearchView={table.isSearchView}
           hasMore={this.props.hasMore}
           columns={columns}
           groupOffsetLeft={groupOffsetLeft}

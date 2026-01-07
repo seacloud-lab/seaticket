@@ -98,7 +98,7 @@ class RowsFooter extends React.Component {
   };
 
   getRow = () => {
-    const { hasMore, hasSelectedRow, rowMetrics, selectedRange, rowsCount } = this.props;
+    const { isSearchView, hasMore, hasSelectedRow, rowMetrics, selectedRange, rowsCount } = this.props;
     if (hasSelectedRow) {
       const selectedRowsCount = RowMetrics.getSelectedIds(rowMetrics).length;
       return selectedRowsCount > 1 ? gettext('{count} rows selected').replace('{count}', selectedRowsCount) : gettext('1 row selected');
@@ -114,14 +114,14 @@ class RowsFooter extends React.Component {
     } else {
       rowsCountText = gettext('{count} row').replace('{count}', rowsCount);
     }
-    if (hasMore) {
+    if (hasMore && !isSearchView) {
       rowsCountText += ' +';
     }
     return rowsCountText;
   };
 
   render() {
-    const { hasMore, isLoadingMore, columns, groupOffsetLeft } = this.props;
+    const { hasMore, isLoadingMore, isSearchView, columns, groupOffsetLeft } = this.props;
     let { summaryItems, totalWidth } = this.getSummaryItems();
     const rowWidth = (isLoadingMore || hasMore ? SEQUENCE_COLUMN_WIDTH + columns[0].width : SEQUENCE_COLUMN_WIDTH) + groupOffsetLeft;
 
@@ -129,7 +129,7 @@ class RowsFooter extends React.Component {
       <div className="sea-metadata-table-footer" style={{ zIndex: seaTableZIndexes.GRID_FOOTER }} ref={ref => this.ref = ref}>
         <div className="rows-row d-flex text-nowrap" style={{ width: rowWidth }}>
           <span>{this.getRow()}</span>
-          {!isLoadingMore && hasMore &&
+          {!isLoadingMore && hasMore && !isSearchView &&
             <span className="load-all ml-4" onClick={this.onClick}>{gettext('Load more')}</span>
           }
           {isLoadingMore &&
