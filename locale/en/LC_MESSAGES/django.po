@@ -289,6 +289,10 @@ msgstr ""
 #: seahub/templates/registration/multi_saml_sso.html:14
 #: seahub/templates/registration/multi_saml_sso.html:15
 #: seahub/templates/registration/multi_saml_sso.html:16
+#: seahub/invitations/templates/invitations/token_view.html:10
+#: seahub/templates/registration/login.html:54
+#: seahub/templates/registration/login.html:55
+#: seahub/templates/registration/login.html:56
 msgid "Email"
 msgstr ""
 
@@ -565,13 +569,6 @@ msgstr ""
 
 #: seahub/invitations/templates/invitations/token_view.html:8
 msgid "Set your password"
-msgstr ""
-
-#: seahub/invitations/templates/invitations/token_view.html:10
-#: seahub/templates/registration/login.html:54
-#: seahub/templates/registration/login.html:55
-#: seahub/templates/registration/login.html:56
-msgid "Email"
 msgstr ""
 
 #: seahub/invitations/templates/invitations/token_view.html:17
@@ -1022,9 +1019,6 @@ msgstr ""
 
 #: seahub/templates/registration/login.html:242
 #: seahub/templates/registration/multi_saml_sso.html:72
-msgid "Email cannot be blank"
-msgstr ""
-
 #: seahub/templates/registration/login.html:244
 #: seahub/templates/registration/registration_form.html:122
 msgid "Email cannot be blank"
