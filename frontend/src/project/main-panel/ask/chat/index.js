@@ -12,8 +12,6 @@ import { Utils } from '@/utils/utils';
 import { useAskPage, useSessions } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import { IssueForAI } from '../../connections/models';
-import { TicketForAI } from '../../tickets/models';
 
 import './index.css';
 
@@ -76,11 +74,8 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       messageInputRef.current?.clearInput();
     });
 
-    const ticketIds = attachments.filter(a => a.type === 'ticket').map(t => t._id);
-    const issuesIds = attachments.filter(a => a.type === 'issue').map(i => ({ issue_id: i._id, connection_id: i.connection_id, connection_type: i.connection_type }));
-
     if (sessionId !== ASK_PAGE_SLUG_ID.NEW) {
-      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
+      eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId, message: validMessage, resolveType, attachments: attachments, model });
       return;
     }
     createSession(validMessage.slice(0, 100)).then(session => {
@@ -89,7 +84,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
       newSessionProblem.current = '';
       togglePageSlugId(newSessionId);
       setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, tickets: ticketIds, issues: issuesIds, model });
+        eventBus.dispatch(EVENT_BUS_TYPE.ASK_QUESTION, { sessionId: newSessionId, message: validMessage, resolveType, attachments: attachments, model });
       }, 3);
     });
   }, [sessionId, chatHistories, updateChatHistories, togglePageSlugId]);
@@ -116,12 +111,7 @@ const Chat = ({ isShowSessions, sessionId, projectUuid, settings, projectName, w
     chatAPI.getChatMessages(projectUuid, sessionId).then(res => {
       const messages = res.data.messages.map(item => {
         if (item.role === 'user') {
-          let attachments = item?.extra_contents || [];
-          attachments = Array.isArray(attachments) ? attachments.map(attachment => {
-            if (attachment.type === 'issue') return new IssueForAI({ ...attachment, _pk: attachment.issue_id });
-            if (attachment.type === 'ticket') return new TicketForAI({ ...attachment, _pk: attachment.ticket_id });
-            return null;
-          }).filter(Boolean) : [];
+          let attachments = item?.attachments || [];
           return new ChatMessage({
             _id: item.id,
             message: {

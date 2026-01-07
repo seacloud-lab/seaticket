@@ -75,7 +75,7 @@ class WebSettingInput extends Component {
               {inputAddon && inputAddon}
             </InputGroup>
         }
-        extraContent={
+        attachment={
           isBtnsShown ?
             <Fragment>
               <OpBtn onMouseDown={this.onSubmit} title={gettext('Submit')} className="web-setting-icon-btn-submit">

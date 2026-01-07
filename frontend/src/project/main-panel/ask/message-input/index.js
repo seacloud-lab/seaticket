@@ -9,7 +9,7 @@ import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
 import { CHAT_MESSAGE_TYPE } from '../constants';
 import ResolveType from './resolve-type';
-import AddTickets from './add-tickets';
+import AddTicketsAndDocs from './add-tickets-and-docs';
 import { useAIChatTools } from '../hooks';
 import ModelSelector from './model-selector';
 import AttachmentsFormatter from './attachments';
@@ -206,7 +206,7 @@ const MessageInput = forwardRef(({
           </div>
           <div className="sea-qa-ai-ask-chat-operations-container">
             <div className="sea-qa-ai-ask-chat-operations-container-left">
-              <AddTickets projectUuid={projectUuid} value={attachments} onChange={updateAttachments} />
+              <AddTicketsAndDocs projectUuid={projectUuid} value={attachments} onChange={updateAttachments} />
               <ResolveType resolveType={resolveType} updateResolveType={updateResolveType} />
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">

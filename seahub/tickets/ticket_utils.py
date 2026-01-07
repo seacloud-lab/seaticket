@@ -209,13 +209,20 @@ def convert_ticket_select_column_name_to_option_id(columns, ticket):
 
 
 def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
-    ticket_ids_str = ", ".join(ticket_ids)
-    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+    ticket_ids_str = ", ".join([
+        str(ticket_id)
+        for ticket_id in ticket_ids
+    ])
+    sql = f"SELECT * FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL)"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
 
 def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records_for_each_id):
-    ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({', '.join(ticket_ids)}) AND `deleted` = False ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
+    ticket_ids_str = ', '.join([
+        str(ticket_id)
+        for ticket_id in ticket_ids
+    ])
+    ticket_comments_sql = f"SELECT * FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
     ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
     result = {}
     for ticket_comment in ticket_comments_data:
@@ -262,7 +269,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     [
         {
             "type": "ticket",
-            "ticket_id": ...,
+            "record_id": ...,
             "state": ...,
             "title": ...,
             "content": ...,
@@ -300,7 +307,7 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
         created_time = time_str_to_utc_time(created_time).isoformat()
         whole_ticket_data = {
             'type': 'ticket',
-            'ticket_id': int(ticket['_pk']),
+            'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),
             'content': ticket.get('content'),

@@ -8,7 +8,7 @@ const Attachments = ({ value }) => {
   return (
     <div className="sea-qa-ai-chat-message-attachments">
       {value.map((attachment, index) => {
-        return (<Attachment attachment={attachment} index={index} key={index} />);
+        return (<Attachment value={attachment} index={index} key={index} />);
       })}
     </div>
   );

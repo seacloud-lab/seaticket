@@ -1,6 +1,8 @@
 import logging
 import json
-
+from datetime import datetime
+from django.utils import timezone
+from seahub.profile.models import Profile
 from seahub.seadb_models.models import KnowledgeBaseTable
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.utils import mq
@@ -10,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 TABLE_KNOWLEDGE_BASE = KnowledgeBaseTable.gen_table_name()
 
+def time_str_to_utc_time(time_str):
+    if time_str.endswith('Z'):
+        # python 3.12 can convert but 3.10 not support
+        time_str = time_str[:-1] + '+00:00'
+    dt = datetime.fromisoformat(time_str)
+    return dt.astimezone(timezone.utc)
 
 def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
     sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` = {record_id}"
@@ -17,6 +25,14 @@ def get_knowledge_base_record_by_pk(seadb_api, project_uuid, record_id):
     rows = res.get('results')
     columns = res.get('metadata') or []
     return (rows[0] if rows else None), columns
+
+def get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids):
+    record_ids_str = ', '.join([
+        str(record_id)
+        for record_id in record_ids
+    ])
+    sql = f"SELECT * FROM `{TABLE_KNOWLEDGE_BASE}` WHERE `_pk` IN ({record_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+    return seadb_api.query_rows(project_uuid, sql).get('results', [])
 
 
 def convert_kb_record_tags_name_to_id(columns, record):
@@ -95,3 +111,56 @@ def send_knowledge_base_update_msg(project_uuid):
             logger.info('No one subscribed to metadata_update channel, event (%s) has not been send' % msg_content)
     except Exception as e:
         logger.error('send knowledge base update msg failed, error: %s', e)
+
+def get_whole_knowledge_bases_data(seadb_api, project_uuid, record_ids):
+    """
+    Build a json from kbs.
+
+    Args:
+    - project_uuid
+    - record_ids
+
+    Returns:
+    [
+        {
+            "type": "knowledge_base",
+            "record_id": ...,
+            "title": ...,
+            "content": ...,
+            "tags": ...,
+            "creator": ...,
+            "created_time": ...,
+            "last_modifier": ...,
+            "modified_time": ...
+        },
+        # {...}
+    ]
+    """
+
+    knowledge_bases = get_knowledge_base_records_by_pks(seadb_api, project_uuid, record_ids)
+    all_relative_users = set()
+    for kb in knowledge_bases:
+        all_relative_users.add(kb['creator'])
+        all_relative_users.add(kb['last_modifier'])
+
+    all_relative_users_profile = Profile.objects.filter(user__in=all_relative_users)
+
+    nickname_map = {
+        user_profile.user: user_profile.nickname
+        for user_profile in all_relative_users_profile
+    }
+
+    result = [{
+            'type': 'knowledge_base',
+            'record_id': kb['_pk'],
+            'title': kb['title'],
+            'content': kb['content'],
+            'tags': kb['tags'],
+            'creator': nickname_map.get(kb['creator']),
+            'created_time': time_str_to_utc_time(kb['created_time']).isoformat(),
+            'last_modifier': nickname_map.get(kb['last_modifier']),
+            'modified_time': time_str_to_utc_time(kb['modified_time']).isoformat(),
+        }
+        for kb in knowledge_bases
+    ]
+    return result

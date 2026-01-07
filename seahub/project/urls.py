@@ -15,6 +15,7 @@ from .ai import ConvertRecordToTicket, EmbeddingAnalysisView, EmbeddingAnalysisT
 from .api_tokens import ProjectAPITokensView, ProjectAPITokenView
 from .token_connections import ProjectConnectionListByTokenView, ProjectConnectionDetailByTokenView, \
     ProjectConnectionRowDetailByTokenView
+from .search import SearchTickectsAndDocumentsView
 
 
 urlpatterns = [
@@ -68,6 +69,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/views/(?P<view_id>.+)/$', ConnectionViewAPI.as_view(), name='api-v1-connection-view'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/move-views/$', ConnectionViewsMoveView.as_view(), name='api-v1-connection-views-move'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]+)/connections/(?P<connection_id>\d+)/duplicate-view/$', ConnectionViewsDuplicateView.as_view(), name='api-v1-connection-view-duplicate'),
+
+    # search
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/search-tickets-and-documents/$', SearchTickectsAndDocumentsView.as_view(), name='api-v1-search-ticket-and-documents'),
 
     re_path(r'^api/v1/ai/convert-record-to-ticket/$', ConvertRecordToTicket.as_view(), name='api-v1-ai-create-ticket'),
     re_path(r'^api/v1/ai/embedding-analysis/$', EmbeddingAnalysisView.as_view(), name='api-v1-ai-embedding-analysis'),

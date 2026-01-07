@@ -517,32 +517,14 @@ def list_tickets_view_records(seadb_api, project_uuid, view, username, start, li
     return records, display_columns
 
 
-def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end, username=''):
+def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
     table_metadata = get_current_table_metadata(tables_metadata, 'tickets')
     if not table_metadata:
         return []
-    for column in (table_metadata or {}).get('columns', []):
-        if column.get('name') == 'title':
-            title_column = column
-        if column.get('name') == 'priority':
-            priority_column = column
 
-    view = {
-            'basic_filters': [],
-            'filters': [
-                {'column_key': title_column.get('key'), 'filter_predicate': 'contains', 'filter_term': search_text}
-            ] if search_text else [],
-            'filter_conjunction': 'Or',
-            'sorts': [
-                {'column_key': priority_column.get('key'), 'sort_type': 'down'}
-            ]
-        }
-
-    columns = table_metadata.get('columns') or []
-    display_columns = [column for column in columns if column['name'] in ['_pk', 'title']]
-    sql = view_data_2_sql('tickets', display_columns, view, username, start, end)
+    sql = f'SELECT `_pk`, `title` FROM `tickets` WHERE `title` ILIKE "%{search_text}%" AND (`deleted` = False OR `deleted` IS NULL) LIMIT {start}, {end}'
     ticket_data = seadb_api.query_rows(project_uuid, sql).get('results')
     return ticket_data
 
@@ -752,3 +734,57 @@ def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, use
         logger.error(f'SeaDB query error for knowledge base : {e}')
         records = []
     return records, display_columns
+
+def list_documents_by_search(seadb_api, project_uuid, documents_connection_id_type_map, search_text, limit):
+    search_tables = [
+        {
+            'name': KnowledgeBaseTable.gen_table_name(),
+            'type': 'knowledge_base',
+            'fields': ['_pk', 'title']
+        }
+    ]
+
+    for connection_id, connection_type in documents_connection_id_type_map.items():
+        if connection_type == ConnectionType.SITE.value:
+            search_tables.append({
+                'name': WebCrawlTable.gen_table_name(connection_id),
+                'type': ConnectionType.SITE.value,
+                'connection_id': connection_id,
+                'fields': ['_pk', 'title', 'url']
+            })
+        elif connection_type == ConnectionType.SEAFILE.value:
+            search_tables.append({
+                'name': SeafileTable.gen_table_name(connection_id),
+                'type': ConnectionType.SEAFILE.value,
+                'connection_id': connection_id,
+                'fields': ['_pk', 'title', 'path']
+            })
+
+    metadata = seadb_api.get_base_metadata(project_uuid)
+    tables_metadata = metadata.get('tables') or []
+
+    results = []
+    for table in search_tables:
+        if len(results) >= limit:
+            break
+
+        table_metadata = get_current_table_metadata(tables_metadata, table['name'])
+        if not table_metadata:
+            continue
+
+        fields_str = ''
+        for field in table['fields']:
+            fields_str += f'`{field}`, '
+        if not fields_str:
+            continue
+        fields_str = fields_str[:-2]
+
+        sql = f'SELECT {fields_str} FROM `{table["name"]}` WHERE `title` ILIKE "%{search_text}%" AND (`deleted` = False OR `deleted` IS NULL) LIMIT 0, {limit - len(results)}'
+
+        for result in seadb_api.query_rows(project_uuid, sql).get('results'):
+            result['type'] = table['type']
+            if 'connection_id' in table:
+                result['connection_id'] = table['connection_id']
+            results.append(result)
+
+    return results

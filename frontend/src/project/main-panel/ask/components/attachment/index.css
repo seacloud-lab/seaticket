@@ -16,8 +16,15 @@
   background-color: #F5F5F5;
 }
 
-.sea-qa-ai-chat-attachment .sea-qa-icon-svg-all-tickets {
+.sea-qa-ai-chat-attachment .sea-qa-project-ai-attachment-icon {
   color: #666;
+}
+
+.sea-qa-ai-chat-attachment .sea-qa-project-ai-attachment-icon.sea-qa-project-ticket-state-circle-check-icon {
+  color: var(--ticket-open-color);
+}
+.sea-qa-ai-chat-attachment .sea-qa-project-ai-attachment-icon.sea-qa-project-ticket-state-circle-dot-icon {
+  color: var(--ticket-close-color);
 }
 
 .sea-qa-ai-chat-attachment .sea-qa-ai-chat-attachment-remove {

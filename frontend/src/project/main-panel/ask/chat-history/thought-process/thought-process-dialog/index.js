@@ -30,7 +30,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle }) => {
           }, {
             name: gettext('User message'),
             children: [
-              { value: taskValue.user_input, formatter: StepMarkdownViewer }
+              { value: taskValue.user_row_message, formatter: StepMarkdownViewer }
             ]
           }
         ]

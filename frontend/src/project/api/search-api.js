@@ -83,6 +83,14 @@ class SearchAPI {
     return this.req.post(url, params, { cancelToken: cancelToken, params: { count: 100 } });
   }
 
+  searchTicketsAndDocuments(projectUuid, query = '', signal) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/search-tickets-and-documents/';
+    const params = {
+      query,
+    };
+    return this.req.get(url, { params: params, signal: signal });
+  }
+
 }
 
 const searchAPI = new SearchAPI();
