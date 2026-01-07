@@ -30,7 +30,7 @@ const LeftBar = () => {
           onClick={openSettings}
           title={gettext('Settings')}
         >
-          <Icon symbol="settings-thin" />
+          <Icon symbol="set-up" />
         </div>
         <div
           className="sea-qa-portal-left-bar-item"

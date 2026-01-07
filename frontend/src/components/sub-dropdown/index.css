@@ -1,7 +1,7 @@
-.sea-qa-sub-dropdown-toggle .sea-qa-icon-svg-down {
+.sea-qa-sub-dropdown-toggle .sea-qa-icon-svg-arrow-down {
   color: var(--bs-icon-color);
 }
 
-.sea-qa-sub-dropdown-toggle:hover .sea-qa-icon-svg-down {
+.sea-qa-sub-dropdown-toggle:hover .sea-qa-icon-svg-arrow-down {
   color: #fff;
 }

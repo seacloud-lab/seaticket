@@ -220,7 +220,7 @@ class SidePanel extends React.Component {
                     <span className="nav-text">{gettext('Projects')}</span>
                   </Link>
                   <IconButton
-                    className={classNames('nav-toggle-container no-hover-bg h-100', { 'rotate-icon-90': !this.props.isOpenGroupExpanded })}
+                    className={classNames('nav-toggle-container no-hover-bg', { 'rotate-icon-90': !this.props.isOpenGroupExpanded })}
                     aria-label={gettext('Expand all workspaces')}
                     aria-expanded={this.props.isOpenGroupExpanded}
                     tabIndex={0}

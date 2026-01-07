@@ -13,14 +13,14 @@
   cursor: pointer;
 }
 
-.main-panel-project-header .main-panel-project-help .sea-qa-icon-svg-help {
+.main-panel-project-header .main-panel-project-help .sea-qa-icon-svg-question-circle-filled {
   height: 20px;
   width: 20px;
   line-height: 1;
   color: #bdbdbd;
 }
 
-.main-panel-project-header .main-panel-project-help:hover .sea-qa-icon-svg-help {
+.main-panel-project-header .main-panel-project-help:hover .sea-qa-icon-svg-question-circle-filled {
   color: #666666;
 }
 

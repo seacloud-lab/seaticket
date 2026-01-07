@@ -76,7 +76,7 @@
   line-height: 1.5;
 }
 
-.sea-metadata-filters-list .sea-qa-customize-select .sea-qa-icon-svg-down {
+.sea-metadata-filters-list .sea-qa-customize-select .sea-qa-icon-svg-arrow-down {
   margin-left: 0.5rem;
 }
 
@@ -203,13 +203,13 @@
   cursor: pointer;
 }
 
-.delete-filter .sea-qa-icon-svg-x {
+.delete-filter .sea-qa-icon-svg-close {
   height: 12px;
   width: 12px;
   color: #999;
 }
 
-.delete-filter .sea-qa-icon-svg-x:hover {
+.delete-filter .sea-qa-icon-svg-close:hover {
   color: #666;
 }
 
