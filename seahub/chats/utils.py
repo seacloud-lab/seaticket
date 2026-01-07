@@ -217,15 +217,15 @@ def get_attachments(seadb_api, project_uuid, attachments):
 
     if github_issues:
         github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        results += github_seadb_api.get_whole_issues_data(github_issues)
+        results += github_seadb_api.get_whole_github_issue_data(github_issues)
 
     if email_issues:
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        results += email_seadb_api.get_whole_issues_data(email_issues)
+        results += email_seadb_api.get_whole_email_data(email_issues)
 
     if discourse_issues:
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
-        results += discourse_seadb_api.get_whole_issues_data(discourse_issues)
+        results += discourse_seadb_api.get_whole_discourse_data(discourse_issues)
     
     return results
 

@@ -3,6 +3,7 @@ import logging
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import DiscourseTopicsTable, DiscourseRepliesTable
 from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
+from seahub.project.constants import ConnectionType
 
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ class DiscourseSeaDBAPI:
                 result[topic_id].append(reply)
         return result
 
-    def get_whole_issues_data(self, connection_ids_pks):
+    def get_whole_discourse_data(self, connection_ids_pks):
         """
         Build a dict object from a discourse topic and its replies.
 
@@ -73,7 +74,7 @@ class DiscourseSeaDBAPI:
         Returns:
         [
             {
-                "type": "issue",
+                "type": "discourse_forum",
                 "connection_id": ...,
                 "record_id": ...,
                 "title": ...,
@@ -111,7 +112,7 @@ class DiscourseSeaDBAPI:
 
             for topic_data in topics:
                 whole_topic_data = {
-                    'type': 'issue',
+                    'type': ConnectionType.DISCOURSE_FORUM.value,
                     'connection_id': int(connection_id),
                     'record_id': int(topic_data['_pk']),
                     'title': topic_data.get('title'),

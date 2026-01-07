@@ -4,6 +4,7 @@ import json
 from seahub.project.utils import url_to_filename, get_file_from_s3_web_crawl
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import WebCrawlTable
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class SiteSeaDBAPI:
                 if file_obj:
                     content = json.loads(file_obj.read())['content']
                     result.append({
-                        'type': 'site',
+                        'type': ConnectionType.SITE.value,
                         'connection_id': connection_id,
                         'record_id': site['_pk'],
                         'title': site['title'],

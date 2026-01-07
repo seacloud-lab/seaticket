@@ -3,6 +3,7 @@ import logging
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM
 from seahub.seadb_models.models import GithubIssuesTable, GithubIssueCommentsTable
+from seahub.project.constants import ConnectionType
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class GitHubSeaDBAPI:
                 result[comment['issue_id']].append(comment)
         return result
     
-    def get_whole_issues_data(self, connection_ids_pks):
+    def get_whole_github_issue_data(self, connection_ids_pks):
         """
         Build a dict object from a github issue and its comments.
 
@@ -73,7 +74,7 @@ class GitHubSeaDBAPI:
         Returns:
         [
             {
-                "type": issue,
+                "type": github_issue,
                 "connection_id": ...,
                 "record_id": ...,
                 "state": ...,
@@ -106,7 +107,7 @@ class GitHubSeaDBAPI:
             issues_comments_map = self.get_comments_by_issue_ids(connection_id, issue_ids, AI_CHAT_GITHUB_ISSUE_MAX_COMMENTS_NUM)
             for issue_data in issues:
                 whole_issue_data = {
-                    'type': 'issue',
+                    'type': ConnectionType.GITHUB_ISSUE.value,
                     'connection_id': int(connection_id),
                     'record_id': int(issue_data['_pk']),
                     'state': issue_data.get('state'),
