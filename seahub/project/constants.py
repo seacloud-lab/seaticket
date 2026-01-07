@@ -27,7 +27,10 @@ class ConnectionType(Enum):
     @classmethod
     def is_valid(cls, value):
         return value in {item.value for item in cls}
-
+    
+class ExtraSourceType(Enum):
+    KNOWLEDGE_BASE = 'knowledge_base'
+    TICKET = 'ticket'
 
 class ConnectionField(object):
     def __init__(self, key, is_required=False, is_unique=False):
@@ -323,10 +326,12 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ExtraSourceType.KNOWLEDGE_BASE.value
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
             ConnectionType.SITE.value,
+            ExtraSourceType.TICKET.value
         ]
     }
 
