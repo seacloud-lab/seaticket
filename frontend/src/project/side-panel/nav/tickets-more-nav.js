@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Icon } from '../../../components';
-import { BAR_TYPES } from '../../constants';
+import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 
 import './tickets-more-nav.css';
 
@@ -32,18 +32,18 @@ const TicketsMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[9].key)}>
-          <span>{BAR_TYPES[9].name}</span>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TAGS].key)}>
+          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TAGS].name}</span>
         </DropdownItem>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[10].key)}>
-          <span>{BAR_TYPES[10].name}</span>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TYPES].key)}>
+          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TYPES].name}</span>
         </DropdownItem>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[11].key)}>
-          <span>{BAR_TYPES[11].name}</span>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].key)}>
+          <span>{BAR_TYPE_CONFIG[BAR_TYPE.SUBSTATES].name}</span>
         </DropdownItem>
         <div className="dropdown-divider"></div>
-        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPES[8].key)}>
-          <span>{BAR_TYPES[8].name}</span>
+        <DropdownItem className="sea-qa-dropdown-item" onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.TRASH].key)}>
+          <span>{BAR_TYPE_CONFIG[BAR_TYPE.TRASH].name}</span>
         </DropdownItem>
       </DropdownMenu>
     </Dropdown>

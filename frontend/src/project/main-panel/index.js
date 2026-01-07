@@ -1,5 +1,5 @@
 import React from 'react';
-import { BAR_TYPE, BAR_TYPES } from '../constants';
+import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
 import Search from './search';
 import Tickets from './tickets';
 import Connections from './connections';
@@ -14,7 +14,7 @@ import './index.css';
 const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocalBar }) => {
   const barKey = activeBar[0];
   if (!barKey) return (<TopBar />);
-  const bar = BAR_TYPES.find(b => b.key === barKey);
+  const bar = BAR_TYPE_CONFIG[barKey];
   const title = bar.name;
   switch (barKey) {
     case BAR_TYPE.CHAT: {

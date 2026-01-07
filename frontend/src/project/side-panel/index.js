@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import ResizeBar from '../../components/resize-bar';
 import Header from './header';
-import { BAR_TYPES } from '../constants';
+import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
@@ -29,18 +29,18 @@ const SidePanel = ({ activeBar, toggleBar }) => {
         <div className="sea-qa-project-side-panel-container">
           <Header />
           <div className="sea-qa-project-navigation sea-qa-nav-list">
-            <Nav nav={BAR_TYPES[0]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[1]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <ConnectionsNav nav={BAR_TYPES[2]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[3]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[4]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[5]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
-            <Nav nav={BAR_TYPES[7]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPES[8]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <TicketsMoreNav onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Documents')}</div>
-            <Nav nav={BAR_TYPES[6]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.KNOWLEDGE]} activeBar={activeBar} level={1} onClick={toggleBar} />
           </div>
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
