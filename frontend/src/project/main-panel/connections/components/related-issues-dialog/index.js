@@ -2,13 +2,14 @@ import React, { useEffect, useCallback, useState, Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext, mediaUrl, projectName, workspaceID } from '@/constants';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { CONNECTION_TYPES } from '../../constants';
 import { getConnectionIcon } from '../../utils';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { getNumberDisplayString, formatWithTimezone } from '@/sea-metadata/utils/column';
+import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
@@ -32,6 +33,13 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
   };
 
   const handleItemClick = (issue) => {
+    if (issue.type === 'ticket') {
+      const { origin } = location;
+      const ticketUrl = `${origin}/workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${issue._id}/`;
+      window.location.href = ticketUrl;
+      return;
+    }
+
     if (issue.url) {
       window.open(issue.url);
     }
