@@ -9,6 +9,7 @@ import TicketsMoreNav from './nav/tickets-more-nav';
 import './index.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
+const { isProjectAdmin } = window.app.pageOptions;
 
 const SidePanel = ({ activeBar, toggleBar }) => {
   const ref = useRef(null);
@@ -32,7 +33,9 @@ const SidePanel = ({ activeBar, toggleBar }) => {
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.CHAT]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} activeBar={activeBar} level={1} onClick={toggleBar} />
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            {isProjectAdmin && (
+              <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} activeBar={activeBar} level={1} onClick={toggleBar} />
+            )}
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.EXTERNAL_PORTAL]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE]} activeBar={activeBar} level={1} onClick={toggleBar} />
             <div className="sea-qa-project-side-panel-subtitle">{window.gettext('Tickets')}</div>
