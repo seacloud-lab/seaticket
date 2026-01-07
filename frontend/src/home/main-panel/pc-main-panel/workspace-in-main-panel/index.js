@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { EmptyTip, Icon, Loading } from '@/components';
+import { EmptyTip, Loading } from '@/components';
 import { isOrgContext, orgName, mediaUrl } from '@/constants';
 import Workspace from '../../../workspace';
 import { Utils } from '@/utils/utils';

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import HeaderDropdownMenu from '../dropdown-menu/header-dropdown-menu';
-import { Icon } from '../../components';
 
 const gettext = window.gettext;
 

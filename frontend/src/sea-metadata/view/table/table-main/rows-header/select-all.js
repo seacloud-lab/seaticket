@@ -45,19 +45,18 @@ class SelectAll extends Component {
         {isMobile ?
           <label className='mobile-select-all-container'>
             {isSelectedParts ?
-              (<Icon symbol="partially-selected" />) :
-              (
-                <>
-                  <input
-                    className="mobile-select-all-checkbox"
-                    name="mobile-select-all-checkbox"
-                    type="checkbox"
-                    checked={isSelectedAll}
-                    readOnly
-                  />
-                  <div className='select-all-checkbox-show'></div>
-                </>
-              )
+              <Icon symbol="partially-selected" />
+              :
+              <>
+                <input
+                  className="mobile-select-all-checkbox"
+                  name="mobile-select-all-checkbox"
+                  type="checkbox"
+                  checked={isSelectedAll}
+                  readOnly
+                />
+                <div className='select-all-checkbox-show'></div>
+              </>
             }
           </label> :
           <>
