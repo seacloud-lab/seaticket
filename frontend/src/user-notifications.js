@@ -7,7 +7,6 @@ import { gettext, siteRoot } from '@constants';
 import { notificationAPI } from './project/api';
 import Loading from './components/loading';
 import NoticeItem from './components/common/notice-item';
-import { DEFAULT_COLOR } from '@/constants/project-icon';
 
 import './css/toolbar.css';
 import './css/user-notifications.css';
@@ -41,49 +40,29 @@ class UserNotificationsDialog extends React.Component {
   }
 
   getItems = (page, is_scroll = false) => {
-    const { activeTab } = this.state;
     this.setState({ isLoading: true });
-
-    if (activeTab === 'general') {
-      notificationAPI.listNotifications(page, PER_PAGE).then((res) => {
-        if (is_scroll) {
-          this.setState({
-            isLoading: false,
-            items: [...this.state.items, ...res.data.notification_list],
-            currentPage: page,
-            hasNextPage: Utils.hasNextPage(page, PER_PAGE, res.data.count)
-          });
-        } else {
-          this.setState({
-            isLoading: false,
-            items: [...res.data.notification_list],
-            currentPage: page,
-            hasNextPage: Utils.hasNextPage(page, PER_PAGE, res.data.count)
-          });
-        }
-      }).catch((error) => {
+    notificationAPI.listNotifications(page, PER_PAGE).then((res) => {
+      if (is_scroll) {
         this.setState({
           isLoading: false,
-          errorMsg: Utils.getErrorMsg(error, true)
-        });
-      });
-    } else {
-      notificationAPI.listAllNotifications(page, PER_PAGE).then((res) => {
-        const projectList = res.data.project?.project_list || [];
-        this.setState({
-          isLoading: false,
-          projectList: projectList,
-          items: [],
+          items: [...this.state.items, ...res.data.notification_list],
           currentPage: page,
-          hasNextPage: false
+          hasNextPage: Utils.hasNextPage(page, PER_PAGE, res.data.count)
         });
-      }).catch((error) => {
+      } else {
         this.setState({
           isLoading: false,
-          errorMsg: Utils.getErrorMsg(error, true)
+          items: [...res.data.notification_list],
+          currentPage: page,
+          hasNextPage: Utils.hasNextPage(page, PER_PAGE, res.data.count)
         });
+      }
+    }).catch((error) => {
+      this.setState({
+        isLoading: false,
+        errorMsg: Utils.getErrorMsg(error, true)
       });
-    }
+    });
   };
 
   markAllRead = () => {
@@ -171,7 +150,7 @@ class UserNotificationsDialog extends React.Component {
   };
 
   renderNoticeContent = (content) => {
-    const { generalNoticeListUnseen, discussionNoticeListUnseen } = this.props;
+    const { generalNoticeListUnseen } = this.props;
     let activeTab = this.state.activeTab;
     return (
       <>
@@ -189,31 +168,12 @@ class UserNotificationsDialog extends React.Component {
                 {generalNoticeListUnseen > 0 && <span className="pl-1">({generalNoticeListUnseen})</span>}
               </NavLink>
             </NavItem>
-            <NavItem className="w-100" role="tab" aria-selected={activeTab === 'project'} aria-controls="project-notice-panel">
-              <NavLink
-                className={classname('w-100 mr-0', { 'active': activeTab === 'project' })}
-                onClick={() => this.tabItemClick('project')}
-                onKeyDown={Utils.onKeyDown}
-                tabIndex="0"
-                value="project"
-              >
-                {gettext('Project')}
-                {discussionNoticeListUnseen > 0 && <span className="pl-1">({discussionNoticeListUnseen})</span>}
-              </NavLink>
-            </NavItem>
           </Nav>
         </div>
         <div className="notice-dialog-main">
           <TabContent activeTab={this.state.activeTab}>
             {activeTab === 'general' &&
               <TabPane tabId="general" role="tabpanel" id="general-notice-panel" className="h-100">
-                <div className="notification-dialog-body" ref={ref => this.notificationTableRef = ref} onScroll={this.onHandleScroll}>
-                  {content}
-                </div>
-              </TabPane>
-            }
-            {activeTab === 'project' &&
-              <TabPane tabId="project" role="tabpanel" id="project-notice-panel" className="h-100">
                 <div className="notification-dialog-body" ref={ref => this.notificationTableRef = ref} onScroll={this.onHandleScroll}>
                   {content}
                 </div>
@@ -231,53 +191,11 @@ class UserNotificationsDialog extends React.Component {
     window.location.href = projectHref;
   };
 
-  renderProjectList = () => {
-    const { projectList, isLoading } = this.state;
-    const filteredList = (projectList || []).filter(item => item.unseen_count > 0);
-
-    if (isLoading) {
-      return <Loading />;
-    }
-
-    if (filteredList.length === 0) {
-      return <p className="text-center mt-4 text-secondary">{gettext('No unread project notifications')}</p>;
-    }
-
-    return (
-      <ul className="notice-list list-unstyled">
-        {filteredList.map(item => (
-          <li
-            key={item.project_uuid}
-            className='notification-item'
-            onClick={() => this.onProjectClick(item)}
-            tabIndex={0}
-            role="button"
-            aria-label={gettext('View project notifications')}
-            onKeyDown={Utils.onKeyDown}
-          >
-            <div className="notification-project-item">
-              <div className="project-item-icon">
-                <i className={`project-icon project-icon-style ${item.project_icon || 'icon-worksheet'}`} style={{ color: item.project_color || DEFAULT_COLOR }}></i>
-              </div>
-              <div className="notification-project-name" title={item.project_name}>{item.project_name}</div>
-              {item.unseen_count > 0 && (
-                <div className="notification-project-unseen">{item.unseen_count < 100 ? item.unseen_count : '99+'}</div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
   render() {
-    const { isLoading, errorMsg, items, activeTab } = this.state;
+    const { isLoading, errorMsg, items } = this.state;
     let content;
     if (errorMsg) {
       content = <p className="error mt-6 text-center">{errorMsg}</p>;
-    }
-    else if (activeTab === 'project') {
-      content = this.renderProjectList();
     }
     else {
       const isDesktop = Utils.isDesktop();
