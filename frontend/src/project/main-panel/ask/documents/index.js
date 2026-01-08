@@ -106,7 +106,7 @@ const Documents = () => {
               </CustomizeDropdownMenu>
             </Dropdown>
             <IconButton icon={isFull ? 'collapse' : 'expand'} onClick={() => setIsFull(!isFull)} title={isFull ? gettext('Collapse') : gettext('Expand')} />
-            <IconButton icon="x" title={gettext('Close')} onClick={closeDocuments} />
+            <IconButton icon="close" title={gettext('Close')} onClick={closeDocuments} />
           </div>
         </div>
         <div className="sea-ticket-chat-documents-body">
