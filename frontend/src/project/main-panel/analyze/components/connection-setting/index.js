@@ -86,7 +86,7 @@ const ConnectionSetting = ({
       )}
       <div className="analyze-add-connection" ref={dropdownRef}>
         <div className="analyze-add-btn" onClick={handleToggleDropdown}>
-          <Icon symbol="add" className="analyze-add-icon" />
+          <Icon symbol="plus" className="analyze-add-icon" />
           <span>{gettext('Add connections')}</span>
         </div>
         {isDropdownOpen && (

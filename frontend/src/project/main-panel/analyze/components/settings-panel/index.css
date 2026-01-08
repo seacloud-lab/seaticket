@@ -8,7 +8,6 @@
   flex-shrink: 0;
 }
 
-/* Header */
 .analyze-settings-header {
   display: flex;
   align-items: center;
@@ -17,33 +16,32 @@
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
-.analyze-settings-header .analyze-settings-title {
+.analyze-settings-title {
   font-size: 16px;
   font-weight: 500;
   color: #333;
 }
 
-.analyze-settings-header .analyze-settings-close {
+.analyze-settings-close {
   cursor: pointer;
   color: #666;
 }
 
-.analyze-settings-header .analyze-settings-close:hover {
+.analyze-settings-close:hover {
   color: #333;
 }
 
-/* Body */
 .analyze-settings-body {
   flex: 1;
   padding: 16px;
   overflow: visible;
 }
 
-.analyze-settings-body .analyze-settings-section {
+.analyze-settings-section {
   margin-bottom: 20px;
 }
 
-.analyze-settings-body .analyze-settings-label {
+.analyze-settings-label {
   margin-bottom: 8px;
 }
 
