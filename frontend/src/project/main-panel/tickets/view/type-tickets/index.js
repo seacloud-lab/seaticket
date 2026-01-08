@@ -10,9 +10,9 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import {
   generatorTicketsRowsTools,
-  convertRowToServerData, convertRowsToServerData,
   cascadeUpdateSubState, generatorTicketsContextMenuOptions
 } from '../../utils';
+import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 
@@ -90,11 +90,11 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
     // row
     insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
     modifyRow: (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
-      const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
+      const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTicket(projectUuid, row_id, rowData, isCopyPaste);
     },
     modifyRows: (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
-      const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
+      const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTickets(projectUuid, rowsData, isCopyPaste);
     },
     deleteRows: (...params) => ticketsAPI.deleteProjectTickets(projectUuid, ...params),

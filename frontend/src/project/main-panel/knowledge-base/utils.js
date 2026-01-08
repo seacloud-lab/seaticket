@@ -1,8 +1,5 @@
 import { gettext } from '@/constants';
-import { CellType } from '@/sea-metadata';
 import { BAR_TYPE } from '@/project/constants';
-import { getTableColumnByKey } from '@/sea-metadata/utils/table';
-import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 export const generatorKnowledgeBaseURL = ({ row, workspaceID, projectName }) => {
   const { origin } = location;
@@ -42,22 +39,4 @@ export const generatorKnowledgeContextMenuOptions = ({
   if (!row) return list;
   if (context.canDeleteRow()) list.push({ label: gettext('Delete record'), callback: () => deleteRow(row._id) });
   return list;
-};
-
-export const convertRowToServerData = (rowUpdate, { data, tagsData }) => {
-  let serverRowData = {};
-  Object.keys(rowUpdate).forEach(key => {
-    const column = getTableColumnByKey(data, key);
-    if (!column) return;
-    const { name, type } = column;
-    let cellValue = rowUpdate[key];
-    if (type === CellType.TAGS) {
-      if (Array.isArray(cellValue) && cellValue.length > 0) {
-        const tags = getRowsByIds(tagsData, cellValue);
-        cellValue = tags.map(tag => tag.name);
-      }
-    }
-    serverRowData[name] = cellValue;
-  });
-  return serverRowData;
 };

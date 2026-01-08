@@ -14,9 +14,9 @@ import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import {
   generatorTicketsRowsTools,
-  convertRowToServerData, convertRowsToServerData,
   cascadeUpdateSubState, generatorTicketsContextMenuOptions,
 } from '../../utils';
+import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 
@@ -138,11 +138,11 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
     // row
     insertRow: () => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW),
     modifyRow: (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
-      const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
+      const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTicket(projectUuid, row_id, rowData, isCopyPaste);
     },
     modifyRows: (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
-      const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
+      const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
       return ticketsAPI.modifyProjectTickets(projectUuid, rowsData, isCopyPaste);
     },
     deleteRow: (...params) => ticketsAPI.deleteProjectTicket(projectUuid, ...params),

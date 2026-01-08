@@ -53,12 +53,12 @@ class Store {
     this.startIndex = 0;
   };
 
-  async loadMetadata(view, limit) {
+  async loadMetadata(view, limit, isReload = false) {
     if (!view) {
       throw Error('View_not_exist');
     }
     if (!this.mounted) return;
-    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit })?.then(res => {
+    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isReload })?.then(res => {
       const rows = res?.data?.rows || [];
       const columns = normalizeColumns(res?.data?.columns || [], this.columnOrderRules);
       let data = new Metadata({ rows, columns, view, columnWidthRules: this.columnWidthRules });
@@ -86,7 +86,7 @@ class Store {
 
   async reload(limit = PER_LOAD_NUMBER) {
     this.startIndex = 0;
-    return this.loadMetadata(this.data.view, limit);
+    return this.loadMetadata(this.data.view, limit, true);
   }
 
   async loadMore(limit) {

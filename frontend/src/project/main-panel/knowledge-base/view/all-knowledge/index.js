@@ -6,7 +6,8 @@ import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { useMetadata } from '../../hooks/metadata';
 import { knowledgeBaseAPI } from '@/project/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { generatorKnowledgeContextMenuOptions, convertRowToServerData } from '../../utils';
+import { generatorKnowledgeContextMenuOptions } from '../../utils';
+import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { viewID, toggleView, togglePageSlugId } = useKnowledgePage();
@@ -46,7 +47,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       duplicateView: (id) => knowledgeBaseAPI.duplicateView(projectUuid, id),
       modifyView: (id, viewData) => knowledgeBaseAPI.modifyView(projectUuid, id, viewData),
       modifyRow: (row_id, row_update, isCopyPaste, { data, tagsData } = {}) => {
-        const rowData = convertRowToServerData(row_update, { data, tagsData });
+        const rowData = convertRowToNameValue(row_update, { data, tagsData });
         return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData);
       },
       deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),

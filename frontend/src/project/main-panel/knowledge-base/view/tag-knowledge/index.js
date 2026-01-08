@@ -7,7 +7,8 @@ import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID, KNOWLEDGE_PRED
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { convertRowToServerData, generatorKnowledgeContextMenuOptions } from '../../utils';
+import { generatorKnowledgeContextMenuOptions } from '../../utils';
+import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 
 const TagKnowledge = ({ projectUuid, permission }) => {
 
@@ -73,7 +74,7 @@ const TagKnowledge = ({ projectUuid, permission }) => {
     },
 
     modifyRow: (row_id, row_update, isCopyPaste, { data, tagsData } = {}) => {
-      const rowData = convertRowToServerData(row_update, { data, tagsData });
+      const rowData = convertRowToNameValue(row_update, { data, tagsData });
       return knowledgeBaseAPI.updateRecord(projectUuid, row_id, rowData);
     },
     deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
