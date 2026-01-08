@@ -213,7 +213,7 @@ const MessageInput = forwardRef(({
               <ModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
               <IconButton
                 disabled={disabled}
-                icon="send"
+                icon="send-arrow"
                 className="sea-qa-ai-ask-icon-btn icon-send-wrapper"
                 onClick={disabled ? () => {} : onSendMessage}
                 title={gettext('Send')}
