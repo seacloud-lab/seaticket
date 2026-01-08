@@ -10,19 +10,15 @@ import { getEventClassName } from '@/utils/dom';
 
 import './index.css';
 
-const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, kbEnabled, ticketEnabled, hiddenConnectionIDs: oldHiddenConnections }) => {
+const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placement, connections, hiddenConnectionIDs: oldHiddenConnections }) => {
   const [searchValue, setSearchValue] = useState('');
   const [hiddenConnectionIDs, setHiddenConnections] = useState(oldHiddenConnections);
   const sources = useMemo(() => {
-    const base = Array.isArray(connections) ? [...connections] : [];
-    if (kbEnabled) {
-      base.push({ id: '__kb__', key: '__kb__', name: gettext('Knowledge Base') });
-    }
-    if (ticketEnabled) {
-      base.push({ id: '__ticket__', key: '__ticket__', name: gettext('Ticket') });
-    }
+    let base = Array.isArray(connections) ? [...connections] : [];
+    base.push({ id: '__kb__', key: '__kb__', name: gettext('Knowledge Base') });
+    base.push({ id: '__ticket__', key: '__ticket__', name: gettext('Ticket') });
     return base;
-  }, [connections, kbEnabled, ticketEnabled]);
+  }, [connections]);
 
   const displayItems = useMemo(() => {
     if (!searchValue) return sources;
