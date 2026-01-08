@@ -110,7 +110,7 @@ const ConnectionSetting = ({
                     const isSelected = tempSelectedConnections.some(c => c.id === connection.id);
                     return (
                       <div key={connection.id} className="analyze-dropdown-item" onClick={() => handleToggleConnection(connection)}>
-                        <div className="analyze-connection-icon"><Icon symbol={isSelected ? 'check' : ''} className="no-hover-bg" /></div>
+                        <div className="analyze-connection-icon"><Icon symbol={isSelected ? 'check-mark' : ''} className="no-hover-bg" /></div>
                         <img src={getConnectionIcon(connection.type)} alt="" className="analyze-connection-img" />
                         <span>{connection.name}</span>
                       </div>
