@@ -375,7 +375,7 @@ const Analyze = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
         <IconButton
-          icon="settings"
+          icon="set-up"
           onClick={handleToggleSettings}
         />
       </TopBar>
