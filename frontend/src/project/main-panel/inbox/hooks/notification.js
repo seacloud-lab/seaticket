@@ -54,6 +54,8 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   }, [projectUuid, notificationList]);
 
   const markAsRead = useCallback((noticeId) => {
+    const noticeItem = notificationList.find(item => item.id === noticeId);
+    if (!noticeItem || noticeItem.seen) return;
     return notificationAPI.markProjectNoticeAsRead(noticeId)
       .then(() => {
         setNotificationList(prev =>
@@ -65,9 +67,11 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         const errorMsg = Utils.getErrorMsg(err);
         toaster.danger(errorMsg);
       });
-  }, []);
+  }, [notificationList]);
 
   const markAllAsRead = useCallback(() => {
+    const hasUnread = notificationList.find(item => item.seen === false);
+    if (notificationList.length === 0 || !hasUnread) return;
     return notificationAPI.markAllProjectRead(projectUuid)
       .then(() => {
         setNotificationList(prev => prev.map(item => ({ ...item, seen: true })));
@@ -77,7 +81,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         const errorMsg = Utils.getErrorMsg(err);
         toaster.danger(errorMsg);
       });
-  }, [projectUuid]);
+  }, [projectUuid, notificationList]);
 
   useEffect(() => {
     // Fetch on initial mount and re-fetch when activated

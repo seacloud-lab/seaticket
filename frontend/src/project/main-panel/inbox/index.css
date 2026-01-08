@@ -1,7 +1,7 @@
 .sea-qa-inbox-panel {
   position: absolute;
   left: 0;
-  z-index: 9999;
+  z-index: 1;
   background-color: #ffffff;
   height: 100%;
   width: 389px;
@@ -60,15 +60,16 @@
 .sea-qa-inbox-list .empty-tip .empty-tip-title {
   margin-top: 24px;
   font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
 }
 
 .sea-qa-inbox-list .empty-tip .empty-tip-text {
   margin-top: 4px;
-  font-size: 14px;
-  font-weight: 400;
   padding: 0 64px;
   text-align: center;
   color: #999999 !important;
+  line-height: 22px;
 }
 
 .sea-qa-inbox-item {

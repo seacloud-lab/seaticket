@@ -8,7 +8,7 @@ import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Inbox = ({ title }) => {
+const Inbox = ({ title, toggleBar }) => {
   const { loading, loadingMore, notificationList, allNotificationCount, markAsRead, markAllAsRead, fetchNotifications, setShowInboxDrawer } = useNotification();
   const page = useRef(1);
   const inboxPanelRef = useRef(null);
@@ -59,7 +59,13 @@ const Inbox = ({ title }) => {
         {!loading && notificationList.length > 0 && (
           <>
             {notificationList.map(item => (
-              <NoticeInboxItem key={item.id} noticeItem={item} onNoticeItemClick={() => markAsRead(item.id)} />
+              <NoticeInboxItem
+                key={item.id}
+                noticeItem={item}
+                onNoticeItemClick={() => markAsRead(item.id)}
+                toggleBar={toggleBar}
+                setShowInboxDrawer={setShowInboxDrawer}
+              />
             ))}
           </>
         )}

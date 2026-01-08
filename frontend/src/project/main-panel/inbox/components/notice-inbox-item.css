@@ -28,6 +28,7 @@
   justify-content: space-between;
   flex: 1;
   margin-left: 8px;
+  margin-right: 12px;
   overflow-x: hidden;
 }
 
@@ -67,8 +68,7 @@
 .inbox-notification-item .notification-point {
   width: 8px;
   height: 8px;
-  right: 0px;
-  margin-right: 6px;
+  right: 16px;
   border-radius: 50%;
   background: #FC6440;
   position: absolute;

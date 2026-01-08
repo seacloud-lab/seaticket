@@ -54,7 +54,7 @@ const MainPanel = (props) => {
   return (
     <div className="sea-qa-project-main-panel">
       <Container { ...props } />
-      {showInboxDrawer && <Inbox title={gettext('Inbox')} />}
+      {showInboxDrawer && <Inbox title={gettext('Inbox')} toggleBar={props.toggleBar} />}
     </div>
   );
 };

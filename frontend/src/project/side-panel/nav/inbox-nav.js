@@ -21,7 +21,7 @@ const InboxNav = ({ nav, level }) => {
     >
       {icon && (<Icon symbol={icon} className="sea-qa-project-navigation-item-icon" />)}
       <span className="sea-qa-project-navigation-item-name">{name}</span>
-      {displayCount && (
+      {displayCount !== 0 && (
         <div className="sea-qa-project-navigation-item-inbox-count">
           {displayCount}
         </div>

@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { Utils } from '../../../../utils/utils';
+import eventBus from '@/utils/event-bus';
 
 import './notice-inbox-item.css';
 
@@ -18,7 +20,7 @@ const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
 
 dayjs.extend(relativeTime);
 
-const NoticeItem = ({ noticeItem, onNoticeItemClick }) => {
+const NoticeItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDrawer }) => {
   const generatorNoticeInfo = useCallback(() => {
     const noticeType = noticeItem.msg_type;
     const detail = noticeItem.detail || {};
@@ -88,17 +90,17 @@ const NoticeItem = ({ noticeItem, onNoticeItemClick }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-    if (onNoticeItemClick) {
-      onNoticeItemClick(noticeItem);
-    }
+    onNoticeItemClick(noticeItem);
   }, [noticeItem, onNoticeItemClick]);
 
   const handleNoticeItemClick = useCallback((url) => {
-    if (onNoticeItemClick) {
-      onNoticeItemClick(noticeItem);
-    }
+    onNoticeItemClick(noticeItem);
     if (url) {
-      window.location.href = url;
+      setShowInboxDrawer(false);
+      toggleBar([BAR_TYPE.TICKET]);
+      setTimeout(() => {
+        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, noticeItem.detail.ticket_id);
+      }, 0);
     }
   }, [noticeItem, onNoticeItemClick]);
 
