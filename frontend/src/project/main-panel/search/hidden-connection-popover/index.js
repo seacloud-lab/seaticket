@@ -154,8 +154,6 @@ HideConnectionPopover.propTypes = {
   target: PropTypes.string.isRequired,
   hiddenConnectionIDs: PropTypes.array.isRequired,
   connections: PropTypes.array.isRequired,
-  kbEnabled: PropTypes.bool,
-  ticketEnabled: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   hidePopover: PropTypes.func.isRequired,
   modifyColumnOrder: PropTypes.func,

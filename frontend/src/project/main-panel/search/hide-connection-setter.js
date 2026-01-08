@@ -90,8 +90,6 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
-  kbEnabled: PropTypes.bool,
-  ticketEnabled: PropTypes.bool,
 };
 
 export default HideConnectionSetter;
