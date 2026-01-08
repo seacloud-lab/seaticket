@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import NoticeInboxItem from '@/components/common/notice-inbox-item';
+import NoticeInboxItem from '@/project/main-panel/inbox/components/notice-inbox-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
 import { useNotification } from '@/sea-metadata';
 import { gettext, mediaUrl } from '@/constants';

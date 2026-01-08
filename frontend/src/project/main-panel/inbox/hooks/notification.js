@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { notificationAPI } from '../../project/api';
+import { notificationAPI } from '../../../api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 
 const NotificationContext = createContext();
 
-export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
+export const NotificationProvider = ({ children, projectUuid }) => {
   const [showInboxDrawer, setShowInboxDrawer] = useState(false);
   const [notificationList, setNotificationList] = useState([]);
   const [unseen, setUnseen] = useState(0);
@@ -15,7 +15,7 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
   const firstLoadedRef = useRef(true);
   const abortControllerRef = useRef(null);
 
-  const fetchNotifications = useCallback((page = 1, perPage = 20, isfetchMore) => {
+  const fetchNotifications = useCallback((page = 1, perPage = 20) => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -24,6 +24,7 @@ export const NotificationProvider = ({ children, projectUuid, activeBar }) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    const isfetchMore = page > 1;
     if (isfetchMore) {
       setLoadingMore(true);
     } else {

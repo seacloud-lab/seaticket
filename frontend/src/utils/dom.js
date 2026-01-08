@@ -140,7 +140,7 @@ export const isActiveOtherPopover = (curPopover) => {
 };
 
 export const isNearBottom = (element, threshold = 50) => {
-  const el = typeof element === 'string' ? document.querySelector(element) : element;
+  const el = getTarget(element);
 
   if (!el) return false;
 

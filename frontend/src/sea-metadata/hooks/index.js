@@ -6,4 +6,4 @@ export { TypesDataProvider, useTypesData } from './typesData';
 export { SubstatesDataProvider, useSubstatesData } from './substatesData';
 export { SelectedRowsProvider, useSelectedRows } from './selected-rows';
 export { DataCacheProvider, useDataCache } from './data-cache';
-export { NotificationProvider, useNotification } from './notification';
+export { NotificationProvider, useNotification } from '../../project/main-panel/inbox/hooks/notification';

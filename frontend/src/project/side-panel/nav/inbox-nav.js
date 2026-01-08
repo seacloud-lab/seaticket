@@ -7,7 +7,7 @@ import './index.css';
 const InboxNav = ({ nav, level }) => {
   const { unseen, showInboxDrawer, setShowInboxDrawer } = useNotification();
   const { name, icon } = nav;
-  const displayCount = unseen > 99 ? '99+' : unseen > 0 ? unseen : null;
+  const displayCount = unseen > 99 ? '99+' : unseen;
 
   return (
     <div

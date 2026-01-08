@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
-import { Utils } from '../../utils/utils';
+import { Utils } from '../../../../utils/utils';
 
 import './notice-inbox-item.css';
 
