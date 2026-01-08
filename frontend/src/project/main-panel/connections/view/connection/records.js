@@ -23,7 +23,7 @@ import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
-import { convertRowToServerData, convertRowsToServerData } from '@/project/main-panel/tickets/utils';
+import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
@@ -195,11 +195,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     };
     if (connection.type === CONNECTION_TYPE.EMAIL) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
-        const rowData = convertRowToServerData(row_update, { data, typesData, tagsData });
+        const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
         return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
       };
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
-        const rowsData = convertRowsToServerData(rowsUpdate, { data, typesData, tagsData });
+        const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
         return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
       };
     }
