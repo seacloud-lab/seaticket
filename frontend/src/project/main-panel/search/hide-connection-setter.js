@@ -5,7 +5,7 @@ import HideConnectionPopover from './hidden-connection-popover';
 import { gettext } from '../../../constants';
 import Icon from '../../../components/icon';
 
-const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, ticketEnabled }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
   const [isShowSetter, setShowSetter] = useState(false);
@@ -48,8 +48,8 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, t
   const validConnectionIds = connections.map((c) => c.id);
   const hiddenOnConnectionsCount = hiddenConnectionIDs.filter(id => validConnectionIds.includes(id)).length;
   const showConnectionsLen = connections.length - hiddenOnConnectionsCount;
-  const kbSelected = kbEnabled && !hiddenConnectionIDs.includes('__kb__');
-  const ticketSelected = ticketEnabled && !hiddenConnectionIDs.includes('__ticket__');
+  const kbSelected = !hiddenConnectionIDs.includes('__kb__');
+  const ticketSelected = !hiddenConnectionIDs.includes('__ticket__');
   const showSourcesLen = showConnectionsLen + (kbSelected ? 1 : 0) + (ticketSelected ? 1 : 0);
 
   return (
@@ -77,8 +77,6 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, t
           readOnly={readOnly}
           hiddenConnectionIDs={hiddenConnectionIDs}
           connections={connections}
-          kbEnabled={kbEnabled}
-          ticketEnabled={ticketEnabled}
           target={target}
           placement="bottom-start"
           hidePopover={onSetterToggle}
@@ -92,8 +90,6 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, kbEnabled, t
 HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
-  kbEnabled: PropTypes.bool,
-  ticketEnabled: PropTypes.bool,
 };
 
 export default HideConnectionSetter;

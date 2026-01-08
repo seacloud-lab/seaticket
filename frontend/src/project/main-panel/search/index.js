@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { toaster, EmptyTip, CenteredLoading } from '@/components';
 import GlobalSearchInput from '@/components/search-input/global-search-input';
-import { searchAPI, knowledgeBaseAPI, ticketsAPI } from '../../api';
+import { searchAPI } from '../../api';
 import { useConnections } from '../connections/hooks/connections';
 import { gettext, mediaUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -36,8 +36,6 @@ const Search = ({ title, settings }) => {
     },
   );
 
-  const [isKBEnabled, setKBEnabled] = useState(false);
-  const [isTicketEnabled, setTicketEnabled] = useState(false);
   const sourceRef = useRef(null);
   const timer = useRef(null);
 
@@ -51,8 +49,8 @@ const Search = ({ title, settings }) => {
 
   const onChange = useCallback((value = '', hiddenConnectionIDs, connections, filterDate) => {
     const hasSelectedConnections = Array.isArray(connections) && connections.some(c => !hiddenConnectionIDs.includes(c.id));
-    const includeKBLocal = isKBEnabled && !hiddenConnectionIDs.includes('__kb__');
-    const includeTicketLocal = isTicketEnabled && !hiddenConnectionIDs.includes('__ticket__');
+    const includeKBLocal = !hiddenConnectionIDs.includes('__kb__');
+    const includeTicketLocal = !hiddenConnectionIDs.includes('__ticket__');
     if (!hasSelectedConnections && !includeKBLocal && !includeTicketLocal) {
       setValue(value);
       setResults([]);
@@ -110,7 +108,7 @@ const Search = ({ title, settings }) => {
         setSearching(error.message === cancelError);
       });
     }, 500);
-  }, [isKBEnabled, semanticEnabled]);
+  }, [semanticEnabled]);
 
   const onClear = useCallback(() => {
     setValue('');
@@ -136,8 +134,6 @@ const Search = ({ title, settings }) => {
 
   useEffect(() => {
     reloadConnections();
-    knowledgeBaseAPI.listViews(projectUuid).then(() => setKBEnabled(true)).catch(() => setKBEnabled(false));
-    ticketsAPI.listViews(projectUuid).then(() => setTicketEnabled(true)).catch(() => setTicketEnabled(false));
     return () => {
       timer.current && clearTimeout(timer.current);
     };
@@ -178,7 +174,7 @@ const Search = ({ title, settings }) => {
           storeKey={SEARCH_STORE_KEY}
         />
         <div className="search-filters-container" style={{ justifyContent: 'space-between' }}>
-          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} kbEnabled={isKBEnabled} ticketEnabled={isTicketEnabled} />
+          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
           <FilterByDate date={filterDate} onChange={onFilterDateChange} />
           <div className="search-filter ml-auto">
             <Switch
