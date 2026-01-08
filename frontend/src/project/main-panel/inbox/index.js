@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import NoticeInboxItem from '@/project/main-panel/inbox/components/notice-inbox-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
-import { useNotification } from '@/sea-metadata';
+import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 import { gettext, mediaUrl } from '@/constants';
 import { isNearBottom } from '@/utils/dom.js';
 import { Utils } from '@/utils/utils';
@@ -20,7 +20,7 @@ const Inbox = ({ title }) => {
     // Load more notifications when near bottom
     if (isNearBottom(e.target)) {
       page.current = page.current + 1;
-      fetchNotifications(page.current, 20, true);
+      fetchNotifications(page.current, 20);
     }
   }, [loadingMore, notificationList]);
 

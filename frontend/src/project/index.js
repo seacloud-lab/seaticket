@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
-import { CollaboratorsProvider, NotificationProvider } from '@/sea-metadata';
+import { CollaboratorsProvider } from '@/sea-metadata';
+import { NotificationProvider } from '@/project/main-panel/inbox/hooks/notification';
 import i18n from '../_i18n/i18n-seafile-editor';
 import SidePanel from './side-panel';
 import MainPanel from './main-panel';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from '../../../components';
-import { useNotification } from '@/sea-metadata';
+import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 
 import './index.css';
 

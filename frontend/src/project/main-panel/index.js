@@ -9,7 +9,7 @@ import Settings from './settings';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Inbox from './inbox';
-import { useNotification } from '@/sea-metadata';
+import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 import { gettext } from '@/constants';
 
 import './index.css';
