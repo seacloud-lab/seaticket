@@ -3,15 +3,18 @@ import NoticeInboxItem from '@/project/main-panel/inbox/components/notice-inbox-
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
 import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 import { gettext, mediaUrl } from '@/constants';
+import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const Inbox = ({ title, toggleBar }) => {
+const Inbox = ({ toggleBar }) => {
   const { loading, loadingMore, notificationList, allNotificationCount, markAsRead, markAllAsRead, fetchNotifications, setShowInboxDrawer } = useNotification();
   const page = useRef(1);
   const inboxPanelRef = useRef(null);
+  const bar = BAR_TYPE_CONFIG[BAR_TYPE.INBOX];
+  const title = bar.name;
 
   const onScroll = useCallback((e) => {
     const hasMore = notificationList.length < allNotificationCount;

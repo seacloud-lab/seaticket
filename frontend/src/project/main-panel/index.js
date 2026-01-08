@@ -10,7 +10,6 @@ import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Inbox from './inbox';
 import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
-import { gettext } from '@/constants';
 
 import './index.css';
 
@@ -54,7 +53,7 @@ const MainPanel = (props) => {
   return (
     <div className="sea-qa-project-main-panel">
       <Container { ...props } />
-      {showInboxDrawer && <Inbox title={gettext('Inbox')} toggleBar={props.toggleBar} />}
+      {showInboxDrawer && <Inbox toggleBar={props.toggleBar} />}
     </div>
   );
 };
