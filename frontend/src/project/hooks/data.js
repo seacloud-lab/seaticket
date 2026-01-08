@@ -1,16 +1,352 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
+import dcopy from 'deep-copy';
 import { CollaboratorsProvider } from '@/sea-metadata';
+import { EMPTY_TABLE } from '../constants';
+import { shouldReload } from '../utils';
+import { TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
 import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
 import { MetadataProvider } from '../main-panel/tickets/hooks';
 import { NotificationProvider } from '../main-panel/inbox/hooks/notification';
+import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
 
 const DataContext = React.createContext(null);
 
 export const DataProvider = ({ projectUuid, activeBar, children }) => {
+  const [data, setData] = useState({ version: 0 });
+
+  const updateData = useCallback((data) => {
+    data.version = data.version + 1;
+    setData(data);
+  }, []);
+
+  const getTableByName = useCallback((tableName, defaultTable = dcopy(EMPTY_TABLE)) => {
+    if (!tableName) return defaultTable;
+    return data[tableName] || defaultTable;
+  }, [data]);
+
+  const updateTable = useCallback((tableName, update = {}, defaultTable = dcopy(EMPTY_TABLE)) => {
+    if (!tableName) return;
+    const newData = dcopy(data);
+    let table = getTableByName(tableName, defaultTable);
+    newData[tableName] = { ...table, ...update };
+    updateData(newData);
+  }, [data, getTableByName, updateData]);
+
+  const markTablesViewExpired = useCallback((tableNames) => {
+    const newData = dcopy(data);
+    tableNames.forEach(tableName => {
+      const table = newData[tableName];
+      if (table) {
+        const id_view_map = { ...table.id_view_map };
+        Object.keys(id_view_map).forEach(viewID => {
+          const view = id_view_map[viewID];
+          id_view_map[viewID] = { ...view, timestamp: 0, rows: [] };
+        });
+        newData[tableName].id_view_map = id_view_map;
+      }
+    });
+    updateData(data);
+  }, [data, updateData]);
+
+  const getTableViews = useCallback((tableName, api, isBuiltIn = false) => {
+    if (isBuiltIn) return api();
+    const table = getTableByName(tableName);
+    let func = () => api().then(res => {
+      let old_id_view_map = table.id_view_map;
+      const { navigation, views } = res.data;
+      let id_view_map = {};
+      Array.isArray(views) && views.forEach(v => {
+        const oldView = old_id_view_map[v._id] || {};
+        const viewCompareKeys = ['filters', 'filter_conjunction', 'basic_filters', 'sorts'];
+        let oldViewData = {};
+        let newViewData = {};
+        viewCompareKeys.forEach(key => {
+          oldViewData[key] = oldView[key];
+          newViewData[key] = v[key];
+        });
+        let newView = { ...oldView, ...v };
+        if (!ObjectUtils.isSameObject(oldViewData, newViewData)) {
+          newView.timestamp = 0;
+          newView.rows = [];
+        }
+        id_view_map[v._id] = newView;
+      });
+
+      updateTable(tableName, { navigation, id_view_map, timestamp: Date.now() });
+      return res;
+    });
+    if (table?.timestamp && !shouldReload(table?.timestamp)) {
+      func = () => new Promise((resolve, reject) => {
+        const { id_view_map, navigation } = table;
+        resolve({
+          data: { views: Object.values(id_view_map), navigation }
+        });
+      });
+    }
+    return func();
+  }, [getTableByName, updateTable]);
+
+  const getTableView = useCallback((tableName, viewID, api, isBuiltIn = false) => {
+    if (isBuiltIn) return api();
+    const table = getTableByName(tableName);
+    const currentView = table.id_view_map[viewID];
+    let func = () => api().then(res => {
+      const { view } = res.data;
+      let { id_view_map = {} } = table;
+      id_view_map[viewID] = { ...id_view_map[viewID], ...view };
+      updateTable(tableName, { id_view_map });
+      return res;
+    });
+    if (currentView && !shouldReload(currentView.timestamp)) {
+      func = () => new Promise((resolve, reject) => {
+        resolve({
+          data: { view: { ...currentView, rows: [] } }
+        });
+      });
+    }
+    return func();
+  }, [getTableByName, updateTable]);
+
+  const insertView = useCallback((tableName, api) => {
+    return api().then(res => {
+      const table = data[tableName] || null;
+      if (table) {
+        const view = res.data.view;
+        let navigation = table.navigation.slice(0);
+        navigation.push({ _id: view._id, type: 'view' });
+        let id_view_map = { ...table.id_view_map };
+        id_view_map[view._id] = view;
+        updateTable(tableName, { id_view_map, navigation });
+      }
+      return res;
+    });
+  }, [data, updateData]);
+
+  const deleteView = useCallback((tableName = '', viewID = '', api) => {
+    return api().then(res => {
+      const table = data[tableName] || null;
+      if (table) {
+        let navigation = table.navigation.slice(0);
+        const navigationIndex = navigation.findIndex(v => v._id === viewID);
+        navigation.splice(navigationIndex, 1);
+        let id_view_map = { ...table.id_view_map };
+        delete id_view_map[viewID];
+        updateTable(tableName, { navigation, id_view_map });
+      }
+      return res;
+    });
+  }, [data, updateTable]);
+
+  const modifyView = useCallback((tableName = '', viewID = '', viewData = {}, api, isBuiltIn = false) => {
+    const table = data[tableName] || null;
+    if (table) {
+      const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
+      const viewDataKeys = Object.keys(viewData);
+      let view_map = { ...table[viewMapName] };
+      let newView = view_map[viewID] || {};
+      if (viewDataKeys.includes('sorts') || viewDataKeys.join('').toLowerCase().includes('filter')) {
+        newView.timestamp = 0;
+        newView.rows = [];
+      }
+      view_map[viewID] = newView;
+      updateTable(tableName, { [viewMapName]: view_map });
+    }
+    return api();
+  }, [data, updateTable]);
+
+  const moveView = useCallback((tableName, sourceViewID, targetViewID, api) => {
+    return api().then(res => {
+      const table = data[tableName] || null;
+      if (table) {
+        let navigation = table.navigation.slice(0);
+        const sourceViewIndex = navigation.findIndex(n => n._id === sourceViewID);
+        const targetViewIndex = navigation.findIndex(n => n._id === targetViewID);
+        const targetView = navigation[targetViewIndex];
+        const sourceView = navigation[sourceViewIndex];
+        navigation.splice(sourceViewIndex, 1);
+        const newTargetViewIndex = navigation.findIndex(n => n._id === targetView._id);
+        navigation.splice(newTargetViewIndex, 0, sourceView);
+        updateTable(tableName, { navigation });
+      }
+      return res;
+    });
+  }, [data, updateTable]);
+
+  const clearViewRows = useCallback((tableName = '', viewID = '', api, isBuiltIn = false) => {
+    return api().then(res => {
+      const table = data[tableName] || null;
+      if (table) {
+        const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
+        let viewMap = { ...table[viewMapName] };
+        let newView = viewMap[viewID] || {};
+        newView.rows = [];
+        viewMap[viewID] = newView;
+        updateTable(tableName, { [viewMapName]: viewMap });
+      }
+      return res;
+    });
+  }, [data, updateTable]);
+
+  const duplicateView = useCallback((tableName, api) => {
+    return api().then(res => {
+      let table = data[tableName] ? dcopy(data[tableName]) : null;
+      if (table) {
+        const view = res.data.view;
+        let navigation = table.navigation.slice(0);
+        navigation.push({ _id: view._id, type: 'view' });
+        let id_view_map = { ...table.id_view_map };
+        id_view_map[view._id] = view;
+        table.navigation = navigation;
+        table.id_view_map = id_view_map;
+        data[tableName] = table;
+        updateData(data);
+      }
+      return res;
+    });
+  }, [data, updateData]);
+
+  const getMetadata = useCallback((tableName, { view_id, start, is_reload = false }, api, isBuiltIn = false) => {
+    let table = getTableByName(tableName);
+    const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
+    const view = table[viewMapName][view_id] || {};
+    let recordsName = 'records';
+    if (tableName === TICKET_TABLE_NAME) {
+      recordsName = TICKET_TABLE_NAME;
+    }
+
+    let func = () => api().then(res => {
+      const records = res.data[recordsName];
+      const rows = Array.isArray(records) ? records : [];
+      const columns = res?.data?.columns || [];
+      let rowIds = [...(view?.rows || [])];
+      let id_row_map = { ...table.id_row_map };
+      let key_column_map = { ...table.key_column_map };
+      let view_map = { ...table[viewMapName] };
+      rows.forEach(r => {
+        const rowId = String(r._pk);
+        if (!rowIds.includes(rowId)) {
+          rowIds.push(rowId);
+        }
+        id_row_map[rowId] = { ...id_row_map[rowId], ...r };
+      });
+      columns.forEach(c => {
+        key_column_map[c.key] = c;
+      });
+      view_map[view_id] = { ...view, rows: rowIds, columns: columns.map(c => c.key), timestamp: Date.now() };
+      updateTable(tableName, { id_row_map, key_column_map, [viewMapName]: view_map });
+      return res;
+    });
+    if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
+      func = () => new Promise((resolve, reject) => {
+        resolve({
+          data: {
+            [recordsName]: view.rows.map(rId => table.id_row_map[rId]).filter(Boolean),
+            columns: view.columns.map(cKey => table.key_column_map[cKey]).filter(Boolean),
+          }
+        });
+      });
+    }
+    return func();
+  }, [getTableByName, updateTable]);
+
+  const getRow = useCallback((tableName, rowId, api) => {
+    if (!tableName || !rowId) return null;
+    const rowIdString = rowId + '';
+    const table = getTableByName(tableName);
+    const id_row_map = table.id_row_map;
+    return id_row_map[rowIdString];
+  }, [getTableByName]);
+
+  const modifyLocalRow = useCallback((tableName, rowId, rowUpdate) => {
+    let table = getTableByName(tableName);
+    const rowIdString = rowId + '';
+    let id_row_map = { ...table.id_row_map };
+    let oldValue = {};
+    let row = id_row_map[rowIdString] || {};
+    Object.keys(rowUpdate).forEach(key => {
+      oldValue[key] = row[key];
+    });
+    if (ObjectUtils.isSameObject(oldValue, rowUpdate)) return;
+    id_row_map[rowIdString] = { ...row, ...rowUpdate };
+    updateTable(tableName, { id_row_map });
+  }, [getTableByName, updateTable]);
+
+  const modifyRow = useCallback((tableName, rowId, rowUpdate, api) => {
+    return api().then(res => {
+      modifyLocalRow(tableName, rowId, rowUpdate);
+      return res;
+    });
+  }, [modifyLocalRow]);
+
+  const modifyLocalRows = useCallback((tableName, rowsUpdate = []) => {
+    let table = getTableByName(tableName);
+    let id_row_map_update = {};
+    rowsUpdate.forEach(rowUpdate => {
+      const { row_id, row } = rowUpdate;
+      const rowIdString = row_id + '';
+      const oldRow = table.id_row_map[rowIdString];
+      let oldValue = {};
+      Object.keys(row).forEach((key) => {
+        oldValue[key] = oldRow[key];
+      });
+      if (!ObjectUtils.isSameObject(oldValue, row)) {
+        id_row_map_update[rowIdString] = { ...oldRow, ...row };
+      }
+    });
+    if (Object.keys(id_row_map_update).length === 0) return;
+    updateTable(tableName, { id_row_map: { ...table.id_row_map, ...id_row_map_update } });
+  }, [getTableByName, updateTable]);
+
+  const modifyRows = useCallback((tableName, rowsUpdate = [], api) => {
+    return api().then(res => {
+      modifyLocalRows(tableName, rowsUpdate);
+      return res;
+    });
+  }, [modifyLocalRows]);
+
+  const deleteRow = useCallback((tableName, rowId, api) => {
+    return api().then(res => {
+      let table = getTableByName(tableName);
+      let id_row_map = { ...table.id_row_map };
+      const rowIdString = rowId + '';
+      delete id_row_map[rowIdString];
+      let tableUpdate = { id_row_map };
+      if (hasOwnProperty(table, 'rows')) {
+        let rows = Array.isArray(table.rows) ? table.rows : [];
+        rows = rows.filter(rId => rId !== rowIdString);
+        tableUpdate.rows = rows;
+      }
+      updateTable(tableName, tableUpdate);
+      return res;
+    });
+  }, [getTableByName, updateTable]);
+
+  const deleteRows = useCallback((tableName, rowIds = [], api) => {
+    return api().then(res => {
+      const rowIdsString = rowIds.map(r => r + '');
+      let table = getTableByName(tableName);
+      let id_row_map = { ...table.id_row_map };
+      rowIdsString.forEach(rowId => {
+        delete id_row_map[rowId];
+      });
+      let tableUpdate = { id_row_map };
+      if (hasOwnProperty(table, 'rows')) {
+        let rows = Array.isArray(table.rows) ? table.rows : [];
+        rows = rows.filter(rId => !rowIdsString.includes(rId));
+        tableUpdate.rows = rows;
+      }
+      updateTable(tableName, tableUpdate);
+      return res;
+    });
+  }, [getTableByName, updateTable]);
+
+  const insertRow = useCallback((tableName, rowData, api) => {
+    //
+  }, []);
 
   const listUserInfo = useCallback((...params) => {
     return userAPI.listUserInfo(...params);
@@ -22,6 +358,29 @@ export const DataProvider = ({ projectUuid, activeBar, children }) => {
 
   return (
     <DataContext.Provider value={{
+      data,
+      updateData,
+      markTablesViewExpired,
+      getTableByName,
+      updateTable,
+      getTableViews,
+      getTableView,
+      insertView,
+      deleteView,
+      modifyView,
+      moveView,
+      duplicateView,
+      clearViewRows,
+
+      getMetadata,
+      getRow,
+      insertRow,
+      modifyRow,
+      modifyLocalRow,
+      modifyRows,
+      modifyLocalRows,
+      deleteRow,
+      deleteRows,
     }}>
       <AIChatToolsProvider>
         <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>

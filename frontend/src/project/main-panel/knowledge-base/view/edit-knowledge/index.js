@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster } from '@/components';
-import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '../../constants';
 import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
 import { useMetadata } from '../../hooks/metadata';
@@ -13,6 +13,8 @@ import { useKnowledgePage } from '../../hooks/knowledge-page';
 import UploadFilesButton from '../../../tickets/components/upload-files-btn';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { TagsSettings } from '../../../tickets/components/ticket-settings';
+import { useData } from '@/project/hooks';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
@@ -29,6 +31,10 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const knowledgeRef = useRef(null);
 
+  const { modifyLocalRow, getTableByName } = useData();
+
+  const lastRecordId = useRef('');
+
   const user = useMemo(() => {
     return {
       name,
@@ -39,6 +45,13 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   const disabled = useMemo(() => {
     return (!title || !title.trim()) || (!content || !content.text.trim()) || isSubmitting;
   }, [title, content, isSubmitting]);
+
+  const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
+    const table = getTableByName(KB_TABLE_NAME);
+    const columns = Object.values(table.key_column_map);
+    if (columns.length === 0) return;
+    modifyLocalRow(KB_TABLE_NAME, ticketID, convertRowToKeyValue(update, { data: { columns }, tagsData }));
+  }, [tagsData, getTableByName, modifyLocalRow]);
 
   const onTitleChange = useCallback((event) => {
     const newTitle = event.target.value;
@@ -98,6 +111,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
       serverData[columnName] = value;
     });
     knowledgeBaseAPI.updateRecord(projectUuid, pageSlugId, serverData).then(res => {
+      handleUpdateRowsCacheData(pageSlugId, serverData);
       togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -107,20 +121,23 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
   }, [title, content, tags]);
 
   useEffect(() => {
-    if (!Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) {
-      knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
-        const { title = '', content, tags = [] } = res?.data.record || {};
-        setTitle(title);
-        setContent({ text: content || '' });
-        setTags(tags);
-        setLoading(false);
-      }).catch(error => {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        setLoading(false);
-      });
-    }
-  }, []);
+    if (Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) return;
+    if (lastRecordId.current === pageSlugId) return;
+    lastRecordId.current = pageSlugId;
+    setLoading(true);
+    knowledgeBaseAPI.getRecord(projectUuid, pageSlugId).then(res => {
+      handleUpdateRowsCacheData(pageSlugId, res?.data.record);
+      const { title = '', content = '', tags = [] } = res?.data.record || {};
+      setTitle(title);
+      setContent({ text: content || '' });
+      setTags(tags);
+      setLoading(false);
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      setLoading(false);
+    });
+  }, [projectUuid, pageSlugId, handleUpdateRowsCacheData]);
 
   useEffect(() => {
     if (isLoading || isMetadataLoading) return;
@@ -135,7 +152,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
     return () => {
       knowledgeDom && resizeObserver.unobserve(knowledgeDom);
     };
-  }, [isLoading, isMetadataLoading]);
+  }, [isLoading || isMetadataLoading]);
 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
@@ -198,7 +215,7 @@ const EditKnowledge = ({ editorAPI, projectUuid }) => {
           <div className="sea-qa-project-knowledge-other-settings">
             <TagsSettings
               value={tags}
-              isLoading={isMetadataLoading}
+              isLoading={false}
               tagsData={tagsData}
               createTag={createTag}
               onChange={setTags}

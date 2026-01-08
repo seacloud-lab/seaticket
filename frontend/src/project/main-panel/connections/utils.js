@@ -1,5 +1,5 @@
 import { mediaUrl, projectName, server, workspaceID } from '@/constants';
-import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES } from './constants';
+import { CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS } from './constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isString } from '@/utils/type-detection';
@@ -149,4 +149,14 @@ export const initConnectionStatus = (status = '') => {
     }
   }
   return validStatus;
+};
+
+export const getTableName = (connection) => {
+  if (!connection) return '';
+  return `${connection.type}_${connection.id}`;
+};
+
+export const isConnectionSyncCompleted = ({ status } = {}) => {
+  const validStatus = initConnectionStatus(status);
+  return CONNECTION_SYNC_COMPLETED_STATUS.includes(validStatus?.last_sync_status);
 };

@@ -5,25 +5,27 @@ import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '../../../../api';
 import BasicTopBar from '../../../top-bar';
 import { useConnectionsPage, useConnections } from '../../hooks';
-import { CONNECTION_PAGE_SLUG_ID } from '../../constants';
+import { CONNECTION_PAGE_SLUG_ID, CONNECTION_SYNC_STATUS } from '../../constants';
 import { IconButton, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import AddButton from '@/project/components/add-button';
+import { AddButton, RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '../../../../constants';
 import { isConnectionRecordsView } from '../../utils';
+import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
-  const { pageSlugId, childrenPageSlugId, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
+  const { pageSlugId, childrenPageSlugId, viewID, connectionInfo, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
   const { modifyLocalConnectionRecord } = useConnections();
   const { name: connectionName } = connectionInfo || {};
   const timer = useRef(null);
-  const [isSyncing, setIsSyncinig] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleNewConnection = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.NEW_CONNECTION);
@@ -62,40 +64,51 @@ const TopBar = ({ title, modifyLocalBar }) => {
           onClick={handleReturnConnectionsHome}
         />
         <span className="text-truncate" title={connectionTitle}>{connectionTitle}</span>
+        <RefreshBtn onClick={onRefresh} />
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, connectionName, handleReturnConnectionsHome, toggleChildrenPageSlugId]);
-
-  const onQueryConnectionStatus = useCallback((connectionID) => {
-    timer.current = setTimeout(() => {
-      connectionsAPI.getConnection(projectUuid, connectionID).then((res) => {
-        const { last_sync_status, last_sync_count } = JSON.parse(res.data.record.status);
-        if (last_sync_status === 'completed') {
-          if (last_sync_count > 0) {
-            onRefresh();
-            const msg = gettext('%s records synced').replace('%s', last_sync_count);
-            toaster.success(msg);
-          } else {
-            toaster.success(gettext('No new records'));
-          }
-          clearTimeout(timer.current);
-          setIsSyncinig(false);
-        } else {
-          onQueryConnectionStatus(connectionID);
-        }
-      }).catch((error) => {
-        setIsSyncinig(false);
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-      });
-    }, 3000);
-  }, [projectUuid]);
+  }, [pageSlugId, childrenPageSlugId, title, connectionName, handleReturnConnectionsHome, toggleChildrenPageSlugId, onRefresh]);
 
   const onManualSync = useCallback((connectionID) => {
     connectionsAPI.triggerSync(projectUuid, connectionID).then(() => {
-      setIsSyncinig(true);
+      setIsSyncing(true);
+      const onQueryConnectionStatus = (connectionID) => {
+        timer.current = setTimeout(() => {
+          connectionsAPI.queryConnectionsStatus(projectUuid, [connectionID]).then((res) => {
+            const { status, last_sync_time } = res.data[connectionID];
+            modifyLocalConnectionRecord(connectionID, { status, last_sync_time });
+
+            const { last_sync_status, last_sync_count } = JSON.parse(status);
+            if (last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
+              clearTimeout(timer.current);
+              timer.current = null;
+              if (last_sync_count > 0) {
+                const msg = gettext('%s records synced').replace('%s', last_sync_count);
+                toaster.success(msg);
+                const eventBus = context.eventBus;
+                eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA, false);
+              } else {
+                toaster.success(gettext('No new records'));
+              }
+              setIsSyncing(false);
+            } else if (last_sync_status === CONNECTION_SYNC_STATUS.FAILED) {
+              clearTimeout(timer.current);
+              timer.current = null;
+              toaster.danger(gettext('Sync failed'));
+              setIsSyncing(false);
+            } else {
+              onQueryConnectionStatus(connectionID);
+            }
+          }).catch((error) => {
+            setIsSyncing(false);
+            const errorMessage = Utils.getErrorMsg(error);
+            toaster.danger(errorMessage);
+            modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: CONNECTION_SYNC_STATUS.FAILED } });
+          });
+        }, 3000);
+      };
+      modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING, last_sync_time: null } });
       onQueryConnectionStatus(connectionID);
-      modifyLocalConnectionRecord(connectionID, { status: { last_sync_status: 'pending' } });
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       let error_msg = '';
@@ -105,16 +118,10 @@ const TopBar = ({ title, modifyLocalBar }) => {
       } else {
         error_msg = errorMessage;
       }
-      setIsSyncinig(false);
+      setIsSyncing(false);
       toaster.danger(error_msg);
     });
-  }, [modifyLocalConnectionRecord]);
-
-  useEffect(() => {
-    return () => {
-      timer.current && clearTimeout(timer.current);
-    };
-  }, []);
+  }, [projectUuid, viewID, modifyLocalConnectionRecord, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
@@ -135,6 +142,19 @@ const TopBar = ({ title, modifyLocalBar }) => {
       </>
     );
   }, [pageSlugId, childrenPageSlugId, isSyncing, handleNewConnection, onManualSync]);
+
+  useEffect(() => {
+    return () => {
+      timer.current && clearTimeout(timer.current);
+      timer.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    timer.current && clearTimeout(timer.current);
+    timer.current = null;
+    setIsSyncing(false);
+  }, [pageSlugId]);
 
   return (
     <BasicTopBar>

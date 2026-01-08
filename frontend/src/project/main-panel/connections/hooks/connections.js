@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
+import dcopy from 'deep-copy';
 import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 import { CommonOperationConfirmationDialog, toaster } from '@/components';
@@ -9,6 +10,9 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 import NewConnectionDialog from '../components/new-connection-dialog';
 import ModifyConnectionDialog from '../components/modify-connection-dialog';
 import { connectionsAPI } from '../../../api';
+import { useData } from '@/project/hooks';
+import { getTableName, initConnectionStatus } from '../utils';
+import { CONNECTION_SYNC_STATUS } from '../constants';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -19,11 +23,29 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   const [isShowRecordDialog, setIsShowRecordDialog] = useState(false);
   const [isShowConfirmDialog, setIsShowConfirmDialog] = useState(false);
 
-  const loadTime = useRef(new Date());
+  const { data, updateData, markTablesViewExpired } = useData();
+
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
   const hasMoreRef = useRef(true);
   const activeConnectionRef = useRef(null);
+  const loadTime = useRef(new Date());
+
+  const deleteConnection = useCallback((connectionID) => {
+    const activeConnectionIndex = connections.findIndex(c => c.id === Number(connectionID));
+    let newConnections = connections.slice(0);
+    let connection;
+    if (activeConnectionIndex > -1) {
+      connection = newConnections[activeConnectionIndex];
+      newConnections.splice(activeConnectionIndex, 1);
+    }
+    setConnections(newConnections);
+
+    let newData = dcopy(data);
+    const connectionTableName = getTableName(connection);
+    delete newData[connectionTableName];
+    updateData(newData);
+  }, [data, updateData]);
 
   const modifyLocalConnectionRecord = useCallback((connectionId, update) => {
     setConnections(prev => prev.map(record =>
@@ -31,18 +53,31 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
     ));
   }, []);
 
-  const modifyLocalConnectionSyncStatus = useCallback((update) => {
-    setConnections(prev => prev.map(record => update[record.id] ?
-      ({ ...record, status: { ...record.status, last_sync_status: update[record.id] } }) : record
-    ));
-  }, []);
+  const modifyLocalConnectionsSyncStatus = useCallback((update = {}) => {
+    let newConnections = connections.slice(0);
+    let successConnections = [];
+    Object.keys(update).forEach(connectionID => {
+      let connectionIndex = newConnections.findIndex(c => c.id === Number(connectionID));
+      if (connectionIndex > -1) {
+        const connection = newConnections[connectionIndex];
+        const connectionUpdate = update[connectionID];
+        const status = initConnectionStatus(connectionUpdate?.status);
+        newConnections[connectionIndex] = { ...connection, ...connectionUpdate, status };
+        if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
+          successConnections.push(connection);
+        }
+      }
+    });
+    setConnections(newConnections);
+    const successConnectionCacheDataNames = successConnections.map(c => getTableName(c));
+    markTablesViewExpired(successConnectionCacheDataNames);
+  }, [connections, markTablesViewExpired]);
 
-  const modifyConnectionStatus = useCallback((connectionId, update) => {
+  const modifyConnectionIsActiveStatus = useCallback((connectionId, activeStatus) => {
+    const update = { 'is_active': activeStatus };
     connectionsAPI.updateConnectionStatus(projectUuid, connectionId, update).then(() => {
       modifyLocalConnectionRecord(connectionId, update);
-      if (Object.keys(update).includes('is_active')) {
-        toaster.success(update.is_active ? gettext('Activated') : gettext('Deactivated'));
-      }
+      toaster.success(activeStatus ? gettext('Activated') : gettext('Deactivated'));
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
     });
@@ -68,13 +103,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
 
   const deleteConnectionRecord = useCallback(() => {
     connectionsAPI.deleteConnection(projectUuid, activeConnectionRef.current.id).then(res => {
-      const activeConnectionIndex = connections.findIndex(c => c.id === activeConnectionRef.current.id);
-      let newConnections = connections.slice(0);
-      if (activeConnectionIndex > -1) {
-        newConnections.splice(activeConnectionIndex, 1);
-      }
+      deleteConnection(activeConnectionRef.current.id);
       activeConnectionRef.current = null;
-      setConnections(newConnections);
       setIsShowConfirmDialog(false);
       activeConnectionRef.current = null;
     }).catch((error) => {
@@ -83,7 +113,7 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       setIsShowConfirmDialog(false);
       activeConnectionRef.current = null;
     });
-  }, [connections]);
+  }, [deleteConnection]);
 
   const closeDeleteConfirmDialog = useCallback(() => {
     setIsShowConfirmDialog(false);
@@ -95,7 +125,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
   }, []);
 
   const modifyConnection = useCallback(({ name, config }, resetSubmittingState, recordId) => {
-    const activeRecordId = recordId || activeConnectionRef.current.id;
+    let activeRecordId = recordId || activeConnectionRef.current.id;
+    activeRecordId = Number(activeRecordId);
     connectionsAPI.modifyConnection(projectUuid, activeRecordId, { name, config }).then(res => {
       const activeConnectionIndex = connections.findIndex(c => c.id === activeRecordId);
       const newConnection = new Connection(res.data.record);
@@ -136,7 +167,6 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
         pre[cur.id] = true;
         return pre;
       }, {});
-
       if (moreConnections.length < pageCountRef.current) {
         hasMoreRef.current = false;
       } else {
@@ -189,8 +219,8 @@ export const ConnectionsProvider = ({ projectUuid, children }) => {
       isLoadingMore,
       connections,
       modifyLocalConnectionRecord,
-      modifyLocalConnectionSyncStatus,
-      modifyConnectionStatus,
+      modifyLocalConnectionsSyncStatus,
+      modifyConnectionIsActiveStatus,
       handleDelete,
       handleModify,
       reloadConnections,

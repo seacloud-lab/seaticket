@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import dayjs from 'dayjs';
-import SeaMetadata, { useDataCache } from '@/sea-metadata';
+import SeaMetadata from '@/sea-metadata';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { connectionsAPI } from '@/project/api';
 import CreateTicketDialog from '../../components/create-ticket-dialog';
@@ -15,24 +14,21 @@ import {
   SUPPORT_AI_CONNECTION_TYPES, SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES,
   CONNECTION_PREDEFINED_COLUMN_NAME,
 } from '../../constants';
-import { toaster } from '@/components';
+import { CenteredLoading, toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import { useConnections } from '../../hooks';
-import { getOriginalPageUrl } from '../../utils';
+import { getOriginalPageUrl, getTableName } from '../../utils';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
+import { useData } from '@/project/hooks';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const seaMetaDataRef = useRef(null);
-  const currentTime = useRef(new Date());
   const allColumns = useRef([]);
-  const { viewID, isLoading, updateConnectionInfo, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
-  const { cachedData, cacheData, clearCacheData } = useDataCache();
 
-  const { connections } = useConnections();
   const [connection, setConnection] = useState({});
   const [currentRow, setCurrentRow] = useState({});
   const [isLoadingConnection, setLoadingConnection] = useState(true);
@@ -45,6 +41,19 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isDeletingRecords, setIsDeletingRecords] = useState(false);
 
   const { updateAttachments } = useAIChatTools();
+  const { viewID, isLoading: isLoadingConnections, updateConnectionInfo, toggleView, toggleChildrenPageSlugId } = useConnectionsPage();
+  const { connections } = useConnections();
+  const {
+    data,
+    getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getMetadata, modifyRow, modifyRows, deleteRows
+  } = useData();
+
+  const getTableNameByConnectionID = useCallback((connectionID) => {
+    const connection = connections.find(c => c.id === connectionID);
+    const tableName = getTableName(connection);
+    return tableName;
+  }, [connections]);
 
   const t = useMemo(() => {
     const connectionType = connection?.type;
@@ -77,135 +86,125 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const api = useMemo(() => {
     allColumns.current = [];
-    const getMetadata = (...params) => {
-      const { view_id } = params[0];
-      if (cachedData && cachedData.view?._id === view_id && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-        return new Promise((resolve, reject) => {
-          const rows = cachedData.rows;
-          const columns = cachedData.columns;
+    let _api = {
+      getMetadata: (...params) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params)).then(res => {
+          const { records } = res.data;
+          const connection = connections.find(c => c.id === connectionID);
+          const type = connection?.type;
+          let rows = Array.isArray(records) ? records : [];
+          let columns = res?.data?.columns || [];
           allColumns.current = columns;
-          resolve({
+          let notDisplayColumnNames = [
+            CONNECTION_PREDEFINED_COLUMN_NAME._PK,
+            CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
+            CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
+            CONNECTION_PREDEFINED_COLUMN_NAME.URL,
+          ];
+          let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
+          if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
+            const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
+            if (typeColum) {
+              const options = typeColum.data?.options || [];
+              const _typesData = options.map(o => ({ ...o, _id: o.id }));
+              setTypesData({
+                rows: _typesData,
+                id_row_map: _typesData.reduce((pre, cur) => {
+                  pre[cur._id] = cur;
+                  return pre;
+                }, {})
+              });
+              context.setSetting('typeColumnKey', typeColum.key);
+            }
+
+            const stateColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
+            if (stateColumnIndex > -1) {
+              const stateColumn = columns[stateColumnIndex];
+              context.setSetting('stateColumnKey', stateColumn.key);
+              let options = stateColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
+              columns[stateColumnIndex].data = { ...stateColumn.data, options };
+            }
+
+            const stateReasonColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
+            if (stateReasonColumnIndex > -1) {
+              const stateReasonColumn = columns[stateReasonColumnIndex];
+              let options = stateReasonColumn.data?.options || [];
+              options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
+              columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
+            }
+          }
+          if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
+            columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
+              ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
+              click: (row) => {
+                const url = getOriginalPageUrl(connection, row, allColumns.current);
+                if (!url) {
+                  toaster.danger(gettext('Missing required information'));
+                  return;
+                }
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+            };
+          }
+          columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
+          return {
             data: {
-              rows: rows,
+              rows,
               columns: columns,
             }
-          });
-        }).then(res => {
-          clearCacheData();
-          return res;
-        });
-      }
-
-      return connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
-        const { type, records } = res.data;
-        let rows = Array.isArray(records) ? records : [];
-        let columns = res?.data?.columns || [];
-        allColumns.current = columns;
-        let notDisplayColumnNames = [
-          CONNECTION_PREDEFINED_COLUMN_NAME._PK,
-          CONNECTION_PREDEFINED_COLUMN_NAME.SLUG,
-          CONNECTION_PREDEFINED_COLUMN_NAME.TOPIC_ID,
-          CONNECTION_PREDEFINED_COLUMN_NAME.URL,
-        ];
-        let columnConfig = CONNECTION_PREDEFINED_COLUMN_CONFIG[type];
-        if (type === CONNECTION_TYPE.GITHUB_ISSUE) {
-          const typeColum = columns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
-          if (typeColum) {
-            const options = typeColum.data?.options || [];
-            const _typesData = options.map(o => ({ ...o, _id: o.id }));
-            setTypesData({
-              rows: _typesData,
-              id_row_map: _typesData.reduce((pre, cur) => {
-                pre[cur._id] = cur;
-                return pre;
-              }, {})
-            });
-            context.setSetting('typeColumnKey', typeColum.key);
-          }
-
-          const stateColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
-          if (stateColumnIndex > -1) {
-            const stateColumn = columns[stateColumnIndex];
-            context.setSetting('stateColumnKey', stateColumn.key);
-            let options = stateColumn.data?.options || [];
-            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_OPTION_NAME_MAP[o.name] || o.name }));
-            columns[stateColumnIndex].data = { ...stateColumn.data, options };
-          }
-
-          const stateReasonColumnIndex = columns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON);
-          if (stateReasonColumnIndex > -1) {
-            const stateReasonColumn = columns[stateReasonColumnIndex];
-            let options = stateReasonColumn.data?.options || [];
-            options = options.map(o => ({ ...o, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] || o.name }));
-            columns[stateReasonColumnIndex].data = { ...stateReasonColumn.data, options };
-          }
-        }
-        if (SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES.includes(type)) {
-          columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE] = {
-            ...columnConfig[CONNECTION_PREDEFINED_COLUMN_NAME.TITLE],
-            click: (row) => {
-              const url = getOriginalPageUrl(connection, row, allColumns.current);
-              if (!url) {
-                toaster.danger(gettext('Missing required information'));
-                return;
-              }
-              window.open(url, '_blank', 'noopener,noreferrer');
-            }
           };
-        }
-        columns = columns.filter(c => !notDisplayColumnNames.includes(c.name)).map(c => ({ ...c, ...columnConfig[c.name] }));
-        clearCacheData();
-        return {
-          data: {
-            rows,
-            columns: columns,
-          }
-        };
-      });
-    };
-    let _api = {
-      getMetadata,
+        });
+      },
       getViews: () => {
-        if (cachedData && cachedData.views && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-          return new Promise((resolve, reject) => {
-            resolve({
-              data: cachedData.views
-            });
-          });
-        }
-        return connectionsAPI.listViews(projectUuid, connectionID);
+        const tableName = getTableNameByConnectionID(connectionID);
+        return getTableViews(tableName, () => connectionsAPI.listViews(projectUuid, connectionID));
       },
       getView: (viewID) => {
-        if (cachedData && cachedData.view?._id === viewID && dayjs(currentTime.current).diff(cachedData.create_at, 'hours') < 1) {
-          return new Promise((resolve, reject) => {
-            resolve({
-              data: {
-                view: cachedData.view
-              }
-            });
-          });
-        }
-        return connectionsAPI.getView(projectUuid, viewID, connectionID);
+        const tableName = getTableNameByConnectionID(connectionID);
+        return getTableView(tableName, viewID, () => connectionsAPI.getView(projectUuid, viewID, connectionID));
       },
-      insertView: (name, viewData) => connectionsAPI.insertView(projectUuid, connectionID, name, viewData),
-      deleteView: (viewID) => connectionsAPI.deleteView(projectUuid, connectionID, viewID),
-      moveView: (sourceViewID, targetViewID) => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID),
-      duplicateView: (viewID) => connectionsAPI.duplicateView(projectUuid, connectionID, viewID),
-      modifyView: (viewID, viewData) => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData),
+      insertView: (name, viewData) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return insertView(tableName, () => connectionsAPI.insertView(projectUuid, connectionID, name, viewData));
+      },
+      deleteView: (viewID) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return deleteView(tableName, viewID, () => connectionsAPI.deleteView(projectUuid, connectionID, viewID));
+      },
+      moveView: (sourceViewID, targetViewID) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return modifyView(tableName, sourceViewID, targetViewID, () => connectionsAPI.moveView(projectUuid, connectionID, sourceViewID, targetViewID));
+      },
+      duplicateView: (viewID) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return duplicateView(tableName, () => connectionsAPI.duplicateView(projectUuid, connectionID, viewID));
+      },
+      modifyView: (viewID, viewData) => {
+        const tableName = getTableNameByConnectionID(connectionID);
+        return modifyView(tableName, viewID, viewData, () => connectionsAPI.modifyView(projectUuid, connectionID, viewID, viewData));
+      },
     };
     if (connection.type === CONNECTION_TYPE.EMAIL) {
       _api.modifyRow = (row_id, row_update, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowData = convertRowToNameValue(row_update, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData);
+        const tableName = getTableNameByConnectionID(connectionID);
+        return modifyRow(tableName, row_id, row_update, () => connectionsAPI.modifyConnectionRecord(projectUuid, connectionID, row_id, rowData));
       };
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        return connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData);
+        const tableName = getTableNameByConnectionID(connectionID);
+        return modifyRows(tableName, rowsUpdate, () => connectionsAPI.modifyConnectionRecords(projectUuid, connectionID, rowsData));
       };
     }
 
     return _api;
-  }, [projectUuid, connectionID, connection, cachedData, clearCacheData]);
+  }, [
+    projectUuid, connectionID, connection, connections, getTableNameByConnectionID,
+    data, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, getMetadata,
+    modifyRows, modifyRow
+  ]);
 
   const handleCreateRelatedTicket = useCallback((row) => {
     if (!row) return;
@@ -242,8 +241,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const recordCount = rows.length;
     setIsDeletingRecords(true);
     const recordIDs = rows.map(row => row._id);
-
-    connectionsAPI.deleteConnectionRecords(projectUuid, connectionID, recordIDs)
+    const tableName = getTableName(connection);
+    deleteRows(tableName, recordIDs, () => connectionsAPI.deleteConnectionRecords(projectUuid, connectionID, recordIDs))
       .then(() => {
         const successMessage = recordCount === 1
           ? gettext('Email deleted successfully')
@@ -260,7 +259,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       .finally(() => {
         setIsDeletingRecords(false);
       });
-  }, [projectUuid, connectionID]);
+  }, [projectUuid, connectionID, connection, deleteRows]);
 
   const generateFindRelatedIssuesOption = useCallback(({ row }) => {
     const enableFindRelatedIssues = SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES.includes(connection?.type);
@@ -454,14 +453,12 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const handleExpandRow = useCallback((row) => {
     if (connection.type === CONNECTION_TYPE.EMAIL) {
-      const data = seaMetaDataRef.current.getData();
-      cacheData(data);
       toggleChildrenPageSlugId(row._id);
       return;
     }
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
     setIsShowRowDetailsDialog(true);
-  }, [connection, toggleChildrenPageSlugId, cacheData]);
+  }, [projectUuid, connectionID, connection, toggleChildrenPageSlugId]);
 
   const switchResource = useCallback((step) => {
     const rowsData = seaMetaDataRef.current.getOrderRows();
@@ -497,7 +494,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, []);
 
-  if (isLoading || isLoadingConnection) return null;
+  if (isLoadingConnections || isLoadingConnection) return (<CenteredLoading />);
 
   return (
     <>

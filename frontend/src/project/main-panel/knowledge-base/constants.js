@@ -73,3 +73,5 @@ export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {
 };
 
 export const KNOWLEDGE_BASE_TYPE = 'knowledge_base';
+
+export const KB_TABLE_NAME = 'kb';

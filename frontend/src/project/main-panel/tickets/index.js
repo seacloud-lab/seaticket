@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { DataCacheProvider } from '@/sea-metadata';
 import { TicketsPageProvider, useTicketsPage } from './hooks';
 import Tags from './view/tags';
 import Types from './view/types';
@@ -60,12 +59,10 @@ const Page = ({ toggleBar, type }) => {
 
 const Tickets = ({ title, toggleBar, type }) => {
   return (
-    <DataCacheProvider>
-      <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
-        <TicketTopBar title={title} type={type} permission={permission} />
-        <Page toggleBar={toggleBar} type={type} />
-      </TicketsPageProvider>
-    </DataCacheProvider>
+    <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
+      <TicketTopBar title={title} type={type} permission={permission} />
+      <Page toggleBar={toggleBar} type={type} />
+    </TicketsPageProvider>
   );
 };
 

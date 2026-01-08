@@ -3,11 +3,11 @@ import TopBar from '../../../top-bar';
 import { useTicketsPage, useMetadata } from '../../hooks';
 import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from '../../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import { IconButton, IconTooltip } from '@/components';
+import { IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import eventBus from '@/utils/event-bus';
 import { getRowById } from '@/sea-metadata/utils/row';
-import AddButton from '@/project/components/add-button';
+import { AddButton, RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
@@ -20,15 +20,8 @@ const TicketTopBar = ({ title, type, permission }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
       return (
         <>
-          <div className="text-truncate">{title}</div>
-          <IconTooltip
-            icon="refresh"
-            tip={gettext('Refresh')}
-            className="sea-qa-project-refresh-tickets-btn"
-            placement="bottom"
-            hoverBackground={true}
-            onClick={onRefresh}
-          />
+          <div className="text-truncate" title={title}>{title}</div>
+          <RefreshBtn onClick={onRefresh} />
         </>
       );
     }
@@ -42,7 +35,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     );
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TAGS) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return <span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>;
+        return (<span className="text-truncate" title={gettext('Tags')}>{gettext('Tags')}</span>);
       }
       const tag = getRowById(tagsData, childrenPageSlugId);
       const customTitle = gettext('Tags') + ' / ' + (tag?.name || '');
@@ -59,7 +52,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>;
+        return (<span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>);
       }
       const type = getRowById(typesData, childrenPageSlugId);
       const customTitle = gettext('Types') + ' / ' + (type?.name || '');
@@ -84,7 +77,7 @@ const TicketTopBar = ({ title, type, permission }) => {
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES) {
       if (childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
-        return <span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>;
+        return (<span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>);
       }
       const substate = getRowById(substatesData, childrenPageSlugId);
       const customTitle = gettext('Substates') + ' / ' + (substate?.name || '');

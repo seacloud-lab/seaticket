@@ -259,3 +259,5 @@ export const TICKET_COLUMNS_WIDTH_CONFIG = {
 };
 
 export const TICKET_TYPE = 'ticket';
+
+export const TICKET_TABLE_NAME = 'tickets';

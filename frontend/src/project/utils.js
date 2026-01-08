@@ -29,3 +29,9 @@ export const getResourceOriginalURL = (type, resource, { workspaceID, projectNam
   if (!connection) return '';
   return getOriginalPageUrl(connection, resource, columns);
 };
+
+export const shouldReload = (timestamp = 0) => {
+  // 36000000(1h): 60 * 60 * 1000
+  if (!timestamp) return true;
+  return Date.now() - timestamp > 3600000;
+};

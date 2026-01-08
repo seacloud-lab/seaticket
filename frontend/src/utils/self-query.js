@@ -53,12 +53,7 @@ class SelfQuery {
             endIds.push(id);
           }
         });
-        this.callback(results);
         this.ids = queriedIds.filter(id => !endIds.includes(id));
-
-        if (endIds.length > 0) {
-          this.onEnd(endIds);
-        }
         this._executeConcurrentQuery();
       }).catch(error => {
         this._executeConcurrentQuery();

@@ -10,13 +10,14 @@ import Tags from './view/tags';
 import TagKnowledge from './view/tag-knowledge';
 import TrashKnowledge from './view/trash-knowledge';
 import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
-import { MetadataProvider } from './hooks/metadata';
+import { MetadataProvider, useMetadata } from './hooks/metadata';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
 
 const Page = ({ title }) => {
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId } = useKnowledgePage();
+  const { isLoading: isMetadataLoading } = useMetadata();
 
   const longtextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file)
@@ -27,7 +28,8 @@ const Page = ({ title }) => {
     title, togglePageSlugId
   }), []);
 
-  if (isLoading) return null;
+  if (isLoading || isMetadataLoading) return null;
+
   if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.TAGS) {
     if (childrenPageSlugId === KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL) return (<Tags { ...props } />);
     return (<TagKnowledge { ...props } tagID={childrenPageSlugId} />);

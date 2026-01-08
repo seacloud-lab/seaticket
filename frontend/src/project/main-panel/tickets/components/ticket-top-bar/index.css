@@ -10,15 +10,3 @@
   height: 16px !important;
   width: 16px !important;
 }
-
-.sea-qa-project-refresh-tickets-btn {
-  display: inline-flex;
-  height: 24px;
-  width: 24px;
-  flex-shrink: 0;
-}
-
-.sea-qa-project-refresh-tickets-btn .sea-qa-icon-svg-refresh {
-  margin-top: 0px;
-  color: #666 !important;
-}

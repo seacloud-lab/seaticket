@@ -4,20 +4,19 @@ import { useConnectionsPage } from '../../../hooks';
 import { CenteredError, CenteredLoading } from '@/components';
 import { connectionsAPI } from '../../../../../api';
 import { Utils } from '@/utils/utils';
-import { initConnectionResourceDetails, generatorConnectionAssetURLPrefix } from '../../../utils';
-import { useDataCache } from '@/sea-metadata';
+import { initConnectionResourceDetails, generatorConnectionAssetURLPrefix, getTableName } from '../../../utils';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { getRowById } from '@/sea-metadata/utils/row';
 import { CONNECTION_TYPE } from '../../../constants';
 import { gettext } from '@/constants';
 import EmailDetails from '../../../components/connection-resource-details/email-details';
+import { useData } from '@/project/hooks';
 
 import './index.css';
 
 const Record = ({ projectUuid }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, connectionInfo, updateConnectionInfo } = useConnectionsPage();
-  const { cachedData } = useDataCache();
+  const { data: cachedData, getRow } = useData();
 
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -27,15 +26,20 @@ const Record = ({ projectUuid }) => {
   const recordRef = useRef(null);
 
   const cachedTitle = useMemo(() => {
-    const titleColumn = getColumnByName(cachedData?.columns || [], 'title');
-    const record = getRowById(cachedData, childrenPageSlugId);
+    const tableName = getTableName({ ...connectionInfo, id: pageSlugId });
+    const table = cachedData[tableName];
+    if (!table) return '';
+    const record = getRow(tableName, childrenPageSlugId);
+    if (!record) return '';
+    const columns = Object.values(table?.key_column_map || {}) || [];
+    const titleColumn = getColumnByName(columns || [], 'title');
     let title = getCellValueByColumn(record, titleColumn);
     if (!title) {
-      const filenameColumn = getColumnByName(cachedData?.columns, 'filename');
+      const filenameColumn = getColumnByName(columns, 'filename');
       title = getCellValueByColumn(record, filenameColumn);
     }
     return title;
-  }, [cachedData, childrenPageSlugId]);
+  }, [cachedData, connectionInfo, pageSlugId, childrenPageSlugId, getRow]);
 
   const title = useMemo(() => {
     return data.title || cachedTitle;
