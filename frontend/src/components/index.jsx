@@ -24,7 +24,7 @@ import ModalPortal from './modal-portal';
 import Radio from './radio';
 import CustomizeGroupSelect from './customize-group-select';
 import CustomizeDropdownMenu from './customize-dropdown-menu';
-import CustomizeDropdownItem from './customize-dropdown-item';
+import CustomizeDropdownItem, { CustomizeDropdownItemIcon, CustomizeDropdownItemText } from './customize-dropdown-item';
 import CustomizeDropdownMoreToggle from './customize-dropdown-more-toggle';
 import CustomizePopover from './customize-popover';
 import CustomizeMarkdownViewer from './customize-markdown-viewer';
@@ -88,6 +88,8 @@ export {
   CustomizeGroupSelect,
   CustomizeDropdownMenu,
   CustomizeDropdownItem,
+  CustomizeDropdownItemIcon,
+  CustomizeDropdownItemText,
   CustomizeDropdownMoreToggle,
   CustomizePopover,
   CustomizeMarkdownViewer,

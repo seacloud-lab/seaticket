@@ -69,14 +69,14 @@ class LongTextFormatter extends React.Component {
   };
 
   translateValue = () => {
-    const { value } = this.props;
+    const { value, textCount } = this.props;
     if (!value) return {};
     const valueType = Object.prototype.toString.call(value);
     if (valueType === '[object String]') {
       const isMarkdown = true;
       const previewTextNeedSlice = false;
       const { previewText, images, links, checklist } = getPreviewContent(value, isMarkdown, previewTextNeedSlice);
-      const newValue = Object.assign({}, { text: value, preview: previewText.slice(0, 200), images, links, checklist });
+      const newValue = Object.assign({}, { text: value, preview: previewText.slice(0, textCount), images, links, checklist });
       return newValue;
     }
     if (valueType === '[object Object]') {
@@ -137,14 +137,19 @@ class LongTextFormatter extends React.Component {
 
   render() {
     const { isPreview } = this.state;
-    const { className, previewClassName } = this.props;
+    const { className, previewClassName, canPreview } = this.props;
     const value = this.translateValue();
+
+    const props = canPreview ? {
+      onMouseEnter: this.onMouseEnter,
+      onMouseLeave: this.onMouseLeave,
+    } : {};
+
     return (
       <div
         className={classnames('long-text-formatter', className)}
-        onMouseEnter={this.onMouseEnter}
-        onMouseLeave={this.onMouseLeave}
         ref={ref => this.ref = ref}
+        { ...props }
       >
         {this.renderLinks(value)}
         {this.renderCheckList(value)}
@@ -170,6 +175,11 @@ LongTextFormatter.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   className: PropTypes.string,
   previewClassName: PropTypes.string,
+};
+
+LongTextFormatter.defaultProps = {
+  canPreview: true,
+  textCount: 200,
 };
 
 export default LongTextFormatter;

@@ -4,3 +4,9 @@
   width: 100%;
   overflow: hidden;
 }
+
+.ask-main-container .sea-ticket-ask-chat-documents {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

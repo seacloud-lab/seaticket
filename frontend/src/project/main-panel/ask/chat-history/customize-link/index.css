@@ -1,0 +1,56 @@
+.sea-ai-chat-customize-link {
+  width: 100%;
+  overflow: hidden;
+  height: auto;
+  border: 1px solid #d1d9e0;
+  border-radius: 12px;
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.sea-ai-chat-customize-link:hover {
+  background-color: #F7F7F5;
+}
+
+.sea-ai-chat-customize-link .sea-ai-chat-customize-link-header {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+}
+
+.sea-ai-chat-customize-link .sea-ai-chat-customize-link-header .sea-ai-chat-customize-link-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.sea-ai-chat-customize-link .sea-ai-chat-customize-link-header sea-ai-chat-customize-md-expand-btn {
+  flex-shrink: 0;
+}
+
+.sea-ai-chat-customize-link .sea-ai-chat-customize-md-link-body {
+  height: unset;
+  min-height: 28px;
+  max-height: 84px;
+  -webkit-line-clamp: 4;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
+  align-items: unset;
+  line-height: 1.5;
+}
+
+.sea-ai-chat-customize-link .sea-ai-chat-customize-md-link-body .preview-text-content {
+  overflow: auto;
+  text-overflow: unset;
+  white-space: unset;
+}

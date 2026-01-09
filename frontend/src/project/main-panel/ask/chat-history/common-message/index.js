@@ -7,6 +7,7 @@ import { CustomizeMarkdownViewer, LinkVerifiedDialog } from '@/components';
 import ThoughtProcess from '../thought-process';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
+import CustomizeLink from '../customize-link';
 import RowDetailsDialog from '@/project/main-panel/connections/components/row-details-dialog';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { getNumberDisplayString } from '@/sea-metadata/utils/column';
@@ -16,7 +17,7 @@ import Attachments from '../attachments';
 
 import './index.css';
 
-const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName, workspaceID }, ref) => {
+const CommonMessage = forwardRef(({ chatId, message, settings, projectUuid, projectName, workspaceID }, ref) => {
   const contentRef = useRef(null);
 
   const [aiMessageType, setAIMessageType] = useState('rich-text');
@@ -36,11 +37,10 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
     ];
   }, []);
 
-  const { aiReply, sources } = useMemo(() => {
-    if (Object.keys(message).length === 0) return '';
+  const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
+    if (Object.keys(message).length === 0) return { aiReply: '', sources: [], mdFiles: [] };
     let value = message[CHAT_MESSAGE_TYPE.AI_REPLY];
 
-    if (Object.keys(message).length === 0) return [];
     let originSources = message[CHAT_MESSAGE_TYPE.SOURCES];
     originSources = Array.isArray(originSources) ? originSources.slice(0) : [];
     let sources = originSources.map(source => {
@@ -71,6 +71,21 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
         topic_id,
       };
     });
+    let mdFiles = [];
+    if (value) {
+      const mdRegex = /<seaqa-markdown(?:\s+file_name="([^"]*)")?\s*>([\s\S]*?)<\/seaqa-markdown>/g;
+      value = value
+        .replace(mdRegex, (match, fileName, content) => {
+          const urlObject = new URL(`file:///sea-ticket/${fileName}?t=${chatId}`);
+          const url = urlObject.href;
+          mdFiles.push({
+            name: fileName,
+            url,
+            content: content.trimStart(),
+          });
+          return `[${fileName}](${url})`;
+        });
+    }
 
     if (value && sources.length > 0) {
       const referenceMarkString = 'Reference|Source|Document|Documents|Docs|Doc';
@@ -132,8 +147,13 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
       value = value + `\n\n${sourcesString}` ;
     }
-    return { aiReply: value, sources };
-  }, [message, projectName, workspaceID]);
+    let aiReplyForCopy = value;
+    mdFiles.forEach(file => {
+      const { url, name } = file;
+      aiReplyForCopy = aiReplyForCopy.replace(`[${name}](${url})`, `\n${name}\n`);
+    });
+    return { aiReply: value, aiReplyForCopy, sources, mdFiles };
+  }, [message, projectName, workspaceID, chatId]);
 
   const handleConnectionRecord = useCallback((record) => {
     setCurrentConnectionRecord({
@@ -174,9 +194,12 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       },
       [ELementTypes.LINK_REFERENCE]: {
         render: (<CustomizeLinkReference />)
+      },
+      [ELementTypes.LINK]: {
+        render: (<CustomizeLink mdFiles={mdFiles} />)
       }
     };
-  }, [sources, settings, openConnectionRecord]);
+  }, [sources, mdFiles, settings, openConnectionRecord]);
 
   const beforeAIReplyRenderCallback = useCallback((value) => {
     if (value.length === 1 && value[0].type === 'paragraph') {
@@ -206,8 +229,8 @@ const CommonMessage = forwardRef(({ message, settings, projectUuid, projectName,
       return contentRef.current.innerHTML;
     },
 
-    getAIReply: () => aiReply,
-  }), [message, aiReply, contentRef]);
+    getAIReply: () => aiReplyForCopy,
+  }), [message, aiReply, aiReplyForCopy, contentRef]);
 
   return (
     <>
