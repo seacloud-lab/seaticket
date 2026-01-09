@@ -899,16 +899,20 @@ class ProjectConnectionRecordsOutdatedView(APIView):
 
         outdated_field = getattr(table_cls, 'outdated', None)
         modified_time_field = getattr(table_cls, 'modified_time', None)
+        sync_time_field = getattr(table_cls, 'sync_time', None)
         if not outdated_field:
             error_msg = 'Outdated field not supported for this connection.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         update_rows = []
         modified_time = datetime.datetime.now(datetime.UTC).isoformat() if modified_time_field else None
+        sync_time = datetime.datetime.now(datetime.UTC).isoformat() if sync_time_field else None
         for record_id in record_ids:
             row = {outdated_field.name: True}
             if modified_time:
                 row[modified_time_field.name] = modified_time
+            if sync_time:
+                row[sync_time_field.name] = sync_time
             update_rows.append({'pk': record_id, 'row': row})
 
         table_name = table_cls.gen_table_name(connection_id)
