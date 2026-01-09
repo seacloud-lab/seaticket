@@ -1,3 +1,4 @@
+/* Selected connections */
 .analyze-selected-connections {
   display: flex;
   flex-wrap: wrap;
@@ -23,6 +24,7 @@
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-icon {
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
   margin-right: 6px;
@@ -68,11 +70,13 @@
   align-items: center;
   gap: 4px;
   padding: 0px 6px;
-  cursor: pointer;
+  width: fit-content;
   height: 32px;
   line-height: 32px;
-  width: fit-content;
   border-radius: 3px;
+  background-image: none;
+  border: none;
+  cursor: pointer;
 }
 
 .analyze-add-connection .analyze-add-btn:hover {
@@ -150,4 +154,11 @@
   width: 16px;
   height: 16px;
   margin-right: 8px;
+}
+
+.analyze-dropdown-item .analyze-connection-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }

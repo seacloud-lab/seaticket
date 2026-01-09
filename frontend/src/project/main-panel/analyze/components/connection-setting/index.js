@@ -69,7 +69,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
               <img src={getConnectionIcon(connection.type)} alt="" className="analyze-tag-icon" />
               <span className="analyze-tag-name">{connection.name}</span>
               <IconTooltip
-                icon="x"
+                icon="close"
                 className="analyze-tag-remove"
                 tip={gettext('Remove')}
                 placement="bottom"
@@ -109,7 +109,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
                           <Icon symbol={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
                         </div>
                         <img src={getConnectionIcon(connection.type)} alt="" className="analyze-connection-img" />
-                        <span>{connection.name}</span>
+                        <span className="analyze-connection-name">{connection.name}</span>
                       </div>
                     );
                   })}
