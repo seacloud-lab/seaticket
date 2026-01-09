@@ -10,7 +10,7 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { BAR_TYPE } from '@/project/constants/bar';
 import {
   generatorTicketsRowsTools,
-  cascadeUpdateSubState, generatorTicketsContextMenuOptions
+  cascadeUpdate, generatorTicketsContextMenuOptions
 } from '../../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { AI_RESOLVE_TYPE } from '@/project/main-panel/ask/constants';
@@ -153,7 +153,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
       tagsData={tagsData}
 
       t={t}
-      cascadeUpdateCells={cascadeUpdateSubState}
+      cascadeUpdateCells={cascadeUpdate}
     />
   );
 };

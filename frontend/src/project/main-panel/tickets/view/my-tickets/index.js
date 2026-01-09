@@ -14,7 +14,7 @@ import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import {
   generatorTicketsRowsTools,
-  cascadeUpdateSubState, generatorTicketsContextMenuOptions,
+  cascadeUpdate, generatorTicketsContextMenuOptions,
 } from '../../utils';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -251,7 +251,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
       substatesData={substatesData}
       createSubstate={createSubstate}
       toggleAllSubstates={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.SUBSTATES)}
-      cascadeUpdateCells={cascadeUpdateSubState}
+      cascadeUpdateCells={cascadeUpdate}
       columnOrderRules={TICKET_COLUMNS_ORDER_CONFIG}
       columnWidthRules={TICKET_COLUMNS_WIDTH_CONFIG}
     />
