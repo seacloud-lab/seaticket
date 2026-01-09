@@ -10,6 +10,48 @@ from seahub.seadb_models.models import WebCrawlTable, DiscourseTopicsTable, Disc
 logger = logging.getLogger(__name__)
 
 
+def fetch_records_by_table_batch(seadb_api, project_uuid, table_name, pks):
+    """Batch fetch records by table name and primary keys.
+
+    Returns:
+        dict: {_pk: record_dict}
+    """
+    if not table_name or not pks:
+        return {}
+
+    try:
+        pks_str = ','.join(map(str, pks))
+        sql = (
+            f"SELECT * FROM `{table_name}` WHERE _pk IN ({pks_str}) "
+            "AND (`deleted` = False OR `deleted` IS NULL)"
+        )
+        res = seadb_api.query_rows(project_uuid, sql)
+        records = res.get('results', [])
+        return {record.get('_pk'): record for record in records}
+    except Exception as e:
+        logger.error(f'Error batch querying `{table_name}`: {e}')
+        return {}
+
+
+def fetch_tickets_batch(seadb_api, project_uuid, ticket_pks):
+    return fetch_records_by_table_batch(seadb_api, project_uuid, 'tickets', ticket_pks)
+
+
+def fetch_issue_type_connection_records_batch(seadb_api, project_uuid, connection_id, connection_type, pks):
+    table_name = None
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        table_name = GithubIssuesTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
+        table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+    elif connection_type == ConnectionType.EMAIL.value:
+        table_name = ThreadTable.gen_table_name(connection_id)
+    else:
+        logger.warning(f'Unsupported issue connection type: {connection_type}')
+        return {}
+
+    return fetch_records_by_table_batch(seadb_api, project_uuid, table_name, pks)
+
+
 def init_site_seadb_table(seadb_api, project_uuid, connection_id):
     site_table_name = WebCrawlTable.gen_table_name(connection_id)
     res = seadb_api.create_table(project_uuid, site_table_name)
