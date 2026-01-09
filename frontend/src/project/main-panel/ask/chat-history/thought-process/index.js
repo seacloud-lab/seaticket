@@ -5,14 +5,14 @@ import ThoughtProcessDialog from './thought-process-dialog';
 
 import './index.css';
 
-const ThoughtProcess = ({ value }) => {
+const ThoughtProcess = ({ value, settings }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
 
   const openDetails = useCallback(() => {
     setIsShowDetails(true);
   }, []);
 
-  if (!value) return null;
+  if (!settings.developer_mode || !value) return null;
 
   return (
     <>
