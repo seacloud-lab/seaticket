@@ -3,17 +3,13 @@ import { gettext } from '@/constants';
 import { Icon, IconTooltip, toaster } from '@/components';
 import CustomizePopover from '@/components/customize-popover';
 import { connectionsAPI } from '@/project/api';
-import { getConnectionIcon } from '../../../connections/utils';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const ConnectionSetting = ({
-  selectedConnections,
-  onConnectionsChange,
-  onRemoveConnection,
-}) => {
+const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveConnection }) => {
   const [connections, setConnections] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [tempSelectedConnections, setTempSelectedConnections] = useState([]);
@@ -25,7 +21,6 @@ const ConnectionSetting = ({
     const currentIds = [...selectedConnections.map(c => c.id)].sort();
     const tempIds = [...tempSelectedConnections.map(c => c.id)].sort();
     const hasChanged = currentIds.length !== tempIds.length || currentIds.some((id, index) => id !== tempIds[index]);
-
     if (hasChanged) {
       onConnectionsChange(tempSelectedConnections);
     }
@@ -110,7 +105,9 @@ const ConnectionSetting = ({
                     const isSelected = tempSelectedConnections.some(c => c.id === connection.id);
                     return (
                       <div key={connection.id} className="analyze-dropdown-item" onClick={() => handleToggleConnection(connection)}>
-                        <div className="analyze-connection-icon"><Icon symbol={isSelected ? 'check-mark' : ''} className="no-hover-bg" /></div>
+                        <div className="analyze-connection-icon">
+                          <Icon symbol={isSelected ? 'check-mark' : ''} className="no-hover-bg" />
+                        </div>
                         <img src={getConnectionIcon(connection.type)} alt="" className="analyze-connection-img" />
                         <span>{connection.name}</span>
                       </div>
