@@ -526,6 +526,7 @@ input.short-input {
   right: 0;
   top: 52px;
   font-size: 13px;
+  padding: 16px;
 }
 
 .account-popup .outer-caret {
@@ -538,9 +539,14 @@ input.short-input {
 }
 
 .account-popup .item {
+  font-size: 14px;
   display: block;
   padding: 8px 18px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.account-popup .item:last-child {
+  border-bottom: none;
 }
 
 .account-popup a.item {
@@ -801,11 +807,11 @@ input.short-input {
 .sf-popover {
   width: 240px;
   background: #fff;
-  border: 1px solid #c9c9c9;
-  border-radius: 3px;
-  box-shadow: 0 0 4px #ccc;
+  border: 1px solid var(--bs-border-secondary-color);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
   position: absolute;
   z-index: 20;
+  border-radius: 8px;
 }
 
 .sf-popover-hd {

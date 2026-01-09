@@ -1,0 +1,128 @@
+/* Account info */
+#account {
+  position: relative;
+}
+
+#my-info {
+  display: inline-block;
+  color: #d6d6d6;
+  cursor: pointer;
+}
+
+#account .avatar {
+  vertical-align: middle;
+}
+
+#account .manage {
+  position: absolute;
+  left: 60px;
+  top: -16px;
+}
+
+#account .manage .a:hover {
+  text-decoration: none;
+}
+
+@media (max-width:767px) {
+  #account {
+    margin: 8px 0 0 10px;
+  }
+
+  .account-toggle {
+    font-size: 19px;
+    line-height: 1;
+    color: #999;
+    margin-top: 8px;
+  }
+}
+
+/* account-popup */
+.account-popup .avatar {
+  float: left;
+}
+
+.account-popup .txt {
+  margin-left: 45px;
+  line-height: 32px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.account-popup {
+  right: 0px;
+  top: 36px;
+  font-size: 13px;
+  padding: 16px;
+}
+
+.account-popup .outer-caret {
+  top: -10px;
+  right: 12px;
+}
+
+.account-popup .sf-popover-con {
+  padding: 0;
+}
+
+.account-popup .item {
+  font-size: 14px;
+  display: block;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  cursor: default;
+}
+
+.account-popup .item:last-child {
+  border-bottom: none;
+}
+
+.account-popup a.item {
+  min-height: 40px;
+  line-height: 40px;
+  color: #212529;
+  font-weight: normal;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.account-popup a.item:hover {
+  background: #fafafa;
+  text-decoration: none;
+}
+
+.account-popup .item .sea-qa-icon-svg {
+  color: var(--bs-icon-color);
+  font-size: 14px;
+  margin-right: 12px;
+}
+
+/* account-info-card */
+.account-info-card {
+  padding: 8px 16px;
+  background-color: #F7F7F5;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  border: 1px solid var(--bs-border-secondary-color);
+}
+
+.account-info-card p {
+  margin-bottom: 0px;
+  font-size: 12px;
+}
+
+.account-info-card .account-info-card-title {
+  color: #212529;
+  line-height: 20px;
+}
+
+.account-info-card .account-info-card-used {
+  color: #212529;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.account-info-card .account-info-card-total {
+  color: #666;
+  font-size: 12px;
+  line-height: 28px;
+}

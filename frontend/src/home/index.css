@@ -129,7 +129,7 @@
 }
 
 .project-center .cur-view-header .cur-view-title {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .workspace {
@@ -294,6 +294,10 @@
   display: flex;
   align-items: center;
   padding-left: 0.5rem;
+}
+
+.project-item .project-item-icon-more-toggle-btn {
+  margin-top: -6px;
 }
 
 .workspace .project-item span {

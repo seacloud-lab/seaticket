@@ -147,7 +147,7 @@ class VirtualProject extends React.Component {
           border: `1.5px solid ${bgColor}80`, // opacity 50%
         }}
       >
-        <div className="project-item-icon-more d-flex">
+        <div className="w-100 d-flex justify-content-between">
           <div className="project-item-icon">
             <i className={`project-icon project-icon-style ${icon || 'icon-worksheet'}`} style={{ color: bgColor || DEFAULT_COLOR }}></i>
           </div>

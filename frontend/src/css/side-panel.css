@@ -10,7 +10,7 @@
 }
 
 .side-panel .nav {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   padding-top: 10px;
   padding-bottom: 10px;
   min-width: 125px;

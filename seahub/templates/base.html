@@ -23,8 +23,8 @@
 <meta name="keywords" content="{% trans "File, Collaboration, Team, Organization" %}" />
 <link rel="icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
 <link rel="apple-touch-icon" href="{{ MEDIA_URL }}{{ favicon_path }}">
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20260105" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260104" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/sea-qa-ui.css?t=20260114" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/customize.css?t=20260114" />
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/seahub_python.css?t=1398068110" />
 {% block extra_style %}
     {% render_bundle 'downIcon' 'css' %}
@@ -48,7 +48,7 @@
 
                 <div id="account">
                     <a id="my-info" href="#" class="account-toggle no-deco hidden-sm-down" aria-label="{% trans "View profile and more" %}">
-                        {% avatar request.user 32 %} <span id="down-icon-wrapper" class="vam"></span>
+                        {% avatar request.user 32 %}
                     </a>
                     <div id="more-icon-wrappe" class="mobile-icon account-toggle hidden-md-up" aria-label="{% trans "View profile and more" %}"></div>
                     <div id="user-info-popup" class="account-popup sf-popover hide">

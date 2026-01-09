@@ -73,43 +73,66 @@ class HeaderDropdownMenu extends React.Component {
           tag='div'
           role="button"
           className="cursor-pointer d-flex align-items-center"
-          title={gettext('More operations')}
-          aria-label={gettext('More operations')}
-          data-toggle="dropdown"
-          aria-expanded={this.state.dropdownOpen}
-          aria-haspopup={true}
-          tabIndex={0}
+          title={gettext('More operations')}aria-label={gettext('More operations')}data-toggle="dropdown"
+          aria-expanded={this.state.dropdownOpen}aria-haspopup={true}tabIndex={0}
         >
           <Icon symbol="plus" />
           <Icon symbol="arrow-down" />
         </DropdownToggle>
         <CustomizeDropdownMenu className="drop-list">
-          {showAddProject &&
-            <CustomizeDropdownItem onClick={this.props.showVirtualProject}>{gettext('Add a blank project')}</CustomizeDropdownItem>
-          }
-          {isOwner && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.onRenameToggle}>{gettext('Rename')}</CustomizeDropdownItem>
-          }
-          {showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.props.openGroupMember}>{gettext('Group members')}</CustomizeDropdownItem>
-          }
-          {isOwnerOrAdmin && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.openInviteDialog}>{gettext('Invite members')}</CustomizeDropdownItem>
-          }
-          {isOwnerOrAdmin && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.onManageMembersToggle}>{gettext('Manage members')}</CustomizeDropdownItem>
-          }
-          {isOwner && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.onTransferGroupToggle}>{gettext('Transfer')}</CustomizeDropdownItem>
-          }
-          {isOwner && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.onDeleteGroupToggle.bind(workspace)}>{gettext('Delete group')}</CustomizeDropdownItem>
-          }
-          {!isOwner && showGroupOptions &&
-            <CustomizeDropdownItem onClick={this.onLeaveGroupToggle.bind(workspace)}>{gettext('Leave group')}</CustomizeDropdownItem>
-          }
+          {showAddProject && (
+            <CustomizeDropdownItem onClick={this.props.showVirtualProject}>
+              <CustomizeDropdownItem.Icon symbol="plus" />
+              <CustomizeDropdownItem.Text>{gettext('Add a blank project')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {isOwner && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.onRenameToggle}>
+              <CustomizeDropdownItem.Icon symbol="rename" />
+              <CustomizeDropdownItem.Text>{gettext('Rename')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.props.openGroupMember}>
+              <CustomizeDropdownItem.Icon symbol="group-members" />
+              <CustomizeDropdownItem.Text>{gettext('Group members')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
           {isOwnerOrAdmin && showGroupOptions && (
-            <CustomizeDropdownItem onClick={this.openTrashDialog}>{gettext('Trash')}</CustomizeDropdownItem>
+            <CustomizeDropdownItem onClick={this.openInviteDialog}>
+              <CustomizeDropdownItem.Icon symbol="invite-members" />
+              <CustomizeDropdownItem.Text>{gettext('Invite members')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {isOwnerOrAdmin && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.onManageMembersToggle}>
+              <CustomizeDropdownItem.Icon symbol="manage-members" />
+              <CustomizeDropdownItem.Text>{gettext('Manage members')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {isOwner && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.onTransferGroupToggle}>
+              <CustomizeDropdownItem.Icon symbol="transfer" />
+              <CustomizeDropdownItem.Text>{gettext('Transfer')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {isOwner && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.onDeleteGroupToggle.bind(workspace)}>
+              <CustomizeDropdownItem.Icon symbol="delete" />
+              <CustomizeDropdownItem.Text>{gettext('Delete group')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {!isOwner && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.onLeaveGroupToggle.bind(workspace)}>
+              <CustomizeDropdownItem.Icon symbol="leave-group" />
+              <CustomizeDropdownItem.Text>{gettext('Leave group')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
+          )}
+          {isOwnerOrAdmin && showGroupOptions && (
+            <CustomizeDropdownItem onClick={this.openTrashDialog}>
+              <CustomizeDropdownItem.Icon symbol="trash" />
+              <CustomizeDropdownItem.Text>{gettext('Trash')}</CustomizeDropdownItem.Text>
+            </CustomizeDropdownItem>
           )}
         </CustomizeDropdownMenu>
       </Dropdown>

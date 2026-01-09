@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { IconButton, ProjectIcon, toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
@@ -193,12 +194,18 @@ class Project extends React.Component {
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
       >
-        <div className="project-item-icon-more d-flex">
+        <div className="w-100 d-flex justify-content-between">
           <div className="project-item-icon">
             <i className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`} style={{ color: project.color || DEFAULT_COLOR }}></i>
           </div>
           {(active || isMoreOperationPopoverShow) && (isOwner || isAdmin) && (
-            <IconButton className="no-hover-bg project-item-icon-more-toggle-btn" icon="more" onClick={this.toggleMoreOperation} title={gettext('More operations')} aria-label={gettext('More operations')} />
+            <IconButton
+              className={classnames('project-item-icon-more-toggle-btn', { 'active': isMoreOperationPopoverShow })}
+              icon="more"
+              onClick={this.toggleMoreOperation}
+              title={gettext('More operations')}
+              aria-label={gettext('More operations')}
+            />
           )}
           {this.state.isMoreOperationPopoverShow && (
             <ProjectItemPopover

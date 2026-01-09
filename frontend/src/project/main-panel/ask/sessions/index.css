@@ -1,5 +1,5 @@
 .sea-qa-ai-ask-sessions-wrapper {
-  border-left: 1px solid #eee;
+  border-left: 1px solid var(--bs-border-secondary-color);
   height: 100%;
   overflow: hidden;
   display: flex;
@@ -9,7 +9,7 @@
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-sessions-header {
   width: 100%;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   height: 44px;
   padding: 0 12px 0 16px;
   display: flex;
