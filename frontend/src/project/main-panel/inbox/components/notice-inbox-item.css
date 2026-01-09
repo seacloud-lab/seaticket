@@ -1,5 +1,5 @@
 .inbox-notification-item {
-  padding: 16px 24px 20px 16px;
+  padding: 16px 8px 20px 16px;
   position: relative;
   cursor: pointer;
 }
@@ -28,7 +28,7 @@
   justify-content: space-between;
   flex: 1;
   margin-left: 8px;
-  margin-right: 12px;
+  margin-right: 28px;
   overflow-x: hidden;
 }
 
