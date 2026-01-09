@@ -451,6 +451,138 @@ class RelatedRecordsView(APIView):
 
         return reranked_keys
 
+    def _prepare_candidates_for_rerank(self, search_results, is_ticket_source, ticket_id,
+                                        source_connection_id, source_record_id):
+        """Prepare candidates for reranking from search results.
+        
+        Returns:
+            tuple: (candidate_for_rerank, key_to_result)
+        """
+        candidate_for_rerank = []
+        key_to_result = {}
+
+        for result in search_results:
+            result_type = result.get('source_type', 'connection')
+            pk = result.get('_id')
+
+            if result_type == 'ticket_summary':
+                if is_ticket_source and pk == int(ticket_id):
+                    # skip if the result is the same as the query ticket
+                    continue
+                candidate_type = 'ticket'
+                connection_id_for_key = None
+            else:
+                result_connection_id = int(result.get('connection_id', source_connection_id or 0))
+                if not is_ticket_source and result_connection_id == source_connection_id and pk == source_record_id:
+                    # skip if the result is the same as the query connection
+                    continue
+                candidate_type = 'connection'
+                connection_id_for_key = result_connection_id
+
+            key = f"{pk}:None" if candidate_type == 'ticket' else f"{pk}:{connection_id_for_key}"
+            key_to_result[key] = result
+            candidate_for_rerank.append({
+                '_id': pk,
+                'connection_id': connection_id_for_key,
+                'type': candidate_type,
+                'title': result.get('title', ''),
+                'ai_summary': result.get('ai_summary', '')
+            })
+
+        return candidate_for_rerank, key_to_result
+
+    def _collect_reranked_pks(self, reranked_candidates, source_connection_id):
+        """Collect ticket pks and connection pks from reranked candidates."""
+        ticket_pks = []
+        connection_pks_map = {}
+
+        for _, result in reranked_candidates:
+            result_type = result.get('source_type', 'connection')
+            pk = result.get('_id')
+            if result_type == 'ticket_summary':
+                ticket_pks.append(pk)
+            else:
+                result_connection_id = int(result.get('connection_id', source_connection_id or 0))
+                if result_connection_id not in connection_pks_map:
+                    connection_pks_map[result_connection_id] = []
+                connection_pks_map[result_connection_id].append(pk)
+
+        return ticket_pks, connection_pks_map
+
+    def _fetch_connection_objects(self, connection, connection_id, needed_connection_ids):
+        """Fetch connection objects for the given connection ids. Return a map of connection id to connection object."""
+        connection_objects = {}
+        if connection:
+            connection_objects[int(connection_id)] = connection
+
+        missing_connection_ids = needed_connection_ids - set(connection_objects.keys())
+        if missing_connection_ids:
+            additional_connections = ProjectConnections.objects.filter(
+                id__in=missing_connection_ids, deleted=False
+            )
+            for conn in additional_connections:
+                connection_objects[conn.id] = conn
+
+        return connection_objects
+
+    def _fetch_reranked_records(self, seadb_api, project_uuid_32, ticket_pks,
+                                 connection_pks_map, connection_objects, current_category):
+        """Fetch all records (tickets and connections) for reranked candidates."""
+        records_map = {'tickets': {}}
+
+        if ticket_pks:
+            records_map['tickets'] = self._fetch_tickets_batch(seadb_api, project_uuid_32, ticket_pks)
+
+        for result_connection_id, pks in connection_pks_map.items():
+            conn = connection_objects.get(result_connection_id)
+            if not conn:
+                logger.warning(f'Connection {result_connection_id} not found or deleted')
+                continue
+
+            connection_type = conn.type
+            if ConnectionCategory.from_type(connection_type) != current_category:
+                continue
+
+            records_map[result_connection_id] = self._fetch_connection_records_batch(
+                seadb_api, project_uuid_32, result_connection_id, connection_type, pks
+            )
+
+        return records_map
+
+    def _build_final_results(self, reranked_candidates, records_map, connection_objects, source_connection_id):
+        """Build final results from reranked candidates and fetched records."""
+        results = []
+
+        for _, result in reranked_candidates:
+            result_type = result.get('source_type', 'connection')
+            pk = result.get('_id')
+            ai_summary = result.get('ai_summary', '')
+
+            if result_type == 'ticket_summary':
+                ticket = records_map.get('tickets', {}).get(pk)
+                if not ticket:
+                    logger.warning(f'Ticket not found for pk {pk}')
+                    continue
+                processed_result = self._process_ticket_result(result, ticket, ai_summary)
+            else:
+                result_connection_id = int(result.get('connection_id', source_connection_id or 0))
+                conn = connection_objects.get(result_connection_id)
+                if not conn:
+                    logger.warning(f'Connection {result_connection_id} not found or deleted')
+                    continue
+
+                record = records_map.get(result_connection_id, {}).get(pk)
+                if not record:
+                    logger.warning(f'Record not found for connection {result_connection_id}, pk {pk}')
+                    continue
+
+                processed_result = self._process_connection_result(result, conn, record, ai_summary)
+
+            if processed_result:
+                results.append(processed_result)
+
+        return results
+
     def post(self, request):
         # validate and get project info
         project_info, error = self._validate_and_get_project_info(request)
@@ -542,110 +674,35 @@ class RelatedRecordsView(APIView):
             if not search_results:
                 return Response({'related_records': [], 'success': True})
 
-            candidate_for_rerank = []
-            key_to_result = {}
-            for result in search_results:
-                result_type = result.get('source_type', 'connection')
-                pk = result.get('_id')
-
-                if result_type == 'ticket_summary':
-                    if is_ticket_source and pk == int(ticket_id):
-                        # skip if the result is the same as the query ticket
-                        continue
-                    candidate_type = 'ticket'
-                    connection_id_for_key = None
-                else:
-                    result_connection_id = int(result.get('connection_id', source_connection_id or 0))
-                    if not is_ticket_source and result_connection_id == source_connection_id and pk == source_record_id:
-                        # skip if the result is the same as the query connection
-                        continue
-                    candidate_type = 'connection'
-                    connection_id_for_key = result_connection_id
-
-                key = f"{pk}:None" if candidate_type == 'ticket' else f"{pk}:{connection_id_for_key}"
-                key_to_result[key] = result
-                candidate_for_rerank.append({
-                    '_id': pk,
-                    'connection_id': connection_id_for_key,
-                    'type': candidate_type,
-                    'title': result.get('title', ''),
-                    'ai_summary': result.get('ai_summary', '')
-                })
+            # prepare candidates for reranking and build key to result map
+            candidate_for_rerank, key_to_result = self._prepare_candidates_for_rerank(
+                search_results, is_ticket_source, ticket_id, source_connection_id, source_record_id
+            )
 
             # rerank results
             reranked_keys = self._perform_reranking(candidate_for_rerank, query_record, request, username, project_uuid)
             reranked_results = []
             if reranked_keys:
                 reranked_candidates = [(key, key_to_result[key]) for key in reranked_keys if key in key_to_result]
-                reranked_ticket_pks = []
-                reranked_connection_pks_map = {}
-                for _, result in reranked_candidates:
-                    result_type = result.get('source_type', 'connection')
-                    pk = result.get('_id')
-                    if result_type == 'ticket_summary':
-                        reranked_ticket_pks.append(pk)
-                    else:
-                        result_connection_id = int(result.get('connection_id', source_connection_id or 0))
-                        if result_connection_id not in reranked_connection_pks_map:
-                            reranked_connection_pks_map[result_connection_id] = {'pks': []}
-                        reranked_connection_pks_map[result_connection_id]['pks'].append(pk)
 
-                connection_objects = {}
-                if connection:
-                    connection_objects[int(connection_id)] = connection
+                # collect pks to fetch
+                ticket_pks, connection_pks_map = self._collect_reranked_pks(reranked_candidates, source_connection_id)
 
-                needed_connection_ids = set(reranked_connection_pks_map.keys())
-                missing_connection_ids = needed_connection_ids - set(connection_objects.keys())
-                if missing_connection_ids:
-                    additional_connections = ProjectConnections.objects.filter(id__in=missing_connection_ids, deleted=False)
-                    for conn in additional_connections:
-                        connection_objects[conn.id] = conn
+                # fetch connection objects
+                connection_objects = self._fetch_connection_objects(
+                    connection, connection_id, set(connection_pks_map.keys())
+                )
 
-                records_map = {'tickets': {}}
-                if reranked_ticket_pks:
-                    records_map['tickets'] = self._fetch_tickets_batch(seadb_api, project_uuid_32, reranked_ticket_pks)
+                # fetch records
+                records_map = self._fetch_reranked_records(
+                    seadb_api, project_uuid_32, ticket_pks,
+                    connection_pks_map, connection_objects, current_category
+                )
 
-                for result_connection_id, data in reranked_connection_pks_map.items():
-                    conn = connection_objects.get(result_connection_id)
-                    if not conn:
-                        logger.warning(f'Connection {result_connection_id} not found or deleted')
-                        continue
-
-                    connection_type = conn.type
-                    if ConnectionCategory.from_type(connection_type) != current_category:
-                        continue
-
-                    records_map[result_connection_id] = self._fetch_connection_records_batch(
-                        seadb_api, project_uuid_32, result_connection_id, connection_type, data['pks']
-                    )
-
-                for _, result in reranked_candidates:
-                    result_type = result.get('source_type', 'connection')
-                    pk = result.get('_id')
-                    ai_summary = result.get('ai_summary', '')
-
-                    if result_type == 'ticket_summary':
-                        ticket = records_map.get('tickets', {}).get(pk)
-                        if not ticket:
-                            logger.warning(f'Ticket not found for pk {pk}')
-                            continue
-                        processed_result = self._process_ticket_result(result, ticket, ai_summary)
-                    else:
-                        result_connection_id = int(result.get('connection_id', source_connection_id or 0))
-                        conn = connection_objects.get(result_connection_id)
-                        if not conn:
-                            logger.warning(f'Connection {result_connection_id} not found or deleted')
-                            continue
-
-                        record = records_map.get(result_connection_id, {}).get(pk)
-                        if not record:
-                            logger.warning(f'Record not found for connection {result_connection_id}, pk {pk}')
-                            continue
-
-                        processed_result = self._process_connection_result(result, conn, record, ai_summary)
-
-                    if processed_result:
-                        reranked_results.append(processed_result)
+                # build final results
+                reranked_results = self._build_final_results(
+                    reranked_candidates, records_map, connection_objects, source_connection_id
+                )
 
         except Exception as e:
             logger.error(f"Error calling vector search indexer: {e}")
