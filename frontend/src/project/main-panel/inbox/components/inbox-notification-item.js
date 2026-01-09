@@ -1,10 +1,11 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { processor } from '@seafile/seafile-editor';
+import { Trans } from 'react-i18next';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
 import { BAR_TYPE } from '@/project/constants';
-import { Utils } from '@/utils/utils';
 
 import './inbox-notification-item.css';
 
@@ -21,6 +22,21 @@ const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
 dayjs.extend(relativeTime);
 
 const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDrawer }) => {
+  const [notificationContent, setNotificationContent] = useState(null);
+
+  const convertNotification = useCallback(() => {
+    const detail = noticeItem.detail || {};
+    const { comment_content } = detail;
+    processor.process(comment_content).then((result) => {
+      const newNotificationContent = String(result);
+      setNotificationContent(newNotificationContent);
+    });
+  }, []);
+
+  useEffect(() => {
+    convertNotification();
+  }, []);
+
   const generatorNoticeInfo = useCallback(() => {
     const noticeType = noticeItem.msg_type;
     const detail = noticeItem.detail || {};
@@ -30,46 +46,23 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         from_user_name,
         from_user_id,
         ticket_id,
-        ticket_title,
         workspace_id,
         project_name,
-        comment_content,
       } = detail;
 
-      const avatar_url = null;
       const username = from_user_name || from_user_id || gettext('System');
 
       let ticketUrl = null;
       if (workspace_id && project_name && ticket_id !== undefined && ticket_id !== null) {
         ticketUrl = siteRoot + 'workspace/' + workspace_id + '/project/' + encodeURIComponent(project_name) + '/tickets/' + ticket_id + '/';
       }
-
-      let notice = '';
-      if (noticeType === MSG_TYPE_TICKET_ASSIGNEE_ADDED) {
-        notice = gettext('{user} added you as an assignee in ticket {ticket}.');
-        notice = notice.replace('{user}', username);
-        notice = notice.replace('{ticket}', `{tagA}${ticket_title || ('#' + ticket_id)}{/tagA}`);
-        notice = Utils.HTMLescape(notice);
-        if (ticketUrl) {
-          notice = notice.replace('{tagA}', `<a href='${Utils.encodePath(ticketUrl)}'>`);
-        } else {
-          notice = notice.replace('{tagA}', '<span>');
-        }
-        notice = notice.replace('{/tagA}', ticketUrl ? '</a>' : '</span>');
-      } else {
-        notice = gettext('Added a new comment in the ticket.');
-        if (comment_content) {
-          const escapedContent = Utils.HTMLescape(comment_content);
-          notice = notice + `<br/><span class="comment-content-preview">"${escapedContent}"</span>`;
-        }
-      }
-
-      return { avatar_url, notice, username, ticketUrl };
+      const ticketTitle = detail.ticket_title;
+      return { username, title: ticketTitle, ticketUrl };
     }
-    return { avatar_url: null, notice: null, username: null };
+    return { username: null, title: null, ticketUrl: null, };
   }, [noticeItem]);
 
-  const { username, notice, ticketUrl } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
+  const { username, title, ticketUrl } = useMemo(() => generatorNoticeInfo(), [generatorNoticeInfo]);
 
   const handleMarkNotificationRead = useCallback((e) => {
     e.preventDefault();
@@ -85,8 +78,6 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
     }
   }, [noticeItem, onNoticeItemClick]);
-
-  if (!notice) return null;
 
   return (
     <div
@@ -108,7 +99,19 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         )}
       </div>
       <div className="notification-content-wrapper">
-        <div dangerouslySetInnerHTML={{ __html: notice }} />
+        <Trans i18nKey="notification-text-1">
+          Added a new comment for ticket
+          <span className="inbox-text-orange">{title}</span>
+        </Trans>
+      </div>
+      <div className="notification-content-wrapper d-flex">
+        <span className="notification-content-quotes">"</span>
+        <div
+          dangerouslySetInnerHTML={{ __html: notificationContent }}
+          className="notification-comment-content"
+        >
+        </div>
+        <span className="notification-content-quotes text-end">"</span>
       </div>
     </div>
   );

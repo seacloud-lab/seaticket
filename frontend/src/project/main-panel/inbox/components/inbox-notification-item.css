@@ -80,6 +80,10 @@
   margin-top: 8px;
 }
 
+.inbox-notification-item .notification-content-wrapper .inbox-text-orange {
+  color: #ed7109;
+}
+
 .inbox-notification-item .notification-content-quotes {
   width: 8px;
 }
