@@ -15,6 +15,8 @@ from seahub.settings import SITE_ROOT, NOTIFY_ADMIN_AFTER_REGISTRATION
 from seahub.registration.models import notify_admins_on_register_complete
 from seahub.utils import render_error
 from seahub.utils.licenseparse import user_number_over_limit
+from seahub.organizations.models import Organization, OrgUser
+from seahub.project.models import Workspaces
 
 
 def token_view(request, token):
@@ -25,10 +27,11 @@ def token_view(request, token):
         raise Http404
 
     if request.method == 'GET':
+        from seahub.auth.utils import get_virtual_id_by_email
+        vid = get_virtual_id_by_email(i.accepter)
         try:
-            user = User.objects.get(email=i.accepter)
+            user = User.objects.get(email=vid)
             if user.is_active is True:
-                # user is active return exist
                 messages.error(request, _('A user with this email already exists.'))
         except User.DoesNotExist:
             pass
@@ -40,14 +43,14 @@ def token_view(request, token):
         if not passwd:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+        from seahub.auth.utils import get_virtual_id_by_email
+        vid = get_virtual_id_by_email(i.accepter)
         try:
-            user = User.objects.get(email=i.accepter)
+            user = User.objects.get(email=vid)
             if user.is_active is True:
-                # user is active return exist
                 messages.error(request, _('A user with this email already exists.'))
                 return render(request, 'invitations/token_view.html', {'iv': i, })
             else:
-                # user is inactive then set active and new password
                 user.set_password(passwd)
                 user.is_active = True
                 user.save()
@@ -67,6 +70,21 @@ def token_view(request, token):
 
         # Update invitation accept time.
         i.accept()
+
+        inviter_org = Organization.objects.get_org_by_username(i.inviter)
+        if inviter_org:
+            try:
+                if not OrgUser.objects.org_user_exists(inviter_org.org_id, user.username):
+                    OrgUser.objects.add_org_user(inviter_org.org_id, user.username, 0)
+                workspace = Workspaces.objects.get_workspace_by_owner(user.username)
+                if workspace:
+                    if workspace.org_id != inviter_org.org_id:
+                        workspace.org_id = inviter_org.org_id
+                        workspace.save(update_fields=['org_id'])
+                else:
+                    Workspaces.objects.create_workspace(user.username, inviter_org.org_id)
+            except Exception:
+                pass
 
         # login
         auth_login(request, user)

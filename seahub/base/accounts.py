@@ -181,7 +181,10 @@ class UserManager(object):
         """
         If user has a role, update it; or create a role for user.
         """
-        UserRole.objects.update_user_role(email, role)
+        try:
+            UserRole.objects.update_user_role(email, role)
+        except UserRole.DoesNotExist:
+            UserRole.objects.add_user_role(email, role)
         return self.get(email=email)
 
     def create_superuser(self, email, password):

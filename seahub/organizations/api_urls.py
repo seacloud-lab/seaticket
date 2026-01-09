@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from seahub.api2.endpoints.org_admin.users import OrgAdminUser, OrgAdminUsers, \
-    OrgAdminSearchUsers
+    OrgAdminSearchUsers, OrgAdminInviteUsers
 from seahub.api2.endpoints.org_admin.user_set_password import OrgAdminUserSetPassword
 from seahub.api2.endpoints.org_admin.groups import OrgAdminGroups, OrgAdminGroup, \
     AdminGroupMembers, AdminGroupMember, OrgAdminGroupProjects, OrgAdminGroupProject
@@ -24,6 +24,7 @@ urlpatterns = [
     re_path(r'^(?P<org_id>\d+)/admin/search-projects/$', OrgAdminSearchProjectsView.as_view(), name='api-v1-org-admin-search-projects'),
 
     re_path(r'^(?P<org_id>\d+)/admin/users/$', OrgAdminUsers.as_view(), name='api-v1-org-admin-users'),
+    re_path(r'^(?P<org_id>\d+)/admin/invite-users/$', OrgAdminInviteUsers.as_view(), name='api-v1-org-admin-invite-users'),
     re_path(r'^(?P<org_id>\d+)/admin/search-users/$', OrgAdminSearchUsers.as_view(), name='api-v1-org-admin-search-users'),
     re_path(r'^(?P<org_id>\d+)/admin/users/(?P<email>[^/]+)/$', OrgAdminUser.as_view(), name='api-v1-org-admin-user'),
     re_path(r'^(?P<org_id>\d+)/admin/users/(?P<email>[^/]+)/set-password/', OrgAdminUserSetPassword.as_view(), name='api-v1-org-admin-user-reset-password'),

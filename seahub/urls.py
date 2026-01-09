@@ -32,6 +32,7 @@ from seahub.api2.endpoints.user_list import UserListView
 
 urlpatterns = [
     re_path(r'^accounts/', include('seahub.registration.urls')),
+    re_path(r'^invitations/', include(('seahub.invitations.urls', 'invitations'), namespace='invitations')),
 
     re_path(r'^sso/$', sso, name='sso'),
     re_path(r'^sso-auto-login/$', sso_auto_login, name='sso-auto-login'),

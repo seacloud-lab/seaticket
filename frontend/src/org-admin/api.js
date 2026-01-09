@@ -152,6 +152,13 @@ class OrgAdminAPI {
     return this.req.put(url);
   }
 
+  orgAdminInviteUsers(orgID, emails) {
+    const url = this.server + '/api/v1/org/' + orgID + '/admin/invite-users/';
+    const form = new FormData();
+    emails.forEach(email => form.append('email', email));
+    return this._sendPostRequest(url, form);
+  }
+
   orgAdminSearchUsers(orgID, query, page, perPage) {
     const url = this.server + '/api/v1/org/' + orgID + '/admin/search-users/';
     let params = {

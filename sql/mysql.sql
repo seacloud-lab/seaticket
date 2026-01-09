@@ -656,3 +656,17 @@ CREATE TABLE `project_notification` (
   KEY `project_notification_timestamp` (`timestamp`),
   KEY `idx_user_seen` (`to_user`,`seen`)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `invitations_invitation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `token` varchar(40) NOT NULL,
+  `inviter` varchar(255) NOT NULL,
+  `accepter` varchar(255) NOT NULL,
+  `invite_time` datetime(6) NOT NULL,
+  `accept_time` datetime(6) DEFAULT NULL,
+  `invite_type` varchar(20) NOT NULL,
+  `expire_time` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `invitations_invitation_inviter_b0a7b855` (`inviter`),
+  KEY `invitations_invitation_token_25a92a38` (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

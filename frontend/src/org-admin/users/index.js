@@ -13,6 +13,7 @@ import orgAdminAPI from '../api';
 import OrgUserInfo from '../models/org-user';
 import AddAdminDialog from './add-admin-dialog';
 import AddUserDialog from './add-user-dialog';
+import InviteUserDialog from './invite-user-dialog';
 
 class OrgUsers extends Component {
 
@@ -26,6 +27,7 @@ class OrgUsers extends Component {
       perPage: 25,
       isShowAddOrgAdminDialog: false,
       isShowAddOrgUserDialog: false,
+      isShowInviteUsersDialog: false,
     };
   }
 
@@ -39,6 +41,10 @@ class OrgUsers extends Component {
 
   toggleAddOrgUser = () => {
     this.setState({ isShowAddOrgUserDialog: !this.state.isShowAddOrgUserDialog });
+  };
+
+  toggleInviteUsers = () => {
+    this.setState({ isShowInviteUsersDialog: !this.state.isShowInviteUsersDialog });
   };
 
   initOrgUsersData = (page, perPage) => {
@@ -78,6 +84,32 @@ class OrgUsers extends Component {
       this.toggleAddOrgUser();
     });
   };
+
+  inviteOrgUsers = (emails) => {
+    orgAdminAPI.orgAdminInviteUsers(orgID, emails).then(res => {
+      const successList = res.data.success || [];
+      const failedList = res.data.failed || [];
+      if (successList.length > 0) {
+        const sentTo = successList.map(item => item.email).join(', ');
+        const successMsg = gettext('Emails have been sent to %s').replace('%s', sentTo);
+        toaster.success(successMsg);
+      }
+      if (failedList.length > 0) {
+        const msg = failedList.map(item => {
+          const errorText = item.error_msg || gettext('Failed to send');
+          return gettext('%s: %s').replace('%s', item.email).replace('%s', errorText);
+        }).join('\n');
+        toaster.danger(msg);
+      }
+      this.initOrgUsersData(this.state.page, this.state.perPage);
+      this.toggleInviteUsers();
+    }).catch(error => {
+      const errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+      this.toggleInviteUsers();
+    });
+  };
+
 
   toggleOrgUsersDelete = (user) => {
     orgAdminAPI.orgAdminDeleteOrgUser(orgID, user.email).then(res => {
@@ -197,9 +229,17 @@ class OrgUsers extends Component {
               <Button color="secondary" className="operation-item" title={gettext('Add user')} aria-label={gettext('Add user')} onClick={this.toggleAddOrgUser}>
                 {gettext('Add user')}
               </Button>
+              <Button color="secondary" className="operation-item" title={gettext('Invite user')} aria-label={gettext('Invite user')} onClick={this.toggleInviteUsers}>
+                {gettext('Invite user')}
+              </Button>
               {this.state.isShowAddOrgUserDialog &&
                 <ModalPortal>
                   <AddUserDialog handleSubmit={this.addOrgUser} toggle={this.toggleAddOrgUser}/>
+                </ModalPortal>
+              }
+              {this.state.isShowInviteUsersDialog &&
+                <ModalPortal>
+                  <InviteUserDialog handleSubmit={this.inviteOrgUsers} toggle={this.toggleInviteUsers}/>
                 </ModalPortal>
               }
             </>
