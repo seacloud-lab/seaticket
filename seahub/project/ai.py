@@ -293,62 +293,6 @@ class RelatedRecordsView(APIView):
 
         return (project, username, project_uuid), None
 
-    def _get_query_vector_from_ticket(self, seadb_api, project_uuid_32, ticket_id):
-        sql = f"SELECT ai_summary_vector, title, ai_summary FROM `tickets` WHERE _pk = {int(ticket_id)} AND (`deleted` = False OR `deleted` IS NULL) LIMIT 1"
-        result = seadb_api.query_rows(project_uuid_32, sql)
-        
-        if not result['results'] or not result['results'][0].get('ai_summary_vector'):
-            error_msg = 'NO AI summary vector.'
-            return None, api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        query_record = result['results'][0]
-        return {
-            'query_record': query_record,
-            'target_vector': query_record['ai_summary_vector'],
-            'current_category': ConnectionCategory.ISSUE,
-            'source_connection_id': None,
-            'source_record_id': int(ticket_id),
-            'connection': None
-        }, None
-
-    def _get_query_vector_from_connection(self, seadb_api, project_uuid_32, connection_id, record_id):
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return None, api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        current_category = ConnectionCategory.from_type(connection.type)
-        
-        table_name = None
-        if current_category == ConnectionCategory.ISSUE:
-            if connection.type == ConnectionType.GITHUB_ISSUE.value:
-                table_name = GithubIssuesTable.gen_table_name(connection_id)
-            elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
-                table_name = DiscourseTopicsTable.gen_table_name(connection_id)
-            elif connection.type == ConnectionType.EMAIL.value:
-                table_name = ThreadTable.gen_table_name(connection_id)
-
-        if not table_name:
-            error_msg = 'Unsupported connection type for similarity search.'
-            return None, api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        sql = f"SELECT ai_summary_vector, title, ai_summary FROM `{table_name}` WHERE _pk = {int(record_id)} LIMIT 1"
-        result = seadb_api.query_rows(project_uuid_32, sql)
-        
-        if not result['results'] or not result['results'][0].get('ai_summary_vector'):
-            error_msg = 'NO AI summary vector.'
-            return None, api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        query_record = result['results'][0]
-        return {
-            'query_record': query_record,
-            'target_vector': query_record['ai_summary_vector'],
-            'current_category': current_category,
-            'source_connection_id': int(connection_id),
-            'source_record_id': int(record_id),
-            'connection': connection
-        }, None
-
     def _get_search_connection_ids(self, project, current_category):
         project_connections = ProjectConnections.objects.filter(
             project=project,
@@ -533,11 +477,15 @@ class RelatedRecordsView(APIView):
         connection_id = request.data.get('connection_id')
         record_id = request.data.get('record_id')
 
-        is_ticket_source = bool(ticket_id)
-        is_connection_source = bool(connection_id and record_id)
+        ticket_provided = bool(ticket_id)
+        connection_provided = bool(connection_id)
+        is_ticket_source = ticket_provided
+        if connection_provided and not record_id:
+            error_msg = 'record_id is required when connection_id is provided.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if not is_ticket_source and not is_connection_source:
-            error_msg = 'Either ticket_id or (connection_id and record_id) is required.'
+        if ticket_provided == connection_provided:
+            error_msg = 'Either ticket_id or (connection_id and record_id) is required, but not both.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # init SeaDB API
@@ -545,20 +493,51 @@ class RelatedRecordsView(APIView):
         project_uuid_32 = uuid_str_to_32_chars(project_uuid)
 
         # get query vector
-        if is_ticket_source:
-            vector_info, error = self._get_query_vector_from_ticket(seadb_api, project_uuid_32, ticket_id)
-        else:
-            vector_info, error = self._get_query_vector_from_connection(seadb_api, project_uuid_32, connection_id, record_id)
-        
-        if error:
-            return error
+        table_name = 'tickets' if ticket_provided else None
+        connection = None
+        current_category = ConnectionCategory.ISSUE if ticket_provided else None
+        source_connection_id = None
+        source_record_id = int(ticket_id) if ticket_provided else None
 
-        query_record = vector_info['query_record']
-        target_vector = vector_info['target_vector']
-        current_category = vector_info['current_category']
-        source_connection_id = vector_info['source_connection_id']
-        source_record_id = vector_info['source_record_id']
-        connection = vector_info['connection']
+        if connection_provided:
+            connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+            if not connection:
+                error_msg = f'Connection {connection_id} not found.'
+                return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+            current_category = ConnectionCategory.from_type(connection.type)
+            if current_category == ConnectionCategory.ISSUE:
+                if connection.type == ConnectionType.GITHUB_ISSUE.value:
+                    table_name = GithubIssuesTable.gen_table_name(connection_id)
+                elif connection.type == ConnectionType.DISCOURSE_FORUM.value:
+                    table_name = DiscourseTopicsTable.gen_table_name(connection_id)
+                elif connection.type == ConnectionType.EMAIL.value:
+                    table_name = ThreadTable.gen_table_name(connection_id)
+
+            if not table_name:
+                error_msg = 'Unsupported connection type for similarity search.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+            source_connection_id = int(connection_id)
+            source_record_id = int(record_id)
+
+        if not table_name or source_record_id is None:
+            error_msg = 'Unable to determine source record for similarity search.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        sql = f"SELECT ai_summary_vector, title, ai_summary FROM `{table_name}` \
+                WHERE _pk = {source_record_id} AND (`deleted` = False OR `deleted` IS NULL) \
+                LIMIT 1"
+        result = seadb_api.query_rows(project_uuid_32, sql)
+
+        if not result['results'] or not result['results'][0].get('ai_summary_vector'):
+            error_msg = 'NO AI summary vector.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        query_record = result['results'][0]
+        target_vector = query_record['ai_summary_vector']
+        if ticket_provided and current_category is None:
+            current_category = ConnectionCategory.ISSUE
 
         # get search connection ids
         search_connection_ids = self._get_search_connection_ids(project, current_category)
