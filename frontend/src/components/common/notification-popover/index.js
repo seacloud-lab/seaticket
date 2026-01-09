@@ -46,11 +46,11 @@ class NotificationPopover extends React.Component {
   };
 
   render() {
-    const { headerText = '', bodyText = '', footerText = '', currentTab, generalNoticeListUnseen, projectNoticeListUnseen, hideTabs } = this.props;
+    const { headerText = '', bodyText = '', footerText = '', currentTab, generalNoticeListUnseen, projectNoticeListUnseen } = this.props;
     const activeIndex = currentTab === 'general' ? 0 : 1;
-    const itemWidths = hideTabs ? [] : this.itemRefs.map(ref => ref?.offsetWidth);
-    const indicatorWidth = hideTabs ? 0 : itemWidths[activeIndex];
-    const indicatorOffset = hideTabs ? 0 : itemWidths.slice(0, activeIndex).reduce((a, b) => a + b, 0) + (2 * activeIndex + 1) * 12;
+    const itemWidths = this.itemRefs.map(ref => ref?.offsetWidth);
+    const indicatorWidth = itemWidths[activeIndex];
+    const indicatorOffset = itemWidths.slice(0, activeIndex).reduce((a, b) => a + b, 0) + (2 * activeIndex + 1) * 12;
     const targetId = this.props.targetId || 'notification-popover';
 
     return (
@@ -70,45 +70,43 @@ class NotificationPopover extends React.Component {
             </div>
           </div>
           <div className="notification-body">
-            <div className={`mark-notifications ${hideTabs ? 'hide-tabs' : ''}`}>
-              {!hideTabs && (
-                <ul
-                  className="nav nav-indicator-container position-relative"
-                  style={{
-                    '--indicator-width': `${indicatorWidth}px`,
-                    '--indicator-offset': `${indicatorOffset}px`
-                  }}
+            <div className="mark-notifications">
+              <ul
+                className="nav nav-indicator-container position-relative"
+                style={{
+                  '--indicator-width': `${indicatorWidth}px`,
+                  '--indicator-offset': `${indicatorOffset}px`
+                }}
+              >
+                <li
+                  className="nav-item mx-3"
+                  ref={el => this.itemRefs[0] = el}
+                  onClick={() => this.tabItemClick('general')}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={currentTab === 'general'}
+                  onKeyDown={Utils.onKeyDown}
                 >
-                  <li
-                    className="nav-item mx-3"
-                    ref={el => this.itemRefs[0] = el}
-                    onClick={() => this.tabItemClick('general')}
-                    tabIndex={0}
-                    role="button"
-                    aria-pressed={currentTab === 'general'}
-                    onKeyDown={Utils.onKeyDown}
-                  >
-                    <span className={`m-0 nav-link ${currentTab === 'general' ? 'active' : ''}`}>
-                      {gettext('General')}
-                      {generalNoticeListUnseen > 0 && <span>({generalNoticeListUnseen})</span>}
-                    </span>
-                  </li>
-                  <li
-                    className="nav-item mx-3"
-                    ref={el => this.itemRefs[1] = el}
-                    onClick={() => this.tabItemClick('project')}
-                    tabIndex={0}
-                    role="button"
-                    aria-pressed={currentTab === 'project'}
-                    onKeyDown={Utils.onKeyDown}
-                  >
-                    <span className={`m-0 nav-link ${currentTab === 'project' ? 'active' : ''}`}>
-                      {gettext('Project')}
-                      {projectNoticeListUnseen > 0 && <span>({projectNoticeListUnseen})</span>}
-                    </span>
-                  </li>
-                </ul>
-              )}
+                  <span className={`m-0 nav-link ${currentTab === 'general' ? 'active' : ''}`}>
+                    {gettext('General')}
+                    {generalNoticeListUnseen > 0 && <span>({generalNoticeListUnseen})</span>}
+                  </span>
+                </li>
+                <li
+                  className="nav-item mx-3"
+                  ref={el => this.itemRefs[1] = el}
+                  onClick={() => this.tabItemClick('project')}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={currentTab === 'project'}
+                  onKeyDown={Utils.onKeyDown}
+                >
+                  <span className={`m-0 nav-link ${currentTab === 'project' ? 'active' : ''}`}>
+                    {gettext('Project')}
+                    {projectNoticeListUnseen > 0 && <span>({projectNoticeListUnseen})</span>}
+                  </span>
+                </li>
+              </ul>
               <button
                 className="mark-all-read border-0 bg-transparent p-0"
                 onClick={this.props.onMarkAllNotifications}
@@ -117,14 +115,14 @@ class NotificationPopover extends React.Component {
                 {bodyText}
               </button>
             </div>
-            {(hideTabs || currentTab === 'general') &&
+            {currentTab === 'general' &&
             <div className="notification-list-container" onScroll={this.onHandleScroll} ref={ref => this.notificationListRef = ref}>
               <div ref={ref => this.notificationsWrapperRef = ref}>
                 {this.props.children}
               </div>
             </div>
             }
-            {!hideTabs && currentTab === 'project' &&
+            {currentTab === 'project' &&
             <div className="notification-list-container" onScroll={this.onHandleScroll} ref={ref => this.notificationListRef = ref}>
               <div ref={ref => this.notificationsWrapperRef = ref}>
                 {this.props.children}
@@ -158,7 +156,6 @@ NotificationPopover.propTypes = {
   currentTab: PropTypes.string,
   generalNoticeListUnseen: PropTypes.number,
   projectNoticeListUnseen: PropTypes.number,
-  hideTabs: PropTypes.bool,
   triggerId: PropTypes.string,
   targetId: PropTypes.string,
 };
