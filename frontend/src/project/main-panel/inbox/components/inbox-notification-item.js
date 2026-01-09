@@ -57,7 +57,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         }
         notice = notice.replace('{/tagA}', ticketUrl ? '</a>' : '</span>');
       } else {
-        notice = gettext('Added a new comment in the row.');
+        notice = gettext('Added a new comment in the ticket.');
         if (comment_content) {
           const escapedContent = Utils.HTMLescape(comment_content);
           notice = notice + `<br/><span class="comment-content-preview">"${escapedContent}"</span>`;
