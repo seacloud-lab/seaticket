@@ -1,0 +1,12 @@
+.sea-qa-project-navigation-item-inbox-count {
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background-color: #fc6440;
+  font-size: 10px;
+  color: #fff;
+  text-align: center;
+  margin-right: 4px;
+}

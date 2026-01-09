@@ -24,8 +24,8 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const isfetchMore = page > 1;
-    if (isfetchMore) {
+    const isFetchMore = page > 1;
+    if (isFetchMore) {
       setLoadingMore(true);
     } else {
       setLoading(true);
@@ -35,7 +35,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       .then(res => {
         const list = res.data.notification_list || [];
         const count = res.data.unseen_count || 0;
-        if (isfetchMore) {
+        if (isFetchMore) {
           setNotificationList([...notificationList, ...list]);
         } else {
           setNotificationList(list);

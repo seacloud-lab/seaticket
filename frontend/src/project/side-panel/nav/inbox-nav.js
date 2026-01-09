@@ -2,7 +2,7 @@ import React from 'react';
 import { Icon } from '../../../components';
 import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 
-import './index.css';
+import './inbox-nav.css';
 
 const InboxNav = ({ nav, level }) => {
   const { unseen, showInboxDrawer, setShowInboxDrawer } = useNotification();

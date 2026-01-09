@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import NoticeInboxItem from '@/project/main-panel/inbox/components/notice-inbox-item';
+import InboxNotificationItem from '@/project/main-panel/inbox/components/inbox-notification-item';
 import { CenteredLoading, Icon, EmptyTip } from '@/components';
 import { useNotification } from '@/project/main-panel/inbox/hooks/notification';
 import { gettext, mediaUrl } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
 import { isNearBottom } from '@/utils/dom.js';
 import { Utils } from '@/utils/utils';
+import { Z_INDEX } from '@/constants';
 
 import './index.css';
 
@@ -40,7 +41,7 @@ const Inbox = ({ toggleBar }) => {
   }, [onHandleClick]);
 
   return (
-    <div className="sea-qa-inbox-panel" ref={inboxPanelRef}>
+    <div className="sea-qa-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
       <div className="sea-qa-inbox-header">
         <span className="heading">{title}</span>
         <div className="sea-qa-inbox-actions" onClick={markAllAsRead}>
@@ -60,7 +61,7 @@ const Inbox = ({ toggleBar }) => {
         {!loading && notificationList.length > 0 && (
           <>
             {notificationList.map(item => (
-              <NoticeInboxItem
+              <InboxNotificationItem
                 key={item.id}
                 noticeItem={item}
                 onNoticeItemClick={() => markAsRead(item.id)}

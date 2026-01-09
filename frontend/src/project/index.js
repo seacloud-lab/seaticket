@@ -58,6 +58,10 @@ const Project = () => {
         return;
       }
       if (activeBarKey === BAR_TYPE.TICKET) {
+        if (newActiveBar[1]) {
+          eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, newActiveBar[1]);
+          return;
+        }
         if (!location.pathname.endsWith('tickets/')) {
           eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
         }

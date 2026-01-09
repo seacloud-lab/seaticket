@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
-import eventBus from '@/utils/event-bus';
 
-import './notice-inbox-item.css';
+import './inbox-notification-item.css';
 
 const propTypes = {
   noticeItem: PropTypes.object.isRequired,
@@ -21,7 +20,7 @@ const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
 
 dayjs.extend(relativeTime);
 
-const NoticeItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDrawer }) => {
+const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDrawer }) => {
   const generatorNoticeInfo = useCallback(() => {
     const noticeType = noticeItem.msg_type;
     const detail = noticeItem.detail || {};
@@ -78,14 +77,12 @@ const NoticeItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDraw
     onNoticeItemClick(noticeItem);
   }, [noticeItem, onNoticeItemClick]);
 
-  const handleNoticeItemClick = useCallback((url) => {
+  const handleNoticeItemClick = useCallback(() => {
     onNoticeItemClick(noticeItem);
-    if (url) {
+    const { msg_type, detail } = noticeItem;
+    if (msg_type === MSG_TYPE_TICKET_ASSIGNEE_ADDED || msg_type === MSG_TYPE_TICKET_COMMENTED) {
       setShowInboxDrawer(false);
-      toggleBar([BAR_TYPE.TICKET]);
-      setTimeout(() => {
-        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, noticeItem.detail.ticket_id);
-      }, 0);
+      toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
     }
   }, [noticeItem, onNoticeItemClick]);
 
@@ -94,7 +91,7 @@ const NoticeItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDraw
   return (
     <div
       className="inbox-notification-item"
-      onClick={() => handleNoticeItemClick(ticketUrl)}
+      onClick={() => handleNoticeItemClick()}
       role="button"
       style={{ cursor: ticketUrl ? 'pointer' : 'default' }}
     >
@@ -117,6 +114,6 @@ const NoticeItem = ({ noticeItem, onNoticeItemClick, toggleBar, setShowInboxDraw
   );
 };
 
-NoticeItem.propTypes = propTypes;
+InboxNotificationItem.propTypes = propTypes;
 
-export default NoticeItem;
+export default InboxNotificationItem;
