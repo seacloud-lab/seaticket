@@ -546,7 +546,6 @@ class OrgAdminSearchUsers(APIView):
         return Response(user_list_info)
 
 
-
 class OrgAdminInviteUsers(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
