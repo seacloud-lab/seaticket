@@ -34,7 +34,7 @@
   font-weight: normal;
   line-height: 40px;
   margin: 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .org-admin .main-panel .nav .nav-item .nav-link,
@@ -54,7 +54,7 @@
 
 .org-admin .main-panel .cur-view-path,
 .sys-admin .main-panel .cur-view-path {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   padding: 0 0.25rem;
 }
 
@@ -137,7 +137,7 @@
 }
 
 .info-item-heading {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   color: inherit;
   font-size: 15px;
   font-weight: 400;

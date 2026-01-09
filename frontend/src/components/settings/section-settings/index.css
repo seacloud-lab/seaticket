@@ -2,7 +2,7 @@
   font-size: 15px;
   font-weight: normal;
   padding-bottom: 0.2em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   margin: 24px 0 0.7em;
   color: inherit;
 }

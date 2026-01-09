@@ -16,7 +16,7 @@
 
 .user-popover-container .user-popover-header .user-popover-title {
   width: 100%;
-  border-bottom: 1px solid #ededed;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   padding-bottom: 14px;
   height: 100%;
   display: flex;
